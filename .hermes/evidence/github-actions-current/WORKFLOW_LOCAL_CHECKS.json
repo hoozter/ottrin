@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "checks": [
+    "packaging/tests/verify-release-workflow-dependencies.sh exit0",
+    "PyYAML BaseLoader syntax and exact workflow/ref concurrency parse",
+    "Unchanged Linux/Windows matrix and verify/search-performance job set",
+    "git diff --check exit0"
+  ],
+  "hosted": "Pending publication and new run; current41394641644 remains separately observed."
+}

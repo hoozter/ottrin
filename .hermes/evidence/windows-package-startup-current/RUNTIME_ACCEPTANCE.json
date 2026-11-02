@@ -1,0 +1,28 @@
+{
+  "status": "required native package startup and GUI focus gates failed",
+  "source_revision": "4d6f4e1a7d7fb5b6bee97cd78132a0765b25ddd7",
+  "positive": [
+    "Actual development deployment",
+    "Real main window with non-elevated package identity",
+    "Normal WM_CLOSE exit0",
+    "Package removal, no remaining index tasks or package processes",
+    "Synthetic source fixture preserved",
+    "Normal reboot verified with changed boot identity"
+  ],
+  "failed": {
+    "index_setup_exit": -1073741819,
+    "gui_focus": "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+    "preferences": "Not established: actor failed before its preferences hash was captured."
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next": "Repair cached activation factory lifetime; rerun actual package enable/disable/reenable, login/update/removal and separate GUI focus guard."
+}

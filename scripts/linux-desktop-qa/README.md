@@ -4,7 +4,8 @@
 Ottrin GUI checks. It starts a private Xvfb display, session bus and KWin process
 with disposable HOME/XDG state through `scripts/test-workspace.py`; Cargo and
 Rustup continue to use the existing shared caches. It never controls the host
-session. The caller must declare its fixtures, impose a finite lease, check app
+session. The harness selects X11 consistently for EGL, GTK, Qt and Winit,
+removing inherited Wayland display/socket values. The caller must declare its fixtures, impose a finite lease, check app
 PID/start time/display ownership before input and record the exact binary hash.
 
 Use the desktop as a context manager. Teardown stops owned process groups and

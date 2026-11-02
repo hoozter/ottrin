@@ -1,0 +1,851 @@
+[
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-02T00:12:44Z",
+    "databaseId": 41365916700,
+    "displayTitle": "Restore native desktop registrations during Linux package removal",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "1e23843124e35a61bc794245a755ee079afdbf05",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41365916700",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Verify production HTML pixels and executable mapping policy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T23:38:05Z",
+    "databaseId": 41363062321,
+    "displayTitle": "Keep the owned Windows test account marker within the native length l\u2026",
+    "event": "push",
+    "headBranch": "branch/msi-rollback-native-control",
+    "headSha": "2a43766875383fadb32f821b52ed7e0bcfe7da98",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41363062321",
+    "workflowName": "Native MSI rollback control",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "native-control",
+        "steps": [
+          "Exercise file-only per-user rollback after actual execution"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T23:34:45Z",
+    "databaseId": 41362787724,
+    "displayTitle": "Compare per-user MSI rollback on an isolated hosted Windows runtime",
+    "event": "push",
+    "headBranch": "branch/msi-rollback-native-control",
+    "headSha": "8826b1b8e4a5424427349c094429c08c9a8596c7",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41362787724",
+    "workflowName": "Native MSI rollback control",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "native-control",
+        "steps": [
+          "Exercise file-only per-user rollback after actual execution"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T22:10:46Z",
+    "databaseId": 41355800562,
+    "displayTitle": "Check scrollable Properties metadata at both viewport positions",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "1eb5ea5c4b5dd9e421a5b06edae4771964081756",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41355800562",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Verify production HTML pixels and executable mapping policy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T22:08:36Z",
+    "databaseId": 41355599547,
+    "displayTitle": "Add reversible Windows folder defaults and remove desktop integration\u2026",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "51a3b67628435c93f4563b3f8df69f89e1217aee",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41355599547",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Verify production Linux desktop integration"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T20:49:07Z",
+    "databaseId": 41348793232,
+    "displayTitle": "Honor desktop startup activation and reap each window independently",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "a9d8de8ad9de94018a3987671863c6062b01ea5e",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41348793232",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T20:29:47Z",
+    "databaseId": 41347132059,
+    "displayTitle": "Add reversible on-demand Linux file manager integration",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "7a1c133bdb73792f8a96f9ae00ef6d99df6b2ccd",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41347132059",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T20:12:50Z",
+    "databaseId": 41345685516,
+    "displayTitle": "Add themed read-only properties and correct native entry metadata",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "8e90bb4bff538fd566666495348e76d9ae39a9dc",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41345685516",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T15:41:39Z",
+    "databaseId": 41322511138,
+    "displayTitle": "Preserve native search paths and replace incompatible index daemons",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "0e85f745316a5daa7e7679426f8974920967088c",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41322511138",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Verify production HTML pixels and executable mapping policy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T15:20:57Z",
+    "databaseId": 41320771519,
+    "displayTitle": "Add reversible folder opening and preserve native index diagnostics",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "29450ee2b86cf5b8658127c52279c85bd09e5a42",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41320771519",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T13:57:09Z",
+    "databaseId": 41313723634,
+    "displayTitle": "Verify portal management through production desktop services",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "d7981da577c857359b5d65682a15aa4e3795819c",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41313723634",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Verify production Linux portal lifecycle"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T13:09:53Z",
+    "databaseId": 41309919766,
+    "displayTitle": "Add reversible Linux desktop file picker integration",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "78af6a2a107f1943c7eae6577ce02c50940e0066",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41309919766",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-01T07:24:32Z",
+    "databaseId": 41284662400,
+    "displayTitle": "Preserve native paths in chooser requests and save selections",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "601c00ed293eb12e9322fd6b22a826a26998ff33",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41284662400",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Verify production HTML pixels and executable mapping policy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-26T06:39:34Z",
+    "databaseId": 40281115565,
+    "displayTitle": "Deliver verified lower-CPU Linux index packages and service update",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "cc68fe8cf491081540acbb8413c3286fd3aec629",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40281115565",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-26T06:16:11Z",
+    "databaseId": 40278830449,
+    "displayTitle": "Reduce filename index construction CPU with bounded direct inserts",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "3ee5f7c9ab604482e0c78a0b132162c7a0941a14",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40278830449",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-26T03:24:31Z",
+    "databaseId": 40263930589,
+    "displayTitle": "Deliver verified Windows candidate and native desktop checks",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "a5003d5f7cc238ad51daa1045702edec8d2f16af",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40263930589",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-26T02:28:41Z",
+    "databaseId": 40259280148,
+    "displayTitle": "Refresh Windows Undo aliases and isolate native pipe fixtures",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "de11ac2c7e009a95189f133eefdd6ae67c08db47",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40259280148",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-26T00:52:51Z",
+    "databaseId": 40251466108,
+    "displayTitle": "Deliver verified index packages and streamline status-only CI",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "db2c2d29d513da58c931cfd2d5af2cfb921d46bb",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40251466108",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-26T00:21:04Z",
+    "databaseId": 40248932019,
+    "displayTitle": "Bound index progress traffic and reduce persistence batch overhead",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "0b011e01700e5795bcfb8ad3c91d8b3607b5a71d",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40248932019",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-26T00:03:41Z",
+    "databaseId": 40247510792,
+    "displayTitle": "Isolate Windows recovery UI tests and record index startup baseline",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "c44d943a8ab3c4c305f001c4dc63c4b8d9dd7ac0",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40247510792",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T22:51:51Z",
+    "databaseId": 40242148948,
+    "displayTitle": "Deliver verified Linux HTML packages and repair Windows sandbox fixtures",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "22068232ed354f62cc89cff9829e03589cb5d63b",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40242148948",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T22:16:58Z",
+    "databaseId": 40239453234,
+    "displayTitle": "Verify Windows guest sandbox tokens and expose hosted boundary failures",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "d54e19336b0f0b1457c121ceafeee9622b6f390e",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40239453234",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Check Windows native preview boundary before workspace suite"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T21:00:13Z",
+    "databaseId": 40233389390,
+    "displayTitle": "Fix Windows Office test fixtures and deliver verified Linux packages",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "cb2e2f69a8fcd82805715e52b6a9dcaf7e1c8359",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40233389390",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T19:46:59Z",
+    "databaseId": 40227656844,
+    "displayTitle": "Diagnose trusted renderer entry refusal",
+    "event": "push",
+    "headBranch": "branch/html-sandbox-profile-probe-20261025",
+    "headSha": "3681c47ac1fb6fb2addda807db3cdb81c5f33120",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40227656844",
+    "workflowName": "HTML sandbox profile probe",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "profile",
+        "steps": [
+          "Probe fixed trusted browser launcher and profile"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T19:43:59Z",
+    "databaseId": 40227414208,
+    "displayTitle": "Probe confined HTML rendering under restricted Linux namespaces",
+    "event": "push",
+    "headBranch": "branch/html-sandbox-profile-probe-20261025",
+    "headSha": "f655bc86d3414193beb0e400fff4eddc9ef025d7",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40227414208",
+    "workflowName": "HTML sandbox profile probe",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "profile",
+        "steps": [
+          "Probe fixed trusted browser launcher and profile"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T19:25:45Z",
+    "databaseId": 40225986422,
+    "displayTitle": "Finish Windows Move handle handoff and harden CI preview checks",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "a230fa2c7b8f8389bd9ddf3a33331388f4febdef",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40225986422",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T18:21:54Z",
+    "databaseId": 40220888977,
+    "displayTitle": "Unify Windows Move folder security and deliver Linux UI fixes",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "7fc8d7680476ebb32e49b76bd6113b213d5e8404",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40220888977",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-25T16:22:46Z",
+    "databaseId": 40211384586,
+    "displayTitle": "Harden Linux Undo identity and repair release verification",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "0f8011f6c3fd0737d5ba7a2a1df2b445d5652e33",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40211384586",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-24T21:05:35Z",
+    "databaseId": 40132684848,
+    "displayTitle": "Normalize Windows verification receipt encoding",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "1777733f3c5a91d70d990e570231e38f5b8b749a",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40132684848",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-24T21:05:14Z",
+    "databaseId": 40132658190,
+    "displayTitle": "Verify packaged Windows recovery and record independent roadmap handoff",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "f148f6985ccccfabfa27ef67fbad622448d9e3df",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40132658190",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-10-24T19:59:59Z",
+    "databaseId": 40127800870,
+    "displayTitle": "Merge GitHub history while retaining current implementations",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "5b199149a19c719a490ff9ad89bba28fa347e2a5",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/40127800870",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-07T21:57:08Z",
+    "databaseId": 34164949054,
+    "displayTitle": "Restore CI on Rust 1.98",
+    "event": "pull_request",
+    "headBranch": "ci/fix-useless-format",
+    "headSha": "f47f985e378e51d2cc37af620e02845e2672b777",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/34164949054",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-07T21:53:51Z",
+    "databaseId": 34164759401,
+    "displayTitle": "Fix preview metadata clippy lint",
+    "event": "push",
+    "headBranch": "ci/fix-useless-format",
+    "headSha": "f47f985e378e51d2cc37af620e02845e2672b777",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/34164759401",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      },
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-06T18:05:40Z",
+    "databaseId": 34050622002,
+    "displayTitle": "Add project and bundled font licenses",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "5329550f5f7f63edad22cb576ec356f0791396bd",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/34050622002",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-06-07T09:58:02Z",
+    "databaseId": 27089268795,
+    "displayTitle": "fix: satisfy windows clippy",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "826bc7b47a68bc1417c42079cea4f31b708fd4aa",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/27089268795",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-06-07T09:47:22Z",
+    "databaseId": 27089043597,
+    "displayTitle": "ci: install ripgrep for content search tests",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "ffb0c666fce088f5b6aa561f6fec84edd4283019",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/27089043597",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo clippy"
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-06-07T09:38:53Z",
+    "databaseId": 27088863874,
+    "displayTitle": "ci: add Linux and Windows verification workflow",
+    "event": "push",
+    "headBranch": "main",
+    "headSha": "9591744df9f5cc145ea41a48e43aa6dfc8ee4b67",
+    "status": "completed",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/27088863874",
+    "workflowName": "ci",
+    "attempt": 1,
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "steps": [
+          "Cargo test"
+        ]
+      }
+    ]
+  }
+]

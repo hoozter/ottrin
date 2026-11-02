@@ -1,0 +1,19 @@
+{
+  "status": "source checks pass; corrected package native gate remains required",
+  "checks": {
+    "windows_all_target_strict_clippy": "WINDOWS_CLIPPY.log",
+    "format": "FMT.log",
+    "actual_child_x11_backend": "environment-probe/RESULT.json",
+    "private_x11_teardown": "environment-probe/TEARDOWN.json",
+    "qa_driver_syntax": "Python AST parse passed"
+  },
+  "cleanup": "Exact incremental guard inspect/apply recorded; rejected4d6f staging292756118bytes and fulfilled source archive retired. Private probes cleaned all profiles/processes/buses/displays and their classified mount.",
+  "remaining_task_resources": {
+    "windows_preparation": ".hermes/evidence/windows-msi-updated-client-current/OWNER.json names active preparation and current MSI/MSIX consumers",
+    "protected_viewer_cores": [
+      "rejected-wayland-console/CORE_CLEANUP.json",
+      "rejected-dmabuf-console/CORE_CLEANUP.json"
+    ]
+  },
+  "delivery": "No current deliverable promoted by this source-only repair."
+}

@@ -1,0 +1,4 @@
+{
+  "source": "https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/internals/preferences.html",
+  "finding": "termsofuse.bypassNotification is the documented test-only first-run notification suppression; applies only to disposable Firefox profile. No personal settings or policies changed."
+}

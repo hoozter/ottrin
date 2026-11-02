@@ -1,0 +1,59 @@
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:25.3946041Z test tests::font_renderer_rejects_unbounded_name_records_before_parsing ... ok
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:25.3952578Z test tests::font_renderer_rejects_color_bitmap_and_svg_font_surfaces ... ok
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:25.4229664Z test tests::html_system_renderer_preserves_local_relative_stylesheets ... FAILED
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:25.4274240Z test tests::html_uses_the_offline_system_renderer_instead_of_a_source_text_card ... ok
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:25.4302534Z test tests::ico_remains_a_visual_image_format_in_the_shared_preview_contract ... ok
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:25.4340207Z test tests::ldif_visual_card_decodes_base64_utf8_display_names ... ok
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:25.4341017Z test tests::ldif_visual_card_summarizes_contacts_instead_of_showing_directory_syntax ... ok
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0921353Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0921682Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0921905Z thread 'tests::html_system_renderer_preserves_local_relative_stylesheets' (6520) panicked at crates/ottrin-preview/src/lib.rs:11143:14:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0922297Z installed offline HTML renderer should load a local relative stylesheet: RenderFailed
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0922589Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0922752Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0922760Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0922971Z     tests::html_system_renderer_preserves_local_relative_stylesheets
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0923115Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0923260Z test result: FAILED. 204 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0923455Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.0955150Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-preview --lib`
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.1067929Z ##[error]Process completed with exit code 101.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.1129369Z ##[group]Run python3 scripts/ci/linux-html-sandbox.py cleanup
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.1129632Z [36;1mpython3 scripts/ci/linux-html-sandbox.py cleanup[0m
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.1583086Z shell: /usr/bin/bash -e {0}
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:26.1583230Z env:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:27.8052308Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:29.4301203Z ... Cleaning /home/runner/work/ottrin/ottrin/target ...
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:30.3609779Z ... Cleaning cargo registry (cache-all-crates: false) ...
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:31.6033567Z ... Cleaning cargo/bin ...
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:31.6062138Z ... Cleaning cargo git cache ...
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:31.6065641Z ... Saving cache ...
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:31.6195846Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ottrin/ottrin --files-from manifest.txt --use-compress-program zstdmt
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:49.0963156Z Sent 0 of 2082174965 (0.0%), 0.0 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:50.0938118Z Sent 402653184 of 2082174965 (19.3%), 191.9 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:51.0940312Z Sent 872415232 of 2082174965 (41.9%), 277.2 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:52.0972773Z Sent 1207959552 of 2082174965 (58.0%), 287.9 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:53.0972993Z Sent 1679521781 of 2082174965 (80.7%), 320.2 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:54.0945946Z Sent 1880848373 of 2082174965 (90.3%), 298.9 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:55.0949276Z Sent 1947957237 of 2082174965 (93.6%), 265.3 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:56.0946481Z Sent 1947957237 of 2082174965 (93.6%), 232.2 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:57.0947876Z Sent 1947957237 of 2082174965 (93.6%), 206.4 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:58.0945108Z Sent 2015066101 of 2082174965 (96.8%), 192.1 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:59.0949379Z Sent 2015066101 of 2082174965 (96.8%), 174.7 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:14:59.6133350Z Sent 2082174965 of 2082174965 (100.0%), 172.4 MBs/sec
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.0935139Z Post job cleanup.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1507118Z [command]/usr/bin/git version
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1545397Z git version 2.56.0
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1583680Z Temporarily overriding HOME='/home/runner/work/_temp/d759d021-b4e8-4259-aad2-687728167ae9' before making global git config changes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1584389Z Adding repository directory to the temporary git global config as a safe directory
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1587478Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ottrin/ottrin
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1626966Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1656188Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1968823Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.1995972Z http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.2004691Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.2038471Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.2297598Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.2323909Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.2794963Z Cleaning up orphan processes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T13:15:00.3143672Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

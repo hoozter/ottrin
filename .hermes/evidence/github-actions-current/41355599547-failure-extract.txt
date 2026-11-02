@@ -1,0 +1,78 @@
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:51.0826377Z test preview_render::tests::wma_metadata_card_exposes_permitted_external_open_action ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:51.0955291Z test preview_render::tests::rust_source_preview_uses_distinct_syntax_colors ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:51.1033583Z test properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width ... FAILED
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:51.1056943Z test remote_index::tests::closing_the_ui_owner_cancels_active_queries_even_when_a_handle_is_retained ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:51.1081979Z test remote_index::tests::long_maintenance_does_not_hold_the_status_and_query_worker ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:51.1089199Z test preview_render::tests::wrapped_preview_footer_stays_inside_its_viewport ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:51.1099369Z test remote_index::tests::missing_endpoint_recovers_with_the_latest_configuration_and_no_local_scanner ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6441185Z ---- properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width stdout ----
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6441599Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6442093Z thread 'properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width' (9160) panicked at crates\ottrin-ui\src\properties.rs:382:21:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6443601Z Missing metadata label: Permissions
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6444016Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6444319Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6444323Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6444743Z     properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6445079Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6445345Z test result: FAILED. 424 passed; 1 failed; 4 ignored; 0 measured; 0 filtered out; finished in 8.99s
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6445702Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.6621919Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-ui --lib`
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.7935523Z ##[error]Process completed with exit code 1.
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.8534844Z ##[group]Run actions/upload-artifact@v4
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.8536215Z with:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.8537351Z   name: windows-native-boundary-failure
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T22:50:59.8537743Z   path: windows-job-fixtures.log
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5657519Z     p=run([str(binary),integration,*args]);report.setdefault('commands',[]).append({'integration':integration,'arguments':args,'stdout':p.stdout,'stderr':p.stderr});return p.stdout
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5658637Z   File "/home/runner/work/ottrin/ottrin/scripts/ci/linux-portal.py", line 27, in run
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5659671Z     if check and p.returncode:raise RuntimeError({'command':args,'code':p.returncode,'stdout':p.stdout,'stderr':p.stderr})
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5660466Z                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5663220Z RuntimeError: {'command': ['/home/runner/work/ottrin/ottrin/target/debug/ottrin-app', 'portal', 'apply'], 'code': 1, 'stdout': '', 'stderr': 'ottrin: Job for xdg-desktop-portal.service failed because start of the service was attempted too often.\nSee "systemctl --user status xdg-desktop-portal.service" and "journalctl --user -xeu xdg-desktop-portal.service" for details.\nTo force a start use "systemctl --user reset-failed xdg-desktop-portal.service"\nfollowed by "systemctl --user start xdg-desktop-portal.service" again.\n'}
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5665670Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5666029Z During handling of the above exception, another exception occurred:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5666388Z 
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5666526Z Traceback (most recent call last):
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5670419Z     p=run([str(binary),integration,*args]);report.setdefault('commands',[]).append({'integration':integration,'arguments':args,'stdout':p.stdout,'stderr':p.stderr});return p.stdout
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5671588Z   File "/home/runner/work/ottrin/ottrin/scripts/ci/linux-portal.py", line 27, in run
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5672502Z     if check and p.returncode:raise RuntimeError({'command':args,'code':p.returncode,'stdout':p.stdout,'stderr':p.stderr})
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5673339Z                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5676191Z RuntimeError: {'command': ['/home/runner/work/ottrin/ottrin/target/debug/ottrin-app', 'portal', 'apply'], 'code': 1, 'stdout': '', 'stderr': 'ottrin: Job for xdg-desktop-portal.service failed because start of the service was attempted too often.\nSee "systemctl --user status xdg-desktop-portal.service" and "journalctl --user -xeu xdg-desktop-portal.service" for details.\nTo force a start use "systemctl --user reset-failed xdg-desktop-portal.service"\nfollowed by "systemctl --user start xdg-desktop-portal.service" again.\n'}
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5845659Z ##[error]Process completed with exit code 1.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5902255Z ##[group]Run actions/upload-artifact@v4
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5902490Z with:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5902655Z   name: linux-portal
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:06.5902850Z   path: portal-evidence/
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.4426861Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.4427289Z   OTTRIN_REQUIRE_HTML_RENDERER: 1
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.4427640Z ##[endgroup]
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.5907221Z (node:13515) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.5908968Z (Use `node --trace-deprecation ...` to show where the warning was created)
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.5964717Z With the provided path, there will be 7 files uploaded
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.5970126Z Artifact name is valid!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.5970708Z Root directory input is valid!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.9201848Z Beginning upload of artifact content to blob storage
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:08.9441110Z (node:13515) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.1979747Z Uploaded bytes 4191
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.2636703Z Finished uploading artifact content to blob storage!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.2637939Z SHA256 digest of uploaded artifact zip is 2b4053a9d10446380f7429b17f6d39eaba157692ebc7831c1e9e0ab6c58898b7
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.2640317Z Finalizing artifact upload
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.7520259Z Artifact linux-html-sandbox.zip successfully finalized. Artifact ID 13103600960
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.7521269Z Artifact linux-html-sandbox has been successfully uploaded! Final size is 4191 bytes. Artifact ID is 13103600960
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.7526809Z Artifact download URL: https://github.com/hoozter/ottrin/actions/runs/41355599547/artifacts/13103600960
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.7714854Z Post job cleanup.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.8772282Z Cache up-to-date.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9029884Z Post job cleanup.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9790914Z [command]/usr/bin/git version
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9820206Z git version 2.56.0
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9940346Z Temporarily overriding HOME='/home/runner/work/_temp/dd3c7d82-6a54-48e5-8ff8-38dca3ca201e' before making global git config changes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9941559Z Adding repository directory to the temporary git global config as a safe directory
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9960443Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ottrin/ottrin
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9962107Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:09.9964024Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.0423059Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.0473913Z http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.0490473Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.0536909Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.0856103Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.0888691Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.1284965Z Cleaning up orphan processes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T22:15:10.1705089Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

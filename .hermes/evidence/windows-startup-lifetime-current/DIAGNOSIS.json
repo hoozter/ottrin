@@ -1,0 +1,8 @@
+{
+  "status": "source lifetime defect identified; actual corrected package still required",
+  "observed": "4d6f4e1a actual packaged service-install exits with access violation0xc0000005 after an initial StartupTask state read",
+  "source_evidence": "windows-core0.58 FactoryCache intentionally retains agile activation factory pointers process-wide and initializes its MTA with CoIncrementMTAUsage on first use. The new per-call RoUninitialize closed that lifetime while leaving the factory cached.",
+  "fix": "Remove the competing per-call WinRT initialization/teardown and unused feature. Let the pinned binding own its MTA/factory lifetime; short call workers remain off the UI apartment.",
+  "primary_reference": "https://learn.microsoft.com/en-us/windows/win32/api/roapi/nf-roapi-rouninitialize",
+  "native_acceptance": "Not yet established; rerun actual package repeated state/enable/disable and removal. GUI focus remains a separate failed gate."
+}

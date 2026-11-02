@@ -1,0 +1,42 @@
+native-control	UNKNOWN STEP	2026-11-01T23:38:21.7663556Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+native-control	UNKNOWN STEP	2026-11-01T23:38:21.7664069Z ##[endgroup]
+native-control	UNKNOWN STEP	2026-11-01T23:38:54.9785416Z ##[error]Process completed with exit code 1.
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0037831Z ##[group]Run actions/upload-artifact@v4
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0038174Z with:
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0038386Z   name: native-msi-rollback-control
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0038671Z   path: msi-control-evidence/
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0039115Z   retention-days: 7
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0039319Z   compression-level: 6
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0039517Z   overwrite: false
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0039721Z   include-hidden-files: false
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.0039955Z ##[endgroup]
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.2399836Z (node:1388) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.2401130Z (Use `node --trace-deprecation ...` to show where the warning was created)
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.2498782Z With the provided path, there will be 5 files uploaded
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.2507707Z Artifact name is valid!
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.2509677Z Root directory input is valid!
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.5129936Z Beginning upload of artifact content to blob storage
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.5435279Z (node:1388) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.6413293Z Uploaded bytes 5754
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.6746205Z Finished uploading artifact content to blob storage!
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.6748153Z SHA256 digest of uploaded artifact zip is 92e1f20bde6c6ff3056b5288213a8b834a2c48003f08a0abe410a1e002dd6727
+native-control	UNKNOWN STEP	2026-11-01T23:38:55.6751119Z Finalizing artifact upload
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.1358612Z Artifact native-msi-rollback-control.zip successfully finalized. Artifact ID 13105698107
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.1360556Z Artifact native-msi-rollback-control has been successfully uploaded! Final size is 5754 bytes. Artifact ID is 13105698107
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.1371986Z Artifact download URL: https://github.com/hoozter/ottrin/actions/runs/41363062321/artifacts/13105698107
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.1765526Z Post job cleanup.
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.3683042Z [command]"C:\Program Files\Git\bin\git.exe" version
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.4056485Z git version 2.56.0.windows.2
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.4134400Z Temporarily overriding HOME='D:\a\_temp\2733bd53-0b29-405b-ae41-18ce1db5756a' before making global git config changes
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.4136782Z Adding repository directory to the temporary git global config as a safe directory
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.4146396Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\ottrin\ottrin
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.4540599Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+native-control	UNKNOWN STEP	2026-11-01T23:38:56.4972380Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+native-control	UNKNOWN STEP	2026-11-01T23:38:57.0772404Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+native-control	UNKNOWN STEP	2026-11-01T23:38:57.1120153Z http.https://github.com/.extraheader
+native-control	UNKNOWN STEP	2026-11-01T23:38:57.1172938Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+native-control	UNKNOWN STEP	2026-11-01T23:38:57.1558641Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+native-control	UNKNOWN STEP	2026-11-01T23:38:57.7360731Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+native-control	UNKNOWN STEP	2026-11-01T23:38:57.7780695Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+native-control	UNKNOWN STEP	2026-11-01T23:38:58.3565826Z Cleaning up orphan processes
+native-control	UNKNOWN STEP	2026-11-01T23:38:58.4255977Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

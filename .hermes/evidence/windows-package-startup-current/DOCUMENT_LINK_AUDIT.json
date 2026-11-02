@@ -1,0 +1,15 @@
+{
+  "scope": "read-only local Markdown target and heading inspection",
+  "findings": [
+    {
+      "source": "docs/DEVELOPMENT.md",
+      "target": "ROADMAP.md#current-checkpoint-and-next-work",
+      "problem": "missing section anchor"
+    },
+    {
+      "source": "docs/RELEASE_CHECKLIST.md",
+      "target": "ROADMAP.md#current-checkpoint-and-next-work",
+      "problem": "missing section anchor"
+    }
+  ]
+}

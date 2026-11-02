@@ -1,0 +1,43 @@
+{
+  "status": "failed",
+  "scope": "Actual Firefox Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "617c03c396ea3365924d82ae32edd898cc70f24fa99fd2b4daa59d795f583ad4",
+  "error": "RuntimeError('No owned window: Open File')",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ltl5lfez",
+    "owned_processes_reaped": [
+      {
+        "pid": 128654,
+        "exit": 0
+      },
+      {
+        "pid": 128657,
+        "exit": 0
+      },
+      {
+        "pid": 128658,
+        "exit": 15
+      },
+      {
+        "pid": 128720,
+        "exit": 0
+      },
+      {
+        "pid": 128722,
+        "exit": -15
+      },
+      {
+        "pid": 128733,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "No owned window: Open File",
+    "profile_removed": true
+  }
+}

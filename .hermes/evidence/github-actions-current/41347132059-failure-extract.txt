@@ -1,0 +1,59 @@
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:24.5315107Z test preview_render::tests::wma_metadata_card_exposes_permitted_external_open_action ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:24.5439575Z test preview_render::tests::structured_document_footer_fits_below_its_fallback_control ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:24.5515760Z test properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width ... FAILED
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:24.5623038Z test preview_render::tests::wrapped_preview_footer_stays_inside_its_viewport ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:24.5636874Z test remote_index::tests::closing_the_ui_owner_cancels_active_queries_even_when_a_handle_is_retained ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:24.5646004Z test remote_index::tests::long_maintenance_does_not_hold_the_status_and_query_worker ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:24.5658013Z test remote_index::tests::missing_endpoint_recovers_with_the_latest_configuration_and_no_local_scanner ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7619971Z ---- properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width stdout ----
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7620383Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7621400Z thread 'properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width' (6408) panicked at crates\ottrin-ui\src\properties.rs:382:21:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7622096Z Missing metadata label: Permissions
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7622476Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7622779Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7622796Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7623222Z     properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7623565Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7623835Z test result: FAILED. 423 passed; 1 failed; 4 ignored; 0 measured; 0 filtered out; finished in 8.73s
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7624208Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.7814276Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-ui --lib`
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.9070238Z ##[error]Process completed with exit code 1.
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.9671963Z ##[group]Run actions/upload-artifact@v4
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.9672350Z with:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.9672586Z   name: windows-native-boundary-failure
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:32.9672901Z   path: windows-job-fixtures.log
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1541404Z   - RUST_VERSION
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1541628Z .. Lockfiles considered:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1541887Z   - D:\a\ottrin\ottrin\Cargo.lock
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1542210Z   - D:\a\ottrin\ottrin\crates\ottrin-app\Cargo.toml
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1542617Z   - D:\a\ottrin\ottrin\crates\ottrin-core\Cargo.toml
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1543028Z   - D:\a\ottrin\ottrin\crates\ottrin-platform\Cargo.toml
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1543442Z   - D:\a\ottrin\ottrin\crates\ottrin-preview\Cargo.toml
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1543842Z   - D:\a\ottrin\ottrin\crates\ottrin-search\Cargo.toml
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1544225Z   - D:\a\ottrin\ottrin\crates\ottrin-ui\Cargo.toml
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1544548Z   - D:\a\ottrin\ottrin\rust-toolchain.toml
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1545030Z ##[endgroup]
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:35.1545133Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:56.7536732Z ... Cleaning D:\a\ottrin\ottrin\target ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:36:57.4020348Z ... Cleaning cargo registry (cache-all-crates: false) ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:37:08.0394608Z ... Cleaning cargo/bin ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:37:08.0445900Z ... Cleaning cargo git cache ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:37:08.0452982Z ... Saving cache ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:37:08.1671411Z [command]"C:\Program Files\Git\usr\bin\tar.exe" --posix -cf cache.tzst --exclude cache.tzst -P -C D:/a/ottrin/ottrin --files-from manifest.txt --force-local --use-compress-program "zstd -T0"
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.2656132Z Failed to save: Unable to reserve cache with key v0-rust-verify-Windows_NT-x64-754c6021-4584650f, another job may be creating this cache.
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.4792318Z Post job cleanup.
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.6849527Z [command]"C:\Program Files\Git\bin\git.exe" version
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.7825907Z git version 2.56.0.windows.2
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.7904025Z Temporarily overriding HOME='D:\a\_temp\2d8a4b6c-bea6-45a3-b25a-c5587bc88f9a' before making global git config changes
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.7905317Z Adding repository directory to the temporary git global config as a safe directory
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.7915261Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\ottrin\ottrin
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.8372025Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:39:59.8766492Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:00.5280149Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:00.5630352Z http.https://github.com/.extraheader
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:00.5682696Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:00.6112365Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:01.2374514Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:01.2782352Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:01.9166573Z Cleaning up orphan processes
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:40:02.1198335Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

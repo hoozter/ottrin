@@ -1,0 +1,6 @@
+35G	target/debug/deps
+17G	target/debug/incremental
+40G	target/x86_64-pc-windows-gnu/debug/deps
+35G	target/x86_64-pc-windows-gnu/debug/incremental
+4.0K	.hermes/evidence/windows-startup-lifetime-current
+280M	.hermes/packaging-tmp

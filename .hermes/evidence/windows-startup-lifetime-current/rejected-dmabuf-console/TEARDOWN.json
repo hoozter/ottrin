@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-5pksr5xw",
+  "owned_processes_reaped": [
+    {
+      "pid": 143517,
+      "exit": 0
+    },
+    {
+      "pid": 143520,
+      "exit": 0
+    },
+    {
+      "pid": 143521,
+      "exit": 15
+    },
+    {
+      "pid": 143576,
+      "exit": -11
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "65 34 0:65 / /var/tmp/.ottrin-picker-qa-5pksr5xw/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "dmabuf import failed to mmap: Operation not permitted\ndmabuf import failed to mmap: Operation not permitted\ndmabuf import failed to mmap: Operation not permitted\n",
+  "profile_removed": true
+}

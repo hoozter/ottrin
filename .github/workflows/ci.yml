@@ -11,6 +11,12 @@ on:
       - "docs/ROADMAP.md"
   pull_request:
 
+# A superseded revision must not keep consuming runners or report stale failures.
+# The newest revision still runs every required gate.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   RUST_VERSION: "1.94.0"
 

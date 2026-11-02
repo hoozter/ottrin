@@ -1,0 +1,37 @@
+XDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-ltl5lfez/data/portal-definitions/kde-portals.conf'
+XDP: Looking for portals configuration in '/var/tmp/.ottrin-picker-qa-ltl5lfez/data/portal-definitions/portals.conf'
+XDP: Preferred portals for interface 'default': none
+XDP: Preferred portals for interface 'org.freedesktop.impl.portal.FileChooser': ottrin
+XDP: Using portal configuration file '/var/tmp/.ottrin-picker-qa-ltl5lfez/data/portal-definitions/portals.conf' for non-specific desktop
+XDP: load portals from /var/tmp/.ottrin-picker-qa-ltl5lfez/data/portal-definitions
+XDP: loading /var/tmp/.ottrin-picker-qa-ltl5lfez/data/portal-definitions/ottrin.portal
+XDP: portal implementation supports org.freedesktop.impl.portal.FileChooser
+XDP: Found 'none' in configuration for default
+XDP: providing portal org.freedesktop.portal.MemoryMonitor
+XDP: providing portal org.freedesktop.portal.PowerProfileMonitor
+XDP: providing portal org.freedesktop.portal.NetworkMonitor
+XDP: providing portal org.freedesktop.portal.ProxyResolver
+XDP: providing portal org.freedesktop.portal.Trash
+XDP: providing portal org.freedesktop.portal.GameMode
+XDP: providing portal org.freedesktop.portal.Realtime
+XDP: Found 'none' in configuration for default
+
+(/usr/libexec/xdg-desktop-portal:128722): xdg-desktop-portal-WARNING **: 06:45:40.300: No skeleton to export
+XDP: Found 'ottrin' in configuration for org.freedesktop.impl.portal.FileChooser
+XDP: Using ottrin.portal for org.freedesktop.impl.portal.FileChooser (config)
+XDP: providing portal org.freedesktop.portal.FileChooser
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: org.freedesktop.portal.Desktop acquired

@@ -1,0 +1,37 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-ltl5lfez",
+  "owned_processes_reaped": [
+    {
+      "pid": 128654,
+      "exit": 0
+    },
+    {
+      "pid": 128657,
+      "exit": 0
+    },
+    {
+      "pid": 128658,
+      "exit": 15
+    },
+    {
+      "pid": 128720,
+      "exit": 0
+    },
+    {
+      "pid": 128722,
+      "exit": -15
+    },
+    {
+      "pid": 128733,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "No owned window: Open File",
+  "profile_removed": true
+}

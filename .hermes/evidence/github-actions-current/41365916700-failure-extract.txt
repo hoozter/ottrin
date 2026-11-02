@@ -1,0 +1,43 @@
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0047143Z     assert all(w['seccomp']=='2' and w['caps']=='0000000000000000' and w['no_new_privs']=='1' and w['profile']=='ottrin-html-render (enforce)' for w in witnesses.values()),witnesses
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0048133Z            ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0052117Z AssertionError: {'4991': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5003': {'userns': 'user:[4026532371]', 'seccomp': '0', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5004': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5023': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5024': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5054': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5055': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}}
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0222598Z ##[error]Process completed with exit code 1.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0315798Z ##[group]Run actions/upload-artifact@v4
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0316040Z with:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0316211Z   name: linux-portal
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.0316404Z   path: portal-evidence/
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.6377597Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.6377861Z   OTTRIN_REQUIRE_HTML_RENDERER: 1
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.6378089Z ##[endgroup]
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.7773668Z (node:5147) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.7774601Z (Use `node --trace-deprecation ...` to show where the warning was created)
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.7829494Z With the provided path, there will be 7 files uploaded
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.7831825Z Artifact name is valid!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:38.7832813Z Root directory input is valid!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.1117243Z Beginning upload of artifact content to blob storage
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.1354050Z (node:5147) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.3399241Z Uploaded bytes 4336
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.3965911Z Finished uploading artifact content to blob storage!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.3966635Z SHA256 digest of uploaded artifact zip is 45bc21ff57e454f0153abefea8224c4288e98a2dd8df9a7fcf14e7dfd860f7cf
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.3967154Z Finalizing artifact upload
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.8559309Z Artifact linux-html-sandbox.zip successfully finalized. Artifact ID 13107765213
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.8560180Z Artifact linux-html-sandbox has been successfully uploaded! Final size is 4336 bytes. Artifact ID is 13107765213
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.8565079Z Artifact download URL: https://github.com/hoozter/ottrin/actions/runs/41365916700/artifacts/13107765213
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.8738774Z Post job cleanup.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.9777959Z Cache up-to-date.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:39.9958337Z Post job cleanup.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.0678924Z [command]/usr/bin/git version
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.0718404Z git version 2.56.0
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.0750362Z Temporarily overriding HOME='/home/runner/work/_temp/ae635224-cd9b-4595-9542-24715788f90f' before making global git config changes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.0751574Z Adding repository directory to the temporary git global config as a safe directory
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.0755487Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ottrin/ottrin
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.0805838Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.0842987Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.1192629Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.1224185Z http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.1236127Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.1269853Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.1576694Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.1608192Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.1998622Z Cleaning up orphan processes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-02T00:15:40.2345172Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

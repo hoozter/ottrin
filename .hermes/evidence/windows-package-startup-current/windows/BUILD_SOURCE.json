@@ -1,0 +1,8 @@
+{
+  "source_revision": "4d6f4e1a7d7fb5b6bee97cd78132a0765b25ddd7",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "cleanup_owner": "windows-package-startup-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "cleanup_reason": "Retired failed native4d6f cohort after recorded startup crash"
+}

@@ -1,0 +1,6 @@
+{
+  "status": "servicing returned3010; agent reboot request failed; no updated-client rollback result",
+  "cause": "virsh agent reboot returned Guest agent not available for now after servicing",
+  "cleanup": "Owned domain, both volumes, NVRAM, TPM and fixtures removed. Original Windows base off and unchanged.",
+  "producer_fix": "A single delayed shutdown.exe reboot now verifies a changed boot identity; the actual MSIX fixture proves this path. Successful servicing is retained as an explicitly unaccepted recovery disk if a later preparation observer fails."
+}

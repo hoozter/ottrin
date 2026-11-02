@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "scope": "Actual private X11 display plus child environment after inherited Wayland values; no host display or GUI viewer input",
+  "actual": {
+    "DISPLAY": ":2",
+    "EGL_PLATFORM": "x11",
+    "GDK_BACKEND": "x11",
+    "XDG_SESSION_TYPE": "x11",
+    "WAYLAND_DISPLAY": null,
+    "WAYLAND_SOCKET": null
+  }
+}

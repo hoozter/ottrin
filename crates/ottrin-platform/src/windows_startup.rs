@@ -3,7 +3,6 @@
 use windows::ApplicationModel::{StartupTask, StartupTaskState};
 use windows::Win32::Foundation::{APPMODEL_ERROR_NO_PACKAGE, ERROR_INSUFFICIENT_BUFFER};
 use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFullName;
-use windows::Win32::System::WinRT::{RO_INIT_MULTITHREADED, RoInitialize, RoUninitialize};
 use windows::core::{HSTRING, PWSTR};
 
 const INDEX_TASK_ID: &str = "OttrinIndex";
@@ -85,20 +84,13 @@ pub fn is_packaged() -> Result<bool, String> {
 fn with_index_task<T: Send + 'static>(
     action: impl FnOnce(StartupTask) -> Result<T, String> + Send + 'static,
 ) -> Result<T, String> {
-    // Services settings and headless commands can arrive on different COM
-    // apartments. Keep asynchronous WinRT completion on one owned MTA thread.
+    // Keep blocking completion off the UI apartment. The windows binding owns
+    // the process-lived MTA used by its cached activation factories. Explicitly
+    // closing WinRT after each call unloads the cached factory's implementation
+    // and leaves the next call with a dangling interface pointer.
     std::thread::Builder::new()
         .name("ottrin-startup".into())
         .spawn(move || {
-            unsafe { RoInitialize(RO_INIT_MULTITHREADED) }
-                .map_err(|error| format!("Cannot initialize Windows startup access: {error}"))?;
-            struct Apartment;
-            impl Drop for Apartment {
-                fn drop(&mut self) {
-                    unsafe { RoUninitialize() };
-                }
-            }
-            let _apartment = Apartment;
             let task = StartupTask::GetAsync(&HSTRING::from(INDEX_TASK_ID))
                 .and_then(|operation| operation.get())
                 .map_err(|error| {

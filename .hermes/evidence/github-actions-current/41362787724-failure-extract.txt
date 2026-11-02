@@ -1,0 +1,5 @@
+native-control	Exercise file-only per-user rollback after actual execution	﻿2026-11-01T23:35:00.8532268Z ##[group]Run ./scripts/ci/msi-rollback-control.ps1 -Output msi-control-evidence
+native-control	Exercise file-only per-user rollback after actual execution	2026-11-01T23:35:00.8532748Z [36;1m./scripts/ci/msi-rollback-control.ps1 -Output msi-control-evidence[0m
+native-control	Exercise file-only per-user rollback after actual execution	2026-11-01T23:35:00.9054545Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+native-control	Exercise file-only per-user rollback after actual execution	2026-11-01T23:35:00.9054921Z ##[endgroup]
+native-control	Exercise file-only per-user rollback after actual execution	2026-11-01T23:35:04.9403391Z ##[error]Process completed with exit code 1.

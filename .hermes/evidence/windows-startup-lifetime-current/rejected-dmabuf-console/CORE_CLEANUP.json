@@ -1,0 +1,8 @@
+{
+  "path": "/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst",
+  "size_bytes": 5095020,
+  "sha256": "b26ca7cbf2da904950f0f5c1e9a61e8b64afafe30aee5a2c576dbffb2f4f2849",
+  "owner": "Owned viewer probe143576; separate private X11 display of the servicing clone",
+  "failure": "Accelerated SPICE DMA-BUF import is denied under this execution environment; native viewer crashes. No guest input occurred.",
+  "pending": "Root-owned coredump directory; sudo -n requires password. Private viewer processes/display/bus/profile and owned portal mount are removed. Further viewer probes require a software-only owned display configuration; do not repeat accelerated import."
+}

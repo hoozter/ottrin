@@ -1,0 +1,13 @@
+{
+  "sources": [
+    {
+      "url": "https://learn.microsoft.com/en-us/uwp/api/windows.applicationmodel.startuptask?view=winrt-26100",
+      "use": "Package-owned desktop StartupTask state and RequestEnableAsync semantics; respect DisabledByUser and policy states."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/apps/develop/launch/launch-settings",
+      "use": "Windows Startup apps settings URI."
+    }
+  ],
+  "verification": "Pinned windows0.58 generated API and native manifest template compile/SDK checks; actual lifecycle remains a separate gate."
+}

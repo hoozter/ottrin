@@ -1,0 +1,15 @@
+error: Failed to reboot domain 'ottrin-msi-updated-client'
+error: Guest agent is not responding: Guest agent not available for now
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-client-current/client.py", line 231, in <module>
+    code="$ErrorActionPreference='Stop';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned update disc missing'};$msu=Join-Path ($disc[0].DeviceID+'\\') '"+target['filename']+"';$p=Start-Process wusa.exe -ArgumentList ('\"'+$msu+'\" /quiet /norestart') -PassThru;$null=$p.Handle;if(-not$p.WaitForExit(3600000)){$p.Kill();throw 'Owned update timed out after60minutes'};$p.WaitForExit();$code=$p.ExitCode;@{exitcode=$code;update='KB5127648';scope='Only disposable network-isolated clone; WUSA validates update applicability and trust'}|ConvertTo-Json -Compress;if($code-notin@(0,3010,2359302)){exit 1}"
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-client-current/client.py", line 15, in virsh
+    name='ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['virsh', '-c', 'qemu:///system', 'reboot', 'ottrin-msi-updated-client', '--mode', 'agent']' returned non-zero exit status 1.

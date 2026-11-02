@@ -11,6 +11,7 @@ assert sum(map(bool,[args.update_manifest,args.msix_parse_only,args.msix_stage,a
 assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base),'New comparison needs an explicit new evidence root'
 r=Path.cwd();e=args.output.resolve() if args.output else Path(__file__).resolve().parent
 assert not args.output or not (e/'OWNER.json').exists(),'Do not replace an existing owned run'
+(e/'DRIVER_SOURCE.py').write_bytes(Path(__file__).read_bytes())
 name='ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
 def virsh(*args):return subprocess.check_output(['virsh','-c','qemu:///system',*args],text=True).strip()
 def save(n,data):(e/n).write_text(json.dumps(data,indent=2)+'\n')
@@ -60,6 +61,9 @@ def cleanup():
 def finish(kind,error,trace):
  if error is not None and not (isinstance(error,SystemExit) and error.code==0):
   state.update(status='failed or interrupted; see retained scope and error',error=repr(error))
+  if args.prepare_updated_base and state.get('servicing_completed') and volume in state['volumes']:
+   save('RECOVERY_BASE.json',{'status':'not accepted; pending owned updated-baseline recovery','path':'/var/lib/libvirt/images/'+volume,'volume':volume,'backing_original':state['base_disk'],'scope':'Successful servicing must not be repeated because its observer failed. Owned domain is stopped and removed; this sole owned disk remains for independent recovery and exact version/clean-shutdown verification.','cleanup_owner':'windows-msi-updated-client-current; current autonomous goal must recover or explicitly retire after consumers close'})
+   state['retained_pending_volume']=volume
  cleanup()
  return False
 with ExitStack() as stack:
@@ -155,9 +159,21 @@ exit $exit
  nv=root.find('./os/nvram');nv.text='/var/lib/libvirt/qemu/nvram/'+name+'_VARS.fd'
  disks=root.findall('./devices/disk');assert len(disks)==1;disks[0].find('source').set('file','/var/lib/libvirt/images/'+volume)
  for interface in root.findall('./devices/interface'):root.find('devices').remove(interface)
+ if args.msix_runtime:
+  graphics=root.find('./devices/graphics');assert graphics.get('type')=='spice'
+  for node in list(graphics.findall('gl')):graphics.remove(node)
+  acceleration=root.find('./devices/video/model/acceleration')
+  if acceleration is not None:acceleration.set('accel3d','no')
+  state['graphics_scope']='Owned software-only SPICE display with explicit bundled OpenGL; no physical adapter acceptance'
+  save('OWNER.json',state)
  cd=E.SubElement(root.find('devices'),'disk',{'type':'file','device':'cdrom'});E.SubElement(cd,'driver',{'name':'qemu','type':'raw'});E.SubElement(cd,'source',{'file':'/var/lib/libvirt/images/'+iso_volume});E.SubElement(cd,'target',{'dev':'sda','bus':'sata'});E.SubElement(cd,'readonly')
  xml=fixture/'domain.xml';E.ElementTree(root).write(xml,encoding='unicode');virsh('define',str(xml));virsh('start',name);state['status']='booting';save('OWNER.json',state)
  spec=importlib.util.spec_from_file_location('guest',r/'.hermes/evidence/windows-20261011/guest_exec.py');g=importlib.util.module_from_spec(spec);spec.loader.exec_module(g);g.DOMAIN=name
+ if args.msix_runtime:
+  desktop_spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(desktop_spec);desktop_spec.loader.exec_module(desktop)
+  private_console=stack.enter_context(desktop.OwnedDesktop(e/'viewer'))
+  viewer=private_console.spawn(['virt-viewer','--connect','qemu:///system','--attach','--domain-name','--reconnect','--auto-resize=never','--spice-disable-audio','--spice-disable-usbredir',name],'viewer.log')
+  time.sleep(3);state['private_console_viewer_start_exit']=viewer.poll();save('OWNER.json',state)
  deadline=time.monotonic()+180
  while True:
   try:g.qga('guest-ping');break
@@ -172,12 +188,40 @@ exit $exit
    if result.get('exited'):return result
    time.sleep(5 if timeout>180 else 1)
   raise TimeoutError('Owned guest control timed out; overlay teardown follows')
+ def reboot_owned_guest():
+  # Servicing can restart the agent. Wait for observation before issuing a
+  # delayed ordinary Windows reboot, then prove a changed boot identity.
+  # Once queued, uncertainty permits observation only, never a duplicate reboot.
+  boot_command="(Get-CimInstance Win32_OperatingSystem).LastBootUpTime.ToUniversalTime().Ticks | ConvertTo-Json -Compress"
+  def observed_boot():
+   result=ps(boot_command,20)
+   assert result.get('exitcode')==0,'Cannot inspect owned guest boot identity'
+   return json.loads(base64.b64decode(result['out-data']).decode('utf-8-sig'))
+  deadline=time.monotonic()+180
+  while True:
+   try:before=observed_boot();break
+   except (RuntimeError,TimeoutError,AssertionError,json.JSONDecodeError):
+    assert time.monotonic()<deadline,'Guest agent did not recover before reboot intent';time.sleep(3)
+  receipt={'before_boot_ticks':before,'command':'shutdown.exe /r /t 15','scope':'Owned disposable guest only; no forced power reset','status':'intent recorded before single reboot request'}
+  number=1+len(list(e.glob('REBOOT_*.json')));filename=f'REBOOT_{number}.json';save(filename,receipt)
+  try:
+   result=ps(r'& "$env:SystemRoot\System32\shutdown.exe" /r /t 15; if($LASTEXITCODE-ne0){throw "Owned Windows reboot request failed"}',20)
+   receipt['request_exit']=result.get('exitcode');receipt['request_stderr']=base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace');assert result.get('exitcode')==0
+  except (RuntimeError,TimeoutError,AssertionError) as error:receipt['request_observation_uncertain']=repr(error)
+  save(filename,receipt);deadline=time.monotonic()+900
+  while True:
+   try:
+    after=observed_boot()
+    if after!=before:break
+   except (RuntimeError,TimeoutError,AssertionError,json.JSONDecodeError):pass
+   assert time.monotonic()<deadline,'Owned guest did not prove a changed boot identity after the single reboot request';time.sleep(3)
+  receipt.update(status='normal reboot verified',after_boot_ticks=after);save(filename,receipt)
  result=ps("$ErrorActionPreference='Stop';$o=Get-CimInstance Win32_OperatingSystem;@{caption=$o.Caption;build=$o.BuildNumber;msi=(Get-Item \"$env:SystemRoot\\System32\\msi.dll\").VersionInfo.FileVersion;disable_msi=(Get-ItemProperty 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\Installer' -ErrorAction SilentlyContinue).DisableMsi}|ConvertTo-Json -Compress")
  assert result['exitcode']==0;save('CLIENT_VERSION.json',json.loads(base64.b64decode(result['out-data']).decode('utf-8-sig')))
  if args.msix_runtime:
   code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});$d=$disc[0].DeviceID+'\\';$script=Join-Path $d 'runtime.ps1';$errors=$null;$tokens=$null;$null=[Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$errors);if($errors.Count){throw ($errors|Out-String)}; & ([ScriptBlock]::Create([IO.File]::ReadAllText($script))) -Mode Prepare -Disc $d"
   result=ps(code,90);save('PREPARATION.json',{'process_exit':result.get('exitcode'),'stdout':base64.b64decode(result.get('out-data','')).decode('utf-8-sig'),'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result['exitcode']==0
-  virsh('reboot',name,'--mode','agent');time.sleep(8);deadline=time.monotonic()+600;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
+  reboot_owned_guest();time.sleep(8);deadline=time.monotonic()+600;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
   while True:
    try:
     result=ps("$p='C:\\OttrinOwnedMsixRuntime\\results\\RESULT.json';if(Test-Path $p){Get-Content $p -Raw}else{'{}'}",20)
@@ -229,7 +273,8 @@ exit $exit
   target=next(item for item in inputs['files'] if 'kb5127648' in item['filename'])
   code="$ErrorActionPreference='Stop';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned update disc missing'};$msu=Join-Path ($disc[0].DeviceID+'\\') '"+target['filename']+"';$p=Start-Process wusa.exe -ArgumentList ('\"'+$msu+'\" /quiet /norestart') -PassThru;$null=$p.Handle;if(-not$p.WaitForExit(3600000)){$p.Kill();throw 'Owned update timed out after60minutes'};$p.WaitForExit();$code=$p.ExitCode;@{exitcode=$code;update='KB5127648';scope='Only disposable network-isolated clone; WUSA validates update applicability and trust'}|ConvertTo-Json -Compress;if($code-notin@(0,3010,2359302)){exit 1}"
   result=ps(code,3700);text=base64.b64decode(result.get('out-data','')).decode('utf-8-sig');save('SERVICING.json',{'process_exit':result.get('exitcode'),'output':text,'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result['exitcode']==0,'Supported update failed; no policy or signature bypass'
-  virsh('reboot',name,'--mode','agent');time.sleep(8);deadline=time.monotonic()+900
+  state['servicing_completed']=True;save('OWNER.json',state)
+  reboot_owned_guest();time.sleep(8);deadline=time.monotonic()+900
   while True:
    try:
     result=ps("$v=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';@{build=$v.CurrentBuildNumber;ubr=$v.UBR;msi=(Get-Item \"$env:SystemRoot\\System32\\msi.dll\").VersionInfo.FileVersion}|ConvertTo-Json -Compress",20)
@@ -253,7 +298,7 @@ exit $exit
  assert result['exitcode']==0,'Interactive preparation failed; preserve controller evidence'
  prepared=ps("Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw",30)
  owner=json.loads(base64.b64decode(prepared['out-data']).decode('utf-8-sig'));assert owner['status']=='prepared';save('GUEST_PREPARATION.json',owner)
- virsh('reboot',name,'--mode','agent');state['status']='waiting for owned interactive actor after reboot';save('OWNER.json',state)
+ reboot_owned_guest();state['status']='waiting for owned interactive actor after reboot';save('OWNER.json',state)
  time.sleep(8);deadline=time.monotonic()+400
  while True:
   try:

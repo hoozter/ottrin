@@ -1,0 +1,42 @@
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:29.5805806Z [1m[91merror[0m: could not compile `ottrin-platform` (lib test) due to 1 previous error
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:29.5806720Z [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.2596726Z ##[error]Process completed with exit code 101.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.2668782Z ##[group]Run python3 scripts/ci/linux-html-sandbox.py cleanup
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.2669159Z [36;1mpython3 scripts/ci/linux-html-sandbox.py cleanup[0m
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.2698058Z shell: /usr/bin/bash -e {0}
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.2698285Z env:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.7336944Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.7337211Z   OTTRIN_REQUIRE_HTML_RENDERER: 1
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.7337446Z ##[endgroup]
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.8758374Z (node:13387) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.8759451Z (Use `node --trace-deprecation ...` to show where the warning was created)
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.8876267Z With the provided path, there will be 7 files uploaded
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.8876878Z Artifact name is valid!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:30.8877174Z Root directory input is valid!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.1416957Z Beginning upload of artifact content to blob storage
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.1629357Z (node:13387) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.2952814Z Uploaded bytes 3542
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.3332420Z Finished uploading artifact content to blob storage!
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.3333201Z SHA256 digest of uploaded artifact zip is c5dd80d957feca33a7c5d54b4635d1362bb5aa7a448989a54ab858b6bc5ad97c
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.3335044Z Finalizing artifact upload
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.7678763Z Artifact linux-html-sandbox.zip successfully finalized. Artifact ID 13089716314
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.7679551Z Artifact linux-html-sandbox has been successfully uploaded! Final size is 3542 bytes. Artifact ID is 13089716314
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.7684380Z Artifact download URL: https://github.com/hoozter/ottrin/actions/runs/41320771519/artifacts/13089716314
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.7870638Z Post job cleanup.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.8871343Z Cache up-to-date.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.8996887Z Post job cleanup.
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.9766790Z [command]/usr/bin/git version
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.9805149Z git version 2.56.0
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.9843750Z Temporarily overriding HOME='/home/runner/work/_temp/9d50234f-979e-41b1-846c-60bc63c83dee' before making global git config changes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.9845111Z Adding repository directory to the temporary git global config as a safe directory
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.9849945Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ottrin/ottrin
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.9902144Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:31.9945777Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.0326162Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.0354790Z http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.0362951Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.0406482Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.0674348Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.0708100Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.1098540Z Cleaning up orphan processes
+verify (ubuntu-latest)	UNKNOWN STEP	2026-11-01T15:27:32.1556425Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

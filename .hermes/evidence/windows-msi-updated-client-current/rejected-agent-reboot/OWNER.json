@@ -1,0 +1,28 @@
+{
+  "domain": "ottrin-msi-updated-client",
+  "uuid": "739e8d18-d15b-4c9d-baec-c9ffc0f43778",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msi-updated-client-fixture.iso",
+    "ottrin-msi-updated-client.qcow2"
+  ],
+  "status": "failed or interrupted; see retained scope and error",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.",
+  "producer_sha256": "2168afd96ea3fa6ac620a95d972d1662e3ad9347b06919c5b3f131798a85b61f",
+  "uploaded_host_iso_removed_bytes": 5370429440,
+  "guest_pid": 7848,
+  "error": "CalledProcessError(1, ['virsh', '-c', 'qemu:///system', 'reboot', 'ottrin-msi-updated-client', '--mode', 'agent'])",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-updated-client.qcow2",
+      "ottrin-msi-updated-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

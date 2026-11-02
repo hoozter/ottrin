@@ -1,0 +1,31 @@
+   Compiling windows v0.58.0
+   Compiling gpu-allocator v0.27.0
+   Compiling wgpu-hal v27.0.4
+   Compiling wgpu-core-deps-windows-linux-android v27.0.0
+   Compiling wgpu-core v27.0.3
+   Compiling wgpu v27.0.1
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling egui-wgpu v0.33.3
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling eframe v0.33.3
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 10m 53s
+    Finished `release` profile [optimized] target(s) in 0.89s
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+Windows GUI subsystem smoke passed: ordinary launch allocates no console.
+/tmp/tmp.EJ9PtActCY/pdfium.tgz: OK
+/tmp/tmp.6YzE6CGz7N/mesa.7z: OK
+/tmp/tmp.6YzE6CGz7N/mesa-source.tar.gz: OK
+/tmp/tmp.6YzE6CGz7N/pal1000-LICENSE.txt: OK
+/tmp/tmp.6YzE6CGz7N/dxc.zip: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/opengl32.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libEGL.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libGLESv2.dll: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/libgallium_wgl.dll: OK
+/tmp/tmp.6YzE6CGz7N/dxc/LICENSE-MS.txt: OK
+/tmp/tmp.6YzE6CGz7N/dxc/bin/x64/dxil.dll: OK
+/tmp/tmp.97HNZe2uo9/archive: OK
+/tmp/tmp.97HNZe2uo9/extract/ripgrep-15.2.0-x86_64-pc-windows-msvc/rg.exe: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-portable.zip

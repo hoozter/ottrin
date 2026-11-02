@@ -1,0 +1,37 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-j5tcjxdc",
+  "owned_processes_reaped": [
+    {
+      "pid": 128285,
+      "exit": 0
+    },
+    {
+      "pid": 128288,
+      "exit": 0
+    },
+    {
+      "pid": 128289,
+      "exit": 15
+    },
+    {
+      "pid": 128341,
+      "exit": 0
+    },
+    {
+      "pid": 128343,
+      "exit": -15
+    },
+    {
+      "pid": 128344,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Error: cannot open display: :2\n",
+  "profile_removed": true
+}

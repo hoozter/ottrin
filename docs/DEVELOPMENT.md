@@ -97,6 +97,12 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo build --release
 ```
 
+Hosted CI is grouped by workflow/ref: a newer revision cancels superseded work,
+while retaining every gate for the newest revision. Investigate and report a
+required failure with its exact source/platform before adding more independent
+feature pushes to a failing revision. Receipt-only commits keep their existing
+narrow path exclusions; a passed focused check is not full hosted or package QA.
+
 Linux development dependencies on Debian/Ubuntu:
 
 ```sh
@@ -760,7 +766,7 @@ Windows MSI from the same extracted portable payload (requires WiX Toolset 5):
 ./packaging/windows/package-msi.sh ./dist/windows-payload/Ottrin-0.1.0-windows-x64
 ```
 
-Linux portable, AppImage, `.deb`, and `.rpm` package sources are available. Windows has portable zip, NSIS per-user installer, and per-user MSI package sources. macOS has an unsigned app-bundle ZIP package source. Native Windows MSI construction, administrative extraction and scoped installation/upgrade/repair/removal have recorded acceptance; failed-transaction registration rollback remains unresolved. Native macOS archive construction and platform acceptance are deferred until the Linux/Windows roadmap is complete. See the [current roadmap checkpoint](ROADMAP.md#current-checkpoint-and-next-work) for current artifacts and unfinished work. Exact native package installation and desktop acceptance remain part of the final Linux candidate pass.
+Linux portable, AppImage, `.deb`, and `.rpm` package sources are available. Windows has portable zip, NSIS per-user installer, and per-user MSI package sources. macOS has an unsigned app-bundle ZIP package source. Native Windows MSI construction, administrative extraction and scoped installation/upgrade/repair/removal have recorded acceptance; failed-transaction registration rollback remains unresolved. Native macOS archive construction and platform acceptance are deferred until the Linux/Windows roadmap is complete. See the [current roadmap checkpoint](ROADMAP.md#current-delivery-and-next-work) for current artifacts and unfinished work. Exact native package installation and desktop acceptance remain part of the final Linux candidate pass.
 
 ## Privileged Helper Model
 
@@ -2122,7 +2128,8 @@ Task Scheduler cannot start the selected daemon reliably, and package removal
 leaves an enabled task pointing into the removed version directory. MSIX startup
 now has a source correction: one disabled-by-default `windows.startupTask`
 extension names the dedicated daemon, and the platform uses the Windows
-`StartupTask` API. This preserves Windows user/policy disable choices and lets
+`StartupTask` API. The binding owns its cached factory/MTA lifetime; do not add
+per-call `RoUninitialize` around its process-lived cache. This preserves Windows user/policy disable choices and lets
 Windows own version changes and removal. Direct ZIP/EXE/MSI installations keep
 the existing authenticated Task Scheduler path. A package refuses to add a second
 startup provider while an unpackaged Ottrin task exists; remove that registration

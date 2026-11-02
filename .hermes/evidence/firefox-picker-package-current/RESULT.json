@@ -1,0 +1,50 @@
+{
+  "status": "pass",
+  "scope": "Actual Firefox Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "617c03c396ea3365924d82ae32edd898cc70f24fa99fd2b4daa59d795f583ad4",
+  "chooser_executable": "/var/tmp/.ottrin-picker-qa-66hy11jg/t/.mount_OttrinvijK0L/usr/bin/ottrin",
+  "open_pid": 130183,
+  "actual_browser": "Firefox",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; browser displays chosen document and writes exact saved bytes",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "save_chooser_pid": 130183,
+  "no_index_started": true,
+  "identity_limit": "Frontend inherits the enclosing host cgroup label org.chromium.Chromium; this scope does not accept Firefox application-ID attribution or sandboxed installed-browser identity.",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-66hy11jg",
+    "owned_processes_reaped": [
+      {
+        "pid": 129853,
+        "exit": 0
+      },
+      {
+        "pid": 129856,
+        "exit": 0
+      },
+      {
+        "pid": 129857,
+        "exit": 15
+      },
+      {
+        "pid": 129905,
+        "exit": 0
+      },
+      {
+        "pid": 129907,
+        "exit": -15
+      },
+      {
+        "pid": 129909,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

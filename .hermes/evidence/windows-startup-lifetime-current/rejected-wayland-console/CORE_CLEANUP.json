@@ -1,0 +1,9 @@
+{
+  "path": "/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst",
+  "size_bytes": 3582882,
+  "sha256": "24fb3efc21ef308d50dc432697a18d8695f36d770ec7b2c6f1a5119ba5fb56dc",
+  "owner": "This owned viewer probe PID142689 at2026-11-02 06:14:29UTC; private servicing clone, no user desktop",
+  "pending": "Protected root-owned coredump directory; sudo -n requires password. All owned viewer/profile/display/bus processes removed.",
+  "source_cause": "Inherited EGL_PLATFORM=wayland and GDK_BACKEND=wayland in an explicitly X11 display; native crash stack enters Wayland from EGL. Producer now consistently selects X11 and removes inherited Wayland socket/display.",
+  "host_limit": "Kernel core_pattern supplies a hard-coded unlimited limit; inherited ulimit -c0 did not prevent this core. No claim of core suppression from that limit."
+}

@@ -1,0 +1,42 @@
+verify (windows-latest)	Cargo test	2026-11-01T21:55:12.7919062Z test preview_render::tests::rust_source_preview_uses_distinct_syntax_colors ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:12.7920051Z test preview_render::tests::wma_metadata_card_exposes_permitted_external_open_action ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:12.7980240Z test properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width ... FAILED
+verify (windows-latest)	Cargo test	2026-11-01T21:55:12.8001186Z test remote_index::tests::closing_the_ui_owner_cancels_active_queries_even_when_a_handle_is_retained ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:12.8026201Z test remote_index::tests::long_maintenance_does_not_hold_the_status_and_query_worker ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:12.8027743Z test preview_render::tests::docx_inline_image_is_admitted_to_the_real_egui_texture_route ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:12.8044593Z test remote_index::tests::missing_endpoint_recovers_with_the_latest_configuration_and_no_local_scanner ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9037466Z test thumbnail_cache::tests::unsafe_svg_thumbnail_response_rejects_raw_fallback_and_stale_raw_cache ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9043872Z test thumbnail_cache::tests::video_candidate_never_falls_back_to_raw_container_bytes ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9048318Z test transfer_probe::tests::blocked_probe_has_bounded_queue_and_cancelled_requests_do_not_publish ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9081488Z test widget_style::tests::action_menu_omits_unused_check_column_and_keeps_icons_near_edge ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9108642Z test widget_style::tests::button_theme_changes_do_not_recolor_or_round_inputs_and_body_labels ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9132753Z test widget_style::tests::input_focus_uses_accent_without_recoloring_selected_text ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9226734Z test widget_style::tests::menu_rows_align_labels_and_icons_across_states_themes_and_text_scales ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9274553Z test widget_style::tests::narrow_destination_row_keeps_trailing_actions_inside_the_row ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9576340Z test widget_style::tests::page_navigation_keeps_reading_order_and_wraps_without_clipping ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9950907Z test widget_style::tests::preview_toolbar_controls_wrap_inside_narrow_panes ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:18.9990136Z test widget_style::tests::rendered_button_feedback_keeps_its_surface_and_menu_labels_use_button_text ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.0078290Z test widget_style::tests::sort_headers_keep_supported_direction_icons_inside_narrow_columns ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.0155133Z test widget_style::tests::themed_controls_keep_the_resolved_palette_when_system_appearance_changes ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.0161893Z test window_chrome::tests::custom_titlebar_does_not_draw_a_full_width_separator_below_the_chrome ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.0163949Z test window_chrome::tests::resize_direction_detects_edges_and_corners ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.1589435Z test tests::ui_content_pages_navigate_refresh_and_reset_with_the_query ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.5842322Z test tests::windows_public_copy_partial_batch_keeps_completed_receipt_and_undo ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8892382Z test tests::windows_public_copy_directory_preserves_streams_and_undo_keeps_source ... ok
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8892919Z 
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8893018Z failures:
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8893143Z 
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8893535Z ---- properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width stdout ----
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8894032Z 
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8894957Z thread 'properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width' (2940) panicked at crates\ottrin-ui\src\properties.rs:382:21:
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8895693Z Missing metadata label: Permissions
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8896134Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8896384Z 
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8896388Z 
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8896448Z failures:
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8896739Z     properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8897005Z 
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8897214Z test result: FAILED. 423 passed; 1 failed; 4 ignored; 0 measured; 0 filtered out; finished in 7.46s
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.8897484Z 
+verify (windows-latest)	Cargo test	2026-11-01T21:55:19.9503915Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-ui --lib`
+verify (windows-latest)	Cargo test	2026-11-01T21:55:20.0518073Z ##[error]Process completed with exit code 1.

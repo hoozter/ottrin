@@ -1,0 +1,25 @@
+{
+  "status": "actual corrected development MSIX assembly and58-file equality pass; native lifecycle pending",
+  "source_revision": "4d6f4e1a7d7fb5b6bee97cd78132a0765b25ddd7",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "eccc3979eb19bf780d33ea746e88965259aee7bb40d1c60996ae89bcbcc2df77",
+  "artifact_bytes": 56828064,
+  "native_payload_files": 58,
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "pending": [
+    "Actual ordinary main-window and startup disable/reenable",
+    "Actual package removal and no retained task/process",
+    "Login and cross-version update"
+  ],
+  "fulfilled_source_archive_removed_bytes": 119025579,
+  "staged_artifact_retired_after_required_runtime_failure": true
+}

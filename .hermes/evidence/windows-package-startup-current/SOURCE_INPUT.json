@@ -1,0 +1,9 @@
+{
+  "source_revision": "4d6f4e1a7d7fb5b6bee97cd78132a0765b25ddd7",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-package-startup-current/source.zip",
+  "status": "prepared",
+  "sha256": "06afad569835310089b8746fe8282a2bac931eee8bf31eb71587f4669b6bd7f3",
+  "archive_bytes": 119025579,
+  "temporary_clone_removed": true
+}

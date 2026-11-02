@@ -1,0 +1,59 @@
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:09:54.8737332Z test preview_render::tests::wrapped_preview_footer_stays_inside_its_viewport ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:09:54.8761227Z test remote_index::tests::closing_the_ui_owner_cancels_active_queries_even_when_a_handle_is_retained ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:09:54.8776358Z test properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width ... FAILED
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:09:54.8778838Z test remote_index::tests::long_maintenance_does_not_hold_the_status_and_query_worker ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:09:54.8797581Z test remote_index::tests::missing_endpoint_recovers_with_the_latest_configuration_and_no_local_scanner ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:09:54.8798812Z test remote_index::tests::queries_observe_configuration_order_and_control_errors_are_not_hidden ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:09:54.8817018Z test remote_index::tests::stalled_configuration_cannot_block_ui_snapshot_reads_or_new_settings ... ok
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5964652Z ---- properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width stdout ----
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5965132Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5965736Z thread 'properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width' (1128) panicked at crates\ottrin-ui\src\properties.rs:382:21:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5966485Z Missing metadata label: Permissions
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5966906Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5967284Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5967288Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5967785Z     properties::tests::property_rows_use_real_metadata_and_remain_within_the_content_width
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5968190Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5968484Z test result: FAILED. 423 passed; 1 failed; 4 ignored; 0 measured; 0 filtered out; finished in 7.07s
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.5968897Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.6150469Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-ui --lib`
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.7340600Z ##[error]Process completed with exit code 1.
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.8024252Z ##[group]Run actions/upload-artifact@v4
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.8024806Z with:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.8024994Z   name: windows-native-boundary-failure
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:01.8025232Z   path: windows-job-fixtures.log
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:04.0135916Z 
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:25.1904382Z ... Cleaning D:\a\ottrin\ottrin\target ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:25.7084136Z ... Cleaning cargo registry (cache-all-crates: false) ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:34.7088277Z ... Cleaning cargo/bin ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:34.7125820Z ... Cleaning cargo git cache ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:34.7130930Z ... Saving cache ...
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:10:34.7735799Z [command]"C:\Program Files\Git\usr\bin\tar.exe" --posix -cf cache.tzst --exclude cache.tzst -P -C D:/a/ottrin/ottrin --files-from manifest.txt --force-local --use-compress-program "zstd -T0"
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:18.7329855Z Sent 0 of 1782142678 (0.0%), 0.0 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:19.7281931Z Sent 335544320 of 1782142678 (18.8%), 159.9 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:20.7329053Z Sent 939524096 of 1782142678 (52.7%), 298.6 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:21.7293472Z Sent 1275068416 of 1782142678 (71.5%), 303.8 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:22.7304368Z Sent 1513707222 of 1782142678 (84.9%), 288.5 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:23.7309965Z Sent 1580816086 of 1782142678 (88.7%), 251.1 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:24.7399842Z Sent 1580816086 of 1782142678 (88.7%), 215.0 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:25.7479045Z Sent 1647924950 of 1782142678 (92.5%), 195.9 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:26.7620767Z Sent 1715033814 of 1782142678 (96.2%), 181.0 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:27.7625185Z Sent 1715033814 of 1782142678 (96.2%), 163.0 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:28.7627870Z Sent 1715033814 of 1782142678 (96.2%), 148.2 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:29.6123587Z Sent 1782142678 of 1782142678 (100.0%), 143.0 MBs/sec
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.0266766Z Post job cleanup.
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.1641061Z [command]"C:\Program Files\Git\bin\git.exe" version
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.2341622Z git version 2.56.0.windows.4
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.2400645Z Temporarily overriding HOME='D:\a\_temp\b54b17c9-e691-4e77-8921-bf2a550377e4' before making global git config changes
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.2401860Z Adding repository directory to the temporary git global config as a safe directory
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.2410276Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\ottrin\ottrin
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.2766282Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:30.3099804Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:31.6208858Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:31.6511746Z http.https://github.com/.extraheader
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:31.6555726Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:31.6913383Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:32.2451031Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:32.2811046Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:32.8500147Z Cleaning up orphan processes
+verify (windows-latest)	UNKNOWN STEP	2026-11-01T21:12:32.9854036Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

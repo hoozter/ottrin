@@ -1,0 +1,43 @@
+{
+  "status": "failed before browser window or portal request",
+  "scope": "Actual Firefox Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "617c03c396ea3365924d82ae32edd898cc70f24fa99fd2b4daa59d795f583ad4",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-j5tcjxdc",
+    "owned_processes_reaped": [
+      {
+        "pid": 128285,
+        "exit": 0
+      },
+      {
+        "pid": 128288,
+        "exit": 0
+      },
+      {
+        "pid": 128289,
+        "exit": 15
+      },
+      {
+        "pid": 128341,
+        "exit": 0
+      },
+      {
+        "pid": 128343,
+        "exit": -15
+      },
+      {
+        "pid": 128344,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "Error: cannot open display: :2\n",
+    "profile_removed": true
+  },
+  "error": "Firefox could not open the private display; no product picker result"
+}

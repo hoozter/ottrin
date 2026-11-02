@@ -1,6 +1,8 @@
 # Ottrin roadmap
 
-## Current delivery and next work — 2026-11-02
+## Current delivery and next work
+
+Updated 2026-11-02.
 
 The stable four-format Linux delivery now uses clean source
 `0b6015dbe58504344962029cc4691b2d5d98f1f5`. Exact hashes and scoped acceptance
@@ -53,49 +55,48 @@ not new-package resource measurements or a sustained personal-workload guarantee
 The personal enabled service is refreshed separately with configuration, wrapper,
 unit and database identity preservation recorded in the current delivery evidence.
 
+Firefox now exercises the delivered AppImage chooser through the real desktop
+portal: Open displays the selected source and Save writes an exact copy, with
+original bytes unchanged and no index started. All private browser/display/bus
+resources are removed. This private harness inherits the enclosing cgroup's
+application label, so it does not accept Firefox app-ID attribution or an installed
+sandboxed-browser identity. Evidence: `firefox-picker-package-current/`.
+
+The GitHub audit finds13 failed push runs since October31:11 CI and2 diagnostic
+controls. Later source0b6015db and40effd6f each pass all three hosted jobs. Source4d6f
+currently passes Linux/performance while Windows tests continue. No scheduled
+retry loop is present. Workflow/ref concurrency now cancels superseded CI runs
+without removing gates; publication/hosted status must be recorded after commit.
+Evidence: `.hermes/evidence/github-actions-current/`.
+
 The independent queue is:
 1. Windows MSI after-execution rollback on a current client fixture.
-   A fresh offline clone of the clean Windows base now reproduces the file-only
-   control failure under a new ordinary interactive account (session1):84 install
-   and80 uninstall rollback errors, with incorrect product registration. This uses
-   MSI5.0.26100.9168, the same version as the retained client; it rules out the old
-   QA profile as the sole cause but does not prove a vendor defect. The initial
-   LocalSystem-to-user launch refusal is retained separately and is not a rollback
-   result. Both owned clones/volumes/fixtures are removed. Compact receipts are in
-   `.hermes/evidence/windows-msi-client-current/`; the pinned public .NET/WiX/SDK
-   cache is retained for the pending Windows installer/MSIX consumer. Next compare
-   a supported current cumulative update on another disposable clone. Hosted
-   Server2025's1625 policy refusal provides no rollback result. No security-policy,
-   Installer-ACL, elevation or rollback waiver is used.
+   A fresh ordinary interactive account on the clean26100.9168 base reproduces
+   the minimal file-only failure (84 install and80 uninstall rollback errors).
+   This rules out the old QA profile as the sole cause; it does not prove a vendor
+   defect. Hosted Server2025 refuses1625 before execution. No policy/ACL/elevation
+   or rollback waiver is used. Evidence: `windows-msi-client-current/`.
+   Three current-client preparation attempts are closed with owned resources
+   removed: one servicing timeout, one reaches26100.9711 but loses observation,
+   and one returns successful servicing3010 but cannot request an agent reboot.
+   A single delayed Windows reboot with changed boot identity is now verified in
+   the MSIX fixture. The revised producer is preparing one reusable updated
+   baseline, retaining a clearly unaccepted recovery disk if successful servicing
+   later loses its observer. Named MSI/MSIX consumers must verify the exact target
+   version and clean shutdown before using it. This is not a passed rollback gate.
+   Evidence: `windows-msi-updated-client-current/`.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.
-   Source40effd6f portable/NSIS and development-only MSIX completed their native
-   consumers and are retired after the failed runtime gate; the accepted
-   Windows8ede candidate/public files are preserved. Actual clean-source MakeAppx
-   assembly passes58-file equality with the portable stage; native/hosted template
-   checks pass. Development deployment and a normal-token real Ottrin main window
-   with verified process package identity and normal close also pass. GUI focus
-   remains unaccepted. The actual index setup creates a normal scheduled task but
-   the daemon times out; removing the package leaves that enabled task pointing to
-   its versioned WindowsApps executable. This is a required failed product gate:
-   source now declares package-managed startup and uses the native StartupTask
-   API, preserving Windows user/policy choices and using package-specific Services
-   labels. Windows all-target compilation and strict lint pass;454 Linux UI tests
-   pass with the existing unrelated namespace fixture ignored. Rebuild and verify
-   actual startup, update and uninstall before accepting the correction.
-   Owned MSIX guests/volumes/profiles and superseded staging292,758,046bytes are
-   removed. The fulfilled source archive118,751,194bytes is removed. The corrected
-   source must produce a new package cohort for the required native consumers.
-   Evidence: `.hermes/evidence/windows-msix-current/`.
-   The first supported current-client servicing fixture times out after25minutes
-   while CBS remains active and yields no updated-client rollback result. Its clone,
-   volumes and profiles are removed; compact control evidence and verified public
-   update inputs remain under `windows-msi-updated-client-current/`. A longer
-   interval successfully reaches26100.9711/MSI5.0.26100.9711, but guest-agent
-   observation fails before a rollback result is collected. Those owned resources
-   are removed. A revised producer is preparing one reusable updated baseline;
-   it must verify and cleanly stop the image before retaining it for the named
-   MSI/MSIX consumers. This is not a passed rollback gate. No Store
-   identity, signing policy, Installer ACL or security-policy workaround is used.
+   Source40effd6f and4d6f4e1a each pass actual MakeAppx assembly and58-file equality.
+   Actual4d6f ordinary main-window package identity, non-elevated token and normal
+   close pass. Its package-managed startup path crashes with access violation
+   during setup; GUI focus remains failed. The source repair removes per-call
+   WinRT teardown that conflicts with the binding's process-lived activation
+   factory cache. Strict Windows all-target checks and formatting pass; actual
+   corrected-package setup/disable/reenable, login, update and removal remain
+   required. All completed native guests/volumes/profiles, fulfilled archives and
+   both rejected package cohorts are removed; the accepted8ede Windows candidate
+   and current Linux deliverables are preserved. No Store identity is invented.
+   Evidence: `windows-package-startup-current/`, `windows-startup-lifetime-current/`.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
 
@@ -1389,6 +1390,7 @@ Do not move a fixable implementation or test failure onto this list.
 | --- | --- | --- |
 | Privileged cleanup of owned X11 test core | Remove only `/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst` (4,096,895 bytes). Noninteractive sudo requires a password; ownership is recorded in `linux-ci-package-current/dark100/CORE_CLEANUP.json`. | All engineering; private profiles, processes, mounts and package extractions are already removed. |
 | Privileged cleanup of owned Chrome diagnostic core | Remove only `/var/lib/systemd/coredump/core.chrome.1000.eeed43c73b3a47998b6355d43295a2ad.2138656.1792952026000000.zst` (2,509,878 bytes). Noninteractive sudo requires a password; `hosted-isolation-current/CORE_CLEANUP.json` records ownership and LimitCORE=0 producer correction. | All engineering; synthetic profile and transient unit are gone. |
+| Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
 | Linux public release signing identity | Owner approves the project identity/public fingerprint and authorizes provisioning its protected signing key. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work; do not invent or publish an identity. |
@@ -1409,7 +1411,8 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux and internal Windows candidate cohorts use clean `8ede1562`.
+The stable Linux cohort uses clean `0b6015db`; the internal Windows candidate
+uses clean `8ede1562`.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
 retired. Shared chooser, lossless native paths, nonblocking index availability, FileManager1

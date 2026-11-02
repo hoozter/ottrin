@@ -1,0 +1,7 @@
+{
+  "source_revision": "4d6f4e1a7d7fb5b6bee97cd78132a0765b25ddd7",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "bytes_removed": 292756118,
+  "reason": "Actual native startup crash and GUI focus result collected; no consumers remain. Stable accepted8ede Windows candidate preserved.",
+  "consumer_checks": "Owned assembly/runtime domains, volumes and fixtures removed; all generated files have one link and no fuser consumers."
+}
