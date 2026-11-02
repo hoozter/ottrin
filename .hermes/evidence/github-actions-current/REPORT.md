@@ -41,3 +41,9 @@ Evidence consists of run/job metadata, compact failure extracts and the current
 run snapshot. No fixtures, package extractions or test processes were allocated
 by this audit. Publication and hosted validation of the workflow follow-up must
 be recorded after its commit, rather than inferred from this local check.
+
+The sourcea10792db follow-up completes all four jobs successfully in
+[run41413618813](https://github.com/hoozter/ottrin/actions/runs/41413618813).
+Native hosted release measurements are16ms Linux and61ms Windows against100ms.
+This resolves the observed current CI failure scope; it does not explain unseen
+mail messages or accept later source revisions automatically.

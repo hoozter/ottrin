@@ -1,0 +1,29 @@
+{
+  "status": "actual revision1 development MSIX assembly and58-file equality pass; real upgrade/deployment remain pending",
+  "source_revision": "c5a40fd231332fa578432897319578d1bb035363",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "ba6783e85a6f97c87b230639a490f1a5cc23843da057b47fbf09b3ba6c1029ed",
+  "artifact_bytes": 56837293,
+  "version": "0.1.0.1",
+  "native_payload_files": 58,
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "previous_version_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/input/previous.msix",
+  "pending": [
+    "Actual same-identity0.1.0.0 to0.1.0.1 update with saved startup/configuration/index data",
+    "Post-update actual GUI and reboot/login",
+    "Removal and resource gates; owner Store/final acceptance remain separate"
+  ]
+}

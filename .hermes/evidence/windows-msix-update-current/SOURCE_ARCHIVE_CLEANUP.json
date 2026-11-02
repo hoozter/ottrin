@@ -1,0 +1,15 @@
+{
+  "removed_path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/source.zip",
+  "bytes": 122478876,
+  "sha256": "e2477cf5f94698f4d23fb51e949df3eaecc324b1449edb03716d6f3070a0c476",
+  "fulfilled_consumer": "Actual native MakeAppx assembly, parameter validation and portable payload equality",
+  "temporary_clone_removed": true,
+  "owned_assembly_guests_removed": [
+    "assembly",
+    "assembly-validated-error"
+  ],
+  "retained_current_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "retained_previous_package": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/input/previous.msix",
+  "retained_updated_baseline": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+  "pending_consumers": "Real cross-version MSIX update/removal; updated baseline also serves MSI diagnosis"
+}

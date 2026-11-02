@@ -1,0 +1,9 @@
+{
+  "source_revision": "c5a40fd231332fa578432897319578d1bb035363",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/source.zip",
+  "status": "prepared",
+  "sha256": "e2477cf5f94698f4d23fb51e949df3eaecc324b1449edb03716d6f3070a0c476",
+  "archive_bytes": 122478876,
+  "temporary_clone_removed": true
+}

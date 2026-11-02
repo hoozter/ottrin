@@ -1,0 +1,25 @@
+{
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/assembly/actor.ps1",
+      "bytes": 6021,
+      "sha256": "9adde4b28c985f29f40f71d78557c83905cbda45423f4f0757e2188e5fe8f6ad"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/assembly/controller.ps1",
+      "bytes": 6824,
+      "sha256": "34aeb0a3070906700470414ae71caee3dec6c325cc2779f90cfd46257db9b568"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/assembly-validated-error/actor.ps1",
+      "bytes": 6021,
+      "sha256": "9adde4b28c985f29f40f71d78557c83905cbda45423f4f0757e2188e5fe8f6ad"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/assembly-validated-error/controller.ps1",
+      "bytes": 6824,
+      "sha256": "34aeb0a3070906700470414ae71caee3dec6c325cc2779f90cfd46257db9b568"
+    }
+  ],
+  "reason": "MSI actor/controller projections were not used by either native SDK/MSIX assembly attempt; actual assembly source, driver and process/result receipts retained"
+}

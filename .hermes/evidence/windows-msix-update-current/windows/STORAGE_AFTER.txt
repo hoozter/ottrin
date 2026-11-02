@@ -1,0 +1,6 @@
+35G	target/debug/deps
+17G	target/debug/incremental
+40G	target/x86_64-pc-windows-gnu/debug/deps
+36G	target/x86_64-pc-windows-gnu/debug/incremental
+280M	/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage
+55M	/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current

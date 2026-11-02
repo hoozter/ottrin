@@ -1,0 +1,16 @@
+{
+  "status": "rejected harness attempt; production MSIX builder was not reached",
+  "failure": "PowerShell5.1 cannot resolve the typed ParameterBindingValidationException catch in the test harness",
+  "repair": "Catch only the expected ParameterArgumentValidationError identifier; unexpected errors still propagate",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "payload_rebuild_required": false
+}

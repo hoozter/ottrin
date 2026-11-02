@@ -72,9 +72,10 @@ separate serial gate on both platforms and retains debug correctness checks.
 Its first native Windows release measurement failed at140ms. Reusing a compiled
 query literal now passes at78ms on the same native client and20ms on Linux, with
 all244 Linux search tests and strict Linux/Windows lint passing. Hosted confirmation
-has three successful jobs for pushed sourcea10792db in run41413618813: complete
-Linux verification and both serial release benchmarks (16ms Linux,61ms Windows).
-The full Windows job remains running; this is not yet an all-jobs hosted pass.
+passes all four jobs for pushed sourcea10792db in run41413618813, including
+complete Linux/Windows verification and release benchmarks16ms Linux/61ms Windows.
+The next sourcec5a40fd2 also passes actual native development revision1 assembly
+and58-file payload equality; its hosted follow-up is pending publication.
 Evidence: `.hermes/evidence/github-actions-current/`,
 `.hermes/evidence/search-performance-isolation-current/`.
 
@@ -108,7 +109,7 @@ The independent queue is:
    SPICE and explicit OpenGL; physical/native-driver acceptance remains separate.
    Completed guests/volumes/profiles and fulfilled source archives are removed.
    The latest development stage remains at `.hermes/packaging-tmp/.windows-desktop-stage`
-   for the pending login/update consumers; accepted8ede and Linux deliveries are
+   for pending update consumers; accepted8ede and Linux deliveries are
    preserved. No Store identity is invented.
    Evidence: `windows-startup-lifetime-current/NATIVE_ACCEPTANCE.json`,
    `windows-startup-lifetime-current/login-verified-state/ACCEPTANCE.json`.
@@ -116,9 +117,13 @@ The independent queue is:
    keep physical-only and final owner acceptance on the explicit waiting list.
    QA desktop teardown now classifies successful SystemExit(0) as closed; an
    actual private desktop probe verifies process/profile removal. Raw older
-   reports retain their original misclassification. A development-only package
-   revision is being prepared for actual0.1.0.0 →0.1.0.1 upgrade acceptance;
-   the previous56.8MB package is the sole explicitly retained upgrade input.
+   reports retain their original misclassification. Sourcec5a40fd2 now builds
+   development MSIX0.1.0.1; native MakeAppx assembly,58-file payload equality and
+   rejection of revisions-1/65536 pass. Real0.1.0.0 →0.1.0.1 update is next.
+   The previous56.8MB package is the sole retained upgrade input, and the new
+   package stage awaits actual update/runtime acceptance. The fulfilled122MB
+   source archive and both assembly guests/volumes are removed. Evidence:
+   `windows-msix-update-current/ASSEMBLY_ACCEPTANCE.json`.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not

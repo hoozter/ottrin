@@ -1,0 +1,8 @@
+{
+  "source_revision": "2ebf5fd0600504a5932bd08b62319e0dd91193ca",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "bytes": 292796549,
+  "reason": "Login/removal acceptance complete; sole old MSIX required for real upgrade is verified at PREVIOUS_PACKAGE.json retained_input. Superseded portable/NSIS and payload have no pending consumer; accepted Windows8ede and Linux deliverables preserved.",
+  "previous_package": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/input/previous.msix",
+  "retired": true
+}

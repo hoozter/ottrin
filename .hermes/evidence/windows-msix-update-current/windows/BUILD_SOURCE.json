@@ -1,0 +1,6 @@
+{
+  "source_revision": "c5a40fd231332fa578432897319578d1bb035363",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "purpose": "Latest portable and NSIS payload for development revision1 MSIX assembly and actual upgrade; accepted delivery unchanged",
+  "cleanup_owner": "Current roadmap goal; retain only until named native update consumers finish"
+}
