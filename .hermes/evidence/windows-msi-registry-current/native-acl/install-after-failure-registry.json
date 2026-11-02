@@ -1,0 +1,118 @@
+{
+  "scope": "Read-only exact owned user installer registry security/access inspection",
+  "packed_product": "27FF92FD0D5CB924E9C991E99B2ABF8A",
+  "product": "{DF29FF72-C5D0-429B-9E9C-199EB9A2FBA8}",
+  "keys": [
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "protected": true,
+      "owner": "S-1-5-32-544",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:BAG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software",
+      "protected": true,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft",
+      "protected": true,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer",
+      "protected": false,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products",
+      "protected": false,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products\\27FF92FD0D5CB924E9C991E99B2ABF8A",
+      "protected": true,
+      "owner": "S-1-5-32-544",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": {
+          "error": "Exception calling \"OpenSubKey\" with \"3\" argument(s): \"Requested registry access is not allowed.\"",
+          "hresult": -2146233087
+        },
+        "Delete": {
+          "error": "Exception calling \"OpenSubKey\" with \"3\" argument(s): \"Requested registry access is not allowed.\"",
+          "hresult": -2146233087
+        },
+        "SetValue": {
+          "error": "Exception calling \"OpenSubKey\" with \"3\" argument(s): \"Requested registry access is not allowed.\"",
+          "hresult": -2146233087
+        },
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:BAG:SYD:P(A;OICI;CCSWRPWPRC;;;WD)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products\\27FF92FD0D5CB924E9C991E99B2ABF8A\\SourceList",
+      "protected": false,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": {
+          "error": "Exception calling \"OpenSubKey\" with \"3\" argument(s): \"Requested registry access is not allowed.\"",
+          "hresult": -2146233087
+        },
+        "Delete": {
+          "error": "Exception calling \"OpenSubKey\" with \"3\" argument(s): \"Requested registry access is not allowed.\"",
+          "hresult": -2146233087
+        },
+        "SetValue": {
+          "error": "Exception calling \"OpenSubKey\" with \"3\" argument(s): \"Requested registry access is not allowed.\"",
+          "hresult": -2146233087
+        },
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:(A;OICIID;KA;;;SY)(A;OICIID;CCSWRPWPRC;;;WD)(A;OICIID;KA;;;BA)"
+    }
+  ],
+  "phase": "install-after-failure",
+  "sid": "S-1-5-21-3183210791-1673105385-3262580894-1005"
+}

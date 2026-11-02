@@ -1,0 +1,21 @@
+{
+  "status": "rollback failures reproduced; native access checks informative; provider ACL read defective",
+  "case_counts": [
+    84,
+    80
+  ],
+  "native_access": "Parent keys allow owned ordinary user writes; installed product and SourceList permit reads and ReadPermissions but deny writes/delete; after uninstall rollback remaining product keys permit writes",
+  "acl_limit": "PowerShell Registry provider incorrectly reports paths missing; no security descriptor captured. Correct native .NET reader and repeat before attributing cause.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-clean-client.qcow2",
+      "ottrin-msi-clean-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_desktop_removed": true,
+  "next": "Native .NET security descriptor capture on a new owned fixture"
+}

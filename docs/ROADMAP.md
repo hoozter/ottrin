@@ -96,8 +96,15 @@ The independent queue is:
    build and incomplete desktop setup as sole causes; it does not prove a vendor
    defect. Hosted Server2025 refuses1625 before execution. No policy/ACL/elevation
    or rollback waiver is used. Compiler-independent/client-fixture diagnosis remains
-   required. Completed child guests, volumes and desktop resources are removed.
-   Evidence: `windows-msi-updated-client-current/`,
+   required. Read-only native ACL capture now confirms the installed product and
+   SourceList deny ordinary-user writes while SYSTEM/administrators retain full
+   access; failed uninstall rollback leaves inherited ordinary-user full access.
+   Both84/80-error controls still fail. This does not identify the internal
+   rollback token or establish a vendor/compiler defect. The next control uses
+   an independently authored native MSI database without WiX. Both new owned
+   diagnostic guests, volumes and private desktops are removed.
+   Evidence: `windows-msi-registry-current/native-acl/OBSERVATION.json`,
+   `windows-msi-updated-client-current/`,
    `windows-startup-lifetime-current/msi-desktop-ready/`.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.
    Source2ebf passes actual MakeAppx assembly and58-file equality, ordinary main

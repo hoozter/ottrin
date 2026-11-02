@@ -1,0 +1,12 @@
+{
+  "status": "Both owned diagnostic guest domains, overlay and ISO volumes, private displays/processes/profiles and staging removed",
+  "remaining_task_storage": {
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-registry-current": 808440
+  },
+  "purpose": "Compact exact diagnostics, raw native MSI logs/archive, frozen producers and desktop readiness evidence",
+  "remaining_shared_baseline": {
+    "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+    "purpose": "Pending compiler-independent MSI and Windows software acceptance consumers"
+  },
+  "no_build_outputs_allocated": true
+}

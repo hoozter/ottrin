@@ -1,0 +1,6 @@
+{
+  "next": "Compare independently authored native Windows Installer database control on the same current client, preserving after-execution failure and ordinary-user gates; do not change ACLs/policy or waive rollback",
+  "basis": "native-acl/OBSERVATION.json",
+  "system_state": "No owned diagnostic VM or desktop remains; updated baseline retained only for named installer/software consumers",
+  "owner_input_required": false
+}

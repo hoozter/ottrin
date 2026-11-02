@@ -1,0 +1,92 @@
+{
+  "scope": "Read-only exact owned user installer registry security/access inspection",
+  "packed_product": "27FF92FD0D5CB924E9C991E99B2ABF8A",
+  "product": "{DF29FF72-C5D0-429B-9E9C-199EB9A2FBA8}",
+  "keys": [
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "protected": true,
+      "owner": "S-1-5-32-544",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:BAG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software",
+      "protected": true,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft",
+      "protected": true,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "acl_state": "not found",
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer",
+      "access": {
+        "QueryValues": "not found",
+        "CreateSubKey": "not found",
+        "Delete": "not found",
+        "SetValue": "not found",
+        "ReadPermissions": "not found"
+      }
+    },
+    {
+      "acl_state": "not found",
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products",
+      "access": {
+        "QueryValues": "not found",
+        "CreateSubKey": "not found",
+        "Delete": "not found",
+        "SetValue": "not found",
+        "ReadPermissions": "not found"
+      }
+    },
+    {
+      "acl_state": "not found",
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products\\27FF92FD0D5CB924E9C991E99B2ABF8A",
+      "access": {
+        "QueryValues": "not found",
+        "CreateSubKey": "not found",
+        "Delete": "not found",
+        "SetValue": "not found",
+        "ReadPermissions": "not found"
+      }
+    },
+    {
+      "acl_state": "not found",
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products\\27FF92FD0D5CB924E9C991E99B2ABF8A\\SourceList",
+      "access": {
+        "QueryValues": "not found",
+        "CreateSubKey": "not found",
+        "Delete": "not found",
+        "SetValue": "not found",
+        "ReadPermissions": "not found"
+      }
+    }
+  ],
+  "phase": "install-before",
+  "sid": "S-1-5-21-3183210791-1673105385-3262580894-1005"
+}

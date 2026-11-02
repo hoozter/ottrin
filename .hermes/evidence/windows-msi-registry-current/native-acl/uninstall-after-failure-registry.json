@@ -1,0 +1,100 @@
+{
+  "scope": "Read-only exact owned user installer registry security/access inspection",
+  "packed_product": "81E14E14A28DB024BB1CE808E36970B3",
+  "product": "{41E41E18-D82A-420B-BBC1-8E803E96073B}",
+  "keys": [
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "protected": true,
+      "owner": "S-1-5-32-544",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:BAG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software",
+      "protected": true,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft",
+      "protected": true,
+      "owner": "S-1-5-18",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:SYG:SYD:P(A;OICI;KR;;;RC)(A;OICI;KA;;;SY)(A;OICI;KA;;;BA)(A;OICI;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;;KR;;;AC)(A;;KR;;;S-1-15-3-1024-1065365936-1281604716-3511738428-1654721687-432734479-3232135806-4053264122-3456934681)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer",
+      "protected": false,
+      "owner": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1005G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products",
+      "protected": false,
+      "owner": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1005G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products\\81E14E14A28DB024BB1CE808E36970B3",
+      "protected": false,
+      "owner": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1005G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+    },
+    {
+      "path": "HKEY_USERS\\S-1-5-21-3183210791-1673105385-3262580894-1005\\Software\\Microsoft\\Installer\\Products\\81E14E14A28DB024BB1CE808E36970B3\\SourceList",
+      "protected": false,
+      "owner": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+      "access": {
+        "QueryValues": "granted",
+        "CreateSubKey": "granted",
+        "Delete": "granted",
+        "SetValue": "granted",
+        "ReadPermissions": "granted"
+      },
+      "sddl": "O:S-1-5-21-3183210791-1673105385-3262580894-1005G:S-1-5-21-3183210791-1673105385-3262580894-513D:(A;OICIID;KA;;;S-1-5-21-3183210791-1673105385-3262580894-1005)(A;OICIID;KA;;;SY)(A;OICIID;KA;;;BA)(A;OICIID;KR;;;RC)"
+    }
+  ],
+  "phase": "uninstall-after-failure",
+  "sid": "S-1-5-21-3183210791-1673105385-3262580894-1005"
+}
