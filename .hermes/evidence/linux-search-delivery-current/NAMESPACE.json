@@ -1,0 +1,43 @@
+{
+  "scope": "Native desktop ownership, private namespace and bus; not DPKG/RPM",
+  "cases": [
+    {
+      "case": "native",
+      "status": "pass",
+      "owned_processes_reaped": true,
+      "profile_and_mount_sources_removed": true
+    },
+    {
+      "case": "foreign-mount",
+      "status": "pass",
+      "owned_processes_reaped": true,
+      "profile_and_mount_sources_removed": true
+    },
+    {
+      "case": "native-deleted",
+      "status": "pass",
+      "owned_processes_reaped": true,
+      "profile_and_mount_sources_removed": true
+    },
+    {
+      "case": "offline",
+      "status": "pass",
+      "owned_processes_reaped": true,
+      "profile_and_mount_sources_removed": true
+    },
+    {
+      "case": "portable",
+      "status": "pass",
+      "owned_processes_reaped": true,
+      "profile_and_mount_sources_removed": true
+    },
+    {
+      "case": "modified",
+      "status": "pass",
+      "modified_state_refused": true,
+      "owned_processes_reaped": true,
+      "profile_and_mount_sources_removed": true
+    }
+  ],
+  "status": "pass"
+}

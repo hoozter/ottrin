@@ -1,0 +1,25 @@
+{
+  "setup_control": false,
+  "distro": "fedora",
+  "domain": "ottrin-native-fedora-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "status": "fail",
+  "package_sha256": "ccb883dc217b6e5d21390165bdf4006607d65384e968feda494bb2c6ac947354",
+  "uuid": "fb245373-d8a0-4684-a35f-d39d9f8a6098",
+  "cloud_init": {
+    "exit": 2,
+    "status": "done",
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "RuntimeError('[\\'scp\\', \\'-F\\', \\'/dev/null\\', \\'-o\\', \\'ForwardX11=no\\', \\'-i\\', \\'/home/campbell/Projects/Ottrin/.hermes/evidence/linux-search-delivery-current/fedora/.native-vm-kymaawg8/id_ed25519\\', \\'-o\\', \\'IdentitiesOnly=yes\\', \\'-o\\', \\'BatchMode=yes\\', \\'-o\\', \\'StrictHostKeyChecking=yes\\', \\'-o\\', \\'UserKnownHostsFile=/home/campbell/Projects/Ottrin/.hermes/evidence/linux-search-delivery-current/fedora/.native-vm-kymaawg8/known_hosts\\', \\'/home/campbell/Projects/Ottrin/.hermes/evidence/linux-search-delivery-current/portal-probe.py\\', \\'ottrinqa@192.168.122.66:portal-probe.py\\']: 255:  scp: stat local \"/home/campbell/Projects/Ottrin/.hermes/evidence/linux-search-delivery-current/portal-probe.py\": No such file or directory\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

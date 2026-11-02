@@ -1,0 +1,15 @@
+{
+  "status": "Rejected QA transport attempt; no package installation or product acceptance",
+  "cause": "One source-probe copy still used cohort path after output-root generalization",
+  "fix": "Canonical probe path used directly in corrected producer",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-fedora-desktop-qa-base.qcow2",
+      "ottrin-native-fedora-desktop-qa-work.qcow2",
+      "ottrin-native-fedora-desktop-qa-seed.iso"
+    ]
+  },
+  "transient_link": "A temporary identical probe symlink was created after the failed consumer had already exited; it was never consumed and has been removed",
+  "rejected_driver": "FEDORA_DRIVER_SOURCE.py"
+}

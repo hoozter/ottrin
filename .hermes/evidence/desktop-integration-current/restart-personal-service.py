@@ -1,7 +1,7 @@
 """One authorized service restart; preserve configuration and verify exact bytes."""
 from pathlib import Path
-import hashlib,json,subprocess,time,os
-p=Path(__file__).resolve().parent;unit='ottrin-index.service';root=Path.cwd()
+import argparse,hashlib,json,subprocess,time,os
+root=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();p=args.output.resolve();assert p.is_relative_to(root/'.hermes/evidence');unit='ottrin-index.service'
 def sha(path):
  with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 def props():

@@ -1,19 +1,20 @@
 """Owned fresh Fedora desktop/package lifecycle, with registered libvirt teardown."""
 from pathlib import Path
 from contextlib import ExitStack
-import hashlib,json,os,shlex,signal,subprocess,sys,tempfile,time,uuid,xml.etree.ElementTree as ET
-r=Path.cwd();e=Path(__file__).resolve().parent
-assert len(sys.argv)==2 and sys.argv[1] in ('fedora','ubuntu')
-distro=sys.argv[1]
+import argparse,hashlib,json,os,shlex,signal,subprocess,sys,tempfile,time,uuid,xml.etree.ElementTree as ET
+r=Path.cwd();drivers=Path(__file__).resolve().parent
+parser=argparse.ArgumentParser();parser.add_argument('distro',choices=['fedora','ubuntu']);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');distro=args.distro
 base=r/('.hermes/tools/fedora44/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2' if distro=='fedora' else '.hermes/tools/ubuntu24/noble-server-cloudimg-amd64.img')
 expected_base='28680fe5b371a5a82ebf43a31926e086a168e59949d03969c5093e7071f90b7f' if distro=='fedora' else '6a81c37564db9b1ee84e141922625e1d7c5b389b99bb3c572e0243607d5bb4d2'
 assert hashlib.file_digest(base.open('rb'),'sha256').hexdigest()==expected_base
 base_info=json.loads(subprocess.check_output(['qemu-img','info','--output=json',str(base)],text=True));assert base_info['format']=='qcow2'
-out=e/distro;out.mkdir(exist_ok=True)
+out=e/distro;out.mkdir(exist_ok=False)
 build=json.loads((e/'BUILD_RESULT.json').read_text());assert build['status'].startswith('four-format build pass')
 stage=Path(build['stage']);package=next(stage.glob('*.rpm' if distro=='fedora' else '*.deb'));portable=next(stage.glob('*portable.tar.gz'))
 name='ottrin-native-'+distro+'-desktop-qa';mac='52:54:00:6f:74:'+('47' if distro=='fedora' else '48');prefix=name+'-';owned_volumes=[];domain_uuid=None
-actor=e/'native-actor.py'
+actor=drivers/'native-actor.py'
+for artifact in [package,portable]:
+ with artifact.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==build['artifacts'][artifact.name]
 report={'setup_control':False,'distro':distro,'domain':name,'mac':mac,'source':build['source_revision'],'status':'running','package_sha256':hashlib.file_digest(package.open('rb'),'sha256').hexdigest()}
 def run(args,check=True,timeout=180):
  p=subprocess.run(list(map(str,args)),capture_output=True,text=True,timeout=timeout)
@@ -42,6 +43,11 @@ def teardown():
   path=virsh('vol-path',volume,'--pool','default').stdout.strip()
   for domain in virsh('list','--all','--name').stdout.splitlines():
    if domain:assert path not in virsh('dumpxml',domain).stdout
+  for line in virsh('vol-list','default').stdout.splitlines()[2:]:
+   fields=line.split()
+   if fields:
+    other=ET.fromstring(virsh('vol-dumpxml',fields[0],'--pool','default').stdout)
+    assert path not in {x.text for x in other.findall('.//backingStore/path')}, 'Another volume retains this backing file'
   virsh('vol-delete',volume,'--pool','default')
  cleanup['volumes_removed']=owned_volumes.copy();(out/'VM_CLEANUP.json').write_text(json.dumps(cleanup,indent=2)+'\n')
 try:
@@ -59,7 +65,7 @@ try:
    source=temporary/(suffix+'.xml');source.write_text(ET.tostring(xml,encoding='unicode'))
    virsh('vol-create','default',source);owned_volumes.append(volume)
    if suffix!='work.qcow2':virsh('vol-upload',volume,base if suffix=='base.qcow2' else seed,'--pool','default',timeout=180)
-  (out/'VM_OWNER.json').write_text(json.dumps({'domain':name,'mac':mac,'volumes':owned_volumes,'base_cache':str(base),'cleanup_owner':str(Path(__file__)),'actor_sha256':hashlib.file_digest(actor.open('rb'),'sha256').hexdigest(),'controller_sha256':hashlib.file_digest(Path(__file__).open('rb'),'sha256').hexdigest(),'probe_sha256':hashlib.file_digest((e/'portal-probe.py').open('rb'),'sha256').hexdigest()},indent=2)+'\n')
+  (out/'VM_OWNER.json').write_text(json.dumps({'domain':name,'mac':mac,'volumes':owned_volumes,'base_cache':str(base),'cleanup_owner':str(Path(__file__)),'actor_sha256':hashlib.file_digest(actor.open('rb'),'sha256').hexdigest(),'controller_sha256':hashlib.file_digest(Path(__file__).open('rb'),'sha256').hexdigest(),'probe_sha256':hashlib.file_digest((drivers/'portal-probe.py').open('rb'),'sha256').hexdigest()},indent=2)+'\n')
   domain_uuid=str(uuid.uuid4())
   run(['virt-install','--connect','qemu:///system','--name',name,'--uuid',domain_uuid,'--memory','3072','--vcpus','2','--import','--disk','vol=default/'+prefix+'work.qcow2,bus=virtio','--disk','vol=default/'+prefix+'seed.iso,device=cdrom','--network','network=default,mac='+mac,'--graphics','none','--osinfo','generic','--noautoconsole'],timeout=60)
   assert virsh('domuuid',name).stdout.strip()==domain_uuid;report['uuid']=domain_uuid
@@ -85,7 +91,7 @@ try:
   assert cloud.returncode in (0,2) and cloud_state['status']=='done' and not cloud_state.get('errors'),cloud_state
   report['cloud_init']={'exit':cloud.returncode,'status':cloud_state['status'],'recoverable_errors':cloud_state.get('recoverable_errors'),'scope':'Provisioning warnings retained separately; product gates unchanged'}
   scp=['scp','-F','/dev/null','-o','ForwardX11=no','-i',str(key),'-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile='+str(temporary/'known_hosts')]
-  for source,destination in [(package,'candidate.rpm' if distro=='fedora' else 'candidate.deb'),(portable,'portable.tar.gz'),(actor,'actor.py'),(e/'portal-probe.py','portal-probe.py')]:run(scp+[str(source),'ottrinqa@'+address+':'+destination],timeout=180)
+  for source,destination in [(package,'candidate.rpm' if distro=='fedora' else 'candidate.deb'),(portable,'portable.tar.gz'),(actor,'actor.py'),(drivers/'portal-probe.py','portal-probe.py')]:run(scp+[str(source),'ottrinqa@'+address+':'+destination],timeout=180)
   if distro=='fedora':
    install=remote('sudo','dnf','-y','install','/home/ottrinqa/candidate.rpm','xdg-desktop-portal','xdg-desktop-portal-gtk','xorg-x11-server-Xvfb','xdotool','python3-gobject',check=False,timeout=600)
   else:
