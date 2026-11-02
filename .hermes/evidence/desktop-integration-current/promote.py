@@ -1,6 +1,6 @@
 """Accept Linux-only desktop/helper changes without promoting the Windows candidate."""
 from pathlib import Path
-import argparse,hashlib,json,shutil,subprocess
+import argparse,hashlib,json,os,shutil,subprocess,tempfile
 r=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');public=r/'dist/packages'
 def read(p):return json.loads(p.read_text())
 def sha(p):
@@ -42,8 +42,21 @@ for name in ['POPULATED_INDEX.json','CONTENT_INDEX.json']:
  if name=='CONTENT_INDEX.json':
   assert resource['live_same_size_edit']['mtime_ns_preserved'] and resource['offline_same_size_edit']['mtime_ns_preserved']
  resource_receipts[name]=str((e/name).relative_to(r))
-for name in ['PACKAGED_NAMESPACE_APPIMAGE.json','PACKAGED_NAMESPACE_RPM.json']:
- namespace=read(e/name);assert namespace['status']=='pass' and namespace['binary_sha256']==indexd
+namespace=read(e/'PACKAGED_NAMESPACE_APPIMAGE.json');assert namespace['status']=='pass' and namespace['binary_sha256']==indexd
+# RPM strips symbols. Bind its native test to its own exact ELF bytes, then
+# compare code sections just as packaging/verify-release-artifacts.sh does.
+with tempfile.TemporaryDirectory(prefix='.rpm-identity-',dir=e) as temporary:
+ temporary=Path(temporary);rpm_binary=temporary/'ottrin-indexd';tools=r/'.hermes/tools/rpm'
+ with rpm_binary.open('wb') as output:
+  subprocess.run(['bash','-c','set -euo pipefail; "$1" "$2" | cpio --extract --to-stdout ./usr/bin/ottrin-indexd','rpm-identity',str(tools/'usr/bin/rpm2cpio'),str(stage/'ottrin-0.1.0-1.x86_64.rpm')],env={**os.environ,'LD_LIBRARY_PATH':str(tools/'usr/lib/x86_64-linux-gnu')},stdout=output,stderr=subprocess.PIPE,check=True,timeout=60)
+ namespace=read(e/'PACKAGED_NAMESPACE_RPM.json');assert namespace['status']=='pass' and namespace['binary_sha256']==sha(rpm_binary)
+ code_identity={}
+ for section in ['.text','.rodata']:
+  for label,binary in [('rpm',rpm_binary),('appimage',extract/'squashfs-root/usr/bin/ottrin-indexd')]:
+   subprocess.run(['objcopy','--dump-section',section+'='+str(temporary/(label+'-section')),str(binary),str(temporary/(label+'-dump'))],check=True)
+  assert (temporary/'rpm-section').read_bytes()==(temporary/'appimage-section').read_bytes()
+  code_identity[section]=sha(temporary/'rpm-section')
+ (e/'RPM_DAEMON_IDENTITY.json').write_text(json.dumps({'status':'pass','rpm_binary_sha256':sha(rpm_binary),'appimage_binary_sha256':indexd,'matched_code_sections':code_identity,'basis':'Same code-section comparison as production verify-release-artifacts.sh; RPM symbol stripping changes complete ELF bytes','temporary_extraction_removed_on_context_exit':True},indent=2)+'\n')
 for name,digest in read(e/'DELIVERABLE_BASELINE.json').items():assert sha(r/name)==digest
 for name,digest in content['artifacts'].items():assert sha(stage/name)==digest
 files=[p for root in [stage,extract] for p in root.rglob('*') if p.is_file() and not p.is_symlink()]
