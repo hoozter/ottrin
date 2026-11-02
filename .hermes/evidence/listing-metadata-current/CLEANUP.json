@@ -1,0 +1,29 @@
+{
+  "status": "Completed source/native-test cleanup; package refresh still pending",
+  "baseline": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905200554,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18181143955,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 42324288875,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38389245480
+  },
+  "after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905241858,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18178444902,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 43391040479,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38912273720
+  },
+  "deltas": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 41304,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": -2699053,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 1066751604,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 523028240
+  },
+  "removed_incremental_sessions": 12,
+  "native_test_guests": "Both domains, disks, input ISO volumes and fixture hard links removed; protected bases retained",
+  "retained": {
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe": "Current verified native Windows regression binary and shared Cargo dependencies; new exact test configuration needed for NTFS proof",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage": "Prior current development candidate, reference/remaining installer acceptance and next upgrade baseline; not superseded until new coherent build"
+  },
+  "new_configuration_purpose": "Native Windows UI unit-test executable enables real directory metadata verification with matching Rust1.94/test profile; no extra target tree, isolated compiler cache or copied executable",
+  "cleanup_owner": "Current roadmap goal; keep current binaries/useful caches, retire superseded staging only after named consumers close"
+}

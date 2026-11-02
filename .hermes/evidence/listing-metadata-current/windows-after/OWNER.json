@@ -1,0 +1,30 @@
+{
+  "domain": "ottrin-native-test",
+  "uuid": "3672590e-52d2-4598-8f7d-c4a10c67cc91",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-native-test-fixture.iso",
+    "ottrin-native-test.qcow2"
+  ],
+  "status": "exact selected native unit test passes",
+  "public_compiler_cache": null,
+  "scope": "Exact named Rust unit test under the owned Windows guest agent token; no ordinary desktop, installer or user-file workflow acceptance",
+  "producer_sha256": "4967dbb58f579b6ca604b88eb4bd57b505a79d03968e89ce897b5f6207f3e894",
+  "uploaded_host_iso_removed_bytes": 737980416,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "guest_pid": 3492,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-native-test.qcow2",
+      "ottrin-native-test-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

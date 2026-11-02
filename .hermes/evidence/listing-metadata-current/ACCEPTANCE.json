@@ -1,0 +1,36 @@
+{
+  "status": "source checks pass; production artifact refresh and native GUI acceptance pending",
+  "source_files": {
+    "crates/ottrin-ui/src/listing.rs": "a3872f88f9ef5ffdc4f6a79f4ee4c3c146636811036e9048ac1990e3be7680a7",
+    "crates/ottrin-ui/Cargo.toml": "94c954348604eb1e4fbbd380ebf4fb79e9325e215b0a94900d4fca868d03e147",
+    ".hermes/evidence/windows-msi-client-current/client.py": "4967dbb58f579b6ca604b88eb4bd57b505a79d03968e89ce897b5f6207f3e894"
+  },
+  "changes": [
+    "Directory symlink target-type resolution preserves the original symlink entry, path and own metadata; missing/unreadable target remains unknown",
+    "Shared listing hides native Windows Hidden/System files and directories when show-hidden is off; ordinary/archive entries stay visible and show-hidden reveals all",
+    "Production Windows SDK storage feature declared where used; no new dependency",
+    "One native unit runner replaces the benchmark-only QA mode with explicit exact test filter and bounded checked execution; immutable past driver snapshots remain unchanged"
+  ],
+  "negative_controls": {
+    "linux": "Directory link classified Some(false) instead of Some(true)",
+    "windows": {
+      "native_test_exit": 101,
+      "diagnostic": "\nthread 'listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes' (7732) panicked at crates/ottrin-ui/src/listing.rs:279:9:\nassertion `left == right` failed\n  left: {\"archive.txt\", \"hidden-dir\", \"hidden-\u65e5\u672c\u8a9e.txt\", \"hidden.txt\", \"system-dir\", \"system.txt\", \"visible-dir\", \"visible.txt\"}\n right: {\"archive.txt\", \"visible-dir\", \"visible.txt\"}\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "binary_sha256": "463CED47050CA0E53EC6AD0F3498A55BCF6F23B81A7C172AF95EEDBDEE2697D7"
+    }
+  },
+  "verification": {
+    "linux_focused": "2 pass",
+    "linux_full_UI": "460 pass,1 existing ignored",
+    "native_windows_exact_attribute_test": {
+      "exit": 0,
+      "binary_sha256": "D5D9DE0F89443EBBFC91E9755CE473D1C53DF1686D74B2A49B071CB06CB74E7D",
+      "stdout": "\nrunning 1 test\ntest listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 436 filtered out; finished in 0.08s\n\n"
+    },
+    "strict_lint": "Linux and Windows all-target UI Clippy pass",
+    "format": "cargo fmt --all --check passes"
+  },
+  "native_scope": "Actual Windows NTFS attribute behavior through the production directory-listing function, executed under the owned guest agent token; no ordinary GUI, installer or whole-Windows-release acceptance inferred",
+  "delivery": "Current delivered Linux remains source d09569e2 and current Windows candidate unchanged; these source fixes are not yet packaged",
+  "cleanup": "Both native test domains/disks/fixtures removed; compiler cache cleanup recorded separately"
+}

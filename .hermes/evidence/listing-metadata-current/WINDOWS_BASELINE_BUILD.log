@@ -1,0 +1,19 @@
+   Compiling windows-sys v0.61.2
+   Compiling winapi-util v0.1.11
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
+   Compiling windows v0.58.0
+   Compiling normpath v1.5.0
+   Compiling opener v0.8.4
+   Compiling syntect v5.3.0
+   Compiling notify v8.2.0
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling eframe v0.33.3
+   Compiling tempfile v3.26.0
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+   Compiling egui_extras v0.33.3
+   Compiling two-face v0.5.2+bat-0.26.1
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 5m 56s
+  Executable unittests src/lib.rs (target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe)

@@ -1,0 +1,11 @@
+{
+  "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+  "sha256": "463ced47050ca0e53ec6ad0f3498a55bcf6f23b81a7c172af95eedbdee2697d7",
+  "bytes": 737110172,
+  "source_listing_sha256": "b5e02ad1fea73f6b737bf0d1be012821f600947579d68bf9dfd349497d684e11",
+  "compiler": "rustc1.94.0",
+  "command": "CARGO_BUILD_JOBS=1 cargo test --target x86_64-pc-windows-gnu -p ottrin-ui --lib --no-run",
+  "test": "listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes",
+  "scope": "Actual current directory listing with native Windows attributes; baseline before Windows visibility repair. Source includes separate Linux link-tag correction.",
+  "consumer": "windows-before owned native test VM; compile the replacement only after consumer/fixture teardown removes hard links"
+}

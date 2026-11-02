@@ -1,0 +1,5 @@
+{
+  "process_exit": 0,
+  "stdout": "{\"stdout\":\"\\nrunning 1 test\\ntest listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes ... ok\\n\\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 436 filtered out; finished in 0.08s\\n\\n\",\"exitcode\":0,\"stderr\":null,\"sha256\":\"D5D9DE0F89443EBBFC91E9755CE473D1C53DF1686D74B2A49B071CB06CB74E7D\"}\r\n",
+  "stderr": ""
+}

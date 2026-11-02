@@ -1,0 +1,5 @@
+{
+  "process_exit": 1,
+  "stdout": "{\"stdout\":\"\\nrunning 1 test\\ntest listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes ... FAILED\\n\\nfailures:\\n\\nfailures:\\n    listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes\\n\\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 436 filtered out; finished in 0.04s\\n\\n\",\"exitcode\":101,\"stderr\":\"\\nthread \\u0027listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes\\u0027 (7732) panicked at crates/ottrin-ui/src/listing.rs:279:9:\\nassertion `left == right` failed\\n  left: {\\\"archive.txt\\\", \\\"hidden-dir\\\", \\\"hidden-\u65e5\u672c\u8a9e.txt\\\", \\\"hidden.txt\\\", \\\"system-dir\\\", \\\"system.txt\\\", \\\"visible-dir\\\", \\\"visible.txt\\\"}\\n right: {\\\"archive.txt\\\", \\\"visible-dir\\\", \\\"visible.txt\\\"}\\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\\n\",\"sha256\":\"463CED47050CA0E53EC6AD0F3498A55BCF6F23B81A7C172AF95EEDBDEE2697D7\"}\r\n",
+  "stderr": ""
+}

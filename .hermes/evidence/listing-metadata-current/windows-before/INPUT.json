@@ -1,0 +1,6 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+  "sha256": "463ced47050ca0e53ec6ad0f3498a55bcf6f23b81a7c172af95eedbdee2697d7",
+  "exact_test": "listing::tests::hidden_toggle_controls_windows_hidden_and_system_attributes",
+  "cargo_output_directory": "debug"
+}

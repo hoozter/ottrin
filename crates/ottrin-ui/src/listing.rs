@@ -25,6 +25,18 @@ pub(crate) fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileE
             Ok(m) => m,
             Err(_) => continue,
         };
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::MetadataExt;
+            use windows_sys::Win32::Storage::FileSystem::{
+                FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_SYSTEM,
+            };
+            if !show_hidden
+                && meta.file_attributes() & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM) != 0
+            {
+                continue;
+            }
+        }
         let kind = if file_type.is_symlink() {
             EntryKind::Symlink
         } else if file_type.is_dir() {
@@ -45,7 +57,9 @@ pub(crate) fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileE
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_secs());
         let symlink_target_is_dir = if matches!(kind, EntryKind::Symlink) {
-            Some(meta.is_dir())
+            std::fs::metadata(item.path())
+                .ok()
+                .map(|target| target.is_dir())
         } else {
             None
         };
@@ -181,5 +195,107 @@ fn format_list_dir_error(path: &Path, e: &std::io::Error) -> String {
             )
         }
         _ => format!("Could not open folder:\n{}\n({})", path_label(path), e),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    fn names(path: &Path, show_hidden: bool) -> BTreeSet<String> {
+        list_directory(path, show_hidden)
+            .unwrap()
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect()
+    }
+
+    #[test]
+    fn hidden_toggle_controls_dot_files_and_directories() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("visible.txt"), b"visible").unwrap();
+        std::fs::write(root.path().join(".hidden.txt"), b"hidden").unwrap();
+        std::fs::create_dir(root.path().join(".hidden-dir")).unwrap();
+        assert_eq!(
+            names(root.path(), false),
+            BTreeSet::from(["visible.txt".into()])
+        );
+        assert_eq!(names(root.path(), true).len(), 3);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn symlink_target_directory_metadata_preserves_link_identity() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::create_dir(root.path().join("target-dir")).unwrap();
+        std::fs::write(root.path().join("target-file"), b"target").unwrap();
+        for (link, target) in [
+            ("dir-link", "target-dir"),
+            ("file-link", "target-file"),
+            ("broken-link", "missing-target"),
+        ] {
+            std::os::unix::fs::symlink(target, root.path().join(link)).unwrap();
+        }
+        let entries = list_directory(root.path(), false).unwrap();
+        for (name, target_is_dir) in [
+            ("dir-link", Some(true)),
+            ("file-link", Some(false)),
+            ("broken-link", None),
+        ] {
+            let entry = entries.iter().find(|entry| entry.name == name).unwrap();
+            assert!(matches!(entry.kind, EntryKind::Symlink));
+            assert_eq!(entry.path, root.path().join(name));
+            assert_eq!(entry.symlink_target_is_dir, target_is_dir, "{name}");
+            assert_eq!(entry.size_bytes, None);
+        }
+        assert!(root.path().join("target-dir").is_dir());
+        assert_eq!(
+            std::fs::read(root.path().join("target-file")).unwrap(),
+            b"target"
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn hidden_toggle_controls_windows_hidden_and_system_attributes() {
+        use std::os::windows::{ffi::OsStrExt, fs::MetadataExt};
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_SYSTEM,
+            SetFileAttributesW,
+        };
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("visible.txt"), b"visible").unwrap();
+        std::fs::create_dir(root.path().join("visible-dir")).unwrap();
+        for (name, directory, attribute) in [
+            ("hidden.txt", false, FILE_ATTRIBUTE_HIDDEN),
+            ("system.txt", false, FILE_ATTRIBUTE_SYSTEM),
+            ("hidden-日本語.txt", false, FILE_ATTRIBUTE_HIDDEN),
+            ("hidden-dir", true, FILE_ATTRIBUTE_HIDDEN),
+            ("system-dir", true, FILE_ATTRIBUTE_SYSTEM),
+            ("archive.txt", false, FILE_ATTRIBUTE_ARCHIVE),
+        ] {
+            let path = root.path().join(name);
+            if directory {
+                std::fs::create_dir(&path).unwrap();
+            } else {
+                std::fs::write(&path, b"attribute fixture").unwrap();
+            }
+            let wide: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
+            assert_ne!(unsafe { SetFileAttributesW(wide.as_ptr(), attribute) }, 0);
+            assert_ne!(
+                std::fs::symlink_metadata(&path).unwrap().file_attributes() & attribute,
+                0
+            );
+        }
+        assert_eq!(
+            names(root.path(), false),
+            BTreeSet::from([
+                "archive.txt".into(),
+                "visible-dir".into(),
+                "visible.txt".into()
+            ])
+        );
+        assert_eq!(names(root.path(), true).len(), 8);
     }
 }

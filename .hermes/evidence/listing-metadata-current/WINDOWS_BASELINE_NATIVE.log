@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-client-current/client.py", line 255, in <module>
+    result=ps(code,210);save('RAW_NATIVE_TEST_PROCESS.json',result);output=base64.b64decode(result.get('out-data','')).decode('utf-8-sig');save('NATIVE_TEST_PROCESS.json',{'process_exit':result.get('exitcode'),'stdout':output,'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result.get('exitcode')==0,'Native unit test failed; retain exact output'
+                                                                                                                                                                                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Native unit test failed; retain exact output
