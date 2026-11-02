@@ -1,0 +1,65 @@
+{
+  "status": "pass: Linux promotion and all completed task cleanup",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "packages_at_stable_paths": {
+    "ottrin-0.1.0-1.x86_64.rpm": "588eb80bdf030e560b6b1a716fa708d68fdb774aa5751e291ca58fec7750158e",
+    "Ottrin-0.1.0-x86_64.AppImage": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "74ef443f561d00f4ba6b3d706f3a70dd1a0c9a3a9181139a398b8b55820c1625",
+    "ottrin_0.1.0_amd64.deb": "622dab551a9a6e97446b7ba735e56a8d3067f55fddf6f698bd933f5a6edc7d0f"
+  },
+  "source_stage_removed": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "single_extraction_removed": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "completed_gui_cases_reaped": [
+    "main-dark100",
+    "main-light150",
+    "properties-dark100",
+    "properties-light150",
+    "icon",
+    "upgrade-view",
+    "menu-keys",
+    "menu-space",
+    "browser-firefox",
+    "browser-flatpak",
+    "symlink-gui-final",
+    "appearance-dark100",
+    "appearance-light150"
+  ],
+  "fresh_native_guests_removed": [
+    "fedora",
+    "ubuntu"
+  ],
+  "storage_baseline": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905241858,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18178444902,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 43391040479,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38912273720,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current": 826,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current": 56882171
+  },
+  "current": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 33358272335,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18178444902,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 33224192075,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38912273720,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current": 4416985,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current": 65399702
+  },
+  "deltas": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": -4546969523,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 0,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": -10166848404,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 0,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/listing-delivery-current": 4416159,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current": 8517531
+  },
+  "standalone_test_cleanup": ".hermes/evidence/listing-storage-current/CLEANUP.json",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Single current source592d56e8 Windows ZIP/NSIS/MSIX3 stage for pending coherent software/installer delivery and next-version baseline, no live guest consumer",
+      "logical_bytes": 292813277
+    }
+  ],
+  "personal_service": "Unchanged indexd payload and active PID262779; no restart or config/database mutation for this UI delivery",
+  "completed_windows_cleanup": "Native assembly, rejected first enabled case, accepted enabled and disabled guests/two volumes each/private profiles removed. Source archive and sole previous MSIX2 baseline removed after consumers completed. No active QA guests remain."
+}

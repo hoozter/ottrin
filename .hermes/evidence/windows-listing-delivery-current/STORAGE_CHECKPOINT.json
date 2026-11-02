@@ -24,5 +24,13 @@
       "purpose": "Compact current package/GUI receipts and synthetic screenshots; native Linux package acceptance pending"
     }
   ],
-  "compiler_debug_roots": "Native and Windows deps/incremental unchanged from exact before-packaging baseline; prior locked-helper cleanup retained current consumers"
+  "compiler_debug_roots": "Native and Windows deps/incremental unchanged from exact before-packaging baseline; prior locked-helper cleanup retained current consumers",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Single current source592d56e8 Windows ZIP/NSIS/MSIX3 stage for pending coherent software/installer delivery and next-version baseline, no live guest consumer",
+      "logical_bytes": 292813277
+    }
+  ],
+  "completed_windows_cleanup": "Native assembly, rejected first enabled case, accepted enabled and disabled guests/two volumes each/private profiles removed. Source archive and sole previous MSIX2 baseline removed after consumers completed. No active QA guests remain."
 }

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "removed_path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-listing-delivery-current/input/previous.msix",
+  "removed_bytes": 56836638,
+  "sha256": "536f5c72371b17b2faab15ad35d1aebfbb8f26e4917bc8958ec21fc50bc7f1bb",
+  "fulfilled_consumers": {
+    "upgrade-enabled-verified": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/ACCEPTANCE.json"
+  },
+  "latest_development_msix_retained": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix"
+}

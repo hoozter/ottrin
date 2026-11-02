@@ -1,0 +1,7 @@
+{
+  "status": "executed; rendered review still required",
+  "prior_accepted_actions": ".hermes/evidence/menu-space-delivery-current/appearance-dark100/RESULT.json",
+  "input_sha256": "96136bd522ab38f0eafb39f5ca8ba6c0b6cb64723b0d9411ff57eca435ea842f",
+  "driver_sha256": "bf5d3419a0390d9afac7ea95b11a165c395d7a2d83a3391d771c937875972dfc",
+  "count": 25
+}

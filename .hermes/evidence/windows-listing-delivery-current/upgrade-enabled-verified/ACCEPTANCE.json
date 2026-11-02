@@ -1,0 +1,43 @@
+{
+  "status": "pass within actual native update/ordinary GUI/real reboot/login/removal scope",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "package_input": {
+    "sha256": "a172aacc3e00bbbe33a4cc4c82507f42db7e7c1c5690cf0661539d79c327e720",
+    "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+    "version": "0.1.0.3",
+    "startup_enabled": true,
+    "previous": {
+      "sha256": "536f5c72371b17b2faab15ad35d1aebfbb8f26e4917bc8958ec21fc50bc7f1bb",
+      "version": "0.1.0.2",
+      "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5"
+    }
+  },
+  "native_receipt": "RUNTIME_RESULT.json",
+  "updated_menu_keys": {
+    "source_sha256": "50C6A3E7D1D8029C750535A7250DDECDE20A9AEEDD1C26F092A38AD3E21FA970",
+    "normal_space_open_close": true,
+    "inspector_menu_escape_keeps_window_open": true,
+    "source_and_directory_unchanged": true,
+    "main_menu_space_keeps_inspector_closed": true,
+    "status": "pass"
+  },
+  "preferences_and_index_file_identity_preserved": true,
+  "actual_login": {
+    "pid": 7184,
+    "administrator": false,
+    "session": 1,
+    "package": "Ottrin.Development_0.1.0.3_x64__vs01n017nxmbr"
+  },
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "native_visibility_receipt": "Separate enabled visibility observer rejected; accepted rendered control is in upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json",
+  "scope_limit": "Owned Windows software SPICE, package identity and ordinary token. Not physical graphics, Store signing/certification, NSIS/MSI acceptance or whole-Windows-roadmap completion."
+}

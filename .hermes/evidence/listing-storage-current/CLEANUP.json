@@ -1,0 +1,20 @@
+{
+  "status": "pass: exact scoped standalone test cleanup complete",
+  "removed_executables": 28,
+  "removed_exact_targets": 84,
+  "obsolete_binary_logical_bytes": 14713751552,
+  "retained_replacements_verified": 10,
+  "measured_helper_result": "Filesystem free-space change: 13.62 GiB; available now 26.78 GiB",
+  "available_after_verification_bytes": 28624982016,
+  "scope": "Obsolete standalone test executables and exact dep-info/fingerprint companions only. Source, final application/daemon binaries, all retained configurations, libraries, incremental caches, current packages and live QA preserved. No new functional-test coverage inferred from artifact verification.",
+  "reference_review": "REFERENCE_REVIEW.json",
+  "replacement_verification": "REPLACEMENT_VERIFICATION.json",
+  "remaining_task_created_storage": "Compact evidence only; no cleanup fixture, package, extra compiler tree or test process allocated",
+  "next_independent_use": "Reassess clean Microsoft Windows installer comparison now that13.62GiB has been recovered; no ISO downloaded yet.",
+  "manifest_cleanup": "Completed input removals.json removed after exact-path validation. The supported apply helper had already removed its completed plan.json; no stale plan remains.",
+  "final_global_scan": {
+    "status": "completed",
+    "errors": 95,
+    "scope": "Fresh local inventory; protected/unreadable paths remain gaps, no claim of whole-machine cleanup completion"
+  }
+}

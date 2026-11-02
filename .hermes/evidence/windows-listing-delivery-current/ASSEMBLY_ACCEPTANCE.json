@@ -19,7 +19,10 @@
     "base_still_off": true,
     "retained_pending_volume": null
   },
-  "pending": [
-    "actual0.1.0.2 to0.1.0.3 enabled/disabled startup upgrade, GUI and real login/removal"
-  ]
+  "pending": [],
+  "runtime_receipts": {
+    "upgrade-enabled-verified": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/ACCEPTANCE.json"
+  },
+  "scope": "Assembly receipt; subsequent runtime receipts independently verify real update/login/removal. Public Windows and Store acceptance unchanged."
 }

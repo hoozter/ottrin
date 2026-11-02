@@ -2,280 +2,102 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-02.
+Updated 2026-11-02. This is the active queue; dated checkpoints below retain
+only their original source/artifact scopes. Test totals are not roadmap completion.
 
-The stable four-format Linux delivery uses clean source
-`d09569e2e48656979bac0c10a6342687457a1de5`. Exact hashes and scoped acceptance
-are authoritative in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
-`955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910`.
-The internal Windows ZIP/NSIS/MSI accepted candidate remains source8ede1562;
-the private newer development stage remains separately scoped. Public Windows
-release files are unchanged. No Windows installer gate is waived.
+The stable Linux AppImage, portable archive, DEB and RPM now use clean source
+`592d56e89d7b7b3c46b685e6d27a3c988c076372`. Their exact hashes, completed scopes
+and limits are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. The stable
+AppImage remains `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
+`1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6`.
 
-All four Linux formats pass their content/payload checks. Portable/AppImage
-closure and native ownership checks pass in their recorded scopes. Actual
-AppImage Dark100/Light150 workflows verify read-only VCF/text Inspector
-navigation/Space/Close, saved theme, long Properties and complete chooser icon
-pixels. Previous → new → reopen visibly retains Miller columns and saved view,
-with source files unchanged. Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB
-runs pass normal setup, actual portal frontend requests, idle readiness,
-same-version reinstall, modified-native-asset refusal, online/offline removal
-and preference restoration, and portable picker use after native removal.
-The first Fedora attempt failed a QA input-copy path before installation; it
-is rejected evidence, not product acceptance. The corrected runs use no setup
-or registration diagnostic controls.
+The shared directory listing now preserves directory-link target type and native
+Windows Hidden/System filtering. Both source regressions fail before repair;
+two Linux metadata tests, all460 Linux UI tests (one existing ignored), strict
+Linux/Windows lint and the actual before/after Windows NTFS test pass. Hosted
+run41486034184 passes all four jobs, including Windows tests/lint/release build.
+Package source592d56e8 differs from hosted source992b2687 only in the roadmap
+receipt; the promotion gate verifies identical production inputs.
 
-The prior exact928b7937 10000-file metadata and content-enabled controls verify live burst
-freshness, same-size body changes with preserved timestamps, offline changes,
-restart and persisted queries. All six30-second quiet samples measure0.067percent
-of one core, about13–17MiB RSS. The unchanged daemon payload carried into this UI delivery has hash
-`1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399`.
-RPM's normal symbol stripping changes its ELF hash; its exact tested payload
-and matching executable sections are recorded separately. Earlier daemon
-resource receipts retain their original package identity.
+All four Linux formats pass content/closure/policy/namespace checks. The exact
+AppImage passes main and read-only Inspector workflows at Dark100/Light150,
+Properties/icon/saved-view update/reopen, native menu arrows/Escape/Space, actual
+installed Firefox and Flatpak Falkon Open/Save with correct caller identities
+and exact bytes, and directory-link navigation in main List and the chooser.
+The chooser returns the exact selected child path with source/link identity
+preserved. Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB pass normal setup,
+actual portal requests, reinstall/refusal, online/offline removal/preference
+restoration and portable picker survival without diagnostic setup controls.
+Current native Settings/editor actions also verify live shared titlebar color,
+actual/preview button radius, main/Settings/editor/Inspector window corners,
+Inspector Space and full-config/source preservation after Cancel. This does not
+repeat the exhaustive39-control sweep or establish physical-renderer acceptance.
 
-The personal enabled service retains the same verified daemon bytes from the
-928b7937 refresh, with config, unit, wrapper and database file identity preserved.
-After this UI-only promotion it remains active with the same PID262779; no daemon
-restart was needed. Its watched Ready observation
-covers60seconds during development:0.333percent of one core,41668KiB RSS and
-163260 indexed items. This is a short personal observation; neither it nor the
-controlled fixture establishes sustained personal-workload acceptance.
+The daemon and five renderer/helper payloads are byte-identical to the previous
+accepted delivery. Exact928b7937 metadata/content10000-file resource receipts keep
+their original source/package identity; their six30-second quiet samples measured
+0.067percent of one core and about13–17MiB RSS. No new sustained personal-workload
+claim is made. The personal enabled service remains active with the same
+PID262779 and unchanged daemon bytes; no restart was needed for this UI refresh.
 
-All completed Linux GUI/browser/index profiles/processes/buses/mounts and both
-fresh native guest sets, volumes and credentials are removed. The current Linux
-four-format stage and single extraction are removed after successful promotion.
-Five superseded exact-configuration incremental sessions are removed through
-the supported locked helper; current compiler caches remain. Superseded2540 Linux/
-Windows packages and extractions, plus completed source archives, are removed.
-Compact current acceptance and cleanup receipts are under
-`.hermes/evidence/menu-space-delivery-current/`. Earlier resource receipts retain
-source928b7937 identity under `linux-search-delivery-current/`.
+Current Linux evidence is `.hermes/evidence/listing-delivery-current/`.
+All completed GUI/browser profiles/processes/buses/mounts, both native Linux
+VMs and their six volumes are removed. Promotion replaces the stable packages
+and removes the single current Linux stage/extraction. Source/NTFS evidence is
+`listing-metadata-current/ACCEPTANCE.json`.
 
-The earlier1e238431/c79dbcbc rejected cohorts exposed shared portable portal
-removal and fresh registration reload defects. The authoritative fixes inherited
-from0b6015db pass again in the new native distribution runs without controls.
-The delivered HTML helper retains syscall confinement and exact versioned
-readiness checks. Updating an AppImage alone does not replace an older protected
-HTML helper installed on the host; that separate administrator setup remains
-on the owner waiting list.
+Windows public files remain unchanged; the accepted internal ZIP/NSIS/MSI
+candidate remains source8ede1562. The separate source592d56e8 development stage
+builds ZIP/NSIS and native MakeAppx MSIX0.1.0.3 with58-file equality and invalid
+revision refusal. Actual0.1.0.2→0.1.0.3 startup-enabled upgrade passes ordinary
+GUI/menu keys/normal Close, retained configuration/native index identity, actual
+reboot/login with Windows-started daemon before any Ottrin CLI, and clean
+removal. Its guest/volumes/profile are removed. The first attempt is rejected:
+its second Space was sent within the existing180ms opening guard. The accepted
+driver observes a settled child before a single close press; it does not retry
+input. Its separate visibility screenshots hit Services instead of the eye,
+so they do not accept show-all/restored visibility. Native Ctrl+L does visibly
+reach the separate fixture. The disabled-startup upgrade also passes: after a real reboot, no daemon starts
+for180.015seconds before any Ottrin CLI; saved startup/configuration/index identity
+survive clean removal. The corrected native Ctrl+L and Hidden/System toggle are
+visually accepted: initial/restored show only V.txt, show-all displays HD/SD folders
+and H.txt/S.txt/V.txt, with native attributes and exact bytes independently checked.
+Hash-bound review of the original screenshots, icon-slot counts and identical
+restored file-view pixels establish the rendered control. Full-window OCR misread
+the small filename and is rejected observer evidence, not a passed OCR gate.
+Both accepted guests/disks/private profiles are removed; the sole56.8MB previous
+MSIX2 input is removed after both consumers complete. Latest MSIX3/ZIP/NSIS stage
+remains for pending Windows delivery/installer acceptance.
+Evidence: `windows-listing-delivery-current/ASSEMBLY_ACCEPTANCE.json`,
+`upgrade-enabled-verified/ACCEPTANCE.json`, `upgrade-disabled/ACCEPTANCE.json` and
+`upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json`.
 
-The current delivered AppImage now passes actual installed Firefox and installed
-Flatpak Falkon Open/Save. Both display the chosen local text document and save
-an exact byte copy, preserve the original, use Ottrin for both native dialogs,
-and forward the actual `firefox` / `org.kde.falkon` app-ID in both backend calls.
-The sandbox cannot see the outside source before selection; no source-folder
-filesystem grant or persistent Flatpak override is added. The private test runtime
-uses a sandbox-local alias to Flatpak's existing per-app document projection;
-this is isolated-session acceptance, not a physical-desktop claim. All profiles,
-processes, buses, mounts and the Firefox transient scope are removed. Failed harness
-attempts are explicitly rejected and compacted; frozen final inputs, exact hashes
-and reviewed screenshots are in `.hermes/evidence/linux-browser-delivery-current/`.
-Earlier0b6015db browser receipts retain their original package scope.
+The clean-up audit removes28 superseded standalone test executables and their
+56 exact dep-info/fingerprint companions after compiler/configuration, current
+replacement, reference, symlink, hard-link and process checks. It recovers
+13.62GiB; source, libraries, incremental caches, current configurations and all
+current deliverables remain. Exact evidence: `listing-storage-current/CLEANUP.json`.
+This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 
-The chooser popup correction passes its rendered regression, all25 picker checks,
-455 UI tests and strict Linux/Windows lint. The clean f7f20542 staging cohort also
-passes both actual installed browsers, native popup ArrowDown/Escape, all six
-main/Properties/icon/upgrade GUI checks and fresh Fedora/Ubuntu native lifecycle.
-Its daemon and five other helper/renderer payloads are byte-identical to the
-stable source928b7937 delivery. All guests, disks, credentials and GUI sessions
-are removed. These receipts retain their exact f7f20542 scope.
+Continue in this order:
 
-The wider native menu audit also found underlying main-window ArrowDown,
-Inspector Escape and main-window Space handling while menus were open. The
-final authoritative handlers share popup ownership; regressions fail before
-repair and all458 UI tests (one existing ignored), formatting and strict
-Linux/Windows all-target lint pass afterward. Clean sourced09569e2 now produces
-one four-format candidate; its AppImage SHA-256 is
-`955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910`.
-Native arrows/Escape/Space and ordinary Inspector open/close positive controls
-pass against that exact AppImage. Six Dark100/Light150 main/Properties/icon/
-saved-view GUI cases and actual installed Firefox/Flatpak Falkon Open/Save pass.
-Complete daemon and five renderer/helper payloads remain byte-identical to the
-stable928b7937 delivery; earlier resource receipts retain their original scope.
-Fresh Fedora and Ubuntu lifecycle pass, including normal setup and removal;
-both domains, their three volumes each and temporary credentials are removed.
-Current Dark100/Light150 Settings/editor native checks also verify shared live
-titlebar colors, actual and preview button radius, window corners on main,
-Settings, editor and Inspector, and complete config restoration after Cancel.
-The first full-config fixture used removed fields and empty default bookmarks;
-its run is rejected. The corrected current-schema runs preserve complete JSON
-and exact source bytes, and close normally with all private resources removed.
-An initial Inspector corner comparison had not actually changed its numeric
-control; confirmed5/20 captures show282 corner pixels changed. No product radius
-defect is inferred from the rejected comparison. This is scoped current-control
-acceptance, not a repeated exhaustive39-control sweep or physical Windows claim.
-Hosted run41466658719 passes all four jobs, including full Windows tests/lint/
-release build. All four accepted Linux packages are now promoted to stable paths;
-checksums verify afterward. Windows public files remain unchanged.
-Evidence: `.hermes/evidence/menu-space-delivery-current/CHECKPOINT.json`,
-`menu-space-ownership-current/SOURCE_ACCEPTANCE.json` and exact case receipts.
+1. Resolve the still-failed MSI after-execution transaction rollback gate.
+   Simple native controls also fail on the updated existing Windows client;
+   no vendor defect or waiver is inferred. Reassess a clean Microsoft client
+   comparison using the recovered space; no new ISO has been downloaded yet.
+2. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
+   software/installer gates pass. Keep development MSIX acceptance separate from
+   signed Store certification; do not promote a failed installer gate.
+3. Audit and finish remaining software/theme/accessibility/resource and supported
+   integration outcomes against the requirements below. The shared themed picker,
+   Linux FileChooser portal/FileManager1 and reversible Windows folder actions
+   have implementation and scoped native/package evidence; do not reopen their
+   completed gates or substitute those receipts for remaining caller/platform/
+   physical acceptance. Do not stop on owner waits while another item is ready.
 
-The original GitHub audit found13 failed push runs since October31:11 CI and2
-installer diagnostics, with no scheduled retry loop. Workflow/ref concurrency
-now cancels superseded runs; receipt-only push exclusions prevent redundant
-full builds. Release500k performance remains a strict100ms serial gate on both
-platforms while debug keeps correctness coverage. Sourcea10792db passes all four
-jobs in run41413618813 (release16ms Linux/61ms Windows). The listing-wake test
-then exposed an unrelated observer race. The authoritative worker-based test
-passes454 Linux UI tests and strict Linux/Windows lint; source05c1325f passes
-all four hosted jobs in run41429811338, including full verification and release
-builds. Tracked product/build inputs are identical between tested05c1325f and
-the packaged928b7937 source; QA/status differences and exact package provenance
-are recorded explicitly. Later receipts do not relabel the compiled source.
-Evidence: `.hermes/evidence/github-actions-current/`,
-`.hermes/evidence/search-performance-isolation-current/`,
-`.hermes/evidence/linux-search-delivery-current/HOSTED_SOURCE_SCOPE.json`.
-
-The independent queue is:
-1. Windows MSI after-execution rollback on a current client fixture.
-   The reusable owned Windows baseline now verifies build26100.9711, MSI5.0.26100.9711,
-   an actual reboot and clean shutdown. It is retained for named MSI/MSIX consumers.
-   A fresh ordinary interactive account, after completing normal first-login
-   desktop setup, still reproduces84 install and80 uninstall rollback errors in
-   the minimal file-only control. This rules out the old QA profile, old client
-   build and incomplete desktop setup as sole causes; it does not prove a vendor
-   defect. Hosted Server2025 refuses1625 before execution. No policy/ACL/elevation
-   or rollback waiver is used. Compiler-independent/client-fixture diagnosis remains
-   required. Read-only native ACL capture now confirms the installed product and
-   SourceList deny ordinary-user writes while SYSTEM/administrators retain full
-   access; failed uninstall rollback leaves inherited ordinary-user full access.
-   Both84/80-error controls still fail. This does not identify the internal
-   rollback token or establish a vendor/compiler defect. A further independently
-   authored native MSI database control now reproduces82 install/78 uninstall
-   skipped rollback errors after actual file operations, without WiX/runtime
-   inputs or Ottrin executables. This rules out a WiX-specific dependency, not
-   shared authoring/engine/fixture causes. Its guest/volumes/private desktop are
-   removed. A clean Microsoft client comparison needs adequate storage: only
-   about17GB is free, so no ISO/new installed base is allocated. Continue other
-   dependency-ready software/delivery work while that comparison is constrained.
-   Evidence: `windows-msi-native-control-current/OBSERVATION.json`,
-   `windows-msi-registry-current/native-acl/OBSERVATION.json`,
-   `windows-msi-updated-client-current/`,
-   `windows-startup-lifetime-current/msi-desktop-ready/`.
-2. MSIX build/deployment tooling independent of parked Store identity/submission.
-   Source2ebf passes actual MakeAppx assembly and58-file equality, ordinary main
-   window and daemon package identity, non-elevated launch, GUI focus, setup,
-   status, disable/reenable, normal Close and actual package removal. Preferences
-   and source files remain unchanged, with no residual daemon or scheduled task.
-   A further actual reboot/login also passes: Windows starts the non-elevated
-   package daemon before any Ottrin CLI, the saved root becomes Ready and saved
-   preferences survive. Subsequent package removal still preserves preferences
-   and source while removing package processes and index tasks. Two earlier
-   attempts exposed harness status-file locking and PowerShell null-string
-   marshalling; neither is counted as login acceptance. Atomic publication/shared
-   reads and an ordinary-user native writer probe now pass. This fixes the prior
-   per-call WinRT teardown crash. The earlier partial preferences fixture omitted
-   required fields and fell back to defaults, so it did not prove the selected
-   settings/index scope. Raw receipts retain an explicit scope correction.
-   A new valid Dark/Grid fixture now proves enabled-startup cross-version update,
-   actual new GUI/normal close, daemon survival after window close, exact one-file
-   readiness, identical database file identity through update/reboot, Windows
-   login startup before any Ottrin CLI and clean removal. The disabled-startup
-   case also passes: startup remains disabled before/after the actual new GUI,
-   no daemon starts during180seconds after a real reboot before any Ottrin CLI,
-   and preferences/native index file identity survive through clean removal.
-   The native visual scope uses software
-   SPICE and explicit OpenGL; physical/native-driver acceptance remains separate.
-   Completed guests/volumes/profiles and fulfilled source archives are removed.
-   The latest development stage remains at `.hermes/packaging-tmp/.windows-desktop-stage`
-   for pending update consumers; accepted8ede and Linux deliveries are
-   preserved. No Store identity is invented.
-   Evidence: `windows-startup-lifetime-current/NATIVE_ACCEPTANCE.json`,
-   `windows-startup-lifetime-current/login-verified-state/ACCEPTANCE.json`.
-3. Remaining software/theme/accessibility/resource and supported-platform gates;
-   keep physical-only and final owner acceptance on the explicit waiting list.
-   QA desktop teardown now classifies successful SystemExit(0) as closed; an
-   actual private desktop probe verifies process/profile removal. Raw older
-   reports retain their original misclassification. Sourcec5a40fd2 now builds
-   development MSIX0.1.0.1; native MakeAppx assembly,58-file payload equality and
-   rejection of revisions-1/65536 pass. Actual0.1.0.0 →0.1.0.1 update now passes
-   both enabled and disabled startup cases.
-   The fulfilled previous56.8MB upgrade input is removed. The new
-   package stage has scoped update/runtime acceptance and awaits the
-   broader software gates. The fulfilled122MB
-   source archive and both assembly guests/volumes are removed. Evidence:
-   `windows-msix-update-current/ASSEMBLY_ACCEPTANCE.json`,
-   `windows-msix-update-current/upgrade-enabled/ACCEPTANCE.json`,
-   `windows-msix-update-current/upgrade-disabled/ACCEPTANCE.json`.
-
-The current Windows development refresh now uses sourced09569e2. Portable ZIP
-and NSIS build successfully; native MakeAppx development MSIX0.1.0.2 assembly,
-58-file equality and invalid revision refusal pass. The assembly guest, disks,
-fixture and fulfilled124MB source archive are removed. Actual0.1.0.1 →0.1.0.2 startup-enabled update now passes updated-window menu
-keys, normal Space open/close, real reboot/login before any Ottrin CLI, retained
-configuration/native index identity and removal. Its guest/disks/profile are
-removed. The startup-disabled case now passes too: startup remains disabled through
-update and the new GUI; an actual reboot/login observes no daemon for180seconds
-before any Ottrin CLI. Configuration/native index identity survive clean removal.
-Its guest/disks/profile are removed. Both upgrade consumers are complete, so
-their sole56.8MB previous-version input is removed. The sole previous0.1.0.1 input is transferred once into
-`windows-menu-space-delivery-current/input/previous.msix`; superseded2540 staging
-and archive are removed. Current Windows staging remains for remaining software/installer acceptance;
-the two named update consumers are complete. Stable8ede and public Windows files remain unchanged; MSI rollback is
-still a required failed gate. Evidence:
-`windows-menu-space-delivery-current/ASSEMBLY_ACCEPTANCE.json`.
-
-The first current Windows upgrade run reaches the actual ordinary updated GUI,
-but fails its keyboard fixture before proving file selection/Inspector opening.
-It is rejected for menu, reboot and removal acceptance; its guest/disks/profile
-are removed. The corrected run launches the updated GUI directly at the existing owned
-one-file fixture, uses pointer selection and captures that selection before
-keyboard tests; its complete startup-enabled lifecycle passes. The first disabled
-case completes ordinary first-login privacy pages but its QA observer misreads a
-small desktop label, fails to send readiness and expires the normal setup deadline.
-That case is rejected and cleaned up. The detector now recognizes the exact
-previously missed large Start-menu labels; a bounded normal-UI observer drives
-only recognized privacy pages through the existing owned-console input helper,
-then the existing observed-desktop SID/nonce guard. No policy override or deadline
-waiver is introduced. The corrected fresh disabled case passes normal-UI setup, native updated menu
-keys, actual no-start180-second login observation, retained config/index identity
-and removal; its guest/disks/profile are removed. Exact acceptance is in
-`windows-menu-space-delivery-current/upgrade-disabled/ACCEPTANCE.json`. Native Ctrl+L navigation/input and Windows Hidden/
-System attribute filtering are separate controlled follow-ups; a home screenshot
-alone does not establish the file attributes or a product defect. These are
-independently executable checks, not owner waits. Evidence:
-`windows-menu-space-delivery-current/KEYBOARD_FIXTURE_FOLLOWUP.json`.
-
-The filesystem-metadata follow-up confirms two production listing defects:
-Unix directory links were tagged as non-directory targets, and native Windows
-Hidden/System files and directories were visible with show-hidden off. Both
-regressions fail before repair. The shared listing now resolves target type while
-preserving symlink identity/own metadata, and applies native Windows visibility
-attributes. Dot-file filtering, ordinary/archive entries and show-hidden on are
-covered. Two focused Linux cases, all460 Linux UI tests (one existing ignored),
-strict Linux/Windows lint and the actual before/after Windows NTFS test pass.
-Both native test guests/disks/fixtures are removed. This source correction is not
-in the delivered d09569e2 artifacts. Clean source592d56e8 now builds all four
-Linux formats and Windows ZIP/NSIS; native MakeAppx MSIX0.1.0.3 assembly passes
-58-file equality and invalid-revision refusal. All six current Linux main/
-Properties/icon/saved-view workflows, both native popup keyboard probes and
-actual installed Firefox/Flatpak Falkon Open/Save pass. Actual main List and
-chooser directory-link navigation pass, including exact selected child path,
-source bytes and retained link identity. Two earlier GUI harness attempts are
-explicitly rejected: private Alt+F4 close and OCR capitalization; their owned
-profiles/processes are removed. The accepted case uses visible Close and verifies
-the exact returned native path. The assembly guest/volumes/fixture and fulfilled
-124MB source archive are removed. Source/native evidence:
-`listing-metadata-current/ACCEPTANCE.json`; current package/GUI checkpoint:
-`listing-delivery-current/CHECKPOINT.json`. Fresh Fedora/Ubuntu lifecycle and
-hosted Windows completion remain before Linux promotion. Windows0.1.0.2 to
-0.1.0.3 startup-enabled attempt fails its Inspector close input: it sends the
-second Space immediately after child mapping, inside the existing180ms opening
-Space guard. That attempt is rejected and its guest/volumes/profile are removed.
-The corrected driver observes a settled child for250ms, captures it and sends
-one close Space with bounded closure observation, without input retries.
-A fresh enabled upgrade is now running; it is not accepted yet. Disabled startup
-and rendered native visibility/Ctrl+L controls follow. The latter now has explicit
-native-attribute fixtures and before/show-all/restored captures for host rendered
-verification; this preparation alone is not acceptance.
-Current stages/extraction and the sole previous MSIX input have these named
-consumers; stable Linux, internal Windows8ede and public Windows remain unchanged.
-
-Do not stop this goal on owner waits while another independent item is ready.
-Older checkpoints below retain their original source/artifact scopes; they do not
-replace this delivery receipt or automatically accept a newer cohort.
+Owner identities/signing/submission, unavailable physical hardware, personal
+administrator setup and final owner acceptance remain on the explicit
+[waiting list](#ownerexternal-waiting-list). They do not block independent work.
 
 ## Shared title alignment — source follow-up, 2026-11-01
 
@@ -1584,7 +1406,7 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux cohort uses clean `d09569e2`; the internal Windows candidate
+The stable Linux cohort uses clean `592d56e8`; the internal Windows candidate
 uses clean `8ede1562`.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are

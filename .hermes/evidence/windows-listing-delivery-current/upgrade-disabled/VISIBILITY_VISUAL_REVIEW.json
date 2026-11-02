@@ -1,0 +1,29 @@
+{
+  "status": "reviewed",
+  "method": "Direct tool view of all three original native window captures; filenames and file/folder icons read visually. Full-window OCR misread the small filename V.txt and is explicitly rejected, not asserted passing.",
+  "captures": {
+    "visibility-default.png": {
+      "sha256": "7335db169eb88d244689ad5f088b8bae01667b10471f1bd45c10674d49010e04",
+      "visible_entries": [
+        "V.txt"
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "ec38ff5d442994f8419a07bfab5c27f2eeb56de7f73eb238eb5114031c83ed6c",
+      "visible_entries": [
+        "HD",
+        "SD",
+        "H.txt",
+        "S.txt",
+        "V.txt"
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "7335db169eb88d244689ad5f088b8bae01667b10471f1bd45c10674d49010e04",
+      "visible_entries": [
+        "V.txt"
+      ]
+    }
+  },
+  "findings": "Initial/restored display only V.txt and1item, eye off. Show-all displays HD/SD folders and H.txt/S.txt/V.txt files and5items, eye on. Breadcrumb reaches OttrinVisibilityFixture after native Ctrl+L. Matching native attributes and exact source-byte preservation are independently recorded in RUNTIME_RESULT.json."
+}

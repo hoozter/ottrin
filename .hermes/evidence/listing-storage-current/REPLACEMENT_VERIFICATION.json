@@ -1,0 +1,78 @@
+{
+  "status": "pass within compiler-config/artifact verification; not a new functional-suite claim",
+  "replacements": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+      "sha256": "402c87b222ac0c36adc3415eed391b8bc376bfae9036c17b0b338d2cbff0cd03",
+      "kind": "Actual native test harness list, no tests executed",
+      "summary": "2 tests, 0 benchmarks"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+      "sha256": "ba373bac66a7f4d2d94f882a96e34abfdeb5213f4cc88cc41cd061227609f6f9",
+      "kind": "Actual native test harness list, no tests executed",
+      "summary": "9 tests, 0 benchmarks"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+      "sha256": "7e662c1fcdf8d0baccb3862ffb49de62e9bc916cd5b768e03b5eb4712e33fffa",
+      "kind": "Actual native test harness list, no tests executed",
+      "summary": "246 tests, 0 benchmarks"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+      "sha256": "203711e46dc9ed8604211b847f41651c9b5a52f9fc1c9ce0761e0a13d6fda7a6",
+      "kind": "Actual native test harness list, no tests executed",
+      "summary": "461 tests, 0 benchmarks"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+      "sha256": "c94272197bcfe863c99ecce770156e8fd9a49492b97ab4d00b8da88bf57bc9b1",
+      "kind": "PE64 x86_64 standalone test executable; complete bytes/fingerprint/current replacement retained",
+      "objdump": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x00000001400013e0\n\n"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+      "sha256": "457fc7bfebcd6bce36fd1dc308eb32c98ba2c00e29a4ae10ba777a039f0df2fd",
+      "kind": "PE64 x86_64 standalone test executable; complete bytes/fingerprint/current replacement retained",
+      "objdump": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x00000001400013e0\n\n"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+      "sha256": "61d1c865ce2a4216881c7f91c42a063f282e7b4e64af08183dcad7d8a62f2375",
+      "kind": "PE64 x86_64 standalone test executable; complete bytes/fingerprint/current replacement retained",
+      "objdump": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x0000000140001410\n\n"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+      "sha256": "118b8af0b94ccddab7eb797ceb4bcf569c4df4373204798047684146e5ba7942",
+      "kind": "PE64 x86_64 standalone test executable; complete bytes/fingerprint/current replacement retained",
+      "objdump": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x0000000140001410\n\n"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.exe",
+      "sha256": "9f0a2122ff092b94617715a36ccab3a367d7efd3fffe4b6655d1820956df79e3",
+      "kind": "PE64 x86_64 standalone test executable; complete bytes/fingerprint/current replacement retained",
+      "objdump": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x0000000140001410\n\n"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+      "sha256": "d5d9de0f89443ebbfc91e9755ce473d1c53df1686d74b2a49b071cb06cb74e7d",
+      "kind": "PE64 x86_64 standalone test executable; complete bytes/fingerprint/current replacement retained",
+      "objdump": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x0000000140001410\n\n"
+    }
+  ],
+  "native_windows_behavior_scope": "Current UI replacement independently ran real NTFS regression and passed; other newer Windows test artifacts are PE/fingerprint verified, no new native execution claimed here",
+  "matching_fields": [
+    "rustc",
+    "features",
+    "declared_features",
+    "target",
+    "profile",
+    "path",
+    "rustflags",
+    "config",
+    "compile_kind"
+  ],
+  "candidate_count": 28
+}

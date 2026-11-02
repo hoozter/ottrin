@@ -1,0 +1,51 @@
+{
+  "status": "pass; complete native results extracted once; duplicate archive/base64 and fulfilled first-login captures removed",
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/RESULTS.zip",
+      "bytes": 430707,
+      "sha256": "90a45fd703b7c377a06924f1e22c7941c3e30840af2bc4597d6f640b91665403"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/RESULT_EXPORT_PROCESS.json",
+      "bytes": 765760,
+      "sha256": "5dfe3b4bd49be72fef436f72dae7e2ac137b230bec4826be124680315d44e931"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/privacy-observed-3.png",
+      "bytes": 206500,
+      "sha256": "1f75453327b6328d946ef395b4687bd2d750fffd43a948019c473e7dc5850905"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/privacy-observed-1.png",
+      "bytes": 194140,
+      "sha256": "83376470e84e6d29d8eccb7f2f97cb75e7b9671bc09de9f03a89296da171f059"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/privacy-observed-2.png",
+      "bytes": 198722,
+      "sha256": "bf1fa6d22e8d6413f9f64be8a5b65d5658133bda7ee51d3d15ce945d732cf313"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/privacy-observed-0.png",
+      "bytes": 201653,
+      "sha256": "e6d1aadd167e66d4e31703f3a3b1a9e57cb63896c76d300ae90a015d681321f1"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-enabled-verified/desktop-ready.png",
+      "bytes": 2513280,
+      "sha256": "e6dea13c3cbf07e8ec662c491f03ece7839c7639cc3ad3b4c79f3d9fd246de78"
+    }
+  ],
+  "retained_authoritative_native_results": "results/",
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

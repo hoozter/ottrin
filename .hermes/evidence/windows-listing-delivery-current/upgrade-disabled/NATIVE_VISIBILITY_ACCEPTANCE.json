@@ -1,0 +1,65 @@
+{
+  "status": "pass",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "package_input": {
+    "sha256": "a172aacc3e00bbbe33a4cc4c82507f42db7e7c1c5690cf0661539d79c327e720",
+    "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+    "version": "0.1.0.3",
+    "startup_enabled": false,
+    "previous": {
+      "sha256": "536f5c72371b17b2faab15ad35d1aebfbb8f26e4917bc8958ec21fc50bc7f1bb",
+      "version": "0.1.0.2",
+      "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5"
+    }
+  },
+  "scope": "Actual ordinary Windows MSIX GUI native Ctrl+L to a separate fixture and Hidden/System file/directory toggle. Default/restored show exactly the ordinary proof file; show-all renders all five known entries. Native attrs/source bytes independently recorded. Physical desktop/native GPU remain separate.",
+  "native_attributes": {
+    "HD": 18,
+    "SD": 20,
+    "H.txt": 34,
+    "S.txt": 36,
+    "V.txt": 32
+  },
+  "captures": {
+    "visibility-address-input.png": {
+      "sha256": "9857fca0119e8d72a57d37454307f1415e95b8b6fff3da7bb3f5003789b0ff5c"
+    },
+    "visibility-default.png": {
+      "sha256": "7335db169eb88d244689ad5f088b8bae01667b10471f1bd45c10674d49010e04",
+      "native_icon_slot_ink_pixels": [
+        1038,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "ec38ff5d442994f8419a07bfab5c27f2eeb56de7f73eb238eb5114031c83ed6c",
+      "native_icon_slot_ink_pixels": [
+        1190,
+        1190,
+        1038,
+        1038,
+        1038
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "7335db169eb88d244689ad5f088b8bae01667b10471f1bd45c10674d49010e04",
+      "native_icon_slot_ink_pixels": [
+        1038,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "updated-inspector-before-normal-space.png": {
+      "sha256": "c992db364e5dac83d7aa15a05689ab22ec6b2f3bd69c973e5fcd16bd03dd24bb"
+    }
+  },
+  "rendered_verification": "Hash-bound direct review of all three original native screenshots plus independent icon-slot counts and exactly restored file-view pixels. Full-window OCR failure is retained as rejected observer evidence.",
+  "restored_file_view_pixels_identical": true,
+  "native_fixture_preserved": true,
+  "verification_driver_sha256": "847d76d6daf9d5596a7d9c0d9421c050aade4b4ec8b46561eacadb16a3af95ff"
+}

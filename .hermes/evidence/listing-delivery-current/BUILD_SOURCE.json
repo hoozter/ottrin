@@ -1,5 +1,8 @@
 {
   "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-  "purpose": "Verified Unix directory-link metadata and native Windows visibility source follow-up; current delivered Linux d095 remains until acceptance"
+  "purpose": "Verified Unix directory-link metadata and native Windows visibility source follow-up; current delivered Linux d095 remains until acceptance",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Accepted local Linux cohort promoted; staging/extraction removed"
 }

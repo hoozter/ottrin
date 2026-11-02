@@ -1,0 +1,266 @@
+{
+  "status": "native actions complete; visual review required",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "artifact_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+  "scope": "Actual packaged Settings/theme editor native pointer/keyboard audit on owned X11/software desktop",
+  "case": "light150",
+  "actions": [
+    {
+      "op": "click",
+      "x": 1074,
+      "y": 54
+    },
+    {
+      "op": "click",
+      "x": 1000,
+      "y": 322
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 85,
+      "y": 130
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-appearance"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 389,
+      "y": 324
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-initial"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 500,
+      "y": 150
+    },
+    {
+      "op": "scroll",
+      "window": "Ottrin Theme Editor",
+      "x": 1000,
+      "y": 600,
+      "direction": "down",
+      "count": 3
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-shared-geometry"
+    },
+    {
+      "op": "capture",
+      "name": "main-before-window-radius"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-before-window-radius"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 976,
+      "y": 663
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "ctrl+a"
+    },
+    {
+      "op": "text",
+      "window": "Ottrin Theme Editor",
+      "value": "20"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "Return"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-window-radius-20"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-window-radius-20"
+    },
+    {
+      "op": "capture",
+      "name": "main-window-radius-20"
+    },
+    {
+      "op": "click",
+      "x": 120,
+      "y": 114
+    },
+    {
+      "op": "key",
+      "value": "space"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Quick Inspector \u2014 preserve.txt",
+      "name": "inspector-window-radius-20"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Quick Inspector \u2014 preserve.txt",
+      "value": "space"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 976,
+      "y": 663
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "ctrl+a"
+    },
+    {
+      "op": "text",
+      "window": "Ottrin Theme Editor",
+      "value": "5"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "Return"
+    },
+    {
+      "op": "key",
+      "value": "space"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Quick Inspector \u2014 preserve.txt",
+      "name": "inspector-window-radius-5"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Quick Inspector \u2014 preserve.txt",
+      "value": "space"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-after-radius-reset"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 976,
+      "y": 663
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 976,
+      "y": 663
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "ctrl+a"
+    },
+    {
+      "op": "text",
+      "window": "Ottrin Theme Editor",
+      "value": "5"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "Return"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-window-radius-confirm-5"
+    },
+    {
+      "op": "key",
+      "value": "space"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Quick Inspector \u2014 preserve.txt",
+      "name": "inspector-radius-confirm-5"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Quick Inspector \u2014 preserve.txt",
+      "value": "space"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 1020,
+      "y": 731
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-after-cancel"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 897,
+      "y": 18
+    },
+    {
+      "op": "capture",
+      "name": "main-after-cancel"
+    },
+    {
+      "op": "finish"
+    }
+  ],
+  "normal_exit": 0,
+  "source_and_config_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_le34d3l",
+    "owned_processes_reaped": [
+      {
+        "pid": 449015,
+        "exit": 0
+      },
+      {
+        "pid": 449020,
+        "exit": 0
+      },
+      {
+        "pid": 449021,
+        "exit": 15
+      },
+      {
+        "pid": 449217,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        449221,
+        449279
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

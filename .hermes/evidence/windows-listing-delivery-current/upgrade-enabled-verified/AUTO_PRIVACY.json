@@ -1,0 +1,5 @@
+{
+  "status": "pass",
+  "domain_uuid": "42d6d880-a6c7-4722-8aa7-a5e3ae845dca",
+  "scope": "Recognized normal first-login UI, then existing observed-desktop SID/nonce guard; no security/OOBE policy changes"
+}

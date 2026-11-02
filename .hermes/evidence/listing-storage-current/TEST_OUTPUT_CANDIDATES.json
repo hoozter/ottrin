@@ -1,0 +1,1831 @@
+{
+  "status": "read-only candidate discovery; references/processes/replacement verification still required",
+  "standalone_tests_only": true,
+  "groups": [
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6118933154843934985,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11464258118835825082,
+        "test_target": "test-lib-ottrin_platform"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-274f7976d82372f5",
+        "modified_ns": 1792647906143279382,
+        "bytes": 137870016,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-274f7976d82372f5",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-274f7976d82372f5.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-274f7976d82372f5"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-274f7976d82372f5/test-lib-ottrin_platform.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-b21e7538cbb86b0a",
+        "modified_ns": 1792840149678217946,
+        "bytes": 846516424,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-b21e7538cbb86b0a",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-b21e7538cbb86b0a.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-b21e7538cbb86b0a"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-b21e7538cbb86b0a/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+        "modified_ns": 1793580073942547026,
+        "bytes": 41621040,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-54132b059e6f738d"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-54132b059e6f738d/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-search",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3703509952502210898,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 4894659833296826094,
+        "test_target": "test-lib-ottrin_search"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+        "modified_ns": 1793607915265012600,
+        "bytes": 78646840,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-search-ea268e832702de9b"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-search-ea268e832702de9b/test-lib-ottrin_search.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3586702553900163283,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 17573561801879140266,
+        "test_target": "test-bin-ottrin-app"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ce54c356b815fc3f",
+        "modified_ns": 1793566831730161773,
+        "bytes": 727168480,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ce54c356b815fc3f",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ce54c356b815fc3f.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-ce54c356b815fc3f"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-ce54c356b815fc3f/test-bin-ottrin-app.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-4c94f065786697f2",
+        "modified_ns": 1791632889652702851,
+        "bytes": 47924216,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-4c94f065786697f2",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-4c94f065786697f2.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-4c94f065786697f2"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-4c94f065786697f2/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+        "modified_ns": 1793636802287718902,
+        "bytes": 772621080,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-a4306a82b74e7d60"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-a4306a82b74e7d60/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+        "modified_ns": 1793566823003116409,
+        "bytes": 719105184,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6118933154843934985,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11464258118835825082,
+        "test_target": "test-lib-ottrin_platform"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-5a95d0376980cc28",
+        "modified_ns": 1793582497391365412,
+        "bytes": 63447888,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-5a95d0376980cc28",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-5a95d0376980cc28.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-5a95d0376980cc28"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-5a95d0376980cc28/test-lib-ottrin_platform.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-preview",
+        "declared_features": "[\"default\", \"system-gstreamer\", \"windows-office\"]",
+        "features": "[\"default\"]",
+        "path": 3253767240901611248,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 14746021376956857801,
+        "test_target": "test-bin-ottrin-legacy-doc-render"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-a64719d06b28a1a6",
+        "modified_ns": 1792952290209159353,
+        "bytes": 6267112,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-a64719d06b28a1a6",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-a64719d06b28a1a6.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-a64719d06b28a1a6"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-a64719d06b28a1a6/test-bin-ottrin-legacy-doc-render.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-preview",
+        "declared_features": "[\"default\", \"system-gstreamer\", \"windows-office\"]",
+        "features": "[\"default\"]",
+        "path": 5183679997196030260,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 7158566718548433974,
+        "test_target": "test-lib-ottrin_preview"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_preview-89d8d7d374b9faf4",
+        "modified_ns": 1793581852134700849,
+        "bytes": 401223688,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_preview-89d8d7d374b9faf4",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_preview-89d8d7d374b9faf4.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-89d8d7d374b9faf4"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-89d8d7d374b9faf4/test-lib-ottrin_preview.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-core",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 18377492254478622603,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18000334185843353398,
+        "test_target": "test-lib-ottrin_core"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_core-b646676bf4cf13fc",
+        "modified_ns": 1793563189044496746,
+        "bytes": 17117680,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_core-b646676bf4cf13fc",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_core-b646676bf4cf13fc.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-core-b646676bf4cf13fc"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-core-b646676bf4cf13fc/test-lib-ottrin_core.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+        "modified_ns": 1793637654392483906,
+        "bytes": 737110172,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-7f80800ba07cbaa0.exe",
+        "modified_ns": 1792263271199864383,
+        "bytes": 3021976,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-7f80800ba07cbaa0.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-7f80800ba07cbaa0.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-7f80800ba07cbaa0"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-7f80800ba07cbaa0/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-search",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3703509952502210898,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 4894659833296826094,
+        "test_target": "test-lib-ottrin_search"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.exe",
+        "modified_ns": 1793547379704874532,
+        "bytes": 85705192,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-search-f6138a643ad74388"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-search-f6138a643ad74388/test-lib-ottrin_search.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3586702553900163283,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 17573561801879140266,
+        "test_target": "test-bin-ottrin-app"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "modified_ns": 1793566975345943270,
+        "bytes": 751613465,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf/test-bin-ottrin-app.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "modified_ns": 1793566987096009832,
+        "bytes": 748624253,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+        "modified_ns": 1793567318729008711,
+        "bytes": 3017675,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-9cae9ea4a8b91d65.exe",
+        "modified_ns": 1792261521353372587,
+        "bytes": 824373908,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-9cae9ea4a8b91d65.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-9cae9ea4a8b91d65.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-9cae9ea4a8b91d65"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-9cae9ea4a8b91d65/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6118933154843934985,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11464258118835825082,
+        "test_target": "test-lib-ottrin_platform"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+        "modified_ns": 1793567318016004214,
+        "bytes": 477497754,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-6753e888d2d2a072"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-6753e888d2d2a072/test-lib-ottrin_platform.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 1722584277633009122,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-27e82c9f3bd3d386.exe",
+        "modified_ns": 1792264246349059684,
+        "bytes": 3023255,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-27e82c9f3bd3d386.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-27e82c9f3bd3d386.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-27e82c9f3bd3d386"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-27e82c9f3bd3d386/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-core",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 18377492254478622603,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18000334185843353398,
+        "test_target": "test-lib-ottrin_core"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_core-f62ac06f746e4554.exe",
+        "modified_ns": 1793532574444278628,
+        "bytes": 13177241,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_core-f62ac06f746e4554.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_core-f62ac06f746e4554.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-core-f62ac06f746e4554"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-core-f62ac06f746e4554/test-lib-ottrin_core.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6118933154843934985,
+        "profile": 1722584277633009122,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11464258118835825082,
+        "test_target": "test-lib-ottrin_platform"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.exe",
+        "modified_ns": 1792264400607319479,
+        "bytes": 1126296969,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-e2d6933b1ac22a07"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-e2d6933b1ac22a07/test-lib-ottrin_platform.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 1722584277633009122,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-98d491679d016e62.exe",
+        "modified_ns": 1792253801179778904,
+        "bytes": 807178074,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-98d491679d016e62.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-98d491679d016e62.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-98d491679d016e62"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-98d491679d016e62/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-preview",
+        "declared_features": "[\"default\", \"system-gstreamer\", \"windows-office\"]",
+        "features": "[\"default\"]",
+        "path": 5183679997196030260,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 7158566718548433974,
+        "test_target": "test-lib-ottrin_preview"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_preview-207cb97347cf7fbd.exe",
+        "modified_ns": 1792125851384058496,
+        "bytes": 449528908,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_preview-207cb97347cf7fbd.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_preview-207cb97347cf7fbd.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-207cb97347cf7fbd"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-207cb97347cf7fbd/test-lib-ottrin_preview.json"
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-7822fec808a2b981",
+        "modified_ns": 1793536333143822580,
+        "bytes": 40034792,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-7822fec808a2b981",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-7822fec808a2b981.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-7822fec808a2b981"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-7822fec808a2b981/test-bin-ottrin-priv-helper.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+        "modified_ns": 1793580073942547026,
+        "bytes": 41621040,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-54132b059e6f738d"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-54132b059e6f738d/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-cdea1bc24ed74204",
+        "modified_ns": 1793514876726931101,
+        "bytes": 60639152,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-cdea1bc24ed74204",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-cdea1bc24ed74204.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-cdea1bc24ed74204"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-cdea1bc24ed74204/test-bin-ottrin-priv-helper.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+        "modified_ns": 1793580073942547026,
+        "bytes": 41621040,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-54132b059e6f738d"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-54132b059e6f738d/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-search",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3703509952502210898,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 4894659833296826094,
+        "test_target": "test-lib-ottrin_search"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-27d1aa83ebd4686f",
+        "modified_ns": 1793546925046375074,
+        "bytes": 76718880,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-27d1aa83ebd4686f",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-27d1aa83ebd4686f.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-search-27d1aa83ebd4686f"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-search-27d1aa83ebd4686f/test-lib-ottrin_search.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+        "modified_ns": 1793607915265012600,
+        "bytes": 78646840,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-search-ea268e832702de9b"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-search-ea268e832702de9b/test-lib-ottrin_search.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-0bbfeb4b30b8fbaa",
+        "modified_ns": 1793595122810676828,
+        "bytes": 772499968,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-0bbfeb4b30b8fbaa",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-0bbfeb4b30b8fbaa.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-0bbfeb4b30b8fbaa"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-0bbfeb4b30b8fbaa/test-lib-ottrin_ui.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+        "modified_ns": 1793636802287718902,
+        "bytes": 772621080,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-a4306a82b74e7d60"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-a4306a82b74e7d60/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-e69afa1ebd5c040d",
+        "modified_ns": 1793559280482287801,
+        "bytes": 719013592,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-e69afa1ebd5c040d",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-e69afa1ebd5c040d.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-e69afa1ebd5c040d"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-e69afa1ebd5c040d/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+        "modified_ns": 1793566823003116409,
+        "bytes": 719105184,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-4eaa5ff6ed518b62",
+        "modified_ns": 1793534226635426130,
+        "bytes": 716865248,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-4eaa5ff6ed518b62",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-4eaa5ff6ed518b62.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-4eaa5ff6ed518b62"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-4eaa5ff6ed518b62/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+        "modified_ns": 1793566823003116409,
+        "bytes": 719105184,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-2e6e904d2a852deb",
+        "modified_ns": 1793531148462464507,
+        "bytes": 716865032,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-2e6e904d2a852deb",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-2e6e904d2a852deb.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-2e6e904d2a852deb"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-2e6e904d2a852deb/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+        "modified_ns": 1793566823003116409,
+        "bytes": 719105184,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-7b81740b21054332",
+        "modified_ns": 1793514912029173072,
+        "bytes": 716772096,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-7b81740b21054332",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-7b81740b21054332.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-7b81740b21054332"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-7b81740b21054332/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+        "modified_ns": 1793566823003116409,
+        "bytes": 719105184,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 0,
+        "config": 8247474407144887393,
+        "configuration": "debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-a6aa052c41cdbb09",
+        "modified_ns": 1792944942259136418,
+        "bytes": 727549896,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-a6aa052c41cdbb09",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-a6aa052c41cdbb09.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-a6aa052c41cdbb09"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-a6aa052c41cdbb09/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+        "modified_ns": 1793566823003116409,
+        "bytes": 719105184,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+          "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9.d",
+          "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-2295b64a6d1c6df8.exe",
+        "modified_ns": 1793567026407235058,
+        "bytes": 755586341,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-2295b64a6d1c6df8.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-2295b64a6d1c6df8.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-2295b64a6d1c6df8"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-2295b64a6d1c6df8/test-lib-ottrin_ui.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+        "modified_ns": 1793637654392483906,
+        "bytes": 737110172,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-3bf3a33854807ff4.exe",
+        "modified_ns": 1793558075708893064,
+        "bytes": 755341995,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-3bf3a33854807ff4.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-3bf3a33854807ff4.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-3bf3a33854807ff4"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-3bf3a33854807ff4/test-lib-ottrin_ui.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+        "modified_ns": 1793637654392483906,
+        "bytes": 737110172,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-ui",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6664036055190131545,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11039074169040111439,
+        "test_target": "test-lib-ottrin_ui"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-41ca65cbf8a227a3.exe",
+        "modified_ns": 1793002581238094344,
+        "bytes": 735194905,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-41ca65cbf8a227a3.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-41ca65cbf8a227a3.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-41ca65cbf8a227a3"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-41ca65cbf8a227a3/test-lib-ottrin_ui.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+        "modified_ns": 1793637654392483906,
+        "bytes": 737110172,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9/test-lib-ottrin_ui.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-search",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3703509952502210898,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 4894659833296826094,
+        "test_target": "test-lib-ottrin_search"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-baeb8ec95f6d2cd8.exe",
+        "modified_ns": 1793004360777895225,
+        "bytes": 78658564,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-baeb8ec95f6d2cd8.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-baeb8ec95f6d2cd8.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-search-baeb8ec95f6d2cd8"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-search-baeb8ec95f6d2cd8/test-lib-ottrin_search.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.exe",
+        "modified_ns": 1793547379704874532,
+        "bytes": 85705192,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-search-f6138a643ad74388"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-search-f6138a643ad74388/test-lib-ottrin_search.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3586702553900163283,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 17573561801879140266,
+        "test_target": "test-bin-ottrin-app"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b6fa9c58132d4b0b.exe",
+        "modified_ns": 1793558845050124344,
+        "bytes": 751271645,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b6fa9c58132d4b0b.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b6fa9c58132d4b0b.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b6fa9c58132d4b0b"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b6fa9c58132d4b0b/test-bin-ottrin-app.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "modified_ns": 1793566975345943270,
+        "bytes": 751613465,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf/test-bin-ottrin-app.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3586702553900163283,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 17573561801879140266,
+        "test_target": "test-bin-ottrin-app"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-808ce7a1b9ad6d18.exe",
+        "modified_ns": 1793547304585854911,
+        "bytes": 750637300,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-808ce7a1b9ad6d18.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-808ce7a1b9ad6d18.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-808ce7a1b9ad6d18"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-808ce7a1b9ad6d18/test-bin-ottrin-app.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "modified_ns": 1793566975345943270,
+        "bytes": 751613465,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf/test-bin-ottrin-app.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3586702553900163283,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 17573561801879140266,
+        "test_target": "test-bin-ottrin-app"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-31b7edd54000d76e.exe",
+        "modified_ns": 1793525835541029431,
+        "bytes": 748485222,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-31b7edd54000d76e.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-31b7edd54000d76e.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-31b7edd54000d76e"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-31b7edd54000d76e/test-bin-ottrin-app.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "modified_ns": 1793566975345943270,
+        "bytes": 751613465,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf/test-bin-ottrin-app.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3586702553900163283,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 17573561801879140266,
+        "test_target": "test-bin-ottrin-app"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-751067b905f3d209.exe",
+        "modified_ns": 1793498606927208126,
+        "bytes": 747013284,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-751067b905f3d209.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-751067b905f3d209.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-751067b905f3d209"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-751067b905f3d209/test-bin-ottrin-app.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "modified_ns": 1793566975345943270,
+        "bytes": 751613465,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf/test-bin-ottrin-app.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 3586702553900163283,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 17573561801879140266,
+        "test_target": "test-bin-ottrin-app"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-4fe7eb5594090e1c.exe",
+        "modified_ns": 1792112092372638365,
+        "bytes": 773987017,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-4fe7eb5594090e1c.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-4fe7eb5594090e1c.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-4fe7eb5594090e1c"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-4fe7eb5594090e1c/test-bin-ottrin-app.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "modified_ns": 1793566975345943270,
+        "bytes": 751613465,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b14e5f4b4a3e18bf/test-bin-ottrin-app.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-4e8c8dbbcb14b56c.exe",
+        "modified_ns": 1793558861966198192,
+        "bytes": 748322196,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-4e8c8dbbcb14b56c.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-4e8c8dbbcb14b56c.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-4e8c8dbbcb14b56c"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-4e8c8dbbcb14b56c/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "modified_ns": 1793566987096009832,
+        "bytes": 748624253,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-9111c5f09348be38.exe",
+        "modified_ns": 1793558025293533805,
+        "bytes": 748300157,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-9111c5f09348be38.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-9111c5f09348be38.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-9111c5f09348be38"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-9111c5f09348be38/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "modified_ns": 1793566987096009832,
+        "bytes": 748624253,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-ee3564b441801c6f.exe",
+        "modified_ns": 1793547278554855478,
+        "bytes": 747737895,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-ee3564b441801c6f.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-ee3564b441801c6f.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-ee3564b441801c6f"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-ee3564b441801c6f/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "modified_ns": 1793566987096009832,
+        "bytes": 748624253,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-e3e9a24fd7932785.exe",
+        "modified_ns": 1793525834718024978,
+        "bytes": 746784178,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-e3e9a24fd7932785.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-e3e9a24fd7932785.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-e3e9a24fd7932785"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-e3e9a24fd7932785/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "modified_ns": 1793566987096009832,
+        "bytes": 748624253,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-app",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 1633295891744245168,
+        "profile": 1169666772337208464,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 18214513505635217009,
+        "test_target": "test-bin-ottrin-indexd"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-a6ae198865e00c6c.exe",
+        "modified_ns": 1792112068377156712,
+        "bytes": 119936762,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-a6ae198865e00c6c.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-a6ae198865e00c6c.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-a6ae198865e00c6c"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-a6ae198865e00c6c/test-bin-ottrin-indexd.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "modified_ns": 1793566987096009832,
+        "bytes": 748624253,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-2d6761405629f9c1/test-bin-ottrin-indexd.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-f15ae09dca7ca09c.exe",
+        "modified_ns": 1793556713132200718,
+        "bytes": 3017675,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-f15ae09dca7ca09c.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-f15ae09dca7ca09c.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-f15ae09dca7ca09c"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-f15ae09dca7ca09c/test-bin-ottrin-priv-helper.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+        "modified_ns": 1793567318729008711,
+        "bytes": 3017675,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-15d6829512b40b55.exe",
+        "modified_ns": 1793521217869321020,
+        "bytes": 3017675,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-15d6829512b40b55.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-15d6829512b40b55.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-15d6829512b40b55"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-15d6829512b40b55/test-bin-ottrin-priv-helper.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+        "modified_ns": 1793567318729008711,
+        "bytes": 3017675,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 13573265171931268338,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 3195842057878862761,
+        "test_target": "test-bin-ottrin-priv-helper"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-8868a7e4bee3e931.exe",
+        "modified_ns": 1792953456446463014,
+        "bytes": 3017675,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-8868a7e4bee3e931.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-8868a7e4bee3e931.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-8868a7e4bee3e931"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-8868a7e4bee3e931/test-bin-ottrin-priv-helper.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+        "modified_ns": 1793567318729008711,
+        "bytes": 3017675,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-666f06da203048bc.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-666f06da203048bc/test-bin-ottrin-priv-helper.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6118933154843934985,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11464258118835825082,
+        "test_target": "test-lib-ottrin_platform"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-5d4b21ab5d11dd66.exe",
+        "modified_ns": 1793556712546196567,
+        "bytes": 475849300,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-5d4b21ab5d11dd66.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-5d4b21ab5d11dd66.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-5d4b21ab5d11dd66"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-5d4b21ab5d11dd66/test-lib-ottrin_platform.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+        "modified_ns": 1793567318016004214,
+        "bytes": 477497754,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-6753e888d2d2a072"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-6753e888d2d2a072/test-lib-ottrin_platform.json"
+      }
+    },
+    {
+      "group": {
+        "compile_kind": 8200324069407742093,
+        "config": 8247474407144887393,
+        "configuration": "x86_64-pc-windows-gnu/debug",
+        "crate": "ottrin-platform",
+        "declared_features": "[]",
+        "features": "[]",
+        "path": 6118933154843934985,
+        "profile": 4539089746505721204,
+        "rustc": 18276270781310494267,
+        "rustflags": [],
+        "target": 11464258118835825082,
+        "test_target": "test-lib-ottrin_platform"
+      },
+      "obsolete": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-01fd2f77d23a5efc.exe",
+        "modified_ns": 1793515230946369718,
+        "bytes": 474633110,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-01fd2f77d23a5efc.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-01fd2f77d23a5efc.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-01fd2f77d23a5efc"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-01fd2f77d23a5efc/test-lib-ottrin_platform.json"
+      },
+      "replacement": {
+        "binary": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+        "modified_ns": 1793567318016004214,
+        "bytes": 477497754,
+        "links": 1,
+        "paths": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.d",
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-6753e888d2d2a072"
+        ],
+        "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-6753e888d2d2a072/test-lib-ottrin_platform.json"
+      }
+    }
+  ],
+  "preserved": [],
+  "candidate_binary_bytes": 14713751552,
+  "prohibited": "No library/dependency/current binary/incremental/session/source/package removal"
+}

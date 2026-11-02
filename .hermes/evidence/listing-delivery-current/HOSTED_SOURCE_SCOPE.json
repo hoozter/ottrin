@@ -1,0 +1,6 @@
+{
+  "candidate_source": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "hosted_tested_source": "992b2687260b5d901b3242d8c7ce27c321dcc66e",
+  "run": 41486034184,
+  "scope": "Package source adds only roadmap receipt to tested production inputs; promotion independently checks exact git diff and requires all four terminal green jobs."
+}

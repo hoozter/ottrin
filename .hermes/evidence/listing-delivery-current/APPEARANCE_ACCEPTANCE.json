@@ -1,0 +1,43 @@
+{
+  "status": "pass within listed current-package native appearance scopes",
+  "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "artifact_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+  "cases": [
+    "Dark100",
+    "Light150"
+  ],
+  "shared_titlebar_rgb": {
+    "editor-custom-titlebar": [
+      113,
+      58,
+      82
+    ],
+    "settings-custom-titlebar": [
+      113,
+      58,
+      82
+    ],
+    "main-custom-titlebar": [
+      113,
+      58,
+      82
+    ]
+  },
+  "preview_titlebar_rgb": [
+    113,
+    58,
+    82
+  ],
+  "button_radius_6_to_14_changed_pixels": {
+    "actual_more_button": 200,
+    "preview_button": 352
+  },
+  "window_radius_5_to_20_top_left_corner_changed_pixels": {
+    "main": 282,
+    "settings": 281,
+    "editor": 282,
+    "inspector": 282
+  },
+  "full_config_and_source_preserved": true,
+  "scope": "Replayed previously accepted native actions against this exact candidate: Settings/editor grouping, live shared titlebar color, real and preview button radius, main/Settings/editor/Inspector window corners, Inspector Space, Cancel. Not an exhaustive39-control sweep, native Windows theme or physical-renderer acceptance."
+}

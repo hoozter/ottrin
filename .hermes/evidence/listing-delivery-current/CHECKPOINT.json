@@ -1,7 +1,7 @@
 {
-  "status": "Progress: four Linux formats and Windows ZIP/NSIS/MSIX3 built; named Linux GUI/browser checks pass; native Windows upgrade running, not acceptance yet",
+  "status": "Delivered four-format Linux source592d56e8 after all required named gates; Windows MSIX3 both real-login updates pass; public Windows unchanged",
   "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
-  "stable_delivery_unchanged": true,
+  "stable_delivery_unchanged": false,
   "linux_artifacts": {
     "ottrin-0.1.0-1.x86_64.rpm": "588eb80bdf030e560b6b1a716fa708d68fdb774aa5751e291ca58fec7750158e",
     "Ottrin-0.1.0-x86_64.AppImage": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
@@ -11,12 +11,11 @@
   "linux_gui_receipt": ".hermes/evidence/listing-delivery-current/GUI_ACCEPTANCE.json",
   "windows_assembly_receipt": ".hermes/evidence/windows-listing-delivery-current/ASSEMBLY_ACCEPTANCE.json",
   "pending": [
-    "fresh Fedora/Ubuntu lifecycle after Windows guest releases RAM",
-    "Windows0.1.0.2 to0.1.0.3 enabled and disabled real-login upgrades",
-    "actual Windows Ctrl+L and Hidden/System rendered control",
-    "hosted41486034184 Windows suite;3of4 jobs green",
-    "promote Linux only after exact required gates"
+    "Clean Microsoft client comparison and failed MSI transaction rollback repair",
+    "Coherent Windows delivery refresh after native installer/software gates",
+    "Remaining roadmap software/physical/owner outcomes in active queue"
   ],
-  "windows_runtime_state": "First actual revision3 enabled attempt rejected at immediate Inspector Space close; opening guard not observed. Guest/volumes/profile removed; fresh corrected upgrade-enabled-verified running. No runtime acceptance yet.",
-  "windows_runtime_receipt": ".hermes/evidence/windows-listing-delivery-current/REJECTED_ENABLED_ATTEMPT.json"
+  "windows_runtime_state": "Revision3 enabled and disabled real update/ordinary menu GUI/reboot/login/removal pass; disabled actual native Hidden/System rendered toggle passes; all accepted guests/profile/volumes and previous baseline input removed",
+  "windows_runtime_receipt": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/ACCEPTANCE.json",
+  "linux_delivery_receipt": ".hermes/evidence/listing-delivery-current/ACCEPTANCE.json"
 }

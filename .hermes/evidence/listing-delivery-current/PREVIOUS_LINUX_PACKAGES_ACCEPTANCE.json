@@ -1,0 +1,61 @@
+{
+  "status": "pass within exact Linux package, private GUI and fresh native distribution scopes",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "cfb12d904179db2e6d9d5c6e1d49554d4cae18cf74c69ec3f8c10e492e5d0826",
+    "Ottrin-0.1.0-x86_64.AppImage": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "bb59fd546303a37eac1f334b1223112224ae78da0ade18675f798ca37a4828c9",
+    "ottrin_0.1.0_amd64.deb": "a2c0f3072d11929778373296eec313e1ccae79772035a2bffde35dfafbc40705"
+  },
+  "evidence": ".hermes/evidence/menu-space-delivery-current",
+  "indexd_binary_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+  "html_binary_sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "gui_sessions": {
+    "main-dark100": ".hermes/evidence/menu-space-delivery-current/main-dark100/RESULT.json",
+    "main-light150": ".hermes/evidence/menu-space-delivery-current/main-light150/RESULT.json",
+    "properties-dark100": ".hermes/evidence/menu-space-delivery-current/properties-dark100/RESULT.json",
+    "properties-light150": ".hermes/evidence/menu-space-delivery-current/properties-light150/RESULT.json",
+    "icon": ".hermes/evidence/menu-space-delivery-current/icon/RESULT.json",
+    "upgrade-view": ".hermes/evidence/menu-space-delivery-current/upgrade-view/RESULT.json"
+  },
+  "appearance_receipt": ".hermes/evidence/menu-space-delivery-current/APPEARANCE_ACCEPTANCE.json",
+  "browser_sessions": [
+    "browser-firefox/RESULT.json",
+    "browser-flatpak/RESULT.json"
+  ],
+  "menu_keyboard_sessions": [
+    "menu-arrows/RESULT.json",
+    "menu-space/RESULT.json"
+  ],
+  "native_distribution_lifecycle": [
+    "Fedora44 DNF/RPM",
+    "Ubuntu24.04 APT/DEB"
+  ],
+  "native_scope": "Normal setup without controls, actual portal chooser, idle status, same-version reinstall, modified-asset refusal, online/offline native removal and preference restoration, portable picker surviving native removal. Source/config unchanged.",
+  "resource_identity": {
+    "daemon_binary_identical_to_previous": true,
+    "receipts": {
+      "POPULATED_INDEX.json": ".hermes/evidence/linux-search-delivery-current/POPULATED_INDEX.json",
+      "CONTENT_INDEX.json": ".hermes/evidence/linux-search-delivery-current/CONTENT_INDEX.json"
+    },
+    "note": "Prior exact source928b7937 10000-file metadata/content controls retain original source/artifact scopes; complete daemon/helper binary equality binds unchanged runtime evidence. Current GUI/browser/native lifecycle checked separately. No new personal or sustained workload claim."
+  },
+  "hosted_source": {
+    "run": 41466658719,
+    "tested_source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+    "product_inputs_match_package_source": true,
+    "linux": "success",
+    "performance": "success",
+    "windows_state_at_linux_promotion": "completed"
+  },
+  "scope": "Local four-format Linux delivery. Physical graphics/devices, external production picker use and final owner acceptance remain separate. Windows internal candidate and failed MSI rollback gate unchanged.",
+  "cleanup": "Owned GUI profiles/processes/displays/buses/mounts and both native VM domains/volumes/credentials removed; staging/extraction retired after promotion. Current compiler caches and compact receipts retained."
+}

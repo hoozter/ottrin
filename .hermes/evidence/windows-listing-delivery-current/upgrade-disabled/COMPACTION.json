@@ -1,0 +1,51 @@
+{
+  "status": "pass; complete native results extracted once; duplicate archive/base64 and fulfilled first-login captures removed",
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/RESULTS.zip",
+      "bytes": 339682,
+      "sha256": "f581f1dc14042825dd1c838448b16482374f2125777c7a67e38eddb31c06af76"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/RESULT_EXPORT_PROCESS.json",
+      "bytes": 603944,
+      "sha256": "7c7221a5fb0638ad362c4c383587afdc480fbff559fd28f055151e84ef6a0c1b"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/privacy-observed-3.png",
+      "bytes": 181287,
+      "sha256": "358e212b3a01d8dee6a6bc6b33aa1cc86497756dc61ff654008e33d38f8d76d8"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/privacy-observed-1.png",
+      "bytes": 169639,
+      "sha256": "5de1222f4122c0f094e87cae9fae6e46ef8b2a3e7dfa25b3a859e794eebb13d0"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/privacy-observed-2.png",
+      "bytes": 174007,
+      "sha256": "4039e42885c555a9fbe72b6060cdf3928186c2edac923eb73e8bc22d4000ef28"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/privacy-observed-0.png",
+      "bytes": 176794,
+      "sha256": "28bcbfb64a9b35d7157b5db5aa47798ccc3a0c13e1f791b32b8e247289b3e26c"
+    },
+    {
+      "path": ".hermes/evidence/windows-listing-delivery-current/upgrade-disabled/desktop-ready.png",
+      "bytes": 1686011,
+      "sha256": "c69a6ce40b6227b9599c1e54704764f93268adccbabd20bd21d7fe737e776ecb"
+    }
+  ],
+  "retained_authoritative_native_results": "results/",
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}
