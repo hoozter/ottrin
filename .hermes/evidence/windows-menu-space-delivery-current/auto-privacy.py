@@ -16,7 +16,7 @@ try:
     assert subprocess.check_output(['virsh','-c','qemu:///system','domuuid',a['domain']],text=True).strip()==a['uuid'];break
   assert time.monotonic()<deadline,'Owned private console did not become available';time.sleep(.5)
  child=subprocess.Popen(['python3',str(r/'.hermes/evidence/windows-startup-lifetime-current/privacy-control.py'),str(e),'finish-msix'],start_new_session=True)
- code=child.wait(timeout=360);assert code==0,code
+ code=child.wait(timeout=780);assert code==0,code
  (e/'AUTO_PRIVACY.json').write_text(json.dumps({'status':'pass','domain_uuid':a['uuid'],'scope':'Recognized normal first-login UI, then existing observed-desktop SID/nonce guard; no security/OOBE policy changes'},indent=2)+'\n')
 finally:
  if child:workspace.stop_tests(child)

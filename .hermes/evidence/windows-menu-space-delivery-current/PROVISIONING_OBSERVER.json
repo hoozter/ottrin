@@ -1,0 +1,8 @@
+{
+  "status": "same live disabled fixture remains pending",
+  "native_client_session": 91817,
+  "observer_session": 22160,
+  "observed": "Normal reboot verified; current console displays Windows first-profile provisioning. Initial observer started before the privacy page and expired its180-second observation window. No product result or fixture termination was inferred from that observer timeout.",
+  "change": "Reattach on the same existing native fixture. Initial OS-screen observation may wait600seconds; other privacy pages remain15seconds and desktop recognition45seconds. The original native actor and actual application checks are unchanged.",
+  "pending": "Recognized native privacy screens, guarded desktop signal, actual startup-disabled update/reboot/removal result"
+}

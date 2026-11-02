@@ -18,7 +18,7 @@ elif action=='finish-msix':
  def own(*args):subprocess.run([sys.executable,str(Path(__file__).resolve()),str(r),*map(str,args)],check=True,timeout=40)
  own('key','Escape')
  for index,(heading,y) in enumerate([('use your location',550),('find my device',550),('improve inking',550),('personalized offers',610)]):
-  filename='privacy-observed-'+str(index)+'.png';deadline=time.monotonic()+(180 if index==0 else 15)
+  filename='privacy-observed-'+str(index)+'.png';deadline=time.monotonic()+(600 if index==0 else 15)
   while True:
    own('shot',filename)
    text=subprocess.check_output(['tesseract',str(r/filename),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=10).casefold()
