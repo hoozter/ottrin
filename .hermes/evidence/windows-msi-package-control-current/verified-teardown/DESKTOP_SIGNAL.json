@@ -1,0 +1,6 @@
+{
+  "status": "sent to owned user fixture",
+  "domain_uuid": "3d1a2e4f-fdfa-4815-ac19-9e13a9b680d3",
+  "observed_frame": "desktop-ready.png",
+  "scope": "Actual owned account desktop; actor independently verifies its token; no security policy override"
+}

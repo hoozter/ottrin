@@ -1,0 +1,24 @@
+{
+  "status": "Actual MSI failure confirmed on independent Windows; corrected terminal/cleanup producer validated",
+  "authoritative_assessment": ".hermes/evidence/windows-msi-package-control-current/verified-teardown/ASSESSMENT.json",
+  "exact_msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "candidate_source": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "native_scope": "Fresh ordinary interactive token; all58 payload files, genuine cache-lock refusal, complete reported preservation and retry. MSI registration/retry remain failed. No elevation or manual registry repair.",
+  "first_observer_limit": "First run published terminal status before finally; explicit guest service-remove result absent. Kept as original evidence, not a cleanup pass.",
+  "producer_validation": "Second fixture reports numeric58, service cleanup exit0 and an identical parent/final native snapshot; both VM/media/private profile teardown receipts pass.",
+  "no_repeat_needed": "Do not repeat unchanged MSI controls; use the explicit native runtime boundary/waiting list and continue ready Windows cohort work.",
+  "remaining_task_created_storage": [
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "Next clean-client Windows ZIP/NSIS/MSIX runtime acceptance; MSI comparison consumer complete"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Current592d56e8 Windows development cohort; MSIX3 retained until its next upgrade consumer is supplied"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
+      "purpose": "Exact current12MB driver/guest-agent bootstrap cache for clean Windows fixture"
+    }
+  ]
+}

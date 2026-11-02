@@ -59,9 +59,21 @@
   "public_windows_files_unchanged": true,
   "linux_source_cohort": "8ede156248e54af88e972d53fe441b05af9caa3c",
   "limits": [
-    "No new MSI install/upgrade/repair/rollback acceptance for these hashes; MSI rollback remains required and failed",
+    "Exact current MSI fresh install and data/task preservation pass, but failed-uninstall registration rollback and ordinary retry fail on independent Windows26300. MSI remains required and not release accepted.",
     "GUI fixture uses exact binaries but does not establish full installed application runtime placement or physical/DPI acceptance",
     "Prior Office,cross-volume,file-operation and sustained resource receipts retain their exact hashes",
     "No public release or Store submission"
-  ]
+  ],
+  "native_msi_rollback": {
+    "status": "failed ordinary-user registration rollback and uninstall retry",
+    "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+    "msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+    "evidence": ".hermes/evidence/windows-msi-package-control-current/verified-teardown/ASSESSMENT.json",
+    "fresh_install_and_all_58_files": "pass",
+    "task_daemon_preferences_source_native_database_identity": "preserved through real cache-cleanup refusal",
+    "failed_product_state": 1,
+    "ordinary_retry_exit": 1603,
+    "release_accepted": false,
+    "fixture_teardown": "Explicit service-remove exit0 before terminal snapshot; VM/media/private console removed"
+  }
 }

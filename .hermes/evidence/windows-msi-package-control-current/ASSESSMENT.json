@@ -1,0 +1,43 @@
+{
+  "status": "failed ordinary-user actual MSI rollback/retry gate",
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "fresh_install_exit": 0,
+  "installed_payload_files_verified": 58,
+  "native_token": {
+    "profile": "C:\\Users\\OTMSI94885935ab84",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "fault": "Real production cleanup refuses an owned cache file held without delete sharing; no package mutation or artificial failure action",
+  "postconditions_preserved": {
+    "daemon_instance_unchanged": true,
+    "task_xml_unchanged": true,
+    "task_security_unchanged": true,
+    "payload_intact": true,
+    "preferences_preserved": true,
+    "source_preserved": true,
+    "database_identity_preserved": true,
+    "index_query_preserved": true,
+    "preferences_after_retry": true,
+    "source_after_retry": true
+  },
+  "database_file_id_before": "402E2E37:0003000000024FEC",
+  "database_file_id_after": "402E2E37:0003000000024FEC",
+  "failed_outcome": {
+    "failure_exit": 1603,
+    "state_after_failure": 1,
+    "retry_exit": 1603,
+    "state_after_retry": 1,
+    "payload_after_retry": true
+  },
+  "raw_skipped_lines": 79,
+  "genuine_or_unknown_undo_failures": 78,
+  "successful_terminal_end_markers": 1,
+  "failure_log_sha256": "d3ea7f7c5193dded4d3e89fb4fdaeadb393573cedac7e602468e5f9339477c14",
+  "current_installer_authoring_unchanged_since_package": true,
+  "scope_limit": "Exact8ede1562 MSI on independent Microsoft client. Application data/task preservation succeeds but package registration and ordinary retry fail. Not a passed MSI release gate; no elevated workaround, policy/ACL change or manual registry repair.",
+  "observer_note": "PowerShell member enumeration emitted58 one values for installed_payload_files; per-file hash loop verified all58. Original output retained; future producer uses explicit collection count and avoids automatic variable names. Original actor also exposed terminal status before its finally block; explicit service-remove completion is unproven. VM teardown is verified. Future producer waits until its recorded cleanup is done.",
+  "native_observation_note": "A late read-only guest-progress request arrived after successful parent teardown and reported domain missing; authoritative result/cleanup are terminal, so the guest was not restarted."
+}

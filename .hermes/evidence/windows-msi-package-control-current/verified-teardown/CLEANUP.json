@@ -1,0 +1,141 @@
+{
+  "status": "pass: explicit guest service teardown acknowledged before final result and all owned VM/media/console resources removed",
+  "service_cleanup_exit": 0,
+  "snapshot_matches_final_guest_result": true,
+  "guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-clean-client.qcow2",
+      "ottrin-msi-clean-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-0zqzxmfz",
+    "owned_processes_reaped": [
+      {
+        "pid": 537733,
+        "exit": 0
+      },
+      {
+        "pid": 537736,
+        "exit": 0
+      },
+      {
+        "pid": 537737,
+        "exit": 15
+      },
+      {
+        "pid": 537788,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "146 34 0:65 / /var/tmp/.ottrin-picker-qa-0zqzxmfz/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "compacted_archive_sha256": "9cdfd736c372dde0975a5c6a4bf14d71d5ba073f87824fbf04de3a778f08c9dc",
+  "members": [
+    {
+      "path": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "7808c7cebce82e2e8e57b02544f4b8482d9c4441e54611cfa36f727c6f16e26a"
+    },
+    {
+      "path": "failure-process.json",
+      "bytes": 68,
+      "sha256": "ae8563571274858cfd3a8782d295281b5b3ca67971d4372657d3ff5e4e766bd5"
+    },
+    {
+      "path": "failure.log",
+      "bytes": 275354,
+      "sha256": "aeaf61212528fffca4f96312005b7108623d7d7c7e9d01ae2af3a065f7cadf3d"
+    },
+    {
+      "path": "fixture-service-cleanup-process.json",
+      "bytes": 225,
+      "sha256": "6a8ca82d17ddf994cb9a3f235cc4e24587f48dc0266f6755f4b5879fd220790c"
+    },
+    {
+      "path": "initial-index-process.json",
+      "bytes": 757,
+      "sha256": "e4efdb44f639b8fdf0de152983486a76ecc11051080570556b1e2cfdc8478484"
+    },
+    {
+      "path": "install-process.json",
+      "bytes": 65,
+      "sha256": "b3eb3c4d2754fd504e007508929bc6662bc8476b65d96fbb24eb402b0126e3af"
+    },
+    {
+      "path": "install.log",
+      "bytes": 255282,
+      "sha256": "ddbf52ea247b5d1ef1e96c6c3d4181f9901fa4e81a0cfb3d3161c6d124be19f2"
+    },
+    {
+      "path": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "1b4a78c0ea925bab3b2a0a696c72fec991aa89f6c134a530f7f618c626253b5f"
+    },
+    {
+      "path": "query-after-refusal-process.json",
+      "bytes": 1102,
+      "sha256": "9a3cd9aacf7ac60766ef14a5e24e9c4c67ce95077e059d117f51a6437a0d5e2e"
+    },
+    {
+      "path": "RESULT.json",
+      "bytes": 2142,
+      "sha256": "fb459b2247bf76b61b338d8c7dddafc629e247f2ff3727380be7777a2c3542db"
+    },
+    {
+      "path": "retry-process.json",
+      "bytes": 68,
+      "sha256": "ae8563571274858cfd3a8782d295281b5b3ca67971d4372657d3ff5e4e766bd5"
+    },
+    {
+      "path": "retry.log",
+      "bytes": 97426,
+      "sha256": "ac9ce7529f00644dfaf1623a9c175d022848ca7441364579c2c22e19320cefc4"
+    }
+  ],
+  "removed_completed_observation_outputs": [
+    {
+      "path": "desktop-ready.png",
+      "bytes": 134695,
+      "sha256": "ad0f0c5f51efb7c500f0471a29f4f55c03fe43ae87f1c7883c360c80bbf6cdb8"
+    },
+    {
+      "path": "first-login.png",
+      "bytes": 182405,
+      "sha256": "2caa1f8db1f4196c8e60019f879bf02a2cff6bf2a3bb267cea1d0f838972da8c"
+    },
+    {
+      "path": "viewer/dbus.log",
+      "bytes": 2934,
+      "sha256": "9997a0d7b76ec64ad1d847d0728cfbeb8946f6e761078fee08377c627a61ca26"
+    },
+    {
+      "path": "viewer/viewer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/wm.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/xvfb.log",
+      "bytes": 1666,
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50"
+    }
+  ],
+  "remaining_shared_fixture": "/var/lib/libvirt/images/ottrin-stock-client.qcow2 retained for next clean Windows ZIP/NSIS/MSIX cohort acceptance"
+}

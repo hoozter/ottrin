@@ -1,0 +1,147 @@
+{
+  "status": "Owned VM/media/private console teardown complete; explicit guest service-remove outcome not captured",
+  "fixture_service_cleanup_exit": null,
+  "native_guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-clean-client.qcow2",
+      "ottrin-msi-clean-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-k6t_v0zo",
+    "owned_processes_reaped": [
+      {
+        "pid": 531622,
+        "exit": 0
+      },
+      {
+        "pid": 531625,
+        "exit": 0
+      },
+      {
+        "pid": 531626,
+        "exit": 15
+      },
+      {
+        "pid": 531677,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "compacted_archive_sha256": "be4d703ad7625999501e036f004000c826b06a3d3aba2e0367e3a1d1398e764d",
+  "members": [
+    {
+      "path": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "fe150e7c5c8713523b5c075f13e319c73c5a429402fbb3129e98102f9a43ee7b"
+    },
+    {
+      "path": "failure-process.json",
+      "bytes": 68,
+      "sha256": "ae8563571274858cfd3a8782d295281b5b3ca67971d4372657d3ff5e4e766bd5"
+    },
+    {
+      "path": "failure.log",
+      "bytes": 275354,
+      "sha256": "d3ea7f7c5193dded4d3e89fb4fdaeadb393573cedac7e602468e5f9339477c14"
+    },
+    {
+      "path": "initial-index-process.json",
+      "bytes": 757,
+      "sha256": "f6a78cf0ad297b52a5afeaead4f19f399079f4f6690c43d85544fe366214cec9"
+    },
+    {
+      "path": "install-process.json",
+      "bytes": 65,
+      "sha256": "b3eb3c4d2754fd504e007508929bc6662bc8476b65d96fbb24eb402b0126e3af"
+    },
+    {
+      "path": "install.log",
+      "bytes": 255282,
+      "sha256": "0350beb6bc7fb2bfa18f0cf2c82e2cf7a8217833c7b8221c0c60af9c1020d2a6"
+    },
+    {
+      "path": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "271d4c991b8f258ddb43098d90e72b6d654a000110f5bde055d5bc3f031fa947"
+    },
+    {
+      "path": "query-after-refusal-process.json",
+      "bytes": 1102,
+      "sha256": "b40c243520afbda1e2a51a12573ad30fdf9a05c6cdfa3c905865b406e0801185"
+    },
+    {
+      "path": "RESULT.json",
+      "bytes": 4418,
+      "sha256": "5ce75fea9f7b1eb750d9fbcf64602fffdac5a5bb8a8a1a075e48dd6717a160ef"
+    },
+    {
+      "path": "retry-process.json",
+      "bytes": 68,
+      "sha256": "ae8563571274858cfd3a8782d295281b5b3ca67971d4372657d3ff5e4e766bd5"
+    },
+    {
+      "path": "retry.log",
+      "bytes": 97426,
+      "sha256": "3985fe37c9b906124aa3bd26254c2513ac95a70c97cbf16da4cc470e56b59696"
+    }
+  ],
+  "removed_completed_observation_outputs": [
+    {
+      "path": "desktop-ready.png",
+      "bytes": 170061,
+      "sha256": "fd14d7ce14557a4d9f4c9404bcb1b91d4995807c87c5a9b55de4a7cf93d2208b"
+    },
+    {
+      "path": "first-login.png",
+      "bytes": 169929,
+      "sha256": "d741cd5c0a601a6bc21e598036a79722733d05d906bdf6563f537eebbe5a13eb"
+    },
+    {
+      "path": "viewer/dbus.log",
+      "bytes": 2934,
+      "sha256": "bd464f93d6725370582a36d591ce4354023228a6a36bad14da3a27bb5b9d45b0"
+    },
+    {
+      "path": "viewer/viewer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/wm.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/xvfb.log",
+      "bytes": 1666,
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50"
+    }
+  ],
+  "retained_pending": [
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "Next clean-client Windows ZIP/NSIS/MSIX runtime acceptance; MSI comparison consumer complete"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Current592d56e8 Windows development cohort; MSIX3 retained until its next upgrade consumer is supplied"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
+      "purpose": "Exact current12MB driver/guest-agent bootstrap cache for clean Windows fixture"
+    }
+  ],
+  "guest_service_cleanup_limit": "Original actor exposed observed status before its finally block. Neither snapshot nor collected final JSON contains a service-remove result, so explicit guest cleanup is not accepted. Registered libvirt teardown stops the entire disposable guest and removes both volumes. Future actor exposes terminal status only after recording cleanup tool availability and outcome."
+}

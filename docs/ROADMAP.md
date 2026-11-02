@@ -91,48 +91,53 @@ This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 
 Continue in this order:
 
-1. Resolve the still-failed MSI after-execution transaction rollback gate.
-   The independent Microsoft Windows11 Enterprise Evaluation26300 installation
-   and signed kernel-driver/bootstrap verification now pass. Its MSI runtime is
-   5.0.26100.9444. The unchanged immediate control and a second deferred DLL
-   control both reproduce82 install/78 uninstall skipped rollback errors under
-   a real ordinary interactive user. The deferred case proves actual file and
-   product registration/unpublication operations before failure. Moving the
-   fault into the execution script does not resolve the problem; old VM state
-   and Ottrin lifecycle actions are not required to reproduce it. Both failed
-   cases leave registration inconsistent, and failed uninstall recovery can
-   leave the payload behind after a reported successful cleanup. The first
-   rollback failure is access denied while undoing protected installer product
-   keys. This matches the symptom in upstream issue8574, but does not establish
-   a safe product fix or justify a gate waiver. Do not repeat completed controls
-   or source-install provisioning without a new causal hypothesis. Compare the
-   security context result with the actual Ottrin MSI on the retained independent
-   base. A new elevated-account control restores registration, payload and normal
-   recovery/removal. All22 native tables match the ordinary control after only
-   generated GUID/nonce normalization; execution/state checks are identical after
-   explicit role/scope substitutions. Its sole raw skipped line follows terminal
-   End with logged return5 (documented success); a fail-closed assessor separates
-   only that exact marker. The ordinary controls still fail81/77 actual/unknown
-   undo lines plus registration/cleanup state, so the release gate is not waived.
-   The original failed actor outputs remain unchanged. Diagnostic elevation is
-   confined to a disposable test account and does not change production scope.
-   Evidence: `windows-msi-security-context-current/COMPARISON.json`,
-   `CONTROL_ASSESSMENT.json` and `TERMINAL_SUCCESS_TRACE.json`.
-   Continue other dependency-ready work
-   while this gate remains failed. Evidence: `windows-stock-client-current/`,
-   `windows-stock-control-current/OBSERVATION.json` and
-   `windows-msi-deferred-control-current/stock/OBSERVATION.json`.
-   All completed guests, their overlay/media volumes and private consoles
-   are removed; the independent15.34GiB base remains for the actual-MSI consumer.
-2. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
-   software/installer gates pass. Keep development MSIX acceptance separate from
-   signed Store certification; do not promote a failed installer gate.
-3. Audit and finish remaining software/theme/accessibility/resource and supported
+1. Refresh the coherent Windows payload cohort and finish independently available
+   ZIP/NSIS/development-MSIX runtime, update and cleanup acceptance. Current public
+   Windows files and the internal8ede1562 cohort remain unchanged until the new
+   native gates pass. Preserve the sole current MSIX3 input for its next upgrade
+   consumer before replacing the592d56e8 development stage. The independent clean
+   Windows base is retained for this named consumer. MSI is still a required
+   outcome, held on the explicit Windows Installer boundary below; do not relabel
+   a failing MSI or silently change its ordinary-user contract. Its boundary must
+   not stall other ready software, package and platform work.
+2. Audit and finish remaining software/theme/accessibility/resource and supported
    integration outcomes against the requirements below. The shared themed picker,
    Linux FileChooser portal/FileManager1 and reversible Windows folder actions
    have implementation and scoped native/package evidence; do not reopen their
    completed gates or substitute those receipts for remaining caller/platform/
-   physical acceptance. Do not stop on owner waits while another item is ready.
+   physical acceptance. Complete the bounded assistive-integration recheck and
+   any remaining independently available exact-package workflows before parking
+   only genuine owner/device/external acceptance.
+
+The actual8ede1562 MSI is now tested on the independent Microsoft26300 client.
+Fresh ordinary-user installation and all58 installed-file hashes pass. A real
+locked-cache uninstall refusal preserves the exact daemon PID/task instance,
+task XML/security, preferences, source bytes, native database file identity and
+fixture query. Windows Installer nevertheless leaves product state1; ordinary
+uninstall retry returns1603 and leaves the payload. All78 genuine/unknown rollback
+failures remain, after separately classifying the one success-coded terminal End
+marker. Current installer authoring is unchanged from that candidate. This is a
+failed release gate, not a data-loss claim or a passing cleanup result. The first
+QA actor exposed terminal status before its finally block, so its explicit guest
+service-cleanup outcome was unproven. The producer now signals completion only
+after recording cleanup. A separate validation fixture confirms service-remove
+exit0, numeric58-file count, matching final native/parent snapshots and complete
+owned VM/media/console teardown, with the same failed MSI registration outcome.
+
+The same native file-only authoring reproduces registration failure without
+Ottrin or WiX. Its22 tables and execution checks match across ordinary/elevated
+controls except generated identifiers and explicit role/scope substitutions.
+The elevated diagnostic restores registration, files and supported recovery/
+cleanup. This isolates execution security context but does not authorize a
+production elevation workaround. No policy/ACL changes or manual installer
+registry repair are introduced. Original actor outputs remain unchanged; only
+the exact adjacent terminal End/return5 marker is separated by the strict assessor.
+Do not keep repeating fulfilled controls or add compensating registry code.
+Evidence: `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json`,
+`windows-msi-security-context-current/COMPARISON.json`, and the earlier independent
+ordinary/deferred controls. Actual/diagnostic guests, overlays/media and private
+consoles are removed; the clean15.34GiB base now has the named Windows-cohort
+acceptance consumer above.
 
 Owner identities/signing/submission, unavailable physical hardware, personal
 administrator setup and final owner acceptance remain on the explicit
@@ -1439,6 +1444,7 @@ Do not move a fixable implementation or test failure onto this list.
 | Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
+| Windows Installer ordinary-user MSI rollback | A supported correction for the native per-user registration undo boundary, or an explicitly approved change to the MSI installation contract. Exact current MSI and independent native controls fail; role-only elevation restores state but is diagnostic only. No supported application-source correction is established. Evidence: `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json` and `windows-msi-security-context-current/COMPARISON.json`. Keep MSI release held; revisit a new supported solution rather than waive the gate. | Current ZIP/NSIS/development-MSIX payload, runtime, update/removal and other software gates continue independently. No production elevation, registry/ACL compensation or silent format withdrawal. |
 | Linux public release signing identity | Owner approves the project identity/public fingerprint and authorizes provisioning its protected signing key. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work; do not invent or publish an identity. |
 | Microsoft Store account/submission | Owner-controlled Store identity, listing and certification after Windows is ready. | Implement/test MSIX packaging and deployment when dependency-ready; unsigned direct ZIP/EXE/MSI remain supported. No paid Windows certificate gate. |
 | Physical-only device/adapter/audio acceptance | A suitable available test device or the owner's later observation for claims virtual fixtures cannot establish. | Native VM/private desktop tests and all reproducible software/resource fixes; record each untested physical claim separately. |
@@ -1488,7 +1494,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | Fourbf3abfd3 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | Popup routing is delivered with native positive controls; remaining broader software/theme gates and then parked owner/device acceptance. |
-| Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, hosted source checks, native icons/CLI and scoped default-folder/Properties/picker/removal acceptance. Private592d56e8 development MSIX0.1.0.3 passes native assembly/runtime and enabled/disabled startup update/reboot with valid preferences and exact native database identity. | MSI rollback/current-client comparison and remaining installed/runtime/software gates. MSI rollback remains required and failed; public packages stay unchanged. |
+| Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, hosted source checks, native icons/CLI and scoped default-folder/Properties/picker/removal acceptance. Private592d56e8 development MSIX0.1.0.3 passes native assembly/runtime and enabled/disabled startup update/reboot with valid preferences and exact native database identity. | Current Windows payload/runtime/software refresh. The actual current-client comparison is complete and failed; MSI remains required on the explicit native runtime boundary. Public packages stay unchanged until their own gates pass. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 

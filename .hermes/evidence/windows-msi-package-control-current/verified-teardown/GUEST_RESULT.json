@@ -1,0 +1,50 @@
+{
+  "preferences_after_retry": true,
+  "service_cleanup_exit": 0,
+  "identity": {
+    "profile": "C:\\Users\\OTMSIc0dd91186a88",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "desktop_ready": true,
+  "cleanup_tool_available": true,
+  "source_preserved": true,
+  "index_query_preserved": true,
+  "failure_exit": 1603,
+  "product": "{05A4976D-72F8-49AA-94F5-87E16BD6C78B}",
+  "after": {
+    "instance": "{5719E012-542D-4544-A8C5-1E6B7B26993F}",
+    "pid": 1232
+  },
+  "state_gate_passed": false,
+  "before": {
+    "instance": "{5719E012-542D-4544-A8C5-1E6B7B26993F}",
+    "pid": 1232
+  },
+  "database_identity_preserved": true,
+  "daemon_instance_unchanged": true,
+  "task_security_unchanged": true,
+  "task_xml_unchanged": true,
+  "database_file_id_before": "402E2E37:0003000000025007",
+  "package": {
+    "sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+    "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+    "payload_files": 58,
+    "scope": "Actual current candidate, not rebuilt, patched or artificially faulted"
+  },
+  "raw_skipped_rollback_lines": 79,
+  "preferences_preserved": true,
+  "payload_after_retry": true,
+  "status": "observed",
+  "source_after_retry": true,
+  "payload_intact": true,
+  "installed_payload_files": 58,
+  "state_after_retry": 1,
+  "database_file_id_after": "402E2E37:0003000000025007",
+  "scope": "Exact ordinary-user Ottrin MSI installation, genuine locked-cache refusal and supported retry; no patched installer or synthetic MSI failure",
+  "state_after_failure": 1,
+  "phase": "actual MSI observation complete; completing owned service teardown",
+  "install_exit": 0,
+  "retry_exit": 1603
+}

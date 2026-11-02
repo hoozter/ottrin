@@ -1,0 +1,45 @@
+{
+  "status": "failed ordinary-user actual MSI rollback/retry gate",
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "installed_payload_files_verified": 58,
+  "native_identity": {
+    "profile": "C:\\Users\\OTMSIc0dd91186a88",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "original_actor_result_sha256": "ff9568cff0d854d7aa9bafa6e928d64163d3da274278da8120a7f6e06600586d",
+  "failure_log_sha256": "aeaf61212528fffca4f96312005b7108623d7d7c7e9d01ae2af3a065f7cadf3d",
+  "fault": "Unmodified production cleanup refuses an owned cache file held without delete sharing",
+  "postconditions_preserved": {
+    "daemon_instance_unchanged": true,
+    "task_xml_unchanged": true,
+    "task_security_unchanged": true,
+    "payload_intact": true,
+    "preferences_preserved": true,
+    "source_preserved": true,
+    "database_identity_preserved": true,
+    "index_query_preserved": true,
+    "preferences_after_retry": true,
+    "source_after_retry": true
+  },
+  "outcomes": {
+    "install_exit": 0,
+    "failure_exit": 1603,
+    "state_after_failure": 1,
+    "retry_exit": 1603,
+    "state_after_retry": 1,
+    "payload_after_retry": true,
+    "state_gate_passed": false
+  },
+  "raw_skipped_lines": 79,
+  "genuine_or_unknown_undo_failures": 78,
+  "successful_terminal_end_markers": 1,
+  "native_database_identity": [
+    "402E2E37:0003000000025007",
+    "402E2E37:0003000000025007"
+  ],
+  "fixture_cleanup": "Explicit service-remove exits0 before terminal native result; exact final snapshot agrees; guest, two volumes and private console/profile removed",
+  "scope_limit": "Real ordinary-user current package on the independent Microsoft client. Preserved data/task state does not accept broken package registration/retry. No elevation, registry repair or security-policy change."
+}

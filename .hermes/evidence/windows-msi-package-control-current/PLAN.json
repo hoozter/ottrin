@@ -1,0 +1,7 @@
+{
+  "status": "prepared; actual MSI not yet accepted",
+  "candidate_source": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "scope": "Actual unmodified current MSI fresh install/all58 files, genuine locked preview-cache cleanup refusal, task/process/config/source/native DB identity preservation and supported uninstall retry",
+  "fault": "Only an owned cache file is held without delete sharing; no patched MSI, synthetic custom action, elevated actor or policy change",
+  "cleanup": "Existing registered offline clone/display/media teardown; only owned service-remove attempted before clone disposal; no manual MSI registry repair"
+}
