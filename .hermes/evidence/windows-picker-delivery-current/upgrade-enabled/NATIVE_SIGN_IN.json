@@ -1,0 +1,8 @@
+{
+  "status": "single native sign-in submitted; actual login/startup still requires native actor proof",
+  "domain_uuid": "b6929099-e694-4da2-8f24-2b520d4fc9e0",
+  "account": "OTMSIXbc56c73fbd57",
+  "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+  "observed_frame_sha256": "34c33c69e6f9277dcb530e34589398fff5504f75cad880f430ff5fed258e1f5d",
+  "scope": "Reset only the exact disposable account credential and enter it once in the observed native password field; no reboot, package command, startup-task or security-policy change; credential never printed or persisted"
+}

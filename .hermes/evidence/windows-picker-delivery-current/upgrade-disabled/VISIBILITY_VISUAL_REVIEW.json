@@ -1,0 +1,28 @@
+{
+  "status": "reviewed",
+  "method": "Direct review of original native screenshots; default/restored V.txt only; show-all renders both hidden/system folders and all three files",
+  "captures": {
+    "visibility-default.png": {
+      "sha256": "169b6f9b09a6e7a5715f01eb148e2fe8311b479b54400bebebdf9c7d3f0ed28c",
+      "visible_entries": [
+        "V.txt"
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "1e3fcd32bf49871d7cd0a5d8b6c414f058a32fd6e0d9b2cc1278a5d859f0647f",
+      "visible_entries": [
+        "HD",
+        "SD",
+        "H.txt",
+        "S.txt",
+        "V.txt"
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "169b6f9b09a6e7a5715f01eb148e2fe8311b479b54400bebebdf9c7d3f0ed28c",
+      "visible_entries": [
+        "V.txt"
+      ]
+    }
+  }
+}

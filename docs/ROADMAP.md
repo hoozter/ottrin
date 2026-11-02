@@ -57,8 +57,8 @@ caches and binaries remain. Earlier source/NTFS evidence keeps its original scop
 in `listing-metadata-current/ACCEPTANCE.json`.
 
 Windows public files remain unchanged; the accepted internal ZIP/NSIS/MSI
-candidate remains source8ede1562. The separate source592d56e8 development stage
-builds ZIP/NSIS and native MakeAppx MSIX0.1.0.3 with58-file equality and invalid
+candidate remains source8ede1562. The preceding source592d56e8 development checkpoint
+built ZIP/NSIS and native MakeAppx MSIX0.1.0.3 with58-file equality and invalid
 revision refusal. Actual0.1.0.2→0.1.0.3 startup-enabled upgrade passes ordinary
 GUI/menu keys/normal Close, retained configuration/native index identity, actual
 reboot/login with Windows-started daemon before any Ottrin CLI, and clean
@@ -76,8 +76,8 @@ Hash-bound review of the original screenshots, icon-slot counts and identical
 restored file-view pixels establish the rendered control. Full-window OCR misread
 the small filename and is rejected observer evidence, not a passed OCR gate.
 Both accepted guests/disks/private profiles are removed; the sole56.8MB previous
-MSIX2 input is removed after both consumers complete. Latest MSIX3/ZIP/NSIS stage
-remains for pending Windows delivery/installer acceptance.
+MSIX2 input is removed after both consumers complete. That MSIX3/ZIP/NSIS stage was retained until the current65676885 replacement
+passed both3→4 upgrade consumers below, then retired.
 Evidence: `windows-listing-delivery-current/ASSEMBLY_ACCEPTANCE.json`,
 `upgrade-enabled-verified/ACCEPTANCE.json`, `upgrade-disabled/ACCEPTANCE.json` and
 `upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json`.
@@ -89,28 +89,39 @@ replacement, reference, symlink, hard-link and process checks. It recovers
 current deliverables remain. Exact evidence: `listing-storage-current/CLEANUP.json`.
 This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 
-The current65676885 Windows replacement now builds ZIP/NSIS and native MakeAppx
+The current65676885 Windows replacement builds ZIP/NSIS and native MakeAppx
 MSIX0.1.0.4. All58 application files match between ZIP and NSIS; the installer
-index controller and transaction script match their authoritative payload/source.
-Native MSIX assembly verifies all58 files and rejects invalid version revisions.
-These are content/assembly gates, not native runtime or lifecycle acceptance.
-The sole explicit MSIX3 upgrade input is now retained in
-`windows-picker-delivery-current/input/previous.msix`; current packages await
-ordinary3→4 enabled/disabled startup/update/login/removal and current portable/NSIS
-workflows. The previous development stage and stable public files remain available.
-Assembly VM, both volumes, fixture, temporary source clone/archive and NSIS
-extraction are removed. Exact remaining storage and cache comparison are recorded
-in `windows-picker-delivery-current/CLEANUP.json`; payload and native receipts are
-`HOST_PAYLOAD.json` and `ASSEMBLY_ACCEPTANCE.json`.
+controller and transaction script match their authoritative payload/source.
+Native MSIX assembly verifies all58 files and rejects invalid revisions. Actual
+0.1.0.3→0.1.0.4 enabled and disabled upgrades now pass ordinary main-window launch,
+normal Close, menu/Inspector Space/Escape controls, saved configuration and native
+index database identity, actual reboot/login and clean package removal. Windows
+starts the ordinary packaged0.1.0.4 daemon before any Ottrin CLI when enabled; disabled login
+observes no daemon for180.240seconds before any CLI. Both cases pass direct rendered
+Hidden/System visibility review, native attribute checks and restored-view pixels.
+Their disposable accounts require native password sign-in on the second boot;
+this fixture authentication is recorded separately and does not start Ottrin or
+alter its startup policy. No bootstrap-causation claim is established.
+
+Both runtime guests/four volumes/private desktops, the assembly guest/two volumes,
+fixtures, source archive/clone, redundant exports and consumed whole-console
+frames are removed. The obsolete292.8MB592d development stage and56.8MB MSIX3 input
+are retired after both named upgrade consumers complete. Current coherent packages
+remain in `.hermes/packaging-tmp/.windows-picker-stage` for current portable/NSIS
+and native chooser acceptance; public Windows files and internal8ede candidate
+are unchanged. Exact scopes and cleanup: `windows-picker-delivery-current/`
+`{HOST_PAYLOAD,ASSEMBLY_ACCEPTANCE,CLEANUP,UPGRADE_INPUT_CLEANUP}.json`, and each
+`upgrade-{enabled,disabled}/{ACCEPTANCE,NATIVE_VISIBILITY_ACCEPTANCE}.json`.
 
 Continue in this order:
 
-1. Refresh the coherent Windows payload cohort and finish independently available
-   ZIP/NSIS/development-MSIX runtime, update and cleanup acceptance. Current public
-   Windows files and the internal8ede1562 cohort remain unchanged until the new
-   native gates pass. Use the verified retained MSIX3 input for its next upgrade
-   consumers before retiring the592d56e8 development stage. The independent clean
-   Windows base is retained for this named consumer. MSI is still a required
+1. Finish current65676885 portable/NSIS native runtime, update and removal plus
+   native Windows chooser Shift-selection acceptance. Current MSIX4 assembly,
+   ordinary runtime, enabled/disabled3→4 updates, real login and removal gates
+   are fulfilled; do not repeat them or the retired MSIX3 inputs. Current public
+   Windows files and the internal8ede1562 cohort remain unchanged pending the
+   remaining native gates. The independent clean Windows base is retained for
+   these named consumers. MSI is still a required
    outcome, held on the explicit Windows Installer boundary below; do not relabel
    a failing MSI or silently change its ordinary-user contract. Its boundary must
    not stall other ready software, package and platform work.

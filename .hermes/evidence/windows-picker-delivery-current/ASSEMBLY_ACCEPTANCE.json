@@ -20,9 +20,16 @@
     "retained_pending_volume": null
   },
   "pending": [
-    "Ordinary Windows runtime",
-    "Actual0.1.0.3 to0.1.0.4 startup-enabled and disabled upgrades, login and removal",
-    "Portable/NSIS current-cohort runtime/lifecycle"
+    "Current portable/NSIS native runtime/lifecycle",
+    "Current Windows chooser Shift-selection native workflows"
   ],
-  "scope": "Native MakeAppx assembly and exact payload comparison. Public packages and Store submission unchanged; MSI rollback remains explicitly failed, not waived."
+  "scope": "Native MakeAppx assembly and exact payload comparison. Public packages and Store submission unchanged; MSI rollback remains explicitly failed, not waived.",
+  "runtime_receipts": {
+    "upgrade-enabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-enabled/ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-disabled/ACCEPTANCE.json"
+  },
+  "native_visibility_receipts": {
+    "upgrade-enabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-enabled/NATIVE_VISIBILITY_ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json"
+  }
 }

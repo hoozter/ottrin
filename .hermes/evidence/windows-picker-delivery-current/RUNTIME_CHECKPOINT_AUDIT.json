@@ -1,0 +1,34 @@
+{
+  "status": "pass within current native MSIX and completed cleanup scope",
+  "cases": {
+    "upgrade-enabled": {
+      "native_result_matches_parent": true,
+      "raw_members_verified": 45,
+      "teardown_and_visibility": "pass",
+      "login": {
+        "pid": 7924,
+        "administrator": false,
+        "session": 1,
+        "package": "Ottrin.Development_0.1.0.4_x64__vs01n017nxmbr"
+      }
+    },
+    "upgrade-disabled": {
+      "native_result_matches_parent": true,
+      "raw_members_verified": 47,
+      "teardown_and_visibility": "pass",
+      "login": {
+        "daemon_count": 0,
+        "observation_seconds": 180.2400309,
+        "startup_enabled": false
+      }
+    }
+  },
+  "current_artifacts_unchanged": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "e11cb37ad662d79c991d86c6a623e1e8aeaebf9db49283d600e3d529fc007863",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b",
+    "Ottrin-0.1.0-windows-x64-development.msix": "8efdaa87c2b32cfc8dcd85caf041b1f54eed118db86be1c42ab5139b0fc42461"
+  },
+  "obsolete_stage_and_previous_input_absent": true,
+  "replay_limit": "Original runtime assessors passed before the previous MSIX input was retired. This compact audit verifies retained exact native result bytes, rendered receipts, cleanup and current package hashes; it does not substitute for an unperformed native test.",
+  "remaining": "Current portable/NSIS native lifecycle and Windows chooser selection; MSI rollback explicitly held; remaining bounded assistive/software and owner/physical acceptance"
+}

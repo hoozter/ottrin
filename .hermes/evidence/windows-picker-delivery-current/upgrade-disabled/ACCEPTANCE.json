@@ -1,0 +1,45 @@
+{
+  "status": "pass within actual native update/ordinary GUI/real reboot/login/removal scope",
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "package_input": {
+    "runtime_script_sha256": "097fccae697450b1f2c8928d076581869e5db473ec1be4ddf0035b19404c6d6f",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "8efdaa87c2b32cfc8dcd85caf041b1f54eed118db86be1c42ab5139b0fc42461",
+    "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+    "version": "0.1.0.4",
+    "startup_enabled": false,
+    "previous": {
+      "sha256": "a172aacc3e00bbbe33a4cc4c82507f42db7e7c1c5690cf0661539d79c327e720",
+      "version": "0.1.0.3",
+      "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372"
+    }
+  },
+  "native_receipt": "RUNTIME_RESULT.json",
+  "updated_menu_keys": {
+    "source_sha256": "50C6A3E7D1D8029C750535A7250DDECDE20A9AEEDD1C26F092A38AD3E21FA970",
+    "normal_space_open_close": true,
+    "inspector_menu_escape_keeps_window_open": true,
+    "source_and_directory_unchanged": true,
+    "main_menu_space_keeps_inspector_closed": true,
+    "status": "pass"
+  },
+  "preferences_and_index_file_identity_preserved": true,
+  "actual_login": {
+    "daemon_count": 0,
+    "observation_seconds": 180.2400309,
+    "startup_enabled": false
+  },
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_console_cleanup_verified": true,
+  "native_visibility_receipt": "Captured for separate hash-bound rendered review; not accepted by this lifecycle assessor",
+  "scope_limit": "Owned Windows software SPICE, exact package identity and ordinary runtime token; unsigned development deployment uses the explicit administrative fixture. Not Store signing/certification, physical graphics, current NSIS/MSI acceptance or whole-Windows-roadmap completion."
+}

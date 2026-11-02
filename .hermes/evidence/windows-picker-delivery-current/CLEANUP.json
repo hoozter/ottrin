@@ -1,5 +1,5 @@
 {
-  "status": "Completed build and assembly resources removed; exact packages and upgrade inputs retained for next native acceptance",
+  "status": "Completed build/assembly and both upgrade/login/removal fixtures cleaned; obsolete development cohort and previous MSIX3 input retired; current packages/base retained for remaining native package consumers",
   "removed_source_archive": {
     "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-delivery-current/source.zip",
     "bytes": 128583419,
@@ -22,22 +22,13 @@
     "target/debug/incremental": 18248171520,
     "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
     "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
-    ".hermes/packaging-tmp/.windows-desktop-stage": 293068800,
-    ".hermes/evidence/windows-picker-delivery-current": 57061376
+    ".hermes/evidence/windows-picker-delivery-current": 1703936
   },
   "compiler_cache_scope": "Same native/Windows debug cache roots as baseline; no added target tree/configuration. Existing release outputs rebuilt with matching settings and retained as current compiler products.",
   "remaining": [
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "Current65676885 ZIP/NSIS/payload/MSIX4 awaiting ordinary native runtime and lifecycle acceptance"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-picker-delivery-current/input/previous.msix",
-      "purpose": "Exact MSIX3 input awaiting enabled/disabled3 to4 upgrade consumers"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
-      "purpose": "Previous usable592d development cohort retained until current cohort runtime passes"
+      "purpose": "Current65676885 ZIP/NSIS/payload/MSIX4. Actual MSIX update/login/removal passes; current portable/NSIS and native chooser workflows remain"
     },
     {
       "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
@@ -47,5 +38,11 @@
       "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
       "purpose": "Reusable12MB driver/agent bootstrap cache for clean native fixture"
     }
-  ]
+  ],
+  "runtime_cleanup": {
+    "upgrade-enabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-enabled/CLEANUP.json",
+    "upgrade-disabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-disabled/CLEANUP.json"
+  },
+  "superseded_cleanup": ".hermes/evidence/windows-picker-delivery-current/UPGRADE_INPUT_CLEANUP.json",
+  "compiler_changes_this_checkpoint": "No Rust builds/tests or new target configurations during native lifecycle acceptance; existing compiler products and useful shared caches preserved"
 }

@@ -1,0 +1,38 @@
+{
+  "domain": "ottrin-msix-runtime",
+  "uuid": "3d626f1d-5ce5-4e74-b022-f3f3db57ca51",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-runtime-fixture.iso",
+    "ottrin-msix-runtime.qcow2"
+  ],
+  "status": "native MSIX runtime test finished; inspect result, not assumed accepted",
+  "public_compiler_cache": null,
+  "scope": "Actual same-identity development MSIX upgrade, ordinary runtime, retained configuration/index and real login/removal for the declared startup choice; Store acceptance remains separate",
+  "producer_sha256": "f77a1f069a4ca5c4b9bcbab9d9e13680b4fd5808e510622a18fead481517e198",
+  "uploaded_host_iso_removed_bytes": 114606080,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "graphics_scope": "Owned software-only SPICE desktop; MSIX uses explicit bundled OpenGL; no physical adapter acceptance",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 555935,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-2omtnq8v/home"
+  },
+  "guest_pid": 9072,
+  "login_reboot_requested": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

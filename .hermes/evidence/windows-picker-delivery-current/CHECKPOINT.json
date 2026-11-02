@@ -1,9 +1,16 @@
 {
-  "status": "Current Windows cohort built; archive identity and native MSIX4 assembly pass; runtime and lifecycle pending",
+  "status": "Current MSIX4 ordinary GUI, real3 to4 enabled/disabled updates, reboot/login/startup, visibility and removal accepted; current portable/NSIS/chooser workflows remain",
   "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
   "host_payload": "HOST_PAYLOAD.json",
   "native_assembly": "ASSEMBLY_ACCEPTANCE.json",
   "cleanup": "CLEANUP.json",
-  "next": "Run ordinary3 to4 startup-enabled/disabled MSIX updates and native current portable/NSIS/chooser workflows. Do not rerun unchanged MSI controls or promote current public files before required scopes pass.",
-  "goal_state": "active; dependency-ready native acceptance remains"
+  "next": "Accept current portable/NSIS lifecycle and native Windows chooser Shift-selection against source65676885 without repeating the fulfilled MSIX or unchanged MSI controls. Then remaining bounded assistive/software acceptance. MSI release is still held at its explicit native runtime boundary.",
+  "goal_state": "active; dependency-ready native acceptance remains",
+  "native_runtime_receipts": [
+    "upgrade-enabled/ACCEPTANCE.json",
+    "upgrade-disabled/ACCEPTANCE.json"
+  ],
+  "disabled_login_quiet_seconds": 180.2400309,
+  "owned_cleanup": "Two runtime guests/four volumes/private consoles plus consumed archive/console outputs removed; obsolete292813277-byte development stage and56839243-byte MSIX3 input removed",
+  "fixture_authentication": "Both second boots used native password sign-in to the exact owned account after automatic-login credentials were absent. Only that disposable credential was reset; no repeated reboot/update, no product startup/task/policy mutation, no secrets retained. Actual startup facts require the separate native LOGIN result. Bootstrap causation remains unproven."
 }

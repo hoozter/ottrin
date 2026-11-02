@@ -1,0 +1,359 @@
+{
+  "status": "pass: native enabled upgrade/login/removal complete; owned guest/two volumes/private console removed; redundant export and consumed whole-console frames compacted",
+  "guest": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-4c0r99j3",
+    "owned_processes_reaped": [
+      {
+        "pid": 550217,
+        "exit": 0
+      },
+      {
+        "pid": 550220,
+        "exit": 0
+      },
+      {
+        "pid": 550221,
+        "exit": 15
+      },
+      {
+        "pid": 550320,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "144 34 0:65 / /var/tmp/.ottrin-picker-qa-4c0r99j3/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "archive_members": [
+    {
+      "path": "ACTOR.json",
+      "bytes": 2421,
+      "sha256": "2ee8878d11cb17771323d3873ac7d29d8e7c525d791a18a521083b189240064c"
+    },
+    {
+      "path": "BEFORE_UPDATE.json",
+      "bytes": 7554,
+      "sha256": "476e4f47f7f2cf91c4d52d628d2fc13629f8a566497f2057d1e1dbfe784daca5"
+    },
+    {
+      "path": "CRASH_EVENTS.json",
+      "bytes": 111,
+      "sha256": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782"
+    },
+    {
+      "path": "DEPLOYMENT.json",
+      "bytes": 678,
+      "sha256": "2e3c0b192188426426bb2b5ae11339987c61eb8ef40dedf300dfa46c3fb4df16"
+    },
+    {
+      "path": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "abab1352e4e9da97c32c01904e0adaac8b00043433e7fa602480e6abbfa5b15d"
+    },
+    {
+      "path": "DESKTOP_WAITING.json",
+      "bytes": 303,
+      "sha256": "08f95e3f98b0b330dbf68cfb45a59b9c45708fa4e454c2fc07abcd18e5cc502d"
+    },
+    {
+      "path": "disabled-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "disabled-status.stdout",
+      "bytes": 67,
+      "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5"
+    },
+    {
+      "path": "index-status.json",
+      "bytes": 616,
+      "sha256": "e23f26362da30a53a21f9606ed3deaf77e7385ead732e014b0d905e653e93e19"
+    },
+    {
+      "path": "index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "login-index-status.json",
+      "bytes": 619,
+      "sha256": "383fc7287682011b73d1d5d4bd3e2a3e19a972f613d74abb843f8a86288b260f"
+    },
+    {
+      "path": "login-index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "login-service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "login-service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+    },
+    {
+      "path": "LOGIN.json",
+      "bytes": 1155,
+      "sha256": "0b452986965f8402dedf4e1d14e39b36f52397a1d66955a77d7843b44885b1db"
+    },
+    {
+      "path": "main.png",
+      "bytes": 58507,
+      "sha256": "bc62f8d2eca352394f0a5fa1d962d60cd7578b8d80c634111aa4d50cab74d3bf"
+    },
+    {
+      "path": "reenable.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reenable.stdout",
+      "bytes": 93,
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c"
+    },
+    {
+      "path": "reenabled-index-status.json",
+      "bytes": 619,
+      "sha256": "70635fc56eb9ab2864be235dba5b2544fab12b229da85e75a6c88e908ed40e40"
+    },
+    {
+      "path": "reenabled-index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "RESULT.json",
+      "bytes": 18457,
+      "sha256": "dd7b5eff8e5ea269d373c5604b78a58a8d977609cd972eb190296408e3b53975"
+    },
+    {
+      "path": "service-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "service-install.stdout",
+      "bytes": 93,
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c"
+    },
+    {
+      "path": "service-remove.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "service-remove.stdout",
+      "bytes": 81,
+      "sha256": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd"
+    },
+    {
+      "path": "service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+    },
+    {
+      "path": "UPDATE.json",
+      "bytes": 8076,
+      "sha256": "a460e090614abac09fcafbc8924912125fa14066299bd1fae8526d3414174aad"
+    },
+    {
+      "path": "updated-after-gui-service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "updated-after-gui-service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+    },
+    {
+      "path": "updated-fixture-selected.png",
+      "bytes": 30961,
+      "sha256": "f56b78d0ec4ce1063c0d5e5149aa49813c4cf8e55c0e45ff87b8755a69cf90b1"
+    },
+    {
+      "path": "updated-index-status.json",
+      "bytes": 619,
+      "sha256": "cdbf81ac5426e81587d51e069a7aa4555faa9ed688510bcb573402caf8a6792a"
+    },
+    {
+      "path": "updated-index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "updated-inspector-before-normal-space.png",
+      "bytes": 18354,
+      "sha256": "c992db364e5dac83d7aa15a05689ab22ec6b2f3bd69c973e5fcd16bd03dd24bb"
+    },
+    {
+      "path": "updated-inspector-menu.png",
+      "bytes": 26329,
+      "sha256": "97438e27f64396c047e436283f5a7bf06b034ba68787c5b2f0714ad76315e2c6"
+    },
+    {
+      "path": "updated-main-menu-after-space.png",
+      "bytes": 46403,
+      "sha256": "090c5cfeffec3fa49495c154bbb465901bbc620cb51bad4963032d920ad090da"
+    },
+    {
+      "path": "updated-main-menu-before-space.png",
+      "bytes": 46403,
+      "sha256": "090c5cfeffec3fa49495c154bbb465901bbc620cb51bad4963032d920ad090da"
+    },
+    {
+      "path": "updated-main.png",
+      "bytes": 27892,
+      "sha256": "13acd52e928da12153a2c9441e9304709c2b862c568481570ea10811eac4d511"
+    },
+    {
+      "path": "updated-service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "updated-service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+    },
+    {
+      "path": "UPDATED.json",
+      "bytes": 4554,
+      "sha256": "36e3a0a7a9509cf1c4f57e45030d78ae13396db9620c3340d850e7d2537a0f57"
+    },
+    {
+      "path": "visibility-address-input.png",
+      "bytes": 31553,
+      "sha256": "21f29583fb847e0fbd21109c4fb4676b985d1a73cb3c9ad65ccb2825095e87dd"
+    },
+    {
+      "path": "visibility-default.png",
+      "bytes": 27949,
+      "sha256": "4490ba20e29985478c9798f6fe8da6a6f4d41eaa6b8d296725e83b42866770ae"
+    },
+    {
+      "path": "visibility-restored.png",
+      "bytes": 27949,
+      "sha256": "4490ba20e29985478c9798f6fe8da6a6f4d41eaa6b8d296725e83b42866770ae"
+    },
+    {
+      "path": "visibility-show-all.png",
+      "bytes": 30465,
+      "sha256": "10ed5dcef503b6b4bc7a428f48ecd4b837a609f216c31b3d7a124fbbe10f5268"
+    }
+  ],
+  "removed_completed_outputs": [
+    {
+      "path": "RESULTS.zip",
+      "bytes": 328272,
+      "sha256": "2f1717ca3c107cdd8323aac31213e17a2a4b109057ba46abf7a193199f1138fd"
+    },
+    {
+      "path": "RESULT_EXPORT_PROCESS.json",
+      "bytes": 583682,
+      "sha256": "bbd6267284f7ee135bddecb8e0a42ba40d6114218f2f43070931edc8b077fe86"
+    },
+    {
+      "path": "runtime-observed.png",
+      "bytes": 2142835,
+      "sha256": "db0d7f7d39085106f302b2b56d572b6fa7263509eb32d7f87f4378c7fb8e61f6"
+    },
+    {
+      "path": "sign-in-observed.png",
+      "bytes": 481348,
+      "sha256": "84a6a31ef2325a605e14998aa7ee38e1f8fd5194b3dc0e5cb0c55955c7ea6212"
+    },
+    {
+      "path": "sign-in-ready.png",
+      "bytes": 425378,
+      "sha256": "34c33c69e6f9277dcb530e34589398fff5504f75cad880f430ff5fed258e1f5d"
+    },
+    {
+      "path": "reboot-login-observed.png",
+      "bytes": 483460,
+      "sha256": "32b4fbf8ed192faf3deb7569df594759604e1cb617f02c39645e94e2818df180"
+    },
+    {
+      "path": "boot-observed.png",
+      "bytes": 22474,
+      "sha256": "ea59457b3dd3762d668af5a2e41be36ffdf912fb4ac2ece47415650d1215cdec"
+    },
+    {
+      "path": "desktop-ready.png",
+      "bytes": 1690352,
+      "sha256": "d873be9f9a8e023706cc6fafec241c33f28436c8a89767cdcb2b41742db8cdc9"
+    },
+    {
+      "path": "post-sign-in.png",
+      "bytes": 2142901,
+      "sha256": "8353995be0333deb5e3c364eea46a257dbbfae26367a0eb0121df785333e93aa"
+    },
+    {
+      "path": "first-login.png",
+      "bytes": 480688,
+      "sha256": "c54d534fbed63a664e8f6388c7e6a371b2d953ac0c54ea2965dfd218420438e8"
+    },
+    {
+      "path": "upgrade-observed.png",
+      "bytes": 628086,
+      "sha256": "bcc9690947e5218d157c25742336c26808276a85c589d8a677313f25138f6ddc"
+    },
+    {
+      "path": "desktop-observed.png",
+      "bytes": 1212070,
+      "sha256": "66ceef858c1fa938a640bb5602b6b5a85d4a28ebe3ce2d69bbaf4c9850731cae"
+    },
+    {
+      "path": "login-observed.png",
+      "bytes": 481645,
+      "sha256": "eb81f97527492a8bcac31acaf4c19368d34cf58722c20e101bb56402b8f7a0de"
+    },
+    {
+      "path": "viewer/dbus.log",
+      "bytes": 2934,
+      "sha256": "70a9a6e649da80354f137610fd9dfb964dd4db831c0545cce383b76ad6bb3e7f"
+    },
+    {
+      "path": "viewer/viewer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/wm.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "viewer/xvfb.log",
+      "bytes": 1666,
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50"
+    }
+  ],
+  "retained": "Exact native result bytes and relevant application screenshots under results/. Shared current packages/base await remaining native package consumers; prior MSIX3 input and superseded stage were retired after both upgrade consumers, as recorded by ../UPGRADE_INPUT_CLEANUP.json",
+  "observer_note": "A late read-only finalization probe arrived after parent teardown, so domain lookup failed. Parent session terminal0, result archive and cleanup are authoritative; no restart or repeated lifecycle."
+}

@@ -1,0 +1,28 @@
+{
+  "status": "reviewed",
+  "method": "Direct review of original native application screenshots; ordinary V.txt only before/after, both Hidden/System directories and files visible when enabled; Inspector shared leading title and read-only text observed",
+  "captures": {
+    "visibility-default.png": {
+      "sha256": "4490ba20e29985478c9798f6fe8da6a6f4d41eaa6b8d296725e83b42866770ae",
+      "visible_entries": [
+        "V.txt"
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "10ed5dcef503b6b4bc7a428f48ecd4b837a609f216c31b3d7a124fbbe10f5268",
+      "visible_entries": [
+        "HD",
+        "SD",
+        "H.txt",
+        "S.txt",
+        "V.txt"
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "4490ba20e29985478c9798f6fe8da6a6f4d41eaa6b8d296725e83b42866770ae",
+      "visible_entries": [
+        "V.txt"
+      ]
+    }
+  }
+}

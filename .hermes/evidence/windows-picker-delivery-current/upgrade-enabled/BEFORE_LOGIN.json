@@ -1,0 +1,224 @@
+{
+  "scope": "Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes",
+  "actor_sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+  "before_login_boot_ticks": 639292543705000000,
+  "updated_actor": {
+    "gui_focus_and_capture": "pass",
+    "scope": "Actual ordinary post-update GUI, unchanged startup/configuration and declared startup choice after main window closes",
+    "main": {
+      "path": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.4_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+      "pid": 6716,
+      "binary_sha256": "667A88BFB0D2F4FC4754908000AB91C19DBE44777F2028C5C01415D9593D56BA",
+      "title": "Ottrin"
+    },
+    "phase": "updated-after-gui-service-status.stdout",
+    "actual_process_package": "Ottrin.Development_0.1.0.4_x64__vs01n017nxmbr",
+    "actual_process_elevated": false,
+    "cli_exits": {
+      "updated-after-gui-service-status.stdout": 0,
+      "updated-index-status.json": 0,
+      "updated-service-status.stdout": 0
+    },
+    "administrator": false,
+    "input_desktop": "Default",
+    "preferences_before_removal": "98807F7DE790C11F1F728ECCAF6CC537980769A0C4E4C92404786B63029CA4D6",
+    "updated_menu_keys": {
+      "source_sha256": "50C6A3E7D1D8029C750535A7250DDECDE20A9AEEDD1C26F092A38AD3E21FA970",
+      "normal_space_open_close": true,
+      "inspector_menu_escape_keeps_window_open": true,
+      "source_and_directory_unchanged": true,
+      "main_menu_space_keeps_inspector_closed": true,
+      "status": "pass"
+    },
+    "index_ready": "ready",
+    "native_visibility_observation": {
+      "scope": "Ordinary package GUI native Ctrl+L input and Hidden/System toggle screenshots; no GUI outcome inferred from filesystem alone",
+      "status": "captured, requires host rendered OCR/review gate",
+      "attributes": [
+        {
+          "name": "HD",
+          "attributes": 18
+        },
+        {
+          "name": "SD",
+          "attributes": 20
+        },
+        {
+          "name": "H.txt",
+          "attributes": 34
+        },
+        {
+          "name": "S.txt",
+          "attributes": 36
+        },
+        {
+          "name": "V.txt",
+          "attributes": 32
+        }
+      ],
+      "source_bytes_preserved": true,
+      "fixture_entries_preserved": true
+    },
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXbc56c73fbd57\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B4C0000000000000000"
+    },
+    "window_diagnostics": {
+      "foreground": 131872,
+      "enable_lua": 1,
+      "window": 131872,
+      "cloaked": 0,
+      "process_session": 1,
+      "minimized": false,
+      "console_session": 1
+    },
+    "normal_close_exit": 0
+  },
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "actor": {
+    "gui_focus_and_capture": "pass",
+    "scope": "Actual ordinary post-update GUI, unchanged startup/configuration and declared startup choice after main window closes",
+    "main": {
+      "path": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.4_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+      "pid": 6716,
+      "binary_sha256": "667A88BFB0D2F4FC4754908000AB91C19DBE44777F2028C5C01415D9593D56BA",
+      "title": "Ottrin"
+    },
+    "phase": "updated-after-gui-service-status.stdout",
+    "actual_process_package": "Ottrin.Development_0.1.0.4_x64__vs01n017nxmbr",
+    "actual_process_elevated": false,
+    "cli_exits": {
+      "updated-after-gui-service-status.stdout": 0,
+      "updated-index-status.json": 0,
+      "updated-service-status.stdout": 0
+    },
+    "administrator": false,
+    "input_desktop": "Default",
+    "preferences_before_removal": "98807F7DE790C11F1F728ECCAF6CC537980769A0C4E4C92404786B63029CA4D6",
+    "updated_menu_keys": {
+      "source_sha256": "50C6A3E7D1D8029C750535A7250DDECDE20A9AEEDD1C26F092A38AD3E21FA970",
+      "normal_space_open_close": true,
+      "inspector_menu_escape_keeps_window_open": true,
+      "source_and_directory_unchanged": true,
+      "main_menu_space_keeps_inspector_closed": true,
+      "status": "pass"
+    },
+    "index_ready": "ready",
+    "native_visibility_observation": {
+      "scope": "Ordinary package GUI native Ctrl+L input and Hidden/System toggle screenshots; no GUI outcome inferred from filesystem alone",
+      "status": "captured, requires host rendered OCR/review gate",
+      "attributes": [
+        {
+          "name": "HD",
+          "attributes": 18
+        },
+        {
+          "name": "SD",
+          "attributes": 20
+        },
+        {
+          "name": "H.txt",
+          "attributes": 34
+        },
+        {
+          "name": "S.txt",
+          "attributes": 36
+        },
+        {
+          "name": "V.txt",
+          "attributes": 32
+        }
+      ],
+      "source_bytes_preserved": true,
+      "fixture_entries_preserved": true
+    },
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXbc56c73fbd57\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B4C0000000000000000"
+    },
+    "window_diagnostics": {
+      "foreground": 131872,
+      "enable_lua": 1,
+      "window": 131872,
+      "cloaked": 0,
+      "process_session": 1,
+      "minimized": false,
+      "console_session": 1
+    },
+    "normal_close_exit": 0
+  },
+  "status": "awaiting actual login",
+  "pre_update_actor": {
+    "service_remove_exit": 0,
+    "gui_focus_and_capture": "pass",
+    "scope": "Actual packaged ordinary main-window launch, normal close and optional index registration; no upgrade acceptance yet",
+    "session_id": 1,
+    "phase": "reenabled-index-status.json",
+    "actual_process_package": "Ottrin.Development_0.1.0.3_x64__vs01n017nxmbr",
+    "service_status_exit": 0,
+    "disable_reenable": "pass",
+    "actual_process_elevated": false,
+    "main": {
+      "path": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.3_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+      "pid": 3216,
+      "binary_sha256": "A4F63AA507DAD44AA3BF28E5DDEBAB420FE05D5B0397DE211530F4595D3C5DE7",
+      "title": "Ottrin"
+    },
+    "cli_exits": {
+      "reenabled-index-status.json": 0,
+      "reenable.stdout": 0,
+      "disabled-status.stdout": 0,
+      "service-remove.stdout": 0,
+      "service-status.stdout": 0,
+      "service-install.stdout": 0,
+      "index-status.json": 0
+    },
+    "administrator": false,
+    "input_desktop": "Default",
+    "preferences_before_removal": "98807F7DE790C11F1F728ECCAF6CC537980769A0C4E4C92404786B63029CA4D6",
+    "service_install_exit": 0,
+    "daemon": {
+      "pid": 3444,
+      "administrator": false,
+      "package": "Ottrin.Development_0.1.0.3_x64__vs01n017nxmbr"
+    },
+    "index_ready": "ready",
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXbc56c73fbd57\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B4C0000000000000000"
+    },
+    "window_diagnostics": {
+      "foreground": 131776,
+      "enable_lua": 1,
+      "window": 131776,
+      "cloaked": 0,
+      "process_session": 1,
+      "minimized": false,
+      "console_session": 1
+    },
+    "normal_close_exit": 0
+  },
+  "deployment": {
+    "full_name": "Ottrin.Development_0.1.0.3_x64__vs01n017nxmbr",
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "location": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.3_x64__vs01n017nxmbr",
+    "version": "0.1.0.3"
+  },
+  "update": {
+    "old_pids": [
+      7332
+    ],
+    "startup_enabled": true,
+    "previous_daemon_count": 1,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.4_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.3_x64__vs01n017nxmbr"
+  }
+}

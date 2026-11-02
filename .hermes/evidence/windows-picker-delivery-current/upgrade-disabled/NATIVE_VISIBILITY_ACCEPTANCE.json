@@ -1,0 +1,67 @@
+{
+  "status": "pass",
+  "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "package_input": {
+    "runtime_script_sha256": "097fccae697450b1f2c8928d076581869e5db473ec1be4ddf0035b19404c6d6f",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "8efdaa87c2b32cfc8dcd85caf041b1f54eed118db86be1c42ab5139b0fc42461",
+    "source_revision": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+    "version": "0.1.0.4",
+    "startup_enabled": false,
+    "previous": {
+      "sha256": "a172aacc3e00bbbe33a4cc4c82507f42db7e7c1c5690cf0661539d79c327e720",
+      "version": "0.1.0.3",
+      "source_revision": "592d56e89d7b7b3c46b685e6d27a3c988c076372"
+    }
+  },
+  "scope": "Actual ordinary Windows MSIX GUI native Ctrl+L to a separate fixture and Hidden/System file/directory toggle. Default/restored show exactly the ordinary proof file; show-all renders all five known entries. Native attrs/source bytes independently recorded. Physical desktop/native GPU remain separate.",
+  "native_attributes": {
+    "HD": 18,
+    "SD": 20,
+    "H.txt": 34,
+    "S.txt": 36,
+    "V.txt": 32
+  },
+  "captures": {
+    "visibility-address-input.png": {
+      "sha256": "a2e33028730550fa9f491e1633a5f1d6684a4a14063de37cd8f6af659cee6891"
+    },
+    "visibility-default.png": {
+      "sha256": "169b6f9b09a6e7a5715f01eb148e2fe8311b479b54400bebebdf9c7d3f0ed28c",
+      "native_icon_slot_ink_pixels": [
+        1038,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "1e3fcd32bf49871d7cd0a5d8b6c414f058a32fd6e0d9b2cc1278a5d859f0647f",
+      "native_icon_slot_ink_pixels": [
+        1190,
+        1190,
+        1038,
+        1038,
+        1038
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "169b6f9b09a6e7a5715f01eb148e2fe8311b479b54400bebebdf9c7d3f0ed28c",
+      "native_icon_slot_ink_pixels": [
+        1038,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "updated-inspector-before-normal-space.png": {
+      "sha256": "c992db364e5dac83d7aa15a05689ab22ec6b2f3bd69c973e5fcd16bd03dd24bb"
+    }
+  },
+  "rendered_verification": "Hash-bound direct review of all three original native screenshots plus independent icon-slot counts and exactly restored file-view pixels. Full-window OCR failure is retained as rejected observer evidence.",
+  "restored_file_view_pixels_identical": true,
+  "native_fixture_preserved": true,
+  "verification_driver_sha256": "89112a0afc9db6f3824a3885ef2f3486d26152b4642ed9a62737fd253b871e40"
+}
