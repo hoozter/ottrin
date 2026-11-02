@@ -1,6 +1,6 @@
 {
   "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
-  "status": "All listed Linux promotion gates pass; final publisher execution pending",
+  "status": "Accepted Linux cohort promoted to stable paths; checksums verified",
   "completed": [
     "four Linux format build",
     "production package content/runtime closure/helper namespace checks",
@@ -14,14 +14,12 @@
     "Exact sourced09569e2 hosted run41466658719 all four jobs success"
   ],
   "pending": [
-    "Final publisher execution and stable Linux checksum verification"
+    "Broader independent software/platform acceptance continues; Windows lifecycle/native input and MSI gates remain separate"
   ],
   "cleanup": "All completed private GUI/browser profiles, processes, buses and mounts removed. Previous Linux/Windows source2540 staging/extraction and fulfilled source archives removed. Current stage/extraction retained for native lifecycle/promotion.",
   "retained_paths": {
-    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage": "Current exact candidate; fresh native and promotion consumers",
-    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract": "One extraction for code/runtime identity and promotion checks",
     "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage": "Current portable/NSIS/assembled MSIX; native upgrade/runtime consumers",
     "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/input/previous.msix": "Sole previous0.1.0.1 package for actual0.1.0.2 startup-enabled/disabled updates"
   },
-  "delivery": "Stable Linux928b7937 and accepted Windows8ede artifacts preserved"
+  "delivery": "Linux d09569e2 accepted and delivered at stable dist/packages paths; Windows accepted8ede/public files preserved"
 }

@@ -1,5 +1,8 @@
 {
   "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-  "purpose": "Clean final main/picker/Inspector popup ownership correction; stable delivery preserved until acceptance"
+  "purpose": "Clean final main/picker/Inspector popup ownership correction; stable delivery preserved until acceptance",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Accepted local Linux cohort promoted; staging/extraction removed"
 }

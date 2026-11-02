@@ -1,13 +1,13 @@
 {
   "status": "pass within exact Linux package, private GUI and fresh native distribution scopes",
-  "source_revision": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "ccb883dc217b6e5d21390165bdf4006607d65384e968feda494bb2c6ac947354",
-    "Ottrin-0.1.0-x86_64.AppImage": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2858a001bba22d000a8b0b329fc2c61e63c22866d3cc95f1c1fb75a570e7dce7",
-    "ottrin_0.1.0_amd64.deb": "d062d22c2eb1d0c04eea8a452d4f9ff346fc81ff2d4af8bdb4e9e934d948ac2f"
+    "ottrin-0.1.0-1.x86_64.rpm": "cfb12d904179db2e6d9d5c6e1d49554d4cae18cf74c69ec3f8c10e492e5d0826",
+    "Ottrin-0.1.0-x86_64.AppImage": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "bb59fd546303a37eac1f334b1223112224ae78da0ade18675f798ca37a4828c9",
+    "ottrin_0.1.0_amd64.deb": "a2c0f3072d11929778373296eec313e1ccae79772035a2bffde35dfafbc40705"
   },
-  "evidence": ".hermes/evidence/linux-search-delivery-current",
+  "evidence": ".hermes/evidence/menu-space-delivery-current",
   "indexd_binary_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
   "html_binary_sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
   "checks": [
@@ -19,29 +19,38 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "gui_sessions": {
-    "main-dark100": ".hermes/evidence/linux-search-delivery-current/main-dark100/RESULT.json",
-    "main-light150": ".hermes/evidence/linux-search-delivery-current/main-light150/RESULT.json",
-    "properties-dark100": ".hermes/evidence/linux-search-delivery-current/properties-dark100/RESULT.json",
-    "properties-light150": ".hermes/evidence/linux-search-delivery-current/properties-light150/RESULT.json",
-    "icon": ".hermes/evidence/linux-search-delivery-current/icon/RESULT.json",
-    "upgrade-view": ".hermes/evidence/linux-search-delivery-current/upgrade-view/RESULT.json"
+    "main-dark100": ".hermes/evidence/menu-space-delivery-current/main-dark100/RESULT.json",
+    "main-light150": ".hermes/evidence/menu-space-delivery-current/main-light150/RESULT.json",
+    "properties-dark100": ".hermes/evidence/menu-space-delivery-current/properties-dark100/RESULT.json",
+    "properties-light150": ".hermes/evidence/menu-space-delivery-current/properties-light150/RESULT.json",
+    "icon": ".hermes/evidence/menu-space-delivery-current/icon/RESULT.json",
+    "upgrade-view": ".hermes/evidence/menu-space-delivery-current/upgrade-view/RESULT.json"
   },
+  "appearance_receipt": ".hermes/evidence/menu-space-delivery-current/APPEARANCE_ACCEPTANCE.json",
+  "browser_sessions": [
+    "browser-firefox/RESULT.json",
+    "browser-flatpak/RESULT.json"
+  ],
+  "menu_keyboard_sessions": [
+    "menu-arrows/RESULT.json",
+    "menu-space/RESULT.json"
+  ],
   "native_distribution_lifecycle": [
     "Fedora44 DNF/RPM",
     "Ubuntu24.04 APT/DEB"
   ],
   "native_scope": "Normal setup without controls, actual portal chooser, idle status, same-version reinstall, modified-asset refusal, online/offline native removal and preference restoration, portable picker surviving native removal. Source/config unchanged.",
   "resource_identity": {
-    "daemon_binary_identical_to_previous": false,
+    "daemon_binary_identical_to_previous": true,
     "receipts": {
       "POPULATED_INDEX.json": ".hermes/evidence/linux-search-delivery-current/POPULATED_INDEX.json",
       "CONTENT_INDEX.json": ".hermes/evidence/linux-search-delivery-current/CONTENT_INDEX.json"
     },
-    "note": "Fresh exact candidate10000-file metadata/content live/offline/restart/query controls and three30-second quiet samples each; not a personal or sustained-workload guarantee."
+    "note": "Prior exact source928b7937 10000-file metadata/content controls retain original source/artifact scopes; complete daemon/helper binary equality binds unchanged runtime evidence. Current GUI/browser/native lifecycle checked separately. No new personal or sustained workload claim."
   },
   "hosted_source": {
-    "run": 41429811338,
-    "tested_source_revision": "05c1325f8728594004bcc4f5f1d31bcd743ba900",
+    "run": 41466658719,
+    "tested_source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
     "product_inputs_match_package_source": true,
     "linux": "success",
     "performance": "success",

@@ -1,0 +1,36 @@
+{
+  "status": "completed Linux delivery cleanup; Windows pending consumers separate",
+  "baseline": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905200554,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18433093402,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 42324288875,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38488115118
+  },
+  "after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 37905200554,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 18181143955,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 42324288875,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 38389245480
+  },
+  "size_deltas": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 0,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": -251949447,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": -98869638
+  },
+  "removed": [
+    "Superseded source2540 Linux/Windows stages and single extraction",
+    "Fulfilled native MSIX source archives and assembly fixture/domain/disks",
+    "Five superseded exact-configuration incremental sessions",
+    "Completed current Linux package staging/extraction after promotion",
+    "All Linux private GUI/browser profiles/processes/displays/buses/mounts and native distro guests/volumes/credentials",
+    "Duplicate rejected appearance-fixture PNGs after retaining corrected captures and compact rejection receipts"
+  ],
+  "retained_task_storage": {
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage": "Current exact Windows portable/NSIS/MSIX; actual enabled/disabled upgrade and native keyboard consumers",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/input/previous.msix": "Sole0.1.0.1 input for actual0.1.0.2 enabled/disabled upgrade tests",
+    "/var/lib/libvirt/images/ottrin-msix-runtime.qcow2": "Active owned native enabled-upgrade guest overlay, producer/client teardown registered",
+    "/var/lib/libvirt/images/ottrin-msix-runtime-fixture.iso": "Active owned upgrade input ISO; producer teardown registered"
+  },
+  "preserved": "Stable Linux deliverables and useful shared caches; accepted Windows/internal/public deliverables, prior named Windows baseline/protected VMs, personal data/settings/service"
+}

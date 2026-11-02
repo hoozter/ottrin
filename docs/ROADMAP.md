@@ -5,10 +5,10 @@
 Updated 2026-11-02.
 
 The stable four-format Linux delivery uses clean source
-`928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee`. Exact hashes and scoped acceptance
+`d09569e2e48656979bac0c10a6342687457a1de5`. Exact hashes and scoped acceptance
 are authoritative in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
-`af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5`.
+`955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910`.
 The internal Windows ZIP/NSIS/MSI accepted candidate remains source8ede1562;
 the private newer development stage remains separately scoped. Public Windows
 release files are unchanged. No Windows installer gate is waived.
@@ -26,28 +26,32 @@ The first Fedora attempt failed a QA input-copy path before installation; it
 is rejected evidence, not product acceptance. The corrected runs use no setup
 or registration diagnostic controls.
 
-Fresh exact10000-file metadata and content-enabled controls verify live burst
+The prior exact928b7937 10000-file metadata and content-enabled controls verify live burst
 freshness, same-size body changes with preserved timestamps, offline changes,
 restart and persisted queries. All six30-second quiet samples measure0.067percent
-of one core, about13–17MiB RSS. The newly delivered AppImage daemon hash is
+of one core, about13–17MiB RSS. The unchanged daemon payload carried into this UI delivery has hash
 `1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399`.
 RPM's normal symbol stripping changes its ELF hash; its exact tested payload
 and matching executable sections are recorded separately. Earlier daemon
 resource receipts retain their original package identity.
 
-The personal enabled service is refreshed to this delivery with config, unit,
-wrapper and database file identity preserved. Its watched Ready observation
+The personal enabled service retains the same verified daemon bytes from the
+928b7937 refresh, with config, unit, wrapper and database file identity preserved.
+After this UI-only promotion it remains active with the same PID262779; no daemon
+restart was needed. Its watched Ready observation
 covers60seconds during development:0.333percent of one core,41668KiB RSS and
 163260 indexed items. This is a short personal observation; neither it nor the
 controlled fixture establishes sustained personal-workload acceptance.
 
-All completed GUI/index profiles/processes/buses/mounts and both native guest
-sets, volumes and temporary credentials are removed. The four-format stage and
-single extraction are removed after promotion.179495425bytes of superseded
-same-configuration release executables/dep-info/fingerprints were removed;
-debug caches remain unchanged and both scanned incremental roots have no
-obsolete sessions. Compact evidence is retained in
-`.hermes/evidence/linux-search-delivery-current/`.
+All completed Linux GUI/browser/index profiles/processes/buses/mounts and both
+fresh native guest sets, volumes and credentials are removed. The current Linux
+four-format stage and single extraction are removed after successful promotion.
+Five superseded exact-configuration incremental sessions are removed through
+the supported locked helper; current compiler caches remain. Superseded2540 Linux/
+Windows packages and extractions, plus completed source archives, are removed.
+Compact current acceptance and cleanup receipts are under
+`.hermes/evidence/menu-space-delivery-current/`. Earlier resource receipts retain
+source928b7937 identity under `linux-search-delivery-current/`.
 
 The earlier1e238431/c79dbcbc rejected cohorts exposed shared portable portal
 removal and fresh registration reload defects. The authoritative fixes inherited
@@ -90,12 +94,21 @@ pass against that exact AppImage. Six Dark100/Light150 main/Properties/icon/
 saved-view GUI cases and actual installed Firefox/Flatpak Falkon Open/Save pass.
 Complete daemon and five renderer/helper payloads remain byte-identical to the
 stable928b7937 delivery; earlier resource receipts retain their original scope.
-Fresh Fedora lifecycle passes, including normal setup and removal; its domain,
-three volumes and temporary credentials are removed. Ubuntu lifecycle is running.
-Hosted run41466658719 passes Linux full verification and both release performance
-gates; full Windows verification is still pending. Stable downloads are unchanged
-until all promotion gates pass. Five superseded exact-configuration incremental
-sessions are removed through the supported locked helper; newest sessions remain.
+Fresh Fedora and Ubuntu lifecycle pass, including normal setup and removal;
+both domains, their three volumes each and temporary credentials are removed.
+Current Dark100/Light150 Settings/editor native checks also verify shared live
+titlebar colors, actual and preview button radius, window corners on main,
+Settings, editor and Inspector, and complete config restoration after Cancel.
+The first full-config fixture used removed fields and empty default bookmarks;
+its run is rejected. The corrected current-schema runs preserve complete JSON
+and exact source bytes, and close normally with all private resources removed.
+An initial Inspector corner comparison had not actually changed its numeric
+control; confirmed5/20 captures show282 corner pixels changed. No product radius
+defect is inferred from the rejected comparison. This is scoped current-control
+acceptance, not a repeated exhaustive39-control sweep or physical Windows claim.
+Hosted run41466658719 passes all four jobs, including full Windows tests/lint/
+release build. All four accepted Linux packages are now promoted to stable paths;
+checksums verify afterward. Windows public files remain unchanged.
 Evidence: `.hermes/evidence/menu-space-delivery-current/CHECKPOINT.json`,
 `menu-space-ownership-current/SOURCE_ACCEPTANCE.json` and exact case receipts.
 
@@ -198,6 +211,17 @@ and archive are removed. Current Windows staging remains for those named runtime
 consumers. Stable8ede and public Windows files remain unchanged; MSI rollback is
 still a required failed gate. Evidence:
 `windows-menu-space-delivery-current/ASSEMBLY_ACCEPTANCE.json`.
+
+The first current Windows upgrade run reaches the actual ordinary updated GUI,
+but fails its keyboard fixture before proving file selection/Inspector opening.
+It is rejected for menu, reboot and removal acceptance; its guest/disks/profile
+are removed. A fresh run launches the updated GUI directly at the existing owned
+one-file fixture, uses pointer selection and captures that selection before
+keyboard tests. It is running. Native Ctrl+L navigation/input and Windows Hidden/
+System attribute filtering are separate controlled follow-ups; a home screenshot
+alone does not establish the file attributes or a product defect. These are
+independently executable checks, not owner waits. Evidence:
+`windows-menu-space-delivery-current/KEYBOARD_FIXTURE_FOLLOWUP.json`.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not
@@ -1510,7 +1534,7 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux cohort uses clean `928b7937`; the internal Windows candidate
+The stable Linux cohort uses clean `d09569e2`; the internal Windows candidate
 uses clean `8ede1562`.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
@@ -1540,9 +1564,9 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four928b7937 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | File-type popup keyboard routing, remaining software/theme gates and then parked owner/device acceptance. |
+| Linux | Fourd09569e2 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | Popup routing is delivered with native positive controls; remaining broader software/theme gates and then parked owner/device acceptance. |
 | Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, hosted source checks, native icons/CLI and scoped default-folder/Properties/picker/removal acceptance. Private c5a40fd2 development MSIX0.1.0.1 passes native assembly/runtime and enabled/disabled startup update/reboot with valid preferences and exact native database identity. | MSI rollback/current-client comparison and remaining installed/runtime/software gates. MSI rollback remains required and failed; public packages stay unchanged. |
-| Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Repair chooser popup keyboard ownership, then finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
+| Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
 User acceptance is deferred. Continue independently executable work; each
