@@ -1,8 +1,11 @@
 """Build one owned four-format Linux cohort; preserve stable deliverables until acceptance."""
 from pathlib import Path
-import hashlib, importlib.util, json, os, shutil, signal, subprocess, tempfile
+import argparse, hashlib, importlib.util, json, os, shutil, signal, subprocess, tempfile
 root = Path.cwd()
-e = Path(__file__).resolve().parent
+parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
+e = args.output.resolve()
+assert e.is_relative_to(root/'.hermes/evidence') and (e/'BUILD_SOURCE.json').is_file()
+assert shutil.disk_usage(root).free > 4*1024**3, 'Insufficient safe package staging margin'
 build = json.loads((e / 'BUILD_SOURCE.json').read_text())
 stage = Path(build['stage'])
 assert stage == root / '.hermes/packaging-tmp/.linux-native-desktop-stage'

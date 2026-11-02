@@ -1,7 +1,8 @@
 """Verify this staged Linux cohort with production verifier blocks; retain one owned AppImage extraction for GUI QA."""
 from pathlib import Path
-import hashlib,json,os,subprocess,sys,tempfile,shutil,signal
-root=Path.cwd();e=Path(__file__).resolve().parent
+import argparse,hashlib,json,os,subprocess,sys,tempfile,shutil,signal
+root=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();e=args.output.resolve()
+assert e.is_relative_to(root/'.hermes/evidence') and (e/'BUILD_SOURCE.json').is_file()
 build=json.loads((e/'BUILD_SOURCE.json').read_text());expected=build['source_revision'];stage=Path(build['stage'])
 assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==expected
 assert not subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],text=True).strip()
