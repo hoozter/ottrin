@@ -209,8 +209,8 @@ configuration/native index identity and removal. Its guest/disks/profile are
 removed. The startup-disabled case now passes too: startup remains disabled through
 update and the new GUI; an actual reboot/login observes no daemon for180seconds
 before any Ottrin CLI. Configuration/native index identity survive clean removal.
-Its guest/disks/profile are removed, and both fulfilled previous-version inputs
-are no longer needed. The sole56.8MB input is removed. The sole previous0.1.0.1 input is transferred once into
+Its guest/disks/profile are removed. Both upgrade consumers are complete, so
+their sole56.8MB previous-version input is removed. The sole previous0.1.0.1 input is transferred once into
 `windows-menu-space-delivery-current/input/previous.msix`; superseded2540 staging
 and archive are removed. Current Windows staging remains for remaining software/installer acceptance;
 the two named update consumers are complete. Stable8ede and public Windows files remain unchanged; MSI rollback is
@@ -238,16 +238,18 @@ alone does not establish the file attributes or a product defect. These are
 independently executable checks, not owner waits. Evidence:
 `windows-menu-space-delivery-current/KEYBOARD_FIXTURE_FOLLOWUP.json`.
 
-The next filesystem-metadata regressions expose a real Unix directory-link tag
-error: the listing reports a directory target as `Some(false)`. The authoritative
-listing now resolves only the target-type flag while preserving symlink entry
-identity and its own metadata. The before-fix regression fails on the directory
-link; the fixed two-case suite and all460 Linux UI tests (one existing ignored)
-pass. This source follow-up is not in the delivered d09569e2 packages. A native
-Windows Hidden/System attribute regression is added and compiling for execution;
-its behavior is not yet accepted or repaired. Do not push the still-unverified
-Windows regression to hosted CI as a passing checkpoint. Evidence:
-`listing-metadata-current/`.
+The filesystem-metadata follow-up confirms two production listing defects:
+Unix directory links were tagged as non-directory targets, and native Windows
+Hidden/System files and directories were visible with show-hidden off. Both
+regressions fail before repair. The shared listing now resolves target type while
+preserving symlink identity/own metadata, and applies native Windows visibility
+attributes. Dot-file filtering, ordinary/archive entries and show-hidden on are
+covered. Two focused Linux cases, all460 Linux UI tests (one existing ignored),
+strict Linux/Windows lint and the actual before/after Windows NTFS test pass.
+Both native test guests/disks/fixtures are removed. This source correction is not
+in the delivered d09569e2 artifacts. Next build a clean source cohort, test the
+affected real GUI/chooser flows, verify package identity and promote only after
+hosted gates pass. Source/native evidence: `listing-metadata-current/ACCEPTANCE.json`.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not
