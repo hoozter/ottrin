@@ -3296,6 +3296,7 @@ dependencies = [
  "libc",
  "notify",
  "ottrin-core",
+ "ottrin-platform",
  "regex",
  "rusqlite",
  "serde",

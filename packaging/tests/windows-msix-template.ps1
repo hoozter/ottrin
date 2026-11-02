@@ -11,6 +11,7 @@ try {
     # SDK/schema control only: this Windows command is never presented as Ottrin.
     $Source = Join-Path $env:SystemRoot 'System32\cmd.exe'
     Copy-Item $Source (Join-Path $Work 'payload\bin\ottrin.exe')
+    Copy-Item $Source (Join-Path $Work 'payload\bin\ottrin-indexd.exe')
     Add-Type -AssemblyName System.Drawing
     $Image = [Drawing.Image]::FromFile($Icon)
     try {

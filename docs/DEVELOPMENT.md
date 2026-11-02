@@ -2115,8 +2115,25 @@ comparison, SDK manifest/block-map validation, development deployment, actual
 ordinary application/chooser launch and icons, saved configuration/data behavior,
 background-index startup and running-process ownership, same-identity package
 upgrade, and package removal without stale startup registrations or unrelated
-profile/data deletion. The existing scheduled-task index integration must pass
-package-path/version changes; successful assembly alone cannot accept this gate.
+profile/data deletion. Successful assembly alone cannot accept these gates.
+
+The native40effd6f development package exposes a failed startup/removal gate:
+Task Scheduler cannot start the selected daemon reliably, and package removal
+leaves an enabled task pointing into the removed version directory. MSIX startup
+now has a source correction: one disabled-by-default `windows.startupTask`
+extension names the dedicated daemon, and the platform uses the Windows
+`StartupTask` API. This preserves Windows user/policy disable choices and lets
+Windows own version changes and removal. Direct ZIP/EXE/MSI installations keep
+the existing authenticated Task Scheduler path. A package refuses to add a second
+startup provider while an unpackaged Ottrin task exists; remove that registration
+from its owning installation before switching providers. This source correction
+requires a rebuilt package and fresh actual startup/update/removal acceptance.
+
+Services labels distinguish package startup repair/disable from native service
+reinstall/uninstall. The package provides a direct Windows Startup apps settings
+link for choices the app is not permitted to override. Passive startup inspection
+must not launch an index daemon; stopping the current daemon must preserve the
+login choice. Test both before calling the package ready.
 
 References: [Microsoft manual MSIX packaging](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-manual-conversion),
 [unsigned development deployment](https://learn.microsoft.com/en-us/windows/msix/package/unsigned-package),

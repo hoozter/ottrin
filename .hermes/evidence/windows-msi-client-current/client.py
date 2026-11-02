@@ -4,9 +4,11 @@ from contextlib import ExitStack
 import argparse, base64, hashlib, importlib.util, json, os, shutil, signal, subprocess, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');args=parser.parse_args()
+assert not args.prepare_updated_base or args.update_manifest
+assert not(args.use_updated_base and args.update_manifest)
 assert sum(map(bool,[args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime]))<=1
-assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime),'New comparison needs an explicit new evidence root'
+assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base),'New comparison needs an explicit new evidence root'
 r=Path.cwd();e=args.output.resolve() if args.output else Path(__file__).resolve().parent
 assert not args.output or not (e/'OWNER.json').exists(),'Do not replace an existing owned run'
 name='ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
@@ -28,7 +30,12 @@ for filename,url,algorithm,digest in [('runtime.zip',pins['runtime_url'],'sha512
  assert hashlib.new(algorithm,p.read_bytes()).hexdigest()==digest
 fixture=e/'fixture';assert not fixture.exists()
 scope='Actual development MSIX deployment, ordinary launch and index/removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
-state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':'/var/lib/libvirt/images/win11ltsc.qcow2','network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+backing='/var/lib/libvirt/images/win11ltsc.qcow2'
+if args.use_updated_base:
+ prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
+ base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default',prepared_base['volume']));assert base_xml.findtext('./backingStore/path')==prepared_base['backing_original'];assert virsh('vol-path','--pool','default',prepared_base['volume'])==backing
+ for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
+state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 save('OWNER.json',state)
 def cleanup():
  try:
@@ -39,12 +46,15 @@ def cleanup():
    disk_sources={x.get('file') for x in root.findall('./devices/disk/source')};assert disk_sources=={'/var/lib/libvirt/images/'+volume,'/var/lib/libvirt/images/'+iso_volume}
    if virsh('domstate',name)!='shut off':virsh('destroy',name)
    virsh('undefine',name,'--nvram','--tpm')
+  removed=[]
   for v in reversed(state['volumes']):
+   if v==state.get('retained_pending_volume'):continue
    for domain in virsh('list','--all','--name').splitlines():
     assert '/var/lib/libvirt/images/'+v not in virsh('dumpxml',domain)
    virsh('vol-delete','--pool','default',v)
+   removed.append(v)
   if fixture.exists():shutil.rmtree(fixture)
-  state['cleanup']={'domain_removed':True,'owned_volumes_removed':state['volumes'][:],'fixture_removed':True,'base_still_off':virsh('domstate','win11ltsc')=='shut off'}
+  state['cleanup']={'domain_removed':True,'owned_volumes_removed':removed,'fixture_removed':True,'base_still_off':virsh('domstate','win11ltsc')=='shut off','retained_pending_volume':state.get('retained_pending_volume')}
  except BaseException as error:state['cleanup_error']=repr(error);raise
  finally:save('OWNER.json',state)
 def finish(kind,error,trace):
@@ -71,7 +81,7 @@ with ExitStack() as stack:
   shutil.copy2(r/'packaging/tests/windows-msix-template.ps1',fixture/'windows-msix-template.ps1')
   shutil.copy2(r/'assets/icon.png',fixture/'icon.png')
  if args.msix_stage:
-  parent=r/'.hermes/evidence/windows-msix-current';build=json.loads((parent/'windows/BUILD_RESULT.json').read_text());source_input=json.loads((parent/'SOURCE_INPUT.json').read_text());git_input=json.loads((parent/'GIT_INPUT.json').read_text());assert build['source_revision']==source_input['source_revision']
+  parent=e.parent;build=json.loads((parent/'windows/BUILD_RESULT.json').read_text());source_input=json.loads((parent/'SOURCE_INPUT.json').read_text());git_input=json.loads((r/'.hermes/evidence/windows-msix-current/GIT_INPUT.json').read_text());assert build['source_revision']==source_input['source_revision']
   assert args.msix_stage.resolve()==Path(build['stage'])==r/'.hermes/packaging-tmp/.windows-desktop-stage'
   files=[('portable.zip',args.msix_stage/'Ottrin-0.1.0-windows-x64-portable.zip',build['artifacts']['Ottrin-0.1.0-windows-x64-portable.zip']),('source.zip',parent/'source.zip',source_input['sha256']),('mingit.zip',cache/'mingit.zip',git_input['sha256'])]
   assembly_inputs={'source_revision':build['source_revision'],'files':[]}
@@ -80,7 +90,7 @@ with ExitStack() as stack:
    os.link(path,fixture/name_in_iso);assembly_inputs['files'].append({'name':name_in_iso,'sha256':digest})
   (fixture/'assembly-inputs.json').write_text(json.dumps(assembly_inputs));shutil.copy2(parent/'assembly.ps1',fixture/'assembly.ps1')
  if args.msix_runtime:
-  parent=r/'.hermes/evidence/windows-msix-current';accepted=json.loads((parent/'ASSEMBLY_ACCEPTANCE.json').read_text());assert args.msix_runtime.resolve()==Path(accepted['artifact'])
+  parent=e.parent;accepted=json.loads((parent/'ASSEMBLY_ACCEPTANCE.json').read_text());assert args.msix_runtime.resolve()==Path(accepted['artifact'])
   with args.msix_runtime.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==accepted['artifact_sha256']
   os.link(args.msix_runtime,fixture/'Ottrin.msix');shutil.copy2(parent/'runtime.ps1',fixture/'runtime.ps1');shutil.copy2(r/'.hermes/evidence/desktop-package-current/windows/gui/NATIVE_CONTROLS_INPUT.ps1',fixture/'native-controls.ps1')
   (fixture/'runtime-input.json').write_text(json.dumps({'sha256':accepted['artifact_sha256'],'source_revision':accepted['source_revision']}))
@@ -167,7 +177,7 @@ exit $exit
  if args.msix_runtime:
   code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});$d=$disc[0].DeviceID+'\\';$script=Join-Path $d 'runtime.ps1';$errors=$null;$tokens=$null;$null=[Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$errors);if($errors.Count){throw ($errors|Out-String)}; & ([ScriptBlock]::Create([IO.File]::ReadAllText($script))) -Mode Prepare -Disc $d"
   result=ps(code,90);save('PREPARATION.json',{'process_exit':result.get('exitcode'),'stdout':base64.b64decode(result.get('out-data','')).decode('utf-8-sig'),'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result['exitcode']==0
-  ps('shutdown.exe /r /t 3 /f',15);time.sleep(8);deadline=time.monotonic()+600;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
+  virsh('reboot',name,'--mode','agent');time.sleep(8);deadline=time.monotonic()+600;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
   while True:
    try:
     result=ps("$p='C:\\OttrinOwnedMsixRuntime\\results\\RESULT.json';if(Test-Path $p){Get-Content $p -Raw}else{'{}'}",20)
@@ -219,7 +229,7 @@ exit $exit
   target=next(item for item in inputs['files'] if 'kb5127648' in item['filename'])
   code="$ErrorActionPreference='Stop';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned update disc missing'};$msu=Join-Path ($disc[0].DeviceID+'\\') '"+target['filename']+"';$p=Start-Process wusa.exe -ArgumentList ('\"'+$msu+'\" /quiet /norestart') -PassThru;$null=$p.Handle;if(-not$p.WaitForExit(3600000)){$p.Kill();throw 'Owned update timed out after60minutes'};$p.WaitForExit();$code=$p.ExitCode;@{exitcode=$code;update='KB5127648';scope='Only disposable network-isolated clone; WUSA validates update applicability and trust'}|ConvertTo-Json -Compress;if($code-notin@(0,3010,2359302)){exit 1}"
   result=ps(code,3700);text=base64.b64decode(result.get('out-data','')).decode('utf-8-sig');save('SERVICING.json',{'process_exit':result.get('exitcode'),'output':text,'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result['exitcode']==0,'Supported update failed; no policy or signature bypass'
-  ps('shutdown.exe /r /t 3 /f',15);time.sleep(8);deadline=time.monotonic()+600
+  virsh('reboot',name,'--mode','agent');time.sleep(8);deadline=time.monotonic()+900
   while True:
    try:
     result=ps("$v=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';@{build=$v.CurrentBuildNumber;ubr=$v.UBR;msi=(Get-Item \"$env:SystemRoot\\System32\\msi.dll\").VersionInfo.FileVersion}|ConvertTo-Json -Compress",20)
@@ -230,13 +240,20 @@ exit $exit
    assert time.monotonic()<deadline,'Updated clone did not reach exact target build'
    time.sleep(3)
   save('UPDATED_CLIENT_VERSION.json',version)
+  if args.prepare_updated_base:
+   virsh('shutdown',name,'--mode','agent');deadline=time.monotonic()+600
+   while virsh('domstate',name)!='shut off':
+    assert time.monotonic()<deadline,'Updated fixture did not shut down cleanly';time.sleep(2)
+   state['retained_pending_volume']=volume;state['status']='updated baseline stopped cleanly; retained for named native consumers'
+   save('UPDATED_BASE.json',{'status':'ready for named pending native consumers','path':'/var/lib/libvirt/images/'+volume,'volume':volume,'backing_original':'/var/lib/libvirt/images/win11ltsc.qcow2','verified_version':version,'clean_agent_shutdown':True,'pending_consumers':['Current-client minimal and actual Ottrin MSI rollback/lifecycle','MSIX startup/update/removal acceptance'],'cleanup_owner':'windows-msi-updated-client-current; delete only after consumers close and domain/backing-chain checks pass'})
+   save('OWNER.json',state);raise SystemExit(0)
  state['status']='running ordinary-user native control';save('OWNER.json',state)
  code="$ErrorActionPreference='Stop';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned fixture disc missing'};$script=Join-Path ($disc[0].DeviceID+'\\') 'controller.ps1';$out='C:\\OttrinMsiCleanClientResults';$source=[IO.File]::ReadAllText($script);$source=$source.Replace('$PSScriptRoot',\"'\"+(Split-Path $script)+\"'\"); & ([ScriptBlock]::Create($source)) -Output $out"
  result=ps(code);save('CONTROLLER_PROCESS.json',{'exitcode':result.get('exitcode'),'stdout':base64.b64decode(result.get('out-data','')).decode('utf-8',errors='replace'),'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')})
  assert result['exitcode']==0,'Interactive preparation failed; preserve controller evidence'
  prepared=ps("Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw",30)
  owner=json.loads(base64.b64decode(prepared['out-data']).decode('utf-8-sig'));assert owner['status']=='prepared';save('GUEST_PREPARATION.json',owner)
- ps("shutdown.exe /r /t 3 /f",15);state['status']='waiting for owned interactive actor after reboot';save('OWNER.json',state)
+ virsh('reboot',name,'--mode','agent');state['status']='waiting for owned interactive actor after reboot';save('OWNER.json',state)
  time.sleep(8);deadline=time.monotonic()+400
  while True:
   try:

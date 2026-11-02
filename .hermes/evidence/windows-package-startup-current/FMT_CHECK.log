@@ -1,0 +1,147 @@
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/lib.rs:9:
+ #[cfg(target_os = "windows")]
+ #[path = "windows_folder_integration.rs"]
+ pub mod folder_integration;
+-#[cfg(target_os = "windows")]
+-pub mod windows_startup;
+ #[cfg(target_os = "linux")]
+ mod integration_preferences;
+ #[cfg(target_os = "linux")]
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/lib.rs:20:
+ #[cfg(all(test, target_os = "windows"))]
+ #[path = "../../../tests/support/windows_oplock.rs"]
+ mod test_oplock;
++#[cfg(target_os = "windows")]
++pub mod windows_startup;
+ 
+ /// Remove optional per-user desktop integrations before the application is removed.
+ /// Modified/foreign state refuses removal; a caller must retain the executable on error.
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/windows_startup.rs:25:
+     pub fn detail(self) -> &'static str {
+         match self {
+             Self::Disabled => "Disabled at login",
+-            Self::DisabledByUser => "Disabled in Windows Startup apps; enable Ottrin there to restore automatic indexing",
++            Self::DisabledByUser => {
++                "Disabled in Windows Startup apps; enable Ottrin there to restore automatic indexing"
++            }
+             Self::Enabled => "Enabled at login",
+             Self::DisabledByPolicy => "Disabled by Windows policy",
+             Self::EnabledByPolicy => "Enabled by Windows policy",
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/windows_startup.rs:39:
+             StartupTaskState::Enabled => Ok(Self::Enabled),
+             StartupTaskState::DisabledByPolicy => Ok(Self::DisabledByPolicy),
+             StartupTaskState::EnabledByPolicy => Ok(Self::EnabledByPolicy),
+-            _ => Err(format!("Windows returned an unknown startup state: {}", state.0)),
++            _ => Err(format!(
++                "Windows returned an unknown startup state: {}",
++                state.0
++            )),
+         }
+     }
+ }
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/windows_startup.rs:52:
+     match result {
+         APPMODEL_ERROR_NO_PACKAGE => Ok(false),
+         ERROR_INSUFFICIENT_BUFFER if length > 0 => Ok(true),
+-        other => Err(format!("Cannot inspect the Windows package identity: {}", other.0)),
++        other => Err(format!(
++            "Cannot inspect the Windows package identity: {}",
++            other.0
++        )),
+     }
+ }
+ 
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/windows_startup.rs:75:
+             let _apartment = Apartment;
+             let task = StartupTask::GetAsync(&HSTRING::from(INDEX_TASK_ID))
+                 .and_then(|operation| operation.get())
+-                .map_err(|error| format!("Cannot inspect the package's index startup task: {error}"))?;
++                .map_err(|error| {
++                    format!("Cannot inspect the package's index startup task: {error}")
++                })?;
+             action(task)
+         })
+         .map_err(|error| format!("Cannot start Windows startup inspection: {error}"))?
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/windows_startup.rs:113:
+         if state.enabled() {
+             Ok(())
+         } else {
+-            Err(format!("Automatic indexing was not enabled: {}", state.detail()))
++            Err(format!(
++                "Automatic indexing was not enabled: {}",
++                state.detail()
++            ))
+         }
+     })
+ }
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-platform/src/windows_startup.rs:140:
+     fn native_states_preserve_user_and_policy_choices() {
+         for (native, expected, enabled) in [
+             (StartupTaskState::Disabled, StartupState::Disabled, false),
+-            (StartupTaskState::DisabledByUser, StartupState::DisabledByUser, false),
++            (
++                StartupTaskState::DisabledByUser,
++                StartupState::DisabledByUser,
++                false,
++            ),
+             (StartupTaskState::Enabled, StartupState::Enabled, true),
+-            (StartupTaskState::DisabledByPolicy, StartupState::DisabledByPolicy, false),
+-            (StartupTaskState::EnabledByPolicy, StartupState::EnabledByPolicy, true),
++            (
++                StartupTaskState::DisabledByPolicy,
++                StartupState::DisabledByPolicy,
++                false,
++            ),
++            (
++                StartupTaskState::EnabledByPolicy,
++                StartupState::EnabledByPolicy,
++                true,
++            ),
+         ] {
+             let state = StartupState::from_native(native).unwrap();
+             assert_eq!(state, expected);
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-search/src/lib.rs:541:
+                 ottrin_platform::windows_startup::index_state()?;
+                 prepare_running_windows_daemon()?;
+                 ensure_windows_search_daemon(&executable)?;
+-                return Ok("Indexing started / restarted. Your login startup choice is unchanged.".into());
++                return Ok(
++                    "Indexing started / restarted. Your login startup choice is unchanged.".into(),
++                );
+             }
+             if query_sqlite_windows_task()?.is_some_and(|task| task.enabled) {
+                 return restart_sqlite_schedule();
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-search/src/lib.rs:571:
+             if ottrin_platform::windows_startup::is_packaged()? {
+                 ottrin_platform::windows_startup::index_state()?;
+                 prepare_running_windows_daemon()?;
+-                return Ok("Indexing stopped. Your saved index and Windows startup choice are kept.".into());
++                return Ok(
++                    "Indexing stopped. Your saved index and Windows startup choice are kept."
++                        .into(),
++                );
+             }
+             query_sqlite_windows_task()?; // Do not mutate runtime after an inspection failure.
+             prepare_running_windows_daemon()?;
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-search/src/lib.rs:2275:
+     {
+         if ottrin_platform::windows_startup::is_packaged()? {
+             ottrin_platform::windows_startup::index_state()?;
+-            let executable = find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
++            let executable =
++                find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
+             prepare_running_windows_daemon()?;
+             ensure_windows_search_daemon(&executable)?;
+             return Ok("Background indexing restarted. Windows login startup is unchanged.".into());
+Diff in /home/campbell/Projects/Ottrin/crates/ottrin-search/src/lib.rs:2447:
+         if ottrin_platform::windows_startup::is_packaged()? {
+             ottrin_platform::windows_startup::disable_index()?;
+             prepare_running_windows_daemon()?;
+-            return Ok("Automatic indexing at login disabled. Your saved index and preferences are kept.".into());
++            return Ok(
++                "Automatic indexing at login disabled. Your saved index and preferences are kept."
++                    .into(),
++            );
+         }
+         uninstall_sqlite_windows_task_with(run_sqlite_windows_task, prepare_running_windows_daemon)
+     }

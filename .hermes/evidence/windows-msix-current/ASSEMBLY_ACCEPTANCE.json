@@ -21,5 +21,6 @@
     "Configuration persistence, package upgrade and removal",
     "Background index startup/task ownership and cleanup",
     "Store identity/certification remains an owner wait"
-  ]
+  ],
+  "staged_artifact_retired_after_failed_runtime_gate": true
 }

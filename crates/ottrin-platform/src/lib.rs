@@ -18,6 +18,8 @@ pub mod portal_integration;
 #[cfg(all(test, target_os = "windows"))]
 #[path = "../../../tests/support/windows_oplock.rs"]
 mod test_oplock;
+#[cfg(target_os = "windows")]
+pub mod windows_startup;
 
 /// Remove optional per-user desktop integrations before the application is removed.
 /// Modified/foreign state refuses removal; a caller must retain the executable on error.

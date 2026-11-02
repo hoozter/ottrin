@@ -537,6 +537,14 @@ impl SearchService {
         {
             let executable =
                 find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
+            if ottrin_platform::windows_startup::is_packaged()? {
+                ottrin_platform::windows_startup::index_state()?;
+                prepare_running_windows_daemon()?;
+                ensure_windows_search_daemon(&executable)?;
+                return Ok(
+                    "Indexing started / restarted. Your login startup choice is unchanged.".into(),
+                );
+            }
             if query_sqlite_windows_task()?.is_some_and(|task| task.enabled) {
                 return restart_sqlite_schedule();
             }
@@ -562,6 +570,14 @@ impl SearchService {
         }
         #[cfg(target_os = "windows")]
         {
+            if ottrin_platform::windows_startup::is_packaged()? {
+                ottrin_platform::windows_startup::index_state()?;
+                prepare_running_windows_daemon()?;
+                return Ok(
+                    "Indexing stopped. Your saved index and Windows startup choice are kept."
+                        .into(),
+                );
+            }
             query_sqlite_windows_task()?; // Do not mutate runtime after an inspection failure.
             prepare_running_windows_daemon()?;
             stop_registered_windows_index_task()?;
@@ -1699,6 +1715,14 @@ pub struct LocateScheduleStatus {
     pub detail: String,
 }
 
+const WINDOWS_PACKAGE_STARTUP_SOURCE: &str = "Windows Startup apps";
+
+impl LocateScheduleStatus {
+    pub fn package_managed(&self) -> bool {
+        self.source == WINDOWS_PACKAGE_STARTUP_SOURCE
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct SystemLocateScheduleStatus {
     pub source: Option<String>,
@@ -2066,6 +2090,30 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
 
     #[cfg(target_os = "windows")]
     {
+        match ottrin_platform::windows_startup::is_packaged() {
+            Ok(true) => {
+                return match ottrin_platform::windows_startup::index_state() {
+                    Ok(state) => LocateScheduleStatus {
+                        source: WINDOWS_PACKAGE_STARTUP_SOURCE.into(),
+                        enabled: state.enabled(),
+                        detail: state.detail().into(),
+                    },
+                    Err(error) => LocateScheduleStatus {
+                        source: WINDOWS_PACKAGE_STARTUP_SOURCE.into(),
+                        enabled: false,
+                        detail: format!("Status unavailable: {error}"),
+                    },
+                };
+            }
+            Err(error) => {
+                return LocateScheduleStatus {
+                    source: WINDOWS_PACKAGE_STARTUP_SOURCE.into(),
+                    enabled: false,
+                    detail: format!("Status unavailable: {error}"),
+                };
+            }
+            Ok(false) => {}
+        }
         sqlite_windows_task_status_with(query_sqlite_windows_task)
     }
 
@@ -2230,6 +2278,14 @@ pub fn restart_sqlite_schedule() -> Result<String, String> {
 
     #[cfg(target_os = "windows")]
     {
+        if ottrin_platform::windows_startup::is_packaged()? {
+            ottrin_platform::windows_startup::index_state()?;
+            let executable =
+                find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
+            prepare_running_windows_daemon()?;
+            ensure_windows_search_daemon(&executable)?;
+            return Ok("Background indexing restarted. Windows login startup is unchanged.".into());
+        }
         restart_sqlite_windows_task_with(run_sqlite_windows_task)?;
         let executable = find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
         windows_daemon::wait_for_windows_search_daemon(&executable)?;
@@ -2298,6 +2354,15 @@ pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> 
 
     #[cfg(target_os = "windows")]
     {
+        if ottrin_platform::windows_startup::is_packaged()? {
+            ottrin_platform::windows_startup::index_state()?;
+            if query_sqlite_windows_task()?.is_some() {
+                return Err("Another Ottrin installation has a Task Scheduler index service. Remove that service from its Services settings before enabling this package's automatic startup.".into());
+            }
+            ottrin_platform::windows_startup::enable_index()?;
+            ensure_windows_search_daemon(&ottrin)?.update_config(config.clone())?;
+            return Ok("Windows startup enabled. Index daemon is ready; Windows manages package updates and removal.".into());
+        }
         query_sqlite_windows_task()?; // Inspection failures must precede any runtime changes.
         let client = SearchDaemonClient::connect_default()?;
         let was_running = client.ping().is_ok();
@@ -2385,6 +2450,14 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
 
     #[cfg(target_os = "windows")]
     {
+        if ottrin_platform::windows_startup::is_packaged()? {
+            ottrin_platform::windows_startup::disable_index()?;
+            prepare_running_windows_daemon()?;
+            return Ok(
+                "Automatic indexing at login disabled. Your saved index and preferences are kept."
+                    .into(),
+            );
+        }
         uninstall_sqlite_windows_task_with(run_sqlite_windows_task, prepare_running_windows_daemon)
     }
 

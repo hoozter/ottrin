@@ -1,0 +1,26 @@
+{
+  "status": "source checks pass; actual corrected-package lifecycle remains required",
+  "checks": {
+    "windows_all_target_check": "WINDOWS_CHECK.log",
+    "windows_all_target_strict_clippy": "WINDOWS_CLIPPY_FINAL.log",
+    "linux_ui_tests": {
+      "passed": 454,
+      "failed": 0,
+      "ignored_existing_namespace_fixture": 1,
+      "log": "LINUX_UI_TESTS.log"
+    },
+    "linux_all_target_strict_clippy": "LINUX_CLIPPY.log",
+    "fmt": "FMT_FINAL.log"
+  },
+  "cleanup": {
+    "incremental_sessions_removed": 30,
+    "incremental_gib_removed": 0.88,
+    "superseded_stage": "RETIRED_STAGE.json",
+    "private_home_xdg": "test-workspace.py teardown completed",
+    "other_ui_test_binary": "retained: compiler configuration does not match current replacement"
+  },
+  "pending_resources": {
+    "updated_client": "Separate ongoing owned Windows update preparation, pending MSI/MSIX consumers; cleanup owned by windows-msi-updated-client-current/client.py"
+  },
+  "delivery": "Stable accepted Linux and Windows candidate unchanged by this Windows-only source correction."
+}

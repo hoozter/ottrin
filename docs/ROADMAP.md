@@ -68,7 +68,8 @@ The independent queue is:
    Server2025's1625 policy refusal provides no rollback result. No security-policy,
    Installer-ACL, elevation or rollback waiver is used.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.
-   Source40effd6f portable/NSIS and a development-only MSIX are staged; the accepted
+   Source40effd6f portable/NSIS and development-only MSIX completed their native
+   consumers and are retired after the failed runtime gate; the accepted
    Windows8ede candidate/public files are preserved. Actual clean-source MakeAppx
    assembly passes58-file equality with the portable stage; native/hosted template
    checks pass. Development deployment and a normal-token real Ottrin main window
@@ -76,15 +77,24 @@ The independent queue is:
    remains unaccepted. The actual index setup creates a normal scheduled task but
    the daemon times out; removing the package leaves that enabled task pointing to
    its versioned WindowsApps executable. This is a required failed product gate:
-   implement package-managed startup, then verify startup, update and uninstall.
-   Owned MSIX guests/volumes/profiles are removed; staged packages remain for these
-   named native consumers. The fulfilled source archive118,751,194bytes is removed.
+   source now declares package-managed startup and uses the native StartupTask
+   API, preserving Windows user/policy choices and using package-specific Services
+   labels. Windows all-target compilation and strict lint pass;454 Linux UI tests
+   pass with the existing unrelated namespace fixture ignored. Rebuild and verify
+   actual startup, update and uninstall before accepting the correction.
+   Owned MSIX guests/volumes/profiles and superseded staging292,758,046bytes are
+   removed. The fulfilled source archive118,751,194bytes is removed. The corrected
+   source must produce a new package cohort for the required native consumers.
    Evidence: `.hermes/evidence/windows-msix-current/`.
    The first supported current-client servicing fixture times out after25minutes
    while CBS remains active and yields no updated-client rollback result. Its clone,
    volumes and profiles are removed; compact control evidence and verified public
-   update inputs remain under `windows-msi-updated-client-current/`. Repeat with a
-   longer monitored servicing interval after the MSIX runtime check. No Store
+   update inputs remain under `windows-msi-updated-client-current/`. A longer
+   interval successfully reaches26100.9711/MSI5.0.26100.9711, but guest-agent
+   observation fails before a rollback result is collected. Those owned resources
+   are removed. A revised producer is preparing one reusable updated baseline;
+   it must verify and cleanly stop the image before retaining it for the named
+   MSI/MSIX consumers. This is not a passed rollback gate. No Store
    identity, signing policy, Installer ACL or security-policy workaround is used.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.

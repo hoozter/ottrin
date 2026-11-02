@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
          xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-         IgnorableNamespaces="uap uap10 rescap">
+         IgnorableNamespaces="uap uap5 uap10 rescap">
   <!-- Identity is supplied explicitly by package-msix.ps1. -->
   <Identity Name="Unset.Identity" Publisher="CN=Unset" Version="0.0.0.0" ProcessorArchitecture="x64" />
   <Properties>
@@ -17,6 +18,11 @@
   <Applications>
     <Application Id="Ottrin" Executable="bin\ottrin.exe" uap10:RuntimeBehavior="packagedClassicApp" uap10:TrustLevel="mediumIL">
       <uap:VisualElements DisplayName="Ottrin" Description="Ottrin file manager" Square150x150Logo="msix-assets\icon-150.png" Square44x44Logo="msix-assets\icon-44.png" BackgroundColor="transparent" />
+      <Extensions>
+        <uap5:Extension Category="windows.startupTask" Executable="bin\ottrin-indexd.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask TaskId="OttrinIndex" Enabled="false" DisplayName="Ottrin background index" />
+        </uap5:Extension>
+      </Extensions>
     </Application>
   </Applications>
   <Capabilities><rescap:Capability Name="runFullTrust" /></Capabilities>

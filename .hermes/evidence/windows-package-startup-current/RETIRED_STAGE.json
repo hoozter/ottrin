@@ -1,0 +1,14 @@
+{
+  "source_revision": "40effd6fb128fc42220be9670377340a5e37031b",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "bytes": 292758046,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "af10a9d516b6bd6342a4531ba6b79102bc47a1b8f93d06f81a8138f14f19c9d6",
+    "Ottrin-0.1.0-windows-x64-setup.exe.sha256": "a5364ca2b8236e644a1f87a7f736b8a8ff434e14128b4c2b3aae00f3e7fdb39b",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "21e4c4561f613f0ba9d68d4f025ef84a5266e98ca1f739e6fc64fa7cd5664ad2",
+    "Ottrin-0.1.0-windows-x64-portable.zip.sha256": "989a5599c6eddaf08c42a067ad2efce124c844aa0625e7842b10a650cca364eb",
+    "Ottrin-0.1.0-windows-x64-development.msix": "3c25abe0b813f75d1eaa0404f3e2bdd9f0bfcd38a8e1dfd55a7f7f7f65fba26e"
+  },
+  "reason": "All exact40 native consumers closed; MSIX startup/removal rejected. Stable8ede Windows candidate unchanged. New corrected-source cohort will reuse this staging path.",
+  "removed": true
+}
