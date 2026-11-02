@@ -1,0 +1,9 @@
+{
+  "status": "Previous native run rejected at positive control; new native run required",
+  "observed": "Actual MSIX update and ordinary updated main window succeeded; initial keyboard-driven fixture navigation/selection did not establish Inspector opening. No menu, reboot or removal acceptance is inferred. Guest/disks/profile removed.",
+  "next": "Launch updated GUI directly at the existing owned one-file fixture, use actual pointer selection, capture selected file and failed Space state. Test menu ownership independently of address navigation.",
+  "separate_followup": [
+    "Native Windows Ctrl+L navigation/input delivery remains unproven by this rejected test",
+    "Hidden/System attribute filtering in Windows needs a controlled native attribute fixture; home screenshot alone does not establish attribute values"
+  ]
+}

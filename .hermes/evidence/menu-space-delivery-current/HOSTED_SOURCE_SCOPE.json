@@ -1,0 +1,7 @@
+{
+  "candidate_source": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "hosted_tested_source": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "run": 41466658719,
+  "url": "https://github.com/hoozter/ottrin/actions/runs/41466658719",
+  "scope": "Exact compiled candidate source; later receipts/status changes do not relabel the package source"
+}

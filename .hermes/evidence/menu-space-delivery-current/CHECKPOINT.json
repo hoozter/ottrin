@@ -1,19 +1,20 @@
 {
   "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
-  "status": "candidate passes package/native menu/six GUI/two browser scopes; final promotion gates pending",
+  "status": "All listed Linux promotion gates pass; final publisher execution pending",
   "completed": [
     "four Linux format build",
     "production package content/runtime closure/helper namespace checks",
     "native main/Inspector arrows Escape and Space; normal Space positive controls",
     "six main Properties icon saved-view GUI cases",
     "actual installed Firefox and Flatpak Falkon Open/Save",
-    "exact unchanged daemon and five helper/renderer payloads"
+    "exact unchanged daemon and five helper/renderer payloads",
+    "Fresh Fedora44 lifecycle and teardown",
+    "Fresh Ubuntu24.04 lifecycle and teardown",
+    "Dark100/Light150 current-schema native Settings/theme-editor live colors, button radius and all four window corner controls; Cancel/full config preservation",
+    "Exact sourced09569e2 hosted run41466658719 all four jobs success"
   ],
   "pending": [
-    "Fresh Fedora lifecycle currently running",
-    "Fresh Ubuntu lifecycle",
-    "Full Windows hosted verify result",
-    "Gate review and stable Linux promotion"
+    "Final publisher execution and stable Linux checksum verification"
   ],
   "cleanup": "All completed private GUI/browser profiles, processes, buses and mounts removed. Previous Linux/Windows source2540 staging/extraction and fulfilled source archives removed. Current stage/extraction retained for native lifecycle/promotion.",
   "retained_paths": {

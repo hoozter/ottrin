@@ -1,0 +1,33 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-98zsbtlw",
+  "owned_processes_reaped": [
+    {
+      "pid": 373461,
+      "exit": 0
+    },
+    {
+      "pid": 373464,
+      "exit": 0
+    },
+    {
+      "pid": 373465,
+      "exit": 15
+    },
+    {
+      "pid": 373521,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      373525,
+      373633
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "142 34 0:64 / /var/tmp/.ottrin-picker-qa-98zsbtlw/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

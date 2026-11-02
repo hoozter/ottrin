@@ -1,0 +1,185 @@
+{
+  "status": "incomplete",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "artifact_sha256": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910",
+  "scope": "Actual packaged Settings/theme editor native pointer/keyboard audit on owned X11/software desktop",
+  "case": "dark100",
+  "actions": [
+    {
+      "op": "click",
+      "x": 1074,
+      "y": 54
+    },
+    {
+      "op": "click",
+      "x": 1000,
+      "y": 322
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-general"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 85,
+      "y": 130
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-appearance"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 389,
+      "y": 324
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-initial"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 500,
+      "y": 150
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-titlebar-selected"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 990,
+      "y": 251
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "ctrl+a"
+    },
+    {
+      "op": "text",
+      "window": "Ottrin Theme Editor",
+      "value": "#713A52"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "Return"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-custom-titlebar"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-custom-titlebar"
+    },
+    {
+      "op": "capture",
+      "name": "main-custom-titlebar"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 582,
+      "y": 668
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-buttons-selected"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 976,
+      "y": 378
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "ctrl+a"
+    },
+    {
+      "op": "text",
+      "window": "Ottrin Theme Editor",
+      "value": "14"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "Return"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-button-radius-14"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 1020,
+      "y": 731
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-after-cancel"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 897,
+      "y": 18
+    },
+    {
+      "op": "capture",
+      "name": "main-after-cancel"
+    },
+    {
+      "op": "finish"
+    }
+  ],
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-diumqa93",
+    "owned_processes_reaped": [
+      {
+        "pid": 371057,
+        "exit": 0
+      },
+      {
+        "pid": 371061,
+        "exit": 0
+      },
+      {
+        "pid": 371062,
+        "exit": 15
+      },
+      {
+        "pid": 371116,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        371120,
+        371177
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "({'theme': 'Dark', 'theme_preset': 'Ottrin', 'custom_themes': [], 'active_custom_theme': None, 'default_view_mode': 'List', 'colorize_file_types': True, 'colorize_folder_labels': False, 'list_columns': ['Name', 'Kind', 'Size', 'Modified'], 'miller_view_scale': 1.0, 'list_view_scale': 1.0, 'grid_view_scale': 1.0, 'command_frame_always_visible': False, 'show_hidden_files': False, 'list_show_thumbnails': False, 'grid_show_thumbnails': False, 'folder_list_thumbnails': {}, 'folder_grid_thumbnails': {}, 'target': {'current': None, 'pinned': [], 'has_ever_set': False, 'recent': []}, 'bookmarks': [['\\ue88a', 'Home', '/var/tmp/.ottrin-picker-qa-diumqa93/home'], ['\\ue1db', 'Root', '/']], 'search': {'default_scope': 'Global', 'include_hidden_system': False, 'include_roots': ['/var/tmp/.ottrin-picker-qa-diumqa93/fixture'], 'indexed_volumes': [], 'exclude_roots': ['/proc', '/sys', '/dev', '/run'], 'content_indexing_enabled': False, 'content_include_roots': [], 'content_exclude_roots': [], 'content_file_groups': ['TextDocuments', 'SourceCode'], 'content_max_file_size_bytes': 524288, 'include_globs': [], 'exclude_globs': ['*.swp', '*.swo', '*.tmp', '*~', '.git/**', '**/.git/**', '.svn/**', '**/.svn/**', '.hg/**', '**/.hg/**', 'node_modules/**', '**/node_modules/**', 'target/**', '**/target/**', '__pycache__/**', '**/__pycache__/**', '*.pyc', '*.pyo', '.Trash/**', '.Trash-*/**'], 'default_sort': 'Relevance', 'result_limit': 500, 'refresh_interval_hours': 0, 'use_system_locate': False, 'manage_locate_db': False, 'locate_update_hours': 6}, 'search_setup_completed': True, 'folder_column_widths': {}, 'miller_column_width_mode': 'Fixed', 'smart_panel_width': 420.0, 'window_size': [1100.0, 800.0], 'thumbnail_cache_max_mb': 512, 'installed_office_previews_enabled': False, 'graphics_renderer': 'Native', 'graphics_compatibility_notice_seen': True}, {'theme': 'Dark', 'theme_preset': 'Ottrin', 'custom_themes': [], 'active_custom_theme': None, 'default_view_mode': 'List', 'colorize_file_types': True, 'colorize_folder_labels': False, 'list_columns': ['Name', 'Kind', 'Size', 'Modified'], 'miller_view_scale': 1.0, 'list_view_scale': 1.0, 'grid_view_scale': 1.0, 'command_frame_always_visible': False, 'restore_session': False, 'show_hidden_files': False, 'list_show_thumbnails': False, 'grid_show_thumbnails': False, 'folder_list_thumbnails': {}, 'folder_grid_thumbnails': {}, 'target': {'current': None, 'pinned': [], 'has_ever_set': False, 'recent': []}, 'last_session_dirs': [], 'bookmarks': [], 'search': {'default_scope': 'Global', 'include_hidden_system': False, 'include_roots': ['/var/tmp/.ottrin-picker-qa-diumqa93/fixture'], 'indexed_volumes': [], 'exclude_roots': ['/proc', '/sys', '/dev', '/run'], 'content_indexing_enabled': False, 'content_include_roots': [], 'content_exclude_roots': [], 'content_file_groups': ['TextDocuments', 'SourceCode'], 'content_max_file_size_bytes': 524288, 'include_globs': [], 'exclude_globs': ['*.swp', '*.swo', '*.tmp', '*~', '.git/**', '**/.git/**', '.svn/**', '**/.svn/**', '.hg/**', '**/.hg/**', 'node_modules/**', '**/node_modules/**', 'target/**', '**/target/**', '__pycache__/**', '**/__pycache__/**', '*.pyc', '*.pyo', '.Trash/**', '.Trash-*/**'], 'default_sort': 'Relevance', 'result_limit': 500, 'refresh_interval_hours': 0, 'use_system_locate': False, 'manage_locate_db': False, 'locate_update_hours': 6}, 'search_setup_completed': True, 'folder_column_widths': {}, 'miller_column_width_mode': 'Fixed', 'smart_panel_width': 420.0, 'window_size': [1100.0, 800.0], 'thumbnail_cache_max_mb': 512, 'installed_office_previews_enabled': False, 'graphics_renderer': 'Native', 'graphics_compatibility_notice_seen': True})",
+    "profile_removed": true
+  }
+}

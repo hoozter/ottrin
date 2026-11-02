@@ -1,0 +1,45 @@
+{
+  "status": "pass within listed current-package native appearance scopes",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "artifact_sha256": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910",
+  "cases": [
+    "Dark100",
+    "Light150"
+  ],
+  "shared_titlebar_rgb": {
+    "editor-custom-titlebar": [
+      113,
+      58,
+      82
+    ],
+    "settings-custom-titlebar": [
+      113,
+      58,
+      82
+    ],
+    "main-custom-titlebar": [
+      113,
+      58,
+      82
+    ]
+  },
+  "preview_titlebar_rgb": [
+    113,
+    58,
+    82
+  ],
+  "button_radius_6_to_14_changed_pixels": {
+    "actual_more_button": 178,
+    "preview_button": 446
+  },
+  "window_radius_5_to_20_corner_changed_pixels": {
+    "main": 282,
+    "settings": 281,
+    "editor": 282,
+    "inspector": 282
+  },
+  "full_config_and_source_preserved": true,
+  "native_close_and_teardown": "Both current runs exit normally; exact fixture bytes and complete current-schema config JSON equal initial values, both private profiles/processes removed",
+  "rejected_attempts": "First Dark whole-config assertion used obsolete fixture fields/default bookmarks; Light canceled. Initial Inspector radius-reset capture retained20; rejected as a5-versus20 comparison. Confirmed5 control and new Inspector capture establish282 corner pixels changed.",
+  "scope": "Current Settings/editor hierarchy, shared live titlebar colors, real and preview button radius, actual main/Settings/editor/Inspector window corners, native Inspector Space and Cancel restoration. This is not an exhaustive39-control sweep, native Windows appearance, physical renderer or final owner acceptance."
+}

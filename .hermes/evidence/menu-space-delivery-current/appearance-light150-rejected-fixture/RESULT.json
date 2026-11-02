@@ -1,0 +1,42 @@
+{
+  "status": "incomplete",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "artifact_sha256": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910",
+  "scope": "Actual packaged Settings/theme editor native pointer/keyboard audit on owned X11/software desktop",
+  "case": "light150",
+  "actions": [],
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-wre5kivy",
+    "owned_processes_reaped": [
+      {
+        "pid": 373048,
+        "exit": 0
+      },
+      {
+        "pid": 373051,
+        "exit": 0
+      },
+      {
+        "pid": 373052,
+        "exit": 15
+      },
+      {
+        "pid": 373114,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        373121,
+        373185
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "142 34 0:64 / /var/tmp/.ottrin-picker-qa-wre5kivy/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "error": "130",
+    "profile_removed": true
+  }
+}

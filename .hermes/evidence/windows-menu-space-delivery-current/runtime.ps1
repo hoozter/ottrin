@@ -112,15 +112,13 @@ function Exercise-UpdatedMenuKeys([IntPtr]$window,[int]$processId){
  # retains its historical keyboard behavior as an actual upgrade input.
  $fixture=Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'OttrinMSIXFixture'
  $file=Join-Path $fixture 'preserve.txt';$before=(Get-FileHash $file).Hash
- [PickerNative]::Focus($window)
- [System.Windows.Forms.SendKeys]::SendWait('^l');Start-Sleep -Milliseconds 250
- [System.Windows.Forms.SendKeys]::SendWait($fixture);[System.Windows.Forms.SendKeys]::SendWait('{ENTER}');Start-Sleep -Milliseconds 750
- [System.Windows.Forms.SendKeys]::SendWait('{DOWN}');Start-Sleep -Milliseconds 250
+ [PickerNative]::Click($window,100,110);Start-Sleep -Milliseconds 400
+ [PickerNative]::Shot($window,(Join-Path $Root 'results\updated-fixture-selected.png'))
  $title='Ottrin Quick Inspector '+[char]0x2014+' preserve.txt'
  [System.Windows.Forms.SendKeys]::SendWait(' ')
  $deadline=[DateTime]::UtcNow.AddSeconds(15);$inspector=[IntPtr]::Zero
  while([DateTime]::UtcNow-lt$deadline){$inspector=[PickerNative]::Window($processId,$title);if($inspector-ne[IntPtr]::Zero){break};Start-Sleep -Milliseconds 100}
- if($inspector-eq[IntPtr]::Zero){throw 'Normal Space did not open the selected fixture in Inspector'}
+ if($inspector-eq[IntPtr]::Zero){[PickerNative]::Shot($window,(Join-Path $Root 'results\updated-failed-space-positive.png'));throw 'Normal Space did not open the selected fixture in Inspector'}
  [PickerNative]::Focus($inspector);[System.Windows.Forms.SendKeys]::SendWait(' ');Start-Sleep -Milliseconds 500
  if([PickerNative]::Window($processId,$title)-ne[IntPtr]::Zero){throw 'Normal Inspector Space did not close'}
  [PickerNative]::Click($window,-26,54);Start-Sleep -Milliseconds 300
@@ -146,7 +144,9 @@ function Exercise-MainWindow{
  while([InputDesktopQA]::Name()-ne'Default'-and[DateTime]::UtcNow-lt$readyDeadline){Start-Sleep -Seconds 1}
  $result.input_desktop=[InputDesktopQA]::Name();Save $ActorStateName $result
  & ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $Root 'native-controls.ps1'))));[PickerNative]::Init()
- Start-Process $exe -ArgumentList @('--renderer','opengl') -WindowStyle Normal|Out-Null
+ $arguments=@('--renderer','opengl')
+ if($Mode-eq'Updated'){$fixture=Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'OttrinMSIXFixture';$arguments=@(('"'+$fixture+'"'),'--renderer','opengl')}
+ Start-Process $exe -ArgumentList $arguments -WindowStyle Normal|Out-Null
  $deadline=[DateTime]::UtcNow.AddSeconds(60);$app=$null;$window=[IntPtr]::Zero
  while([DateTime]::UtcNow-lt$deadline){
   foreach($candidate in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe})){

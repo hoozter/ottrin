@@ -1,0 +1,34 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-wre5kivy",
+  "owned_processes_reaped": [
+    {
+      "pid": 373048,
+      "exit": 0
+    },
+    {
+      "pid": 373051,
+      "exit": 0
+    },
+    {
+      "pid": 373052,
+      "exit": 15
+    },
+    {
+      "pid": 373114,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      373121,
+      373185
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "142 34 0:64 / /var/tmp/.ottrin-picker-qa-wre5kivy/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "130",
+  "profile_removed": true
+}

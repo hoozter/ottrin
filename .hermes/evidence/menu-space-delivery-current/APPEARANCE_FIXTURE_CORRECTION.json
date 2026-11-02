@@ -1,0 +1,6 @@
+{
+  "status": "First full-config comparison rejected; corrected current-schema fixture required",
+  "observed": "Dark native titlebar and button-radius edits rendered correctly, but full JSON comparison included obsolete restore_session/last_session_dirs and empty bookmarks that startup normally initializes. The visual observation does not pass complete config-preservation acceptance. Light attempt canceled before further input.",
+  "fix": "Remove superseded fixture fields and initialize the actual current default bookmarks with the owned HOME. Continue to require complete JSON equality and exact source bytes after normal close.",
+  "cleanup": "Both rejected owned profiles and processes removed; no product or personal settings changed"
+}

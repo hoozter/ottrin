@@ -1,0 +1,11 @@
+{
+  "sha256": "536f5c72371b17b2faab15ad35d1aebfbb8f26e4917bc8958ec21fc50bc7f1bb",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "version": "0.1.0.2",
+  "startup_enabled": true,
+  "previous": {
+    "sha256": "ba6783e85a6f97c87b230639a490f1a5cc23843da057b47fbf09b3ba6c1029ed",
+    "version": "0.1.0.1",
+    "source_revision": "c5a40fd231332fa578432897319578d1bb035363"
+  }
+}
