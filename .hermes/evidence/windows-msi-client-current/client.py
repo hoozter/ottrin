@@ -106,7 +106,9 @@ with ExitStack() as stack:
   if args.msix_upgrade_from:
    previous=json.loads((parent/'PREVIOUS_PACKAGE.json').read_text());assert args.msix_upgrade_from.resolve()==Path(previous['retained_input'])
    with args.msix_upgrade_from.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==previous['sha256']
-   assert previous['version']=='0.1.0.0' and runtime_input['version']=='0.1.0.1'
+   versions=[tuple(int(part) for part in value.split('.')) for value in [previous['version'],runtime_input['version']]]
+   assert all(len(version)==4 and all(0<=part<=65535 for part in version) for version in versions),versions
+   assert versions[0]<versions[1], 'Actual MSIX update requires a strictly newer four-part version'
    os.link(args.msix_upgrade_from,fixture/'Previous.msix');runtime_input['previous']={'sha256':previous['sha256'],'version':previous['version'],'source_revision':previous['source_revision']}
   (fixture/'runtime-input.json').write_text(json.dumps(runtime_input));save('RUNTIME_INPUT.json',runtime_input)
  (fixture/'pins.json').write_text(json.dumps(pins))

@@ -8574,10 +8574,41 @@ impl OttrinApp {
 
     // ── Keyboard handling ─────────────────────────────────────────────────────
 
+    fn main_shortcuts_available(&self, ctx: &Context) -> bool {
+        self.pending_picker.is_none() && !egui::Popup::is_any_open(ctx)
+    }
+
+    fn handle_preview_toggle(&mut self, ctx: &Context) {
+        if !self.main_shortcuts_available(ctx) {
+            return;
+        }
+        // Space to toggle preview — must consume before widgets see it.
+        if self.pending_rename.is_none()
+            && !self.creation_modal_active()
+            && self.pending_delete.is_none()
+            && self.pending_transfer_conflict.is_none()
+            && !self.pending_empty_trash
+            && !self.any_address_bar_editing()
+            && !self.command_frame.visible
+        {
+            let space = self.preview.text_editor.is_none()
+                && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Space));
+            if space {
+                if self.preview.visible {
+                    if self.request_preview_close() {
+                        self.close_preview(ctx);
+                    }
+                } else {
+                    self.open_preview();
+                }
+            }
+        }
+    }
+
     fn handle_keyboard(&mut self, ctx: &Context) {
         // Secondary pickers and open menus own their shortcuts. Do not also
         // apply their keys to the main window's selection or file actions.
-        if self.pending_picker.is_some() || egui::Popup::is_any_open(ctx) {
+        if !self.main_shortcuts_available(ctx) {
             return;
         }
         // Don't intercept keys when typing in address bar
@@ -23305,27 +23336,7 @@ impl eframe::App for OttrinApp {
             self.dismiss_command_frame_if_inactive(ctx);
         }
 
-        // Space to toggle preview — must consume before widgets see it.
-        if self.pending_rename.is_none()
-            && !self.creation_modal_active()
-            && self.pending_delete.is_none()
-            && self.pending_transfer_conflict.is_none()
-            && !self.pending_empty_trash
-            && !self.any_address_bar_editing()
-            && !self.command_frame.visible
-        {
-            let space = self.preview.text_editor.is_none()
-                && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Space));
-            if space {
-                if self.preview.visible {
-                    if self.request_preview_close() {
-                        self.close_preview(ctx);
-                    }
-                } else {
-                    self.open_preview();
-                }
-            }
-        }
+        self.handle_preview_toggle(ctx);
 
         // Block scroll areas from capturing edge-drag events during window resize.
         {
@@ -27783,6 +27794,52 @@ mod tests {
             assert!(!app.command_frame.visible, "{key:?}");
             assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
         }
+    }
+
+    #[test]
+    fn popup_blocks_preview_toggle_without_disabling_normal_space() {
+        let (_root, mut app, source) = clipboard_keyboard_fixture();
+        app.state.active_tab_mut().view_mode = ViewMode::List;
+        let ctx = Context::default();
+        let popup = egui::Id::new("preview-toggle-popup-test");
+        let frame = |app: &mut OttrinApp, pressed: bool, open_popup: bool| {
+            let _ = ctx.run(
+                egui::RawInput {
+                    events: vec![egui::Event::Key {
+                        key: Key::Space,
+                        physical_key: Some(Key::Space),
+                        pressed,
+                        repeat: false,
+                        modifiers: egui::Modifiers::NONE,
+                    }],
+                    ..Default::default()
+                },
+                |ctx| {
+                    if open_popup {
+                        egui::Popup::open_id(ctx, popup);
+                    }
+                    app.handle_keyboard(ctx);
+                    app.handle_preview_toggle(ctx);
+                },
+            );
+        };
+        frame(&mut app, true, true);
+        assert!(!app.preview.visible, "Space belongs to the open menu");
+        egui::Popup::close_id(&ctx, popup);
+        frame(&mut app, false, false);
+        frame(&mut app, true, false);
+        assert!(
+            app.preview.visible,
+            "Normal Space must still open Inspector"
+        );
+        assert_eq!(app.preview.path.as_ref(), Some(&source));
+        frame(&mut app, false, false);
+        frame(&mut app, true, false);
+        assert!(
+            !app.preview.visible,
+            "Normal Space must still close Inspector"
+        );
+        assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
     }
 
     #[test]

@@ -40,6 +40,8 @@ Human-readable path labels must use the shared display helpers. Keep navigation,
 
 Sort headers use the shared header painter and installed Material direction icons, with a reserved marker slot even when the label is truncated. Search markers follow the actual query order: Name/Folder ascending, Size/Modified descending.
 
+Open menus own keyboard input before underlying file selection, file operations or preview toggles. Verify Arrow, Enter, Escape and Space with a menu open, then verify ordinary navigation and Inspector open/close after dismissal; a blocked shortcut must not disable its normal action.
+
 Repeated rows must share label starts, icon centers, padding, and vertical centers. Reserve separate fixed columns for selection indicators and icons, including empty columns on unchecked or disabled rows within a choice group. Action-only menus must omit the unused selection column. Use meaningful, consistently sized icons for menu actions and view/sort options; review density, padding and visual balance as well as geometry. Never position icons or checkmarks with whitespace inside text labels. Keep submenu arrows and secondary actions in their own trailing columns. Scale row height and column spacing with text size; avoid clipping or shifting labels when state changes.
 
 Activity card titles must wrap within their column while keeping status badges visible and aligned to the same trailing edge across short and long cards. Toolbars must wrap at narrow widths and larger text sizes rather than widening the panel beyond its viewport. Copy recovery cards separate readable status from technical paths, identities and refusal diagnostics; complete diagnostics remain selectable in expandable Recovery details.

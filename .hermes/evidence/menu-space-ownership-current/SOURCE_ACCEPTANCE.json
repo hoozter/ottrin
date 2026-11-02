@@ -1,0 +1,15 @@
+{
+  "status": "source checks pass; final exact-package Space check pending",
+  "defect": "Native source2540 main-menu Space opens Inspector behind popup",
+  "negative_control": "BASELINE_CORRECT_FIXTURE.log fails Space belongs to the open menu before fix",
+  "rejected_attempt": "BASELINE_TEST.log inherited Miller mode while fixture populated List; normal-open assertion was not valid defect evidence",
+  "fix": "Both main keyboard handlers share popup/picker ownership guard",
+  "verification": {
+    "ui_tests": "458 passed, 1 existing ignored",
+    "linux_clippy": "pass strict all-targets",
+    "windows_clippy": "pass strict all-targets",
+    "format": "pass"
+  },
+  "baseline_native": "RESULT.json and BASELINE_RUN.py retain source2540 artifact scope",
+  "pending": "Fresh clean-source package build and native popup/normal Space positive controls"
+}
