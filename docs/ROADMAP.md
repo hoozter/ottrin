@@ -72,7 +72,8 @@ separate serial gate on both platforms and retains debug correctness checks.
 Its first native Windows release measurement failed at140ms. Reusing a compiled
 query literal now passes at78ms on the same native client and20ms on Linux, with
 all244 Linux search tests and strict Linux/Windows lint passing. Hosted confirmation
-remains pending.
+is running for pushed sourcea10792db in run41413618813 (four jobs); it is not yet
+a hosted pass.
 Evidence: `.hermes/evidence/github-actions-current/`,
 `.hermes/evidence/search-performance-isolation-current/`.
 

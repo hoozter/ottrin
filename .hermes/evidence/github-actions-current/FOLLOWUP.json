@@ -1,0 +1,33 @@
+{
+  "source_revision": "a10792dbaee5be5e96e7d2f78f722585a36c8474",
+  "push": "origin/main verified",
+  "run_id": 41413618813,
+  "url": "https://github.com/hoozter/ottrin/actions/runs/41413618813",
+  "status": "in_progress",
+  "conclusion": "",
+  "jobs": [
+    {
+      "name": "verify (windows-latest)",
+      "status": "in_progress",
+      "conclusion": ""
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "in_progress",
+      "conclusion": ""
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "in_progress",
+      "conclusion": ""
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "in_progress",
+      "conclusion": ""
+    }
+  ],
+  "local_checks": "244 Linux search tests; strict Linux/Windows lint; exact serial release500k query20ms Linux/78ms Windows, unchanged100ms budget",
+  "delivery_scope": "Source pushed; accepted AppImage unchanged; hosted result pending",
+  "cleanup": "Benchmark VM/volumes/fixtures removed; obsolete release test binaries/fingerprints/dep-info and one finalized incremental session removed. BUILD_CLEANUP.json lists retained stage/baseline pending consumers."
+}
