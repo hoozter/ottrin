@@ -1,11 +1,11 @@
 {
-  "status": "All local four-format content, exact AppImage GUI/picker/browser/appearance and fresh Fedora/Ubuntu lifecycle gates pass; awaiting hosted Windows job before promotion",
+  "status": "Delivered: all four Linux formats promoted; complete local/native/hosted gates pass",
   "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
   "appimage_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
   "hosted_run": 41508619836,
-  "pending_consumer": "Hosted full Windows verification and existing guarded promotion; do not rebuild completed cohort or repeat fulfilled native fixtures",
-  "retained_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-  "retained_extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "pending_consumer": null,
+  "retained_stage": null,
+  "retained_extraction": null,
   "cleanup_completed": [
     "All private GUI/browser displays/processes/profiles/buses/mounts removed",
     "Both native distribution guests and six volumes removed",
@@ -13,7 +13,9 @@
     "Eleven superseded incremental sessions removed after identity/lock checks;0.50GiB recovered",
     "Contact sheets removed after original screenshot review"
   ],
-  "stable_deliverables_preserved": true,
+  "stable_deliverables_preserved": "Previous stable cohort replaced only after complete guarded acceptance",
   "first_paint": "first-paint/RESULT.json;0.801\u20131.040s content-observation upper bounds including screenshot/OCR; rejected full-window OCR kept separately",
-  "current_personal_index_service": "Active PID262779; no restart or installation changes performed"
+  "current_personal_index_service": "Active PID262779; no restart or installation changes performed",
+  "hosted_status": "success: all four jobs",
+  "next": "Actual Windows MSI comparison on retained independent base, then current Windows delivery and remaining roadmap software gates"
 }

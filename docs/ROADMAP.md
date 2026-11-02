@@ -6,45 +6,55 @@ Updated 2026-11-02. This is the active queue; dated checkpoints below retain
 only their original source/artifact scopes. Test totals are not roadmap completion.
 
 The stable Linux AppImage, portable archive, DEB and RPM now use clean source
-`592d56e89d7b7b3c46b685e6d27a3c988c076372`. Their exact hashes, completed scopes
+`bf3abfd32fc7654108e3f723f6a95c2f5866c5af`. Their exact hashes, completed scopes
 and limits are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. The stable
 AppImage remains `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
-`1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6`.
+`1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8`.
 
-The shared directory listing now preserves directory-link target type and native
-Windows Hidden/System filtering. Both source regressions fail before repair;
-two Linux metadata tests, all460 Linux UI tests (one existing ignored), strict
-Linux/Windows lint and the actual before/after Windows NTFS test pass. Hosted
-run41486034184 passes all four jobs, including Windows tests/lint/release build.
-Package source592d56e8 differs from hosted source992b2687 only in the roadmap
-receipt; the promotion gate verifies identical production inputs.
+The chooser now uses the modifiers on each arrow-key press, preserving range
+selection when Shift changes later in the same frame. Its rendered regression
+fails before repair. All26 picker tests and461 Linux UI tests pass, with one
+existing ignored namespace fixture; strict Linux/Windows all-target UI lint passes.
+Hosted41508619836 passes all four jobs, including Windows tests/lint/release build.
+The exact package source equals the hosted tested source. Earlier listing fixes
+retain directory-link target type and Windows Hidden/System filtering.
 
-All four Linux formats pass content/closure/policy/namespace checks. The exact
-AppImage passes main and read-only Inspector workflows at Dark100/Light150,
+All four formats pass production content/closure/policy/namespace checks. The exact
+AppImage passes Dark100/Light150 main and read-only VCF/text Inspector workflows,
 Properties/icon/saved-view update/reopen, native menu arrows/Escape/Space, actual
 installed Firefox and Flatpak Falkon Open/Save with correct caller identities
-and exact bytes, and directory-link navigation in main List and the chooser.
-The chooser returns the exact selected child path with source/link identity
-preserved. Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB pass normal setup,
-actual portal requests, reinstall/refusal, online/offline removal/preference
-restoration and portable picker survival without diagnostic setup controls.
-Current native Settings/editor actions also verify live shared titlebar color,
-actual/preview button radius, main/Settings/editor/Inspector window corners,
-Inspector Space and full-config/source preservation after Cancel. This does not
-repeat the exhaustive39-control sweep or establish physical-renderer acceptance.
+and exact bytes, and main/chooser directory-link navigation. Live appearance
+replay plus rendered review verifies shared titlebar color, actual/preview button
+corners, main/Settings/editor/Inspector window corners, Inspector Space and full
+configuration/source preservation after Cancel. This does not repeat the exhaustive
+39-control sweep or establish physical-renderer acceptance.
 
-The daemon and five renderer/helper payloads are byte-identical to the previous
-accepted delivery. Exact928b7937 metadata/content10000-file resource receipts keep
-their original source/package identity; their six30-second quiet samples measured
+Native chooser Up/Down single/range responses, independent concurrent cancellation,
+source/config preservation and operation without indexing pass at both scales.
+Process-cold window mapping is0.321–0.537seconds; separate actual-content observation
+is0.801–1.040seconds including screenshot/OCR overhead with OS caches retained.
+Both30-second idle samples measure0.033percent of one core and94–95MiB PSS on
+this software desktop. The rejected whole-window OCR timeout remains explicit
+observer evidence. No always-running picker GUI or new index service is introduced.
+Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB pass normal setup, actual portal
+requests, reinstall/refusal, online/offline removal/preference restoration and
+portable picker survival without diagnostic setup controls.
+
+The daemon and five helper/renderer payloads remain byte-identical to the previous
+accepted delivery. Original928b7937 metadata/content10000-file resource receipts
+retain their source/package identity; their six30-second quiet samples measured
 0.067percent of one core and about13–17MiB RSS. No new sustained personal-workload
-claim is made. The personal enabled service remains active with the same
-PID262779 and unchanged daemon bytes; no restart was needed for this UI refresh.
+claim is made. The personal enabled index service remains active on PID262779;
+this UI refresh does not restart it.
 
-Current Linux evidence is `.hermes/evidence/listing-delivery-current/`.
-All completed GUI/browser profiles/processes/buses/mounts, both native Linux
-VMs and their six volumes are removed. Promotion replaces the stable packages
-and removes the single current Linux stage/extraction. Source/NTFS evidence is
-`listing-metadata-current/ACCEPTANCE.json`.
+Current Linux evidence is `.hermes/evidence/picker-keyboard-selection-current/`.
+All completed native/GUI/browser profiles, processes, displays, buses and mounts,
+both Linux guests and their six volumes, and the current Linux stage/extraction
+are removed. Published bytes and all four checksum sidecars are rechecked after
+promotion. Eleven superseded incremental sessions were removed through the locked
+helper after explicit process-identity checks, recovering0.50GiB; current compiler
+caches and binaries remain. Earlier source/NTFS evidence keeps its original scope
+in `listing-metadata-current/ACCEPTANCE.json`.
 
 Windows public files remain unchanged; the accepted internal ZIP/NSIS/MSI
 candidate remains source8ede1562. The separate source592d56e8 development stage
@@ -72,7 +82,7 @@ Evidence: `windows-listing-delivery-current/ASSEMBLY_ACCEPTANCE.json`,
 `upgrade-enabled-verified/ACCEPTANCE.json`, `upgrade-disabled/ACCEPTANCE.json` and
 `upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json`.
 
-The clean-up audit removes28 superseded standalone test executables and their
+The earlier clean-up audit removed28 superseded standalone test executables and their
 56 exact dep-info/fingerprint companions after compiler/configuration, current
 replacement, reference, symlink, hard-link and process checks. It recovers
 13.62GiB; source, libraries, incremental caches, current configurations and all
@@ -81,27 +91,7 @@ This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 
 Continue in this order:
 
-1. Finish the Linux chooser correction delivery from clean `bf3abfd3`.
-   Its four-format build, production content/closure/policy/namespace checks,
-   Dark100/Light150 native main/Inspector/Properties/icon/saved-view/menu and
-   real browser portal gates, live appearance replay with rendered review, and
-   fresh Fedora/Ubuntu normal package lifecycle all pass. Native chooser tests
-   verify exact Up/Down single/range responses, independent concurrent cancellation,
-   source/config preservation and no index startup. Both30-second idle samples
-   measure0.033percent of one core and94–95MiB PSS on the software desktop.
-   Process-cold window mapping is0.321–0.537s; separate actual-content observation
-   is0.801–1.040s including screenshot/OCR overhead with OS caches retained.
-   A full-window OCR false timeout is explicitly rejected, not a product failure.
-   Source461 UI tests and strict Linux/Windows lint pass. Hosted41508619836 has
-   three green jobs and a live Windows test job at this checkpoint. Observe that
-   existing job; do not rebuild or rerun completed fixtures. On full success,
-   run `picker-keyboard-selection-current/promote.py --output
-   .hermes/evidence/picker-keyboard-selection-current` with Python. It retains
-   every existing Linux promotion gate and adds the exact chooser controls.
-   Current stage and extraction remain solely for that consumer; stable592d56e8
-   packages stay unchanged until promotion. All local desktops/guests are removed.
-   Evidence: `picker-keyboard-selection-current/CHECKPOINT.json` and `CLEANUP.json`.
-2. Resolve the still-failed MSI after-execution transaction rollback gate.
+1. Resolve the still-failed MSI after-execution transaction rollback gate.
    The independent Microsoft Windows11 Enterprise Evaluation26300 installation
    and signed kernel-driver/bootstrap verification now pass. Its MSI runtime is
    5.0.26100.9444. The unchanged immediate control and a second deferred DLL
@@ -134,10 +124,10 @@ Continue in this order:
    `windows-msi-deferred-control-current/stock/OBSERVATION.json`.
    All completed guests, their overlay/media volumes and private consoles
    are removed; the independent15.34GiB base remains for the actual-MSI consumer.
-3. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
+2. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
    software/installer gates pass. Keep development MSIX acceptance separate from
    signed Store certification; do not promote a failed installer gate.
-4. Audit and finish remaining software/theme/accessibility/resource and supported
+3. Audit and finish remaining software/theme/accessibility/resource and supported
    integration outcomes against the requirements below. The shared themed picker,
    Linux FileChooser portal/FileManager1 and reversible Windows folder actions
    have implementation and scoped native/package evidence; do not reopen their
@@ -156,9 +146,9 @@ file instead of extending the selection. Arrow navigation now processes ordered
 key press events with their own modifiers. Up/Down and both released/later-pressed
 Shift controls pass. All26 picker tests and461 full UI tests pass, with one
 existing ignored namespace fixture; strict Linux/Windows all-target UI lint passes.
-Evidence: `picker-keyboard-selection-current/SOURCE_ACCEPTANCE.json`. This is a
-source checkpoint; stable packages retain their prior source and scopes until the
-exact clean-source build and native packaged picker acceptance complete.
+Evidence: `picker-keyboard-selection-current/SOURCE_ACCEPTANCE.json`. The resulting
+exact-sourcebf3abfd3 cohort now passes native/package/hosted gates and is delivered
+at the stable Linux paths; `DELIVERY_VERIFICATION.json` records promotion checks.
 
 ## Shared title alignment — source follow-up, 2026-11-01
 
@@ -1467,7 +1457,7 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux cohort uses clean `592d56e8`; the internal Windows candidate
+The stable Linux cohort uses clean `bf3abfd3`; the internal Windows candidate
 uses clean `8ede1562`.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
@@ -1497,7 +1487,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four592d56e8 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | Popup routing is delivered with native positive controls; remaining broader software/theme gates and then parked owner/device acceptance. |
+| Linux | Fourbf3abfd3 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | Popup routing is delivered with native positive controls; remaining broader software/theme gates and then parked owner/device acceptance. |
 | Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, hosted source checks, native icons/CLI and scoped default-folder/Properties/picker/removal acceptance. Private592d56e8 development MSIX0.1.0.3 passes native assembly/runtime and enabled/disabled startup update/reboot with valid preferences and exact native database identity. | MSI rollback/current-client comparison and remaining installed/runtime/software gates. MSI rollback remains required and failed; public packages stay unchanged. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |

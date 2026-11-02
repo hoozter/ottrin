@@ -2,9 +2,7 @@
   "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
   "purpose": "Shared picker arrow-key modifier regression; four-format refresh followed by exact native key input acceptance",
-  "pending_consumers": [
-    "package contents/unchanged runtime identity",
-    "actual AppImage picker Shift+Up/Down selection and accepted response",
-    "stable promotion and staging cleanup"
-  ]
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Accepted local Linux cohort promoted; staging/extraction removed"
 }
