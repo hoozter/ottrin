@@ -12,6 +12,26 @@ The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
 The internal Windows ZIP/NSIS/MSI candidate remains source8ede1562 and public
 Windows release files remain unchanged. No Windows installer gate is waived.
 
+A newer Linux four-format candidate is built from clean source928b7937 and is
+retained privately for pending native-distribution acceptance and promotion.
+Its AppImage SHA-256 is
+`af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5`.
+All four content/payload checks pass; portable/AppImage closure and packaged
+daemon ownership checks pass in their recorded scopes. Actual AppImage
+Dark100/Light150 read-only Inspector navigation/Space/Close, saved theme, long
+Properties, complete chooser icon pixels, and previous → candidate → reopen
+Miller view checks pass with visual review. Both exact10000-file metadata and
+content-enabled live/offline/restart/query controls pass. All six30-second quiet
+samples measure0.067percent of one core, about13–17MiB RSS. These are controlled
+candidate measurements, not a new personal-service or sustained-workload claim.
+All owned GUI/index test processes and private profiles are removed;179495425
+bytes of superseded same-configuration application executables/dep-info/fingerprints
+are removed. Debug caches are unchanged; the two scanned debug incremental roots
+contain no obsolete sessions.
+The stage and single verified AppImage extraction remain only for named native
+lifecycle/promotion consumers. Stable delivery and the personal service are unchanged.
+Evidence: `.hermes/evidence/linux-search-delivery-current/CANDIDATE_STATUS.json`.
+
 All four Linux formats pass payload/runtime/helper/documentation and namespace
 ownership checks. Actual AppImage Dark100/Light150 checks pass read-only VCF/text
 Inspector navigation, native Close, long Properties metadata and saved theme.

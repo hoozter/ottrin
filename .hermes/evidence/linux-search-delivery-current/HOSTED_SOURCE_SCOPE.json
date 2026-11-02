@@ -1,0 +1,25 @@
+{
+  "candidate_source": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "hosted_tested_source": "05c1325f8728594004bcc4f5f1d31bcd743ba900",
+  "run": 41429811338,
+  "status": "All4 hosted jobs pass; tracked product/build inputs identical between tested and candidate commits",
+  "comparison": [
+    "git",
+    "diff",
+    "--name-only",
+    "05c1325f8728594004bcc4f5f1d31bcd743ba900",
+    "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+    "--",
+    ".",
+    ":!.hermes/evidence/**",
+    ":!docs/ROADMAP.md",
+    ":!dist/**"
+  ],
+  "changed_product_paths": [],
+  "excluded_paths": [
+    ".hermes/evidence/**: QA producers and receipts",
+    "docs/ROADMAP.md: status text; exact packaged copy checked separately",
+    "dist/**: delivery receipts/artifacts"
+  ],
+  "source_label": "Candidate retains its own928b7937 provenance; not relabelled as05c1325f"
+}

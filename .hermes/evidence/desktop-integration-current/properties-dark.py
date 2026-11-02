@@ -1,7 +1,7 @@
 """Exact AppImage Properties at Light150; own desktop and preserve source/config."""
 from pathlib import Path
-import hashlib,importlib.util,json,time
-r=Path.cwd();e=Path(__file__).resolve().parent;out=e/'properties-dark100';assert not out.exists()
+import argparse,hashlib,importlib.util,json,time
+r=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');out=e/'properties-dark100';assert not out.exists()
 s=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
 b=Path(json.loads((e/'BUILD_SOURCE.json').read_text())['stage'])/'Ottrin-0.1.0-x86_64.AppImage';digest=hashlib.sha256(b.read_bytes()).hexdigest();assert digest==json.loads((e/'PACKAGE_CONTENT_ACCEPTANCE.json').read_text())['artifacts'][b.name]
 report={'artifact_sha256':digest,'scope':'Actual packaged Dark100 Properties, long metadata, normal native-pointer Close, no index/config/source mutation'}

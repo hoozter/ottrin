@@ -1,0 +1,37 @@
+{
+  "status": "reviewed",
+  "artifact_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
+  "observed": [
+    "Dark100 main and VCF Inspector: coherent native title bars, legible text and aligned rows",
+    "Light150 VCF Inspector and Properties: readable scaled controls, native Close and wrapping long metadata",
+    "Dark100 Properties: long title elides without displacing Close; metadata wraps in framed groups",
+    "Previous, updated and reopened actual AppImage screenshots visibly retain Miller columns"
+  ],
+  "sessions": {
+    "main-dark100": {
+      "status": "pass: normal close, index continuity, saved theme and unchanged declared files",
+      "profile_removed": true
+    },
+    "main-light150": {
+      "status": "pass: normal close, index continuity, saved theme and unchanged declared files",
+      "profile_removed": true
+    },
+    "properties-dark100": {
+      "status": "pass",
+      "profile_removed": true
+    },
+    "properties-light150": {
+      "status": "pass",
+      "profile_removed": true
+    },
+    "icon": {
+      "status": "pass",
+      "profile_removed": true
+    },
+    "upgrade-view": {
+      "status": "pass",
+      "profile_removed": true
+    }
+  },
+  "scope": "Private X11/software-rendered native frames; no physical compositor/device or final owner acceptance"
+}

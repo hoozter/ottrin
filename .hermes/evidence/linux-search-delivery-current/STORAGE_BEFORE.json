@@ -1,0 +1,15 @@
+{
+  "observed_at": "2026-11-02T11:24:16.981087+00:00",
+  "free_bytes": 17203908608,
+  "sizes_bytes": {
+    "target/debug/deps": 37905163260,
+    "target/debug/incremental": 18179252865,
+    "target/x86_64-pc-windows-gnu/debug/deps": 42324287869,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 38387964990,
+    "target/release": 4299491759,
+    ".hermes/packaging-tmp/.windows-desktop-stage": 292808841,
+    ".hermes/evidence/linux-search-delivery-current": 0
+  },
+  "build_flags": "Existing build-all.sh Linux configuration; CARGO_BUILD_JOBS=1; shared target/.cargo/.rustup",
+  "cleanup_owner": "Current roadmap goal: verify candidates then promote stable delivery; remove owned extractions/staging, obsolete outputs and fixtures after exact consumers finish"
+}

@@ -1,7 +1,7 @@
 """Previous -> staged AppImage -> reopen, preserving Miller and private files."""
 from pathlib import Path
-import hashlib, importlib.util, json, time
-r=Path.cwd(); e=Path(__file__).resolve().parent; out=e/'upgrade-view'; assert not out.exists()
+import argparse,hashlib, importlib.util, json, time
+r=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');out=e/'upgrade-view';assert not out.exists()
 spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py'); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 new=Path(json.loads((e/'BUILD_SOURCE.json').read_text())['stage'])/'Ottrin-0.1.0-x86_64.AppImage'
 old=r/'dist/packages'/new.name

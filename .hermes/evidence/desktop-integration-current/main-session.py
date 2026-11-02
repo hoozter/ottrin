@@ -1,8 +1,8 @@
 """Finite actual-AppImage main-window acceptance; owned private desktop and teardown."""
 from pathlib import Path
 import argparse,hashlib,importlib.util,json,os,socket,struct,time
-r=Path.cwd();e=Path(__file__).resolve().parent
-parser=argparse.ArgumentParser();parser.add_argument('--case',choices=['main-dark100','main-light150'],required=True);args=parser.parse_args();out=e/args.case;assert not out.exists()
+r=Path.cwd();drivers=Path(__file__).resolve().parent
+parser=argparse.ArgumentParser();parser.add_argument('--case',choices=['main-dark100','main-light150'],required=True);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');out=e/args.case;assert not out.exists()
 spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(spec);spec.loader.exec_module(desktop)
 build=json.loads((e/'BUILD_SOURCE.json').read_text());content=json.loads((e/'PACKAGE_CONTENT_ACCEPTANCE.json').read_text());image=Path(build['stage'])/'Ottrin-0.1.0-x86_64.AppImage'
 def sha(p):
@@ -30,9 +30,9 @@ try:
   data={'profile':str(d.profile),'fixture':str(fixture),'app_pid':app.pid,'app_start_time':Path(f'/proc/{app.pid}/stat').read_text().rsplit(') ',1)[1].split()[19],'window':window,'environment':{k:d.env[k] for k in ['DISPLAY','DBUS_SESSION_BUS_ADDRESS','HOME','XDG_CONFIG_HOME','XDG_CACHE_HOME','XDG_DATA_HOME','XDG_STATE_HOME','XDG_RUNTIME_DIR']}}
   (out/'SESSION.json').write_text(json.dumps(data,indent=2)+'\n')
   import sys
-  sys.path.insert(0,str(e))
+  sys.path.insert(0,str(drivers))
   from importlib import import_module
-  session=import_module('native-actions').Session(args.case)
+  session=import_module('native-actions').Session(out)
   scale=1.5 if args.case.endswith('150') else 1.0
   session.click(round(120*scale),round(114*scale));session.keys('space')
   session.wait(lambda:any(w['title']=='Ottrin Quick Inspector — contact.vcf' for w in session.windows()))

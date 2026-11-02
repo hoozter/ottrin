@@ -1,0 +1,78 @@
+{
+  "replacement": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-0b6719a16a211aa1",
+  "same_compiler_settings": {
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "declared_features": "[]",
+    "target": 17573561801879140266,
+    "profile": 6278758924229537004,
+    "path": 3586702553900163283,
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 0
+  },
+  "candidates": [
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/release/.fingerprint/ottrin-app-31ec990852a94b8f",
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-31ec990852a94b8f",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-31ec990852a94b8f.d",
+      "bytes": 34791832
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/release/.fingerprint/ottrin-app-0090969d6ecc3be3",
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-0090969d6ecc3be3",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-0090969d6ecc3be3.d",
+      "bytes": 37204480
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/release/.fingerprint/ottrin-app-787180d643289bd6",
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-787180d643289bd6",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-787180d643289bd6.d",
+      "bytes": 35872184
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/release/.fingerprint/ottrin-app-6e6e16bfdaeab279",
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-6e6e16bfdaeab279",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-6e6e16bfdaeab279.d",
+      "bytes": 35728920
+    },
+    {
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/release/.fingerprint/ottrin-app-1dbd1d655a8f6937",
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-1dbd1d655a8f6937",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-1dbd1d655a8f6937.d",
+      "bytes": 35889672
+    }
+  ],
+  "references": {
+    "ottrin_app-31ec990852a94b8f": [],
+    "ottrin_app-0090969d6ecc3be3": [],
+    "ottrin_app-787180d643289bd6": [],
+    "ottrin_app-6e6e16bfdaeab279": [],
+    "ottrin_app-1dbd1d655a8f6937": []
+  },
+  "no_open_consumers": true,
+  "status": "removed exact superseded executables, dep-info and matching fingerprints; replacement/dependencies/caches retained",
+  "removed": [
+    {
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-31ec990852a94b8f",
+      "bytes": 34793333
+    },
+    {
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-0090969d6ecc3be3",
+      "bytes": 37206814
+    },
+    {
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-787180d643289bd6",
+      "bytes": 35873685
+    },
+    {
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-6e6e16bfdaeab279",
+      "bytes": 35730420
+    },
+    {
+      "executable": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-1dbd1d655a8f6937",
+      "bytes": 35891173
+    }
+  ],
+  "total_removed_bytes": 179495425
+}

@@ -1,0 +1,69 @@
+{
+  "status": "Built, content verified, scoped GUI and populated metadata/content resources pass; not promoted",
+  "source_revision": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "artifact_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
+  "resource_samples": {
+    "POPULATED_INDEX.json": {
+      "populated_idle": {
+        "seconds": 30.027,
+        "cpu_ticks": 2,
+        "cpu_percent_one_core": 0.067,
+        "rss_kib_at_end": 14188
+      },
+      "after_burst_idle": {
+        "seconds": 30.029,
+        "cpu_ticks": 2,
+        "cpu_percent_one_core": 0.067,
+        "rss_kib_at_end": 17044
+      },
+      "after_restart_idle": {
+        "seconds": 30.029,
+        "cpu_ticks": 2,
+        "cpu_percent_one_core": 0.067,
+        "rss_kib_at_end": 13088
+      }
+    },
+    "CONTENT_INDEX.json": {
+      "populated_idle": {
+        "seconds": 30.028,
+        "cpu_ticks": 2,
+        "cpu_percent_one_core": 0.067,
+        "rss_kib_at_end": 14888
+      },
+      "after_burst_idle": {
+        "seconds": 30.028,
+        "cpu_ticks": 2,
+        "cpu_percent_one_core": 0.067,
+        "rss_kib_at_end": 16892
+      },
+      "after_restart_idle": {
+        "seconds": 30.029,
+        "cpu_ticks": 2,
+        "cpu_percent_one_core": 0.067,
+        "rss_kib_at_end": 13324
+      }
+    }
+  },
+  "gui_cases": [
+    "main-dark100",
+    "main-light150",
+    "properties-dark100",
+    "properties-light150",
+    "icon",
+    "upgrade-view"
+  ],
+  "qa_producer_sha256": {
+    "main-session.py": "b9d786213ac68fb2a37ecb447fe8f861e82e967150830f0f3b86c8e8cfc26db8",
+    "properties-dark.py": "d6346ceb91fff29d41a0a3a06125d7fcb7f7dd9b1cc7f4d688ab29a9c30307ae",
+    "properties-light.py": "8279825524d4f7bbcaa303849cf2c1e24c5c32f68259ec6658b06ad9ad3c60d1",
+    "icon-check.py": "1cbff7d0732d26ba30d84d15eb717354715fb621f63c61b8f4c530f3ced0c753",
+    "upgrade-view.py": "658b8001ec5cd2f64f150eee49854338ffb90e0922ad7357a1da9f7e0295efb8"
+  },
+  "current_delivery": "dist/packages still accepted0b6015db cohort; all54 baseline files unchanged",
+  "next": [
+    "Fresh Fedora44/Ubuntu24.04 native distribution acceptance for exact candidate",
+    "Bind promotion receipt to new daemon resource acceptance and proven CI-equivalent product source; promote all four formats together",
+    "Refresh personal enabled index service with current candidate after promotion, preserving configuration/unit/wrapper/database identity"
+  ],
+  "scope": "No physical graphics/device, external sandboxed browser or final owner acceptance claimed"
+}

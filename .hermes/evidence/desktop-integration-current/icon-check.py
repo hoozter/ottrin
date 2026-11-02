@@ -1,8 +1,8 @@
 """Read the complete owned X11 icon property with an explicit length bound."""
 from pathlib import Path
-import importlib.util,json,hashlib,time,re
+import argparse,importlib.util,json,hashlib,time,re
 from PIL import Image
-r=Path.cwd();e=Path(__file__).resolve().parent;out=e/'icon';assert not out.exists()
+r=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');out=e/'icon';assert not out.exists()
 spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(spec);spec.loader.exec_module(desktop)
 build=json.loads((e/'BUILD_SOURCE.json').read_text());content=json.loads((e/'PACKAGE_CONTENT_ACCEPTANCE.json').read_text());binary=Path(build['stage'])/'Ottrin-0.1.0-x86_64.AppImage'
 with binary.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==content['artifacts'][binary.name]
