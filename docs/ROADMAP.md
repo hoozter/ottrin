@@ -115,13 +115,24 @@ Continue in this order:
    rollback failure is access denied while undoing protected installer product
    keys. This matches the symptom in upstream issue8574, but does not establish
    a safe product fix or justify a gate waiver. Do not repeat completed controls
-   or source-install provisioning without a new causal hypothesis. Compare
-   remaining authoring/security-context differences, then test the actual Ottrin
-   MSI on the retained independent base. Continue other dependency-ready work
+   or source-install provisioning without a new causal hypothesis. Compare the
+   security context result with the actual Ottrin MSI on the retained independent
+   base. A new elevated-account control restores registration, payload and normal
+   recovery/removal. All22 native tables match the ordinary control after only
+   generated GUID/nonce normalization; execution/state checks are identical after
+   explicit role/scope substitutions. Its sole raw skipped line follows terminal
+   End with logged return5 (documented success); a fail-closed assessor separates
+   only that exact marker. The ordinary controls still fail81/77 actual/unknown
+   undo lines plus registration/cleanup state, so the release gate is not waived.
+   The original failed actor outputs remain unchanged. Diagnostic elevation is
+   confined to a disposable test account and does not change production scope.
+   Evidence: `windows-msi-security-context-current/COMPARISON.json`,
+   `CONTROL_ASSESSMENT.json` and `TERMINAL_SUCCESS_TRACE.json`.
+   Continue other dependency-ready work
    while this gate remains failed. Evidence: `windows-stock-client-current/`,
    `windows-stock-control-current/OBSERVATION.json` and
    `windows-msi-deferred-control-current/stock/OBSERVATION.json`.
-   All three completed guests, their overlay/media volumes and private consoles
+   All completed guests, their overlay/media volumes and private consoles
    are removed; the independent15.34GiB base remains for the actual-MSI consumer.
 3. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
    software/installer gates pass. Keep development MSIX acceptance separate from

@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "cases": [
+    "exact terminal End plus success5 separated",
+    "End plus failure3 retained",
+    "return50 retained",
+    "return5 after other op retained",
+    "intervening op retained",
+    "unknown formatting retained"
+  ],
+  "scope": "Parser negative controls only; not installer acceptance"
+}

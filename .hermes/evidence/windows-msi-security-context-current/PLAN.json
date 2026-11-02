@@ -1,0 +1,8 @@
+{
+  "status": "prepared, native execution not yet accepted",
+  "hypothesis": "Protected product-registration rollback failure depends on ordinary versus elevated actor context, not merely immediate versus deferred fault position",
+  "variable": "Fresh owned QA account is added to local Administrators and scheduled at Highest on a disposable offline overlay",
+  "unchanged": "Native Windows Installer database authoring, control.txt payload, full executed-file and rollback/recovery/cleanup checks; source Microsoft client and MSI runtime",
+  "comparison": ".hermes/evidence/windows-stock-control-current/GUEST_RESULT.json",
+  "delivery_limit": "Does not change production per-user installer scope or permit elevation as ordinary-user acceptance"
+}

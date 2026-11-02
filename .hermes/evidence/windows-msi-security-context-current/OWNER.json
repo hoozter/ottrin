@@ -1,0 +1,37 @@
+{
+  "domain": "ottrin-msi-clean-client",
+  "uuid": "5356daf2-9117-4f0b-bef3-5151b71b29f0",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msi-clean-client-fixture.iso",
+    "ottrin-msi-clean-client.qcow2"
+  ],
+  "status": "control finished; inspect exact result, not assumed pass",
+  "public_compiler_cache": null,
+  "scope": "Diagnostic elevated owned QA account, same native file-only MSI authoring. No ordinary-user acceptance, Ottrin executable, security-policy change or original profile mutation.",
+  "producer_sha256": "29fc81958b88ea48ac5db6f5f8cea606b83dcacee18e0c45895f656c633623c5",
+  "uploaded_host_iso_removed_bytes": 894976,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "graphics_scope": "Owned software-only SPICE desktop; MSIX uses explicit bundled OpenGL; no physical adapter acceptance",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 522313,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-ppfbuhiy/home"
+  },
+  "guest_pid": 5916,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-clean-client.qcow2",
+      "ottrin-msi-clean-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

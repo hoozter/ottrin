@@ -1,0 +1,676 @@
+{
+  "status": "failed native rollback/cleanup gate",
+  "scope": "Ordinary-user native file-only control; actual Ottrin installer remains separate",
+  "original_actor_status": "failed native rollback or supported cleanup",
+  "original_actor_result_sha256": "c5b2f19aa102072b676f6a03696189b3d8cf51cc14643799b3bfd085922b98d1",
+  "source_reference": "https://learn.microsoft.com/en-us/windows/win32/msi/logging-of-action-return-values",
+  "interpretation": "Logged action return5 is documented success. Only the adjacent exact terminal End(0) marker is separated; all other skipped lines, failed state, missing executed operations and cleanup residue still fail. Original results/logs are unchanged.",
+  "cases": [
+    {
+      "kind": "install",
+      "log_sha256": "b67f05d4391e9ca415380eb4e8006335dcc12bf9534d686dc79fcce6495a82b0",
+      "raw_skipped_lines": 82,
+      "successful_terminal_end_markers": [
+        {
+          "line": 1253,
+          "text": "MSI (s) (18:40) [19:52:51:422]: Error in rollback skipped.\tReturn: 5"
+        }
+      ],
+      "failed_or_unknown_undo_lines": [
+        {
+          "line": 419,
+          "text": "MSI (s) (18:40) [19:52:51:255]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 431,
+          "text": "MSI (s) (18:40) [19:52:51:256]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 443,
+          "text": "MSI (s) (18:40) [19:52:51:258]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 456,
+          "text": "MSI (s) (18:40) [19:52:51:260]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 468,
+          "text": "MSI (s) (18:40) [19:52:51:265]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 475,
+          "text": "MSI (s) (18:40) [19:52:51:265]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 487,
+          "text": "MSI (s) (18:40) [19:52:51:269]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 498,
+          "text": "MSI (s) (18:40) [19:52:51:271]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 509,
+          "text": "MSI (s) (18:40) [19:52:51:272]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 520,
+          "text": "MSI (s) (18:40) [19:52:51:274]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 531,
+          "text": "MSI (s) (18:40) [19:52:51:276]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 542,
+          "text": "MSI (s) (18:40) [19:52:51:278]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 553,
+          "text": "MSI (s) (18:40) [19:52:51:278]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 564,
+          "text": "MSI (s) (18:40) [19:52:51:283]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 575,
+          "text": "MSI (s) (18:40) [19:52:51:283]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 582,
+          "text": "MSI (s) (18:40) [19:52:51:285]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 588,
+          "text": "MSI (s) (18:40) [19:52:51:287]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 594,
+          "text": "MSI (s) (18:40) [19:52:51:287]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 600,
+          "text": "MSI (s) (18:40) [19:52:51:288]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 606,
+          "text": "MSI (s) (18:40) [19:52:51:288]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 612,
+          "text": "MSI (s) (18:40) [19:52:51:290]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 618,
+          "text": "MSI (s) (18:40) [19:52:51:290]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 624,
+          "text": "MSI (s) (18:40) [19:52:51:292]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 630,
+          "text": "MSI (s) (18:40) [19:52:51:292]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 636,
+          "text": "MSI (s) (18:40) [19:52:51:294]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 642,
+          "text": "MSI (s) (18:40) [19:52:51:294]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 654,
+          "text": "MSI (s) (18:40) [19:52:51:296]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 661,
+          "text": "MSI (s) (18:40) [19:52:51:298]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 668,
+          "text": "MSI (s) (18:40) [19:52:51:301]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 681,
+          "text": "MSI (s) (18:40) [19:52:51:303]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 693,
+          "text": "MSI (s) (18:40) [19:52:51:304]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 706,
+          "text": "MSI (s) (18:40) [19:52:51:306]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 713,
+          "text": "MSI (s) (18:40) [19:52:51:308]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 725,
+          "text": "MSI (s) (18:40) [19:52:51:310]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 732,
+          "text": "MSI (s) (18:40) [19:52:51:312]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 744,
+          "text": "MSI (s) (18:40) [19:52:51:314]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 755,
+          "text": "MSI (s) (18:40) [19:52:51:316]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 766,
+          "text": "MSI (s) (18:40) [19:52:51:316]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 777,
+          "text": "MSI (s) (18:40) [19:52:51:318]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 788,
+          "text": "MSI (s) (18:40) [19:52:51:320]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 799,
+          "text": "MSI (s) (18:40) [19:52:51:322]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 810,
+          "text": "MSI (s) (18:40) [19:52:51:324]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 821,
+          "text": "MSI (s) (18:40) [19:52:51:324]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 832,
+          "text": "MSI (s) (18:40) [19:52:51:326]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 843,
+          "text": "MSI (s) (18:40) [19:52:51:328]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 854,
+          "text": "MSI (s) (18:40) [19:52:51:330]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 865,
+          "text": "MSI (s) (18:40) [19:52:51:332]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 876,
+          "text": "MSI (s) (18:40) [19:52:51:332]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 887,
+          "text": "MSI (s) (18:40) [19:52:51:334]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 898,
+          "text": "MSI (s) (18:40) [19:52:51:336]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 909,
+          "text": "MSI (s) (18:40) [19:52:51:338]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 920,
+          "text": "MSI (s) (18:40) [19:52:51:340]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 931,
+          "text": "MSI (s) (18:40) [19:52:51:340]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 942,
+          "text": "MSI (s) (18:40) [19:52:51:342]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 953,
+          "text": "MSI (s) (18:40) [19:52:51:344]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 964,
+          "text": "MSI (s) (18:40) [19:52:51:346]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 975,
+          "text": "MSI (s) (18:40) [19:52:51:348]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 982,
+          "text": "MSI (s) (18:40) [19:52:51:350]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 994,
+          "text": "MSI (s) (18:40) [19:52:51:352]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1005,
+          "text": "MSI (s) (18:40) [19:52:51:354]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1016,
+          "text": "MSI (s) (18:40) [19:52:51:356]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1027,
+          "text": "MSI (s) (18:40) [19:52:51:358]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1038,
+          "text": "MSI (s) (18:40) [19:52:51:362]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1049,
+          "text": "MSI (s) (18:40) [19:52:51:364]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1060,
+          "text": "MSI (s) (18:40) [19:52:51:368]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1071,
+          "text": "MSI (s) (18:40) [19:52:51:370]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1082,
+          "text": "MSI (s) (18:40) [19:52:51:372]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1093,
+          "text": "MSI (s) (18:40) [19:52:51:374]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1104,
+          "text": "MSI (s) (18:40) [19:52:51:376]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1115,
+          "text": "MSI (s) (18:40) [19:52:51:380]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1126,
+          "text": "MSI (s) (18:40) [19:52:51:382]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1137,
+          "text": "MSI (s) (18:40) [19:52:51:384]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1148,
+          "text": "MSI (s) (18:40) [19:52:51:386]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1159,
+          "text": "MSI (s) (18:40) [19:52:51:388]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1170,
+          "text": "MSI (s) (18:40) [19:52:51:390]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1181,
+          "text": "MSI (s) (18:40) [19:52:51:394]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1192,
+          "text": "MSI (s) (18:40) [19:52:51:396]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1203,
+          "text": "MSI (s) (18:40) [19:52:51:398]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1214,
+          "text": "MSI (s) (18:40) [19:52:51:400]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1225,
+          "text": "MSI (s) (18:40) [19:52:51:402]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 1237,
+          "text": "MSI (s) (18:40) [19:52:51:404]: Error in rollback skipped.\tReturn: 3"
+        }
+      ],
+      "file_and_registration_executed_before_fault": true,
+      "rollback_state_correct": false,
+      "supported_recovery_and_cleanup_correct": true,
+      "pass": false
+    },
+    {
+      "kind": "uninstall",
+      "log_sha256": "14fee110863832a6a9149fd904d69067d071677777d0dac32a88f9a5f673f6a0",
+      "raw_skipped_lines": 78,
+      "successful_terminal_end_markers": [
+        {
+          "line": 898,
+          "text": "MSI (s) (18:E0) [19:52:54:765]: Error in rollback skipped.\tReturn: 5"
+        }
+      ],
+      "failed_or_unknown_undo_lines": [
+        {
+          "line": 373,
+          "text": "MSI (s) (18:E0) [19:52:54:609]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 393,
+          "text": "MSI (s) (18:E0) [19:52:54:617]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 434,
+          "text": "MSI (s) (18:E0) [19:52:54:635]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 441,
+          "text": "MSI (s) (18:E0) [19:52:54:641]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 448,
+          "text": "MSI (s) (18:E0) [19:52:54:643]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 454,
+          "text": "MSI (s) (18:E0) [19:52:54:647]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 460,
+          "text": "MSI (s) (18:E0) [19:52:54:649]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 470,
+          "text": "MSI (s) (18:E0) [19:52:54:651]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 477,
+          "text": "MSI (s) (18:E0) [19:52:54:653]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 483,
+          "text": "MSI (s) (18:E0) [19:52:54:655]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 489,
+          "text": "MSI (s) (18:E0) [19:52:54:655]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 495,
+          "text": "MSI (s) (18:E0) [19:52:54:657]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 501,
+          "text": "MSI (s) (18:E0) [19:52:54:657]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 507,
+          "text": "MSI (s) (18:E0) [19:52:54:659]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 513,
+          "text": "MSI (s) (18:E0) [19:52:54:661]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 519,
+          "text": "MSI (s) (18:E0) [19:52:54:661]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 525,
+          "text": "MSI (s) (18:E0) [19:52:54:663]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 531,
+          "text": "MSI (s) (18:E0) [19:52:54:663]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 537,
+          "text": "MSI (s) (18:E0) [19:52:54:665]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 543,
+          "text": "MSI (s) (18:E0) [19:52:54:667]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 549,
+          "text": "MSI (s) (18:E0) [19:52:54:667]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 555,
+          "text": "MSI (s) (18:E0) [19:52:54:669]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 561,
+          "text": "MSI (s) (18:E0) [19:52:54:671]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 567,
+          "text": "MSI (s) (18:E0) [19:52:54:673]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 573,
+          "text": "MSI (s) (18:E0) [19:52:54:675]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 579,
+          "text": "MSI (s) (18:E0) [19:52:54:675]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 585,
+          "text": "MSI (s) (18:E0) [19:52:54:677]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 591,
+          "text": "MSI (s) (18:E0) [19:52:54:679]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 597,
+          "text": "MSI (s) (18:E0) [19:52:54:681]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 603,
+          "text": "MSI (s) (18:E0) [19:52:54:681]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 609,
+          "text": "MSI (s) (18:E0) [19:52:54:683]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 615,
+          "text": "MSI (s) (18:E0) [19:52:54:685]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 621,
+          "text": "MSI (s) (18:E0) [19:52:54:685]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 627,
+          "text": "MSI (s) (18:E0) [19:52:54:687]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 633,
+          "text": "MSI (s) (18:E0) [19:52:54:689]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 639,
+          "text": "MSI (s) (18:E0) [19:52:54:691]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 645,
+          "text": "MSI (s) (18:E0) [19:52:54:691]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 651,
+          "text": "MSI (s) (18:E0) [19:52:54:693]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 657,
+          "text": "MSI (s) (18:E0) [19:52:54:695]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 663,
+          "text": "MSI (s) (18:E0) [19:52:54:695]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 669,
+          "text": "MSI (s) (18:E0) [19:52:54:697]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 675,
+          "text": "MSI (s) (18:E0) [19:52:54:697]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 682,
+          "text": "MSI (s) (18:E0) [19:52:54:701]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 688,
+          "text": "MSI (s) (18:E0) [19:52:54:703]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 694,
+          "text": "MSI (s) (18:E0) [19:52:54:703]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 700,
+          "text": "MSI (s) (18:E0) [19:52:54:705]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 706,
+          "text": "MSI (s) (18:E0) [19:52:54:707]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 712,
+          "text": "MSI (s) (18:E0) [19:52:54:709]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 718,
+          "text": "MSI (s) (18:E0) [19:52:54:709]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 724,
+          "text": "MSI (s) (18:E0) [19:52:54:711]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 730,
+          "text": "MSI (s) (18:E0) [19:52:54:711]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 736,
+          "text": "MSI (s) (18:E0) [19:52:54:715]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 742,
+          "text": "MSI (s) (18:E0) [19:52:54:715]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 748,
+          "text": "MSI (s) (18:E0) [19:52:54:717]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 754,
+          "text": "MSI (s) (18:E0) [19:52:54:719]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 760,
+          "text": "MSI (s) (18:E0) [19:52:54:721]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 766,
+          "text": "MSI (s) (18:E0) [19:52:54:723]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 772,
+          "text": "MSI (s) (18:E0) [19:52:54:725]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 778,
+          "text": "MSI (s) (18:E0) [19:52:54:735]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 784,
+          "text": "MSI (s) (18:E0) [19:52:54:737]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 790,
+          "text": "MSI (s) (18:E0) [19:52:54:739]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 796,
+          "text": "MSI (s) (18:E0) [19:52:54:739]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 802,
+          "text": "MSI (s) (18:E0) [19:52:54:741]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 808,
+          "text": "MSI (s) (18:E0) [19:52:54:743]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 814,
+          "text": "MSI (s) (18:E0) [19:52:54:745]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 820,
+          "text": "MSI (s) (18:E0) [19:52:54:747]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 826,
+          "text": "MSI (s) (18:E0) [19:52:54:749]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 832,
+          "text": "MSI (s) (18:E0) [19:52:54:750]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 838,
+          "text": "MSI (s) (18:E0) [19:52:54:750]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 844,
+          "text": "MSI (s) (18:E0) [19:52:54:752]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 850,
+          "text": "MSI (s) (18:E0) [19:52:54:755]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 856,
+          "text": "MSI (s) (18:E0) [19:52:54:757]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 862,
+          "text": "MSI (s) (18:E0) [19:52:54:757]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 868,
+          "text": "MSI (s) (18:E0) [19:52:54:759]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 874,
+          "text": "MSI (s) (18:E0) [19:52:54:761]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 880,
+          "text": "MSI (s) (18:E0) [19:52:54:761]: Error in rollback skipped.\tReturn: 3"
+        },
+        {
+          "line": 892,
+          "text": "MSI (s) (18:E0) [19:52:54:763]: Error in rollback skipped.\tReturn: 3"
+        }
+      ],
+      "file_and_registration_executed_before_fault": true,
+      "rollback_state_correct": false,
+      "supported_recovery_and_cleanup_correct": false,
+      "pass": false
+    }
+  ]
+}

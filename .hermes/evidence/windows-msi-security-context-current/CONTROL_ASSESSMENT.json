@@ -1,0 +1,42 @@
+{
+  "status": "pass within diagnostic scope",
+  "scope": "Elevated file-only diagnostic; cannot accept an ordinary-user or actual Ottrin installer",
+  "original_actor_status": "failed native rollback or supported cleanup",
+  "original_actor_result_sha256": "60a4bf84411b5c52078dd808c570d5a836a28ad97d2c37ba4f9b888d3306a7fe",
+  "source_reference": "https://learn.microsoft.com/en-us/windows/win32/msi/logging-of-action-return-values",
+  "interpretation": "Logged action return5 is documented success. Only the adjacent exact terminal End(0) marker is separated; all other skipped lines, failed state, missing executed operations and cleanup residue still fail. Original results/logs are unchanged.",
+  "cases": [
+    {
+      "kind": "install",
+      "log_sha256": "48409297fb20ea4e836c3a81059362822bfe2b255a5edbcda1e32ff870a69413",
+      "raw_skipped_lines": 1,
+      "successful_terminal_end_markers": [
+        {
+          "line": 612,
+          "text": "MSI (s) (44:38) [20:56:51:448]: Error in rollback skipped.\tReturn: 5"
+        }
+      ],
+      "failed_or_unknown_undo_lines": [],
+      "file_and_registration_executed_before_fault": true,
+      "rollback_state_correct": true,
+      "supported_recovery_and_cleanup_correct": true,
+      "pass": true
+    },
+    {
+      "kind": "uninstall",
+      "log_sha256": "84dd961c23960d733c0806852a38bf8ba0d4caad6366dfbd955df6e9ffcee194",
+      "raw_skipped_lines": 1,
+      "successful_terminal_end_markers": [
+        {
+          "line": 508,
+          "text": "MSI (s) (44:34) [20:56:54:169]: Error in rollback skipped.\tReturn: 5"
+        }
+      ],
+      "failed_or_unknown_undo_lines": [],
+      "file_and_registration_executed_before_fault": true,
+      "rollback_state_correct": true,
+      "supported_recovery_and_cleanup_correct": true,
+      "pass": true
+    }
+  ]
+}

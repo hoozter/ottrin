@@ -1,0 +1,6 @@
+{
+  "run": 41508619836,
+  "job": 125494300779,
+  "result": "Live job log endpoint returns404 BlobNotFound while job API still reports in_progress; no terminal or missing-job inference and no restart",
+  "next": "Observe the same existing job; logs can be fetched once available"
+}

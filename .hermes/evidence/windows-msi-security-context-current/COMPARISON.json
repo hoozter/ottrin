@@ -1,0 +1,148 @@
+{
+  "status": "Native authored rollback is context-sensitive; ordinary-user release gate remains failed",
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "build": "26300",
+    "msi_version": "5.0.26100.9444"
+  },
+  "native_builder_sha256": "653bf94b7791564d1b1c81520f21fb934126da13e2d82f31a1ed144d13d83795",
+  "actor_comparison": "Identical execution/state/recovery/cleanup checks after explicit diagnostic role and scope substitutions",
+  "all_22_table_comparisons": [
+    {
+      "path": "tables-install/Component.idt",
+      "ordinary_sha256": "e29e485c93121c4780dd441142f36d86d72e1f3962ba4cae02c16bf1c0b44648",
+      "elevated_sha256": "dff51fd166477683ff94d2d7fd006d0da4c8b3511fe94fb3a3fbeacc0c4ce13a"
+    },
+    {
+      "path": "tables-install/CustomAction.idt",
+      "ordinary_sha256": "213075d55e78510af2b174da0a7e7b838851dcc513c7d03fd08a68deb74c36a4",
+      "elevated_sha256": "213075d55e78510af2b174da0a7e7b838851dcc513c7d03fd08a68deb74c36a4"
+    },
+    {
+      "path": "tables-install/Directory.idt",
+      "ordinary_sha256": "b210b7d83fe53c1b88c025ab0c89745f6400de15f371e11df3ca80fb0cd467cf",
+      "elevated_sha256": "b210b7d83fe53c1b88c025ab0c89745f6400de15f371e11df3ca80fb0cd467cf"
+    },
+    {
+      "path": "tables-install/Feature.idt",
+      "ordinary_sha256": "af605e9a198a930c9acdc119292c1c5ca1c2afebf3975d04c7f4d50523bcdf74",
+      "elevated_sha256": "af605e9a198a930c9acdc119292c1c5ca1c2afebf3975d04c7f4d50523bcdf74"
+    },
+    {
+      "path": "tables-install/FeatureComponents.idt",
+      "ordinary_sha256": "09ad4b439e29cf0391412ce495455087e1ce65f026210acacf070fd6386d2997",
+      "elevated_sha256": "09ad4b439e29cf0391412ce495455087e1ce65f026210acacf070fd6386d2997"
+    },
+    {
+      "path": "tables-install/File.idt",
+      "ordinary_sha256": "5c54ae8fdcf05953a00b82ec149dd1f8ac7582f0ab4ab5e50fa9f2306204feed",
+      "elevated_sha256": "5c54ae8fdcf05953a00b82ec149dd1f8ac7582f0ab4ab5e50fa9f2306204feed"
+    },
+    {
+      "path": "tables-install/InstallExecuteSequence.idt",
+      "ordinary_sha256": "f9e220d039d2869c18985ddbdee5c0479ac51873c4eae64e36635e32c0cc4c7f",
+      "elevated_sha256": "f9e220d039d2869c18985ddbdee5c0479ac51873c4eae64e36635e32c0cc4c7f"
+    },
+    {
+      "path": "tables-install/Media.idt",
+      "ordinary_sha256": "ba423de06528686c0571c59e9da934a00bc4641abea470a080edbd4b57f49c9c",
+      "elevated_sha256": "ba423de06528686c0571c59e9da934a00bc4641abea470a080edbd4b57f49c9c"
+    },
+    {
+      "path": "tables-install/Property.idt",
+      "ordinary_sha256": "d24c0d71f7bf8520efd31f897b8b7da1bf13c0bbeb0478e9449d6e4274c26dd3",
+      "elevated_sha256": "533737f91f19d59599c9f3e7f7d04e48fce1df909e5b366c296fc105e0ef452c"
+    },
+    {
+      "path": "tables-install/Registry.idt",
+      "ordinary_sha256": "6790eed564642f50165cc50f006dc95d3bf495c9460f8e20e64cd0017d24d429",
+      "elevated_sha256": "441d0a5eda7fefc33265f5c9e9da55208b0add8b51f268a3031b113b16cf1e29"
+    },
+    {
+      "path": "tables-install/RemoveFile.idt",
+      "ordinary_sha256": "21ad6f6cefe64b72d5f5aa0fd63f0e9b0975a009da6a192a8b2936a1bc8c7636",
+      "elevated_sha256": "21ad6f6cefe64b72d5f5aa0fd63f0e9b0975a009da6a192a8b2936a1bc8c7636"
+    },
+    {
+      "path": "tables-uninstall/Component.idt",
+      "ordinary_sha256": "67d7198b4266cbed8dff80f8647c5fa7186d8e66c1041a4592ca3c6e30b4c59a",
+      "elevated_sha256": "d20a2285c6903348b3893e7f798e94c2c982f14a2d857f6b116decefcfd427c2"
+    },
+    {
+      "path": "tables-uninstall/CustomAction.idt",
+      "ordinary_sha256": "213075d55e78510af2b174da0a7e7b838851dcc513c7d03fd08a68deb74c36a4",
+      "elevated_sha256": "213075d55e78510af2b174da0a7e7b838851dcc513c7d03fd08a68deb74c36a4"
+    },
+    {
+      "path": "tables-uninstall/Directory.idt",
+      "ordinary_sha256": "64d1e6fa9d8c0f9528aa6133e4c9081a62d0fd37d6a7ae0715c0a65d5add33ca",
+      "elevated_sha256": "64d1e6fa9d8c0f9528aa6133e4c9081a62d0fd37d6a7ae0715c0a65d5add33ca"
+    },
+    {
+      "path": "tables-uninstall/Feature.idt",
+      "ordinary_sha256": "af605e9a198a930c9acdc119292c1c5ca1c2afebf3975d04c7f4d50523bcdf74",
+      "elevated_sha256": "af605e9a198a930c9acdc119292c1c5ca1c2afebf3975d04c7f4d50523bcdf74"
+    },
+    {
+      "path": "tables-uninstall/FeatureComponents.idt",
+      "ordinary_sha256": "09ad4b439e29cf0391412ce495455087e1ce65f026210acacf070fd6386d2997",
+      "elevated_sha256": "09ad4b439e29cf0391412ce495455087e1ce65f026210acacf070fd6386d2997"
+    },
+    {
+      "path": "tables-uninstall/File.idt",
+      "ordinary_sha256": "5c54ae8fdcf05953a00b82ec149dd1f8ac7582f0ab4ab5e50fa9f2306204feed",
+      "elevated_sha256": "5c54ae8fdcf05953a00b82ec149dd1f8ac7582f0ab4ab5e50fa9f2306204feed"
+    },
+    {
+      "path": "tables-uninstall/InstallExecuteSequence.idt",
+      "ordinary_sha256": "f9e220d039d2869c18985ddbdee5c0479ac51873c4eae64e36635e32c0cc4c7f",
+      "elevated_sha256": "f9e220d039d2869c18985ddbdee5c0479ac51873c4eae64e36635e32c0cc4c7f"
+    },
+    {
+      "path": "tables-uninstall/Media.idt",
+      "ordinary_sha256": "ba423de06528686c0571c59e9da934a00bc4641abea470a080edbd4b57f49c9c",
+      "elevated_sha256": "ba423de06528686c0571c59e9da934a00bc4641abea470a080edbd4b57f49c9c"
+    },
+    {
+      "path": "tables-uninstall/Property.idt",
+      "ordinary_sha256": "bf79423866430cb7deeec138d202c068d458764f14ad709188896d9202dbb874",
+      "elevated_sha256": "48284564a54f0276433697e33e4c9387408c89bf57e01b3a854d9bf1473edc16"
+    },
+    {
+      "path": "tables-uninstall/Registry.idt",
+      "ordinary_sha256": "ba93f05d3ce3c0b415abed450106a24e42aa9c52ca2fbe4d6f322034ff91737f",
+      "elevated_sha256": "30ad007a7f8055393042c92331e970c568a6ee6067d12c272b9c07a68f122bde"
+    },
+    {
+      "path": "tables-uninstall/RemoveFile.idt",
+      "ordinary_sha256": "21ad6f6cefe64b72d5f5aa0fd63f0e9b0975a009da6a192a8b2936a1bc8c7636",
+      "elevated_sha256": "21ad6f6cefe64b72d5f5aa0fd63f0e9b0975a009da6a192a8b2936a1bc8c7636"
+    }
+  ],
+  "table_normalization": "Only generated product/component GUIDs and owned nonce are normalized; identical table sets required",
+  "elevated": {
+    "raw_actor_status": "failed native rollback or supported cleanup",
+    "assessment": "CONTROL_ASSESSMENT.json",
+    "registration_payload_recovery_cleanup_postconditions": "all pass",
+    "genuine_undo_failure_lines": [
+      0,
+      0
+    ]
+  },
+  "ordinary": {
+    "raw_actor_status": "failed native rollback or supported cleanup",
+    "assessment": ".hermes/evidence/windows-stock-control-current/CONTROL_ASSESSMENT.json",
+    "raw_skipped_lines": [
+      82,
+      78
+    ],
+    "genuine_undo_failure_lines": [
+      81,
+      77
+    ],
+    "postconditions": "registration incorrect after failure; uninstall cleanup leaves payload"
+  },
+  "conclusion": "Protected product-registration undo fails for the ordinary account and succeeds for the elevated actor with the same native authoring. This narrows execution security context; it does not establish a safe production per-user fix. No release waiver or production elevation change.",
+  "trace_note": "Original actor counted success-coded End return5. Assessment separates only that exact terminal marker and preserves raw data.",
+  "next": "Actual Ottrin MSI on retained independent base; no registry/ACL/policy compensation"
+}

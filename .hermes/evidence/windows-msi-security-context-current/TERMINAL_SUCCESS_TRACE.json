@@ -1,0 +1,20 @@
+{
+  "source": "https://learn.microsoft.com/en-us/windows/win32/msi/logging-of-action-return-values",
+  "interpretation": "Microsoft documents logged action return5 as ERROR_SUCCESS. Only its exact adjacent End(Checksum=0...) occurrence is separated. This is an inference tied to actual successful state/cleanup, not a general allowlist for every Return5.",
+  "cases": {
+    "install": {
+      "log_sha256": "48409297fb20ea4e836c3a81059362822bfe2b255a5edbcda1e32ff870a69413",
+      "terminal_lines": [
+        "MSI (s) (44:38) [20:56:51:448]: Executing op: End(Checksum=0,ProgressTotalHDWord=0,ProgressTotalLDWord=0)",
+        "MSI (s) (44:38) [20:56:51:448]: Error in rollback skipped.\tReturn: 5"
+      ]
+    },
+    "uninstall": {
+      "log_sha256": "84dd961c23960d733c0806852a38bf8ba0d4caad6366dfbd955df6e9ffcee194",
+      "terminal_lines": [
+        "MSI (s) (44:34) [20:56:54:169]: Executing op: End(Checksum=0,ProgressTotalHDWord=0,ProgressTotalLDWord=0)",
+        "MSI (s) (44:34) [20:56:54:169]: Error in rollback skipped.\tReturn: 5"
+      ]
+    }
+  }
+}

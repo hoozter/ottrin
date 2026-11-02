@@ -1,0 +1,54 @@
+{
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "build": "26300",
+    "msi_version": "5.0.26100.9444"
+  },
+  "desktop_ready": true,
+  "session_id": 1,
+  "phase": "executing native MSI rollback control",
+  "scope": "Diagnostic elevated-account native file-only MSI rollback; no ordinary-user acceptance or Ottrin executable",
+  "identity": {
+    "profile": "C:\\Users\\OTMSI7e8be6ac6d81",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": true
+  },
+  "status": "failed native rollback or supported cleanup",
+  "cases": [
+    {
+      "skipped_rollback_errors": 1,
+      "payload_after_cleanup": false,
+      "payload_after_failure": false,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "install",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{E4B95C22-8B64-4ED5-AC51-99BBB5FE7D04}",
+      "rollback_correct": true,
+      "msi_sha256": "496D2D4289A094BF4A13106F7052BDC74814D8713ADC726364FA86EFF2496BDF",
+      "recovery_install_exit": 0,
+      "state_after_failure": -1,
+      "state_before": -1
+    },
+    {
+      "skipped_rollback_errors": 1,
+      "payload_after_cleanup": false,
+      "payload_after_failure": true,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "uninstall",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{2D584E9D-5EDB-4390-B599-5DA9EE335E58}",
+      "rollback_correct": true,
+      "msi_sha256": "E154955505A72894CABC450A1F2C6FE3981E8A20B6B95D15E8D9F70DEE230364",
+      "recovery_install_exit": 0,
+      "install_exit": 0,
+      "state_after_failure": 5,
+      "state_before": -1
+    }
+  ]
+}

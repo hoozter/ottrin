@@ -1,0 +1,5 @@
+{
+  "purpose": "Single diagnostic variable: elevated QA actor token, compared with native ordinary-user control",
+  "scope": "Only newly created account in the offline disposable overlay; no policy/ACL/rollback bypass; not release acceptance",
+  "ordinary_comparison": ".hermes/evidence/windows-stock-control-current/GUEST_RESULT.json"
+}

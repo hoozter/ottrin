@@ -4,7 +4,8 @@ from contextlib import ExitStack
 import argparse, base64, re, hashlib, importlib.util, json, os, shutil, signal, subprocess, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');args=parser.parse_args()
+assert not args.native_elevated or args.native_msi_builder,'Elevated diagnostic requires the native file-only builder; never an application deployment mode'
 assert not args.test_filter or args.native_test
 assert not args.native_test or (args.test_filter and re.fullmatch(r'[A-Za-z0-9_:]+',args.test_filter))
 assert not args.native_msi_builder or ((args.use_updated_base or args.use_stock_base) and args.output and not any([args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test]))
@@ -39,6 +40,7 @@ for filename,url,algorithm,digest in ([] if args.native_test or args.msix_runtim
  assert hashlib.new(algorithm,p.read_bytes()).hexdigest()==digest
 fixture=e/'fixture';assert not fixture.exists()
 scope='Actual same-identity development MSIX upgrade, ordinary runtime, retained configuration/index and real login/removal for the declared startup choice; Store acceptance remains separate' if args.msix_upgrade_from else 'Exact named Rust unit test under the owned Windows guest agent token; no ordinary desktop, installer or user-file workflow acceptance' if args.native_test else 'Actual development MSIX deployment, ordinary runtime, real login startup and removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
+if args.native_elevated:scope='Diagnostic elevated owned QA account, same native file-only MSI authoring. No ordinary-user acceptance, Ottrin executable, security-policy change or original profile mutation.'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
 if args.use_updated_base:
  prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
@@ -137,6 +139,10 @@ with ExitStack() as stack:
   actor=(args.native_msi_builder.parent/'actor-input.ps1').read_text() if args.native_msi_builder and args.native_msi_builder.parent.name=='windows-msi-deferred-control-current' else (source/'msi-rollback-control-actor.ps1').read_text()
   actor=actor.replace(" foreach($kind in @('install','uninstall')) {", " $result.phase='waiting for owned ordinary desktop';Save;$deadline=[DateTime]::UtcNow.AddMinutes(8);$readyPath=Join-Path $out 'DESKTOP_READY.json';while(-not(Test-Path $readyPath)){if([DateTime]::UtcNow-ge$deadline){throw 'Owned first-login desktop was not made ready'};Start-Sleep -Milliseconds 250};$ready=Get-Content $readyPath -Raw|ConvertFrom-Json;Require ($ready.sid-eq$ExpectedSid) 'Desktop readiness belongs to another fixture';$result.desktop_ready=$true;$result.phase='executing native MSI rollback control';Save\n foreach($kind in @('install','uninstall')) {")
   actor=actor.replace(" $profilePath=[Environment]", " $session=(Get-Process -Id $PID).SessionId;Require ($session-gt0) 'Real ordinary interactive session required';$result.session_id=$session\n $profilePath=[Environment]")
+  if args.native_elevated:
+   ordinary="Require (-not([Security.Principal.WindowsPrincipal]::new($id)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) 'Ordinary token required'"
+   assert ordinary in actor and 'administrator=$false' in actor
+   actor=actor.replace(ordinary,"Require (([Security.Principal.WindowsPrincipal]::new($id)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) 'Diagnostic elevated token required'").replace('administrator=$false','administrator=$true').replace('waiting for owned ordinary desktop','waiting for owned diagnostic desktop').replace('Fresh native ordinary-user file-only MSI rollback after executed copy/removal; no Ottrin executable or application custom action','Diagnostic elevated-account native file-only MSI rollback; no ordinary-user acceptance or Ottrin executable')
   (fixture/'actor.ps1').write_text(actor)
   script=(source/'msi-rollback-control.ps1').read_text()
   start=script.index("if($env:GITHUB_ACTIONS")
@@ -167,6 +173,11 @@ with ExitStack() as stack:
  finally{if($password){$password.Dispose()};Save}
  exit $exit
  '''
+  if args.native_elevated:
+   membership="Add-LocalGroupMember -Group (Get-LocalGroup -SID 'S-1-5-32-545') -Member $user"
+   assert membership in script and '-LogonType Interactive -RunLevel Limited' in script
+   script=script.replace(membership,membership+";Add-LocalGroupMember -Group (Get-LocalGroup -SID 'S-1-5-32-544') -Member $user").replace('-LogonType Interactive -RunLevel Limited','-LogonType Interactive -RunLevel Highest')
+   save('SECURITY_CONTEXT.json',{'purpose':'Single diagnostic variable: elevated QA actor token, compared with native ordinary-user control','scope':'Only newly created account in the offline disposable overlay; no policy/ACL/rollback bypass; not release acceptance','ordinary_comparison':'.hermes/evidence/windows-stock-control-current/GUEST_RESULT.json'})
   if args.native_msi_builder:
    assert args.native_msi_builder.resolve() in [r/'.hermes/evidence/windows-msi-native-control-current/build.ps1',r/'.hermes/evidence/windows-msi-deferred-control-current/build.ps1']
    if args.native_msi_builder.parent.name=='windows-msi-deferred-control-current':
@@ -348,7 +359,7 @@ with ExitStack() as stack:
    state['retained_pending_volume']=volume;state['status']='updated baseline stopped cleanly; retained for named native consumers'
    save('UPDATED_BASE.json',{'status':'ready for named pending native consumers','path':'/var/lib/libvirt/images/'+volume,'volume':volume,'backing_original':'/var/lib/libvirt/images/win11ltsc.qcow2','verified_version':version,'clean_agent_shutdown':True,'pending_consumers':['Current-client minimal and actual Ottrin MSI rollback/lifecycle','MSIX startup/update/removal acceptance'],'cleanup_owner':'windows-msi-updated-client-current; delete only after consumers close and domain/backing-chain checks pass'})
    save('OWNER.json',state);raise SystemExit(0)
- state['status']='running ordinary-user native control';save('OWNER.json',state)
+ state['status']='running diagnostic elevated native control' if args.native_elevated else 'running ordinary-user native control';save('OWNER.json',state)
  code="$ErrorActionPreference='Stop';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned fixture disc missing'};$script=Join-Path ($disc[0].DeviceID+'\\') 'controller.ps1';$out='C:\\OttrinMsiCleanClientResults';$source=[IO.File]::ReadAllText($script);$source=$source.Replace('$PSScriptRoot',\"'\"+(Split-Path $script)+\"'\"); & ([ScriptBlock]::Create($source)) -Output $out"
  result=ps(code);save('CONTROLLER_PROCESS.json',{'exitcode':result.get('exitcode'),'stdout':base64.b64decode(result.get('out-data','')).decode('utf-8',errors='replace'),'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')})
  assert result['exitcode']==0,'Interactive preparation failed; preserve controller evidence'
