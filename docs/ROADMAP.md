@@ -206,10 +206,14 @@ and NSIS build successfully; native MakeAppx development MSIX0.1.0.2 assembly,
 fixture and fulfilled124MB source archive are removed. Actual0.1.0.1 →0.1.0.2 startup-enabled update now passes updated-window menu
 keys, normal Space open/close, real reboot/login before any Ottrin CLI, retained
 configuration/native index identity and removal. Its guest/disks/profile are
-removed. The startup-disabled case is pending. The sole previous0.1.0.1 input is transferred once into
+removed. The startup-disabled case now passes too: startup remains disabled through
+update and the new GUI; an actual reboot/login observes no daemon for180seconds
+before any Ottrin CLI. Configuration/native index identity survive clean removal.
+Its guest/disks/profile are removed, and both fulfilled previous-version inputs
+are no longer needed. The sole56.8MB input is removed. The sole previous0.1.0.1 input is transferred once into
 `windows-menu-space-delivery-current/input/previous.msix`; superseded2540 staging
-and archive are removed. Current Windows staging remains for those named runtime
-consumers. Stable8ede and public Windows files remain unchanged; MSI rollback is
+and archive are removed. Current Windows staging remains for remaining software/installer acceptance;
+the two named update consumers are complete. Stable8ede and public Windows files remain unchanged; MSI rollback is
 still a required failed gate. Evidence:
 `windows-menu-space-delivery-current/ASSEMBLY_ACCEPTANCE.json`.
 
@@ -225,12 +229,25 @@ That case is rejected and cleaned up. The detector now recognizes the exact
 previously missed large Start-menu labels; a bounded normal-UI observer drives
 only recognized privacy pages through the existing owned-console input helper,
 then the existing observed-desktop SID/nonce guard. No policy override or deadline
-waiver is introduced. A fresh disabled case is running; its observed state must
-pass before acceptance. Native Ctrl+L navigation/input and Windows Hidden/
+waiver is introduced. The corrected fresh disabled case passes normal-UI setup, native updated menu
+keys, actual no-start180-second login observation, retained config/index identity
+and removal; its guest/disks/profile are removed. Exact acceptance is in
+`windows-menu-space-delivery-current/upgrade-disabled/ACCEPTANCE.json`. Native Ctrl+L navigation/input and Windows Hidden/
 System attribute filtering are separate controlled follow-ups; a home screenshot
 alone does not establish the file attributes or a product defect. These are
 independently executable checks, not owner waits. Evidence:
 `windows-menu-space-delivery-current/KEYBOARD_FIXTURE_FOLLOWUP.json`.
+
+The next filesystem-metadata regressions expose a real Unix directory-link tag
+error: the listing reports a directory target as `Some(false)`. The authoritative
+listing now resolves only the target-type flag while preserving symlink entry
+identity and its own metadata. The before-fix regression fails on the directory
+link; the fixed two-case suite and all460 Linux UI tests (one existing ignored)
+pass. This source follow-up is not in the delivered d09569e2 packages. A native
+Windows Hidden/System attribute regression is added and compiling for execution;
+its behavior is not yet accepted or repaired. Do not push the still-unverified
+Windows regression to hosted CI as a passing checkpoint. Evidence:
+`listing-metadata-current/`.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not

@@ -1,0 +1,16 @@
+{
+  "status": "Linux source correction and checks pass; Windows native baseline pending",
+  "production_file": "crates/ottrin-ui/src/listing.rs",
+  "file_sha256": "b5e02ad1fea73f6b737bf0d1be012821f600947579d68bf9dfd349497d684e11",
+  "before": "BASELINE_LINUX_CORRECTED.log: dir-link Some(false) instead of Some(true)",
+  "fixed": "Target metadata resolves directory flag; entry remains Symlink, broken target unknown, target files unchanged",
+  "source_checks": "2 focused tests pass; 460 Linux UI tests pass with1 existing ignored",
+  "windows": "Exact Hidden/System attribute test added; no-run cross-compilation active. No native result yet; no Windows fix or acceptance claimed.",
+  "rejected_harness_attempt": "BASELINE_LINUX.log passed cargo test redundantly to a wrapper that already invokes cargo test; it did not run any product tests",
+  "artifact_scope": "Delivered Linux d09569e2 and current Windows candidate are unchanged. This WIP source is not packaged/pushed.",
+  "pending_consumers": [
+    "Native Windows attribute negative/positive controls",
+    "Strict cross-platform source lint and affected native GUI checks",
+    "Matching-configuration cache cleanup after new verification"
+  ]
+}

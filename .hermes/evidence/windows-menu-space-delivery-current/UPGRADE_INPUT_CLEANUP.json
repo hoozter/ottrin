@@ -1,0 +1,8 @@
+{
+  "removed": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/input/previous.msix",
+  "bytes": 56837293,
+  "sha256": "ba6783e85a6f97c87b230639a490f1a5cc23843da057b47fbf09b3ba6c1029ed",
+  "reason": "Both named actual startup-enabled/disabled1-to2 upgrade consumers passed and their host fixtures/guest/disks were removed. Historical input receipt retains its original scope.",
+  "retained": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+  "purpose": "Current source d095 portable/NSIS/MSIX58-file candidate retained for remaining native software/installer acceptance; stable internal8ede/public files unchanged"
+}

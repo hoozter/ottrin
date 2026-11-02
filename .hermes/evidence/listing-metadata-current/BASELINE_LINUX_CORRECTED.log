@@ -1,0 +1,41 @@
+   Compiling x11-dl v2.21.0
+   Compiling glib-sys v0.20.10
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling gobject-sys v0.20.10
+   Compiling winit v0.30.12
+   Compiling gio-sys v0.20.10
+   Compiling fontique v0.11.1
+   Compiling glutin_glx_sys v0.6.1
+   Compiling glib v0.20.12
+   Compiling parley v0.11.1
+   Compiling glutin v0.32.3
+   Compiling egui-wgpu v0.33.3
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling rwml v0.1.4
+   Compiling glutin-winit v0.5.0
+   Compiling gio v0.20.12
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling eframe v0.33.3
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 4m 26s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-a4306a82b74e7d60)
+
+running 2 tests
+
+thread 'listing::tests::symlink_target_directory_metadata_preserves_link_identity' (397775) panicked at crates/ottrin-ui/src/listing.rs:235:13:
+assertion `left == right` failed: dir-link
+  left: Some(false)
+ right: Some(true)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test listing::tests::hidden_toggle_controls_dot_files_and_directories ... ok
+test listing::tests::symlink_target_directory_metadata_preserves_link_identity ... FAILED
+
+failures:
+
+failures:
+    listing::tests::symlink_target_directory_metadata_preserves_link_identity
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 459 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`
