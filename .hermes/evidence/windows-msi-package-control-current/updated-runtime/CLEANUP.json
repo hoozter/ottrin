@@ -1,0 +1,90 @@
+{
+  "status": "complete owned cleanup",
+  "guest_and_media": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-clean-client.qcow2",
+      "ottrin-msi-clean-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_desktop_profile_absent": true,
+  "private_viewer_pid_absent": true,
+  "prepared_base_retirement": "PREPARED_BASE_RETIREMENT.json",
+  "redundant_output_removed": [
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/RESULTS.zip",
+      "bytes": 62674
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/initial.png",
+      "bytes": 20311
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/boot-progress.png",
+      "bytes": 11198
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/login-progress.png",
+      "bytes": 617216
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/after-reboot.png",
+      "bytes": 11196
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/account-progress.png",
+      "bytes": 9772
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/privacy-progress.png",
+      "bytes": 198946
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/readiness-progress.png",
+      "bytes": 2513272
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/privacy-accepted-2.png",
+      "bytes": 1469174
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/viewer/TEARDOWN.json",
+      "bytes": 625
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/viewer/dbus.log",
+      "bytes": 2934
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/viewer/viewer.log",
+      "bytes": 0
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/viewer/wm.log",
+      "bytes": 0
+    },
+    {
+      "path": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/viewer/xvfb.log",
+      "bytes": 1666
+    }
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/updated-runtime",
+      "purpose": "Compact exact native result, compressed raw logs, frozen producers, readiness rejection/recovery and cleanup receipts; no pending runtime consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/input/Ottrin-0.1.0-windows-x64.msi",
+      "purpose": "52.5MB exact held MSI for required native rollback boundary; release unaccepted"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "Existing independent clean Windows base for remaining software/platform audit; not created this turn"
+    }
+  ],
+  "compiler_builds_this_turn": false,
+  "user_data_and_current_deliverables_preserved": true
+}

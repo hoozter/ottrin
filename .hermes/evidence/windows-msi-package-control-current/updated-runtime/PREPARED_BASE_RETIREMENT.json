@@ -1,0 +1,61 @@
+{
+  "status": "owned prepared base removed through libvirt; protected environments preserved",
+  "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+  "allocated_bytes": 24320540672,
+  "closed_consumer": "Exact held8ede application MSI comparison on26100/.9711; same rollback/retry failure observed, evidence retained",
+  "assessment": "ASSESSMENT.json",
+  "domains": {
+    "ottrin-copy-cleanup-qa": "shut off",
+    "ottrin-index-qa": "shut off",
+    "ottrin-qa-20261011": "shut off",
+    "win11ltsc": "shut off"
+  },
+  "snapshots": {
+    "ottrin-copy-cleanup-qa": [],
+    "ottrin-index-qa": [],
+    "ottrin-qa-20261011": [],
+    "win11ltsc": []
+  },
+  "volumes_before": {
+    "ottrin-copy-cleanup-qa.qcow2": {
+      "path": "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+      "backing_paths": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2"
+      ]
+    },
+    "ottrin-index-qa.qcow2": {
+      "path": "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+      "backing_paths": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2"
+      ]
+    },
+    "ottrin-msi-updated-client.qcow2": {
+      "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+      "backing_paths": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    "ottrin-qa-20261011.qcow2": {
+      "path": "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+      "backing_paths": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    "ottrin-stock-client.qcow2": {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "backing_paths": []
+    },
+    "win11ltsc.qcow2": {
+      "path": "/var/lib/libvirt/images/win11ltsc.qcow2",
+      "backing_paths": []
+    }
+  },
+  "protected_volumes_preserved": [
+    "ottrin-copy-cleanup-qa.qcow2",
+    "ottrin-index-qa.qcow2",
+    "ottrin-qa-20261011.qcow2",
+    "win11ltsc.qcow2",
+    "ottrin-stock-client.qcow2"
+  ],
+  "path_absent": true
+}

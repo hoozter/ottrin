@@ -1,0 +1,5 @@
+﻿{
+    "stdout":  "{\n  \"items\": [\n    {\n      \"path\": {\n        \"encoding\": \"windows-utf16-le\",\n        \"units_hex\": \"005c005c003f005c0043003a005c00550073006500720073005c004f0054004d00530049006200370033006600640030003800340064003500300033005c004f0074007400720069006e004f0077006e00650064004d0073006900460069006c00650073005c0072006f006c006c006200610063006b002d00700072006f006f0066002e007400780074\"\n      },\n      \"parent_path\": {\n        \"encoding\": \"windows-utf16-le\",\n        \"units_hex\": \"005c005c003f005c0043003a005c00550073006500720073005c004f0054004d00530049006200370033006600640030003800340064003500300033005c004f0074007400720069006e004f0077006e00650064004d0073006900460069006c00650073\"\n      },\n      \"name\": \"rollback-proof.txt\",\n      \"kind\": \"File\",\n      \"is_executable\": false,\n      \"symlink_target_is_dir\": null,\n      \"size_bytes\": 41,\n      \"modified_unix_secs\": 1793661616,\n      \"content_snippet\": null\n    }\n  ],\n  \"total\": 1,\n  \"status\": \"Ready\",\n  \"error\": null\n}\n",
+    "stderr":  "",
+    "exit":  0
+}

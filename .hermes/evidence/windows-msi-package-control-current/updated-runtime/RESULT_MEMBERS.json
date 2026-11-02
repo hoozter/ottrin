@@ -1,0 +1,50 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "56103fd71c04839dea511c95debfac993882160208548559b9f98af897a1da6a"
+  },
+  "failure-process.json": {
+    "bytes": 68,
+    "sha256": "ae8563571274858cfd3a8782d295281b5b3ca67971d4372657d3ff5e4e766bd5"
+  },
+  "failure.log": {
+    "bytes": 275074,
+    "sha256": "daaba10f2dc6650bb6cf5be840db3caf56db19764aa0922de7e37b7bb38f2cf6"
+  },
+  "fixture-service-cleanup-process.json": {
+    "bytes": 225,
+    "sha256": "e0d4ea71f2a57b2eea8f2d496d28dfa3b20c9f3e2fbb6f3ecab7910ff2b118fe"
+  },
+  "initial-index-process.json": {
+    "bytes": 757,
+    "sha256": "87269e336bc5df31a23d9c26d35d4e3efeb53f37cb4cd36e9d7b6bce77e4b1e5"
+  },
+  "install-process.json": {
+    "bytes": 65,
+    "sha256": "b3eb3c4d2754fd504e007508929bc6662bc8476b65d96fbb24eb402b0126e3af"
+  },
+  "install.log": {
+    "bytes": 255002,
+    "sha256": "c94dc1cf4234441d76c1a9460a04a995e68eb18d28917019642175df90914707"
+  },
+  "OWNER.json": {
+    "bytes": 965,
+    "sha256": "aff5596c7d8bd929945695f87bb9009decd376f832207314fac0ed244c9aa63c"
+  },
+  "query-after-refusal-process.json": {
+    "bytes": 1102,
+    "sha256": "0642e94b071ffb730cda4c1c933a2703dcafc58e05b4c9c8cbaaf52b40557bcc"
+  },
+  "RESULT.json": {
+    "bytes": 2161,
+    "sha256": "0930553935c610a943199e251fdc58931e16814fb98309dc8d33f9340d4382ee"
+  },
+  "retry-process.json": {
+    "bytes": 68,
+    "sha256": "ae8563571274858cfd3a8782d295281b5b3ca67971d4372657d3ff5e4e766bd5"
+  },
+  "retry.log": {
+    "bytes": 97146,
+    "sha256": "4bfeb8c60f1cc5c114df7eb9e4222fb37c0bf737b1c2e6d2fe7d4b4e6d6a9b53"
+  }
+}

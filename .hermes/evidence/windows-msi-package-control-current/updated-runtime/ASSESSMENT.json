@@ -1,0 +1,47 @@
+{
+  "status": "failed ordinary-user actual MSI rollback/retry gate on prepared updated runtime",
+  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "native_runtime": {
+    "caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+    "disable_msi": null,
+    "build": "26100",
+    "msi": "5.0.26100.9711"
+  },
+  "native_identity": {
+    "profile": "C:\\Users\\OTMSIb73fd084d503",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+    "administrator": false,
+    "session": 1
+  },
+  "installed_payload_files_verified": 58,
+  "canonical_native_result_sha256": "0930553935c610a943199e251fdc58931e16814fb98309dc8d33f9340d4382ee",
+  "console_snapshot_matches_canonical": true,
+  "outcomes": {
+    "install_exit": 0,
+    "failure_exit": 1603,
+    "state_after_failure": 1,
+    "retry_exit": 1603,
+    "state_after_retry": 1,
+    "state_gate_passed": false,
+    "payload_after_retry": true
+  },
+  "postconditions_preserved": {
+    "daemon_instance_unchanged": true,
+    "task_xml_unchanged": true,
+    "task_security_unchanged": true,
+    "payload_intact": true,
+    "preferences_preserved": true,
+    "source_preserved": true,
+    "database_identity_preserved": true,
+    "index_query_preserved": true,
+    "preferences_after_retry": true,
+    "source_after_retry": true
+  },
+  "raw_skipped_rollback_lines": 79,
+  "native_service_cleanup_exit": 0,
+  "scope_limit": "Exact retained diagnostic8ede MSI on26100/.9711. Confirms same failure as independent26300/.9444; no production correction, elevation, registration compensation or security-policy change. Does not accept release.",
+  "observer_recovery": "Optional first-login page sequence corrected on same live guest before application operation; rejected observer expectation retained.",
+  "genuine_or_unknown_undo_failures": 78,
+  "successful_terminal_end_markers": 1
+}

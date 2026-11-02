@@ -1,0 +1,4 @@
+# Exact native Windows evidence retains its BOM and CRLF bytes.
+results/*.json binary
+# Frozen generated controller input retains the exact bytes used by the guest.
+controller.ps1 binary

@@ -1,5 +1,5 @@
 {
-  "status": "ready for named pending native consumers",
+  "status": "retired after all named native consumers completed",
   "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
   "volume": "ottrin-msi-updated-client.qcow2",
   "backing_original": "/var/lib/libvirt/images/win11ltsc.qcow2",
@@ -9,12 +9,12 @@
     "msi": "5.0.26100.9711"
   },
   "clean_agent_shutdown": true,
-  "pending_consumers": [
-    "Reconcile the named application-level held MSI comparison on build26100.9711; native file-only control is observed failed, actual retained8ede MSI only observed on independent26300/.9444. Not a fulfilled gate."
-  ],
+  "pending_consumers": [],
   "cleanup_owner": "windows-msi-updated-client-current; delete only after consumers close and domain/backing-chain checks pass",
   "completed_consumers": [
     "Native file-only26100.9711 ordinary-user rollback control (failed)",
-    "Source592d MSIX2 to3 enabled and disabled real update/reboot/login/removal; both owned overlays removed"
-  ]
+    "Source592d MSIX2 to3 enabled and disabled real update/reboot/login/removal; both owned overlays removed",
+    "Exact retained8ede application MSI on26100/.9711: fresh install58 files pass, genuine refusal damages registration and retry fails1603; same as26300/.9444"
+  ],
+  "retirement_receipt": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/updated-runtime/PREPARED_BASE_RETIREMENT.json"
 }

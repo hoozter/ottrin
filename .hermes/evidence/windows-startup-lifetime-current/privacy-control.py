@@ -14,29 +14,30 @@ elif action=='key':
  key=sys.argv[3];assert key in ['Escape','Return'];subprocess.run(['xdotool','windowactivate','--sync',window,'key','--clearmodifiers',key],env=env,check=True,timeout=10);time.sleep(.4)
 elif action=='shot':
  name=sys.argv[3];assert Path(name).name==name and name.endswith('.png');subprocess.run(['import','-window',window,str(r/name)],env=env,check=True,timeout=10)
-elif action=='finish-msix':
+elif action in ['finish-msix','finish-application']:
  # The producer still requires an observed normal desktop. Complete only these
  # known first-login pages through native input; never change OOBE/security policy.
  import hashlib
  steps=[]
  def own(*args):subprocess.run([sys.executable,str(Path(__file__).resolve()),str(r),*map(str,args)],check=True,timeout=40)
  own('key','Escape')
- for index,(heading,y) in enumerate([('use your location',550),('find my device',550),('improve inking',550),('personalized offers',610)]):
-  filename='privacy-observed-'+str(index)+'.png';deadline=time.monotonic()+(600 if index==0 else 15)
-  while True:
-   own('shot',filename)
-   text=subprocess.check_output(['tesseract',str(r/filename),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=10).casefold()
-   if heading in text:break
-   assert time.monotonic()<deadline,('Expected owned first-login page did not appear',heading);time.sleep(.5)
-  steps.append({'heading':heading,'observed_sha256':hashlib.sha256((r/filename).read_bytes()).hexdigest(),'selection':'No','input':[[900,y],[1080,737]]})
-  own('click',900,y);own('click',1080,737)
- deadline=time.monotonic()+45
+ # Editions can omit privacy pages. Act once only on a recognized, observed
+ # page; a transition timeout never repeats input or restarts the guest.
+ allowed={'use your location':550,'find my device':550,'improve inking':550,'personalized offers':610}
+ seen=set();deadline=time.monotonic()+600
  while True:
-  own('shot','desktop-ready.png')
-  text=subprocess.check_output(['tesseract',str(r/'desktop-ready.png'),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=10).casefold()
+  filename='privacy-accepted-'+str(len(steps))+'.png';own('shot',filename)
+  text=subprocess.check_output(['tesseract',str(r/filename),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=10).casefold()
   if 'recycle bin' in text or all(label in text for label in ['pinned','recommended','file explorer']):break
-  assert time.monotonic()<deadline,'Normal Windows desktop did not appear';time.sleep(.5)
- own('key','Escape');own('shot','desktop-ready.png');own('ready')
+  matched=[heading for heading in allowed if heading in text]
+  assert len(matched)<=1,'Ambiguous privacy page; no input sent'
+  if matched and matched[0] not in seen:
+   heading=matched[0];y=allowed[heading];seen.add(heading)
+   steps.append({'heading':heading,'observed_sha256':hashlib.sha256((r/filename).read_bytes()).hexdigest(),'selection':'No','input':[[900,y],[1080,737]]})
+   own('click',900,y);own('click',1080,737);deadline=time.monotonic()+45
+  assert time.monotonic()<deadline,'Known privacy page transition or normal desktop did not appear; no repeated input'
+  time.sleep(.5)
+ own('key','Escape');own('shot','desktop-ready.png');own('ready-msi' if action=='finish-application' else 'ready')
  (r/'PRIVACY_STEPS.json').write_text(json.dumps({'status':'pass','scope':'Known first-login pages observed by OCR and completed with native input on owned private console; optional collection declined; no policy bypass','domain_uuid':owner['uuid'],'steps':steps,'desktop_observed':True},indent=2)+'\n')
 elif action in ['ready','ready-msi']:
  assert (r/'desktop-ready.png').is_file(),'Observe the actual ready desktop before signalling'
