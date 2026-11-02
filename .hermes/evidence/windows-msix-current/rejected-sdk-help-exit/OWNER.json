@@ -1,0 +1,24 @@
+{
+  "domain": "ottrin-msix-parser",
+  "uuid": "eb45dd8e-cc24-4b6a-ac87-c6d90e083e7f",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-parser-fixture.iso",
+    "ottrin-msix-parser.qcow2"
+  ],
+  "status": "booting",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.",
+  "guest_pid": 5516,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-parser-fixture.iso",
+      "ottrin-msix-parser.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  }
+}

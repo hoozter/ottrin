@@ -1,0 +1,8 @@
+{
+  "url": "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.buildtools/10.0.26100.9457/microsoft.windows.sdk.buildtools.10.0.26100.9457.nupkg",
+  "sha512_base64": "bVwznDT8AETSle4ePhMLXMFrjvLjHje6AoHzX0cZgJ7nhBfixZID1t5GJvpiNANNbndO58BbLv9VfMHUbQ9mTA==",
+  "version": "10.0.26100.9457",
+  "bytes": 22749607,
+  "source": "Microsoft Windows SDK BuildTools, official NuGet metadata x-ms-meta-sha512",
+  "purpose": "Native MakeAppx validation and development-only MSIX deployment in an owned VM"
+}

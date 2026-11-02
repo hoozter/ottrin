@@ -1,0 +1,25 @@
+{
+  "domain": "ottrin-msix-parser",
+  "uuid": "b9705bea-a9ac-4f41-b6cb-37def6c99e6c",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-parser-fixture.iso",
+    "ottrin-msix-parser.qcow2"
+  ],
+  "status": "native parser/XML and SDK invocation pass; assembly/deployment remain required",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate",
+  "producer_sha256": "d9fbdfb3b958ca9fb0063fd533f4987465a34d58fc77548e26e429f35a625766",
+  "guest_pid": 4812,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-parser-fixture.iso",
+      "ottrin-msix-parser.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "status": "native source parser and SDK template round-trip pass; full assembly/deployment remain required",
+  "parser": {
+    "source_sha256": "427D20BBB039798D560FEB66349FE5F5BFF06C7B68ACFBB31762B226F6407C8F",
+    "scope": "Native parser and XML load; not package assembly/deployment",
+    "manifest_sha256": "9F6CE68B9A5F4A52A97563387C8F68CC60933B90F433B4358CEAE779C28139A5",
+    "syntax_errors": 0,
+    "parser": "Windows PowerShell 5.1"
+  },
+  "sdk": {
+    "scope": "Actual template accepted by native MakeAppx and unpacked with unchanged control bytes; Windows cmd.exe fixture, not Ottrin runtime or deployment acceptance.",
+    "status": "pass",
+    "makeappx_sha256": "58D5E69FD0322F960AFBE34AFED0EDA66A5D001811EE838D1C7165130C3D55E5",
+    "template_sha256": "9F6CE68B9A5F4A52A97563387C8F68CC60933B90F433B4358CEAE779C28139A5"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-parser-fixture.iso",
+      "ottrin-msix-parser.qcow2"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true
+  },
+  "retained_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-current",
+      "purpose": "Compact native parser/template acceptance and rejected-help control receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler/windows-sdk-buildtools.nupkg",
+      "purpose": "Pinned22MiB SDK input for pending actual Ottrin MSIX assembly/deployment"
+    }
+  ]
+}

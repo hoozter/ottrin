@@ -2086,3 +2086,38 @@ uses its existing idle-only disable/apply path. Absence is a no-op without a
 session bus. A modified/foreign registration refuses removal and the uninstaller
 must retain the application on an error. Registered production-portal uninstall
 and final packages remain separate acceptance scopes.
+
+
+## MSIX package preparation
+
+`packaging/windows/package-msix.ps1` assembles a separate MSIX from the exact
+portable stage of a clean source revision. It requires Windows SDK MakeAppx.exe
+on PATH or an explicit `MAKEAPPX` path, retains the previous package if SDK
+validation fails, and removes its owned `.msix-stage` directory on every exit.
+This assembly entry point is undergoing native validation; it is not yet a
+release-accepted artifact or a completed installed-lifecycle implementation.
+
+For isolated Windows11 development QA, use `-Stage PATH -Development`. This
+uses a clearly separate unsigned development identity and produces the stable
+`dist/Ottrin-VERSION-windows-x64-development.msix` path. Microsoft's development
+namespace permits explicit administrator `Add-AppxPackage -AllowUnsigned` testing;
+it is not intended for public distribution and does not establish Store trust.
+Do not change machine signing policy or trust an invented project certificate.
+
+For eventual Store assembly, supply `-Stage PATH -PackageName NAME -Publisher
+PUBLISHER -PublisherDisplayName DISPLAY_NAME` using the owner-controlled Partner
+Center values. No identity is guessed or silently reused from development QA.
+Store submission/certification remains deferred. The existing unsigned direct
+ZIP/EXE/MSI channel is independent.
+
+Required native gates before claiming MSIX readiness: exact portable payload
+comparison, SDK manifest/block-map validation, development deployment, actual
+ordinary application/chooser launch and icons, saved configuration/data behavior,
+background-index startup and running-process ownership, same-identity package
+upgrade, and package removal without stale startup registrations or unrelated
+profile/data deletion. The existing scheduled-task index integration must pass
+package-path/version changes; successful assembly alone cannot accept this gate.
+
+References: [Microsoft manual MSIX packaging](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-manual-conversion),
+[unsigned development deployment](https://learn.microsoft.com/en-us/windows/msix/package/unsigned-package),
+and [desktop package constraints](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-prepare).

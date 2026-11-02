@@ -57,12 +57,21 @@ The independent queue is:
    QA profile as the sole cause but does not prove a vendor defect. The initial
    LocalSystem-to-user launch refusal is retained separately and is not a rollback
    result. Both owned clones/volumes/fixtures are removed. Compact receipts are in
-   `.hermes/evidence/windows-msi-client-current/`; the37MiB pinned public compiler
+   `.hermes/evidence/windows-msi-client-current/`; the pinned public .NET/WiX/SDK
    cache is retained for the pending Windows installer/MSIX consumer. Next compare
    a supported current cumulative update on another disposable clone. Hosted
    Server2025's1625 policy refusal provides no rollback result. No security-policy,
    Installer-ACL, elevation or rollback waiver is used.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.
+   The new clean-stage assembly entry point and distinct development/explicit Store
+   identities pass native PowerShell5.1 parsing. The actual manifest passes native
+   MakeAppx pack/unpack with an unchanged Windows command fixture, and this template
+   gate is added to Windows CI. This is not actual Ottrin MSIX assembly/deployment
+   acceptance: exact payload, ordinary launch, configuration/data, index startup,
+   package upgrade and uninstall remain required. No Store identity is invented.
+   Evidence: `.hermes/evidence/windows-msix-current/`. A separate owned offline
+   current-client servicing comparison is pending; the official catalog inputs are
+   hash-verified and tracked under `windows-msi-updated-client-current/`.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
 
