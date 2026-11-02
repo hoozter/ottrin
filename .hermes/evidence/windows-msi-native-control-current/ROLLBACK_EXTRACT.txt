@@ -1,0 +1,25 @@
+failure-install.log
+MSI (s) (B8:CC) [12:19:33:358]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\AFF366C471C01774C80C664243680517\SourceList 3: 5
+MSI (s) (B8:CC) [12:19:33:358]: Note: 1: 2205 2:  3: Error
+MSI (s) (B8:CC) [12:19:33:358]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1403
+Info 1403.Could not delete value LastUsedSource from key \S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\AFF366C471C01774C80C664243680517\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (B8:CC) [12:19:33:358]: Executing op: RegCreateKey()
+MSI (s) (B8:CC) [12:19:33:360]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\AFF366C471C01774C80C664243680517\SourceList 3: 5
+MSI (s) (B8:CC) [12:19:33:360]: Note: 1: 2205 2:  3: Error
+MSI (s) (B8:CC) [12:19:33:360]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401
+MSI (s) (B8:CC) [12:19:33:360]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\AFF366C471C01774C80C664243680517\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (B8:CC) [12:19:33:360]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\AFF366C471C01774C80C664243680517,SecurityDescriptor=BinaryData,BinaryType=1,,)
+
+failure-uninstall.log
+MSI (s) (B8:40) [12:19:36:432]: Note: 1: 2318 2:
+MSI (s) (B8:40) [12:19:36:436]: Executing op: RegRemoveKey()
+MSI (s) (B8:40) [12:19:36:436]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1005\Products\066B8F7FEE8B45C45ADEFDD17FD6C704\Patches 3: 2
+MSI (s) (B8:40) [12:19:36:436]: Executing op: RegOpenKey(Root=-2147483646,Key=Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1005\Products\066B8F7FEE8B45C45ADEFDD17FD6C704\Patches,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (B8:40) [12:19:36:436]: Executing op: RegAddValue(Name=AllPatches,,)
+MSI (s) (B8:40) [12:19:36:438]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1005\Products\066B8F7FEE8B45C45ADEFDD17FD6C704\Patches 3: 5
+MSI (s) (B8:40) [12:19:36:438]: Note: 1: 2205 2:  3: Error
+MSI (s) (B8:40) [12:19:36:438]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1406
+MSI (s) (B8:40) [12:19:36:438]: Error in rollback skipped.	Return: 3
+Info 1406.Could not write value AllPatches to key \Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1005\Products\066B8F7FEE8B45C45ADEFDD17FD6C704\Patches.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (B8:40) [12:19:36:438]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\066B8F7FEE8B45C45ADEFDD17FD6C704\Patches,,BinaryType=1,,)

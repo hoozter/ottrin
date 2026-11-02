@@ -80,9 +80,8 @@ performance jobs but fails a Linux listing-wake test: a constructor/barrier wake
 can race the test observer. The actual worker already publishes before wake.
 An authoritative listing-worker factory now lets that test observe only its
 own worker;454 Linux UI tests and strict Linux/Windows lint pass. Hosted
-confirmation of pushed correction05c1325f in run41429811338 passes Linux full
-verification and both release performance gates; Windows full verification is
-still in progress.
+confirmation of pushed correction05c1325f in run41429811338 now passes all four
+jobs, including full Linux/Windows verification and both release performance gates.
 Evidence: `.hermes/evidence/github-actions-current/`,
 `.hermes/evidence/search-performance-isolation-current/`.
 
@@ -100,10 +99,16 @@ The independent queue is:
    SourceList deny ordinary-user writes while SYSTEM/administrators retain full
    access; failed uninstall rollback leaves inherited ordinary-user full access.
    Both84/80-error controls still fail. This does not identify the internal
-   rollback token or establish a vendor/compiler defect. The next control uses
-   an independently authored native MSI database without WiX. Both new owned
-   diagnostic guests, volumes and private desktops are removed.
-   Evidence: `windows-msi-registry-current/native-acl/OBSERVATION.json`,
+   rollback token or establish a vendor/compiler defect. A further independently
+   authored native MSI database control now reproduces82 install/78 uninstall
+   skipped rollback errors after actual file operations, without WiX/runtime
+   inputs or Ottrin executables. This rules out a WiX-specific dependency, not
+   shared authoring/engine/fixture causes. Its guest/volumes/private desktop are
+   removed. A clean Microsoft client comparison needs adequate storage: only
+   about17GB is free, so no ISO/new installed base is allocated. Continue other
+   dependency-ready software/delivery work while that comparison is constrained.
+   Evidence: `windows-msi-native-control-current/OBSERVATION.json`,
+   `windows-msi-registry-current/native-acl/OBSERVATION.json`,
    `windows-msi-updated-client-current/`,
    `windows-startup-lifetime-current/msi-desktop-ready/`.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.

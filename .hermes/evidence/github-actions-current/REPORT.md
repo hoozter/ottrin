@@ -60,3 +60,8 @@ Published correction05c1325f is being verified in
 [run41429811338](https://github.com/hoozter/ottrin/actions/runs/41429811338).
 Linux full verification and both release performance gates pass; Windows full
 verification remains in progress. This snapshot is retained in HOSTED_05_CURRENT.json.
+
+Run41429811338 for05c1325f now finishes all four jobs successfully, including
+full Windows tests, strict lint, release build and executable icon verification.
+HOSTED_05_FINAL.json records the terminal hosted result. Later receipt-only
+checkpoints preserve this tested source; no extra full CI run was triggered.

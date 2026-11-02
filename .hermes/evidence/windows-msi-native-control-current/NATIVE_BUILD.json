@@ -1,0 +1,49 @@
+{
+  "compiler_inputs": [],
+  "status": "authored; runtime acceptance separate",
+  "builds": [
+    {
+      "source": "uncompressed control.txt",
+      "payload_bytes": 39,
+      "sha256": "B78114E80A1A942EF75A04979F6247053131A5D4952A1D2BF74373D2A1DEB3A4",
+      "product": "{4C663FFA-0C17-4771-8CC0-662434865071}",
+      "kind": "install",
+      "tables": [
+        "Component.idt",
+        "CustomAction.idt",
+        "Directory.idt",
+        "Feature.idt",
+        "FeatureComponents.idt",
+        "File.idt",
+        "InstallExecuteSequence.idt",
+        "Media.idt",
+        "Property.idt",
+        "Registry.idt",
+        "RemoveFile.idt"
+      ],
+      "summary_word_count": 8
+    },
+    {
+      "source": "uncompressed control.txt",
+      "payload_bytes": 39,
+      "sha256": "35627C1ACC204633F22250B6B82787FEED53D60513E9CB454518D6211483AB1A",
+      "product": "{F7F8B660-B8EE-4C54-A5ED-DF1DF76D7C40}",
+      "kind": "uninstall",
+      "tables": [
+        "Component.idt",
+        "CustomAction.idt",
+        "Directory.idt",
+        "Feature.idt",
+        "FeatureComponents.idt",
+        "File.idt",
+        "InstallExecuteSequence.idt",
+        "Media.idt",
+        "Property.idt",
+        "Registry.idt",
+        "RemoveFile.idt"
+      ],
+      "summary_word_count": 8
+    }
+  ],
+  "api": "WindowsInstaller.Installer.OpenDatabase(Create), Database.Import and SummaryInformation"
+}

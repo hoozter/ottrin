@@ -1,0 +1,94 @@
+{
+  "status": "Independent native MSI authoring succeeds; executed-operation rollback and cleanup gate still fail",
+  "client": {
+    "caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+    "build": "26100",
+    "msi_version": "5.0.26100.9711"
+  },
+  "cases": [
+    {
+      "skipped_rollback_errors": 82,
+      "payload_after_cleanup": false,
+      "payload_after_failure": false,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "install",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{4C663FFA-0C17-4771-8CC0-662434865071}",
+      "rollback_correct": false,
+      "msi_sha256": "B78114E80A1A942EF75A04979F6247053131A5D4952A1D2BF74373D2A1DEB3A4",
+      "recovery_install_exit": 0,
+      "state_after_failure": 5,
+      "state_before": -1
+    },
+    {
+      "skipped_rollback_errors": 78,
+      "payload_after_cleanup": true,
+      "payload_after_failure": true,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "uninstall",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{F7F8B660-B8EE-4C54-A5ED-DF1DF76D7C40}",
+      "rollback_correct": false,
+      "msi_sha256": "35627C1ACC204633F22250B6B82787FEED53D60513E9CB454518D6211483AB1A",
+      "recovery_install_exit": 0,
+      "install_exit": 0,
+      "state_after_failure": 1,
+      "state_before": -1
+    }
+  ],
+  "native_builder_sha256": "653bf94b7791564d1b1c81520f21fb934126da13e2d82f31a1ed144d13d83795",
+  "compiler_inputs": [],
+  "media_bytes": 894976,
+  "conclusion": "WiX, its compiler/runtime inputs, compression and any Ottrin executable are not required to reproduce the registration/rollback failure on this client. Shared sequence authoring, native engine and fixture state remain possible causes; not a vendor defect finding.",
+  "next": "Clean independent Microsoft Windows client comparison, after adequate owned storage is available; continue dependency-ready roadmap gates meanwhile",
+  "stock_image_source": "https://www.microsoft.com/en-us/evalcenter/download-windows-11-enterprise",
+  "stock_image_limit": "Filesystem has approximately17GB free; insufficient margin for ISO plus installed independent Windows client. No image download or new installed base allocated. No account/form invented or policy changed.",
+  "scope_limits": [
+    "Actual nested IDT files were copied into guest results but omitted by the non-recursive final collection; native builder, table names/identities/hashes, snapshots and operation logs retained. Producer corrected for future runs; no rerun performed solely to repeat fulfilled operations.",
+    "No independent stock client acceptance yet"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msi-clean-client.qcow2",
+      "ottrin-msi-clean-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer_cleanup": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-5dt6pcto",
+    "owned_processes_reaped": [
+      {
+        "pid": 243917,
+        "exit": 0
+      },
+      {
+        "pid": 243926,
+        "exit": 0
+      },
+      {
+        "pid": 243927,
+        "exit": 15
+      },
+      {
+        "pid": 243978,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

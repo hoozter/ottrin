@@ -1,0 +1,16 @@
+{
+  "status": "Owned domain, overlay/ISO volumes, staging, private desktop/processes/profile removed",
+  "remaining_task_storage": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-native-control-current",
+    "purpose": "Independent control source, native logs/archive, snapshots and compact result receipts"
+  },
+  "retained_current_candidate": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+    "purpose": "Named pending Windows software/package acceptance"
+  },
+  "retained_shared_baseline": {
+    "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+    "purpose": "Named pending MSI and Windows software comparisons"
+  },
+  "no_rust_build_outputs_allocated": true
+}

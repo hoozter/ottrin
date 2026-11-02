@@ -4,7 +4,8 @@ from contextlib import ExitStack
 import argparse, base64, hashlib, importlib.util, json, os, shutil, signal, subprocess, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--search-benchmark',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--search-benchmark',type=Path);parser.add_argument('--native-msi-builder',type=Path);args=parser.parse_args()
+assert not args.native_msi_builder or (args.use_updated_base and args.output and not any([args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.search_benchmark]))
 assert not args.msix_startup_disabled or args.msix_upgrade_from
 assert not args.msix_upgrade_from or args.msix_runtime
 assert not args.prepare_updated_base or args.update_manifest
@@ -25,7 +26,7 @@ assert not virsh('snapshot-list','win11ltsc','--name')
 for v in [volume,iso_volume]:assert subprocess.run(['virsh','-c','qemu:///system','vol-info','--pool','default',v],capture_output=True).returncode!=0
 pins=json.loads((r/'.hermes/evidence/windows-20261011/windows-msi-compiler-downloads.json').read_text())
 cache=r/'.hermes/tools/msi-compiler';cache.mkdir(exist_ok=True)
-for filename,url,algorithm,digest in ([] if args.search_benchmark or args.msix_runtime else [('runtime.zip',pins['runtime_url'],'sha512',pins['runtime_sha512']),('wix.zip',pins['wix_url'],'sha256',pins['wix_sha256'])]):
+for filename,url,algorithm,digest in ([] if args.search_benchmark or args.msix_runtime or args.native_msi_builder else [('runtime.zip',pins['runtime_url'],'sha512',pins['runtime_sha512']),('wix.zip',pins['wix_url'],'sha256',pins['wix_sha256'])]):
  p=cache/filename
  if not p.exists():
   temp=p.with_suffix('.download');assert not temp.exists()
@@ -39,7 +40,7 @@ if args.use_updated_base:
  prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
  base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default',prepared_base['volume']));assert base_xml.findtext('./backingStore/path')==prepared_base['backing_original'];assert virsh('vol-path','--pool','default',prepared_base['volume'])==backing
  for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
-state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.search_benchmark or args.msix_runtime else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.search_benchmark or args.msix_runtime or args.native_msi_builder else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 save('OWNER.json',state)
 def cleanup():
  try:
@@ -73,7 +74,7 @@ def finish(kind,error,trace):
 with ExitStack() as stack:
  stack.push(finish)
  fixture.mkdir()
- for filename in ([] if args.search_benchmark or args.msix_runtime else ['runtime.zip','wix.zip']):os.link(cache/filename,fixture/filename)
+ for filename in ([] if args.search_benchmark or args.msix_runtime or args.native_msi_builder else ['runtime.zip','wix.zip']):os.link(cache/filename,fixture/filename)
  if args.update_manifest:
   inputs=json.loads(args.update_manifest.read_text());update_cache=r/'.hermes/tools/windows-client-update'
   assert shutil.disk_usage('/var/lib/libvirt/images').free>24*1024**3,'Need room for owned ISO, servicing overlay and teardown'
@@ -151,8 +152,14 @@ with ExitStack() as stack:
  finally{if($password){$password.Dispose()};Save}
  exit $exit
  '''
+  if args.native_msi_builder:
+   assert args.native_msi_builder.resolve()==r/'.hermes/evidence/windows-msi-native-control-current/build.ps1'
+   start=script.index(" $pins=Get-Content")
+   end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
+   script=script[:start]+" & ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'native-build.ps1')))) -Root $root -Nonce $nonce\n"+script[end:]
+   shutil.copy2(args.native_msi_builder,fixture/'native-build.ps1')
   (fixture/'controller.ps1').write_text(script);shutil.copy2(fixture/'controller.ps1',e/'controller.ps1');shutil.copy2(fixture/'actor.ps1',e/'actor.ps1')
-  iso_inputs=[fixture/n for n in ['runtime.zip','wix.zip','pins.json','actor.ps1','controller.ps1']]
+  iso_inputs=[fixture/n for n in (['native-build.ps1','actor.ps1','controller.ps1'] if args.native_msi_builder else ['runtime.zip','wix.zip','pins.json','actor.ps1','controller.ps1'])]
   if args.update_manifest:
    iso_inputs.extend(fixture/item['filename'] for item in inputs['files'])
    iso_inputs.append(fixture/'update-inputs.json')
@@ -338,7 +345,7 @@ with ExitStack() as stack:
   assert time.monotonic()<deadline,'Interactive actor did not finish'
   time.sleep(3)
  save('GUEST_RESULT.json',actor_result)
- result=ps("$ErrorActionPreference='Stop';$owner=Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw|ConvertFrom-Json;Copy-Item ($owner.root+'\\results\\*') 'C:\\OttrinMsiCleanClientResults';Compress-Archive 'C:\\OttrinMsiCleanClientResults\\*' 'C:\\OttrinMsiCleanClientResults.zip';[Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\\OttrinMsiCleanClientResults.zip'))",30)
+ result=ps("$ErrorActionPreference='Stop';$owner=Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw|ConvertFrom-Json;Copy-Item ($owner.root+'\\results\\*') 'C:\\OttrinMsiCleanClientResults' -Recurse;Compress-Archive 'C:\\OttrinMsiCleanClientResults\\*' 'C:\\OttrinMsiCleanClientResults.zip';[Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\\OttrinMsiCleanClientResults.zip'))",30)
  assert result['exitcode']==0
  (e/'RESULTS.zip').write_bytes(base64.b64decode(base64.b64decode(result['out-data']).decode().strip()))
  state['status']='control finished; inspect exact result, not assumed pass';save('OWNER.json',state)
