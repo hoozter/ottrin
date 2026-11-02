@@ -1,0 +1,11 @@
+{
+  "purpose": "Sole previous-version package required by pending real cross-version native MSIX acceptance",
+  "source_revision": "2ebf5fd0600504a5932bd08b62319e0dd91193ca",
+  "version": "0.1.0.0",
+  "sha256": "271c76a6f8a6b7cd9000aaea27aa8c03607c29dd1a2c5a907bb128d3db5494ca",
+  "source": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/input/previous.msix",
+  "cleanup_owner": "Current roadmap goal: delete this exact input once native upgrade consumers finish",
+  "status": "verified previous package retained for named upgrade consumer",
+  "bytes": 56840472
+}

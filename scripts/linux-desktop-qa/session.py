@@ -132,8 +132,9 @@ class OwnedDesktop:
             ]
             if self.isolation:
                 self.isolation.__exit__(kind, error, trace)
-            self.report['status'] = 'closed' if kind is None else 'failed'
-            if error:
+            success = kind is None or (isinstance(error, SystemExit) and error.code in (None, 0))
+            self.report['status'] = 'closed' if success else 'failed'
+            if error and not success:
                 self.report['error'] = str(error)
         except BaseException as failure:
             self.report['status'] = 'failed teardown'

@@ -2100,12 +2100,22 @@ and final packages remain separate acceptance scopes.
 portable stage of a clean source revision. It requires Windows SDK MakeAppx.exe
 on PATH or an explicit `MAKEAPPX` path, retains the previous package if SDK
 validation fails, and removes its owned `.msix-stage` directory on every exit.
-This assembly entry point is undergoing native validation; it is not yet a
-release-accepted artifact or a completed installed-lifecycle implementation.
+Actual development assembly, ordinary runtime, real login startup and removal
+pass for the source2ebf package; exact evidence is linked from the roadmap.
+Cross-version update and remaining integration/Store gates are still required.
 
 For isolated Windows11 development QA, use `-Stage PATH -Development`. This
-uses a clearly separate unsigned development identity and produces the stable
-`dist/Ottrin-VERSION-windows-x64-development.msix` path. Microsoft's development
+uses a separate unsigned development identity and produces the stable
+`dist/Ottrin-VERSION-windows-x64-development.msix` path.
+
+For a same-release development upgrade, add `-DevelopmentRevision 1` (0–65535;
+default0). This changes only the fourth MSIX version component, preserves the
+development package identity and retains the stable output path. The existing
+package is an explicitly owned temporary upgrade input until the real update
+and cleanup checks finish. Store builds cannot accept this parameter and keep
+the fourth component0.
+
+Microsoft's development
 namespace permits explicit administrator `Add-AppxPackage -AllowUnsigned` testing;
 it is not intended for public distribution and does not establish Store trust.
 Do not change machine signing policy or trust an invented project certificate.
@@ -2133,8 +2143,9 @@ per-call `RoUninitialize` around its process-lived cache. This preserves Windows
 Windows own version changes and removal. Direct ZIP/EXE/MSI installations keep
 the existing authenticated Task Scheduler path. A package refuses to add a second
 startup provider while an unpackaged Ottrin task exists; remove that registration
-from its owning installation before switching providers. This source correction
-requires a rebuilt package and fresh actual startup/update/removal acceptance.
+from its owning installation before switching providers. The rebuilt2ebf package
+passes actual setup/disable/reenable, reboot/login and removal. Actual cross-version
+update remains required; original40effd6f failures remain historical evidence.
 
 Services labels distinguish package startup repair/disable from native service
 reinstall/uninstall. The package provides a direct Windows Startup apps settings
@@ -2144,4 +2155,5 @@ login choice. Test both before calling the package ready.
 
 References: [Microsoft manual MSIX packaging](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-manual-conversion),
 [unsigned development deployment](https://learn.microsoft.com/en-us/windows/msix/package/unsigned-package),
+[Store package version requirements](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/package-version-numbering?pivots=store-installer-msix),
 and [desktop package constraints](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-prepare).

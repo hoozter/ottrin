@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$Stage,
     [Parameter(Mandatory = $true, ParameterSetName = 'Development')][switch]$Development,
+    [Parameter(ParameterSetName = 'Development')][ValidateRange(0, 65535)][int]$DevelopmentRevision = 0,
     [Parameter(Mandatory = $true, ParameterSetName = 'Store')][string]$PackageName,
     [Parameter(Mandatory = $true, ParameterSetName = 'Store')][string]$Publisher,
     [Parameter(Mandatory = $true, ParameterSetName = 'Store')][string]$PublisherDisplayName
@@ -21,7 +22,9 @@ $Version = $VersionLine -replace 'version = "([^"]+)"', '$1'
 if ($Version -notmatch '^([0-9]+)\.([0-9]+)\.([0-9]+)$') { throw 'MSIX requires a three-component numeric release version.' }
 $Parts = @($Matches[1], $Matches[2], $Matches[3])
 if (@($Parts | Where-Object { [int]$_ -gt 65535 }).Count) { throw 'MSIX version component exceeds 65535.' }
-$PackageVersion = $Version + '.0'
+# The fourth component is reserved for the Store; development updates can
+# advance it without changing the product release version or package identity.
+$PackageVersion = $Version + '.' + $(if ($Development) { $DevelopmentRevision } else { 0 })
 $Recorded = Get-Content (Join-Path $Stage 'SOURCE_REVISION.txt')
 if ($Recorded -notcontains "Version: $Version" -or $Recorded -notcontains "Git revision: $Revision") { throw 'Portable stage does not match this clean source revision/version.' }
 if (@(Get-ChildItem $Stage -Force -Recurse | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count) { throw 'MSIX stage must contain ordinary owned files, not links or junctions.' }

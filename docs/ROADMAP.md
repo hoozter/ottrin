@@ -114,9 +114,11 @@ The independent queue is:
    `windows-startup-lifetime-current/login-verified-state/ACCEPTANCE.json`.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
-   The QA desktop teardown report also needs its successful SystemExit(0)
-   classification corrected at the next source checkpoint; actual process/profile
-   removal for these cases is separately verified in the retained receipts.
+   QA desktop teardown now classifies successful SystemExit(0) as closed; an
+   actual private desktop probe verifies process/profile removal. Raw older
+   reports retain their original misclassification. A development-only package
+   revision is being prepared for actual0.1.0.0 →0.1.0.1 upgrade acceptance;
+   the previous56.8MB package is the sole explicitly retained upgrade input.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not

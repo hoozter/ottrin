@@ -1,9 +1,11 @@
 """Real shallow Git source fixture; do not impersonate Git or rewrite stage provenance."""
 from pathlib import Path
-import hashlib,json,shutil,subprocess,zipfile,signal
+import argparse,hashlib,json,shutil,subprocess,zipfile,signal
 def cancelled(signum,frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-r=Path.cwd();e=Path(__file__).resolve().parent;source=r/'.hermes/packaging-tmp/.windows-msix-source';archive=e/'source.zip'
+parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
+r=Path.cwd();e=args.output.resolve();assert e.is_dir() and not (e/'SOURCE_INPUT.json').exists(),'Existing source receipt must not be overwritten'
+source=r/'.hermes/packaging-tmp/.windows-msix-source';archive=e/'source.zip'
 assert not source.exists() and not archive.exists()
 revision=json.loads((e/'windows/BUILD_SOURCE.json').read_text())['source_revision']
 assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==revision
