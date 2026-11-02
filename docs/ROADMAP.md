@@ -2,92 +2,64 @@
 
 ## Current delivery and next work — 2026-11-02
 
-The four Linux formats and the internal Windows ZIP/NSIS/MSI cohort now share
-clean source `8ede156248e54af88e972d53fe441b05af9caa3c`. The full hosted Linux,
-Windows and search-performance run41360032284 passes. Current artifact hashes and
-exact scopes are authoritative in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`
-and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. The stable Linux AppImage is
-`dist/packages/Ottrin-0.1.0-x86_64.AppImage` (SHA-256
-`0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0`).
-Public Windows release files remain unchanged; this is the internal candidate.
+The stable four-format Linux delivery now uses clean source
+`0b6015dbe58504344962029cc4691b2d5d98f1f5`. Exact hashes and scoped acceptance
+are authoritative in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
+`617c03c396ea3365924d82ae32edd898cc70f24fa99fd2b4daa59d795f583ad4`.
+The internal Windows ZIP/NSIS/MSI candidate remains source8ede1562 and public
+Windows release files remain unchanged. No Windows installer gate is waived.
 
-All four Linux formats pass payload/runtime/helper/documentation and ownership
-checks. Actual AppImage Dark100/Light150 checks pass long/short chrome, pointer
-Close, read-only Inspector navigation, preserved files/preferences and index
-continuity. Native-byte cooperating picker Save/folder/cancel/caller-loss,
-FileManager1 activation/reveal/Properties/startup/window lifecycle, uninstall
-refusals/restoration, complete chooser icon pixels and bounded resource checks
-pass. The10000-file content index passes live/offline changes,restart/queries;
-three30-second quiet samples use0.033–0.067percent of one core and13–17MiB RSS.
+All four Linux formats pass payload/runtime/helper/documentation and namespace
+ownership checks. Actual AppImage Dark100/Light150 checks pass read-only VCF/text
+Inspector navigation, native Close, long Properties metadata and saved theme.
+A previous-image → new-image → reopen run visibly retains Miller columns and
+saved Miller preference, with source fixture unchanged. Complete chooser icon
+pixels match the source icon. All owned private desktop resources are removed.
 
-Native Windows portable/NSIS/MSI58-file payload equality, loader/CLI and embedded
-app/index icons pass. Actual ordinary100percent OpenGL checks pass directory/drive
-default opening, Settings enable/restore, long Properties with native Close,
-picker native-UTF16 Save/cancel/no-write/config preservation and unchanged index
-process set, then uninstall/default restoration. The rejected plain-filename QA
-request and restricted script-loading control are retained alongside successful
-reruns. This does not establish MSI rollback, installed lifecycle,physical GPU or
-all-DPI acceptance.
+Fresh Fedora44 and Ubuntu24.04 guests now pass normal setup without diagnostic
+controls: actual frontend picker requests, idle readiness without starting the
+backend, same-version reinstall, refusal to remove a modified native asset,
+online/offline native preference restoration, and real portable picker use after
+native package removal. Main preferences and source files are preserved. Both
+owned domains, three volumes each, seed/key profiles and credentials are removed.
+Evidence: `.hermes/evidence/desktop-integration-current/`.
 
-The personal enabled index service now runs the exact accepted daemon, with
-configuration/unit/wrapper bytes and saved database identity preserved. Its first
-minute overlaps catch-up work (26.20percent of one core); the following minute
-remains watched Ready while processing incremental changes (0.433percent). The
-latter is an active-change observation,not idle acceptance. All private fixtures,
-processes/displays/buses/mounts and superseded package staging/extractions are
-removed; compact receipts and useful current build caches remain. The personal
-configured daemon is intentionally running. Evidence:
-`.hermes/evidence/desktop-package-current/`.
+The earlier1e238431 package failed because native removal deleted a shared portal
+definition used by portable integration. The c79dbcbc follow-up retained that
+definition but required an explicit D-Bus ReloadConfig diagnostic control for fresh
+activation. Both rejected cohorts and failure evidence remain documented; their
+staging and guests are removed. The current accepted cohort fixes registration
+reload in the authoritative setup/removal paths and passes without those controls.
 
-Native cleanup source `1e238431` passes17 integration tests and six real
-private-bus/mount ownership cases. The exact Fedora RPM diagnostic, with an
-explicit backend-start control, also passes same-version reinstall, refusal on a
-modified native asset, online/offline native preference restoration, and portable
-registration/PID retention. It fails because package removal deletes the shared
-system portal definition still needed by the portable picker. Normal setup also
-fails when the frontend leaves that backend inactive. The owned guests, disks,
-seed and credentials are removed; controls are retained in
-`.hermes/evidence/native-desktop-package-current/`. Source corrections now move
-the shared definition to helper-managed integration, retain it for a known
-portable picker, validate explicit on-demand activation, and distinguish idle
-readiness from failed service state. Exact new-package acceptance is still pending.
+The stronger HTML gate caught an unfiltered short-lived renderer in run41365916700.
+Inherited syscall confinement and an exact versioned helper-readiness response now
+pass the full hosted Linux job and search-performance job in run41374248948.
+Run41369606817 for the parent c79dbcbc also finishes all three jobs successfully.
+An older installed protected HTML helper now correctly requires setup/update;
+updating an AppImage alone does not replace protected system integration.
 
-Hosted source run41365916700 fails the Linux HTML gate: one short-lived
-renderer sample has Seccomp0; its Windows and performance jobs pass. The stricter
-inherited-filter rendering/profile/preload gate and the full Linux job now pass
-for `c79dbcbc` in run41369606817; that run's Windows job is still pending at this
-checkpoint. This does not accept a stale installed helper: the next source requires
-an explicit versioned helper response and shows setup/update for older helpers.
-
-The exact `c79dbcbc` Fedora run reproduces a fresh-broker activation failure.
-`ListActivatableNames` lacks the new backend; an explicit session-bus ReloadConfig
-adds it and allows real Ottrin chooser requests. With that diagnostic control,
-all three users' real frontend/idle checks, native reinstall/removal/refusal,
-shared-definition retention and a working portable picker after native uninstall
-pass, preserving main preferences/source. Normal setup remains unaccepted for
-that cohort. Source now reloads the user activation registry during setup and
-online removal. The next clean packages must pass without the control. Owned VMs,
-volumes, credentials and profiles are removed; stable deliverables remain the
-accepted8ede cohort above.
+The index daemon ELF is byte-for-byte identical to the previous accepted daemon
+`5e5d0ae99c7cad3d12629aaeb007411947abe3ccb5aa6225b93a7deacc7d35d1`.
+Earlier exact10000-file index live/offline/restart/query proof and three30-second
+quiet samples (0.033–0.067percent of one core,13–17MiB RSS) retain their original
+package receipt in `.hermes/evidence/desktop-package-current/linux/`; these are
+not new-package resource measurements or a sustained personal-workload guarantee.
+The personal enabled service is refreshed separately with configuration, wrapper,
+unit and database identity preservation recorded in the current delivery evidence.
 
 The independent queue is:
-1. Native DEB/RPM removal/reinstall with optional folder/picker integration:
-   verify native-owned active/offline registrations and retain independent
-   portable/AppImage choices; reuse the authoritative ownership/restoration code.
-2. Windows MSI after-execution rollback on a suitable current client fixture.
-   The retained client failure remains required. A fresh hosted Server2025
-   standard-user control is refused1625 under DisableMsi=1 before file execution,
-   so it provides no rollback result. Its temporary account/profile/root and
-   sparse local checkout are removed; compact source/controls are retained in
-   `.hermes/evidence/msi-hosted-control-current/`. No policy/elevation workaround
-   or rollback waiver is used.
-3. MSIX build/deployment tooling independent of parked Store identity/submission.
-4. Remaining software/theme/accessibility/resource and supported-platform gates;
+1. Windows MSI after-execution rollback on a fresh ordinary client fixture.
+   The retained client failure remains required. Hosted Server2025 refuses the
+   standard-user control1625 under DisableMsi=1 before file execution and provides
+   no rollback result. No policy/elevation workaround or rollback waiver is used.
+2. MSIX build/deployment tooling independent of parked Store identity/submission.
+3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not
-replace this delivery receipt or automatically accept the newest cohort.
+replace this delivery receipt or automatically accept a newer cohort.
 
 ## Shared title alignment — source follow-up, 2026-11-01
 

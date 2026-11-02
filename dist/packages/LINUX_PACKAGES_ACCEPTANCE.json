@@ -1,15 +1,15 @@
 {
-  "status": "pass within exact Linux content and private native GUI/integration/resource scopes",
-  "source_revision": "8ede156248e54af88e972d53fe441b05af9caa3c",
+  "status": "pass within exact Linux package, private GUI and fresh native distribution scopes",
+  "source_revision": "0b6015dbe58504344962029cc4691b2d5d98f1f5",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "b116a755ad737abac2a50d34aa71f157828cc19321874c4b441c4c37ebfa8152",
-    "Ottrin-0.1.0-x86_64.AppImage": "0570e5bd7046f5b822e7ec1897fcb381528a2870c98516a2a090d70c705f38d0",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f4f18c3729eb688e3e51229e29ee295f3173847420c9755c404cbd1baa789ffc",
-    "ottrin_0.1.0_amd64.deb": "07d389cd92c7130632056fd2a49e72a1295a676880654b2f1b406073858a2e32"
+    "ottrin-0.1.0-1.x86_64.rpm": "e0613187ab151d7feeedc01b06cec3b5ff336118a1f6db1e48a493c200d35950",
+    "Ottrin-0.1.0-x86_64.AppImage": "617c03c396ea3365924d82ae32edd898cc70f24fa99fd2b4daa59d795f583ad4",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f87d70c4fd1edafa69c0d50b214c01e51b9b37113b2db08ae272f8543a4f5533",
+    "ottrin_0.1.0_amd64.deb": "8e4f81248f238c8db5cb6c10a6686dc61878e4fca0068f9df557ac9b6443e7bf"
   },
-  "evidence": ".hermes/evidence/desktop-package-current/linux",
+  "evidence": ".hermes/evidence/desktop-integration-current",
   "indexd_binary_sha256": "5e5d0ae99c7cad3d12629aaeb007411947abe3ccb5aa6225b93a7deacc7d35d1",
-  "html_binary_sha256": "9003487565ec3aefa13821f2cc23faa4f1b7ca9c403280eb39f7bec084880843",
+  "html_binary_sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -18,47 +18,30 @@
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
-  "gui_and_resource_sessions": {
-    "main-dark100": {
-      "receipt": "main-dark100/RESULT.json",
-      "owned_profile_removed": true
-    },
-    "main-light150": {
-      "receipt": "main-light150/RESULT.json",
-      "owned_profile_removed": true
-    },
-    "properties-dark100": {
-      "receipt": "properties-dark100/RESULT.json",
-      "owned_profile_removed": true
-    },
-    "properties-light150": {
-      "receipt": "properties-light150/RESULT.json",
-      "owned_profile_removed": true
-    },
-    "resources": {
-      "receipt": "resources/RESULT.json",
-      "owned_profile_removed": true
-    },
-    "icon": {
-      "receipt": "icon/RESULT.json",
-      "owned_profile_removed": true
-    },
-    "picker": {
-      "receipt": "picker/RESULT.json",
-      "owned_profile_removed": true
-    }
+  "gui_sessions": {
+    "main-dark100": ".hermes/evidence/desktop-integration-current/main-dark100/RESULT.json",
+    "main-light150": ".hermes/evidence/desktop-integration-current/main-light150/RESULT.json",
+    "properties-dark100": ".hermes/evidence/desktop-integration-current/properties-dark100/RESULT.json",
+    "properties-light150": ".hermes/evidence/desktop-integration-current/properties-light150/RESULT.json",
+    "icon": ".hermes/evidence/desktop-integration-current/icon/RESULT.json",
+    "upgrade-view": ".hermes/evidence/desktop-integration-current/upgrade-view/RESULT.json"
   },
-  "integration": [
-    "D-Bus activation/signatures,native paths,reveal,Properties,startup token,independent child reaping and active-window continuity",
-    "Blocked-cache/modified-registration uninstall refusal and successful ownership-aware removal;original defaults/config/source preserved"
+  "native_distribution_lifecycle": [
+    "Fedora44 DNF/RPM",
+    "Ubuntu24.04 APT/DEB"
   ],
-  "resource": "Exact10000-file content index:live/offline changes,restart,queries and three30-second quiet observations;see POPULATED_INDEX.json. Chooser repeated/concurrent cancel and quiet sample in resources/RESULT.json. These are scoped samples,not a sustained personal-workload guarantee.",
+  "native_scope": "Normal setup without controls, actual portal chooser, idle status, same-version reinstall, modified-asset refusal, online/offline native removal and preference restoration, portable picker surviving native removal. Source/config unchanged.",
+  "resource_identity": {
+    "previous_receipt": ".hermes/evidence/desktop-package-current/linux/POPULATED_INDEX.json",
+    "daemon_binary_identical": true,
+    "note": "Earlier scoped resource samples retain their original package identity; not rerun or represented as new-package measurements."
+  },
   "hosted_source": {
-    "run": 41360032284,
+    "run": 41374248948,
     "linux": "success",
     "performance": "success",
     "windows_state_at_linux_promotion": "in_progress"
   },
-  "scope": "Local Linux four-format contents and actual AppImage X11/software-rendered acceptance. Fresh-distribution lifecycle,physical seats/devices,external production app picker use,final owner/release acceptance and Windows installer rollback remain separate. Earlier receipts retain their original artifact hashes.",
-  "cleanup": "All private profiles/processes/mounts removed. Completed staging/extraction retired at promotion; current compiler outputs and compact receipts retained."
+  "scope": "Local four-format Linux delivery. Physical graphics/devices, external production picker use and final owner acceptance remain separate. Windows internal candidate and failed MSI rollback gate unchanged.",
+  "cleanup": "Owned GUI profiles/processes/displays/buses/mounts and both native VM domains/volumes/credentials removed; staging/extraction retired after promotion. Current compiler caches and compact receipts retained."
 }

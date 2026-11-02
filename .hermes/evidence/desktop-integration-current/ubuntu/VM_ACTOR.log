@@ -1,0 +1,47 @@
+{
+  "source": "0b6015dbe58504344962029cc4691b2d5d98f1f5",
+  "scope": "Exact ubuntu same-version reinstall/removal; native online/offline folder/picker and independent portable choice",
+  "status": "pass",
+  "picker_frontend": {
+    "ottrinqa": {
+      "expected_executable": "/usr/bin/ottrin",
+      "chooser_pid": 3812,
+      "mapped_ms": 526,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    },
+    "offlineqa": {
+      "expected_executable": "/usr/bin/ottrin",
+      "chooser_pid": 3862,
+      "mapped_ms": 257,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    },
+    "portableqa": {
+      "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+      "chooser_pid": 3913,
+      "mapped_ms": 413,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    }
+  },
+  "configured": {
+    "ottrinqa": 3807,
+    "offlineqa": 3857,
+    "portableqa": 3906
+  },
+  "reinstall": "pass; selected integrations retained; active picker PIDs unchanged",
+  "modified_native_asset": "refused before native or portable picker stopped",
+  "native_removal": "pass; online/offline preferences restored and native receipts removed; app preferences/source retained",
+  "native_activation_removed": true,
+  "portable_registration_and_process": "preserved",
+  "portable_system_definition_present": true,
+  "portable_frontend_after_native_removal": {
+    "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+    "chooser_pid": 5274,
+    "mapped_ms": 135,
+    "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+    "status": "pass"
+  },
+  "portable_picker_after_native_removal": "pass; real frontend restart and backend readiness"
+}

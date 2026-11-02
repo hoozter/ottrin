@@ -1,0 +1,8 @@
+{
+  "source_revision": "0b6015dbe58504344962029cc4691b2d5d98f1f5",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "cleanup_owner": "desktop-integration-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Accepted local Linux cohort promoted; staging/extraction removed"
+}

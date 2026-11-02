@@ -1,0 +1,20 @@
+{
+  "status": "reviewed",
+  "scope": "Actual X11/software-rendered screenshots, dark100 and light150; not physical seat acceptance",
+  "observations": [
+    "Inspector chrome matches theme; bounded leading-aligned titles and reachable Close",
+    "Read-only VCF and text use expected content and controls",
+    "Properties metadata wraps without covering Close in both themes",
+    "Previous, updated and reopened actual AppImages all show Miller columns; persisted Miller preference and fixture preserved"
+  ],
+  "screenshots": [
+    "main-dark100/initial.png",
+    "main-dark100/vcf-inspector.png",
+    "main-light150/note-after-right.png",
+    "properties-dark100/initial.png",
+    "properties-light150/initial.png",
+    "upgrade-view/previous.png",
+    "upgrade-view/updated.png",
+    "upgrade-view/reopened.png"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "status": "complete",
+  "owned_gui_profiles_removed": true,
+  "native_fedora_and_ubuntu_domains_and_volumes_removed": true,
+  "staging_and_extraction_removed": true,
+  "superseded_stable_packages_replaced": true,
+  "python_bytecode_removed": true,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-current",
+      "purpose": "Compact acceptance receipts and evidence producers; no pending QA consumers"
+    }
+  ],
+  "personal_index_service": "Intentionally enabled and running accepted runtime; not QA output"
+}
