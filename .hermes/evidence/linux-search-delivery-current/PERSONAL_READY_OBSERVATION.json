@@ -1,0 +1,14 @@
+{
+  "status": "watched ready service observed; scoped development workload sample",
+  "pid": 262779,
+  "daemon_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+  "source_revision": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "seconds": 60.061,
+  "cpu_ticks": 20,
+  "cpu_percent_one_core": 0.333,
+  "rss_kib": 41668,
+  "indexed_items": 163260,
+  "watcher_ready": true,
+  "enabled": true,
+  "scope": "Personal enabled daemon,60seconds during development; no daemon IPC within sample, no workload quiescence or sustained-workload guarantee"
+}

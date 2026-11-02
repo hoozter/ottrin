@@ -1,5 +1,5 @@
 {
-  "status": "Built, content verified, scoped GUI and populated metadata/content resources pass; not promoted",
+  "status": "All four formats accepted and promoted; personal enabled service refreshed",
   "source_revision": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
   "artifact_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
   "resource_samples": {
@@ -59,11 +59,10 @@
     "icon-check.py": "1cbff7d0732d26ba30d84d15eb717354715fb621f63c61b8f4c530f3ced0c753",
     "upgrade-view.py": "658b8001ec5cd2f64f150eee49854338ffb90e0922ad7357a1da9f7e0295efb8"
   },
-  "current_delivery": "dist/packages still accepted0b6015db cohort; all54 baseline files unchanged",
+  "current_delivery": "dist/packages accepted928b7937 cohort",
   "next": [
-    "Fresh Fedora44/Ubuntu24.04 native distribution acceptance for exact candidate",
-    "Bind promotion receipt to new daemon resource acceptance and proven CI-equivalent product source; promote all four formats together",
-    "Refresh personal enabled index service with current candidate after promotion, preserving configuration/unit/wrapper/database identity"
+    "Refresh ordinary external-browser Open/Save acceptance for current package, then installed sandboxed-browser scope where available",
+    "Continue remaining Linux/Windows software, integration and resource gates; keep owner hardware/Store/signing acceptance separate"
   ],
   "scope": "No physical graphics/device, external sandboxed browser or final owner acceptance claimed"
 }

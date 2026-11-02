@@ -3,5 +3,8 @@
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
   "current_delivery": "dist/packages source0b6015db preserved pending new cohort acceptance",
   "purpose": "Deliver verified search literal reuse and current source with exact local four-format validation",
-  "producer": ".hermes/evidence/desktop-integration-current/build.py"
+  "producer": ".hermes/evidence/desktop-integration-current/build.py",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Accepted local Linux cohort promoted; staging/extraction removed"
 }

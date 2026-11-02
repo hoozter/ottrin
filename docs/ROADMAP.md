@@ -4,106 +4,81 @@
 
 Updated 2026-11-02.
 
-The stable four-format Linux delivery now uses clean source
-`0b6015dbe58504344962029cc4691b2d5d98f1f5`. Exact hashes and scoped acceptance
+The stable four-format Linux delivery uses clean source
+`928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee`. Exact hashes and scoped acceptance
 are authoritative in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
-`617c03c396ea3365924d82ae32edd898cc70f24fa99fd2b4daa59d795f583ad4`.
-The internal Windows ZIP/NSIS/MSI candidate remains source8ede1562 and public
-Windows release files remain unchanged. No Windows installer gate is waived.
-
-A newer Linux four-format candidate is built from clean source928b7937 and is
-retained privately for pending native-distribution acceptance and promotion.
-Its AppImage SHA-256 is
 `af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5`.
-All four content/payload checks pass; portable/AppImage closure and packaged
-daemon ownership checks pass in their recorded scopes. Actual AppImage
-Dark100/Light150 read-only Inspector navigation/Space/Close, saved theme, long
-Properties, complete chooser icon pixels, and previous → candidate → reopen
-Miller view checks pass with visual review. Both exact10000-file metadata and
-content-enabled live/offline/restart/query controls pass. All six30-second quiet
-samples measure0.067percent of one core, about13–17MiB RSS. These are controlled
-candidate measurements, not a new personal-service or sustained-workload claim.
-All owned GUI/index test processes and private profiles are removed;179495425
-bytes of superseded same-configuration application executables/dep-info/fingerprints
-are removed. Debug caches are unchanged; the two scanned debug incremental roots
-contain no obsolete sessions.
-The stage and single verified AppImage extraction remain only for named native
-lifecycle/promotion consumers. Stable delivery and the personal service are unchanged.
-Evidence: `.hermes/evidence/linux-search-delivery-current/CANDIDATE_STATUS.json`.
+The internal Windows ZIP/NSIS/MSI accepted candidate remains source8ede1562;
+the private newer development stage remains separately scoped. Public Windows
+release files are unchanged. No Windows installer gate is waived.
 
-All four Linux formats pass payload/runtime/helper/documentation and namespace
-ownership checks. Actual AppImage Dark100/Light150 checks pass read-only VCF/text
-Inspector navigation, native Close, long Properties metadata and saved theme.
-A previous-image → new-image → reopen run visibly retains Miller columns and
-saved Miller preference, with source fixture unchanged. Complete chooser icon
-pixels match the source icon. All owned private desktop resources are removed.
+All four Linux formats pass their content/payload checks. Portable/AppImage
+closure and native ownership checks pass in their recorded scopes. Actual
+AppImage Dark100/Light150 workflows verify read-only VCF/text Inspector
+navigation/Space/Close, saved theme, long Properties and complete chooser icon
+pixels. Previous → new → reopen visibly retains Miller columns and saved view,
+with source files unchanged. Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB
+runs pass normal setup, actual portal frontend requests, idle readiness,
+same-version reinstall, modified-native-asset refusal, online/offline removal
+and preference restoration, and portable picker use after native removal.
+The first Fedora attempt failed a QA input-copy path before installation; it
+is rejected evidence, not product acceptance. The corrected runs use no setup
+or registration diagnostic controls.
 
-Fresh Fedora44 and Ubuntu24.04 guests now pass normal setup without diagnostic
-controls: actual frontend picker requests, idle readiness without starting the
-backend, same-version reinstall, refusal to remove a modified native asset,
-online/offline native preference restoration, and real portable picker use after
-native package removal. Main preferences and source files are preserved. Both
-owned domains, three volumes each, seed/key profiles and credentials are removed.
-Evidence: `.hermes/evidence/desktop-integration-current/`.
+Fresh exact10000-file metadata and content-enabled controls verify live burst
+freshness, same-size body changes with preserved timestamps, offline changes,
+restart and persisted queries. All six30-second quiet samples measure0.067percent
+of one core, about13–17MiB RSS. The newly delivered AppImage daemon hash is
+`1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399`.
+RPM's normal symbol stripping changes its ELF hash; its exact tested payload
+and matching executable sections are recorded separately. Earlier daemon
+resource receipts retain their original package identity.
 
-The earlier1e238431 package failed because native removal deleted a shared portal
-definition used by portable integration. The c79dbcbc follow-up retained that
-definition but required an explicit D-Bus ReloadConfig diagnostic control for fresh
-activation. Both rejected cohorts and failure evidence remain documented; their
-staging and guests are removed. The current accepted cohort fixes registration
-reload in the authoritative setup/removal paths and passes without those controls.
+The personal enabled service is refreshed to this delivery with config, unit,
+wrapper and database file identity preserved. Its watched Ready observation
+covers60seconds during development:0.333percent of one core,41668KiB RSS and
+163260 indexed items. This is a short personal observation; neither it nor the
+controlled fixture establishes sustained personal-workload acceptance.
 
-The delivered source0b6015db now passes all three hosted jobs in run41374248948.
-The personal watched service stays Ready in a further60-second development
-observation at0.446percent of one core and about26MiB RSS; this is not controlled
-idle or sustained workload acceptance.
+All completed GUI/index profiles/processes/buses/mounts and both native guest
+sets, volumes and temporary credentials are removed. The four-format stage and
+single extraction are removed after promotion.179495425bytes of superseded
+same-configuration release executables/dep-info/fingerprints were removed;
+debug caches remain unchanged and both scanned incremental roots have no
+obsolete sessions. Compact evidence is retained in
+`.hermes/evidence/linux-search-delivery-current/`.
 
-The stronger HTML gate caught an unfiltered short-lived renderer in run41365916700.
-Inherited syscall confinement and an exact versioned helper-readiness response now
-pass the full hosted Linux job and search-performance job in run41374248948.
-Run41369606817 for the parent c79dbcbc also finishes all three jobs successfully.
-An older installed protected HTML helper now correctly requires setup/update;
-updating an AppImage alone does not replace protected system integration.
+The earlier1e238431/c79dbcbc rejected cohorts exposed shared portable portal
+removal and fresh registration reload defects. The authoritative fixes inherited
+from0b6015db pass again in the new native distribution runs without controls.
+The delivered HTML helper retains syscall confinement and exact versioned
+readiness checks. Updating an AppImage alone does not replace an older protected
+HTML helper installed on the host; that separate administrator setup remains
+on the owner waiting list.
 
-The index daemon ELF is byte-for-byte identical to the previous accepted daemon
-`5e5d0ae99c7cad3d12629aaeb007411947abe3ccb5aa6225b93a7deacc7d35d1`.
-Earlier exact10000-file index live/offline/restart/query proof and three30-second
-quiet samples (0.033–0.067percent of one core,13–17MiB RSS) retain their original
-package receipt in `.hermes/evidence/desktop-package-current/linux/`; these are
-not new-package resource measurements or a sustained personal-workload guarantee.
-The personal enabled service is refreshed separately with configuration, wrapper,
-unit and database identity preservation recorded in the current delivery evidence.
+Earlier source0b6015db also passed real ordinary Firefox Open/Save and actual
+`firefox` portal app-ID attribution, with unchanged original bytes. Those browser
+receipts remain exact0b6015db evidence in
+`.hermes/evidence/firefox-identity-package-current/`; they do not automatically
+accept the new package or an installed sandboxed browser. Refreshing external
+browser acceptance is dependency-ready follow-up work.
 
-Firefox now exercises the delivered AppImage chooser through the real desktop
-portal: Open displays the selected source and Save writes an exact copy, with
-original bytes unchanged and no index started. A subsequent owned Firefox scope
-also passes actual `firefox` app-ID attribution. All private browser/display/bus
-resources and the transient scope are removed. This accepts an ordinary installed
-Firefox caller, not an installed sandboxed browser.
-Evidence: `.hermes/evidence/firefox-identity-package-current/`.
-
-The original GitHub audit found13 failed push runs since October31:11 CI and2 diagnostic
-controls. Later source0b6015db and40effd6f each pass all three hosted jobs. Source2ebf
-passes Linux/performance but fails the concurrent Windows debug500k timing check
-(320ms versus250ms). No scheduled retry loop is present. Workflow/ref concurrency
-now cancels superseded runs. The pending fix makes release100ms performance a
-separate serial gate on both platforms and retains debug correctness checks.
-Its first native Windows release measurement failed at140ms. Reusing a compiled
-query literal now passes at78ms on the same native client and20ms on Linux, with
-all244 Linux search tests and strict Linux/Windows lint passing. Hosted confirmation
-passes all four jobs for pushed sourcea10792db in run41413618813, including
-complete Linux/Windows verification and release benchmarks16ms Linux/61ms Windows.
-Sourcec5a40fd2 also passes native development revision1 assembly and58-file
-payload equality. Its pushed76bed4db follow-up run41423617027 passes both
-performance jobs but fails a Linux listing-wake test: a constructor/barrier wake
-can race the test observer. The actual worker already publishes before wake.
-An authoritative listing-worker factory now lets that test observe only its
-own worker;454 Linux UI tests and strict Linux/Windows lint pass. Hosted
-confirmation of pushed correction05c1325f in run41429811338 now passes all four
-jobs, including full Linux/Windows verification and both release performance gates.
+The original GitHub audit found13 failed push runs since October31:11 CI and2
+installer diagnostics, with no scheduled retry loop. Workflow/ref concurrency
+now cancels superseded runs; receipt-only push exclusions prevent redundant
+full builds. Release500k performance remains a strict100ms serial gate on both
+platforms while debug keeps correctness coverage. Sourcea10792db passes all four
+jobs in run41413618813 (release16ms Linux/61ms Windows). The listing-wake test
+then exposed an unrelated observer race. The authoritative worker-based test
+passes454 Linux UI tests and strict Linux/Windows lint; source05c1325f passes
+all four hosted jobs in run41429811338, including full verification and release
+builds. Tracked product/build inputs are identical between tested05c1325f and
+the packaged928b7937 source; QA/status differences and exact package provenance
+are recorded explicitly. Later receipts do not relabel the compiled source.
 Evidence: `.hermes/evidence/github-actions-current/`,
-`.hermes/evidence/search-performance-isolation-current/`.
+`.hermes/evidence/search-performance-isolation-current/`,
+`.hermes/evidence/linux-search-delivery-current/HOSTED_SOURCE_SCOPE.json`.
 
 The independent queue is:
 1. Windows MSI after-execution rollback on a current client fixture.

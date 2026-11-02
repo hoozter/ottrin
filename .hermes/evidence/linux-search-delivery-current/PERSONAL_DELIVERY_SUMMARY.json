@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "source_revision": "928b7937bb5bf7d5fa0fbb5dafd70ae4d4ef41ee",
+  "daemon_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+  "runtime_gui_sha256": "133c541b72cd29a13e9586a2c83926261cc08bcc773eb40119958896e7e058d2",
+  "runtime_gui_matches_current_release": true,
+  "configuration_unit_wrapper_unchanged": true,
+  "database_inode_preserved": true,
+  "old_mount_removed": true,
+  "enabled": "enabled",
+  "scope": "Authorized personal user service refresh; raw configuration contents and private path diagnostics remain local"
+}

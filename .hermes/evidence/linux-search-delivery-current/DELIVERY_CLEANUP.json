@@ -1,0 +1,26 @@
+{
+  "status": "Linux delivery cleanup complete; personal enabled service intentionally running",
+  "removed": [
+    ".hermes/packaging-tmp/.linux-native-desktop-stage",
+    ".hermes/packaging-tmp/.linux-desktop-extract",
+    "All owned Fedora/Ubuntu and rejected transport-attempt guests/volumes/temporary seed and SSH credentials",
+    "Temporary RPM identity extraction and unused probe symlink"
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-search-delivery-current",
+      "purpose": "Compact native/package/resource/GUI acceptance, logs and reviewed frames; personal raw diagnostics remain local"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Current Windows development candidate awaiting named remaining software/package acceptance"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+      "purpose": "Named remaining independent Windows installer/software comparisons"
+    }
+  ],
+  "current_deliverables": "Stable dist/packages four Linux formats; unrelated Windows/user files preserved",
+  "superseded_release_executables_removed_bytes": 179495425,
+  "debug_cache_baseline_unchanged": true
+}
