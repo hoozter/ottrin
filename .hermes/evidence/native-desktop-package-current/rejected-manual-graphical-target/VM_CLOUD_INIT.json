@@ -1,0 +1,58 @@
+{
+  "boot_status_code": "enabled-by-generator",
+  "datasource": "nocloud",
+  "detail": "DataSourceNoCloud [seed=/dev/sr0]",
+  "errors": [],
+  "extended_status": "degraded done",
+  "init": {
+    "errors": [],
+    "finished": 12.78,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)"
+      ]
+    },
+    "start": 11.24
+  },
+  "init-local": {
+    "errors": [],
+    "finished": 9.4,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)"
+      ]
+    },
+    "start": 9.16
+  },
+  "last_update": "Thu, 01 Jan 1970 00:00:13 +0000",
+  "modules-config": {
+    "errors": [],
+    "finished": 12.88,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)"
+      ]
+    },
+    "start": 12.83
+  },
+  "modules-final": {
+    "errors": [],
+    "finished": 13.06,
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)"
+      ]
+    },
+    "start": 12.91
+  },
+  "recoverable_errors": {
+    "WARNING": [
+      "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)",
+      "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)",
+      "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)",
+      "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)"
+    ]
+  },
+  "stage": null,
+  "status": "done"
+}

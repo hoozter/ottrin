@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/fedora-vm.py", line 20, in <module>
+    assert all(not item.startswith(prefix) for item in virsh('vol-list','default','--name').stdout.splitlines())
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/fedora-vm.py", line 16, in virsh
+    def virsh(*args,**kw):return run(['virsh','-c','qemu:///system',*args],**kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/fedora-vm.py", line 14, in run
+    if check and p.returncode:raise RuntimeError(f'{args}: {p.returncode}: {p.stdout[-1500:]} {p.stderr[-1500:]}')
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: ['virsh', '-c', 'qemu:///system', 'vol-list', 'default', '--name']: 1:  error: command 'vol-list' doesn't support option --name

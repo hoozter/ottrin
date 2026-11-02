@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/fedora-vm.py", line 75, in <module>
+    remote('cloud-init','status','--wait',timeout=180)
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/fedora-vm.py", line 74, in remote
+    def remote(*args,check=True,timeout=180):return run(ssh+[shlex.join(list(map(str,args)))],check=check,timeout=timeout)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/fedora-vm.py", line 14, in run
+    if check and p.returncode:raise RuntimeError(f'{args}: {p.returncode}: {p.stdout[-1500:]} {p.stderr[-1500:]}')
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: ['ssh', '-i', '/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/.native-vm-ta_g8ubm/id_ed25519', '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'UserKnownHostsFile=/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-package-current/.native-vm-ta_g8ubm/known_hosts', '-o', 'ConnectTimeout=4', 'ottrinqa@192.168.122.66', 'cloud-init status --wait']: 2: status: done
+ X11 forwarding request failed

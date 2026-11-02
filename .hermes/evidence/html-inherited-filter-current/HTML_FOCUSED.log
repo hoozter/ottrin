@@ -1,0 +1,11 @@
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `test` profile [optimized + debuginfo] target(s) in 16.10s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_preview-89d8d7d374b9faf4)
+
+running 4 tests
+test linux_html_filter::tests::filtered_child ... ignored, Only the owning test launches this fresh process to install an irreversible filter
+test linux_html::tests::html_protocol_refuses_arbitrary_commands_mounts_paths_and_unbounded_resources ... ok
+test linux_html::tests::html_workspace_admission_rejects_public_wrong_owner_symlink_and_oversized_input ... ok
+test linux_html_filter::tests::inherited_html_filter_denies_real_self_inspection_in_an_owned_child ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 204 filtered out; finished in 0.00s

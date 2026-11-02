@@ -1516,6 +1516,19 @@ Optional desktop registration is removed through the internal
 operation before payload deletion. It uses the same folder/picker restoration code
 as Settings, matches the recorded native activation command, preserves portable
 registrations, and refuses modified assets or unresolved picker unit overrides.
+The root helper installs the shared system portal definition during native
+post-install setup; DEB/RPM do not own that file as removable payload. The same
+protected-definition validation serves portable helper setup. Native removal
+retains the definition when a canonical per-user receipt still selects a portable
+picker; otherwise the helper removes only its exact original file, preserving
+modified files and refusing unsafe targets. User-maintenance stdout carries only
+the explicit retention marker; service diagnostics stay on stderr.
+
+Explicit picker setup may activate the configured backend to validate it, even
+when the desktop frontend defers activation until the first request. Passive
+status never activates it: a valid, applied, inactive backend is ready on demand;
+a failed unit or an unreachable running backend needs repair.
+
 Offline removal restores the preference without starting a user manager or
 frontend. Online removal requires idle portal sessions; FileManager1 shutdown
 uses the captured unique bus owner and verifies its user, native executable and
@@ -1708,6 +1721,23 @@ and [two namespace restriction modes](https://gitlab.com/apparmor/apparmor/-/wik
 The separate fixed-entry rendering, executable-mapping/preload, Chromium sandbox,
 script/network and arbitrary-command checks remain required. Ottrin never changes
 these global sysctls.
+
+The HTML helper supplies a sealed, architecture-checked seccomp BPF program to
+Bubblewrap before browser execution. All browser descendants inherit this baseline,
+including renderer startup before Chromium installs its additional sandbox. It
+denies process inspection/injection, BPF, perf events, userfaultfd, io_uring setup,
+keyring operations and handle-based filesystem opening. It does not replace
+Chromium's process-specific policy or disable its sandbox. Unsupported syscall
+architectures fail closed; x86-64 rejects the alternate x32 syscall ABI.
+The program travels in an immutable memfd; only the trusted child receives its
+close-on-exec exception. The kernel regression first proves self-process memory
+reading works, then verifies denial in an owned child with the actual filter;
+caller processes and the host policy remain unchanged. The production hosted
+probe requires filtering in every recorded renderer sample, observes an additional
+renderer filter, and retains the pixel/preload/profile/capability checks. A passing
+kernel test alone does not accept the rendered helper. See the
+[kernel seccomp ABI](https://docs.kernel.org/userspace-api/seccomp_filter.html) and
+[Bubblewrap filter transport](https://github.com/containers/bubblewrap/blob/main/bwrap.xml).
 
 ## On-demand chooser protocol
 

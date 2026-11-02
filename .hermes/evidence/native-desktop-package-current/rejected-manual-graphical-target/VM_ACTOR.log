@@ -1,0 +1,6 @@
+{
+  "source": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "scope": "Exact RPM same-version reinstall/removal; native online/offline folder/picker and independent portable choice",
+  "status": "fail",
+  "error": "RuntimeError(\"['runuser', '-u', 'ottrinqa', '--', 'env', '-i', 'PATH=/usr/sbin:/usr/bin:/sbin:/bin', 'HOME=/home/ottrinqa', 'USER=ottrinqa', 'XDG_CURRENT_DESKTOP=OttrinQA', 'XDG_RUNTIME_DIR=/run/user/1000', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus', 'systemctl', '--user', 'start', 'graphical-session.target']: 4:  Failed to start graphical-session.target: Operation refused, unit graphical-session.target may be requested by dependency only (it is configured to refuse manual start/stop).\\nSee user logs and 'systemctl --user status graphical-session.target' for details.\\n\")"
+}

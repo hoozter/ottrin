@@ -1,0 +1,8 @@
+{
+  "source_revision": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "cleanup_owner": "native-desktop-package-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Rejected diagnostic cohort retired; stable accepted packages unchanged"
+}

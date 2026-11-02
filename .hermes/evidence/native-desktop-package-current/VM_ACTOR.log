@@ -1,0 +1,17 @@
+{
+  "source": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "scope": "Exact RPM same-version reinstall/removal; native online/offline folder/picker and independent portable choice",
+  "status": "fail",
+  "setup_control": "Explicit user start of the backend after enable; diagnostic only, normal lazy setup failure is retained separately",
+  "configured": {
+    "ottrinqa": 1976,
+    "offlineqa": 2054,
+    "portableqa": 2177
+  },
+  "reinstall": "pass; selected integrations retained; active picker PIDs unchanged",
+  "modified_native_asset": "refused before native or portable picker stopped",
+  "native_removal": "pass; online/offline preferences restored and native receipts removed; app preferences/source retained",
+  "portable_registration_and_process": "preserved",
+  "portable_system_definition_present": false,
+  "error": "AssertionError('Native package removal deleted the shared portal definition still needed by the portable picker')"
+}

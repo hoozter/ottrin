@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_preview-89d8d7d374b9faf4",
+  "replacement_sha256": "845c59384b8ef79532e6e29092663633dfe06475792fb09c5ce38ca0dd4d27a9",
+  "retired": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_preview-95903c79075b572c",
+  "retired_sha256": "f007815648bcef8988c7ee179a851f90b786db3336cd8e063679a5cce74ff2c5",
+  "matching_compiler_settings": {
+    "rustc": 18276270781310494267,
+    "features": "[\"default\"]",
+    "declared_features": "[\"default\", \"system-gstreamer\", \"windows-office\"]",
+    "target": 7158566718548433974,
+    "profile": 1169666772337208464,
+    "path": 5183679997196030260,
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 0
+  },
+  "removed_bytes": 400872234,
+  "removed_files": [
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_preview-95903c79075b572c",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_preview-95903c79075b572c.d",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-95903c79075b572c/test-lib-ottrin_preview.json",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-95903c79075b572c/test-lib-ottrin_preview",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-95903c79075b572c/dep-test-lib-ottrin_preview",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-95903c79075b572c/invoked.timestamp"
+  ],
+  "verification": "HTML protocol, workspace admission, real kernel positive/denial and owned child controls pass; strict all-target clippy passes. No maintained producer references or active consumers; all link counts one."
+}

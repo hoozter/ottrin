@@ -966,9 +966,13 @@ fn handle_cli_action(args: &[OsString]) -> bool {
             }
             _ => Err("Invalid native desktop maintenance operation".into()),
         };
-        if let Err(error) = result {
-            eprintln!("ottrin: {error}");
-            std::process::exit(1);
+        match result {
+            Ok(true) => println!("retain-portal-definition"),
+            Ok(false) => {}
+            Err(error) => {
+                eprintln!("ottrin: {error}");
+                std::process::exit(1);
+            }
         }
         return true;
     }

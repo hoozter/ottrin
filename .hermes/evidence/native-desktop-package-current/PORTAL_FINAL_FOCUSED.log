@@ -1,0 +1,24 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 4.96s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-5a95d0376980cc28)
+
+running 17 tests
+test integration_preferences::tests::changes_only_chooser_and_restores_it_after_unrelated_edits ... ok
+test integration_preferences::tests::missing_key_is_added_inside_preferred_group ... ok
+test integration_preferences::tests::no_final_newline_or_group_is_supported_and_ambiguous_input_is_retained ... ok
+test portal_integration::tests::foreign_activation_and_symlink_preferences_are_retained ... ok
+test portal_integration::tests::modified_activation_file_blocks_uninstall_before_preferences_change ... ok
+test portal_integration::tests::activation_uses_each_consumers_literal_path_grammar ... ok
+test portal_integration::tests::enable_disable_preserves_other_providers_and_unrelated_user_changes ... ok
+test portal_integration::tests::generated_override_is_removed_but_user_edits_after_install_are_retained ... ok
+test portal_integration::tests::modified_provider_lists_and_reselected_foreign_defaults_are_retained ... ok
+test portal_integration::tests::native_removal_restores_offline_picker_and_preserves_portable_choice ... ok
+test folder_integration::tests::modified_asset_blocks_removal_before_changing_preferences ... ok
+test folder_integration::tests::desktop_entry_is_valid_for_glib_and_uses_one_native_file_argument ... ok
+test folder_integration::tests::new_user_override_is_removed_and_foreign_assets_are_retained ... ok
+test folder_integration::tests::reveal_activation_never_replaces_an_unowned_provider_even_during_repair ... ok
+test folder_integration::tests::directory_override_restores_previous_handler_and_keeps_unrelated_edits ... ok
+test folder_integration::tests::native_removal_restores_its_handler_and_preserves_portable_registration ... ok
+test folder_integration::tests::edited_provider_lists_keep_new_choices_and_disable_removes_only_ottrin ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 423 filtered out; finished in 0.01s

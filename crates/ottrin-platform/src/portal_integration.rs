@@ -138,7 +138,15 @@ pub fn status() -> PortalStatus {
         let selected = effective_path == record.config
             && integration_preferences::value(&effective, "preferred", CHOOSER)?
                 .is_some_and(|value| value.split(';').next() == Some("ottrin"));
-        let reachable = !record.enabled || !record.applied || backend_ready().is_ok();
+        // A configured on-demand backend may be idle with no bus owner. Status
+        // must not start it or turn a deliberately idle service into a setup error.
+        let reachable = !record.enabled
+            || !record.applied
+            || if backend_running()? {
+                backend_ready(gio::DBusCallFlags::NO_AUTO_START).is_ok()
+            } else {
+                backend_idle()?
+            };
         Ok::<_, String>((
             record.enabled,
             record.enabled && record.applied && valid && selected && reachable,
@@ -336,6 +344,23 @@ pub fn remove_for_uninstall() -> Result<Vec<String>, String> {
     Ok(messages)
 }
 
+fn native_registration(paths: &Paths, record: &Registration) -> bool {
+    let activation = paths.data.join(format!("dbus-1/services/{BUS}.service"));
+    let expected = format!(
+        "[D-BUS Service]\nName={BUS}\nExec=\"/usr/bin/ottrin\" portal\nSystemdService={UNIT}\n"
+    );
+    record
+        .files
+        .iter()
+        .any(|(path, data)| *path == activation && *data == expected)
+}
+
+pub(crate) fn portable_definition_needed() -> Result<bool, String> {
+    let paths = Paths::current()?;
+    Ok(registration(&paths)?
+        .is_some_and(|record| record.enabled && !native_registration(&paths, &record)))
+}
+
 pub(crate) fn native_package_owned(check_only: bool, online: bool) -> Result<(), String> {
     native_package_at(&Paths::current()?, check_only, online, systemctl)
 }
@@ -348,15 +373,7 @@ fn native_package_at(
     let Some(record) = registration(paths)? else {
         return Ok(());
     };
-    let activation = paths.data.join(format!("dbus-1/services/{BUS}.service"));
-    let expected = format!(
-        "[D-BUS Service]\nName={BUS}\nExec=\"/usr/bin/ottrin\" portal\nSystemdService={UNIT}\n"
-    );
-    if !record
-        .files
-        .iter()
-        .any(|(path, data)| *path == activation && *data == expected)
-    {
+    if !native_registration(paths, &record) {
         return Ok(());
     }
     for (path, expected) in &record.files {
@@ -434,7 +451,7 @@ fn native_package_at(
             disable_at(paths, |args| if online { control(args) } else { Ok(()) })?;
         }
         if online {
-            control(&["restart", "xdg-desktop-portal.service"])?;
+            control(&["try-restart", "xdg-desktop-portal.service"])?;
         }
         // With no user manager there is no frontend to reload. The restored
         // preference will be read at login; no pending activation remains.
@@ -559,7 +576,51 @@ fn ensure_idle_on(bus: &gio::DBusConnection) -> Result<(), String> {
     }
     Ok(())
 }
-fn backend_ready() -> Result<(), String> {
+fn backend_idle() -> Result<bool, String> {
+    let state = Command::new("systemctl")
+        .args([
+            "--user",
+            "--no-ask-password",
+            "--no-pager",
+            "show",
+            UNIT,
+            "--property=ActiveState",
+            "--value",
+        ])
+        .output()
+        .map_err(|e| e.to_string())?;
+    if !state.status.success() {
+        return Err(String::from_utf8_lossy(&state.stderr).trim().into());
+    }
+    match String::from_utf8_lossy(&state.stdout).trim() {
+        "inactive" => Ok(true),
+        "failed" | "active" | "activating" | "deactivating" | "reloading" => Ok(false),
+        _ => Err("Cannot determine the on-demand picker service state".into()),
+    }
+}
+
+fn backend_running() -> Result<bool, String> {
+    use gio::glib::variant::ToVariant;
+    let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE)
+        .map_err(|e| e.to_string())?;
+    bus.call_sync(
+        Some("org.freedesktop.DBus"),
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+        "NameHasOwner",
+        Some(&(BUS,).to_variant()),
+        None,
+        gio::DBusCallFlags::NO_AUTO_START,
+        2000,
+        gio::Cancellable::NONE,
+    )
+    .map_err(|e| e.to_string())?
+    .get::<(bool,)>()
+    .map(|(running,)| running)
+    .ok_or_else(|| "Invalid picker ownership reply".into())
+}
+
+fn backend_ready(flags: gio::DBusCallFlags) -> Result<(), String> {
     use gio::glib::variant::ToVariant;
     let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE)
         .map_err(|e| e.to_string())?;
@@ -571,7 +632,7 @@ fn backend_ready() -> Result<(), String> {
             "Get",
             Some(&("org.freedesktop.impl.portal.FileChooser", "version").to_variant()),
             None,
-            gio::DBusCallFlags::NO_AUTO_START,
+            flags,
             3000,
             gio::Cancellable::NONE,
         )
@@ -597,7 +658,9 @@ pub fn apply() -> Result<String, String> {
     ensure_idle()?;
     systemctl(&["restart", "xdg-desktop-portal.service"])?;
     if record.enabled {
-        backend_ready()?;
+        // Explicit setup validates the installed activation path, including on
+        // frontends which defer backend startup until the first chooser request.
+        backend_ready(gio::DBusCallFlags::NONE)?;
         record.applied = true;
         write(
             &paths.state,

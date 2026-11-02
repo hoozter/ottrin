@@ -1,0 +1,23 @@
+{
+  "domain": "ottrin-native-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "status": "fail",
+  "rpm_sha256": "ac5a7ea44c4f4ecf2faaa9e9f9f78a00a90b80f99105102e9e831aba789c221b",
+  "uuid": "6290e23e-ac49-4599-a6da-51f1b4e3a061",
+  "cloud_init": {
+    "exit": 2,
+    "status": "done",
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-desktop-qa (ottrin-native-desktop-qa)"
+      ]
+    },
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('{\\n  \"source\": \"1e23843124e35a61bc794245a755ee079afdbf05\",\\n  \"scope\": \"Exact RPM same-version reinstall/removal; native online/offline folder/picker and independent portable choice\",\\n  \"status\": \"fail\",\\n  \"error\": \"RuntimeError(\\\\\"[\\'runuser\\', \\'-u\\', \\'ottrinqa\\', \\'--\\', \\'env\\', \\'-i\\', \\'PATH=/usr/sbin:/usr/bin:/sbin:/bin\\', \\'HOME=/home/ottrinqa\\', \\'USER=ottrinqa\\', \\'XDG_CURRENT_DESKTOP=OttrinQA\\', \\'XDG_RUNTIME_DIR=/run/user/1000\\', \\'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus\\', \\'systemctl\\', \\'--user\\', \\'start\\', \\'graphical-session.target\\']: 4:  Failed to start graphical-session.target: Operation refused, unit graphical-session.target may be requested by dependency only (it is configured to refuse manual start/stop).\\\\\\\\nSee user logs and \\'systemctl --user status graphical-session.target\\' for details.\\\\\\\\n\\\\\")\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

@@ -1,0 +1,23 @@
+{
+  "source": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "status": "rejected scoped cohort retired after completed diagnostic controls",
+  "reason": "Shared portal definition removed with native package; normal lazy backend setup and hosted HTML security checks failed. Stable accepted8ede packages remain untouched.",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "ac5a7ea44c4f4ecf2faaa9e9f9f78a00a90b80f99105102e9e831aba789c221b",
+    "Ottrin-0.1.0-x86_64.AppImage": "7a8e716b34583cf05aa9bc8050a1f38b5d4416e8e59818e372ad345b3ac87d6e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "7f93534671d357d9a3dc4822893f8eef8d89081179933ce23ad526470ea5da66",
+    "ottrin_0.1.0_amd64.deb": "2802b61c92852c4a4b20dc71e0c4ed2df2373dd845691832e842723819a8099b"
+  },
+  "removed_bytes": 112643647,
+  "files": 9,
+  "all_link_counts_one": true,
+  "no_active_file_consumers": true,
+  "VM_removed": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-desktop-qa-base.qcow2",
+      "ottrin-native-desktop-qa-work.qcow2",
+      "ottrin-native-desktop-qa-seed.iso"
+    ]
+  }
+}

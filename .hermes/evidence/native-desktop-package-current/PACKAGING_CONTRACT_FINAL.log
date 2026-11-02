@@ -1,0 +1,7 @@
+/tmp/tmp.4zjOK7Chk9/stage
+/tmp/tmp.4zjOK7Chk9/dist/.deb.R9mfOm/package
+dpkg-deb: building package 'ottrin' in '/tmp/tmp.4zjOK7Chk9/dist/.deb.R9mfOm/ottrin_0.1.0_amd64.deb'.
+/tmp/tmp.4zjOK7Chk9/dist/ottrin_0.1.0_amd64.deb
+/tmp/tmp.ialUmqcZc3/pdfium.tgz: FAILED
+sha256sum: WARNING: 1 computed checksum did NOT match
+Linux native package staging contract: PASS

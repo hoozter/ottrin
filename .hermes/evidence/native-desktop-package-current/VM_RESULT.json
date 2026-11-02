@@ -1,0 +1,17 @@
+{
+  "setup_control": true,
+  "domain": "ottrin-native-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "status": "fail",
+  "rpm_sha256": "ac5a7ea44c4f4ecf2faaa9e9f9f78a00a90b80f99105102e9e831aba789c221b",
+  "uuid": "08333207-952e-42de-844c-0e1b855169dd",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('{\\n  \"source\": \"1e23843124e35a61bc794245a755ee079afdbf05\",\\n  \"scope\": \"Exact RPM same-version reinstall/removal; native online/offline folder/picker and independent portable choice\",\\n  \"status\": \"fail\",\\n  \"setup_control\": \"Explicit user start of the backend after enable; diagnostic only, normal lazy setup failure is retained separately\",\\n  \"configured\": {\\n    \"ottrinqa\": 1976,\\n    \"offlineqa\": 2054,\\n    \"portableqa\": 2177\\n  },\\n  \"reinstall\": \"pass; selected integrations retained; active picker PIDs unchanged\",\\n  \"modified_native_asset\": \"refused before native or portable picker stopped\",\\n  \"native_removal\": \"pass; online/offline preferences restored and native receipts removed; app preferences/source retained\",\\n  \"portable_registration_and_process\": \"preserved\",\\n  \"portable_system_definition_present\": false,\\n  \"error\": \"AssertionError(\\'Native package removal deleted the shared portal definition still needed by the portable picker\\')\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

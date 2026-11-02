@@ -95,6 +95,10 @@ for payload in \
   test -f "$STAGE/$payload"
 done
 
+test ! -e "$STAGE/usr/share/xdg-desktop-portal/portals/ottrin.portal"
+grep -Fq -- '--install-portal-definition' "$STAGE/usr/libexec/ottrin/native-package-lifecycle"
+grep -Fq -- '--remove-portal-definition' "$STAGE/usr/libexec/ottrin/native-package-lifecycle"
+
 if find "$STAGE/usr/lib" -type f -print -quit 2>/dev/null | grep -q .; then
   printf 'native package staging bundled portable runtime libraries\n' >&2
   exit 1

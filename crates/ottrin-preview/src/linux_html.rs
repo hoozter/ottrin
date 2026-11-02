@@ -5,6 +5,7 @@ use crate::{
 };
 use std::ffi::OsString;
 use std::io::Read;
+use std::os::fd::AsRawFd;
 use std::os::unix::fs::MetadataExt;
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
@@ -240,6 +241,8 @@ pub fn run_html_renderer_helper(arguments: Vec<OsString>) -> Result<(), String> 
     if !Path::new(crate::linux_namespace::BWRAP).is_file() {
         return Err("Install Bubblewrap for HTML previews".into());
     }
+    // Readiness includes the architecture and sealed kernel-program transport.
+    let filter = crate::linux_html_filter::file()?;
     if arguments == [OsString::from("--check")] {
         return Ok(());
     }
@@ -271,7 +274,20 @@ pub fn run_html_renderer_helper(arguments: Vec<OsString>) -> Result<(), String> 
         ));
     }
     let req = request(root, browser, dimension);
-    let error = crate::linux_namespace::command(&req).env_clear().exec();
+    let descriptor = filter.as_raw_fd();
+    let mut command = crate::linux_namespace::command_with_seccomp(&req, descriptor);
+    // SAFETY: the child only changes this owned descriptor's close-on-exec flag;
+    // the sealed program remains live through exec and Bubblewrap closes it.
+    unsafe {
+        command.pre_exec(move || {
+            let flags = libc::fcntl(descriptor, libc::F_GETFD);
+            if flags < 0 || libc::fcntl(descriptor, libc::F_SETFD, flags & !libc::FD_CLOEXEC) < 0 {
+                return Err(std::io::Error::last_os_error());
+            }
+            Ok(())
+        });
+    }
+    let error = command.env_clear().exec();
     Err(format!("Cannot launch isolated HTML renderer: {error}"))
 }
 

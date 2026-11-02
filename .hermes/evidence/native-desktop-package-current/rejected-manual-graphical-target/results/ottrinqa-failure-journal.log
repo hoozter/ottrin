@@ -1,0 +1,55 @@
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Queued start job for default target default.target.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Created slice app.slice - User Application Slice.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Started grub-boot-success.timer - Mark boot as successful after the user session has run 2 minutes.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Started systemd-tmpfiles-clean.timer - Daily Cleanup of User's Temporary Directories.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Reached target paths.target - Paths.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Reached target timers.target - Timers.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Starting dbus.socket - D-Bus User Message Bus Socket...
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Starting systemd-tmpfiles-setup.service - Create User Files and Directories...
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Reached target sockets.target - Sockets.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Finished systemd-tmpfiles-setup.service - Create User Files and Directories.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Reached target basic.target - Basic System.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Reached target default.target - Main User Target.
+Nov 02 00:25:08 ottrin-native-desktop-qa systemd[1146]: Startup finished in 150ms.
+Nov 02 00:25:08 ottrin-native-desktop-qa sshd-session[1163]: Received disconnect from 192.168.122.1 port 42130:11: disconnected by user
+Nov 02 00:25:08 ottrin-native-desktop-qa sshd-session[1163]: Disconnected from user ottrinqa 192.168.122.1 port 42130
+Nov 02 00:25:08 ottrin-native-desktop-qa sudo[1197]: ottrinqa : PWD=/home/ottrinqa ; USER=root ; COMMAND=/usr/sbin/cloud-init status --wait --format=json
+Nov 02 00:25:08 ottrin-native-desktop-qa sudo[1197]: pam_unix(sudo:session): session opened for user root(uid=0) by ottrinqa(uid=1000)
+Nov 02 00:25:08 ottrin-native-desktop-qa sudo[1197]: pam_unix(sudo:session): session closed for user root
+Nov 02 00:25:08 ottrin-native-desktop-qa sshd-session[1196]: Received disconnect from 192.168.122.1 port 42144:11: disconnected by user
+Nov 02 00:25:08 ottrin-native-desktop-qa sshd-session[1196]: Disconnected from user ottrinqa 192.168.122.1 port 42144
+Nov 02 00:25:09 ottrin-native-desktop-qa sshd-session[1234]: Received disconnect from 192.168.122.1 port 42146:11: disconnected by user
+Nov 02 00:25:09 ottrin-native-desktop-qa sshd-session[1234]: Disconnected from user ottrinqa 192.168.122.1 port 42146
+Nov 02 00:25:10 ottrin-native-desktop-qa sshd-session[1267]: Received disconnect from 192.168.122.1 port 42152:11: disconnected by user
+Nov 02 00:25:10 ottrin-native-desktop-qa sshd-session[1267]: Disconnected from user ottrinqa 192.168.122.1 port 42152
+Nov 02 00:25:10 ottrin-native-desktop-qa sshd-session[1300]: Received disconnect from 192.168.122.1 port 42168:11: disconnected by user
+Nov 02 00:25:10 ottrin-native-desktop-qa sshd-session[1300]: Disconnected from user ottrinqa 192.168.122.1 port 42168
+Nov 02 00:25:10 ottrin-native-desktop-qa sudo[1334]: ottrinqa : PWD=/home/ottrinqa ; USER=root ; COMMAND=/usr/sbin/dnf -y install /home/ottrinqa/candidate.rpm xdg-desktop-portal xdg-desktop-portal-gtk xorg-x11-server-Xvfb
+Nov 02 00:25:10 ottrin-native-desktop-qa sudo[1334]: pam_unix(sudo:session): session opened for user root(uid=0) by ottrinqa(uid=1000)
+Nov 02 00:25:56 ottrin-native-desktop-qa systemd[1146]: Received SIGRTMIN+25 from PID 1 (systemd).
+Nov 02 00:25:56 ottrin-native-desktop-qa systemd[1146]: Reexecuting.
+Nov 02 00:25:56 ottrin-native-desktop-qa systemd[1146]: Created slice session.slice - User Core Session Slice.
+Nov 02 00:25:56 ottrin-native-desktop-qa systemd[1146]: Starting dbus-broker.service - D-Bus User Message Bus...
+Nov 02 00:25:56 ottrin-native-desktop-qa dbus-broker-launch[1796]: Policy to allow eavesdropping in /usr/share/dbus-1/session.conf +31: Eavesdropping is deprecated and ignored
+Nov 02 00:25:56 ottrin-native-desktop-qa dbus-broker-launch[1796]: Policy to allow eavesdropping in /usr/share/dbus-1/session.conf +33: Eavesdropping is deprecated and ignored
+Nov 02 00:25:56 ottrin-native-desktop-qa systemd[1146]: Started dbus-broker.service - D-Bus User Message Bus.
+Nov 02 00:25:56 ottrin-native-desktop-qa dbus-broker-launch[1796]: Ready
+Nov 02 00:25:56 ottrin-native-desktop-qa systemd[1146]: Queuing reload/restart jobs for marked units…
+Nov 02 00:25:56 ottrin-native-desktop-qa (sd-pam)[1795]: pam_unix(login:session): session closed for user ottrinqa
+Nov 02 00:26:00 ottrin-native-desktop-qa sudo[1334]: pam_unix(sudo:session): session closed for user root
+Nov 02 00:26:00 ottrin-native-desktop-qa sshd-session[1333]: Received disconnect from 192.168.122.1 port 42180:11: disconnected by user
+Nov 02 00:26:00 ottrin-native-desktop-qa sshd-session[1333]: Disconnected from user ottrinqa 192.168.122.1 port 42180
+Nov 02 00:26:00 ottrin-native-desktop-qa sudo[1827]: ottrinqa : PWD=/home/ottrinqa ; USER=root ; COMMAND=/usr/sbin/python3 /home/ottrinqa/actor.py 1e23843124e35a61bc794245a755ee079afdbf05
+Nov 02 00:26:00 ottrin-native-desktop-qa sudo[1827]: pam_unix(sudo:session): session opened for user root(uid=0) by ottrinqa(uid=1000)
+Nov 02 00:26:00 ottrin-native-desktop-qa systemd[1146]: Starting ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :77 -screen 0 1024x768x24 -nolisten tcp -ac...
+Nov 02 00:26:00 ottrin-native-desktop-qa systemd[1146]: Started ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :77 -screen 0 1024x768x24 -nolisten tcp -ac.
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: > Warning:          Multiple symbols for level 1/group 1 on key <FK23>
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: >                   Using F23, ignoring XF86TouchpadOff
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: > Warning:          Symbol map for key <FK23> redefined
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: >                   Using last definition for conflicting fields
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: > Warning:          Symbol map for key <FK24> redefined
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: >                   Using last definition for conflicting fields
+Nov 02 00:26:00 ottrin-native-desktop-qa Xvfb[1867]: Errors from xkbcomp are not fatal to the X server

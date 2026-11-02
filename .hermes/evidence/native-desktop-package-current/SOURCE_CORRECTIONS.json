@@ -1,0 +1,33 @@
+{
+  "status": "source checks pass; exact new packages and production rendered gate pending",
+  "parent_revision": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "source_sha256": {
+    "crates/ottrin-app/src/main.rs": "7df0b6ef72935e4268fbdcacab7db248dee6b5adaf158cebe9e2ce0cc5ebb095",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "3361b224a6589d817e45a73f09f137dcde904ee51efa90a2e9e4ca206a6ac25c",
+    "crates/ottrin-platform/src/bin/setup/mod.rs": "9d280379168ad66eaa081454e8e992e42ed02e60069d27f6ef238e335f720247",
+    "crates/ottrin-platform/src/native_desktop.rs": "9ff623cd885f8584bbaf761179f056ad81b90567d02c06f615cef1f81cbbfb87",
+    "crates/ottrin-platform/src/portal_integration.rs": "49ed4fa97a6b3d72ae02970d27d7bf22548056b0241cca412a066c20ee7be82e",
+    "crates/ottrin-preview/src/lib.rs": "c213e22096d3007a8b2f218769cce1d9e591babbaa17d8f07d91497f52a2b322",
+    "crates/ottrin-preview/src/linux_html.rs": "5f4cd580296139b4b99ad3f3b480816fa508358cfdf8ead4e3e463ba3ba97ad0",
+    "crates/ottrin-preview/src/linux_namespace.rs": "2f36288209d68af88414e5f7b170c8615a4ee0a0c9e63181a603cac9b86b74cd",
+    "packaging/linux/native-package-lifecycle.sh": "0b8c10d272051db4793e40b936e3f9a5844aad54252766ccc3b5820c7f422dc7",
+    "packaging/linux/package-rpm.sh": "f8382c02fb5b93687ac3b2d91e10ee78741b50c429495d93b4cef9b9c59558f8",
+    "packaging/linux/stage-native-package.sh": "14f7973c1bdd53966a794cd8ccbaea0ed07772597a8e2a29bb4213b31a38fd70",
+    "packaging/tests/verify-linux-native-package-contract.sh": "bbd9c69ef71f66c56bd29f6c4b6b4160db820af39a2783d812805c3e8ecfda9c",
+    "scripts/ci/verify-linux-html-sandbox.py": "a3a1dcb94448e194b39de4854ddd2f31d50e1a352b4ac2331af305c111eb89ab",
+    "crates/ottrin-preview/src/linux_html_filter.rs": "01099479ccb9cd2c0c5cfad07789faba8d55797cb9227b6138419fee01b2617e"
+  },
+  "checks": {
+    "integration": 17,
+    "root_helper": 9,
+    "HTML_protocol_workspace_and_real_kernel": {
+      "passed": 3,
+      "ignored": 1,
+      "ignored_scope": "The owning parent actually executes the irreversible child test in a fresh process"
+    },
+    "strict_platform_preview_app_all_target_clippy": "pass",
+    "native_package_staging_contract": "pass"
+  },
+  "rejected_old_cohort": "RETIRED_SOURCE_1E238431.json; all source1e fixtures removed; normal setup and shared definition retention remain failed for that cohort",
+  "cleanup": "All owned VMs, volumes, seeds, SSH credentials, profiles and processes removed; rejected112643647-byte staging retired. Older400872234-byte same-configuration preview test/fingerprint/dep-info replaced after verification. Unchanged incremental guard retry passed after transientPID18793 disappeared:12sessions/0.41GiB. Current deliverables, personal daemon, compiler caches, retained canonical guests and Fedora base preserved. Compact receipts/producers remain in the two evidence roots."
+}

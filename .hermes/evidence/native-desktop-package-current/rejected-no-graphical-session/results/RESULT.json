@@ -1,0 +1,6 @@
+{
+  "source": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "scope": "Exact RPM same-version reinstall/removal; native online/offline folder/picker and independent portable choice",
+  "status": "fail",
+  "error": "RuntimeError(\"['runuser', '-u', 'ottrinqa', '--', 'env', '-i', 'PATH=/usr/sbin:/usr/bin:/sbin:/bin', 'HOME=/home/ottrinqa', 'USER=ottrinqa', 'XDG_CURRENT_DESKTOP=OttrinQA', 'XDG_RUNTIME_DIR=/run/user/1000', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus', '/usr/bin/ottrin', 'portal', 'apply']: 1:  ottrin: A dependency job for xdg-desktop-portal.service failed. See 'journalctl -xe' for details.\\n\")"
+}

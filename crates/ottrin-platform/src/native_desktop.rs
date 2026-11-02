@@ -5,14 +5,16 @@ use std::{fs, os::unix::fs::MetadataExt, path::Path};
 
 /// Check is non-mutating; removal preserves preferences and generated search data.
 /// The caller establishes whether this user's systemd manager is online.
-pub fn maintain(check_only: bool, online: bool) -> Result<(), String> {
+/// Returns whether a portable picker still needs the shared system definition.
+pub fn maintain(check_only: bool, online: bool) -> Result<bool, String> {
+    let portable_definition = super::portal_integration::portable_definition_needed()?;
     super::portal_integration::native_package_owned(true, online)?;
     super::folder_integration::native_package_owned(true, online)?;
     if !check_only {
         super::portal_integration::native_package_owned(false, online)?;
         super::folder_integration::native_package_owned(false, online)?;
     }
-    Ok(())
+    Ok(portable_definition)
 }
 
 enum Owner {

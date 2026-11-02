@@ -1,0 +1,9 @@
+inspect 0 Obsolete/unpublished sessions identified: 14
+
+apply 1 Obsolete/unpublished sessions identified: 14
+
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/html-inherited-filter-current/cleanup.py", line 13, in <module>
+    assert p.returncode==0,'Inspect guard refusal before any retry; retain all safeguards'
+           ^^^^^^^^^^^^^^^
+AssertionError: Inspect guard refusal before any retry; retain all safeguards

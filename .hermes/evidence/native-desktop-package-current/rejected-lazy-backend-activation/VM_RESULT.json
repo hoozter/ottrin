@@ -1,0 +1,16 @@
+{
+  "domain": "ottrin-native-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "1e23843124e35a61bc794245a755ee079afdbf05",
+  "status": "fail",
+  "rpm_sha256": "ac5a7ea44c4f4ecf2faaa9e9f9f78a00a90b80f99105102e9e831aba789c221b",
+  "uuid": "19eff604-25a7-4423-83d6-de016dbf477d",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('{\\n  \"source\": \"1e23843124e35a61bc794245a755ee079afdbf05\",\\n  \"scope\": \"Exact RPM same-version reinstall/removal; native online/offline folder/picker and independent portable choice\",\\n  \"status\": \"fail\",\\n  \"error\": \"RuntimeError(\\\\\"[\\'runuser\\', \\'-u\\', \\'ottrinqa\\', \\'--\\', \\'env\\', \\'-i\\', \\'PATH=/usr/sbin:/usr/bin:/sbin:/bin\\', \\'HOME=/home/ottrinqa\\', \\'USER=ottrinqa\\', \\'XDG_CURRENT_DESKTOP=OttrinQA\\', \\'XDG_RUNTIME_DIR=/run/user/1000\\', \\'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus\\', \\'/usr/bin/ottrin\\', \\'portal\\', \\'apply\\']: 1:  ottrin: The desktop portal restarted, but Ottrin\\'s picker is not ready: GDBus.Error:org.freedesktop.DBus.Error.NameHasNoOwner: Destination does not exist\\\\\\\\n\\\\\")\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

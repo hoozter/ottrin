@@ -39,14 +39,25 @@ removed; compact receipts and useful current build caches remain. The personal
 configured daemon is intentionally running. Evidence:
 `.hermes/evidence/desktop-package-current/`.
 
-Native optional-desktop cleanup source is now being verified in
-`.hermes/evidence/native-desktop-removal-current/`: focused integration tests and
-real private-bus/mount ownership cases pass. It restores native-owned folder and
-picker choices without app-data cleanup and preserves portable registrations.
-Exact DPKG/RPM online/offline removal and reinstall remain pending, including
-continued availability of the shared system portal definition for a portable
-picker after native package removal. Stable packages above are unchanged by this
-in-progress source work.
+Native cleanup source `1e238431` passes17 integration tests and six real
+private-bus/mount ownership cases. The exact Fedora RPM diagnostic, with an
+explicit backend-start control, also passes same-version reinstall, refusal on a
+modified native asset, online/offline native preference restoration, and portable
+registration/PID retention. It fails because package removal deletes the shared
+system portal definition still needed by the portable picker. Normal setup also
+fails when the frontend leaves that backend inactive. The owned guests, disks,
+seed and credentials are removed; controls are retained in
+`.hermes/evidence/native-desktop-package-current/`. Source corrections now move
+the shared definition to helper-managed integration, retain it for a known
+portable picker, validate explicit on-demand activation, and distinguish idle
+readiness from failed service state. Exact new-package acceptance is still pending.
+
+Hosted source run41365916700 also fails the Linux HTML gate: one short-lived
+renderer sample has Seccomp0. The failure and process history are retained;
+this is not a green source run. A new inherited HTML syscall filter passes a real
+kernel denial control and strict source checks; the production rendered/profile
+probe is now stricter about every observed sample. It remains pending until that
+full probe passes. Stable packages above remain unchanged by this source work.
 
 The independent queue is:
 1. Native DEB/RPM removal/reinstall with optional folder/picker integration:

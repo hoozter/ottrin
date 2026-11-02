@@ -31,6 +31,22 @@ fn main() {
         return;
     }
     #[cfg(target_os = "linux")]
+    if let Some(option) = std::env::args().nth(1)
+        && std::env::args().len() == 2
+        && matches!(
+            option.as_str(),
+            "--install-portal-definition" | "--remove-portal-definition"
+        )
+    {
+        if let Err(error) =
+            setup::configure_portal_definition(option == "--remove-portal-definition")
+        {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    #[cfg(target_os = "linux")]
     if std::env::args().skip(1).eq(["--configure-html-sandbox"]) {
         if let Err(error) = setup::configure_html_sandbox() {
             eprintln!("{error}");

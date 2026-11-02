@@ -126,15 +126,17 @@ case "${1-}" in
                 ;;
         esac
         if [ "$1" = user-remove ]; then
-            /usr/bin/ottrin-indexd --native-package-stop
+            /usr/bin/ottrin-indexd --native-package-stop >&2
         fi
-        service_operation "${1#user-}" "$manager"
+        # Keep stdout reserved for the desktop ownership protocol above.
+        service_operation "${1#user-}" "$manager" >&2
         ;;
     remove|refresh)
         [ "$#" -eq 1 ] || exit 2
         [ "$(id -u)" -eq 0 ] || { echo 'Native package lifecycle requires root' >&2; exit 1; }
         operation=$1
         if [ "$operation" = refresh ]; then
+            /usr/libexec/ottrin/ottrin-priv-helper --install-portal-definition
             if [ -f /etc/apparmor.d/abi/4.0 ] && command -v apparmor_parser >/dev/null 2>&1; then
                 /usr/libexec/ottrin/ottrin-priv-helper --configure-html-sandbox
             elif [ "$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo 0)" = 1 ]; then
@@ -145,6 +147,7 @@ case "${1-}" in
         accounts=$(getent passwd)
         # Resolve every standard registration before changing any of them.
         # In particular an offline override must reject removal up front.
+        portable_picker=false
         phases=$operation
         if [ "$operation" = remove ]; then phases='check remove'; fi
         for phase in $phases; do
@@ -153,10 +156,15 @@ case "${1-}" in
         while IFS=: read -r account unused uid gid gecos account_home login_shell; do
             case "$uid" in ''|*[!0-9]*) echo 'Invalid account uid' >&2; exit 1 ;; esac
             case "$account_home" in /*) ;; *) continue ;; esac
-            runuser -u "$account" -- env -i PATH="$PATH" HOME="$account_home" \
+            result=$(runuser -u "$account" -- env -i PATH="$PATH" HOME="$account_home" \
                 USER="$account" LOGNAME="$account" XDG_RUNTIME_DIR="/run/user/$uid" \
                 DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
-                "$self" "user-$phase"
+                "$self" "user-$phase")
+            case "$result" in
+                '') ;;
+                retain-portal-definition) portable_picker=true ;;
+                *) echo 'Unexpected native desktop maintenance reply; removal refused' >&2; exit 1 ;;
+            esac
         done <<EOF
 $accounts
 EOF
@@ -168,6 +176,9 @@ EOF
         service_operation "$phase" "$manager"
         done
         if [ "$operation" = remove ]; then
+            if [ "$portable_picker" = false ]; then
+                /usr/libexec/ottrin/ottrin-priv-helper --remove-portal-definition
+            fi
             /usr/libexec/ottrin/ottrin-priv-helper --remove-html-sandbox-policy
         fi
         ;;

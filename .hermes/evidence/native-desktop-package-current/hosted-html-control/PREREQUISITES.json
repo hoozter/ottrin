@@ -1,0 +1,34 @@
+{
+  "directories_before": {
+    "/usr": {
+      "uid": 0,
+      "mode": "0o755"
+    },
+    "/usr/share": {
+      "uid": 0,
+      "mode": "0o777"
+    },
+    "/usr/libexec": {
+      "uid": 0,
+      "mode": "0o755"
+    },
+    "/usr/share/polkit-1": {
+      "uid": 0,
+      "mode": "0o777"
+    },
+    "/usr/share/polkit-1/actions": {
+      "uid": 0,
+      "mode": "0o777"
+    },
+    "/etc": {
+      "uid": 0,
+      "mode": "0o755"
+    },
+    "/etc/apparmor.d": {
+      "uid": 0,
+      "mode": "0o755"
+    }
+  },
+  "browser_sha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+  "scope": "Disposable hosted runner only; production installer validation remains unchanged"
+}

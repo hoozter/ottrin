@@ -5,6 +5,17 @@ use std::process::Command;
 pub(crate) const BWRAP: &str = "/usr/bin/bwrap";
 
 pub(crate) fn command(request: &IsolatedProcessRequest) -> Command {
+    build_command(request, None)
+}
+
+pub(crate) fn command_with_seccomp(
+    request: &IsolatedProcessRequest,
+    fd: std::os::fd::RawFd,
+) -> Command {
+    build_command(request, Some(fd))
+}
+
+fn build_command(request: &IsolatedProcessRequest, seccomp: Option<std::os::fd::RawFd>) -> Command {
     let executable_is_already_visible = ["/usr", "/bin", "/lib", "/lib64", "/opt"]
         .iter()
         .any(|root| request.executable.starts_with(root));
@@ -77,6 +88,9 @@ pub(crate) fn command(request: &IsolatedProcessRequest) -> Command {
             .arg(runtime)
             .arg("/run/ottrin-lib")
             .args(["--setenv", "LD_LIBRARY_PATH", "/run/ottrin-lib"]);
+    }
+    if let Some(fd) = seccomp {
+        command.arg("--seccomp").arg(fd.to_string());
     }
     command.arg(&sandbox_executable).args(&request.arguments);
     command

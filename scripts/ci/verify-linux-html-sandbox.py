@@ -52,7 +52,7 @@ try:
         args=(proc/'cmdline').read_bytes();s=(proc/'status').read_text();label=(proc/'attr/current').read_text().strip()
         if b'--type=renderer' in args:
          fields={k:v.strip() for k,v in (line.split(':',1) for line in s.splitlines() if ':' in line)}
-         witness={'userns':os.readlink(proc/'ns/user'),'seccomp':fields.get('Seccomp'),'caps':fields.get('CapEff'),'no_new_privs':fields.get('NoNewPrivs'),'profile':label}
+         witness={'userns':os.readlink(proc/'ns/user'),'seccomp':fields.get('Seccomp'),'caps':fields.get('CapEff'),'no_new_privs':fields.get('NoNewPrivs'),'profile':label,'filter_count':fields.get('Seccomp_filters')}
          start_after=(proc/'stat').read_text().rsplit(') ',1)[1].split()[19]
          identity=pid+':'+start_before
          history=histories.setdefault(identity,{'pid':pid,'start_ticks':start_before,'cmdline':args.decode(errors='backslashreplace').split('\0'),'samples':[]})
@@ -71,6 +71,13 @@ try:
   image.save(out/'render.png')
   assert witnesses,'renderer was not observed'
   assert all(w['seccomp']=='2' and w['caps']=='0000000000000000' and w['no_new_privs']=='1' and w['profile']=='ottrin-html-render (enforce)' for w in witnesses.values()),witnesses
+  # The inherited helper filter must cover even a renderer's startup samples,
+  # before Chromium installs its own more restrictive process-specific policy.
+  samples=[sample for history in histories.values() for sample in history['samples']]
+  assert all(sample['same_process_epoch'] and sample['seccomp']=='2' and int(sample['filter_count'] or 0)>=1 for sample in samples),histories
+  assert any(int(sample['filter_count'] or 0)>=2 for sample in samples),'No additional Chromium renderer filter observed'
+  report['inherited_filter_covers_all_observed_samples']=True
+  report['additional_renderer_filter_observed']=True
   report['pixel_checks']='pass; inert static layout and blocked script'
  report['private_profile_removed']=not root.exists();report['status']='pass'
 except BaseException as e:

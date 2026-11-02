@@ -41,6 +41,8 @@ mod isolated_process;
 #[cfg(target_os = "linux")]
 mod linux_html;
 #[cfg(target_os = "linux")]
+mod linux_html_filter;
+#[cfg(target_os = "linux")]
 mod linux_namespace;
 #[cfg(target_os = "linux")]
 mod media_playback;

@@ -1,0 +1,582 @@
+{
+  "status": "fail",
+  "uid": 1001,
+  "controller_userns": "user:[4026531837]",
+  "restriction_before": "1",
+  "preload_control_executed": true,
+  "unconfined_transition_restriction": "1",
+  "direct_profile_change_probe": {
+    "baseline": {
+      "uid": 1001,
+      "euid": 1001,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "unconfined",
+      "change_rc": -2,
+      "change_errno": 0,
+      "userns_rc": 0,
+      "userns_errno": 0,
+      "label_after_userns": "unprivileged_userns (enforce)",
+      "mountns_rc": -1,
+      "mountns_errno": 1
+    },
+    "transition": {
+      "uid": 1001,
+      "euid": 1001,
+      "cap_eff": "0000000000000000",
+      "label_before": "unconfined",
+      "label_after": "ottrin-html-render//&unconfined (enforce)",
+      "change_rc": 0,
+      "change_errno": 0,
+      "userns_rc": 0,
+      "userns_errno": 0,
+      "label_after_userns": "ottrin-html-render//&unprivileged_userns (enforce)",
+      "mountns_rc": -1,
+      "mountns_errno": 1
+    }
+  },
+  "direct_profile_change": "unconfined restrictions stacked; in-namespace privileged operation denied",
+  "arbitrary_command_flags_refused": true,
+  "renderer_histories": {
+    "4991:20418": {
+      "pid": "4991",
+      "start_ticks": "20418",
+      "cmdline": [
+        "/opt/google/chrome/chrome --type=renderer --top-chrome-webui --crashpad-handler-pid=4 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/profile --change-stack-guard-on-fork=enable --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=5 --launch-time-",
+        ""
+      ],
+      "samples": [
+        {
+          "elapsed_ms": 338,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 364,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 411,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 438,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 461,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 486,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 511,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 535,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 565,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 589,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 619,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        }
+      ]
+    },
+    "5003:20421": {
+      "pid": "5003",
+      "start_ticks": "20421",
+      "cmdline": [
+        "/opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=4 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/profile --change-stack-guard-on-fork=enable --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=7 --launch-time-ticks=204214893 --s",
+        ""
+      ],
+      "samples": [
+        {
+          "elapsed_ms": 364,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "0",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        }
+      ]
+    },
+    "5004:20422": {
+      "pid": "5004",
+      "start_ticks": "20422",
+      "cmdline": [
+        "/opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=4 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/profile --change-stack-guard-on-fork=enable --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=6 --launch-time-ticks=204221232 --s",
+        ""
+      ],
+      "samples": [
+        {
+          "elapsed_ms": 411,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 438,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 461,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 486,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 511,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 535,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 565,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 589,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 619,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        }
+      ]
+    },
+    "5023:20425": {
+      "pid": "5023",
+      "start_ticks": "20425",
+      "cmdline": [
+        "/opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=4 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/profile --change-stack-guard-on-fork=enable --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=8 --launch-time-ticks=204230253 --s",
+        ""
+      ],
+      "samples": [
+        {
+          "elapsed_ms": 438,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 461,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 487,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 511,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 536,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 565,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 589,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        }
+      ]
+    },
+    "5024:20426": {
+      "pid": "5024",
+      "start_ticks": "20426",
+      "cmdline": [
+        "/opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=4 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/profile --extension-process --change-stack-guard-on-fork=enable --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=9 --launch-time",
+        ""
+      ],
+      "samples": [
+        {
+          "elapsed_ms": 439,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 461,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 487,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 512,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 536,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 566,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 589,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 619,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 648,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        }
+      ]
+    },
+    "5054:20434": {
+      "pid": "5054",
+      "start_ticks": "20434",
+      "cmdline": [
+        "/opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=4 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/profile --extension-process --change-stack-guard-on-fork=enable --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=10 --launch-tim",
+        ""
+      ],
+      "samples": [
+        {
+          "elapsed_ms": 512,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 537,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 566,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 590,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 619,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        }
+      ]
+    },
+    "5055:20435": {
+      "pid": "5055",
+      "start_ticks": "20435",
+      "cmdline": [
+        "/opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=4 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/profile --change-stack-guard-on-fork=enable --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=11 --launch-time-ticks=204347794 --",
+        ""
+      ],
+      "samples": [
+        {
+          "elapsed_ms": 537,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 566,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 590,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        },
+        {
+          "elapsed_ms": 619,
+          "same_process_epoch": true,
+          "userns": "user:[4026532371]",
+          "seccomp": "2",
+          "caps": "0000000000000000",
+          "no_new_privs": "1",
+          "profile": "ottrin-html-render (enforce)"
+        }
+      ]
+    }
+  },
+  "exit": 0,
+  "renderer_witnesses": {
+    "4991": {
+      "userns": "user:[4026532371]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5003": {
+      "userns": "user:[4026532371]",
+      "seccomp": "0",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5004": {
+      "userns": "user:[4026532371]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5023": {
+      "userns": "user:[4026532371]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5024": {
+      "userns": "user:[4026532371]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5054": {
+      "userns": "user:[4026532371]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    },
+    "5055": {
+      "userns": "user:[4026532371]",
+      "seccomp": "2",
+      "caps": "0000000000000000",
+      "no_new_privs": "1",
+      "profile": "ottrin-html-render (enforce)"
+    }
+  },
+  "caller_preload_denied": true,
+  "error": "AssertionError({'4991': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5003': {'userns': 'user:[4026532371]', 'seccomp': '0', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5004': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5023': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5024': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5054': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}, '5055': {'userns': 'user:[4026532371]', 'seccomp': '2', 'caps': '0000000000000000', 'no_new_privs': '1', 'profile': 'ottrin-html-render (enforce)'}})",
+  "restriction_after": "1",
+  "host_restriction_unchanged": true
+}

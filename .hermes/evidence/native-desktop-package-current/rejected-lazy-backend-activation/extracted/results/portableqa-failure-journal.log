@@ -1,0 +1,32 @@
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Queued start job for default target default.target.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Created slice app.slice - User Application Slice.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Started grub-boot-success.timer - Mark boot as successful after the user session has run 2 minutes.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Started systemd-tmpfiles-clean.timer - Daily Cleanup of User's Temporary Directories.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reached target paths.target - Paths.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reached target timers.target - Timers.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Starting dbus.socket - D-Bus User Message Bus Socket...
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Starting systemd-tmpfiles-setup.service - Create User Files and Directories...
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reached target sockets.target - Sockets.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Finished systemd-tmpfiles-setup.service - Create User Files and Directories.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reached target basic.target - Basic System.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reached target default.target - Main User Target.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Startup finished in 145ms.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Starting ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :79 -screen 0 1024x768x24 -nolisten tcp -ac...
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Started ottrin-qa-xvfb.service - [systemd-run] /usr/bin/Xvfb :79 -screen 0 1024x768x24 -nolisten tcp -ac.
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: > Warning:          Multiple symbols for level 1/group 1 on key <FK23>
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: >                   Using F23, ignoring XF86TouchpadOff
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: > Warning:          Symbol map for key <FK23> redefined
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: >                   Using last definition for conflicting fields
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: > Warning:          Symbol map for key <FK24> redefined
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: >                   Using last definition for conflicting fields
+Nov 02 00:30:49 ottrin-native-desktop-qa Xvfb[1945]: Errors from xkbcomp are not fatal to the X server
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reload requested from client PID 1946 ('systemctl')...
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reloading...
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reloading finished in 99 ms.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reached target graphical-session.target - Current graphical user session.
+Nov 02 00:30:49 ottrin-native-desktop-qa systemd[1923]: Reached target ottrin-qa-session.target - Owned private X11 QA session.

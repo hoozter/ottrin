@@ -1,7 +1,7 @@
 use std::fs;
 use std::io::{Read, Write};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 const HTML_POLICY: &[u8] =
     include_bytes!("../../../../../packaging/linux/ottrin-html-render.apparmor");
@@ -85,6 +85,82 @@ fn write_protected(path: &Path, bytes: &[u8], mode: u32, owner: u32) -> std::io:
     result
 }
 
+fn portal_path(root: &Path, owner: u32) -> std::io::Result<PathBuf> {
+    protected_directory(root, owner)?;
+    for relative in [
+        "usr",
+        "usr/share",
+        "usr/share/xdg-desktop-portal",
+        "usr/share/xdg-desktop-portal/portals",
+    ] {
+        protected_directory(&root.join(relative), owner)?;
+    }
+    let path = root.join("usr/share/xdg-desktop-portal/portals/ottrin.portal");
+    match fs::symlink_metadata(&path) {
+        Ok(metadata)
+            if !metadata.is_file() || metadata.uid() != owner || metadata.mode() & 0o022 != 0 =>
+        {
+            return Err(std::io::Error::other(
+                "Unsafe Ottrin portal definition; retained unchanged",
+            ));
+        }
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
+    }
+    Ok(path)
+}
+
+fn validate_portal_definition(root: &Path, owner: u32) -> std::io::Result<PathBuf> {
+    let path = portal_path(root, owner)?;
+    match fs::read(&path) {
+        Ok(data) if data != PORTAL_DEFINITION => {
+            return Err(std::io::Error::other(
+                "Modified Ottrin portal definition retained; setup did not replace it",
+            ));
+        }
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
+    }
+    Ok(path)
+}
+
+fn configure_portal_at(root: &Path, owner: u32) -> std::io::Result<()> {
+    let path = validate_portal_definition(root, owner)?;
+    write_protected(&path, PORTAL_DEFINITION, 0o644, owner)
+}
+
+fn remove_portal_at(root: &Path, owner: u32) -> std::io::Result<()> {
+    let path = root.join("usr/share/xdg-desktop-portal/portals/ottrin.portal");
+    match fs::symlink_metadata(&path) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error),
+        Ok(_) => {}
+    }
+    let path = portal_path(root, owner)?;
+    if fs::read(&path)? != PORTAL_DEFINITION {
+        println!("Modified Ottrin portal definition retained.");
+        return Ok(());
+    }
+    fs::remove_file(path)
+}
+
+/// The definition is shared system integration, not native-package payload:
+/// portable picker registrations can still need it after the package is removed.
+pub fn configure_portal_definition(remove: bool) -> Result<(), String> {
+    // SAFETY: read-only process identity inspection.
+    if unsafe { libc::geteuid() } != 0 {
+        return Err("System portal setup requires administrator permission".into());
+    }
+    if remove {
+        remove_portal_at(Path::new("/"), 0)
+    } else {
+        configure_portal_at(Path::new("/"), 0)
+    }
+    .map_err(|e| e.to_string())
+}
+
 fn install_at(root: &Path, helper: &[u8], html: &[u8], owner: u32) -> std::io::Result<()> {
     protected_directory(root, owner)?;
     for relative in [
@@ -100,23 +176,7 @@ fn install_at(root: &Path, helper: &[u8], html: &[u8], owner: u32) -> std::io::R
     ] {
         protected_directory(&root.join(relative), owner)?;
     }
-    let portal = root.join("usr/share/xdg-desktop-portal/portals/ottrin.portal");
-    match fs::symlink_metadata(&portal) {
-        Ok(metadata) => {
-            if !metadata.is_file() || metadata.uid() != owner || metadata.mode() & 0o022 != 0 {
-                return Err(std::io::Error::other(
-                    "Unsafe Ottrin portal definition; retained unchanged",
-                ));
-            }
-            if fs::read(&portal)? != PORTAL_DEFINITION {
-                return Err(std::io::Error::other(
-                    "Modified Ottrin portal definition retained; setup did not replace it",
-                ));
-            }
-        }
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-        Err(error) => return Err(error),
-    }
+    let portal = validate_portal_definition(root, owner)?;
     write_protected(
         &root.join("usr/libexec/ottrin/ottrin-priv-helper"),
         helper,
@@ -222,6 +282,32 @@ mod tests {
             .permissions(fs::Permissions::from_mode(0o755))
             .tempdir()
             .unwrap()
+    }
+
+    #[test]
+    fn shared_portal_definition_lifetime_preserves_modified_and_foreign_files() {
+        let directory = fixture();
+        let root = directory.path();
+        let owner = fs::metadata(root).unwrap().uid();
+        remove_portal_at(root, owner).unwrap();
+        assert!(!root.join("usr").exists());
+        configure_portal_at(root, owner).unwrap();
+        let path = root.join("usr/share/xdg-desktop-portal/portals/ottrin.portal");
+        fs::write(&path, b"custom definition").unwrap();
+        remove_portal_at(root, owner).unwrap();
+        assert_eq!(fs::read(&path).unwrap(), b"custom definition");
+        assert!(configure_portal_at(root, owner).is_err());
+        fs::remove_file(&path).unwrap();
+        let foreign = root.join("foreign");
+        fs::write(&foreign, b"preserve").unwrap();
+        std::os::unix::fs::symlink(&foreign, &path).unwrap();
+        assert!(remove_portal_at(root, owner).is_err());
+        assert_eq!(fs::read(&foreign).unwrap(), b"preserve");
+        fs::remove_file(&path).unwrap();
+        configure_portal_at(root, owner).unwrap();
+        assert_eq!(fs::read(&path).unwrap(), PORTAL_DEFINITION);
+        remove_portal_at(root, owner).unwrap();
+        assert!(!path.exists());
     }
 
     #[test]
