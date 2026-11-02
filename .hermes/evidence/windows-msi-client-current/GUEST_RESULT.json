@@ -1,0 +1,52 @@
+{
+  "windows": {
+    "caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+    "build": "26100",
+    "msi_version": "5.0.26100.9168"
+  },
+  "session_id": 1,
+  "scope": "Fresh native ordinary-user file-only MSI rollback after executed copy/removal; no Ottrin executable or application custom action",
+  "identity": {
+    "profile": "C:\\Users\\OTMSIbbcdf632ed3b",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+    "administrator": false
+  },
+  "status": "failed native rollback or supported cleanup",
+  "cases": [
+    {
+      "skipped_rollback_errors": 84,
+      "payload_after_cleanup": false,
+      "payload_after_failure": false,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "install",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{C832DC74-A43A-4DDB-81B9-11669EFE68B3}",
+      "rollback_correct": false,
+      "msi_sha256": "9AFCAAB28FAC7879A19F97B9A8C83BA4B985A570D02ED54E5623D0C198FA86E5",
+      "recovery_install_exit": 0,
+      "state_after_failure": 5,
+      "state_before": -1
+    },
+    {
+      "skipped_rollback_errors": 80,
+      "payload_after_cleanup": true,
+      "payload_after_failure": true,
+      "failure_exit": 1603,
+      "cleanup_exit": 0,
+      "state_after_cleanup": -1,
+      "kind": "uninstall",
+      "state_after_recovery": 5,
+      "actual_file_operation_before_failure": true,
+      "product": "{5E3231EC-1976-4D13-8016-1708CFEFEC7D}",
+      "rollback_correct": false,
+      "msi_sha256": "C5476FFF97D51A0D3545F7942E742CF2C8731873880E16A10AE4734B368475A6",
+      "recovery_install_exit": 0,
+      "install_exit": 0,
+      "state_after_failure": 1,
+      "state_before": -1
+    }
+  ]
+}

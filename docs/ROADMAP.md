@@ -49,10 +49,19 @@ The personal enabled service is refreshed separately with configuration, wrapper
 unit and database identity preservation recorded in the current delivery evidence.
 
 The independent queue is:
-1. Windows MSI after-execution rollback on a fresh ordinary client fixture.
-   The retained client failure remains required. Hosted Server2025 refuses the
-   standard-user control1625 under DisableMsi=1 before file execution and provides
-   no rollback result. No policy/elevation workaround or rollback waiver is used.
+1. Windows MSI after-execution rollback on a current client fixture.
+   A fresh offline clone of the clean Windows base now reproduces the file-only
+   control failure under a new ordinary interactive account (session1):84 install
+   and80 uninstall rollback errors, with incorrect product registration. This uses
+   MSI5.0.26100.9168, the same version as the retained client; it rules out the old
+   QA profile as the sole cause but does not prove a vendor defect. The initial
+   LocalSystem-to-user launch refusal is retained separately and is not a rollback
+   result. Both owned clones/volumes/fixtures are removed. Compact receipts are in
+   `.hermes/evidence/windows-msi-client-current/`; the37MiB pinned public compiler
+   cache is retained for the pending Windows installer/MSIX consumer. Next compare
+   a supported current cumulative update on another disposable clone. Hosted
+   Server2025's1625 policy refusal provides no rollback result. No security-policy,
+   Installer-ACL, elevation or rollback waiver is used.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
@@ -719,50 +728,17 @@ Linux is the primary implementation and daily-driver platform. Windows follows t
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
-## Current checkpoint and next work
+## Queue ownership
 
-Audited: 2026-11-01. This section and the delivery table are the active queue;
-checkpoint narratives retain historical evidence only. Test totals do not measure
-roadmap completion. A source pass does not establish package or owner acceptance.
+The **Current delivery and next work** section at the top is the single active
+queue. Earlier dated checkpoints are historical evidence, with their original
+source and package scopes. They do not reopen completed gates or override current
+artifact receipts. Test totals do not measure roadmap completion. A source pass
+does not establish package or owner acceptance.
 
-1. **Retain the HTML security regression gate.** Latest completed8e57b0f5 hosted
-   run41325738936 passes Linux, Windows and search jobs;983f8e29 also passes.
-   Folder-action checkpoint9242ef29 run41336693431 now passes all three jobs.
-   The earlier0e85f745 seccomp0 observation remains an unexplained failed control.
-   Per-process histories preserve every sample and the full assertion. Investigate
-   a recurrence using those histories; do not waive the gate or describe the
-   current pipeline as blocked while its complete checks pass.
-2. **Finish desktop/cooperating-app integration.** Portal source/lifecycle passes
-   at 87999cf8. Reversible Linux default-directory dispatch passes actual GIO/GUI
-   at 29450ee2. CI caught a platform-test lint omission; correction8cd433cc is
-   pushed and its Linux production lifecycle now passes. Actual sandboxed
-   development-caller Open/Save and document export also pass. Still required:
-   FileManager1 final packaged/cooperating-caller acceptance, the final packaged Windows default-folder preference
-   and cooperating-app acceptance. Windows menu actions pass native
-   parser/registry and actual Shell/Services checks at9242ef29.
-   Direct Windows owner/Open/Save/lease checks and a constrained Flatpak caller
-   pass in source; they do not establish final browser/package acceptance.
-3. **Deliver one coherent package cohort.** Stable Linux formats and Windows
-   candidates remain25b38c8f. Rebuild from a clean verified checkpoint, verify
-   exact packaged chooser/integration/upgrade/native paths and bounded resource
-   behavior, update receipts and remove superseded generated output. Refresh the
-   enabled personal index only through its verified upgrade path.
-4. **Close remaining software roadmap gates.** Complete outstanding daily-driver,
-   editing/recovery, file-operation/conflict/undo, theme/layout/accessibility,
-   renderer/Office/media and installation lifecycle acceptance. MSI rollback is
-   a required failed gate, not waived or assigned to the owner; investigate a
-   materially different corrective path instead of repeating equivalent controls.
-   Preserve the explicit native-platform and physical-device scope boundaries.
-   Windows executable icon resources pass native source checks; collect the new
-   hosted MSVC release gate and include them in exact-package acceptance.
-5. **Finish release preparation.** Implement and verify remaining MSIX/release
-   tooling independently. Linux signing identity, Store identity/submission,
-   unavailable physical hardware and final owner acceptance stay on the waiting
-   list below. macOS remains deferred. Continue other ready work during any wait.
-
-The goal stays active while any independently executable outcome remains. Its
-completion requires a final audit showing that all remaining items genuinely
-need the owner or an unavailable external resource.
+The goal stays active while independently executable outcomes remain. Completion
+requires a final audit showing that every remaining item genuinely needs the
+owner or an unavailable external resource.
 
 ## Historical checkpoint evidence
 
@@ -1429,7 +1405,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four8ede1562 formats; complete hosted source checks, actual AppImage dark/light chooser/chrome/read-only/FileManager1/uninstall scopes and bounded index/chooser samples. Personal service uses the exact accepted runtime. | Native optional desktop-integration removal/reinstall, external production callers and remaining software/theme gates before parked owner/device acceptance. |
+| Linux | Four0b6015db formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks and fresh Fedora/Ubuntu optional desktop-integration setup/reinstall/removal. Identical daemon retains earlier scoped resource proof. Personal service refreshed with configuration/data preserved. | External production callers and remaining software/theme gates before parked owner/device acceptance. |
 | Windows |8ede1562 ZIP/NSIS/MSI candidate;58 matching files, full hosted source checks, native icons/CLI and ordinary default-folder/Properties/picker/uninstall restoration scopes. [Candidate receipt](../dist/WINDOWS_CANDIDATE_ACCEPTANCE.json) records exact limits. | MSI rollback/current-client comparison, MSIX tooling and remaining installed/runtime/software gates. MSI rollback remains required and failed. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; portal87999cf8 production lifecycle; folder29450ee2 actual native GIO dispatch/restoration. Protocol2 native query/upgrade and direct Windows parent/lease caller checks pass in source. | Sandboxed development-caller Open/Save/export passes; FileManager1 and reversible Windows folder defaults now pass scoped exact-package checks; finish production cooperating/sandbox callers and native lifecycle/resource acceptance. Park only genuine owner/physical/external waits. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |

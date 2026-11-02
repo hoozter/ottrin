@@ -1,0 +1,8 @@
+{
+  "status": "read-only planning; no VM, disk or account allocated",
+  "base_domain": "win11ltsc",
+  "base_uuid": "4e160378-2610-4072-b528-048e4c9f509e",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "snapshots": [],
+  "next": "Use an owned read-only-backed overlay of the clean licensed base, initially with NIC down. Query only OS/MSI version and setup-relevant policy. Compare minimal file-only rollback under a fresh ordinary interactive account before considering a supported Microsoft cumulative update. Keep the base and all named retained guests unchanged. Use public inputs on a read-only fixture ISO if offline servicing/tools are needed. Register exact domain/UUID/volumes/teardown before allocation. No registry-ACL, elevation, policy-disable or rollback waiver as a product workaround."
+}

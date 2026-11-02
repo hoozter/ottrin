@@ -1,0 +1,17 @@
+{
+  "sources": {
+    "unsigned_msix": "https://learn.microsoft.com/en-us/windows/msix/package/unsigned-package",
+    "manifest": "https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-manual-conversion",
+    "package_constraints": "https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-prepare",
+    "system_launch_constraint": "https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createprocesswithlogonw",
+    "current_windows_release": "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information",
+    "update_prerequisites": "https://support.microsoft.com/en-us/servicing/os/windows-11/2026/10/kb5134133-windows-11-24h2-25h2-26h2-update"
+  },
+  "observations": [
+    "Both clean-client and retained-client MSI version5.0.26100.9168; no current-CU comparison yet",
+    "Use clone-only Windows servicing; no Installer ACL/policy/elevation workaround",
+    "Unsigned executable MSIX development deployment uses special publisher OID and administrator Add-AppxPackage -AllowUnsigned; this is not release signing",
+    "Store identity/submission remains owner wait; independent manifest/build/runtime/update/uninstall work remains required",
+    "MSIX index startup/update/uninstall ownership must be verified before advertising package readiness"
+  ]
+}
