@@ -78,18 +78,26 @@ Its daemon and five other helper/renderer payloads are byte-identical to the
 stable source928b7937 delivery. All guests, disks, credentials and GUI sessions
 are removed. These receipts retain their exact f7f20542 scope.
 
-Before promotion, a wider native menu audit finds the same defect in two other
-contexts: ArrowDown changes alpha to beta behind the main menu; Escape closes
-Quick Inspector while its menu is open. Both corresponding regressions fail before
-repair. The authoritative main-window and Inspector handlers now yield to open
-framework popups. All457 UI tests (one existing ignored) and strict Linux/Windows
-all-target lint pass. The superseded f7f20542 stage was removed without changing
-stable downloads. Next build one clean cohort containing all three popup contexts;
-verify menu arrows/Escape, normal Inspector close and the affected native workflows
-before promotion. This is independently executable work, not an owner wait.
-Evidence: `.hermes/evidence/menu-keyboard-isolation-current/SOURCE_ACCEPTANCE.json`;
-prior scoped package checks:
-`.hermes/evidence/picker-popup-keyboard-current/CANDIDATE_ACCEPTANCE.json`.
+The wider native menu audit also found underlying main-window ArrowDown,
+Inspector Escape and main-window Space handling while menus were open. The
+final authoritative handlers share popup ownership; regressions fail before
+repair and all458 UI tests (one existing ignored), formatting and strict
+Linux/Windows all-target lint pass afterward. Clean sourced09569e2 now produces
+one four-format candidate; its AppImage SHA-256 is
+`955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910`.
+Native arrows/Escape/Space and ordinary Inspector open/close positive controls
+pass against that exact AppImage. Six Dark100/Light150 main/Properties/icon/
+saved-view GUI cases and actual installed Firefox/Flatpak Falkon Open/Save pass.
+Complete daemon and five renderer/helper payloads remain byte-identical to the
+stable928b7937 delivery; earlier resource receipts retain their original scope.
+Fresh Fedora lifecycle passes, including normal setup and removal; its domain,
+three volumes and temporary credentials are removed. Ubuntu lifecycle is running.
+Hosted run41466658719 passes Linux full verification and both release performance
+gates; full Windows verification is still pending. Stable downloads are unchanged
+until all promotion gates pass. Five superseded exact-configuration incremental
+sessions are removed through the supported locked helper; newest sessions remain.
+Evidence: `.hermes/evidence/menu-space-delivery-current/CHECKPOINT.json`,
+`menu-space-ownership-current/SOURCE_ACCEPTANCE.json` and exact case receipts.
 
 The original GitHub audit found13 failed push runs since October31:11 CI and2
 installer diagnostics, with no scheduled retry loop. Workflow/ref concurrency
@@ -178,6 +186,18 @@ The independent queue is:
    `windows-msix-update-current/ASSEMBLY_ACCEPTANCE.json`,
    `windows-msix-update-current/upgrade-enabled/ACCEPTANCE.json`,
    `windows-msix-update-current/upgrade-disabled/ACCEPTANCE.json`.
+
+The current Windows development refresh now uses sourced09569e2. Portable ZIP
+and NSIS build successfully; native MakeAppx development MSIX0.1.0.2 assembly,
+58-file equality and invalid revision refusal pass. The assembly guest, disks,
+fixture and fulfilled124MB source archive are removed. Actual0.1.0.1 →0.1.0.2
+startup-enabled/disabled update, updated-window menu keys, real reboot/login and
+removal remain pending. The sole previous0.1.0.1 input is transferred once into
+`windows-menu-space-delivery-current/input/previous.msix`; superseded2540 staging
+and archive are removed. Current Windows staging remains for those named runtime
+consumers. Stable8ede and public Windows files remain unchanged; MSI rollback is
+still a required failed gate. Evidence:
+`windows-menu-space-delivery-current/ASSEMBLY_ACCEPTANCE.json`.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not
@@ -1490,7 +1510,7 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux cohort uses clean `0b6015db`; the internal Windows candidate
+The stable Linux cohort uses clean `928b7937`; the internal Windows candidate
 uses clean `8ede1562`.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are

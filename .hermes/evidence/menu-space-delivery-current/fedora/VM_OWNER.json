@@ -1,0 +1,14 @@
+{
+  "domain": "ottrin-native-fedora-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "volumes": [
+    "ottrin-native-fedora-desktop-qa-base.qcow2",
+    "ottrin-native-fedora-desktop-qa-work.qcow2",
+    "ottrin-native-fedora-desktop-qa-seed.iso"
+  ],
+  "base_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/fedora44/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2",
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-current/native-vm.py",
+  "actor_sha256": "a68d65990fb3c6e9f3f710616e63ffe6235ec63f2c8b445fc1ced6eeb1ba14e5",
+  "controller_sha256": "85c249aea8e7c818a18871e36a816398bbdbb4bb61a395432635a70182045818",
+  "probe_sha256": "c50fe218eeb6a9f15dd5d16019854e0b57a7ccf234297975ca4b320a69d10bb7"
+}

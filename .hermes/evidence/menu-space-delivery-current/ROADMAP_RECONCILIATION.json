@@ -1,5 +1,5 @@
 {
-  "status": "document reconciliation pending package content checks",
+  "status": "Current delivery revision and source/QA/Windows assembly resume point corrected in docs/ROADMAP.md; final delivery state awaits remaining promotion gates",
   "discrepancies": [
     {
       "location": "docs/ROADMAP.md Current delivery and remaining outcomes prose",
