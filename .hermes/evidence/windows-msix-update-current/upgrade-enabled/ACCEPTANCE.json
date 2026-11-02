@@ -1,0 +1,97 @@
+{
+  "status": "scoped enabled-startup cross-version update, GUI, reboot/login and removal pass",
+  "old_source_revision": "2ebf5fd0600504a5932bd08b62319e0dd91193ca",
+  "new_source_revision": "c5a40fd231332fa578432897319578d1bb035363",
+  "old_artifact_sha256": "271c76a6f8a6b7cd9000aaea27aa8c03607c29dd1a2c5a907bb128d3db5494ca",
+  "new_artifact_sha256": "ba6783e85a6f97c87b230639a490f1a5cc23843da057b47fbf09b3ba6c1029ed",
+  "update": {
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.0_x64__vs01n017nxmbr",
+    "old_processes_removed": true,
+    "old_pids": [
+      5868
+    ],
+    "after": "Ottrin.Development_0.1.0.1_x64__vs01n017nxmbr"
+  },
+  "observed_settings": "Both main.png and updated-main.png visibly show non-default Dark/Grid; old image has first-use compatibility notice, new image retains its dismissal",
+  "index_scope": "Exactly one indexed file; strict original guard1 passes before/after update and after login; fallback profile indexing would fail this check",
+  "store_identity": "9E9485EC9485C76D:000500000002B3E20000000000000000",
+  "store_path": "C:\\Users\\OTMSIXd4919abdbb58\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+  "login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8184,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.1_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXd4919abdbb58\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "9E9485EC9485C76D:000500000002B3E20000000000000000"
+    },
+    "boot_ticks": 639292110905000000,
+    "administrator": false
+  },
+  "preferences_preserved": true,
+  "fixture_preserved": true,
+  "package_removed": true,
+  "package_processes_removed": true,
+  "remaining_index_tasks": [],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "viewer_cleanup": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-s0mr6_6z",
+    "owned_processes_reaped": [
+      {
+        "pid": 220809,
+        "exit": 0
+      },
+      {
+        "pid": 220812,
+        "exit": 0
+      },
+      {
+        "pid": 220813,
+        "exit": 15
+      },
+      {
+        "pid": 220873,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "147 34 0:67 / /var/tmp/.ottrin-picker-qa-s0mr6_6z/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "runtime_source_sha256": "0c57ef535d15ceead39943ce9a7615f519997444672f5f1d426db9c8b25993be",
+  "pending": [
+    "Disabled startup choice across update and reboot",
+    "Remaining packaged software/resource/integration gates",
+    "Physical adapter and owner Store/final acceptance remain separate"
+  ],
+  "scope": "Software SPICE and explicit OpenGL; no machine signing, ACL, security or rollback waiver",
+  "producer_scope_label_correction": "Raw OWNER.json retained the generic pre-upgrade runtime scope label; explicit --msix-upgrade-from, actual update version identities and ordinary GUI/login/removal results prove the narrower enabled-choice upgrade scope described here. Producer label corrected for future consumers."
+}

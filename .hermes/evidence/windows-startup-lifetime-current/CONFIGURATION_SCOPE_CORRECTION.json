@@ -1,0 +1,6 @@
+{
+  "reason": "The earlier PowerShell fixture omitted required AppConfig fields (list_columns, command_frame_always_visible, show_hidden_files, target), so serde could fall back to defaults. Observed970 indexed items do not prove the selected one-file fixture root was applied.",
+  "still_proven": "Actual package identity, ordinary tokens, startup enable/disable/reenable, Windows-launched daemon after real reboot, package/process removal and unchanged synthetic source/preference file bytes.",
+  "not_proven_by_old_attempt": "Effective selected theme/view/index roots or meaningful preference/index data persistence.",
+  "replacement": "windows-msix-update-current/upgrade-enabled/ACCEPTANCE.json now proves effective Dark/Grid settings, exact one-file index scope, same native database file identity across real update and reboot, startup and removal."
+}

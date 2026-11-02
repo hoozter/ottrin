@@ -76,5 +76,11 @@
   },
   "scope": "Software SPICE with explicit OpenGL on owned updated Windows client; package identity/token/real boot observed, no security policy changes; not physical adapter/Store/cross-version acceptance",
   "visual_review": "main.png visibly renders actual Light Miller UI and declared OpenGL compatibility notice; no complete theme or physical-adapter claim",
-  "cleanup_status_caveat": "OwnedDesktop labels SystemExit(0) as failed despite successful resource removal. Retain raw report; process exits, profile removal and VM/volume cleanup independently prove teardown. Classification source correction remains in the roadmap."
+  "cleanup_status_caveat": "OwnedDesktop labels SystemExit(0) as failed despite successful resource removal. Retain raw report; process exits, profile removal and VM/volume cleanup independently prove teardown. Classification source correction remains in the roadmap.",
+  "configuration_scope_correction": {
+    "reason": "The earlier PowerShell fixture omitted required AppConfig fields (list_columns, command_frame_always_visible, show_hidden_files, target), so serde could fall back to defaults. Observed970 indexed items do not prove the selected one-file fixture root was applied.",
+    "still_proven": "Actual package identity, ordinary tokens, startup enable/disable/reenable, Windows-launched daemon after real reboot, package/process removal and unchanged synthetic source/preference file bytes.",
+    "not_proven_by_old_attempt": "Effective selected theme/view/index roots or meaningful preference/index data persistence.",
+    "replacement": "windows-msix-update-current/upgrade-enabled/ACCEPTANCE.json now proves effective Dark/Grid settings, exact one-file index scope, same native database file identity across real update and reboot, startup and removal."
+  }
 }

@@ -2144,8 +2144,14 @@ Windows own version changes and removal. Direct ZIP/EXE/MSI installations keep
 the existing authenticated Task Scheduler path. A package refuses to add a second
 startup provider while an unpackaged Ottrin task exists; remove that registration
 from its owning installation before switching providers. The rebuilt2ebf package
-passes actual setup/disable/reenable, reboot/login and removal. Actual cross-version
-update remains required; original40effd6f failures remain historical evidence.
+passes actual setup/disable/reenable, reboot/login and removal. A subsequent
+update from source2ebf (MSIX0.1.0.0) to sourcec5a40fd2 (MSIX0.1.0.1) passes
+the enabled-startup case with effective
+Dark/Grid settings and identical index database file identity through reboot.
+Disabled-startup preservation remains required. The earlier partial preferences
+fixture did not prove effective configuration; the roadmap and original summary
+receipts carry this scope correction. Original40effd6f failures remain historical
+evidence.
 
 Services labels distinguish package startup repair/disable from native service
 reinstall/uninstall. The package provides a direct Windows Startup apps settings

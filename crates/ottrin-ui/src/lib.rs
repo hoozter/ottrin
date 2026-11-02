@@ -3557,6 +3557,27 @@ impl ResultRepaint {
     }
 }
 
+fn spawn_listing_worker(
+    repaint: ResultRepaint,
+) -> (Sender<ListingRequest>, Receiver<ListingResponse>) {
+    let (request_tx, request_rx) = mpsc::channel::<ListingRequest>();
+    let (result_tx, result_rx) = mpsc::channel::<ListingResponse>();
+    std::thread::spawn(move || {
+        while let Ok(req) = request_rx.recv() {
+            let result = list_directory(&req.path, req.show_hidden);
+            repaint.send(
+                &result_tx,
+                ListingResponse {
+                    key: req.key,
+                    request_id: req.request_id,
+                    result,
+                },
+            );
+        }
+    });
+    (request_tx, result_rx)
+}
+
 pub struct OttrinApp {
     transfer_probe: transfer_probe::Worker,
     state: AppState,
@@ -3819,8 +3840,6 @@ impl OttrinApp {
         config: AppConfig,
         graphics_runtime: GraphicsRuntimeStatus,
     ) -> Self {
-        let (listing_tx, listing_worker_rx) = mpsc::channel::<ListingRequest>();
-        let (listing_worker_tx, listing_rx) = mpsc::channel::<ListingResponse>();
         let (op_tx, op_rx) = mpsc::channel::<OpResult>();
         let (path_move_undo_tx, path_move_undo_rx) = mpsc::channel::<PathMoveUndoResult>();
         let (trash_tx, trash_rx) = mpsc::channel::<TrashLoadResponse>();
@@ -3828,6 +3847,7 @@ impl OttrinApp {
 
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
         let result_repaint = ResultRepaint::default();
+        let (listing_tx, listing_rx) = spawn_listing_worker(result_repaint.clone());
         let (preview_req_tx, preview_res_rx) = preview_jobs::spawn(result_repaint.clone());
         let transfer_probe = transfer_probe::Worker::spawn(result_repaint.clone());
         let office_provider = Arc::new(Mutex::new(None));
@@ -3848,23 +3868,6 @@ impl OttrinApp {
         let (preview_load_tx, preview_load_rx) =
             spawn_preview_loader_with(load_preview_cancellable, result_repaint.clone());
         let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
-
-        let listing_repaint = result_repaint.clone();
-
-        // Single long-lived listing worker thread; later requests supersede stale responses.
-        std::thread::spawn(move || {
-            while let Ok(req) = listing_worker_rx.recv() {
-                let result = list_directory(&req.path, req.show_hidden);
-                listing_repaint.send(
-                    &listing_worker_tx,
-                    ListingResponse {
-                        key: req.key,
-                        request_id: req.request_id,
-                        result,
-                    },
-                );
-            }
-        });
 
         let colors = Colors::for_config(&config, None);
 
@@ -33752,30 +33755,29 @@ mod tests {
     fn listing_completion_wakes_the_ui_without_input_or_polling() {
         let root = tempfile::tempdir().unwrap();
         std::fs::write(root.path().join("ready.txt"), "ready").unwrap();
-        let mut app = OttrinApp::default();
-        let key = ListingKey::TabMain(app.state.active_tab().id);
-        // Drain constructor requests before binding the observed context.
-        let barrier = app.request_listing(key, root.path().to_path_buf());
-        loop {
-            let result = app.listing_rx.recv_timeout(Duration::from_secs(2)).unwrap();
-            if result.request_id == barrier {
-                break;
-            }
-        }
         let ctx = Context::default();
         let (wake_tx, wake_rx) = mpsc::channel();
         ctx.set_request_repaint_callback(move |info| {
             wake_tx.send(info.delay).unwrap();
         });
-        app.result_repaint.bind(&ctx);
-        let request = app.request_listing(key, root.path().to_path_buf());
+        let repaint = ResultRepaint::default();
+        repaint.bind(&ctx);
+        let (requests, results) = spawn_listing_worker(repaint);
+        let request = 1;
+        requests
+            .send(ListingRequest {
+                key: ListingKey::TabMain(1),
+                path: root.path().to_path_buf(),
+                request_id: request,
+                show_hidden: false,
+            })
+            .unwrap();
         assert_eq!(
             wake_rx.recv_timeout(Duration::from_secs(2)).unwrap(),
             Duration::ZERO
         );
         // The callback must follow result publication: no UI polling loop needed.
-        let result = app
-            .listing_rx
+        let result = results
             .try_recv()
             .expect("listing already published at wake");
         assert_eq!(result.request_id, request);

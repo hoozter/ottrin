@@ -1,0 +1,42 @@
+{
+  "removed_unused_screenshots": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-enabled/offers.png",
+      "bytes": 206497,
+      "sha256": "14f143b9d9c4551afa644845ad2b68b0c54fa9f5cd6badf912eb3618e08a10fa"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-enabled/current.png",
+      "bytes": 201458,
+      "sha256": "522e53bf2abc4ad7e02f7ed89e266822738a6e10d402eb91d930fe9f72647067"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-enabled/inking.png",
+      "bytes": 198778,
+      "sha256": "7f2ea117414e7d13fcba8b40f3dc5d327aac955201edf2b44141963dbb48ed4c"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-enabled/find-device.png",
+      "bytes": 193987,
+      "sha256": "366b1216f619d65efd3af073ed2d950129723a3a4875aa856f340cd3225e0b63"
+    }
+  ],
+  "vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_profile_removed": true,
+  "private_viewer_absent": true,
+  "domain_absent_on_live_recheck": true,
+  "retained_paths": {
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/input/previous.msix": "Pending disabled-startup update consumer",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage": "Currentc5 candidate for remaining native software gates",
+    "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2": "Pending disabled-startup update and MSI diagnosis consumers"
+  }
+}

@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][ValidateSet('Prepare','Install','Actor','Login','Finalize')][string]$Mode,[string]$Disc,[string]$Root='C:\OttrinOwnedMsixRuntime')
+param([Parameter(Mandatory=$true)][ValidateSet('Prepare','Install','Actor','Login','Finalize','Updated')][string]$Mode,[string]$Disc,[string]$Root='C:\OttrinOwnedMsixRuntime')
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
 function Save($Name,$Value){
  $path=Join-Path $Root ('results\'+$Name+'.json');$temporary=$path+'.'+[Guid]::NewGuid().ToString('N')+'.tmp'
@@ -16,6 +16,7 @@ if($Mode-eq'Prepare'){
  if(Test-Path $Root){throw 'Existing runtime fixture retained'}
  $packageInput=Get-Content (Join-Path $Disc 'runtime-input.json') -Raw|ConvertFrom-Json
  if((Get-FileHash (Join-Path $Disc 'Ottrin.msix')).Hash.ToLowerInvariant()-ne$packageInput.sha256){throw 'Runtime package input mismatch'}
+ if($packageInput.previous-and(Get-FileHash (Join-Path $Disc 'Previous.msix')).Hash.ToLowerInvariant()-ne$packageInput.previous.sha256){throw 'Previous runtime package input mismatch'}
  New-Item -ItemType Directory $Root,(Join-Path $Root 'results')|Out-Null
  $nonce=[Guid]::NewGuid().ToString('N');$name='OTMSIX'+$nonce.Substring(0,12);$secret=[Guid]::NewGuid().ToString('N')+'aA1!';$password=ConvertTo-SecureString $secret -AsPlainText -Force
  try {
@@ -24,13 +25,14 @@ if($Mode-eq'Prepare'){
   $acl=Get-Acl $Root;$acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($user.SID,'ReadAndExecute','ContainerInherit,ObjectInherit','None','Allow'));Set-Acl $Root $acl
   $acl=Get-Acl (Join-Path $Root 'results');$acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($user.SID,'Modify','ContainerInherit,ObjectInherit','None','Allow'));Set-Acl (Join-Path $Root 'results') $acl
   Copy-Item (Join-Path $Disc 'Ottrin.msix'),(Join-Path $Disc 'runtime.ps1'),(Join-Path $Disc 'native-controls.ps1') $Root
-  $owner=@{nonce=$nonce;account=$name;sid=$user.SID.Value;package=$packageInput;installer_task=('OttrinMsixInstall-'+$nonce);actor_task=('OttrinMsixActor-'+$nonce);login_task=('OttrinMsixLogin-'+$nonce);finalizer_task=('OttrinMsixFinalize-'+$nonce);scope='Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes'}
+  if($packageInput.previous){Copy-Item (Join-Path $Disc 'Previous.msix') $Root}
+  $owner=@{nonce=$nonce;account=$name;sid=$user.SID.Value;package=$packageInput;installer_task=('OttrinMsixInstall-'+$nonce);actor_task=('OttrinMsixActor-'+$nonce);login_task=('OttrinMsixLogin-'+$nonce);finalizer_task=('OttrinMsixFinalize-'+$nonce);updated_task=('OttrinMsixUpdated-'+$nonce);scope='Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes'}
   $owner|ConvertTo-Json -Depth 6|Set-Content -Encoding UTF8 (Join-Path $Root 'OWNER.json')
-  foreach($phase in @('Install','Actor','Login','Finalize')){
+  foreach($phase in @('Install','Actor','Login','Finalize','Updated')){
    $invoke="& ([ScriptBlock]::Create([IO.File]::ReadAllText('$Root\runtime.ps1'))) -Mode $phase -Root '$Root'"
    $action=New-ScheduledTaskAction -Execute "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand '+[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($invoke)))
    $principal=New-ScheduledTaskPrincipal -UserId ($env:COMPUTERNAME+'\'+$name) -LogonType Interactive -RunLevel $(if($phase-in@('Install','Finalize')){'Highest'}else{'Limited'})
-   if($phase-eq'Install'){$trigger=New-ScheduledTaskTrigger -AtLogOn -User ($env:COMPUTERNAME+'\'+$name);Register-ScheduledTask -TaskName $owner.installer_task -Action $action -Principal $principal -Trigger $trigger|Out-Null}else{$taskName=switch($phase){'Actor'{$owner.actor_task};'Login'{$owner.login_task};'Finalize'{$owner.finalizer_task}};Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal|Out-Null}
+   if($phase-eq'Install'){$trigger=New-ScheduledTaskTrigger -AtLogOn -User ($env:COMPUTERNAME+'\'+$name);Register-ScheduledTask -TaskName $owner.installer_task -Action $action -Principal $principal -Trigger $trigger|Out-Null}else{$taskName=switch($phase){'Actor'{$owner.actor_task};'Login'{$owner.login_task};'Finalize'{$owner.finalizer_task};'Updated'{$owner.updated_task}};Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal|Out-Null}
   }
   $key='HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
   foreach($pair in @(@('AutoAdminLogon','1'),@('DefaultUserName',$name),@('DefaultDomainName',$env:COMPUTERNAME),@('DefaultPassword',$secret))){Set-ItemProperty $key -Name $pair[0] -Value $pair[1]}
@@ -62,16 +64,82 @@ public static class InputDesktopQA {
 '@
 
  Add-Type -TypeDefinition 'using System; using System.Text; using System.Runtime.InteropServices; public static class PackageIdentityQA { [DllImport("kernel32.dll", CharSet=CharSet.Unicode)] public static extern int GetPackageFullName(IntPtr process, ref uint length, StringBuilder value); [DllImport("user32.dll", SetLastError=true)] public static extern bool PostMessageW(IntPtr window, uint message, IntPtr first, IntPtr second); }'
+$ActorStateName=if($Mode-eq'Login'){'LOGIN'}elseif($Mode-eq'Updated'){'UPDATED'}else{'ACTOR'}
 function Invoke-OwnCLI([string[]]$arguments,[string]$stdoutName,[string]$stderrName){
  $p=Start-Process $exe -ArgumentList $arguments -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root ('results\'+$stdoutName)) -RedirectStandardError (Join-Path $Root ('results\'+$stderrName));$null=$p.Handle
- $result.phase=$stdoutName;$result.active_cli=@{pid=$p.Id;arguments=$arguments};Save $(if($Mode-eq'Login'){'LOGIN'}else{'ACTOR'}) $result
+ $result.phase=$stdoutName;$result.active_cli=@{pid=$p.Id;arguments=$arguments};Save $ActorStateName $result
  try{
   # Start-Process -Wait waits for descendants, including the persistent daemon.
   # Only the CLI must exit; the daemon is verified separately below.
   if(-not$p.WaitForExit(90000)){throw ('Owned CLI timed out: '+$stdoutName)}
-  $p.WaitForExit();$code=$p.ExitCode;$result.cli_exits[$stdoutName]=$code;$result.Remove('active_cli');Save $(if($Mode-eq'Login'){'LOGIN'}else{'ACTOR'}) $result
+  $p.WaitForExit();$code=$p.ExitCode;$result.cli_exits[$stdoutName]=$code;$result.Remove('active_cli');Save $ActorStateName $result
   return [pscustomobject]@{ExitCode=$code}
  }finally{if(-not$p.HasExited){$p.Kill();$null=$p.WaitForExit(5000)};$p.Dispose()}
+}
+Add-Type -TypeDefinition @'
+using System;using System.IO;using System.Runtime.InteropServices;using Microsoft.Win32.SafeHandles;
+public static class StoreFileQA {
+ [StructLayout(LayoutKind.Sequential)]struct FileId { public ulong Volume,Low,High; }
+ [DllImport("kernel32.dll",SetLastError=true)]static extern bool GetFileInformationByHandleEx(SafeFileHandle handle,int kind,out FileId value,uint size);
+ public static string Identity(string path){using(var file=File.Open(path,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete)){FileId value;if(!GetFileInformationByHandleEx(file.SafeFileHandle,18,out value,24))throw new System.ComponentModel.Win32Exception();return value.Volume.ToString("X16")+":"+value.Low.ToString("X16")+value.High.ToString("X16");}}
+}
+'@
+function Get-OwnStore{
+ $paths=@((Join-Path $env:LOCALAPPDATA 'ottrin\search.db'),(Join-Path $env:LOCALAPPDATA ('Packages\'+$package.PackageFamilyName+'\LocalCache\Local\ottrin\search.db')))
+ $existing=@($paths|Where-Object {Test-Path $_ -PathType Leaf})
+ if($existing.Count-ne1){throw 'Expected exactly one owned ordinary or package-virtualized search store'}
+ return @{path=$existing[0];identity=[StoreFileQA]::Identity($existing[0]);bytes=(Get-Item $existing[0]).Length}
+}
+function Wait-OwnIndexReady([string]$Prefix){
+ $deadline=[DateTime]::UtcNow.AddSeconds(60)
+ do{
+  $process=Invoke-OwnCLI @('index','status','--json') ($Prefix+'index-status.json') ($Prefix+'index-status.stderr')
+  if($process.ExitCode-ne0){throw 'Read-only index diagnostics failed'}
+  $diagnostics=Read-State (Join-Path $Root ('results\'+$Prefix+'index-status.json'))
+  if($diagnostics.status-eq'ready'-and$diagnostics.watcher_ready-and$diagnostics.watched_roots-eq1){if($diagnostics.indexed_items-ne1){throw 'Fixture scope was not applied: expected exactly one indexed file'};return $diagnostics}
+  Start-Sleep -Seconds 1
+ }while([DateTime]::UtcNow-lt$deadline)
+ throw 'Package daemon did not become ready on its saved fixture root'
+}
+function Exercise-MainWindow{
+ $readyDeadline=[DateTime]::UtcNow.AddMinutes(2)
+ while([InputDesktopQA]::Name()-ne'Default'-and[DateTime]::UtcNow-lt$readyDeadline){Start-Sleep -Seconds 1}
+ $result.input_desktop=[InputDesktopQA]::Name();Save $ActorStateName $result
+ & ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $Root 'native-controls.ps1'))));[PickerNative]::Init()
+ Start-Process $exe -ArgumentList @('--renderer','opengl') -WindowStyle Normal|Out-Null
+ $deadline=[DateTime]::UtcNow.AddSeconds(60);$app=$null;$window=[IntPtr]::Zero
+ while([DateTime]::UtcNow-lt$deadline){
+  foreach($candidate in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe})){
+   $found=[PickerNative]::Window($candidate.Id,'Ottrin')
+   if($found-ne[IntPtr]::Zero){$app=$candidate;$window=$found;break}
+  }
+  if($app){break};Start-Sleep -Milliseconds 200
+ }
+ if(-not$app){throw 'Actual packaged main window did not map'}
+ $processOwner=Invoke-CimMethod -InputObject (Get-CimInstance Win32_Process -Filter ("ProcessId="+$app.Id)) -MethodName GetOwnerSid
+ if($processOwner.Sid-ne$owner.sid){throw 'Main window belongs to another identity'}
+
+ [uint32]$length=0;$errorCode=[PackageIdentityQA]::GetPackageFullName($app.Handle,[ref]$length,$null)
+ if($errorCode-ne122){throw 'Main process has no queryable package identity'}
+ $buffer=[Text.StringBuilder]::new([int]$length)
+ if([PackageIdentityQA]::GetPackageFullName($app.Handle,[ref]$length,$buffer)-ne0-or$buffer.ToString()-ne$package.PackageFullName){throw 'Main process package identity mismatch'}
+ $result.actual_process_package=$buffer.ToString()
+ $result.actual_process_elevated=[InputDesktopQA]::Elevated($app.Handle)
+ if($result.actual_process_elevated){throw 'Actual main process must have an ordinary non-elevated token'}
+ $result.window_diagnostics=@{console_session=[InputDesktopQA]::WTSGetActiveConsoleSessionId();process_session=$app.SessionId;minimized=[InputDesktopQA]::IsIconic($window);cloaked=[InputDesktopQA]::Cloaked($window);foreground=[InputDesktopQA]::GetForegroundWindow().ToInt64();window=$window.ToInt64();enable_lua=(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System').EnableLUA}
+ [InputDesktopQA]::ShowWindow($window,9)|Out-Null
+ [PickerNative]::Place($window)
+ try {
+  if($result.input_desktop-ne'Default'){throw 'Fresh-login input desktop not ready'}
+  [PickerNative]::Focus($window);Start-Sleep -Milliseconds 500
+  [PickerNative]::Shot($window,(Join-Path $Root ('results\'+$(if($Mode-eq'Updated'){'updated-main.png'}else{'main.png'}))));$result.gui_focus_and_capture='pass'
+ }catch{$result.gui_focus_and_capture='failed';$result.gui_error=$_.Exception.Message}
+ $result.main=@{pid=$app.Id;path=$app.Path;title=[PickerNative]::Title($window);binary_sha256=(Get-FileHash $app.Path).Hash};Save $ActorStateName $result
+ try {
+  if([PickerNative]::Window($app.Id,'Ottrin')-ne$window){throw 'Owned main window identity changed'}
+  if(-not[PackageIdentityQA]::PostMessageW($window,0x10,[IntPtr]::Zero,[IntPtr]::Zero)){throw 'Normal window close was refused'}
+  if(-not$app.WaitForExit(15000)){throw 'Main window did not close'};$app.WaitForExit();if($app.ExitCode-ne0){throw 'Main window exited abnormally'};$result.normal_close_exit=0
+ }catch{$result.normal_close_error=$_.Exception.Message}
 }
 if($Mode-in@('Install','Finalize')){
  $result=@{status='running';scope=$owner.scope;source_revision=$owner.package.source_revision;actor_sid=$owner.sid}
@@ -90,7 +158,8 @@ if($Mode-in@('Install','Finalize')){
    $result.login=$login
   }else{
   if(@(Get-AppxPackage -Name 'Ottrin.Development').Count){throw 'Unexpected existing development package'}
-  Add-AppxPackage -Path (Join-Path $Root 'Ottrin.msix') -AllowUnsigned
+  $initial=if($owner.package.previous){'Previous.msix'}else{'Ottrin.msix'}
+  Add-AppxPackage -Path (Join-Path $Root $initial) -AllowUnsigned
   $package=Get-AppxPackage -Name 'Ottrin.Development';if(-not$package){throw 'Package registration missing'}
   $result.deployment=@{full_name=$package.PackageFullName;family=$package.PackageFamilyName;location=$package.InstallLocation;version=[string]$package.Version};Save 'DEPLOYMENT' $result
   Save 'DESKTOP_WAITING' @{status='waiting for owned ordinary desktop';sid=$owner.sid;nonce=$owner.nonce;scope='Complete the disposable account privacy setup through the private console; do not alter security or OOBE policies'}
@@ -104,6 +173,28 @@ if($Mode-in@('Install','Finalize')){
   $result.actor=$actor
   $events=@(Get-WinEvent -FilterHashtable @{LogName='Application';Id=1000;StartTime=(Get-Date).AddMinutes(-10)} -ErrorAction SilentlyContinue|Where-Object {$_.Message.IndexOf($package.InstallLocation,[StringComparison]::OrdinalIgnoreCase)-ge0}|Select-Object TimeCreated,Id,Message)
   Save 'CRASH_EVENTS' @{events=$events;scope='Only events naming this owned package installation'}
+  if($actor.status-eq'pass'-and$owner.package.previous){
+   $result.pre_update_actor=$actor;$before=$package
+   if([string]$before.Version-ne$owner.package.previous.version){throw 'Unexpected installed previous package version'}
+   $oldProcesses=@(Get-Process ottrin,ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-and$_.Path.StartsWith($before.InstallLocation,[StringComparison]::OrdinalIgnoreCase)})
+   if(@($oldProcesses|Where-Object {$_.ProcessName-eq'ottrin-indexd'}).Count-ne1){throw 'Upgrade requires the actual previous daemon running'}
+   Save 'BEFORE_UPDATE' $result
+   Add-AppxPackage -Path (Join-Path $Root 'Ottrin.msix') -AllowUnsigned -ForceApplicationShutdown
+   $package=Get-AppxPackage -Name 'Ottrin.Development'
+   if([string]$package.Version-ne$owner.package.version-or$package.PackageFamilyName-ne$before.PackageFamilyName-or$package.PackageFullName-eq$before.PackageFullName){throw 'Actual same-identity version update failed'}
+   $remaining=@(Get-Process ottrin,ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-and$_.Path.StartsWith($before.InstallLocation,[StringComparison]::OrdinalIgnoreCase)})
+   if($remaining.Count){throw 'Old package processes survived Windows update shutdown'}
+   $result.update=@{before=$before.PackageFullName;after=$package.PackageFullName;family=$package.PackageFamilyName;old_processes_removed=$true;old_pids=@($oldProcesses|ForEach-Object {$_.Id})}
+   Save 'UPDATE' $result
+   Start-ScheduledTask -TaskName $owner.updated_task;$deadline=[DateTime]::UtcNow.AddMinutes(5)
+   do{
+    $path=Join-Path $Root 'results\UPDATED.json'
+    if(Test-Path $path){$updated=Read-State $path;if($updated.status-ne'running'){break}}
+    if([DateTime]::UtcNow-ge$deadline){throw 'Ordinary post-update actor timed out'};Start-Sleep -Milliseconds 250
+   }while($true)
+   $result.updated_actor=$updated;$actor=$updated;$result.actor=$actor
+   if($actor.status-ne'pass'){throw 'Actual post-update ordinary runtime failed'}
+  }
   if($actor.status-eq'pass'){
    # Only Windows may start the daemon on the next login. No Ottrin CLI is scheduled.
    $trigger=New-ScheduledTaskTrigger -AtLogOn -User ($env:COMPUTERNAME+'\'+$owner.account)
@@ -159,17 +250,36 @@ if($Mode-eq'Login'){
   if(-not$result.preferences_preserved){throw 'Preferences changed across login'}
   $process=Invoke-OwnCLI @('index','service-status') 'login-service-status.stdout' 'login-service-status.stderr'
   if($process.ExitCode-ne0-or(Get-Content (Join-Path $Root 'results\login-service-status.stdout') -Raw)-notmatch'Enabled at login'){throw 'Login startup setting not preserved'}
-  $deadline=[DateTime]::UtcNow.AddSeconds(60)
-  do{
-   $process=Invoke-OwnCLI @('index','status','--json') 'login-index-status.json' 'login-index-status.stderr'
-   if($process.ExitCode-ne0){throw 'Read-only login index diagnostics failed'}
-   $diagnostics=Get-Content (Join-Path $Root 'results\login-index-status.json') -Raw|ConvertFrom-Json
-   if($diagnostics.status-eq'ready'-and$diagnostics.watcher_ready-and$diagnostics.watched_roots-eq1){break};Start-Sleep -Seconds 1
-  }while([DateTime]::UtcNow-lt$deadline)
-  if($diagnostics.status-ne'ready'-or-not$diagnostics.watcher_ready-or$diagnostics.watched_roots-ne1){throw 'Windows-started daemon did not become ready on its saved root'}
-  $result.index_ready=$diagnostics.status;$result.status='pass'
+  $diagnostics=Wait-OwnIndexReady 'login-'
+  $result.index_ready=$diagnostics.status;$result.store=Get-OwnStore
+  if($result.store.identity-ne$pending.actor.store.identity-or$result.store.path-ne$pending.actor.store.path){throw 'Login replaced or relocated the saved index database'}
+  $result.status='pass'
  }catch{$result.status='failed actual login';$result.error=$_.Exception.Message;$result.stack=$_.ScriptStackTrace}
  finally{Save 'LOGIN' $result}
+ exit $(if($result.status-eq'pass'){0}else{1})
+}
+if($Mode-eq'Updated'){
+ $result=@{status='running';administrator=$admin;cli_exits=@{};scope='Actual ordinary post-update GUI, unchanged startup/configuration and live new daemon after main window closes'};Save 'UPDATED' $result
+ try{
+  if($admin){throw 'Post-update observer must have an ordinary token'}
+  $before=Read-State (Join-Path $Root 'results\BEFORE_UPDATE.json')
+  $config=Join-Path $env:APPDATA 'ottrin\config.json';$result.preferences_before_removal=(Get-FileHash $config).Hash
+  if($result.preferences_before_removal-ne$before.actor.preferences_before_removal){throw 'Preferences changed during package update'}
+  $package=Get-AppxPackage -Name 'Ottrin.Development';$exe=Join-Path $package.InstallLocation 'bin\ottrin.exe'
+  if([string]$package.Version-ne$owner.package.version){throw 'Wrong updated package version'}
+  $process=Invoke-OwnCLI @('index','service-status') 'updated-service-status.stdout' 'updated-service-status.stderr'
+  if($process.ExitCode-ne0-or(Get-Content (Join-Path $Root 'results\updated-service-status.stdout') -Raw)-notmatch'Enabled at login'){throw 'Update lost the startup setting; no repair attempted'}
+  $result.store=Get-OwnStore
+  if($result.store.identity-ne$before.actor.store.identity-or$result.store.path-ne$before.actor.store.path){throw 'Update replaced or relocated the saved index database'}
+  Exercise-MainWindow
+  if($result.gui_focus_and_capture-ne'pass'-or-not$result.ContainsKey('normal_close_exit')-or$result.normal_close_exit-ne0){throw 'Updated GUI focus or normal close failed'}
+  $daemonExe=Join-Path $package.InstallLocation 'bin\ottrin-indexd.exe'
+  if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count-ne1){throw 'New background daemon did not survive normal main-window close'}
+  $diagnostics=Wait-OwnIndexReady 'updated-';$result.index_ready=$diagnostics.status
+  if((Get-FileHash $config).Hash-ne$result.preferences_before_removal){throw 'Post-update GUI altered saved preferences'}
+  $result.status='pass'
+ }catch{$result.status='failed post-update runtime';$result.error=$_.Exception.Message;$result.stack=$_.ScriptStackTrace}
+ finally{Save 'UPDATED' $result}
  exit $(if($result.status-eq'pass'){0}else{1})
 }
 $result=@{status='running';administrator=$admin;session_id=(Get-Process -Id $PID).SessionId;scope='Actual packaged ordinary main-window launch, normal close and optional index registration; no upgrade acceptance yet'};Save 'ACTOR' $result
@@ -178,46 +288,9 @@ try {
  if($admin){throw 'Ordinary application token required'}
  $fixture=Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'OttrinMSIXFixture';New-Item -ItemType Directory $fixture|Out-Null;[IO.File]::WriteAllText((Join-Path $fixture 'preserve.txt'),"Preserve owned MSIX fixture`n")
  $config=Join-Path $env:APPDATA 'ottrin\config.json';New-Item -ItemType Directory (Split-Path $config) -Force|Out-Null
- [IO.File]::WriteAllText($config,(@{theme='Light';default_view_mode='Miller';bookmarks=@();installed_office_previews_enabled=$false;search=@{include_roots=@($fixture);content_indexing_enabled=$false}}|ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false))
+ [IO.File]::WriteAllText($config,(@{theme='Dark';default_view_mode='Grid';list_columns=@('Name','Kind','Size','Modified');command_frame_always_visible=$false;show_hidden_files=$false;target=@{current=$null};bookmarks=@();installed_office_previews_enabled=$false;search=@{include_roots=@($fixture);content_indexing_enabled=$false}}|ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false))
  $package=Get-AppxPackage -Name 'Ottrin.Development';$exe=Join-Path $package.InstallLocation 'bin\ottrin.exe'
- $readyDeadline=[DateTime]::UtcNow.AddMinutes(2)
- while([InputDesktopQA]::Name()-ne'Default'-and[DateTime]::UtcNow-lt$readyDeadline){Start-Sleep -Seconds 1}
- $result.input_desktop=[InputDesktopQA]::Name();Save 'ACTOR' $result
- & ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $Root 'native-controls.ps1'))));[PickerNative]::Init()
- Start-Process $exe -ArgumentList @('--renderer','opengl') -WindowStyle Normal|Out-Null
- $deadline=[DateTime]::UtcNow.AddSeconds(60);$app=$null;$window=[IntPtr]::Zero
- while([DateTime]::UtcNow-lt$deadline){
-  foreach($candidate in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe})){
-   $found=[PickerNative]::Window($candidate.Id,'Ottrin')
-   if($found-ne[IntPtr]::Zero){$app=$candidate;$window=$found;break}
-  }
-  if($app){break};Start-Sleep -Milliseconds 200
- }
- if(-not$app){throw 'Actual packaged main window did not map'}
- $processOwner=Invoke-CimMethod -InputObject (Get-CimInstance Win32_Process -Filter ("ProcessId="+$app.Id)) -MethodName GetOwnerSid
- if($processOwner.Sid-ne$owner.sid){throw 'Main window belongs to another identity'}
-
- [uint32]$length=0;$errorCode=[PackageIdentityQA]::GetPackageFullName($app.Handle,[ref]$length,$null)
- if($errorCode-ne122){throw 'Main process has no queryable package identity'}
- $buffer=[Text.StringBuilder]::new([int]$length)
- if([PackageIdentityQA]::GetPackageFullName($app.Handle,[ref]$length,$buffer)-ne0-or$buffer.ToString()-ne$package.PackageFullName){throw 'Main process package identity mismatch'}
- $result.actual_process_package=$buffer.ToString()
- $result.actual_process_elevated=[InputDesktopQA]::Elevated($app.Handle)
- if($result.actual_process_elevated){throw 'Actual main process must have an ordinary non-elevated token'}
- $result.window_diagnostics=@{console_session=[InputDesktopQA]::WTSGetActiveConsoleSessionId();process_session=$app.SessionId;minimized=[InputDesktopQA]::IsIconic($window);cloaked=[InputDesktopQA]::Cloaked($window);foreground=[InputDesktopQA]::GetForegroundWindow().ToInt64();window=$window.ToInt64();enable_lua=(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System').EnableLUA}
- [InputDesktopQA]::ShowWindow($window,9)|Out-Null
- [PickerNative]::Place($window)
- try {
-  if($result.input_desktop-ne'Default'){throw 'Fresh-login input desktop not ready'}
-  [PickerNative]::Focus($window);Start-Sleep -Milliseconds 500
-  [PickerNative]::Shot($window,(Join-Path $Root 'results\main.png'));$result.gui_focus_and_capture='pass'
- }catch{$result.gui_focus_and_capture='failed';$result.gui_error=$_.Exception.Message}
- $result.main=@{pid=$app.Id;path=$app.Path;title=[PickerNative]::Title($window);binary_sha256=(Get-FileHash $app.Path).Hash};Save 'ACTOR' $result
- try {
-  if([PickerNative]::Window($app.Id,'Ottrin')-ne$window){throw 'Owned main window identity changed'}
-  if(-not[PackageIdentityQA]::PostMessageW($window,0x10,[IntPtr]::Zero,[IntPtr]::Zero)){throw 'Normal window close was refused'}
-  if(-not$app.WaitForExit(15000)){throw 'Main window did not close'};$app.WaitForExit();if($app.ExitCode-ne0){throw 'Main window exited abnormally'};$result.normal_close_exit=0
- }catch{$result.normal_close_error=$_.Exception.Message}
+ Exercise-MainWindow
  $process=Invoke-OwnCLI @('index','service-install') 'service-install.stdout' 'service-install.stderr'
  $result.service_install_exit=$process.ExitCode;if($process.ExitCode-ne0){throw 'Packaged background index setup failed; inspect exact CLI output'}
  $process=Invoke-OwnCLI @('index','service-status') 'service-status.stdout' 'service-status.stderr'
@@ -233,14 +306,7 @@ try {
  if([PackageIdentityQA]::GetPackageFullName($daemon.Handle,[ref]$length,$buffer)-ne0-or$buffer.ToString()-ne$package.PackageFullName){throw 'Daemon package identity mismatch'}
  if([InputDesktopQA]::Elevated($daemon.Handle)){throw 'Index daemon must not be elevated'}
  $result.daemon=@{pid=$daemon.Id;package=$buffer.ToString();administrator=$false}
- $deadline=[DateTime]::UtcNow.AddSeconds(60)
- do{
- $process=Invoke-OwnCLI @('index','status','--json') 'index-status.json' 'index-status.stderr'
- if($process.ExitCode-ne0){throw 'Actual package index diagnostics failed'}
- $diagnostics=Get-Content (Join-Path $Root 'results\index-status.json') -Raw|ConvertFrom-Json
- if($diagnostics.status-eq'ready'-and$diagnostics.watcher_ready-and$diagnostics.watched_roots-eq1){break};Start-Sleep -Seconds 1
- }while([DateTime]::UtcNow-lt$deadline)
- if($diagnostics.status-ne'ready'-or-not$diagnostics.watcher_ready-or$diagnostics.watched_roots-ne1){throw 'Actual package daemon is not ready on its one configured fixture root'}
+ $diagnostics=Wait-OwnIndexReady ''
  $result.index_ready=$diagnostics.status
 
  $process=Invoke-OwnCLI @('index','service-remove') 'service-remove.stdout' 'service-remove.stderr'
@@ -250,6 +316,8 @@ try {
  if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count-ne0){throw 'Disabling package indexing did not stop its daemon'}
  $process=Invoke-OwnCLI @('index','service-install') 'reenable.stdout' 'reenable.stderr'
  if($process.ExitCode-ne0){throw 'Package startup could not be enabled again'}
+ $diagnostics=Wait-OwnIndexReady 'reenabled-'
+ $result.store=Get-OwnStore
  $result.disable_reenable='pass';$result.preferences_before_removal=(Get-FileHash $config).Hash
  $result.status=if($result.gui_focus_and_capture-eq'pass'-and$result.ContainsKey('normal_close_exit')-and$result.normal_close_exit-eq0){'pass'}else{'partial runtime; GUI focus or close gate failed'}
 }catch{$result.status='failed ordinary runtime';$result.error=$_.Exception.Message;$result.stack=$_.ScriptStackTrace}

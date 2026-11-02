@@ -47,3 +47,11 @@ The sourcea10792db follow-up completes all four jobs successfully in
 Native hosted release measurements are16ms Linux and61ms Windows against100ms.
 This resolves the observed current CI failure scope; it does not explain unseen
 mail messages or accept later source revisions automatically.
+
+The later76bed follow-up run41423617027 exposes a Linux listing-wake test race
+(`listing already published at wake: Empty`), while both release performance jobs
+pass. A constructor/barrier wake could arrive after the observer bound the shared
+context. The actual worker already publishes before wake. A shared production
+worker factory lets the test observe only that worker;454 Linux UI tests and
+strict Linux/Windows lint pass locally without sleeps, retries or weaker timing
+assertions. Publication/hosted confirmation follows the correction commit.

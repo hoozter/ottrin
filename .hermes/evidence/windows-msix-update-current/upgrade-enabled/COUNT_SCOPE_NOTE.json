@@ -1,0 +1,5 @@
+{
+  "observation": "Actual pre-update and post-update actors pass the frozen one-item guard. One-root fixture diagnostics count one indexed file, not a second entry for the root directory.",
+  "source": "Frozen RUNTIME_SOURCE.ps1 and actual BEFORE_LOGIN.json; original expected1 is retained unchanged",
+  "correction": "Temporary source expectation2 based on the scanner loop was never used by a test; reverted to the actual observed contract. No acceptance assertion was relaxed."
+}

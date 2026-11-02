@@ -1,0 +1,44 @@
+2026-11-02T09:54:32.2608224Z test tests::linux_move_recovery_requires_a_captured_plan_before_queueing ... ok
+2026-11-02T09:54:32.2626067Z test tests::linux_settings_disclose_the_system_media_boundary ... ok
+2026-11-02T09:54:32.2630864Z test tests::list_rubber_band_starts_in_blank_viewport_below_rows ... ok
+2026-11-02T09:54:32.2634084Z test tests::list_rubber_band_uses_row_rectangles_for_replacement_and_modifiers ... ok
+2026-11-02T09:54:32.2670464Z test tests::listing_completion_wakes_the_ui_without_input_or_polling ... FAILED
+2026-11-02T09:54:32.2671948Z test tests::local_clipboard_capture_preserves_unavailable_volume_tombstones ... ok
+2026-11-02T09:54:32.2884043Z test tests::entering_miller_reveals_the_current_directory_and_selection_once ... ok
+2026-11-02T09:54:32.2887164Z test tests::local_path_bindings_reject_a_retargeted_destination_link ... ok
+2026-11-02T09:54:32.2888849Z test tests::local_storage_binding_rejects_real_mount_replacement_under_discovered_parent ... ignored, requires an explicitly owned private user/mount namespace
+2026-11-02T09:54:32.2907791Z test tests::local_clipboard_copy_outside_home_crosses_filesystems_through_the_worker ... ok
+2026-11-02T09:54:32.2910789Z test tests::locations_rail_defaults_to_compact_width ... ok
+2026-11-02T09:54:32.2911929Z test tests::locations_tooltip_never_competes_with_a_context_menu_layer ... ok
+2026-11-02T09:54:32.3038971Z test tests::locations_rail_and_single_file_canvas_share_real_layout_without_input_leaks ... ok
+2026-11-02T09:54:32.3042777Z test tests::main_preview_and_inspector_share_nonvisual_body_routing ... ok
+2026-11-02T09:54:32.3053124Z test tests::managed_system_locate_schedule_is_identified_as_ottrin_owned ... ok
+2026-11-02T09:54:32.3054301Z test tests::markdown_inline_format_inserts_an_editable_pair_without_a_selection ... ok
+2026-11-02T09:54:33.5535531Z test window_chrome::tests::long_titles_keep_close_visible_and_clickable_without_expanding_the_window ... ok
+2026-11-02T09:54:33.6024332Z test tests::ui_content_pages_navigate_refresh_and_reset_with_the_query ... ok
+2026-11-02T09:54:34.6641010Z test preview_render::tests::shared_preview_bodies_have_one_scrollbar_and_stationary_footers ... ok
+2026-11-02T09:54:34.6641752Z
+2026-11-02T09:54:34.6641892Z failures:
+2026-11-02T09:54:34.6642068Z
+2026-11-02T09:54:34.6642722Z ---- tests::listing_completion_wakes_the_ui_without_input_or_polling stdout ----
+2026-11-02T09:54:34.6643298Z
+2026-11-02T09:54:34.6643966Z thread 'tests::listing_completion_wakes_the_ui_without_input_or_polling' (11688) panicked at crates/ottrin-ui/src/lib.rs:33780:14:
+2026-11-02T09:54:34.6644990Z listing already published at wake: Empty
+2026-11-02T09:54:34.6645687Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-02T09:54:34.6646230Z
+2026-11-02T09:54:34.6646236Z
+2026-11-02T09:54:34.6646369Z failures:
+2026-11-02T09:54:34.6646839Z     tests::listing_completion_wakes_the_ui_without_input_or_polling
+2026-11-02T09:54:34.6647302Z
+2026-11-02T09:54:34.6647750Z test result: FAILED. 453 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.62s
+2026-11-02T09:54:34.6648363Z
+2026-11-02T09:54:34.6806617Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-ui --lib`
+2026-11-02T09:54:34.6963573Z ##[error]Process completed with exit code 101.
+2026-11-02T09:54:34.7052579Z ##[group]Run actions/upload-artifact@v4
+2026-11-02T09:54:34.7052913Z with:
+2026-11-02T09:54:34.7053116Z   name: linux-portal
+2026-11-02T09:54:34.7053352Z   path: portal-evidence/
+2026-11-02T09:54:34.7053600Z   if-no-files-found: ignore
+2026-11-02T09:54:34.7053849Z   retention-days: 7
+2026-11-02T09:54:34.7054074Z   compression-level: 6
+2026-11-02T09:54:34.7054297Z   overwrite: false

@@ -7,5 +7,11 @@
   "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/input/previous.msix",
   "cleanup_owner": "Current roadmap goal: delete this exact input once native upgrade consumers finish",
   "status": "verified previous package retained for named upgrade consumer",
-  "bytes": 56840472
+  "bytes": 56840472,
+  "pending_consumers": [
+    "Disabled-startup-choice preservation across real update and reboot"
+  ],
+  "completed_consumers": [
+    "Enabled-startup0.1.0.0 to0.1.0.1 update, GUI, real reboot and removal"
+  ]
 }

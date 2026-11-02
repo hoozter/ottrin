@@ -1,0 +1,15 @@
+{
+  "reason": "Hosted76bed Linux failure listing already published at wake: Empty; constructor/barrier notification could reach the shared observer after binding",
+  "change": "One authoritative listing-worker factory used by the application and a dedicated test. Test keeps immediate wake and already-published result assertions; no sleeps, retry loop or relaxed timeout.",
+  "focused_test": "pass",
+  "full_linux_ui_suite": {
+    "passed": 454,
+    "ignored": 1
+  },
+  "strict_linux_clippy": "pass",
+  "strict_windows_gnu_clippy": "pass",
+  "cargo_fmt": "pass",
+  "incremental_cleanup": "No obsolete/unpublished sessions found",
+  "hosted_followup": "Pending push and verification",
+  "scope": "Worker behavior unchanged; exact package artifacts remain scoped to their own source revisions"
+}

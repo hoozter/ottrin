@@ -1,7 +1,7 @@
 """Finite native input/readiness for one owned disposable Windows console."""
 from pathlib import Path
 import json,os,subprocess,sys,time,importlib.util,re
-cohort=Path(__file__).resolve().parent;case=sys.argv[1];assert re.fullmatch('[a-z0-9-]+',case);r=cohort/case;owner=json.loads((r/'OWNER.json').read_text());assert subprocess.check_output(['virsh','-c','qemu:///system','domuuid',owner['domain']],text=True).strip()==owner['uuid']
+r=Path(sys.argv[1]).resolve();assert r.is_relative_to(Path.cwd()/'.hermes/evidence') and re.fullmatch('[a-z0-9-]+',r.name);owner=json.loads((r/'OWNER.json').read_text());assert subprocess.check_output(['virsh','-c','qemu:///system','domuuid',owner['domain']],text=True).strip()==owner['uuid']
 meta=owner['private_console'];p=Path('/proc')/str(meta['pid']);args=(p/'cmdline').read_bytes().split(b'\0');assert owner['domain'].encode() in args and os.readlink(p/'exe')=='/usr/bin/virt-viewer';values=dict(v.split(b'=',1) for v in (p/'environ').read_bytes().split(b'\0') if b'=' in v);assert os.fsdecode(values[b'DISPLAY'])==meta['display'] and os.fsdecode(values[b'HOME'])==meta['home'] and meta['home'].startswith('/var/tmp/.ottrin-picker-qa-');env={**os.environ,'DISPLAY':meta['display'],'GDK_BACKEND':'x11','EGL_PLATFORM':'x11'};env.pop('XAUTHORITY',None)
 q=subprocess.run(['xdotool','search','--onlyvisible','--pid',str(meta['pid'])],env=env,text=True,capture_output=True);assert q.returncode==0,q.stderr;window=q.stdout.split()[-1];action=sys.argv[2]
 if action=='click':

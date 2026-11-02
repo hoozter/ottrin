@@ -16,8 +16,9 @@
     "all_jobs_pass_run": 41374248948,
     "later_all_jobs_pass_run": 41380442981
   },
-  "current_source_run": 41413618813,
-  "current_status": "All four a107 jobs pass: complete Linux/Windows verification and strict release benchmarks16ms Linux/61ms Windows. Newc5 development-revision package passes native assembly locally; next hosted run follows publication.",
+  "current_source_run": 41423617027,
+  "current_status": "76bed Linux Cargo test fails listing-wake observer race; both release performance jobs pass. Correction passes454 Linux UI tests plus strict Linux/Windows lint locally; next hosted run pending push.",
   "changes": "Published workflow/ref concurrency cancels superseded runs. Pending follow-up retains debug correctness and enforces serial exact release100ms benchmark on both Linux and Windows.",
-  "limits": "Retained runs/notifications do not explain hundreds of separate emails; mailbox uninspected. Native2ebf MSIX basic lifecycle now passes; login/update remain separate."
+  "limits": "Retained runs/notifications do not explain hundreds of separate emails; mailbox uninspected. Native2ebf MSIX basic lifecycle now passes; login/update remain separate.",
+  "original_snapshot_scope": "Retained-run counts refer the original2026-11-02 audit dataset in RUNS.json; later follow-up run states are recorded separately."
 }

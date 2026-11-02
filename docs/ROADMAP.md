@@ -63,7 +63,7 @@ resources and the transient scope are removed. This accepts an ordinary installe
 Firefox caller, not an installed sandboxed browser.
 Evidence: `.hermes/evidence/firefox-identity-package-current/`.
 
-The GitHub audit finds13 failed push runs since October31:11 CI and2 diagnostic
+The original GitHub audit found13 failed push runs since October31:11 CI and2 diagnostic
 controls. Later source0b6015db and40effd6f each pass all three hosted jobs. Source2ebf
 passes Linux/performance but fails the concurrent Windows debug500k timing check
 (320ms versus250ms). No scheduled retry loop is present. Workflow/ref concurrency
@@ -74,8 +74,13 @@ query literal now passes at78ms on the same native client and20ms on Linux, with
 all244 Linux search tests and strict Linux/Windows lint passing. Hosted confirmation
 passes all four jobs for pushed sourcea10792db in run41413618813, including
 complete Linux/Windows verification and release benchmarks16ms Linux/61ms Windows.
-The next sourcec5a40fd2 also passes actual native development revision1 assembly
-and58-file payload equality; its hosted follow-up is pending publication.
+Sourcec5a40fd2 also passes native development revision1 assembly and58-file
+payload equality. Its pushed76bed4db follow-up run41423617027 passes both
+performance jobs but fails a Linux listing-wake test: a constructor/barrier wake
+can race the test observer. The actual worker already publishes before wake.
+An authoritative listing-worker factory now lets that test observe only its
+own worker;454 Linux UI tests and strict Linux/Windows lint pass. Hosted
+confirmation of this correction remains pending publication.
 Evidence: `.hermes/evidence/github-actions-current/`,
 `.hermes/evidence/search-performance-isolation-current/`.
 
@@ -104,7 +109,14 @@ The independent queue is:
    attempts exposed harness status-file locking and PowerShell null-string
    marshalling; neither is counted as login acceptance. Atomic publication/shared
    reads and an ordinary-user native writer probe now pass. This fixes the prior
-   per-call WinRT teardown crash; cross-version update remains required.
+   per-call WinRT teardown crash. The earlier partial preferences fixture omitted
+   required fields and fell back to defaults, so it did not prove the selected
+   settings/index scope. Raw receipts retain an explicit scope correction.
+   A new valid Dark/Grid fixture now proves enabled-startup cross-version update,
+   actual new GUI/normal close, daemon survival after window close, exact one-file
+   readiness, identical database file identity through update/reboot, Windows
+   login startup before any Ottrin CLI and clean removal. Disabled-startup
+   preservation across update remains required.
    The native visual scope uses software
    SPICE and explicit OpenGL; physical/native-driver acceptance remains separate.
    Completed guests/volumes/profiles and fulfilled source archives are removed.
@@ -119,11 +131,14 @@ The independent queue is:
    actual private desktop probe verifies process/profile removal. Raw older
    reports retain their original misclassification. Sourcec5a40fd2 now builds
    development MSIX0.1.0.1; native MakeAppx assembly,58-file payload equality and
-   rejection of revisions-1/65536 pass. Real0.1.0.0 →0.1.0.1 update is next.
+   rejection of revisions-1/65536 pass. Actual0.1.0.0 →0.1.0.1 update now passes
+   the enabled-startup case; the disabled-startup case is next.
    The previous56.8MB package is the sole retained upgrade input, and the new
-   package stage awaits actual update/runtime acceptance. The fulfilled122MB
+   package stage has scoped enabled-update/runtime acceptance and awaits the
+   disabled-choice and broader software gates. The fulfilled122MB
    source archive and both assembly guests/volumes are removed. Evidence:
-   `windows-msix-update-current/ASSEMBLY_ACCEPTANCE.json`.
+   `windows-msix-update-current/ASSEMBLY_ACCEPTANCE.json`,
+   `windows-msix-update-current/upgrade-enabled/ACCEPTANCE.json`.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not
