@@ -203,9 +203,10 @@ The independent queue is:
 The current Windows development refresh now uses sourced09569e2. Portable ZIP
 and NSIS build successfully; native MakeAppx development MSIX0.1.0.2 assembly,
 58-file equality and invalid revision refusal pass. The assembly guest, disks,
-fixture and fulfilled124MB source archive are removed. Actual0.1.0.1 →0.1.0.2
-startup-enabled/disabled update, updated-window menu keys, real reboot/login and
-removal remain pending. The sole previous0.1.0.1 input is transferred once into
+fixture and fulfilled124MB source archive are removed. Actual0.1.0.1 →0.1.0.2 startup-enabled update now passes updated-window menu
+keys, normal Space open/close, real reboot/login before any Ottrin CLI, retained
+configuration/native index identity and removal. Its guest/disks/profile are
+removed. The startup-disabled case is pending. The sole previous0.1.0.1 input is transferred once into
 `windows-menu-space-delivery-current/input/previous.msix`; superseded2540 staging
 and archive are removed. Current Windows staging remains for those named runtime
 consumers. Stable8ede and public Windows files remain unchanged; MSI rollback is
@@ -215,9 +216,17 @@ still a required failed gate. Evidence:
 The first current Windows upgrade run reaches the actual ordinary updated GUI,
 but fails its keyboard fixture before proving file selection/Inspector opening.
 It is rejected for menu, reboot and removal acceptance; its guest/disks/profile
-are removed. A fresh run launches the updated GUI directly at the existing owned
+are removed. The corrected run launches the updated GUI directly at the existing owned
 one-file fixture, uses pointer selection and captures that selection before
-keyboard tests. It is running. Native Ctrl+L navigation/input and Windows Hidden/
+keyboard tests; its complete startup-enabled lifecycle passes. The first disabled
+case completes ordinary first-login privacy pages but its QA observer misreads a
+small desktop label, fails to send readiness and expires the normal setup deadline.
+That case is rejected and cleaned up. The detector now recognizes the exact
+previously missed large Start-menu labels; a bounded normal-UI observer drives
+only recognized privacy pages through the existing owned-console input helper,
+then the existing observed-desktop SID/nonce guard. No policy override or deadline
+waiver is introduced. A fresh disabled case is running; its observed state must
+pass before acceptance. Native Ctrl+L navigation/input and Windows Hidden/
 System attribute filtering are separate controlled follow-ups; a home screenshot
 alone does not establish the file attributes or a product defect. These are
 independently executable checks, not owner waits. Evidence:

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "input": ".hermes/evidence/windows-menu-space-delivery-current/upgrade-disabled-rejected-desktop-observer/desktop-ready.png",
+  "previous_small_label_match": false,
+  "large_start_menu_labels": {
+    "pinned": true,
+    "recommended": true,
+    "file explorer": true
+  },
+  "scope": "Exact previously rejected loaded-desktop screenshot now matches the supported desktop branch; native full fixture rerun remains required"
+}

@@ -1,0 +1,6 @@
+{
+  "status": "First disabled run rejected at QA desktop-readiness observer; no product acceptance",
+  "observed": "Known4 privacy pages were completed; actual loaded Windows desktop/Start menu captured, but OCR misread small Recycle Bin label. Readiness was not sent, bounded setup deadline expired. Owned guest/disks/profile removed.",
+  "fix": "Keep exact recognized privacy headings/native No selections. Wake normal console with Escape; first page gets bounded startup observation. Desktop requires recognized Recycle Bin or all three large Start-menu labels Pinned/Recommended/File Explorer, then existing nonce/SID/interactive-user readiness guard. No registry/policy/security bypass and no deadline waiver.",
+  "pending": "Fresh disabled case using corrected detector"
+}

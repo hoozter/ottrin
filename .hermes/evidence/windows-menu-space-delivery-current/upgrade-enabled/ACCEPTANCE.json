@@ -1,0 +1,39 @@
+{
+  "status": "pass within actual native upgrade/startup/menu/removal scope",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "artifact_sha256": "536f5c72371b17b2faab15ad35d1aebfbb8f26e4917bc8958ec21fc50bc7f1bb",
+  "previous": "Ottrin.Development_0.1.0.1_x64__vs01n017nxmbr",
+  "updated": "Ottrin.Development_0.1.0.2_x64__vs01n017nxmbr",
+  "startup_enabled": true,
+  "actual_updated_gui_ordinary": true,
+  "updated_menu_keys": {
+    "source_sha256": "50C6A3E7D1D8029C750535A7250DDECDE20A9AEEDD1C26F092A38AD3E21FA970",
+    "normal_space_open_close": true,
+    "inspector_menu_escape_keeps_window_open": true,
+    "source_and_directory_unchanged": true,
+    "main_menu_space_keeps_inspector_closed": true,
+    "status": "pass"
+  },
+  "reboot_login_before_any_ottrin_cli": {
+    "pid": 7084,
+    "administrator": false,
+    "session": 1,
+    "package": "Ottrin.Development_0.1.0.2_x64__vs01n017nxmbr"
+  },
+  "index_ready": "ready",
+  "store_identity_preserved": "9E9485EC9485C76D:000500000002B3E00000000000000000",
+  "normal_updated_close_exit": 0,
+  "preferences_and_source_preserved": true,
+  "package_processes_and_tasks_removed": true,
+  "owned_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "Actual filtered ordinary runtime on owned updated Windows client and software SPICE/OpenGL; Store/MSI/physical/native-driver and final owner acceptance remain separate. Rejected first navigation positive control remains separately scoped."
+}

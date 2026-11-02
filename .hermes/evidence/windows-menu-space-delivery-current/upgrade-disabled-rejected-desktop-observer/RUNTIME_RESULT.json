@@ -1,0 +1,14 @@
+{
+  "scope": "Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes",
+  "actor_sid": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+  "error": "Owned first-login desktop was not made ready",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "stack": "at <ScriptBlock>, <No file>: line 208\r\nat <ScriptBlock>, <No file>: line 1",
+  "status": "failed native MSIX lifecycle",
+  "deployment": {
+    "full_name": "Ottrin.Development_0.1.0.1_x64__vs01n017nxmbr",
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "location": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.1_x64__vs01n017nxmbr",
+    "version": "0.1.0.1"
+  }
+}
