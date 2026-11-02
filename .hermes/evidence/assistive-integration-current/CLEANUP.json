@@ -43,5 +43,13 @@
       "purpose": "Current AccessKit-enabled application/test binaries, dependency libraries and compiler caches retained for source checks and upcoming Linux delivery; Windows graph still requires its own build"
     }
   ],
-  "current_deliverables_and_user_data_preserved": true
+  "current_deliverables_and_user_data_preserved": true,
+  "evidence_compaction": {
+    "rejected_observer_empty_response_removed": true,
+    "test_stdout_retained_exact_gzip": {
+      "path": ".hermes/evidence/assistive-integration-current/tests.stdout.gz",
+      "raw_bytes": 46490,
+      "raw_sha256": "94832072c04454ae05e7b8f829a0cbaa34b927a3f57c313c30063a998e944901"
+    }
+  }
 }
