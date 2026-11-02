@@ -1,0 +1,41 @@
+{
+  "status": "completed owned guest, volumes, private desktop and staging removed",
+  "native": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_profile_removed": true,
+  "obsolete_previous_package_removed_bytes": 56840472,
+  "unused_frames_removed": [
+    {
+      "path": ".hermes/evidence/windows-msix-update-current/upgrade-disabled/current.png",
+      "bytes": 201440
+    },
+    {
+      "path": ".hermes/evidence/windows-msix-update-current/upgrade-disabled/offers.png",
+      "bytes": 206438
+    },
+    {
+      "path": ".hermes/evidence/windows-msix-update-current/upgrade-disabled/inking.png",
+      "bytes": 198773
+    },
+    {
+      "path": ".hermes/evidence/windows-msix-update-current/upgrade-disabled/find-device.png",
+      "bytes": 194005
+    }
+  ],
+  "remaining_task_storage": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-disabled",
+    "purpose": "Compact native acceptance, frozen producers, decoded results archive and reviewed GUI frames"
+  },
+  "retained_shared_baseline": {
+    "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+    "purpose": "Named pending independent MSI rollback and Windows software acceptance consumers"
+  }
+}

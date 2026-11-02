@@ -6,12 +6,12 @@
   "source": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix",
   "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/input/previous.msix",
   "cleanup_owner": "Current roadmap goal: delete this exact input once native upgrade consumers finish",
-  "status": "verified previous package retained for named upgrade consumer",
+  "status": "Fulfilled exact upgrade input removed after both native consumers passed",
   "bytes": 56840472,
-  "pending_consumers": [
-    "Disabled-startup-choice preservation across real update and reboot"
-  ],
+  "pending_consumers": [],
   "completed_consumers": [
-    "Enabled-startup0.1.0.0 to0.1.0.1 update, GUI, real reboot and removal"
-  ]
+    "Enabled-startup0.1.0.0 to0.1.0.1 update, GUI, real reboot and removal",
+    "Disabled-startup0.1.0.0 to0.1.0.1 update, GUI, real reboot and removal"
+  ],
+  "removed_bytes": 56840472
 }

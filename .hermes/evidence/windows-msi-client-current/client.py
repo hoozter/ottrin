@@ -4,7 +4,8 @@ from contextlib import ExitStack
 import argparse, base64, hashlib, importlib.util, json, os, shutil, signal, subprocess, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--search-benchmark',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--search-benchmark',type=Path);args=parser.parse_args()
+assert not args.msix_startup_disabled or args.msix_upgrade_from
 assert not args.msix_upgrade_from or args.msix_runtime
 assert not args.prepare_updated_base or args.update_manifest
 assert not(args.use_updated_base and args.update_manifest)
@@ -32,7 +33,7 @@ for filename,url,algorithm,digest in ([] if args.search_benchmark or args.msix_r
   finally:temp.unlink(missing_ok=True)
  assert hashlib.new(algorithm,p.read_bytes()).hexdigest()==digest
 fixture=e/'fixture';assert not fixture.exists()
-scope='Actual same-identity development MSIX upgrade, ordinary runtime, retained configuration/index and real login/removal; disabled-choice/Store acceptance remain separate' if args.msix_upgrade_from else 'Exact optimized500k search benchmark on the owned native Windows client; pure computation under the agent token, not desktop or file-operation acceptance' if args.search_benchmark else 'Actual development MSIX deployment, ordinary runtime, real login startup and removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
+scope='Actual same-identity development MSIX upgrade, ordinary runtime, retained configuration/index and real login/removal for the declared startup choice; Store acceptance remains separate' if args.msix_upgrade_from else 'Exact optimized500k search benchmark on the owned native Windows client; pure computation under the agent token, not desktop or file-operation acceptance' if args.search_benchmark else 'Actual development MSIX deployment, ordinary runtime, real login startup and removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
 if args.use_updated_base:
  prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
@@ -100,7 +101,7 @@ with ExitStack() as stack:
   parent=e.parent;accepted=json.loads((parent/'ASSEMBLY_ACCEPTANCE.json').read_text());assert args.msix_runtime.resolve()==Path(accepted['artifact'])
   with args.msix_runtime.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==accepted['artifact_sha256']
   os.link(args.msix_runtime,fixture/'Ottrin.msix');shutil.copy2(parent/'runtime.ps1',fixture/'runtime.ps1');shutil.copy2(r/'.hermes/evidence/desktop-package-current/windows/gui/NATIVE_CONTROLS_INPUT.ps1',fixture/'native-controls.ps1')
-  runtime_input={'sha256':accepted['artifact_sha256'],'source_revision':accepted['source_revision'],'version':accepted['version']}
+  runtime_input={'sha256':accepted['artifact_sha256'],'source_revision':accepted['source_revision'],'version':accepted['version'],'startup_enabled':not args.msix_startup_disabled}
   if args.msix_upgrade_from:
    previous=json.loads((parent/'PREVIOUS_PACKAGE.json').read_text());assert args.msix_upgrade_from.resolve()==Path(previous['retained_input'])
    with args.msix_upgrade_from.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==previous['sha256']

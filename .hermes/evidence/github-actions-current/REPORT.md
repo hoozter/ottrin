@@ -55,3 +55,8 @@ context. The actual worker already publishes before wake. A shared production
 worker factory lets the test observe only that worker;454 Linux UI tests and
 strict Linux/Windows lint pass locally without sleeps, retries or weaker timing
 assertions. Publication/hosted confirmation follows the correction commit.
+
+Published correction05c1325f is being verified in
+[run41429811338](https://github.com/hoozter/ottrin/actions/runs/41429811338).
+Linux full verification and both release performance gates pass; Windows full
+verification remains in progress. This snapshot is retained in HOSTED_05_CURRENT.json.

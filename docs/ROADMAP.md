@@ -80,7 +80,9 @@ performance jobs but fails a Linux listing-wake test: a constructor/barrier wake
 can race the test observer. The actual worker already publishes before wake.
 An authoritative listing-worker factory now lets that test observe only its
 own worker;454 Linux UI tests and strict Linux/Windows lint pass. Hosted
-confirmation of this correction remains pending publication.
+confirmation of pushed correction05c1325f in run41429811338 passes Linux full
+verification and both release performance gates; Windows full verification is
+still in progress.
 Evidence: `.hermes/evidence/github-actions-current/`,
 `.hermes/evidence/search-performance-isolation-current/`.
 
@@ -115,8 +117,10 @@ The independent queue is:
    A new valid Dark/Grid fixture now proves enabled-startup cross-version update,
    actual new GUI/normal close, daemon survival after window close, exact one-file
    readiness, identical database file identity through update/reboot, Windows
-   login startup before any Ottrin CLI and clean removal. Disabled-startup
-   preservation across update remains required.
+   login startup before any Ottrin CLI and clean removal. The disabled-startup
+   case also passes: startup remains disabled before/after the actual new GUI,
+   no daemon starts during180seconds after a real reboot before any Ottrin CLI,
+   and preferences/native index file identity survive through clean removal.
    The native visual scope uses software
    SPICE and explicit OpenGL; physical/native-driver acceptance remains separate.
    Completed guests/volumes/profiles and fulfilled source archives are removed.
@@ -132,13 +136,14 @@ The independent queue is:
    reports retain their original misclassification. Sourcec5a40fd2 now builds
    development MSIX0.1.0.1; native MakeAppx assembly,58-file payload equality and
    rejection of revisions-1/65536 pass. Actual0.1.0.0 →0.1.0.1 update now passes
-   the enabled-startup case; the disabled-startup case is next.
-   The previous56.8MB package is the sole retained upgrade input, and the new
-   package stage has scoped enabled-update/runtime acceptance and awaits the
-   disabled-choice and broader software gates. The fulfilled122MB
+   both enabled and disabled startup cases.
+   The fulfilled previous56.8MB upgrade input is removed. The new
+   package stage has scoped update/runtime acceptance and awaits the
+   broader software gates. The fulfilled122MB
    source archive and both assembly guests/volumes are removed. Evidence:
    `windows-msix-update-current/ASSEMBLY_ACCEPTANCE.json`,
-   `windows-msix-update-current/upgrade-enabled/ACCEPTANCE.json`.
+   `windows-msix-update-current/upgrade-enabled/ACCEPTANCE.json`,
+   `windows-msix-update-current/upgrade-disabled/ACCEPTANCE.json`.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not

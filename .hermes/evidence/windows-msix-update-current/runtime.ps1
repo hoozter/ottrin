@@ -16,6 +16,7 @@ if($Mode-eq'Prepare'){
  if(Test-Path $Root){throw 'Existing runtime fixture retained'}
  $packageInput=Get-Content (Join-Path $Disc 'runtime-input.json') -Raw|ConvertFrom-Json
  if((Get-FileHash (Join-Path $Disc 'Ottrin.msix')).Hash.ToLowerInvariant()-ne$packageInput.sha256){throw 'Runtime package input mismatch'}
+ if($packageInput.startup_enabled-isnot[bool]){throw 'Explicit expected startup choice required'}
  if($packageInput.previous-and(Get-FileHash (Join-Path $Disc 'Previous.msix')).Hash.ToLowerInvariant()-ne$packageInput.previous.sha256){throw 'Previous runtime package input mismatch'}
  New-Item -ItemType Directory $Root,(Join-Path $Root 'results')|Out-Null
  $nonce=[Guid]::NewGuid().ToString('N');$name='OTMSIX'+$nonce.Substring(0,12);$secret=[Guid]::NewGuid().ToString('N')+'aA1!';$password=ConvertTo-SecureString $secret -AsPlainText -Force
@@ -90,6 +91,11 @@ function Get-OwnStore{
  if($existing.Count-ne1){throw 'Expected exactly one owned ordinary or package-virtualized search store'}
  return @{path=$existing[0];identity=[StoreFileQA]::Identity($existing[0]);bytes=(Get-Item $existing[0]).Length}
 }
+function Assert-OwnStartup([string]$Prefix){
+ $process=Invoke-OwnCLI @('index','service-status') ($Prefix+'service-status.stdout') ($Prefix+'service-status.stderr')
+ $expected=if($owner.package.startup_enabled){'Enabled at login'}else{'enabled=false'}
+ if($process.ExitCode-ne0-or(Get-Content (Join-Path $Root ('results\'+$Prefix+'service-status.stdout')) -Raw)-notmatch$expected){throw 'Saved startup choice changed; no repair attempted'}
+}
 function Wait-OwnIndexReady([string]$Prefix){
  $deadline=[DateTime]::UtcNow.AddSeconds(60)
  do{
@@ -154,7 +160,7 @@ if($Mode-in@('Install','Finalize')){
     if(Test-Path $loginPath){$login=Read-State $loginPath;if($login.status-ne'running'){break}}
     if([DateTime]::UtcNow-ge$deadline){throw 'Ordinary actual-login observer did not finish'};Start-Sleep -Milliseconds 250
    }while($true)
-   if($result.status-ne'awaiting actual login'-or$login.status-ne'pass'-or$login.boot_ticks-eq$result.before_login_boot_ticks){throw 'Actual new-login daemon proof required before finalization'}
+   if($result.status-ne'awaiting actual login'-or$login.status-ne'pass'-or$login.boot_ticks-eq$result.before_login_boot_ticks){throw 'Actual new-login startup-choice proof required before finalization'}
    $result.login=$login
   }else{
   if(@(Get-AppxPackage -Name 'Ottrin.Development').Count){throw 'Unexpected existing development package'}
@@ -177,14 +183,15 @@ if($Mode-in@('Install','Finalize')){
    $result.pre_update_actor=$actor;$before=$package
    if([string]$before.Version-ne$owner.package.previous.version){throw 'Unexpected installed previous package version'}
    $oldProcesses=@(Get-Process ottrin,ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-and$_.Path.StartsWith($before.InstallLocation,[StringComparison]::OrdinalIgnoreCase)})
-   if(@($oldProcesses|Where-Object {$_.ProcessName-eq'ottrin-indexd'}).Count-ne1){throw 'Upgrade requires the actual previous daemon running'}
+   $expectedDaemonCount=if($owner.package.startup_enabled){1}else{0}
+   if(@($oldProcesses|Where-Object {$_.ProcessName-eq'ottrin-indexd'}).Count-ne$expectedDaemonCount){throw 'Pre-update daemon state does not match the declared startup choice'}
    Save 'BEFORE_UPDATE' $result
    Add-AppxPackage -Path (Join-Path $Root 'Ottrin.msix') -AllowUnsigned -ForceApplicationShutdown
    $package=Get-AppxPackage -Name 'Ottrin.Development'
    if([string]$package.Version-ne$owner.package.version-or$package.PackageFamilyName-ne$before.PackageFamilyName-or$package.PackageFullName-eq$before.PackageFullName){throw 'Actual same-identity version update failed'}
    $remaining=@(Get-Process ottrin,ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-and$_.Path.StartsWith($before.InstallLocation,[StringComparison]::OrdinalIgnoreCase)})
    if($remaining.Count){throw 'Old package processes survived Windows update shutdown'}
-   $result.update=@{before=$before.PackageFullName;after=$package.PackageFullName;family=$package.PackageFamilyName;old_processes_removed=$true;old_pids=@($oldProcesses|ForEach-Object {$_.Id})}
+   $result.update=@{before=$before.PackageFullName;after=$package.PackageFullName;family=$package.PackageFamilyName;old_processes_removed=$true;startup_enabled=$owner.package.startup_enabled;previous_daemon_count=$expectedDaemonCount;old_pids=@($oldProcesses|ForEach-Object {$_.Id})}
    Save 'UPDATE' $result
    Start-ScheduledTask -TaskName $owner.updated_task;$deadline=[DateTime]::UtcNow.AddMinutes(5)
    do{
@@ -234,6 +241,7 @@ if($Mode-eq'Login'){
   $result.boot_ticks=(Get-CimInstance Win32_OperatingSystem).LastBootUpTime.ToUniversalTime().Ticks
   if($pending.status-ne'awaiting actual login'-or$result.boot_ticks-eq$pending.before_login_boot_ticks){throw 'Login observer requires the next real boot'}
   $package=Get-AppxPackage -Name 'Ottrin.Development';$exe=Join-Path $package.InstallLocation 'bin\ottrin.exe';$daemonExe=Join-Path $package.InstallLocation 'bin\ottrin-indexd.exe'
+  if($owner.package.startup_enabled){
   $deadline=[DateTime]::UtcNow.AddMinutes(3)
   do{
    $daemons=@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe})
@@ -246,12 +254,22 @@ if($Mode-eq'Login'){
   $buffer=[Text.StringBuilder]::new([int]$length)
   if([PackageIdentityQA]::GetPackageFullName($daemon.Handle,[ref]$length,$buffer)-ne0-or$buffer.ToString()-ne$package.PackageFullName){throw 'Login daemon package identity mismatch'}
   $result.observed_before_any_ottrin_cli=@{pid=$daemon.Id;package=$buffer.ToString();administrator=$false;session=$daemon.SessionId}
+  }else{
+   $started=[DateTime]::UtcNow;$deadline=$started.AddMinutes(3)
+   do{
+    if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count){throw 'Disabled startup launched a package daemon at login'}
+    Start-Sleep -Milliseconds 250
+   }while([DateTime]::UtcNow-lt$deadline)
+   $result.observed_before_any_ottrin_cli=@{daemon_count=0;observation_seconds=([DateTime]::UtcNow-$started).TotalSeconds;startup_enabled=$false}
+  }
   $config=Join-Path $env:APPDATA 'ottrin\config.json';$result.preferences_preserved=(Get-FileHash $config).Hash-eq$pending.actor.preferences_before_removal
   if(-not$result.preferences_preserved){throw 'Preferences changed across login'}
-  $process=Invoke-OwnCLI @('index','service-status') 'login-service-status.stdout' 'login-service-status.stderr'
-  if($process.ExitCode-ne0-or(Get-Content (Join-Path $Root 'results\login-service-status.stdout') -Raw)-notmatch'Enabled at login'){throw 'Login startup setting not preserved'}
-  $diagnostics=Wait-OwnIndexReady 'login-'
-  $result.index_ready=$diagnostics.status;$result.store=Get-OwnStore
+  Assert-OwnStartup 'login-'
+  if($owner.package.startup_enabled){$diagnostics=Wait-OwnIndexReady 'login-';$result.index_ready=$diagnostics.status}else{
+   if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count){throw 'Passive startup inspection started a disabled daemon'}
+   $result.index_state='stopped as configured'
+  }
+  $result.store=Get-OwnStore
   if($result.store.identity-ne$pending.actor.store.identity-or$result.store.path-ne$pending.actor.store.path){throw 'Login replaced or relocated the saved index database'}
   $result.status='pass'
  }catch{$result.status='failed actual login';$result.error=$_.Exception.Message;$result.stack=$_.ScriptStackTrace}
@@ -259,7 +277,7 @@ if($Mode-eq'Login'){
  exit $(if($result.status-eq'pass'){0}else{1})
 }
 if($Mode-eq'Updated'){
- $result=@{status='running';administrator=$admin;cli_exits=@{};scope='Actual ordinary post-update GUI, unchanged startup/configuration and live new daemon after main window closes'};Save 'UPDATED' $result
+ $result=@{status='running';administrator=$admin;cli_exits=@{};scope='Actual ordinary post-update GUI, unchanged startup/configuration and declared startup choice after main window closes'};Save 'UPDATED' $result
  try{
   if($admin){throw 'Post-update observer must have an ordinary token'}
   $before=Read-State (Join-Path $Root 'results\BEFORE_UPDATE.json')
@@ -267,15 +285,29 @@ if($Mode-eq'Updated'){
   if($result.preferences_before_removal-ne$before.actor.preferences_before_removal){throw 'Preferences changed during package update'}
   $package=Get-AppxPackage -Name 'Ottrin.Development';$exe=Join-Path $package.InstallLocation 'bin\ottrin.exe'
   if([string]$package.Version-ne$owner.package.version){throw 'Wrong updated package version'}
-  $process=Invoke-OwnCLI @('index','service-status') 'updated-service-status.stdout' 'updated-service-status.stderr'
-  if($process.ExitCode-ne0-or(Get-Content (Join-Path $Root 'results\updated-service-status.stdout') -Raw)-notmatch'Enabled at login'){throw 'Update lost the startup setting; no repair attempted'}
+  Assert-OwnStartup 'updated-'
   $result.store=Get-OwnStore
   if($result.store.identity-ne$before.actor.store.identity-or$result.store.path-ne$before.actor.store.path){throw 'Update replaced or relocated the saved index database'}
   Exercise-MainWindow
   if($result.gui_focus_and_capture-ne'pass'-or-not$result.ContainsKey('normal_close_exit')-or$result.normal_close_exit-ne0){throw 'Updated GUI focus or normal close failed'}
   $daemonExe=Join-Path $package.InstallLocation 'bin\ottrin-indexd.exe'
-  if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count-ne1){throw 'New background daemon did not survive normal main-window close'}
-  $diagnostics=Wait-OwnIndexReady 'updated-';$result.index_ready=$diagnostics.status
+  $sessionDaemons=@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe})
+  if($owner.package.startup_enabled){
+   if($sessionDaemons.Count-ne1){throw 'New background daemon did not survive normal main-window close'}
+   $diagnostics=Wait-OwnIndexReady 'updated-';$result.index_ready=$diagnostics.status
+  }else{
+   $result.session_daemons_after_gui_close=$sessionDaemons.Count
+   if($sessionDaemons.Count-gt1){throw 'Multiple session daemons after normal close'}
+   if($sessionDaemons.Count-eq1){$diagnostics=Wait-OwnIndexReady 'updated-session-';$result.index_ready=$diagnostics.status}else{
+    $process=Invoke-OwnCLI @('index','status','--json') 'updated-cached-index.json' 'updated-cached-index.stderr'
+    if($process.ExitCode-ne0){throw 'Read-only saved-index inspection failed'}
+    $diagnostics=Read-State (Join-Path $Root 'results\updated-cached-index.json')
+    if($diagnostics.indexed_items-ne1){throw 'Disabled update lost the saved one-file index'}
+    if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count){throw 'Saved-index inspection started a disabled session daemon'}
+    $result.cached_index_items=$diagnostics.indexed_items
+   }
+  }
+  Assert-OwnStartup 'updated-after-gui-'
   if((Get-FileHash $config).Hash-ne$result.preferences_before_removal){throw 'Post-update GUI altered saved preferences'}
   $result.status='pass'
  }catch{$result.status='failed post-update runtime';$result.error=$_.Exception.Message;$result.stack=$_.ScriptStackTrace}
@@ -318,6 +350,12 @@ try {
  if($process.ExitCode-ne0){throw 'Package startup could not be enabled again'}
  $diagnostics=Wait-OwnIndexReady 'reenabled-'
  $result.store=Get-OwnStore
+ if(-not$owner.package.startup_enabled){
+  $process=Invoke-OwnCLI @('index','service-remove') 'chosen-disable.stdout' 'chosen-disable.stderr'
+  if($process.ExitCode-ne0){throw 'Unable to choose disabled startup before update'}
+  Assert-OwnStartup 'chosen-disabled-'
+  if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count){throw 'Chosen disabled startup did not stop its existing daemon'}
+ }
  $result.disable_reenable='pass';$result.preferences_before_removal=(Get-FileHash $config).Hash
  $result.status=if($result.gui_focus_and_capture-eq'pass'-and$result.ContainsKey('normal_close_exit')-and$result.normal_close_exit-eq0){'pass'}else{'partial runtime; GUI focus or close gate failed'}
 }catch{$result.status='failed ordinary runtime';$result.error=$_.Exception.Message;$result.stack=$_.ScriptStackTrace}

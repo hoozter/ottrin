@@ -1,0 +1,39 @@
+{
+  "conclusion": "",
+  "headSha": "05c1325f8728594004bcc4f5f1d31bcd743ba900",
+  "jobs": [
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41429811338/job/125225337363",
+      "active_steps": []
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41429811338/job/125225337789",
+      "active_steps": []
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41429811338/job/125225338267",
+      "active_steps": []
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "in_progress",
+      "conclusion": "",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41429811338/job/125225338323",
+      "active_steps": [
+        "Cargo test"
+      ]
+    }
+  ],
+  "status": "in_progress",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/41429811338",
+  "observed_at": "2026-11-02T10:52:33.641524+00:00"
+}
