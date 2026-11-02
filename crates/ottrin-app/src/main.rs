@@ -946,6 +946,32 @@ fn show_windows_startup_failure_dialog(message: &str) {
 }
 
 fn handle_cli_action(args: &[OsString]) -> bool {
+    #[cfg(target_os = "linux")]
+    if args
+        .first()
+        .is_some_and(|arg| arg == "--native-package-desktop")
+    {
+        let result = match args.get(1).and_then(|arg| arg.to_str()) {
+            Some("check-online") if args.len() == 2 => {
+                ottrin_platform::native_desktop::maintain(true, true)
+            }
+            Some("check-offline") if args.len() == 2 => {
+                ottrin_platform::native_desktop::maintain(true, false)
+            }
+            Some("remove-online") if args.len() == 2 => {
+                ottrin_platform::native_desktop::maintain(false, true)
+            }
+            Some("remove-offline") if args.len() == 2 => {
+                ottrin_platform::native_desktop::maintain(false, false)
+            }
+            _ => Err("Invalid native desktop maintenance operation".into()),
+        };
+        if let Err(error) = result {
+            eprintln!("ottrin: {error}");
+            std::process::exit(1);
+        }
+        return true;
+    }
     if let Some(action) = cli_headless_action(args) {
         if let Err(error) = run_headless_action(action) {
             eprintln!("ottrin: {error}");

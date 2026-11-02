@@ -1,6 +1,8 @@
 #[cfg(target_os = "linux")]
 mod file_uri;
 #[cfg(target_os = "linux")]
+pub mod native_desktop;
+#[cfg(target_os = "linux")]
 pub use file_uri::{local_file_uri, local_path_from_uri};
 #[cfg(target_os = "linux")]
 pub mod folder_integration;

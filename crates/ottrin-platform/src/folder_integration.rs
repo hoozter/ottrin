@@ -302,6 +302,49 @@ pub fn disable() -> Result<String, String> {
     stop_owned_file_manager()?;
     Ok(message)
 }
+/// Package removal only owns registrations whose recorded activation command
+/// points to the native installation. Portable choices are deliberately untouched.
+pub(crate) fn native_package_owned(check_only: bool, online: bool) -> Result<(), String> {
+    let d = Directories::current()?;
+    native_package_at(&d, Path::new("/usr/bin/ottrin"), check_only, online)
+}
+fn native_package_at(
+    d: &Directories,
+    native: &Path,
+    check_only: bool,
+    online: bool,
+) -> Result<(), String> {
+    let Some(record) = registration(d)? else {
+        return Ok(());
+    };
+    let activation = d
+        .data
+        .join(format!("dbus-1/services/{FILE_MANAGER_BUS}.service"));
+    let expected = format!(
+        "[D-BUS Service]\nName={FILE_MANAGER_BUS}\nExec={} file-manager\n",
+        storage::dbus_executable(native)?
+    );
+    if !record
+        .files
+        .iter()
+        .any(|file| file.path == activation && file.sha256 == digest(expected.as_bytes()))
+    {
+        return Ok(());
+    }
+    check_files(&record)?;
+    let current = storage::read_text(&record.config)?.unwrap_or_default();
+    preferences::value(&current, GROUP, MIME)?;
+    if !check_only {
+        // Stop only the native peer; an independent portable instance may own
+        // FileManager1 even while the native registration is installed.
+        if online {
+            super::native_desktop::stop_native_file_manager()?;
+        }
+        disable_at(d)?;
+    }
+    Ok(())
+}
+
 fn disable_at(d: &Directories) -> Result<String, String> {
     let Some(record) = registration(d)? else {
         return Ok("Ottrin folder integration is already off".into());
@@ -391,6 +434,34 @@ mod tests {
         fs::write(&path, b"#!/bin/sh\nexit 0\n").unwrap();
         fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
         path
+    }
+    #[test]
+    fn native_removal_restores_its_handler_and_preserves_portable_registration() {
+        let root = tempfile::tempdir().unwrap();
+        let d = directories(root.path());
+        let native = fixture_executable(&d, "native");
+        let portable = fixture_executable(&d, "portable");
+        let config = d.config.join("mimeapps.list");
+        let original = b"[Default Applications]\ninode/directory=files.desktop;\n";
+        storage::atomic_write(&config, original).unwrap();
+        enable_at(&d, &portable).unwrap();
+        let before = fs::read(receipt(&d)).unwrap();
+        native_package_at(&d, &native, false, false).unwrap();
+        assert_eq!(fs::read(receipt(&d)).unwrap(), before);
+        enable_at(&d, &native).unwrap();
+        let installed = fs::read(&config).unwrap();
+        native_package_at(&d, &native, true, false).unwrap();
+        assert_eq!(fs::read(&config).unwrap(), installed);
+        let record = registration(&d).unwrap().unwrap();
+        storage::atomic_write(&record.files[0].path, b"user edit").unwrap();
+        assert!(native_package_at(&d, &native, false, false).is_err());
+        assert_eq!(fs::read(&config).unwrap(), installed);
+        // Restore the exact owned asset before the successful removal.
+        fs::remove_file(&record.files[0].path).unwrap();
+        native_package_at(&d, &native, false, false).unwrap();
+        assert_eq!(fs::read(&config).unwrap(), original);
+        assert!(!receipt(&d).exists());
+        assert!(record.files.iter().all(|file| !file.path.exists()));
     }
     #[test]
     fn reveal_activation_never_replaces_an_unowned_provider_even_during_repair() {

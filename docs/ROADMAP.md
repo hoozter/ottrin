@@ -39,6 +39,15 @@ removed; compact receipts and useful current build caches remain. The personal
 configured daemon is intentionally running. Evidence:
 `.hermes/evidence/desktop-package-current/`.
 
+Native optional-desktop cleanup source is now being verified in
+`.hermes/evidence/native-desktop-removal-current/`: focused integration tests and
+real private-bus/mount ownership cases pass. It restores native-owned folder and
+picker choices without app-data cleanup and preserves portable registrations.
+Exact DPKG/RPM online/offline removal and reinstall remain pending, including
+continued availability of the shared system portal definition for a portable
+picker after native package removal. Stable packages above are unchanged by this
+in-progress source work.
+
 The independent queue is:
 1. Native DEB/RPM removal/reinstall with optional folder/picker integration:
    verify native-owned active/offline registrations and retain independent

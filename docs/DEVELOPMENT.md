@@ -1511,6 +1511,24 @@ complete resource/concurrency/workflow acceptance, or enable public Windows Copy
 
 DEB/RPM use `packaging/linux/native-package-lifecycle.sh` for native service cleanup and post-install refresh. User files are changed only after switching to that UID with a sanitized environment; effective executable ownership keeps independent portable/AppImage services intact. Removal performs ownership preflight before mutation, refuses unresolved offline overrides, and retains preferences, indexes and source files. Reinstall uses try-restart so stopped registrations remain stopped.
 
+Optional desktop registration is removed through the internal
+`ottrin --native-package-desktop check-online|check-offline|remove-online|remove-offline`
+operation before payload deletion. It uses the same folder/picker restoration code
+as Settings, matches the recorded native activation command, preserves portable
+registrations, and refuses modified assets or unresolved picker unit overrides.
+Offline removal restores the preference without starting a user manager or
+frontend. Online removal requires idle portal sessions; FileManager1 shutdown
+uses the captured unique bus owner and verifies its user, native executable and
+installed entry across mount namespaces. It does not run application data cleanup.
+
+The real namespace regression is
+`packaging/tests/verify-linux-native-desktop-ownership.py --binary target/debug/ottrin-app --output /tmp/ottrin-desktop-ownership.json`.
+It covers native, deleted-native, independent same-path/mount, offline, portable
+and modified-registration cases on a private bus. Native package-manager tests
+must additionally verify running/stopped reinstall, online/offline picker state,
+and the shared system portal definition when a portable picker remains selected;
+a passing namespace test alone does not accept DPKG/RPM removal.
+
 The package's internal `ottrin-indexd --native-package-stop` operation also drains native session daemons without an installed unit. It authenticates a Unix peer, validates the executable path (including a deleted native image), and compares the installed executable entry through both the caller’s filesystem and `/proc/PEER/root`. Different private mount views cannot establish ownership from matching path text alone. It keeps the connection used for validation, requests graceful upgrade preparation, and waits on the captured process fd. It does not create a daemon or load a user profile. Independent portable executables at the same user's endpoint are left alone.
 
 Native acceptance must exercise direct package-manager removal, not only application service removal followed by uninstall. Cover active/offline users, an independent portable service/session, protected Administrator state, cleanup failure before file deletion, preserved data and running/stopped reinstall behavior. Canonical offline configuration is currently supported; custom offline configuration roots and nonstandard runtime endpoints remain separate audit items. Native Fedora and Ubuntu fixtures are under `.hermes/evidence/native-lifecycle-current/` and `.hermes/evidence/deb-lifecycle-current/`; current artifact scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Matching installed entries across private mount namespaces, foreign copied entries at the same apparent path, and deleted native executables have a real unprivileged namespace regression:

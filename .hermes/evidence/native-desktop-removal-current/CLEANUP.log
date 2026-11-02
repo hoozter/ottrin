@@ -1,0 +1,9 @@
+inspect 0 Obsolete/unpublished sessions identified: 19
+
+apply 1 Obsolete/unpublished sessions identified: 19
+
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/native-desktop-removal-current/cleanup.py", line 13, in <module>
+    assert p.returncode==0,'Inspect guard refusal before any retry; retain all safeguards'
+           ^^^^^^^^^^^^^^^
+AssertionError: Inspect guard refusal before any retry; retain all safeguards

@@ -120,6 +120,11 @@ case "${1-}" in
         # Inspect after runuser's PAM session setup: it may itself start a
         # manager that was offline when the package transaction began.
         manager=$(user_manager_mode)
+        case "$1" in
+            user-check|user-remove)
+                /usr/bin/ottrin --native-package-desktop "${1#user-}-$manager"
+                ;;
+        esac
         if [ "$1" = user-remove ]; then
             /usr/bin/ottrin-indexd --native-package-stop
         fi

@@ -1,0 +1,53 @@
+{
+  "status": "source and private-namespace checks pass; exact native package lifecycle pending",
+  "parent": "6bc897bf",
+  "checks": {
+    "integration_tests": 17,
+    "strict_platform_app_all_target_clippy": "pass",
+    "real_private_namespace_cases": [
+      {
+        "case": "native",
+        "status": "pass",
+        "owned_processes_reaped": true,
+        "profile_and_mount_sources_removed": true
+      },
+      {
+        "case": "foreign-mount",
+        "status": "pass",
+        "owned_processes_reaped": true,
+        "profile_and_mount_sources_removed": true
+      },
+      {
+        "case": "native-deleted",
+        "status": "pass",
+        "owned_processes_reaped": true,
+        "profile_and_mount_sources_removed": true
+      },
+      {
+        "case": "offline",
+        "status": "pass",
+        "owned_processes_reaped": true,
+        "profile_and_mount_sources_removed": true
+      },
+      {
+        "case": "portable",
+        "status": "pass",
+        "owned_processes_reaped": true,
+        "profile_and_mount_sources_removed": true
+      },
+      {
+        "case": "modified",
+        "status": "pass",
+        "modified_state_refused": true,
+        "owned_processes_reaped": true,
+        "profile_and_mount_sources_removed": true
+      }
+    ]
+  },
+  "binary_sha256": "ca765af4c6208aad8c6fc3515cf149ed9a70f6da9cbb6625181db9fef6e6f79d",
+  "remaining": [
+    "Exact native RPM/DEB online/offline picker removal and reinstall",
+    "Shared portal definition lifetime when portable integration remains selected"
+  ],
+  "cleanup": "All six namespace cases reap owned children and remove profiles/mount sources. Initial incremental apply refused transient process gap4187300; confirmed absent and unchanged guard retry passed, removing11 sessions/0.46GiB. Shared caches and existing unrelated Python bytecode retained. No VM or package staging allocated yet."
+}

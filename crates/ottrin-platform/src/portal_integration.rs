@@ -336,6 +336,113 @@ pub fn remove_for_uninstall() -> Result<Vec<String>, String> {
     Ok(messages)
 }
 
+pub(crate) fn native_package_owned(check_only: bool, online: bool) -> Result<(), String> {
+    native_package_at(&Paths::current()?, check_only, online, systemctl)
+}
+fn native_package_at(
+    paths: &Paths,
+    check_only: bool,
+    online: bool,
+    mut control: impl FnMut(&[&str]) -> Result<(), String>,
+) -> Result<(), String> {
+    let Some(record) = registration(paths)? else {
+        return Ok(());
+    };
+    let activation = paths.data.join(format!("dbus-1/services/{BUS}.service"));
+    let expected = format!(
+        "[D-BUS Service]\nName={BUS}\nExec=\"/usr/bin/ottrin\" portal\nSystemdService={UNIT}\n"
+    );
+    if !record
+        .files
+        .iter()
+        .any(|(path, data)| *path == activation && *data == expected)
+    {
+        return Ok(());
+    }
+    for (path, expected) in &record.files {
+        if let Some(data) = read_regular(path)?
+            && data != *expected
+        {
+            return Err(format!(
+                "Modified activation file retained: {}",
+                path.display()
+            ));
+        }
+    }
+    // Overrides can redirect the generated unit to a portable process. Refuse
+    // ambiguous ownership instead of stopping it during native package removal.
+    for base in [
+        paths.config.join("systemd/user"),
+        paths.data.join("systemd/user"),
+        PathBuf::from("/etc/systemd/user"),
+        PathBuf::from("/usr/lib/systemd/user"),
+    ] {
+        let overrides = base.join(format!("{UNIT}.d"));
+        match fs::read_dir(&overrides) {
+            Ok(entries) => {
+                for entry in entries {
+                    let path = entry.map_err(|e| e.to_string())?.path();
+                    if path
+                        .extension()
+                        .is_some_and(|extension| extension == "conf")
+                    {
+                        return Err(format!(
+                            "Cannot resolve native picker override: {}",
+                            path.display()
+                        ));
+                    }
+                }
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.to_string()),
+        }
+    }
+    let current = read_regular(&record.config)?.unwrap_or_default();
+    integration_preferences::value(&current, "preferred", CHOOSER)?;
+    if online {
+        let effective = Command::new("systemctl")
+            .args([
+                "--user",
+                "--no-ask-password",
+                "--no-pager",
+                "show",
+                UNIT,
+                "--property=ExecStart",
+                "--value",
+            ])
+            .output()
+            .map_err(|e| e.to_string())?;
+        if !effective.status.success() {
+            return Err(String::from_utf8_lossy(&effective.stderr).trim().into());
+        }
+        let effective = String::from_utf8(effective.stdout).map_err(|e| e.to_string())?;
+        let effective = effective.trim();
+        if !effective.is_empty()
+            && (!effective.starts_with("{ path=/usr/bin/ottrin ; argv[]=/usr/bin/ottrin portal ; ")
+                || effective.lines().count() != 1)
+        {
+            return Err(
+                "The effective picker unit is not owned by the native package; retained unchanged"
+                    .into(),
+            );
+        }
+        super::native_desktop::check_native_portal()?;
+        ensure_idle()?;
+    }
+    if !check_only {
+        if record.enabled {
+            disable_at(paths, |args| if online { control(args) } else { Ok(()) })?;
+        }
+        if online {
+            control(&["restart", "xdg-desktop-portal.service"])?;
+        }
+        // With no user manager there is no frontend to reload. The restored
+        // preference will be read at login; no pending activation remains.
+        fs::remove_file(&paths.state).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 pub fn disable() -> Result<String, String> {
     normal_user()?;
     let paths = Paths::current()?;
@@ -511,6 +618,36 @@ mod tests {
             data: root.join("data"),
             state: root.join("state/registration.json"),
         }
+    }
+    #[test]
+    fn native_removal_restores_offline_picker_and_preserves_portable_choice() {
+        let root = tempfile::tempdir().unwrap();
+        let paths = fixture(root.path());
+        enable_at(&paths, Path::new("/opt/ottrin.AppImage"), |_| Ok(())).unwrap();
+        let before = fs::read(&paths.state).unwrap();
+        native_package_at(&paths, false, false, |_| panic!("offline control")).unwrap();
+        assert_eq!(fs::read(&paths.state).unwrap(), before);
+        enable_at(&paths, Path::new("/usr/bin/ottrin"), |_| Ok(())).unwrap();
+        let record = registration(&paths).unwrap().unwrap();
+        let installed = fs::read(&record.config).unwrap();
+        native_package_at(&paths, true, false, |_| panic!("offline control")).unwrap();
+        assert_eq!(fs::read(&record.config).unwrap(), installed);
+        let override_path = paths
+            .config
+            .join(format!("systemd/user/{UNIT}.d/override.conf"));
+        write(&override_path, b"[Service]\nExecStart=/opt/other\n").unwrap();
+        assert!(native_package_at(&paths, false, false, |_| panic!("offline control")).is_err());
+        assert_eq!(fs::read(&record.config).unwrap(), installed);
+        fs::remove_file(override_path).unwrap();
+        native_package_at(&paths, false, false, |_| panic!("offline control")).unwrap();
+        assert!(!paths.state.exists());
+        assert!(!record.config.exists());
+        assert!(record.files.iter().all(|(path, _)| !path.exists()));
+        // Disabled-but-not-applied native registrations also finish offline.
+        enable_at(&paths, Path::new("/usr/bin/ottrin"), |_| Ok(())).unwrap();
+        disable_at(&paths, |_| Ok(())).unwrap();
+        native_package_at(&paths, false, false, |_| panic!("offline control")).unwrap();
+        assert!(!paths.state.exists());
     }
     #[test]
     fn enable_disable_preserves_other_providers_and_unrelated_user_changes() {
