@@ -1,0 +1,18 @@
+{
+  "status": "failed native integration or observer gate",
+  "scope": "Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance",
+  "binary_sha256": "ab32bbe90cb2bf1dfdb93fd99a8b059f8f660db6e333df36881dd29eff94c046",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 586481,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 586484,
+  "error": "DBusException(\"Unknown method 'GetRoleName'\")"
+}

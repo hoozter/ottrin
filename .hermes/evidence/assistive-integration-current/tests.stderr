@@ -1,0 +1,9 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `test` profile [optimized + debuginfo] target(s) in 32.73s
+     Running unittests src/main.rs (target/debug/deps/ottrin_app-f782c95013d7b443)
+     Running unittests src/bin/ottrin-indexd.rs (target/debug/deps/ottrin_indexd-6b61eb1d64dde180)
+     Running tests/persisted_search_cli.rs (target/debug/deps/persisted_search_cli-e70a1f794d02c475)
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-02a622793291427c)
+   Doc-tests ottrin_ui

@@ -1,0 +1,7 @@
+    Checking ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 14.69s

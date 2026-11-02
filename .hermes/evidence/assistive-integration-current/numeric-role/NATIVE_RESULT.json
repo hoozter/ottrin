@@ -1,0 +1,49 @@
+{
+  "status": "pass bounded activation/tree/bus-loss/cancel",
+  "scope": "Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance",
+  "binary_sha256": "ab32bbe90cb2bf1dfdb93fd99a8b059f8f660db6e333df36881dd29eff94c046",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 586685,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 586688,
+  "tree_nodes": 29,
+  "visible_names": [
+    "ottrin-app",
+    "Accessibility proof",
+    "\ue5d8",
+    "\ue1db /",
+    "\ue2c7 var",
+    "\ue2c7 tmp",
+    "\ue2c7 .ottrin-picker-qa-hmtjn2us",
+    "\ue2c7 fixture",
+    "\ue3c9",
+    "1 item",
+    "\ue8f4",
+    "\ue8f5",
+    "\ue5c3",
+    "\ue8ef",
+    "Places",
+    "Home",
+    "Root",
+    "Desktop",
+    "Downloads",
+    "Documents",
+    "proof.txt",
+    "File name",
+    "Open",
+    "Cancel"
+  ],
+  "cancel_control_exposed": true,
+  "visible_file_exposed": true,
+  "after_bus_loss_exit": null,
+  "normal_cancel_exit": 0,
+  "source_bytes_preserved": true
+}

@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-975drw4x",
+  "owned_processes_reaped": [
+    {
+      "pid": 586413,
+      "exit": 0
+    },
+    {
+      "pid": 586416,
+      "exit": 0
+    },
+    {
+      "pid": 586417,
+      "exit": 15
+    },
+    {
+      "pid": 586484,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "org.freedesktop.DBus.Error.UnknownMethod: Unknown method 'GetRoleName'",
+  "profile_removed": true
+}

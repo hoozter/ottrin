@@ -1,0 +1,36 @@
+{
+  "status": "pass bounded native Linux AccessKit source restoration; delivery and Windows acceptance pending",
+  "source_parent": "870195da37223d3ac948d06e1a1a2b0a395cdf50",
+  "feature": "workspace eframe/accesskit enabled; previous blanket disabled setting removed",
+  "native_binary_sha256": "ab32bbe90cb2bf1dfdb93fd99a8b059f8f660db6e333df36881dd29eff94c046",
+  "production_locked_build_same_bytes": true,
+  "native_versions": {
+    "accesskit": "0.21.1",
+    "accesskit_atspi_common": "0.14.2",
+    "accesskit_consumer": "0.31.0",
+    "accesskit_macos": "0.22.2",
+    "accesskit_unix": "0.17.2",
+    "accesskit_windows": "0.29.2",
+    "accesskit_winit": "0.29.2"
+  },
+  "native_cases": {
+    "numeric-role": "Enabled private AT-SPI registration;29 nodes, visible proof.txt/Open/Cancel; private accessibility bus termination; Escape exits0; source unchanged",
+    "main-client-close": "Enabled private AT-SPI registration;60 nodes, visible proof.txt; private session bus termination; actual client Close exits0; source unchanged"
+  },
+  "rejected_observers": {
+    "observer-role-name": "GetRoleName unsupported; retained native numeric roles are used in corrected observer",
+    "main-session-bus": "WM Alt+F4 did not close after private session bus loss; this does not prove application close failure. Corrected actual client Close passes."
+  },
+  "checks": {
+    "linux_app_check": "pass offline dependency resolution then normal locked production build",
+    "linux_app_ui_tests": "49 app,2 indexd,3 persisted CLI,461 UI and3 scoped subprocess controls pass;1 existing UI ignored fixture",
+    "strict_linux_clippy_app_ui_all_targets": "pass -D warnings"
+  },
+  "remaining": [
+    "Windows native UI Automation tree/lifecycle and source CI",
+    "Meaningful names for remaining icon-only controls; glyph names observed and not accepted as complete accessibility",
+    "Themed Settings/Inspector assistive interaction and screen-reader usability scope",
+    "Exact rebuilt Linux/Windows delivery and final release gates"
+  ],
+  "scope_limit": "No packaged, physical display, real screen-reader usability, Windows runtime or global accessibility completion claim"
+}

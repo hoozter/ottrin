@@ -150,16 +150,39 @@ is removed through libvirt after domain, snapshot and backing-reference checks;
 all protected environments and current deliverables remain. Exact retained
 paths and compact evidence are in that case's `CLEANUP.json`.
 
+The bounded Linux assistive recheck now passes with AccessKit enabled in the
+existing debug configuration. Native private AT-SPI registration exposes the
+chooser file/Open/Cancel controls and main file row (29/60 nodes). The chooser
+survives accessibility-bus loss and cancels normally; the main window survives
+private session-bus loss and its actual client Close exits0, with source bytes
+preserved. `GetRoleName` and WM Alt+F4 observers are explicitly rejected; numeric
+roles/native names and client Close provide the corrected observations. The
+locked production debug build has identical bytes to this tested candidate.
+The obsolete blanket AccessKit disable is removed in source. Linux check,
+49 app/2 daemon/3 persisted-CLI/461 UI tests and strict app/UI all-target lint
+pass (one existing UI ignored fixture). Current delivered packages remain at
+their earlier sources. Windows native UI Automation, remaining glyph-only
+button names, Settings/Inspector interaction and exact refreshed delivery remain
+required; this is not full accessibility or screen-reader usability acceptance.
+Evidence is `assistive-integration-current/ACCEPTANCE.json`. All four owned
+desktop profiles, processes, displays and buses are removed. Seven obsolete
+incremental sessions and ten superseded standalone binaries with exact dep-info/
+fingerprints are pruned after compiler/profile/consumer/link checks; current
+executables, dependency libraries and useful caches remain. Exact retained
+paths and pending consumers are in that checkpoint's `CLEANUP.json`.
+
 Continue in this order:
 
 1. Audit the remaining software/platform/theme/resource and supported integration
    requirements against their actual source, package and native evidence. Finish
    dependency-ready outcomes whose evidence is missing, weak or contradictory;
    do not repeat the fulfilled current Windows/Linux package workflows without
-   changed inputs or a reproduced defect. The bounded native assistive-integration
-   recheck remains unperformed and is independently available. Check remaining
-   Windows caller/folder/helper/Office/media/resource scopes against the explicit
-   requirements before parking only genuinely owner/device/external acceptance.
+   changed inputs or a reproduced defect. Finish the restored AccessKit source
+   gate: inspect hosted Linux/Windows CI, verify native Windows UI Automation,
+   repair glyph-only control names and check Settings/Inspector interaction, then
+   rebuild and deliver the exact accepted cohort. Check remaining Windows
+   caller/folder/helper/Office/media/resource scopes against explicit requirements
+   before parking only genuinely owner/device/external acceptance.
    The named application-level26100/.9711 MSI comparison is now complete and
    reproduces the26300/.9444 failure. Both actual observations are retained; the
    prepared22.65GiB base is retired after its final consumer and reference checks.

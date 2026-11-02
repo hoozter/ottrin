@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-flxhmw9j",
+  "owned_processes_reaped": [
+    {
+      "pid": 586878,
+      "exit": 0
+    },
+    {
+      "pid": 586881,
+      "exit": 0
+    },
+    {
+      "pid": 586882,
+      "exit": 15
+    },
+    {
+      "pid": 586956,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      587011
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Command '['/home/campbell/Projects/Ottrin/target/debug/ottrin-app', '/var/tmp/.ottrin-picker-qa-flxhmw9j/fixture', '--renderer', 'opengl']' timed out after 15 seconds",
+  "profile_removed": true
+}

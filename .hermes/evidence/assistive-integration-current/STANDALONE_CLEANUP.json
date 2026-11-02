@@ -1,0 +1,128 @@
+{
+  "status": "verified superseded standalone binaries, exact dep-info/fingerprints removed",
+  "items": [
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ce54c356b815fc3f",
+      "bytes": 727168480,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-f782c95013d7b443",
+      "replacement_sha256": "5cc9ec1dc0a51c889aefe79c8472bc09b2b5ca4e1c73580c112d79b7b0ef50fb",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ce54c356b815fc3f",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-ce54c356b815fc3f.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-ce54c356b815fc3f"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+      "bytes": 719105184,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6b61eb1d64dde180",
+      "replacement_sha256": "4153d3416f618d375b9a16d51d32d6f355822e6c97e1aa92e825db3810c81266",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-726b08c3a12ef8f9.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-726b08c3a12ef8f9"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-19a83d6c063bd045",
+      "bytes": 62056384,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e70a1f794d02c475",
+      "replacement_sha256": "6de3a14b9d5a4ae39b9e193c83ccd7507ced6093143f8527ef39cffa3ab4d797",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-19a83d6c063bd045",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-19a83d6c063bd045.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-19a83d6c063bd045"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-261bc193fcb66823",
+      "bytes": 58689280,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e70a1f794d02c475",
+      "replacement_sha256": "6de3a14b9d5a4ae39b9e193c83ccd7507ced6093143f8527ef39cffa3ab4d797",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-261bc193fcb66823",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-261bc193fcb66823.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-261bc193fcb66823"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e7ffcfd8684de8ee",
+      "bytes": 59247864,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e70a1f794d02c475",
+      "replacement_sha256": "6de3a14b9d5a4ae39b9e193c83ccd7507ced6093143f8527ef39cffa3ab4d797",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e7ffcfd8684de8ee",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e7ffcfd8684de8ee.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-e7ffcfd8684de8ee"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-161967a0fbce6782",
+      "bytes": 59247816,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e70a1f794d02c475",
+      "replacement_sha256": "6de3a14b9d5a4ae39b9e193c83ccd7507ced6093143f8527ef39cffa3ab4d797",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-161967a0fbce6782",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-161967a0fbce6782.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-161967a0fbce6782"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e7c738018806fe93",
+      "bytes": 59247832,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e70a1f794d02c475",
+      "replacement_sha256": "6de3a14b9d5a4ae39b9e193c83ccd7507ced6093143f8527ef39cffa3ab4d797",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e7c738018806fe93",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e7c738018806fe93.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-e7c738018806fe93"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-17302bda94deaca4",
+      "bytes": 60149808,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-e70a1f794d02c475",
+      "replacement_sha256": "6de3a14b9d5a4ae39b9e193c83ccd7507ced6093143f8527ef39cffa3ab4d797",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-17302bda94deaca4",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/persisted_search_cli-17302bda94deaca4.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-17302bda94deaca4"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+      "bytes": 772650088,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-02a622793291427c",
+      "replacement_sha256": "0884c0d0d3a5910b214ee78a2284a7749ebb5ffe5170982efb15224f4308d8f0",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-a4306a82b74e7d60.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-a4306a82b74e7d60"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-74dc989a31d50c41",
+      "bytes": 850104264,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+      "replacement_sha256": "ab32bbe90cb2bf1dfdb93fd99a8b059f8f660db6e333df36881dd29eff94c046",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-74dc989a31d50c41",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-74dc989a31d50c41.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-74dc989a31d50c41",
+        "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-integration-current/ottrin-app.before"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    }
+  ],
+  "recovered_binary_bytes": 3427667000,
+  "current_executables_and_shared_libraries_preserved": true
+}

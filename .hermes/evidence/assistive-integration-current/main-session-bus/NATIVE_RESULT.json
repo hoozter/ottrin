@@ -1,0 +1,61 @@
+{
+  "status": "failed native integration or observer gate",
+  "scope": "Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance",
+  "binary_sha256": "ab32bbe90cb2bf1dfdb93fd99a8b059f8f660db6e333df36881dd29eff94c046",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 586953,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 586956,
+  "tree_nodes": 60,
+  "visible_names": [
+    "ottrin-app",
+    "\ue897",
+    "\ue8b6",
+    "\ue8f5",
+    "\ueb8e",
+    "1 item",
+    "fixture",
+    "+",
+    "\ue5c4",
+    "\ue5c8",
+    "\ue5d8",
+    "Menu",
+    "Switch to Grid view",
+    "View Options",
+    "\ue1db /",
+    "\u203a",
+    "\ue2c7 var",
+    "\u203a",
+    "\ue2c7 tmp",
+    "\u203a",
+    "\ue2c7 .ottrin-picker-qa-flxhmw9j",
+    "\u203a",
+    "\ue2c7 fixture",
+    "Sort",
+    "A-Z",
+    "100%",
+    "\ue8ba",
+    "proof.txt",
+    "Expand locations rail",
+    "Home \u00b7 /var/tmp/.ottrin-picker-qa-flxhmw9j/home",
+    "Root \u00b7 /",
+    "\ue873",
+    "\ue168",
+    "Toggle Search",
+    "\ue889",
+    "\ue872"
+  ],
+  "cancel_control_exposed": false,
+  "visible_file_exposed": true,
+  "lost_bus": "private session",
+  "after_bus_loss_exit": null,
+  "error": "TimeoutExpired(['/home/campbell/Projects/Ottrin/target/debug/ottrin-app', '/var/tmp/.ottrin-picker-qa-flxhmw9j/fixture', '--renderer', 'opengl'], 15)"
+}

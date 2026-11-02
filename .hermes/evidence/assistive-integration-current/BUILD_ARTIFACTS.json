@@ -1,0 +1,62 @@
+[
+  {
+    "package_id": "registry+https://github.com/rust-lang/crates.io-index#accesskit@0.21.1",
+    "features": [],
+    "filenames": [
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit-c65d1c1751f16f48.rlib",
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit-c65d1c1751f16f48.rmeta"
+    ],
+    "executable": null
+  },
+  {
+    "package_id": "registry+https://github.com/rust-lang/crates.io-index#accesskit_consumer@0.31.0",
+    "features": [],
+    "filenames": [
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_consumer-9e4cfcad35b42dc8.rlib",
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_consumer-9e4cfcad35b42dc8.rmeta"
+    ],
+    "executable": null
+  },
+  {
+    "package_id": "registry+https://github.com/rust-lang/crates.io-index#accesskit_atspi_common@0.14.2",
+    "features": [],
+    "filenames": [
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_atspi_common-3b1adac6781d9571.rlib",
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_atspi_common-3b1adac6781d9571.rmeta"
+    ],
+    "executable": null
+  },
+  {
+    "package_id": "registry+https://github.com/rust-lang/crates.io-index#accesskit_winit@0.29.2",
+    "features": [
+      "accesskit_unix",
+      "async-io",
+      "default",
+      "rwh_06"
+    ],
+    "filenames": [
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_winit-822cfafbe211a81f.rlib",
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_winit-822cfafbe211a81f.rmeta"
+    ],
+    "executable": null
+  },
+  {
+    "package_id": "registry+https://github.com/rust-lang/crates.io-index#accesskit_unix@0.17.2",
+    "features": [
+      "async-io"
+    ],
+    "filenames": [
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_unix-5ef2aa13d84eefee.rlib",
+      "/home/campbell/Projects/Ottrin/target/debug/deps/libaccesskit_unix-5ef2aa13d84eefee.rmeta"
+    ],
+    "executable": null
+  },
+  {
+    "package_id": "path+file:///home/campbell/Projects/Ottrin/crates/ottrin-app#0.1.0",
+    "features": [],
+    "filenames": [
+      "/home/campbell/Projects/Ottrin/target/debug/ottrin-app"
+    ],
+    "executable": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app"
+  }
+]

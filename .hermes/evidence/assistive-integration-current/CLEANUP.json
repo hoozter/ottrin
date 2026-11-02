@@ -1,0 +1,47 @@
+{
+  "status": "completed owned GUI and obsolete standalone/incremental cleanup",
+  "native_fixture_profiles_removed": true,
+  "native_processes_buses_displays_closed": true,
+  "temporary_backup_executable_removed": true,
+  "standalone_cleanup": "STANDALONE_CLEANUP.json",
+  "incremental_cleanup": "INCREMENTAL_CANDIDATES.json and INCREMENTAL_RESULT.json",
+  "retired_compact_inputs": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-integration-current/BUILD_BASELINE.json",
+      "bytes": 7875838,
+      "sha256": "2144932c678c99af01adeba582664791e20afdf5bc14d1ce9640882a5bb1d02b"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-integration-current/Cargo.lock.before",
+      "bytes": 159912,
+      "sha256": "021aca361ebc21ff290bd5d5c7661513216f0d088f746a55d569b2d9b80ec13c"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-integration-current/build.jsonl",
+      "bytes": 448399,
+      "sha256": "29d3fc20b1869fff5609220cc3419346249705e1e25373f6bff02debdcec6927"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-integration-current/enabled-build.jsonl",
+      "bytes": 448355,
+      "sha256": "d93478d107c0f1475d29b8a664c076d56f543bb49fe5d84ef8f3297bdd1fe9aa"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-integration-current/incremental-inspect.json",
+      "bytes": 44,
+      "sha256": "3147332f9b0dc95d0ddac1c7cdc28e72d002d1ef7132d460712350f7fc1ee1ec"
+    }
+  ],
+  "current_sizes": "36300130503\ttarget/debug/deps\n19362065592\ttarget/debug/incremental",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-integration-current",
+      "purpose": "Compact source/native tree/screenshots/observer rejection and cleanup receipts; no pending GUI process"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug",
+      "purpose": "Current AccessKit-enabled application/test binaries, dependency libraries and compiler caches retained for source checks and upcoming Linux delivery; Windows graph still requires its own build"
+    }
+  ],
+  "current_deliverables_and_user_data_preserved": true
+}

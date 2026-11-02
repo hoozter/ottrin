@@ -1,0 +1,28 @@
+{
+  "purpose": "One temporary existing-debug configuration with eframe/accesskit for bounded native Unix lifecycle recheck; no delivered build changes",
+  "source_before_changes": "870195da37223d3ac948d06e1a1a2b0a395cdf50",
+  "compiler": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.0\nLLVM version: 21.1.8\n",
+  "command": [
+    "cargo",
+    "build",
+    "-p",
+    "ottrin-app",
+    "--features",
+    "eframe/accesskit",
+    "--message-format=json-render-diagnostics"
+  ],
+  "roots": [
+    "target/debug/deps",
+    "target/debug/.fingerprint",
+    "target/debug/incremental",
+    "target/debug/build"
+  ],
+  "baseline_file_count": 42702,
+  "baseline_logical_bytes_by_root": {
+    "target/debug/deps": 33358301835,
+    "target/debug/.fingerprint": 2328291,
+    "target/debug/incremental": 18178928717,
+    "target/debug/build": 1523833087
+  },
+  "large_file_inventory_retired_after_scoped_cleanup": true
+}

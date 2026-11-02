@@ -1,0 +1,60 @@
+     Locking 19 packages to latest compatible versions
+      Adding accesskit v0.21.1
+      Adding accesskit_atspi_common v0.14.2
+      Adding accesskit_consumer v0.31.0
+      Adding accesskit_macos v0.22.2
+      Adding accesskit_unix v0.17.2
+      Adding accesskit_windows v0.29.2
+      Adding accesskit_winit v0.29.2
+      Adding atspi v0.25.0
+      Adding atspi-common v0.9.0
+      Adding atspi-connection v0.9.0
+      Adding atspi-proxies v0.9.0
+      Adding windows v0.61.3
+      Adding windows-collections v0.2.0
+      Adding windows-future v0.2.1
+      Adding windows-numerics v0.2.0
+      Adding windows-threading v0.1.0
+      Adding zbus-lockstep v0.5.2
+      Adding zbus-lockstep-macros v0.5.2
+      Adding zbus_xml v5.1.0
+    Checking wayland-client v0.31.12
+    Checking quick-xml v0.38.4
+    Checking accesskit v0.21.1
+    Checking foldhash v0.1.5
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Checking hashbrown v0.15.5
+    Checking egui v0.33.3
+    Checking accesskit_consumer v0.31.0
+    Checking zbus_xml v5.1.0
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Checking wayland-protocols v0.32.10
+    Checking wayland-cursor v0.31.12
+    Checking calloop-wayland-source v0.3.0
+    Checking calloop-wayland-source v0.4.1
+    Checking zbus-lockstep v0.5.2
+    Checking atspi-common v0.9.0
+    Checking egui_glow v0.33.3
+    Checking egui_extras v0.33.3
+    Checking atspi-proxies v0.9.0
+    Checking accesskit_atspi_common v0.14.2
+    Checking wayland-protocols-wlr v0.3.10
+    Checking wayland-protocols-plasma v0.3.10
+    Checking wayland-protocols-experimental v20250721.0.1
+    Checking wayland-protocols-misc v0.3.10
+    Checking atspi-connection v0.9.0
+    Checking atspi v0.25.0
+    Checking accesskit_unix v0.17.2
+    Checking smithay-client-toolkit v0.19.2
+    Checking smithay-client-toolkit v0.20.0
+    Checking smithay-clipboard v0.7.3
+    Checking winit v0.30.12
+    Checking accesskit_winit v0.29.2
+    Checking egui-wgpu v0.33.3
+    Checking glutin-winit v0.5.0
+    Checking egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+    Checking eframe v0.33.3
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Checking ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 16.24s
