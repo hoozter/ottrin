@@ -1,0 +1,6 @@
+{
+  "status": "release sample failed100ms gate at140ms; observer encoding also failed",
+  "native_result": "RECOVERED_PROCESS_OUTPUT.txt preserves exact underlying bytes recovered from UnicodeDecodeError representation; query140ms,2hits,exit101",
+  "cleanup": "Owned guest and both volumes removed; original base and prepared baseline remain off",
+  "next": "Reuse a compiled literal matcher; preserve100ms budget. Producer now writes raw process data before decoding and emits plain UTF8 strings. Future clones also remove inherited host filesystem, host-device and USB redirection transports; benchmark uses explicit read-only input media."
+}

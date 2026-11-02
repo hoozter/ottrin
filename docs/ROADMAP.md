@@ -57,46 +57,51 @@ unit and database identity preservation recorded in the current delivery evidenc
 
 Firefox now exercises the delivered AppImage chooser through the real desktop
 portal: Open displays the selected source and Save writes an exact copy, with
-original bytes unchanged and no index started. All private browser/display/bus
-resources are removed. This private harness inherits the enclosing cgroup's
-application label, so it does not accept Firefox app-ID attribution or an installed
-sandboxed-browser identity. Evidence: `firefox-picker-package-current/`.
+original bytes unchanged and no index started. A subsequent owned Firefox scope
+also passes actual `firefox` app-ID attribution. All private browser/display/bus
+resources and the transient scope are removed. This accepts an ordinary installed
+Firefox caller, not an installed sandboxed browser.
+Evidence: `.hermes/evidence/firefox-identity-package-current/`.
 
 The GitHub audit finds13 failed push runs since October31:11 CI and2 diagnostic
-controls. Later source0b6015db and40effd6f each pass all three hosted jobs. Source4d6f
-currently passes Linux/performance while Windows tests continue. No scheduled
-retry loop is present. Workflow/ref concurrency now cancels superseded CI runs
-without removing gates; publication/hosted status must be recorded after commit.
-Evidence: `.hermes/evidence/github-actions-current/`.
+controls. Later source0b6015db and40effd6f each pass all three hosted jobs. Source2ebf
+passes Linux/performance but fails the concurrent Windows debug500k timing check
+(320ms versus250ms). No scheduled retry loop is present. Workflow/ref concurrency
+now cancels superseded runs. The pending fix makes release100ms performance a
+separate serial gate on both platforms and retains debug correctness checks.
+Its first native Windows release measurement failed at140ms. Reusing a compiled
+query literal now passes at78ms on the same native client and20ms on Linux, with
+all244 Linux search tests and strict Linux/Windows lint passing. Hosted confirmation
+remains pending.
+Evidence: `.hermes/evidence/github-actions-current/`,
+`.hermes/evidence/search-performance-isolation-current/`.
 
 The independent queue is:
 1. Windows MSI after-execution rollback on a current client fixture.
-   A fresh ordinary interactive account on the clean26100.9168 base reproduces
-   the minimal file-only failure (84 install and80 uninstall rollback errors).
-   This rules out the old QA profile as the sole cause; it does not prove a vendor
+   The reusable owned Windows baseline now verifies build26100.9711, MSI5.0.26100.9711,
+   an actual reboot and clean shutdown. It is retained for named MSI/MSIX consumers.
+   A fresh ordinary interactive account, after completing normal first-login
+   desktop setup, still reproduces84 install and80 uninstall rollback errors in
+   the minimal file-only control. This rules out the old QA profile, old client
+   build and incomplete desktop setup as sole causes; it does not prove a vendor
    defect. Hosted Server2025 refuses1625 before execution. No policy/ACL/elevation
-   or rollback waiver is used. Evidence: `windows-msi-client-current/`.
-   Three current-client preparation attempts are closed with owned resources
-   removed: one servicing timeout, one reaches26100.9711 but loses observation,
-   and one returns successful servicing3010 but cannot request an agent reboot.
-   A single delayed Windows reboot with changed boot identity is now verified in
-   the MSIX fixture. The revised producer is preparing one reusable updated
-   baseline, retaining a clearly unaccepted recovery disk if successful servicing
-   later loses its observer. Named MSI/MSIX consumers must verify the exact target
-   version and clean shutdown before using it. This is not a passed rollback gate.
-   Evidence: `windows-msi-updated-client-current/`.
+   or rollback waiver is used. Compiler-independent/client-fixture diagnosis remains
+   required. Completed child guests, volumes and desktop resources are removed.
+   Evidence: `windows-msi-updated-client-current/`,
+   `windows-startup-lifetime-current/msi-desktop-ready/`.
 2. MSIX build/deployment tooling independent of parked Store identity/submission.
-   Source40effd6f and4d6f4e1a each pass actual MakeAppx assembly and58-file equality.
-   Actual4d6f ordinary main-window package identity, non-elevated token and normal
-   close pass. Its package-managed startup path crashes with access violation
-   during setup; GUI focus remains failed. The source repair removes per-call
-   WinRT teardown that conflicts with the binding's process-lived activation
-   factory cache. Strict Windows all-target checks and formatting pass; actual
-   corrected-package setup/disable/reenable, login, update and removal remain
-   required. All completed native guests/volumes/profiles, fulfilled archives and
-   both rejected package cohorts are removed; the accepted8ede Windows candidate
-   and current Linux deliverables are preserved. No Store identity is invented.
-   Evidence: `windows-package-startup-current/`, `windows-startup-lifetime-current/`.
+   Source2ebf passes actual MakeAppx assembly and58-file equality, ordinary main
+   window and daemon package identity, non-elevated launch, GUI focus, setup,
+   status, disable/reenable, normal Close and actual package removal. Preferences
+   and source files remain unchanged, with no residual daemon or scheduled task.
+   This fixes the prior per-call WinRT teardown crash. Actual login startup and
+   cross-version update remain required. The native visual scope uses software
+   SPICE and explicit OpenGL; physical/native-driver acceptance remains separate.
+   Completed guests/volumes/profiles and fulfilled source archives are removed.
+   The latest development stage remains at `.hermes/packaging-tmp/.windows-desktop-stage`
+   for the pending login/update consumers; accepted8ede and Linux deliveries are
+   preserved. No Store identity is invented.
+   Evidence: `windows-startup-lifetime-current/NATIVE_ACCEPTANCE.json`.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
 

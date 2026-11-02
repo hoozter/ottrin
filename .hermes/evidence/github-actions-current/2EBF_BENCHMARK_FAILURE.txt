@@ -1,0 +1,41 @@
+verify (windows-latest)	Cargo test	2026-11-02T07:13:30.8844393Z
+verify (windows-latest)	Cargo test	2026-11-02T07:13:30.8845813Z running 1 test
+verify (windows-latest)	Cargo test	2026-11-02T07:13:32.2352365Z
+verify (windows-latest)	Cargo test	2026-11-02T07:13:32.2353439Z running 1 test
+verify (windows-latest)	Cargo test	2026-11-02T07:13:32.2962321Z test copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:13:33.4500457Z test copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_requires_ordered_complete_seal ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:13:33.5030275Z
+verify (windows-latest)	Cargo test	2026-11-02T07:13:33.5030792Z running 1 test
+verify (windows-latest)	Cargo test	2026-11-02T07:13:34.7599017Z test copy_transaction::windows::journal::tests::windows_native_copy_tree_security_cached_acl_is_not_native_authority_even_with_valid_hashes ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:13:35.7841300Z
+verify (windows-latest)	Cargo test	2026-11-02T07:13:35.7841885Z running 1 test
+verify (windows-latest)	Cargo test	2026-11-02T07:18:44.0085703Z test tests::cancelled_live_content_provider_is_reaped_after_both_pipes_are_drained ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:44.0686872Z test tests::clear_sqlite_storage_removes_and_reports_all_generation_content_files ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:44.4226543Z test tests::clear_storage_stops_owner_and_leaves_empty_unavailable_state ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:44.7438039Z test tests::concurrent_query_handle_does_not_block_stop ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:44.7774104Z test tests::bench_query_500k ... FAILED
+verify (windows-latest)	Cargo test	2026-11-02T07:18:46.0782085Z test tests::content_fallback_honors_configured_extraction_size_limit ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:46.1896157Z test tests::content_fallback_honors_selected_file_groups ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:46.1898680Z test tests::content_provider_wait_fixture ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:46.3331622Z test tests::content_ripgrep_exclude_globs_keep_exact_files_and_descendants_out_of_rg ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:46.4182253Z test tests::content_search_honors_query_filters ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:18:46.5913435Z test tests::content_search_matches_multi_word_queries ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8419456Z test tests::unavailable_content_root_keeps_metadata_usable_and_recovers_its_watch ... ok
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8420762Z
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8420937Z failures:
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8421160Z
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8421404Z ---- tests::bench_query_500k stdout ----
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8421970Z 500k query: 320ms, 2 hits
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8422262Z
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8422849Z thread 'tests::bench_query_500k' (7164) panicked at crates\ottrin-search\src\lib.rs:8431:9:
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8424482Z Query over 500k items took 320ms — exceeds 250ms budget
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8425473Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8426120Z
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8426128Z
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8426252Z failures:
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8426641Z     tests::bench_query_500k
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8427067Z
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8427646Z test result: FAILED. 223 passed; 1 failed; 6 ignored; 0 measured; 0 filtered out; finished in 98.24s
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8428669Z
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.8487543Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-search --lib`
+verify (windows-latest)	Cargo test	2026-11-02T07:20:03.9725213Z ##[error]Process completed with exit code 1.

@@ -16,8 +16,8 @@
     "all_jobs_pass_run": 41374248948,
     "later_all_jobs_pass_run": 41380442981
   },
-  "current_source_run": 41394641644,
-  "current_status": "Linux and performance pass; Windows Cargo test still running at observation",
-  "changes": "Workflow/ref concurrency cancels superseded CI runs; platform matrix, tests and failure checks unchanged. No notification preferences changed.",
-  "limits": "Retained runs/notifications do not explain hundreds of separate emails; no claim about uninspected mail messages. Actual MSIX package startup failure is a separate open native gate."
+  "current_source_run": 41400086555,
+  "current_status": "Source2ebf Windows debug timing failed. Final repair passes244 Linux search tests, strict lint on both platforms, and exact release benchmarks20ms Linux/78ms Windows against unchanged100ms; hosted follow-up pending.",
+  "changes": "Published workflow/ref concurrency cancels superseded runs. Pending follow-up retains debug correctness and enforces serial exact release100ms benchmark on both Linux and Windows.",
+  "limits": "Retained runs/notifications do not explain hundreds of separate emails; mailbox uninspected. Native2ebf MSIX basic lifecycle now passes; login/update remain separate."
 }

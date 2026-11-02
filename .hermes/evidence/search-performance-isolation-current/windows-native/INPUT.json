@@ -1,0 +1,7 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_search-c3b2d99c4b844ce4.exe",
+  "sha256": "c56c0938f25dfa05408ff3c134f8f95869843372bd8518a09e071d649af7ec09",
+  "exact_test": "tests::bench_query_500k",
+  "profile": "release",
+  "budget_ms": 100
+}

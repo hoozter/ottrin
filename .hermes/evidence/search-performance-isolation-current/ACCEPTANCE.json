@@ -1,0 +1,27 @@
+{
+  "scope": "Exact500k release query, same owned Windows client4GiB/16vCPU, no concurrent compiler; not sustained workload/resource or whole-product acceptance",
+  "status": "Final native release benchmarks, Linux functional suite and strict Linux/Windows lint pass; hosted confirmation pending",
+  "algorithm": "Compile one immutable normalized memmem literal searcher per query term and reuse across indexed names and paths; no new per-index-row memory",
+  "release_budget_ms": 100,
+  "linux_ms": 20,
+  "windows_before_ms": 140,
+  "windows_after_ms": 78,
+  "expected_hits": 2,
+  "linux_functional": {
+    "passed": 244,
+    "ignored": 2
+  },
+  "windows_executable_sha256": "ff4c13f5f3cb89395eecf726ac481023baa58718c86fb29086a470eb40372f14",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-search-benchmark.qcow2",
+      "ottrin-search-benchmark-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "ci": "Mandatory exact serial release benchmark on both Linux and Windows; concurrent debug suite retains correctness and informational timing",
+  "final_source": "Tracked search source and dependency changes in the Git commit containing this receipt"
+}

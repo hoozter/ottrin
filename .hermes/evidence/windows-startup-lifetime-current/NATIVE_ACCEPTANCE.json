@@ -1,0 +1,83 @@
+{
+  "status": "scoped actual MSIX lifecycle pass; login/update and broader acceptance remain required",
+  "source_revision": "2ebf5fd0600504a5932bd08b62319e0dd91193ca",
+  "artifact_sha256": "271c76a6f8a6b7cd9000aaea27aa8c03607c29dd1a2c5a907bb128d3db5494ca",
+  "artifact_bytes": 56840472,
+  "payload_files": 58,
+  "client": {
+    "caption": "Microsoft Windows 11 IoT Enterprise LTSC",
+    "disable_msi": null,
+    "build": "26100",
+    "msi": "5.0.26100.9711"
+  },
+  "positive": [
+    "Actual production-builder58-file assembly equality",
+    "Administrative development deployment with normal user runtime",
+    "Actual main and daemon package identities, neither elevated",
+    "Real GUI foreground focus and screenshot after ordinary first-login setup",
+    "Normal WM_CLOSE exit0",
+    "Startup enable, OS state query, daemon ready on selected fixture root",
+    "Disable stops daemon; OS state disabled; reenable exits0 with daemon ready",
+    "Removal deletes package processes and leaves no index scheduled task",
+    "Preferences and synthetic source fixture unchanged after removal"
+  ],
+  "cli_exits": {
+    "reenable.stdout": 0,
+    "disabled-status.stdout": 0,
+    "service-remove.stdout": 0,
+    "service-status.stdout": 0,
+    "service-install.stdout": 0,
+    "index-status.json": 0
+  },
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_viewer_cleanup": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-4nvvo8bt",
+    "owned_processes_reaped": [
+      {
+        "pid": 161524,
+        "exit": 0
+      },
+      {
+        "pid": 161527,
+        "exit": 0
+      },
+      {
+        "pid": 161528,
+        "exit": 15
+      },
+      {
+        "pid": 161578,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "0",
+    "profile_removed": true
+  },
+  "visual_review": "main.png visibly renders the actual Light Miller interface, Ottrin icon and declared OpenGL compatibility notice. This is not a complete theme or physical-adapter audit.",
+  "pending": [
+    "Actual login startup",
+    "Cross-version package update and persisted startup/configuration choices",
+    "Native packaged folder integration and broader software/resource gates",
+    "Owner Store identity/certification and final acceptance remain later waits"
+  ],
+  "precondition_repairs": [
+    "Actual disposable-user privacy setup before actor, no policy changes",
+    "Wait for direct CLI exit, not persistent descendants"
+  ],
+  "earlier_attempt": "runtime/PARTIAL_SCOPE.json retains the invalid GUI precondition and process-tree wait timeout."
+}

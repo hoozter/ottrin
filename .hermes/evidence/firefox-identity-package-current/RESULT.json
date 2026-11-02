@@ -1,0 +1,60 @@
+{
+  "status": "pass",
+  "scope": "Actual Firefox Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "617c03c396ea3365924d82ae32edd898cc70f24fa99fd2b4daa59d795f583ad4",
+  "firefox_scope": {
+    "unit": "app-firefox-ottrinqa159595fdf2358d4a.scope",
+    "desktop_entry": "/usr/share/applications/firefox.desktop",
+    "purpose": "Correct real application attribution; inner Firefox retains only explicitly selected private session/environment values"
+  },
+  "chooser_executable": "/var/tmp/.ottrin-picker-qa-ma41_ls8/t/.mount_OttrinpqcaJP/usr/bin/ottrin",
+  "open_pid": 149041,
+  "actual_browser": "Firefox",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; browser displays chosen document and writes exact saved bytes",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "chooser_backend_pid": 149281,
+  "no_index_started": true,
+  "identity_limit": "Ordinary installed Firefox identity accepted through its desktop-entry systemd scope; this is not installed Flatpak-browser acceptance.",
+  "actual_portal_app_id": "firefox",
+  "owned_firefox_scope_cleanup": {
+    "unit": "app-firefox-ottrinqa159595fdf2358d4a.scope",
+    "load_state": "not-found"
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ma41_ls8",
+    "owned_processes_reaped": [
+      {
+        "pid": 148669,
+        "exit": 0
+      },
+      {
+        "pid": 148672,
+        "exit": 0
+      },
+      {
+        "pid": 148673,
+        "exit": 15
+      },
+      {
+        "pid": 148731,
+        "exit": 0
+      },
+      {
+        "pid": 148733,
+        "exit": -15
+      },
+      {
+        "pid": 148750,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

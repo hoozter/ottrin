@@ -4,15 +4,16 @@ from contextlib import ExitStack
 import argparse, base64, hashlib, importlib.util, json, os, shutil, signal, subprocess, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--search-benchmark',type=Path);args=parser.parse_args()
 assert not args.prepare_updated_base or args.update_manifest
 assert not(args.use_updated_base and args.update_manifest)
-assert sum(map(bool,[args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime]))<=1
-assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base),'New comparison needs an explicit new evidence root'
+assert sum(map(bool,[args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.search_benchmark]))<=1
+interactive_case=bool(args.msix_runtime or not(args.update_manifest or args.msix_parse_only or args.msix_stage or args.search_benchmark))
+assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base or args.search_benchmark),'New comparison needs an explicit new evidence root'
 r=Path.cwd();e=args.output.resolve() if args.output else Path(__file__).resolve().parent
 assert not args.output or not (e/'OWNER.json').exists(),'Do not replace an existing owned run'
 (e/'DRIVER_SOURCE.py').write_bytes(Path(__file__).read_bytes())
-name='ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
+name='ottrin-search-benchmark' if args.search_benchmark else 'ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
 def virsh(*args):return subprocess.check_output(['virsh','-c','qemu:///system',*args],text=True).strip()
 def save(n,data):(e/n).write_text(json.dumps(data,indent=2)+'\n')
 assert name not in virsh('list','--all','--name').splitlines()
@@ -22,7 +23,7 @@ assert not virsh('snapshot-list','win11ltsc','--name')
 for v in [volume,iso_volume]:assert subprocess.run(['virsh','-c','qemu:///system','vol-info','--pool','default',v],capture_output=True).returncode!=0
 pins=json.loads((r/'.hermes/evidence/windows-20261011/windows-msi-compiler-downloads.json').read_text())
 cache=r/'.hermes/tools/msi-compiler';cache.mkdir(exist_ok=True)
-for filename,url,algorithm,digest in [('runtime.zip',pins['runtime_url'],'sha512',pins['runtime_sha512']),('wix.zip',pins['wix_url'],'sha256',pins['wix_sha256'])]:
+for filename,url,algorithm,digest in ([] if args.search_benchmark else [('runtime.zip',pins['runtime_url'],'sha512',pins['runtime_sha512']),('wix.zip',pins['wix_url'],'sha256',pins['wix_sha256'])]):
  p=cache/filename
  if not p.exists():
   temp=p.with_suffix('.download');assert not temp.exists()
@@ -30,13 +31,13 @@ for filename,url,algorithm,digest in [('runtime.zip',pins['runtime_url'],'sha512
   finally:temp.unlink(missing_ok=True)
  assert hashlib.new(algorithm,p.read_bytes()).hexdigest()==digest
 fixture=e/'fixture';assert not fixture.exists()
-scope='Actual development MSIX deployment, ordinary launch and index/removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
+scope='Exact optimized500k search benchmark on the owned native Windows client; pure computation under the agent token, not desktop or file-operation acceptance' if args.search_benchmark else 'Actual development MSIX deployment, ordinary launch and index/removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
 if args.use_updated_base:
  prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
  base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default',prepared_base['volume']));assert base_xml.findtext('./backingStore/path')==prepared_base['backing_original'];assert virsh('vol-path','--pool','default',prepared_base['volume'])==backing
  for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
-state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.search_benchmark else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 save('OWNER.json',state)
 def cleanup():
  try:
@@ -44,6 +45,7 @@ def cleanup():
    assert virsh('domuuid',name)==uid
    assert not virsh('snapshot-list',name,'--name')
    root=E.fromstring(virsh('dumpxml',name));assert not root.findall('./devices/interface')
+   assert all(not root.findall('./devices/'+tag) for tag in ['filesystem','hostdev','redirdev'])
    disk_sources={x.get('file') for x in root.findall('./devices/disk/source')};assert disk_sources=={'/var/lib/libvirt/images/'+volume,'/var/lib/libvirt/images/'+iso_volume}
    if virsh('domstate',name)!='shut off':virsh('destroy',name)
    virsh('undefine',name,'--nvram','--tpm')
@@ -69,7 +71,7 @@ def finish(kind,error,trace):
 with ExitStack() as stack:
  stack.push(finish)
  fixture.mkdir()
- for filename in ['runtime.zip','wix.zip']:os.link(cache/filename,fixture/filename)
+ for filename in ([] if args.search_benchmark else ['runtime.zip','wix.zip']):os.link(cache/filename,fixture/filename)
  if args.update_manifest:
   inputs=json.loads(args.update_manifest.read_text());update_cache=r/'.hermes/tools/windows-client-update'
   assert shutil.disk_usage('/var/lib/libvirt/images').free>24*1024**3,'Need room for owned ISO, servicing overlay and teardown'
@@ -99,48 +101,54 @@ with ExitStack() as stack:
   os.link(args.msix_runtime,fixture/'Ottrin.msix');shutil.copy2(parent/'runtime.ps1',fixture/'runtime.ps1');shutil.copy2(r/'.hermes/evidence/desktop-package-current/windows/gui/NATIVE_CONTROLS_INPUT.ps1',fixture/'native-controls.ps1')
   (fixture/'runtime-input.json').write_text(json.dumps({'sha256':accepted['artifact_sha256'],'source_revision':accepted['source_revision']}))
  (fixture/'pins.json').write_text(json.dumps(pins))
- source=r/'.hermes/evidence/msi-hosted-control-current/source'
- actor=(source/'msi-rollback-control-actor.ps1').read_text()
- actor=actor.replace(" $profilePath=[Environment]", " $session=(Get-Process -Id $PID).SessionId;Require ($session-gt0) 'Real ordinary interactive session required';$result.session_id=$session\n $profilePath=[Environment]")
- (fixture/'actor.ps1').write_text(actor)
- script=(source/'msi-rollback-control.ps1').read_text()
- start=script.index("if($env:GITHUB_ACTIONS")
- end=script.index("$id=[Security.Principal.WindowsIdentity]",start)
- script=script[:start]+script[end:]
- script=script.replace("$env:RUNNER_TEMP","$env:TEMP")
- start=script.index(" $repo=[IO.Path]::GetFullPath")
- end=script.index(" Expand-Archive",start)
- script=script[:start]+" $pins=Get-Content (Join-Path $PSScriptRoot 'pins.json') -Raw|ConvertFrom-Json\n foreach($file in @('runtime.zip','wix.zip')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n if((Get-FileHash (Join-Path $root 'runtime.zip') -Algorithm SHA512).Hash-ne$pins.runtime_sha512-or(Get-FileHash (Join-Path $root 'wix.zip')).Hash-ne$pins.wix_sha256){throw 'Offline compiler input mismatch'}\n"+script[end:]
- script=script.replace("(Join-Path $PSScriptRoot 'msi-rollback-control-actor.ps1')","(Join-Path $PSScriptRoot 'actor.ps1')")
- start=script.index(" $arguments='-NoProfile -NonInteractive -ExecutionPolicy")
- end=script.index(" $process=Start-Process",start)
- script=script[:start]+" $invoke=\"& ([ScriptBlock]::Create([IO.File]::ReadAllText('$(Join-Path $root 'actor.ps1')'))) -Root '$root' -ExpectedSid '$($user.SID.Value)'\"\n $arguments='-NoProfile -NonInteractive -EncodedCommand '+[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($invoke))\n"+script[end:]
- # A disposable overlay is the cleanup boundary for any engine registration defect.
- script=script.replace('hosted_runner_disposal_handles_any_residual_engine_registration','owned_overlay_disposal_handles_any_residual_engine_registration')
- # LocalSystem cannot use CreateProcessWithLogonW. Log on the fresh ordinary
- # account on this offline disposable clone instead; never alter the base.
- start=script.index(" $process=Start-Process")
- script=script[:start]+''' $action=New-ScheduledTaskAction -Execute "$env:SystemRoot\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Argument $arguments
- $trigger=New-ScheduledTaskTrigger -AtLogOn -User ($env:COMPUTERNAME+'\\'+$name)
- $principal=New-ScheduledTaskPrincipal -UserId ($env:COMPUTERNAME+'\\'+$name) -LogonType Interactive -RunLevel Limited
- $taskName='OttrinOwnedMsiControl';Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Force|Out-Null
- $plain=$credential.GetNetworkCredential().Password
- $key='HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon'
- foreach($pair in @(@('AutoAdminLogon','1'),@('DefaultUserName',$name),@('DefaultDomainName',$env:COMPUTERNAME),@('DefaultPassword',$plain))){Set-ItemProperty -Path $key -Name $pair[0] -Value $pair[1]}
- $plain=$null;$state.phase='ready for owned interactive reboot';$state.status='prepared';$state.task=$taskName;$state.actor_sid=$user.SID.Value;$exit=0;Save
-}catch{$state.status='failed interactive preparation';$state.error=$_.Exception.Message;$state.stack=$_.ScriptStackTrace;$exit=1}
-finally{if($password){$password.Dispose()};Save}
-exit $exit
-'''
- (fixture/'controller.ps1').write_text(script);shutil.copy2(fixture/'controller.ps1',e/'controller.ps1');shutil.copy2(fixture/'actor.ps1',e/'actor.ps1')
- iso_inputs=[fixture/n for n in ['runtime.zip','wix.zip','pins.json','actor.ps1','controller.ps1']]
- if args.update_manifest:
-  iso_inputs.extend(fixture/item['filename'] for item in inputs['files'])
-  iso_inputs.append(fixture/'update-inputs.json')
- if args.update_manifest or args.msix_parse_only or args.msix_stage:
-  iso_inputs.extend(fixture/name for name in ['package-msix.ps1','msix-manifest.xml','windows-sdk-buildtools.zip','windows-msix-template.ps1','icon.png'])
- if args.msix_stage:iso_inputs.extend(fixture/name for name in ['portable.zip','source.zip','mingit.zip','assembly-inputs.json','assembly.ps1'])
- if args.msix_runtime:iso_inputs.extend(fixture/name for name in ['Ottrin.msix','runtime.ps1','runtime-input.json','native-controls.ps1'])
+ if args.search_benchmark:
+  executable=args.search_benchmark.resolve();assert executable.parent==r/'target/x86_64-pc-windows-gnu/release/deps' and executable.name.startswith('ottrin_search-') and executable.suffix=='.exe'
+  with executable.open('rb') as file:digest=hashlib.file_digest(file,'sha256').hexdigest()
+  os.link(executable,fixture/'benchmark.exe');iso_inputs=[fixture/'benchmark.exe'];save('INPUT.json',{'executable':str(executable),'sha256':digest,'exact_test':'tests::bench_query_500k','profile':'release','budget_ms':100})
+ else:
+  source=r/'.hermes/evidence/msi-hosted-control-current/source'
+  actor=(source/'msi-rollback-control-actor.ps1').read_text()
+  actor=actor.replace(" foreach($kind in @('install','uninstall')) {", " $result.phase='waiting for owned ordinary desktop';Save;$deadline=[DateTime]::UtcNow.AddMinutes(8);$readyPath=Join-Path $out 'DESKTOP_READY.json';while(-not(Test-Path $readyPath)){if([DateTime]::UtcNow-ge$deadline){throw 'Owned first-login desktop was not made ready'};Start-Sleep -Milliseconds 250};$ready=Get-Content $readyPath -Raw|ConvertFrom-Json;Require ($ready.sid-eq$ExpectedSid) 'Desktop readiness belongs to another fixture';$result.desktop_ready=$true;$result.phase='executing native MSI rollback control';Save\n foreach($kind in @('install','uninstall')) {")
+  actor=actor.replace(" $profilePath=[Environment]", " $session=(Get-Process -Id $PID).SessionId;Require ($session-gt0) 'Real ordinary interactive session required';$result.session_id=$session\n $profilePath=[Environment]")
+  (fixture/'actor.ps1').write_text(actor)
+  script=(source/'msi-rollback-control.ps1').read_text()
+  start=script.index("if($env:GITHUB_ACTIONS")
+  end=script.index("$id=[Security.Principal.WindowsIdentity]",start)
+  script=script[:start]+script[end:]
+  script=script.replace("$env:RUNNER_TEMP","$env:TEMP")
+  start=script.index(" $repo=[IO.Path]::GetFullPath")
+  end=script.index(" Expand-Archive",start)
+  script=script[:start]+" $pins=Get-Content (Join-Path $PSScriptRoot 'pins.json') -Raw|ConvertFrom-Json\n foreach($file in @('runtime.zip','wix.zip')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n if((Get-FileHash (Join-Path $root 'runtime.zip') -Algorithm SHA512).Hash-ne$pins.runtime_sha512-or(Get-FileHash (Join-Path $root 'wix.zip')).Hash-ne$pins.wix_sha256){throw 'Offline compiler input mismatch'}\n"+script[end:]
+  script=script.replace("(Join-Path $PSScriptRoot 'msi-rollback-control-actor.ps1')","(Join-Path $PSScriptRoot 'actor.ps1')")
+  start=script.index(" $arguments='-NoProfile -NonInteractive -ExecutionPolicy")
+  end=script.index(" $process=Start-Process",start)
+  script=script[:start]+" $invoke=\"& ([ScriptBlock]::Create([IO.File]::ReadAllText('$(Join-Path $root 'actor.ps1')'))) -Root '$root' -ExpectedSid '$($user.SID.Value)'\"\n $arguments='-NoProfile -NonInteractive -EncodedCommand '+[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($invoke))\n"+script[end:]
+  # A disposable overlay is the cleanup boundary for any engine registration defect.
+  script=script.replace('hosted_runner_disposal_handles_any_residual_engine_registration','owned_overlay_disposal_handles_any_residual_engine_registration')
+  # LocalSystem cannot use CreateProcessWithLogonW. Log on the fresh ordinary
+  # account on this offline disposable clone instead; never alter the base.
+  start=script.index(" $process=Start-Process")
+  script=script[:start]+''' $action=New-ScheduledTaskAction -Execute "$env:SystemRoot\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Argument $arguments
+  $trigger=New-ScheduledTaskTrigger -AtLogOn -User ($env:COMPUTERNAME+'\\'+$name)
+  $principal=New-ScheduledTaskPrincipal -UserId ($env:COMPUTERNAME+'\\'+$name) -LogonType Interactive -RunLevel Limited
+  $taskName='OttrinOwnedMsiControl';Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Force|Out-Null
+  $plain=$credential.GetNetworkCredential().Password
+  $key='HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon'
+  foreach($pair in @(@('AutoAdminLogon','1'),@('DefaultUserName',$name),@('DefaultDomainName',$env:COMPUTERNAME),@('DefaultPassword',$plain))){Set-ItemProperty -Path $key -Name $pair[0] -Value $pair[1]}
+  $plain=$null;$state.phase='ready for owned interactive reboot';$state.status='prepared';$state.task=$taskName;$state.actor_sid=$user.SID.Value;$exit=0;Save
+ }catch{$state.status='failed interactive preparation';$state.error=$_.Exception.Message;$state.stack=$_.ScriptStackTrace;$exit=1}
+ finally{if($password){$password.Dispose()};Save}
+ exit $exit
+ '''
+  (fixture/'controller.ps1').write_text(script);shutil.copy2(fixture/'controller.ps1',e/'controller.ps1');shutil.copy2(fixture/'actor.ps1',e/'actor.ps1')
+  iso_inputs=[fixture/n for n in ['runtime.zip','wix.zip','pins.json','actor.ps1','controller.ps1']]
+  if args.update_manifest:
+   iso_inputs.extend(fixture/item['filename'] for item in inputs['files'])
+   iso_inputs.append(fixture/'update-inputs.json')
+  if args.update_manifest or args.msix_parse_only or args.msix_stage:
+   iso_inputs.extend(fixture/name for name in ['package-msix.ps1','msix-manifest.xml','windows-sdk-buildtools.zip','windows-msix-template.ps1','icon.png'])
+  if args.msix_stage:iso_inputs.extend(fixture/name for name in ['portable.zip','source.zip','mingit.zip','assembly-inputs.json','assembly.ps1'])
+  if args.msix_runtime:iso_inputs.extend(fixture/name for name in ['Ottrin.msix','runtime.ps1','runtime-input.json','native-controls.ps1'])
  # UDF carries the real >4GiB file size; the ISO9660 fallback is limited.
  # The Windows reader must recheck every update hash before WUSA executes it.
  large_file_flags=['-allow-limited-size'] if args.update_manifest else []
@@ -159,21 +167,24 @@ exit $exit
  nv=root.find('./os/nvram');nv.text='/var/lib/libvirt/qemu/nvram/'+name+'_VARS.fd'
  disks=root.findall('./devices/disk');assert len(disks)==1;disks[0].find('source').set('file','/var/lib/libvirt/images/'+volume)
  for interface in root.findall('./devices/interface'):root.find('devices').remove(interface)
- if args.msix_runtime:
+ for tag in ['filesystem','hostdev','redirdev']:
+  for device in root.findall('./devices/'+tag):root.find('devices').remove(device)
+ state.update(host_filesystems=0,host_devices=0,usb_redirection=0);save('OWNER.json',state)
+ if interactive_case:
   graphics=root.find('./devices/graphics');assert graphics.get('type')=='spice'
   for node in list(graphics.findall('gl')):graphics.remove(node)
   acceleration=root.find('./devices/video/model/acceleration')
   if acceleration is not None:acceleration.set('accel3d','no')
-  state['graphics_scope']='Owned software-only SPICE display with explicit bundled OpenGL; no physical adapter acceptance'
+  state['graphics_scope']='Owned software-only SPICE desktop; MSIX uses explicit bundled OpenGL; no physical adapter acceptance'
   save('OWNER.json',state)
  cd=E.SubElement(root.find('devices'),'disk',{'type':'file','device':'cdrom'});E.SubElement(cd,'driver',{'name':'qemu','type':'raw'});E.SubElement(cd,'source',{'file':'/var/lib/libvirt/images/'+iso_volume});E.SubElement(cd,'target',{'dev':'sda','bus':'sata'});E.SubElement(cd,'readonly')
  xml=fixture/'domain.xml';E.ElementTree(root).write(xml,encoding='unicode');virsh('define',str(xml));virsh('start',name);state['status']='booting';save('OWNER.json',state)
  spec=importlib.util.spec_from_file_location('guest',r/'.hermes/evidence/windows-20261011/guest_exec.py');g=importlib.util.module_from_spec(spec);spec.loader.exec_module(g);g.DOMAIN=name
- if args.msix_runtime:
+ if interactive_case:
   desktop_spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(desktop_spec);desktop_spec.loader.exec_module(desktop)
   private_console=stack.enter_context(desktop.OwnedDesktop(e/'viewer'))
   viewer=private_console.spawn(['virt-viewer','--connect','qemu:///system','--attach','--domain-name','--reconnect','--auto-resize=never','--spice-disable-audio','--spice-disable-usbredir',name],'viewer.log')
-  time.sleep(3);state['private_console_viewer_start_exit']=viewer.poll();save('OWNER.json',state)
+  time.sleep(3);state['private_console_viewer_start_exit']=viewer.poll();state['private_console']={'pid':viewer.pid,'display':private_console.env['DISPLAY'],'home':str(private_console.profile/'home')};save('OWNER.json',state)
  deadline=time.monotonic()+180
  while True:
   try:g.qga('guest-ping');break
@@ -218,10 +229,14 @@ exit $exit
   receipt.update(status='normal reboot verified',after_boot_ticks=after);save(filename,receipt)
  result=ps("$ErrorActionPreference='Stop';$o=Get-CimInstance Win32_OperatingSystem;@{caption=$o.Caption;build=$o.BuildNumber;msi=(Get-Item \"$env:SystemRoot\\System32\\msi.dll\").VersionInfo.FileVersion;disable_msi=(Get-ItemProperty 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\Installer' -ErrorAction SilentlyContinue).DisableMsi}|ConvertTo-Json -Compress")
  assert result['exitcode']==0;save('CLIENT_VERSION.json',json.loads(base64.b64decode(result['out-data']).decode('utf-8-sig')))
+ if args.search_benchmark:
+  code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$OutputEncoding=[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false);$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned benchmark media missing'};$exe=Join-Path ($disc[0].DeviceID+'\\') 'benchmark.exe';if((Get-FileHash $exe).Hash.ToLowerInvariant()-ne'"+digest+"'){throw 'Native benchmark input mismatch'};$root=Join-Path $env:TEMP 'ottrin-benchmark-"+uid+"';if(Test-Path $root){throw 'Existing benchmark fixture retained'};New-Item -ItemType Directory $root|Out-Null;$p=Start-Process $exe -ArgumentList @('--exact','tests::bench_query_500k','--nocapture','--test-threads=1') -PassThru -RedirectStandardOutput ($root+'\\stdout.txt') -RedirectStandardError ($root+'\\stderr.txt');$null=$p.Handle;try{if(-not$p.WaitForExit(180000)){$p.Kill();throw 'Owned benchmark timed out'};$p.WaitForExit();$code=$p.ExitCode;@{exitcode=$code;stdout=([string](Get-Content ($root+'\\stdout.txt') -Raw -Encoding UTF8));stderr=([string](Get-Content ($root+'\\stderr.txt') -Raw -Encoding UTF8));sha256=(Get-FileHash $exe).Hash}|ConvertTo-Json -Compress;if($code-ne0){exit 1}}finally{if(-not$p.HasExited){$p.Kill();$null=$p.WaitForExit(5000)};$p.Dispose()}"
+  result=ps(code,210);save('RAW_BENCHMARK_PROCESS.json',result);output=base64.b64decode(result.get('out-data','')).decode('utf-8-sig');save('BENCHMARK_PROCESS.json',{'process_exit':result.get('exitcode'),'stdout':output,'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result.get('exitcode')==0,'Native benchmark failed; retain exact output'
+  benchmark=json.loads(output);save('BENCHMARK.json',benchmark);assert benchmark['exitcode']==0 and 'test result: ok. 1 passed' in benchmark['stdout'];state['status']='exact native release benchmark passes100ms gate';save('OWNER.json',state);raise SystemExit(0)
  if args.msix_runtime:
   code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});$d=$disc[0].DeviceID+'\\';$script=Join-Path $d 'runtime.ps1';$errors=$null;$tokens=$null;$null=[Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$errors);if($errors.Count){throw ($errors|Out-String)}; & ([ScriptBlock]::Create([IO.File]::ReadAllText($script))) -Mode Prepare -Disc $d"
   result=ps(code,90);save('PREPARATION.json',{'process_exit':result.get('exitcode'),'stdout':base64.b64decode(result.get('out-data','')).decode('utf-8-sig'),'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result['exitcode']==0
-  reboot_owned_guest();time.sleep(8);deadline=time.monotonic()+600;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
+  reboot_owned_guest();time.sleep(8);deadline=time.monotonic()+1200;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
   while True:
    try:
     result=ps("$p='C:\\OttrinOwnedMsixRuntime\\results\\RESULT.json';if(Test-Path $p){Get-Content $p -Raw}else{'{}'}",20)
@@ -299,7 +314,7 @@ exit $exit
  prepared=ps("Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw",30)
  owner=json.loads(base64.b64decode(prepared['out-data']).decode('utf-8-sig'));assert owner['status']=='prepared';save('GUEST_PREPARATION.json',owner)
  reboot_owned_guest();state['status']='waiting for owned interactive actor after reboot';save('OWNER.json',state)
- time.sleep(8);deadline=time.monotonic()+400
+ time.sleep(8);deadline=time.monotonic()+1200
  while True:
   try:
    result=ps("$p='"+owner['root']+"\\results\\RESULT.json';if(Test-Path $p){Get-Content $p -Raw}else{'{}'}",20)

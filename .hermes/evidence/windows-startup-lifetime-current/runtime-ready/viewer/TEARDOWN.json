@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-4nvvo8bt",
+  "owned_processes_reaped": [
+    {
+      "pid": 161524,
+      "exit": 0
+    },
+    {
+      "pid": 161527,
+      "exit": 0
+    },
+    {
+      "pid": 161528,
+      "exit": 15
+    },
+    {
+      "pid": 161578,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "0",
+  "profile_removed": true
+}

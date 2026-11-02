@@ -1,0 +1,7 @@
+{
+  "source": "crates/ottrin-search/src/lib.rs",
+  "linux_strict_clippy": "    Finished `dev` profile [optimized + debuginfo] target(s) in 7.15s",
+  "windows_strict_clippy": "    Finished `dev` profile [optimized + debuginfo] target(s) in 31.93s",
+  "cargo_fmt": "pass",
+  "workflow_contract": "pass"
+}

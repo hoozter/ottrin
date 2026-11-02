@@ -1,0 +1,40 @@
+[
+  {
+    "obsolete_executable": "target/release/deps/ottrin_search-2d9bd653b64eea23",
+    "replacement": "target/release/deps/ottrin_search-4522a893cdb76658",
+    "matching_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 4894659833296826094,
+      "profile": 7866363979565995559,
+      "path": 3703509952502210898,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "obsolete_bytes": 8068240,
+    "links": 1,
+    "fingerprint": "target/release/.fingerprint/ottrin-search-2d9bd653b64eea23",
+    "dep_info": "target/release/deps/ottrin_search-2d9bd653b64eea23.d"
+  },
+  {
+    "obsolete_executable": "target/x86_64-pc-windows-gnu/release/deps/ottrin_search-c3b2d99c4b844ce4.exe",
+    "replacement": "target/x86_64-pc-windows-gnu/release/deps/ottrin_search-7a9993b50db09209.exe",
+    "matching_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 4894659833296826094,
+      "profile": 7866363979565995559,
+      "path": 3703509952502210898,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "obsolete_bytes": 8089977,
+    "links": 1,
+    "fingerprint": "target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-search-c3b2d99c4b844ce4",
+    "dep_info": "target/x86_64-pc-windows-gnu/release/deps/ottrin_search-c3b2d99c4b844ce4.d"
+  }
+]

@@ -16,14 +16,23 @@ hosted Server2025's ordinary MSI policy refusal; that branch is inactive.
 Those normal-CI defect scopes subsequently pass in all three jobs of
 [run41374248948](https://github.com/hoozter/ottrin/actions/runs/41374248948)
 and [run41380442981](https://github.com/hoozter/ottrin/actions/runs/41380442981).
-The former verifies the current delivered Linux source. At this observation,
-[run41394641644](https://github.com/hoozter/ottrin/actions/runs/41394641644)
-passes Linux/performance while Windows is still running Cargo tests.
-The separately reproduced native MSIX startup crash remains open.
+The former verifies the current delivered Linux source. The superseded source4d
+run41394641644 was canceled after its actual native package failed startup.
+Source2ebf [run41400086555](https://github.com/hoozter/ottrin/actions/runs/41400086555)
+passes Linux/performance, but the Windows parallel debug functional suite fails
+its500k timing check at320ms against250ms. The native MSIX startup repair now
+passes its basic package lifecycle; login and cross-version update remain.
+
+The performance follow-up retains500k correctness in debug and moves strict
+release100ms enforcement into an exact serial test on both platforms. The first
+local Windows release check failed140ms. The final reusable literal matcher
+passes at78ms on the same native client and20ms on Linux; all244 Linux search
+tests and strict lint on both platforms pass. The100ms budget remains unchanged.
 
 The CI workflow now groups by workflow/ref and cancels superseded runs, following
 [GitHub's concurrency mechanism](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
-The platform matrix, test steps and failure conditions are unchanged. Existing
+The initial concurrency change preserved all checks. The subsequent performance
+change adds a Windows release gate. Existing
 receipt-only path exclusions remain narrow; no account notification settings are
 changed. Required CI failures must be investigated before piling more independent
 feature pushes onto the failing source, and reported with the exact failing gate.

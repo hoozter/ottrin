@@ -1,0 +1,32 @@
+{
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_search-2d9bd653b64eea23",
+      "bytes": 8068240
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/release/.fingerprint/ottrin-search-2d9bd653b64eea23",
+      "bytes": 1572
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_search-2d9bd653b64eea23.d",
+      "bytes": 2003
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_search-c3b2d99c4b844ce4.exe",
+      "bytes": 8089977
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-search-c3b2d99c4b844ce4",
+      "bytes": 1921
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_search-c3b2d99c4b844ce4.d",
+      "bytes": 2860
+    }
+  ],
+  "reason": "Prior task benchmark executables replaced and validated with matching compiler/profile/features/target; no active consumers; useful dependencies and current binaries retained",
+  "incremental": "One superseded finalized session removed using exact-root guarded helper with reviewed desktop process identities",
+  "pending_stage": ".hermes/packaging-tmp/.windows-desktop-stage: current development MSIX login/update consumers",
+  "pending_vm_disk": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2: reusable current-client MSI/MSIX consumers"
+}

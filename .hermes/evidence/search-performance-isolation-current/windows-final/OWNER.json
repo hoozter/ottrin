@@ -1,0 +1,30 @@
+{
+  "domain": "ottrin-search-benchmark",
+  "uuid": "ed153ed6-95a0-4af1-b35d-04fac197cdf4",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-search-benchmark-fixture.iso",
+    "ottrin-search-benchmark.qcow2"
+  ],
+  "status": "exact native release benchmark passes100ms gate",
+  "public_compiler_cache": null,
+  "scope": "Exact optimized500k search benchmark on the owned native Windows client; pure computation under the agent token, not desktop or file-operation acceptance",
+  "producer_sha256": "299b7c15773cf13a406f6c5866b1adb4231566487b6c8bb7bacc3e49f0077477",
+  "uploaded_host_iso_removed_bytes": 8970240,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "guest_pid": 5636,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-search-benchmark.qcow2",
+      "ottrin-search-benchmark-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

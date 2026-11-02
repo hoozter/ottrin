@@ -1,0 +1,18 @@
+{
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Long-lived systemd user-session PAM helper, not a Rust compiler/cache consumer; process command is only (sd-pam). Protected process is preserved."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Long-lived KDE polkit authentication agent at /usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1, not a Rust compiler/cache consumer. Protected process is preserved."
+    }
+  ]
+}

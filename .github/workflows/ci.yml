@@ -196,7 +196,11 @@ jobs:
           retention-days: 7
 
   search-performance:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
@@ -213,15 +217,16 @@ jobs:
           cache-on-failure: true
 
       - name: Release benchmark smoke test
+        shell: bash
         run: |
           mkdir -p ci-artifacts
-          cargo test -p ottrin-search --release -- bench_query_500k --nocapture \
+          cargo test -p ottrin-search --release --lib -- tests::bench_query_500k --exact --nocapture --test-threads=1 \
             | tee ci-artifacts/search-benchmark.txt
 
       - name: Upload benchmark artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ottrin-search-benchmark
+          name: ottrin-search-benchmark-${{ matrix.os }}
           path: ci-artifacts/search-benchmark.txt
           if-no-files-found: error
           retention-days: 14

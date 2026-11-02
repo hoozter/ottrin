@@ -38,7 +38,12 @@ if($Mode-eq'Install'){
   Add-AppxPackage -Path (Join-Path $Root 'Ottrin.msix') -AllowUnsigned
   $package=Get-AppxPackage -Name 'Ottrin.Development';if(-not$package){throw 'Package registration missing'}
   $result.deployment=@{full_name=$package.PackageFullName;family=$package.PackageFamilyName;location=$package.InstallLocation;version=[string]$package.Version};Save 'DEPLOYMENT' $result
-  Start-ScheduledTask -TaskName $owner.actor_task;$deadline=[DateTime]::UtcNow.AddMinutes(6)
+  Save 'DESKTOP_WAITING' @{status='waiting for owned ordinary desktop';sid=$owner.sid;nonce=$owner.nonce;scope='Complete the disposable account privacy setup through the private console; do not alter security or OOBE policies'}
+  $deadline=[DateTime]::UtcNow.AddMinutes(8);$readyPath=Join-Path $Root 'results\DESKTOP_READY.json'
+  while(-not(Test-Path $readyPath)){if([DateTime]::UtcNow-ge$deadline){throw 'Owned first-login desktop was not made ready'};Start-Sleep -Milliseconds 250}
+  $ready=Get-Content $readyPath -Raw|ConvertFrom-Json
+  if($ready.sid-ne$owner.sid-or$ready.nonce-ne$owner.nonce){throw 'Desktop readiness belongs to another fixture'}
+  Start-ScheduledTask -TaskName $owner.actor_task;$deadline=[DateTime]::UtcNow.AddMinutes(8)
   while([DateTime]::UtcNow-lt$deadline){$path=Join-Path $Root 'results\ACTOR.json';if(Test-Path $path){$actor=Get-Content $path -Raw|ConvertFrom-Json;if($actor.status-ne'running'){break}};Start-Sleep -Seconds 1}
   if(-not$actor-or$actor.status-eq'running'){throw 'Ordinary runtime actor timed out'}
   $result.actor=$actor
@@ -65,6 +70,18 @@ if($Mode-eq'Install'){
  exit $(if($result.status-eq'pass'){0}else{1})
 }
 $result=@{status='running';administrator=$admin;session_id=(Get-Process -Id $PID).SessionId;scope='Actual packaged ordinary main-window launch, normal close and optional index registration; no upgrade acceptance yet'};Save 'ACTOR' $result
+function Invoke-OwnCLI([string[]]$arguments,[string]$stdoutName,[string]$stderrName){
+ $p=Start-Process $exe -ArgumentList $arguments -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root ('results\'+$stdoutName)) -RedirectStandardError (Join-Path $Root ('results\'+$stderrName));$null=$p.Handle
+ $result.phase=$stdoutName;$result.active_cli=@{pid=$p.Id;arguments=$arguments};Save 'ACTOR' $result
+ try{
+  # Start-Process -Wait waits for descendants, including the persistent daemon.
+  # Only the CLI must exit; the daemon is verified separately below.
+  if(-not$p.WaitForExit(90000)){throw ('Owned CLI timed out: '+$stdoutName)}
+  $p.WaitForExit();$code=$p.ExitCode;$result.cli_exits[$stdoutName]=$code;$result.Remove('active_cli');Save 'ACTOR' $result
+  return [pscustomobject]@{ExitCode=$code}
+ }finally{if(-not$p.HasExited){$p.Kill();$null=$p.WaitForExit(5000)};$p.Dispose()}
+}
+$result.cli_exits=@{}
 try {
  if($admin){throw 'Ordinary application token required'}
  $fixture=Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'OttrinMSIXFixture';New-Item -ItemType Directory $fixture|Out-Null;[IO.File]::WriteAllText((Join-Path $fixture 'preserve.txt'),"Preserve owned MSIX fixture`n")
@@ -128,9 +145,9 @@ public static class InputDesktopQA {
   if(-not[PackageIdentityQA]::PostMessageW($window,0x10,[IntPtr]::Zero,[IntPtr]::Zero)){throw 'Normal window close was refused'}
   if(-not$app.WaitForExit(15000)){throw 'Main window did not close'};$app.WaitForExit();if($app.ExitCode-ne0){throw 'Main window exited abnormally'};$result.normal_close_exit=0
  }catch{$result.normal_close_error=$_.Exception.Message}
- $process=Start-Process $exe -ArgumentList @('index','service-install') -PassThru -Wait -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root 'results\service-install.stdout') -RedirectStandardError (Join-Path $Root 'results\service-install.stderr')
+ $process=Invoke-OwnCLI @('index','service-install') 'service-install.stdout' 'service-install.stderr'
  $result.service_install_exit=$process.ExitCode;if($process.ExitCode-ne0){throw 'Packaged background index setup failed; inspect exact CLI output'}
- $process=Start-Process $exe -ArgumentList @('index','service-status') -PassThru -Wait -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root 'results\service-status.stdout') -RedirectStandardError (Join-Path $Root 'results\service-status.stderr')
+ $process=Invoke-OwnCLI @('index','service-status') 'service-status.stdout' 'service-status.stderr'
  $result.service_status_exit=$process.ExitCode;if($process.ExitCode-ne0){throw 'Packaged startup inspection failed'}
  $status=Get-Content (Join-Path $Root 'results\service-status.stdout') -Raw
  if($status-notmatch'Windows Startup apps'-or$status-notmatch'Enabled at login'){throw 'Actual package startup must report enabled Windows Startup apps'}
@@ -145,7 +162,7 @@ public static class InputDesktopQA {
  $result.daemon=@{pid=$daemon.Id;package=$buffer.ToString();administrator=$false}
  $deadline=[DateTime]::UtcNow.AddSeconds(60)
  do{
- $process=Start-Process $exe -ArgumentList @('index','status','--json') -PassThru -Wait -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root 'results\index-status.json') -RedirectStandardError (Join-Path $Root 'results\index-status.stderr')
+ $process=Invoke-OwnCLI @('index','status','--json') 'index-status.json' 'index-status.stderr'
  if($process.ExitCode-ne0){throw 'Actual package index diagnostics failed'}
  $diagnostics=Get-Content (Join-Path $Root 'results\index-status.json') -Raw|ConvertFrom-Json
  if($diagnostics.status-eq'ready'-and$diagnostics.watcher_ready-and$diagnostics.watched_roots-eq1){break};Start-Sleep -Seconds 1
@@ -153,12 +170,12 @@ public static class InputDesktopQA {
  if($diagnostics.status-ne'ready'-or-not$diagnostics.watcher_ready-or$diagnostics.watched_roots-ne1){throw 'Actual package daemon is not ready on its one configured fixture root'}
  $result.index_ready=$diagnostics.status
 
- $process=Start-Process $exe -ArgumentList @('index','service-remove') -PassThru -Wait -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root 'results\service-remove.stdout') -RedirectStandardError (Join-Path $Root 'results\service-remove.stderr')
+ $process=Invoke-OwnCLI @('index','service-remove') 'service-remove.stdout' 'service-remove.stderr'
  $result.service_remove_exit=$process.ExitCode;if($process.ExitCode-ne0){throw 'Packaged disable startup failed'}
- $process=Start-Process $exe -ArgumentList @('index','service-status') -PassThru -Wait -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root 'results\disabled-status.stdout') -RedirectStandardError (Join-Path $Root 'results\disabled-status.stderr')
+ $process=Invoke-OwnCLI @('index','service-status') 'disabled-status.stdout' 'disabled-status.stderr'
  if($process.ExitCode-ne0-or(Get-Content (Join-Path $Root 'results\disabled-status.stdout') -Raw)-notmatch'enabled=false'){throw 'Disabled package startup not reflected in status'}
  if(@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe}).Count-ne0){throw 'Disabling package indexing did not stop its daemon'}
- $process=Start-Process $exe -ArgumentList @('index','service-install') -PassThru -Wait -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Root 'results\reenable.stdout') -RedirectStandardError (Join-Path $Root 'results\reenable.stderr')
+ $process=Invoke-OwnCLI @('index','service-install') 'reenable.stdout' 'reenable.stderr'
  if($process.ExitCode-ne0){throw 'Package startup could not be enabled again'}
  $result.disable_reenable='pass';$result.preferences_before_removal=(Get-FileHash $config).Hash
  $result.status=if($result.gui_focus_and_capture-eq'pass'-and$result.ContainsKey('normal_close_exit')-and$result.normal_close_exit-eq0){'pass'}else{'partial runtime; GUI focus or close gate failed'}

@@ -1,0 +1,11 @@
+{
+  "pass": true,
+  "platforms": [
+    "ubuntu-latest",
+    "windows-latest"
+  ],
+  "serial_exact_release_test": true,
+  "budget_ms": 100,
+  "superseded_cancel": true,
+  "release_dependency_contract": "pass"
+}
