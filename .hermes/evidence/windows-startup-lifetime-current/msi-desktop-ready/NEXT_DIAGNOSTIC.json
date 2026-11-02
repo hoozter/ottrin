@@ -1,0 +1,5 @@
+{
+  "observation": "First install rollback error follows RegOpenKey/RegRemoveValue/RegCreateKey in the owned user Installer Products SourceList; native error5 access denied. Later rollback errors affect further operations.",
+  "meaning": "This narrows the next investigation to exact per-user installer registry/token/ACL state as well as compiler-independent control. It does not establish whether the base, native engine, policy or authored rollback caused the error.",
+  "next": "Capture owned fixture key ACL and actual user/service identity before failure and after failed rollback; compare with independent native MSI database control. Do not alter ACLs/policies or waive rollback."
+}

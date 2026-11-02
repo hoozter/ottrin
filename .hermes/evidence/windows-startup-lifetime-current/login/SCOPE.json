@@ -1,0 +1,28 @@
+{
+  "status": "rejected harness attempt; no actual login proof",
+  "failure": {
+    "scope": "Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes",
+    "actor_sid": "S-1-5-21-3183210791-1673105385-3262580894-1005",
+    "error": "The process cannot access the file 'C:\\OttrinOwnedMsixRuntime\\results\\ACTOR.json' because it is being used by another process.",
+    "source_revision": "2ebf5fd0600504a5932bd08b62319e0dd91193ca",
+    "stack": "at <ScriptBlock>, <No file>: line 91\r\nat <ScriptBlock>, <No file>: line 1",
+    "status": "failed native MSIX lifecycle",
+    "deployment": {
+      "full_name": "Ottrin.Development_0.1.0.0_x64__vs01n017nxmbr",
+      "family": "Ottrin.Development_vs01n017nxmbr",
+      "location": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.0_x64__vs01n017nxmbr",
+      "version": "0.1.0.0"
+    }
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "repair": "Atomic complete JSON publication and readers sharing deletion; preserve failed result-export process before cleanup"
+}

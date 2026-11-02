@@ -1,0 +1,34 @@
+{
+  "status": "No actual login acceptance from these attempts",
+  "attempts": [
+    {
+      "attempt": "login",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "scope_receipt": ".hermes/evidence/windows-startup-lifetime-current/login/SCOPE.json"
+    },
+    {
+      "attempt": "login-atomic",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "scope_receipt": ".hermes/evidence/windows-startup-lifetime-current/login-atomic/SCOPE.json"
+    }
+  ],
+  "source_repair": "Atomic state Save/Read-State plus explicit NullString.Value for File.Replace; exact native two-write fixed probe pass is retained under login-atomic"
+}

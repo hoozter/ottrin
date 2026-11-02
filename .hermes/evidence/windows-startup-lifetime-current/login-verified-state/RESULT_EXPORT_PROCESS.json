@@ -1,0 +1,8 @@
+{
+  "exitcode": 0,
+  "decoded_artifact": "RESULTS.zip",
+  "decoded_sha256": "4a573ee600a8182ae690f89ce8c401496af45547a0c6af169b745ce00569d4d3",
+  "decoded_bytes": 98859,
+  "out_data_removed": "Fulfilled base64 transport duplication; decoded archive retained",
+  "err-data": null
+}

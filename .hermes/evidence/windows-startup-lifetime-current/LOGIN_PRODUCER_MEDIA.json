@@ -1,0 +1,19 @@
+{
+  "scope": "Source review of future MSIX runtime media reduction; actual accepted run used prior full media and is not relabeled",
+  "required_runtime_media": {
+    "Ottrin.msix": "Exact SHA-verified package installed by Prepare",
+    "runtime.ps1": "Exact native parsed fixture and all runtime phases",
+    "runtime-input.json": "Expected package SHA and source revision",
+    "native-controls.ps1": "Owned GUI focus, window and screenshot inspectors"
+  },
+  "removed_unconsumed_inputs": [
+    "runtime.zip",
+    "wix.zip",
+    "pins.json",
+    "actor.ps1",
+    "controller.ps1"
+  ],
+  "shared_caches_retained": true,
+  "python_syntax": "pass",
+  "product_payload_unchanged": true
+}

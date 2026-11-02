@@ -1,0 +1,80 @@
+{
+  "status": "actual packaged login startup and removal pass; cross-version update and broader acceptance remain",
+  "source_revision": "2ebf5fd0600504a5932bd08b62319e0dd91193ca",
+  "artifact_sha256": "271c76a6f8a6b7cd9000aaea27aa8c03607c29dd1a2c5a907bb128d3db5494ca",
+  "login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8140,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.0_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "boot_ticks": 639292068975000000,
+    "administrator": false
+  },
+  "before_login_boot_ticks": 639292066105000000,
+  "actor_status": "pass",
+  "normal_close_exit": 0,
+  "package_removed": true,
+  "package_processes_removed": true,
+  "preferences_preserved": true,
+  "fixture_preserved": true,
+  "remaining_index_tasks": [],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_viewer_cleanup": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-3haruelf",
+    "owned_processes_reaped": [
+      {
+        "pid": 200973,
+        "exit": 0
+      },
+      {
+        "pid": 200977,
+        "exit": 0
+      },
+      {
+        "pid": 200978,
+        "exit": 15
+      },
+      {
+        "pid": 201035,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "0",
+    "profile_removed": true
+  },
+  "runtime_source": {
+    "sha256": "e9b458288b6e5b56e3ad9cbce959b033511a9a8b7037b7c589ea6cc9063841e6",
+    "guest_path": "C:\\OttrinOwnedMsixRuntime\\runtime.ps1",
+    "host_source": ".hermes/evidence/windows-startup-lifetime-current/runtime.ps1",
+    "scope": "Actual guest runtime script matches current source bytes; read-only hash observation during second login, no Ottrin CLI"
+  },
+  "scope": "Software SPICE with explicit OpenGL on owned updated Windows client; package identity/token/real boot observed, no security policy changes; not physical adapter/Store/cross-version acceptance",
+  "visual_review": "main.png visibly renders actual Light Miller UI and declared OpenGL compatibility notice; no complete theme or physical-adapter claim",
+  "cleanup_status_caveat": "OwnedDesktop labels SystemExit(0) as failed despite successful resource removal. Retain raw report; process exits, profile removal and VM/volume cleanup independently prove teardown. Classification source correction remains in the roadmap."
+}

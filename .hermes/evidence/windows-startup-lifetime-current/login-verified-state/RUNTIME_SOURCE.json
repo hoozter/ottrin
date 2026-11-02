@@ -1,0 +1,6 @@
+{
+  "sha256": "e9b458288b6e5b56e3ad9cbce959b033511a9a8b7037b7c589ea6cc9063841e6",
+  "guest_path": "C:\\OttrinOwnedMsixRuntime\\runtime.ps1",
+  "host_source": ".hermes/evidence/windows-startup-lifetime-current/runtime.ps1",
+  "scope": "Actual guest runtime script matches current source bytes; read-only hash observation during second login, no Ottrin CLI"
+}

@@ -1,0 +1,35 @@
+MSI (s) (C0:9C) [08:29:46:375]: User policy value 'DisableRollback' is 0
+MSI (s) (C0:9C) [08:29:46:375]: Machine policy value 'DisableRollback' is 0
+Action ended 08:29:46: DeliberateFailure. Return value 3.
+MSI (s) (C0:9C) [08:29:46:375]: Note: 1: 2318 2:
+MSI (s) (C0:9C) [08:29:46:377]: Executing op: Header(Signature=1397708873,Version=500,Timestamp=1566720952,LangId=1033,Platform=589824,ScriptType=2,ScriptMajorVersion=21,ScriptMinorVersion=4,ScriptAttributes=0)
+MSI (s) (C0:9C) [08:29:46:377]: Executing op: DialogInfo(Type=0,Argument=1033)
+MSI (s) (C0:9C) [08:29:46:377]: Executing op: DialogInfo(Type=1,Argument=Ottrin Hosted Rollback Control install)
+MSI (s) (C0:9C) [08:29:46:379]: Executing op: RollbackInfo(,RollbackAction=Rollback,RollbackDescription=Rolling back action: [1],,CleanupAction=RollbackCleanup,CleanupDescription=Removing backup files File: [1],)
+MSI (s) (C0:9C) [08:29:46:379]: Executing op: ActionStart(Name=PublishProduct,Description=Publishing product information,)
+MSI (s) (C0:9C) [08:29:46:379]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A\SourceList\Net,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (C0:9C) [08:29:46:379]: Executing op: ProductInfo(ProductKey={31DA2F18-5180-499F-83A5-C66A2736F4A4},ProductName=Ottrin Hosted Rollback Control install,PackageName=control-install.msi,Language=1033,Version=16777216,Assignment=0,ObsoleteArg=0,,,PackageCode={942BE861-92B0-45AB-BFF9-05A3C10BCB35},,,InstanceType=0,LUASetting=0,RemoteURTInstalls=0,ProductDeploymentFlags=2)
+MSI (s) (C0:9C) [08:29:46:381]: SHELL32::SHGetFolderPath returned: C:\Users\OTMSIfa79b43a4b29\AppData\Roaming
+MSI (s) (C0:9C) [08:29:46:382]: SHELL32::SHGetFolderPath returned: C:\Users\OTMSIfa79b43a4b29\AppData\Roaming
+MSI (s) (C0:9C) [08:29:46:384]: SHELL32::SHGetFolderPath returned: C:\Users\OTMSIfa79b43a4b29\AppData\Roaming
+MSI (s) (C0:9C) [08:29:46:384]: Note: 1: 2318 2:
+MSI (s) (C0:9C) [08:29:46:386]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A\SourceList,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (C0:9C) [08:29:46:386]: Executing op: RegRemoveValue(Name=LastUsedSource,Value=#%n;1;C:\WINDOWS\TEMP\ottrin-msi-fa79b43a4b294e73b45549db728f005c\,)
+MSI (s) (C0:9C) [08:29:46:386]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A\SourceList 3: 5
+MSI (s) (C0:9C) [08:29:46:386]: Note: 1: 2205 2:  3: Error
+MSI (s) (C0:9C) [08:29:46:386]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1403
+Info 1403.Could not delete value LastUsedSource from key \S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (C0:9C) [08:29:46:388]: Executing op: RegCreateKey()
+MSI (s) (C0:9C) [08:29:46:388]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A\SourceList 3: 5
+MSI (s) (C0:9C) [08:29:46:388]: Note: 1: 2205 2:  3: Error
+MSI (s) (C0:9C) [08:29:46:388]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1401
+MSI (s) (C0:9C) [08:29:46:388]: Error in rollback skipped.	Return: 3
+Info 1401.Could not create key: \S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A\SourceList.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (C0:9C) [08:29:46:388]: Executing op: RegOpenKey(Root=-2147483645,Key=S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A,SecurityDescriptor=BinaryData,BinaryType=1,,)
+MSI (s) (C0:9C) [08:29:46:390]: Executing op: RegRemoveValue(Name=Clients,Value=[~]:,)
+MSI (s) (C0:9C) [08:29:46:390]: Note: 1: 1402 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A 3: 5
+MSI (s) (C0:9C) [08:29:46:390]: Note: 1: 2205 2:  3: Error
+MSI (s) (C0:9C) [08:29:46:390]: Note: 1: 2228 2:  3: Error 4: SELECT `Message` FROM `Error` WHERE `Error` = 1403
+Info 1403.Could not delete value Clients from key \S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A.  System error .  Verify that you have sufficient access to that key, or contact your support personnel.
+MSI (s) (C0:9C) [08:29:46:390]: Executing op: RegCreateKey()
+MSI (s) (C0:9C) [08:29:46:390]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1005\Software\Microsoft\Installer\Products\81F2AD130815F994385A6CA672634F4A 3: 5

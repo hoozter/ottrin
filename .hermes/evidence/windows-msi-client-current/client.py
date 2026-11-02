@@ -23,7 +23,7 @@ assert not virsh('snapshot-list','win11ltsc','--name')
 for v in [volume,iso_volume]:assert subprocess.run(['virsh','-c','qemu:///system','vol-info','--pool','default',v],capture_output=True).returncode!=0
 pins=json.loads((r/'.hermes/evidence/windows-20261011/windows-msi-compiler-downloads.json').read_text())
 cache=r/'.hermes/tools/msi-compiler';cache.mkdir(exist_ok=True)
-for filename,url,algorithm,digest in ([] if args.search_benchmark else [('runtime.zip',pins['runtime_url'],'sha512',pins['runtime_sha512']),('wix.zip',pins['wix_url'],'sha256',pins['wix_sha256'])]):
+for filename,url,algorithm,digest in ([] if args.search_benchmark or args.msix_runtime else [('runtime.zip',pins['runtime_url'],'sha512',pins['runtime_sha512']),('wix.zip',pins['wix_url'],'sha256',pins['wix_sha256'])]):
  p=cache/filename
  if not p.exists():
   temp=p.with_suffix('.download');assert not temp.exists()
@@ -31,13 +31,13 @@ for filename,url,algorithm,digest in ([] if args.search_benchmark else [('runtim
   finally:temp.unlink(missing_ok=True)
  assert hashlib.new(algorithm,p.read_bytes()).hexdigest()==digest
 fixture=e/'fixture';assert not fixture.exists()
-scope='Exact optimized500k search benchmark on the owned native Windows client; pure computation under the agent token, not desktop or file-operation acceptance' if args.search_benchmark else 'Actual development MSIX deployment, ordinary launch and index/removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
+scope='Exact optimized500k search benchmark on the owned native Windows client; pure computation under the agent token, not desktop or file-operation acceptance' if args.search_benchmark else 'Actual development MSIX deployment, ordinary runtime, real login startup and removal ownership; no upgrade acceptance' if args.msix_runtime else 'Actual MSIX assembly and payload comparison; deployment remains separate' if args.msix_stage else 'Native MSIX parser/XML and SDK smoke; assembly/deployment remain separate' if args.msix_parse_only else 'Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
 if args.use_updated_base:
  prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
  base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default',prepared_base['volume']));assert base_xml.findtext('./backingStore/path')==prepared_base['backing_original'];assert virsh('vol-path','--pool','default',prepared_base['volume'])==backing
  for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
-state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.search_benchmark else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+state={'domain':name,'uuid':uid,'base_domain':'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.search_benchmark or args.msix_runtime else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 save('OWNER.json',state)
 def cleanup():
  try:
@@ -71,7 +71,7 @@ def finish(kind,error,trace):
 with ExitStack() as stack:
  stack.push(finish)
  fixture.mkdir()
- for filename in ([] if args.search_benchmark else ['runtime.zip','wix.zip']):os.link(cache/filename,fixture/filename)
+ for filename in ([] if args.search_benchmark or args.msix_runtime else ['runtime.zip','wix.zip']):os.link(cache/filename,fixture/filename)
  if args.update_manifest:
   inputs=json.loads(args.update_manifest.read_text());update_cache=r/'.hermes/tools/windows-client-update'
   assert shutil.disk_usage('/var/lib/libvirt/images').free>24*1024**3,'Need room for owned ISO, servicing overlay and teardown'
@@ -105,6 +105,8 @@ with ExitStack() as stack:
   executable=args.search_benchmark.resolve();assert executable.parent==r/'target/x86_64-pc-windows-gnu/release/deps' and executable.name.startswith('ottrin_search-') and executable.suffix=='.exe'
   with executable.open('rb') as file:digest=hashlib.file_digest(file,'sha256').hexdigest()
   os.link(executable,fixture/'benchmark.exe');iso_inputs=[fixture/'benchmark.exe'];save('INPUT.json',{'executable':str(executable),'sha256':digest,'exact_test':'tests::bench_query_500k','profile':'release','budget_ms':100})
+ elif args.msix_runtime:
+  iso_inputs=[fixture/n for n in ['Ottrin.msix','runtime.ps1','runtime-input.json','native-controls.ps1']]
  else:
   source=r/'.hermes/evidence/msi-hosted-control-current/source'
   actor=(source/'msi-rollback-control-actor.ps1').read_text()
@@ -148,7 +150,6 @@ with ExitStack() as stack:
   if args.update_manifest or args.msix_parse_only or args.msix_stage:
    iso_inputs.extend(fixture/name for name in ['package-msix.ps1','msix-manifest.xml','windows-sdk-buildtools.zip','windows-msix-template.ps1','icon.png'])
   if args.msix_stage:iso_inputs.extend(fixture/name for name in ['portable.zip','source.zip','mingit.zip','assembly-inputs.json','assembly.ps1'])
-  if args.msix_runtime:iso_inputs.extend(fixture/name for name in ['Ottrin.msix','runtime.ps1','runtime-input.json','native-controls.ps1'])
  # UDF carries the real >4GiB file size; the ISO9660 fallback is limited.
  # The Windows reader must recheck every update hash before WUSA executes it.
  large_file_flags=['-allow-limited-size'] if args.update_manifest else []
@@ -239,15 +240,18 @@ with ExitStack() as stack:
   reboot_owned_guest();time.sleep(8);deadline=time.monotonic()+1200;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
   while True:
    try:
-    result=ps("$p='C:\\OttrinOwnedMsixRuntime\\results\\RESULT.json';if(Test-Path $p){Get-Content $p -Raw}else{'{}'}",20)
+    result=ps("$p='C:\\OttrinOwnedMsixRuntime\\results\\RESULT.json';if(Test-Path $p){$s=[IO.File]::Open($p,'Open','Read',([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete));$r=[IO.StreamReader]::new($s);try{$r.ReadToEnd()}finally{$r.Dispose()}}else{'{}'}",20)
     if result.get('exitcode')==0:
      runtime=json.loads(base64.b64decode(result.get('out-data','e30=')).decode('utf-8-sig'))
-     if runtime.get('status') not in [None,'running']:break
+     if runtime.get('status')=='awaiting actual login' and not state.get('login_reboot_requested'):
+      state['login_reboot_requested']=True;save('OWNER.json',state);save('BEFORE_LOGIN.json',runtime)
+      reboot_owned_guest();state['status']='observing actual Windows login startup before any Ottrin CLI';save('OWNER.json',state)
+     elif runtime.get('status') not in [None,'running','awaiting actual login']:break
    except (RuntimeError,TimeoutError,json.JSONDecodeError):pass
    assert time.monotonic()<deadline,'Native MSIX interactive test did not finish'
    time.sleep(3)
   save('RUNTIME_RESULT.json',runtime)
-  result=ps("$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Compress-Archive 'C:\\OttrinOwnedMsixRuntime\\results\\*' 'C:\\OttrinOwnedMsixRuntimeResults.zip';[Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\\OttrinOwnedMsixRuntimeResults.zip'))",30);assert result['exitcode']==0
+  result=ps("$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Compress-Archive 'C:\\OttrinOwnedMsixRuntime\\results\\*' 'C:\\OttrinOwnedMsixRuntimeResults.zip';[Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\\OttrinOwnedMsixRuntimeResults.zip'))",30);save('RESULT_EXPORT_PROCESS.json',result);assert result['exitcode']==0
   (e/'RESULTS.zip').write_bytes(base64.b64decode(base64.b64decode(result['out-data']).decode().strip()))
   state['status']='native MSIX runtime test finished; inspect result, not assumed accepted';save('OWNER.json',state)
   raise SystemExit(0)
@@ -317,7 +321,7 @@ with ExitStack() as stack:
  time.sleep(8);deadline=time.monotonic()+1200
  while True:
   try:
-   result=ps("$p='"+owner['root']+"\\results\\RESULT.json';if(Test-Path $p){Get-Content $p -Raw}else{'{}'}",20)
+   result=ps("$p='"+owner['root']+"\\results\\RESULT.json';if(Test-Path $p){$s=[IO.File]::Open($p,'Open','Read',([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete));$r=[IO.StreamReader]::new($s);try{$r.ReadToEnd()}finally{$r.Dispose()}}else{'{}'}",20)
    if result.get('exitcode')==0:
     actor_result=json.loads(base64.b64decode(result.get('out-data','e30=')).decode('utf-8-sig'))
     if actor_result.get('status') not in [None,'running']:break

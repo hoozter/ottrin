@@ -72,8 +72,9 @@ separate serial gate on both platforms and retains debug correctness checks.
 Its first native Windows release measurement failed at140ms. Reusing a compiled
 query literal now passes at78ms on the same native client and20ms on Linux, with
 all244 Linux search tests and strict Linux/Windows lint passing. Hosted confirmation
-is running for pushed sourcea10792db in run41413618813 (four jobs); it is not yet
-a hosted pass.
+has three successful jobs for pushed sourcea10792db in run41413618813: complete
+Linux verification and both serial release benchmarks (16ms Linux,61ms Windows).
+The full Windows job remains running; this is not yet an all-jobs hosted pass.
 Evidence: `.hermes/evidence/github-actions-current/`,
 `.hermes/evidence/search-performance-isolation-current/`.
 
@@ -95,16 +96,27 @@ The independent queue is:
    window and daemon package identity, non-elevated launch, GUI focus, setup,
    status, disable/reenable, normal Close and actual package removal. Preferences
    and source files remain unchanged, with no residual daemon or scheduled task.
-   This fixes the prior per-call WinRT teardown crash. Actual login startup and
-   cross-version update remain required. The native visual scope uses software
+   A further actual reboot/login also passes: Windows starts the non-elevated
+   package daemon before any Ottrin CLI, the saved root becomes Ready and saved
+   preferences survive. Subsequent package removal still preserves preferences
+   and source while removing package processes and index tasks. Two earlier
+   attempts exposed harness status-file locking and PowerShell null-string
+   marshalling; neither is counted as login acceptance. Atomic publication/shared
+   reads and an ordinary-user native writer probe now pass. This fixes the prior
+   per-call WinRT teardown crash; cross-version update remains required.
+   The native visual scope uses software
    SPICE and explicit OpenGL; physical/native-driver acceptance remains separate.
    Completed guests/volumes/profiles and fulfilled source archives are removed.
    The latest development stage remains at `.hermes/packaging-tmp/.windows-desktop-stage`
    for the pending login/update consumers; accepted8ede and Linux deliveries are
    preserved. No Store identity is invented.
-   Evidence: `windows-startup-lifetime-current/NATIVE_ACCEPTANCE.json`.
+   Evidence: `windows-startup-lifetime-current/NATIVE_ACCEPTANCE.json`,
+   `windows-startup-lifetime-current/login-verified-state/ACCEPTANCE.json`.
 3. Remaining software/theme/accessibility/resource and supported-platform gates;
    keep physical-only and final owner acceptance on the explicit waiting list.
+   The QA desktop teardown report also needs its successful SystemExit(0)
+   classification corrected at the next source checkpoint; actual process/profile
+   removal for these cases is separately verified in the retained receipts.
 
 Do not stop this goal on owner waits while another independent item is ready.
 Older checkpoints below retain their original source/artifact scopes; they do not

@@ -1,0 +1,152 @@
+{
+  "removed_unused_files": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/login-state.png",
+      "bytes": 9384,
+      "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/privacy-offers.png",
+      "bytes": 184314,
+      "sha256": "2d8167e3f7a4a26f45f11788b2f2a0e425f937cae0eea478975c362ecad5d3fd"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/privacy.png",
+      "bytes": 179285,
+      "sha256": "6f25923f227761012b20b7629661f118d64bbb91a9dcf7a43df6dd388d08b281"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/boot.png",
+      "bytes": 18089,
+      "sha256": "a5146f11b5d120d488b1a4a4f4b64c2e49d91e23018d407769ff1c8cf5bbf682"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/current.png",
+      "bytes": 468614,
+      "sha256": "995f31139c4608a47e849041394f0cbfeb610f46249551be05fe86042af0aae2"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/privacy-find-device.png",
+      "bytes": 171553,
+      "sha256": "9db221f42656d1995ce78e0816921e7f83de3e8e497dcb6e87652943cc400d59"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/desktop-ready.png",
+      "bytes": 2134714,
+      "sha256": "f21a61a90cd53ac10c94e14b403b15fc4966a744c8f3b7c8b9211568ef1dcaf9"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/privacy-inking.png",
+      "bytes": 176207,
+      "sha256": "1d973ccb8be52da1ae2042a4280a81e28a497a4b39f62e229bc9e88521b4dd70"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/actor.ps1",
+      "bytes": 6021,
+      "sha256": "9adde4b28c985f29f40f71d78557c83905cbda45423f4f0757e2188e5fe8f6ad"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login/controller.ps1",
+      "bytes": 6824,
+      "sha256": "34aeb0a3070906700470414ae71caee3dec6c325cc2779f90cfd46257db9b568"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/privacy-offers.png",
+      "bytes": 181399,
+      "sha256": "97d898d4389c3f8871caa598f04356122c0e260c85fa97d7b8782966d820501e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/privacy.png",
+      "bytes": 176812,
+      "sha256": "c843ddf12c2ab141930309385b28dd64adf7597beb08d031b11078dfbc2b74ce"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/actor.png",
+      "bytes": 1688822,
+      "sha256": "3a88e86bd311c9e7b81f6487a0624154cfa1722fff3063fd35b3dbca647b94da"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/current.png",
+      "bytes": 9384,
+      "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/privacy-find-device.png",
+      "bytes": 169668,
+      "sha256": "c2133ca382fed032491e862ce5ae0a7000da901fa289dd85227ee590b2d327f7"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/desktop-ready.png",
+      "bytes": 1688858,
+      "sha256": "aa25ffd31c42eab1489393d271c107a1108ade3214d1aaa7ad0e75be949f503d"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/privacy-inking.png",
+      "bytes": 174190,
+      "sha256": "02fb5608428ff4334efd25fa50050527beb6039dbe3ea8c1ad05212e363d0706"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/actor.ps1",
+      "bytes": 6021,
+      "sha256": "9adde4b28c985f29f40f71d78557c83905cbda45423f4f0757e2188e5fe8f6ad"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-atomic/controller.ps1",
+      "bytes": 6824,
+      "sha256": "34aeb0a3070906700470414ae71caee3dec6c325cc2779f90cfd46257db9b568"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/privacy-offers.png",
+      "bytes": 206535,
+      "sha256": "8bbbc17b3e722c28053a829c0f43237c91733bf19414197ffa32c3bcda4ed1a3"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/privacy.png",
+      "bytes": 201524,
+      "sha256": "315747619f0ee0421773057bea280129238d316f31358e9e2ca449de088acbe1"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/current.png",
+      "bytes": 17816,
+      "sha256": "3a897b066b5eaf77f4cc2f741da530dcb3e0d23bfb2288d5ef72fe14333cefcf"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/privacy-find-device.png",
+      "bytes": 194105,
+      "sha256": "de165c253f8ecfde9e1a4e42c01ae276f723b8fb0c117b707354664e0e56f2d7"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/privacy-inking.png",
+      "bytes": 198830,
+      "sha256": "8578d7ee2777137fcc68680b92cd859b1a02082cf72796dbf0ad80060c696da6"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/actor.ps1",
+      "bytes": 6021,
+      "sha256": "9adde4b28c985f29f40f71d78557c83905cbda45423f4f0757e2188e5fe8f6ad"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/controller.ps1",
+      "bytes": 6824,
+      "sha256": "34aeb0a3070906700470414ae71caee3dec6c325cc2779f90cfd46257db9b568"
+    }
+  ],
+  "removed_bytes": 8288638,
+  "scope": "Discarded intermediate/rejected screenshots and unused MSI actor/controller projections; compact negative evidence, native probes, complete result archive and final main/desktop images retained",
+  "owned_children_removed": [
+    "login",
+    "login-atomic",
+    "login-verified-state"
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Latest development MSIX and matching stage for pending actual cross-version update acceptance"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2",
+      "purpose": "Retained updated Windows baseline for pending MSI diagnostics and cross-version MSIX update consumers"
+    }
+  ],
+  "remaining_protected_cores": "Existing owner-wait core paths and exact cleanup blockers remain in docs/ROADMAP.md and rejected console CORE_CLEANUP.json receipts; no new core created by these software-console cases"
+}

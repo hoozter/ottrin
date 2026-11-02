@@ -1,0 +1,35 @@
+{
+  "actual_live_recheck": [
+    {
+      "case": "login",
+      "domain_absent": true,
+      "owned_volumes_absent": [
+        "ottrin-msix-runtime-fixture.iso",
+        "ottrin-msix-runtime.qcow2"
+      ],
+      "viewer_process_absent": 194421,
+      "private_profile_absent": "/var/tmp/.ottrin-picker-qa-4gpqei2z"
+    },
+    {
+      "case": "login-atomic",
+      "domain_absent": true,
+      "owned_volumes_absent": [
+        "ottrin-msix-runtime-fixture.iso",
+        "ottrin-msix-runtime.qcow2"
+      ],
+      "viewer_process_absent": 196798,
+      "private_profile_absent": "/var/tmp/.ottrin-picker-qa-iqju4vtj"
+    },
+    {
+      "case": "login-verified-state",
+      "domain_absent": true,
+      "owned_volumes_absent": [
+        "ottrin-msix-runtime-fixture.iso",
+        "ottrin-msix-runtime.qcow2"
+      ],
+      "viewer_process_absent": 201035,
+      "private_profile_absent": "/var/tmp/.ottrin-picker-qa-3haruelf"
+    }
+  ],
+  "original_base_off": true
+}

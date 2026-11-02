@@ -1,0 +1,22 @@
+{
+  "run": 41413618813,
+  "scope": "Completed exact release performance jobs; full functional result remains separate",
+  "results": [
+    {
+      "platform": "Windows",
+      "job": 125172089851,
+      "lines": [
+        "2026-11-02T08:34:49.8291185Z test tests::bench_query_500k ... 500k query: 61ms, 2 hits",
+        "2026-11-02T08:34:49.9555878Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 230 filtered out; finished in 0.52s"
+      ]
+    },
+    {
+      "platform": "Linux",
+      "job": 125172089994,
+      "lines": [
+        "2026-11-02T08:32:07.9446824Z test tests::bench_query_500k ... 500k query: 16ms, 2 hits",
+        "2026-11-02T08:32:08.0089445Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.48s"
+      ]
+    }
+  ]
+}

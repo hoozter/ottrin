@@ -1,0 +1,19 @@
+{
+  "index_ready": "ready",
+  "phase": "login-index-status.json",
+  "observed_before_any_ottrin_cli": {
+    "pid": 8140,
+    "administrator": false,
+    "session": 1,
+    "package": "Ottrin.Development_0.1.0.0_x64__vs01n017nxmbr"
+  },
+  "cli_exits": {
+    "login-service-status.stdout": 0,
+    "login-index-status.json": 0
+  },
+  "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+  "preferences_preserved": true,
+  "status": "pass",
+  "boot_ticks": 639292068975000000,
+  "administrator": false
+}

@@ -1,0 +1,6 @@
+{
+  "status": "rejected harness attempt; actual actor exited1 before Ottrin GUI launch; actual login not exercised",
+  "cause": "PowerShell5.1 marshals null string backup path for File.Replace as an invalid path; corrected NullString.Value is proven under the same ordinary user with two consecutive state writes",
+  "evidence": "TERMINAL_ACTOR_AND_STATE_PROBES.log",
+  "cleanup": "Explicitly terminate only this owned producer so its registered teardown removes the stalled disposable guest and all child resources; no restart due observation timeout"
+}
