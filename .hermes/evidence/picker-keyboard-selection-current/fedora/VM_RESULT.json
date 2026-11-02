@@ -1,0 +1,24 @@
+{
+  "setup_control": false,
+  "distro": "fedora",
+  "domain": "ottrin-native-fedora-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "status": "pass within actor scope",
+  "package_sha256": "aba45c43b3e74c8cc6d761e9c6968dd1ecf1596f693da1bb713818a2de38ba9e",
+  "uuid": "e00d0bcd-631f-4de1-90f2-293fe3c90c41",
+  "cloud_init": {
+    "exit": 2,
+    "status": "done",
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "temporary_seed_and_ssh_keys_removed": true
+}

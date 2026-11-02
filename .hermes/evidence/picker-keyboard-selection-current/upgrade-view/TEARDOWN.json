@@ -1,0 +1,39 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-ld2sir2b",
+  "owned_processes_reaped": [
+    {
+      "pid": 506629,
+      "exit": 0
+    },
+    {
+      "pid": 506640,
+      "exit": 0
+    },
+    {
+      "pid": 506641,
+      "exit": 15
+    },
+    {
+      "pid": 506883,
+      "exit": 0
+    },
+    {
+      "pid": 507206,
+      "exit": 0
+    },
+    {
+      "pid": 507424,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      506888,
+      507078
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

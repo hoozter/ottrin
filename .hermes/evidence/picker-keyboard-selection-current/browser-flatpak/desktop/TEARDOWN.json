@@ -1,0 +1,36 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-vpyvtrdc",
+  "owned_processes_reaped": [
+    {
+      "pid": 509745,
+      "exit": 0
+    },
+    {
+      "pid": 509757,
+      "exit": 0
+    },
+    {
+      "pid": 509758,
+      "exit": 15
+    },
+    {
+      "pid": 509873,
+      "exit": -15
+    },
+    {
+      "pid": 509874,
+      "exit": -15
+    },
+    {
+      "pid": 509903,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

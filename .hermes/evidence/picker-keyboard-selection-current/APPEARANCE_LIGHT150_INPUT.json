@@ -1,0 +1,7 @@
+{
+  "status": "executed; rendered review still required",
+  "prior_accepted_actions": ".hermes/evidence/menu-space-delivery-current/appearance-light150/RESULT.json",
+  "input_sha256": "465e5ff0b0d0a3606dd69cb20fbee9c014960192680d112d63663a6a7d488f1f",
+  "driver_sha256": "bf5d3419a0390d9afac7ea95b11a165c395d7a2d83a3391d771c937875972dfc",
+  "count": 44
+}

@@ -1,0 +1,8 @@
+{
+  "status": "rejected observer; no product startup failure established",
+  "actual_rendered_frame": "content-0.png",
+  "cause": "Whole-window OCR drops dots and misreads gamma.txt while all three filenames and footer actions are visibly present",
+  "correction": "At the observed file-list bounds,3x raster enlargement and line OCR return all three exact names. Preserve original guest/app evidence; rerun only corrected observation",
+  "teardown": "Owned app and private display/profile removed by registered context teardown",
+  "producer_correction": "Original failure receipt retained status=running despite terminal exception; future producer now records failed observation explicitly. Accepted run source frozen separately. Empty aborted response file removed, not treated as valid JSON or cancellation."
+}

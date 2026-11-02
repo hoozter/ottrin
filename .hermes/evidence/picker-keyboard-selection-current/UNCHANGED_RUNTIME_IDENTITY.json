@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "previous_source": "592d56e89d7b7b3c46b685e6d27a3c988c076372",
+  "previous_appimage_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+  "candidate_source": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "candidate_appimage_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+  "identical_complete_payloads": {
+    "usr/bin/ottrin-indexd": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+    "usr/bin/ottrin-media-playback": "d8b602a62cebb37d212629fd61cfeb700dd10dddfc87c8e9f22544ba3d205ca3",
+    "usr/bin/ottrin-legacy-doc-render": "0c85f0615777cc686ad4d4e0bb55a8bf881b92c6b3922e8222ce109bd8ff2a57",
+    "usr/libexec/ottrin/ottrin-priv-helper": "041770a6db79578a7271eab56f8bd5127a0a155f5b9ed1bb185420da7cf6c41d",
+    "usr/libexec/ottrin/ottrin-html-render": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
+    "usr/bin/pdfium/lib/libpdfium.so": "3019ad1cd6980e51d900bb9266f8980cb846cb8e0c1f6553c52a7a1626469020"
+  },
+  "scope": "Six exact daemon/renderer/helper payloads unchanged. Historical performance/installation receipts retain their own package source and identity; no automatic acceptance of newly rebuilt GUI."
+}

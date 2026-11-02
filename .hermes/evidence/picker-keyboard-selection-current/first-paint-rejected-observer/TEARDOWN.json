@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-9bs_3r7q",
+  "owned_processes_reaped": [
+    {
+      "pid": 515328,
+      "exit": 0
+    },
+    {
+      "pid": 515331,
+      "exit": 0
+    },
+    {
+      "pid": 515332,
+      "exit": 15
+    },
+    {
+      "pid": 515430,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Actual chooser contents did not become ready",
+  "profile_removed": true
+}

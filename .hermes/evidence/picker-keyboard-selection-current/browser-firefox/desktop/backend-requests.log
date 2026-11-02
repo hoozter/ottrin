@@ -1,0 +1,280 @@
+signal time=1793647774.338905 sender=org.freedesktop.DBus -> destination=:1.7 serial=2 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameAcquired
+   string ":1.7"
+signal time=1793647774.338957 sender=org.freedesktop.DBus -> destination=:1.7 serial=4 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameLost
+   string ":1.7"
+method call time=1793647777.091458 sender=:1.8 -> destination=:1.4 serial=51 path=/org/freedesktop/portal/desktop; interface=org.freedesktop.impl.portal.FileChooser; member=OpenFile
+   object path "/org/freedesktop/portal/desktop/request/1_9/firefox_file_picker_0_1157361011"
+   string "firefox"
+   string "x11:400003"
+   string "Open File - Mozilla Firefox"
+   array [
+      dict entry(
+         string "modal"
+         variant             boolean true
+      )
+      dict entry(
+         string "multiple"
+         variant             boolean false
+      )
+      dict entry(
+         string "directory"
+         variant             boolean false
+      )
+      dict entry(
+         string "filters"
+         variant             array [
+               struct {
+                  string "All Files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*"
+                     }
+                  ]
+               }
+               struct {
+                  string "HTML Files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.[hH][tT][mM][lL]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[hH][tT][mM]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[sS][hH][tT][mM][lL]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[xX][hH][tT][mM][lL]"
+                     }
+                  ]
+               }
+               struct {
+                  string "Text Files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.[tT][xX][tT]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[tT][eE][xX][tT]"
+                     }
+                  ]
+               }
+               struct {
+                  string "Image Files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.[jJ][pP][eE]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[jJ][pP][gG]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[jJ][pP][eE][gG]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[gG][iI][fF]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[pP][nN][gG]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[bB][mM][pP]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[iI][cC][oO]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[sS][vV][gG]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[sS][vV][gG][zZ]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[tT][iI][fF]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[tT][iI][fF][fF]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[aA][iI]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[dD][rR][wW]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[pP][cC][tT]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[pP][sS][pP]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[xX][cC][fF]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[pP][sS][dD]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[rR][aA][wW]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[wW][eE][bB][pP]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[hH][eE][iI][cC]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[aA][vV][iI][fF]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[jJ][xX][lL]"
+                     }
+                  ]
+               }
+               struct {
+                  string "XML Files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.[xX][mM][lL]"
+                     }
+                  ]
+               }
+               struct {
+                  string "PDF Files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.[pP][dD][fF]"
+                     }
+                  ]
+               }
+            ]
+      )
+      dict entry(
+         string "current_filter"
+         variant             struct {
+               string "All Files"
+               array [
+                  struct {
+                     uint32 0
+                     string "*"
+                  }
+               ]
+            }
+      )
+   ]
+method call time=1793647781.047709 sender=:1.8 -> destination=:1.4 serial=60 path=/org/freedesktop/portal/desktop; interface=org.freedesktop.impl.portal.FileChooser; member=SaveFile
+   object path "/org/freedesktop/portal/desktop/request/1_9/firefox_file_picker_1_2801394884"
+   string "firefox"
+   string "x11:400003"
+   string "Save As - Mozilla Firefox"
+   array [
+      dict entry(
+         string "modal"
+         variant             boolean true
+      )
+      dict entry(
+         string "filters"
+         variant             array [
+               struct {
+                  string "Plain text document"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*.[tT][xX][tT]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[tT][eE][xX][tT]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[pP][oO][tT]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[bB][rR][fF]"
+                     }
+                     struct {
+                        uint32 0
+                        string "*.[sS][rR][tT]"
+                     }
+                  ]
+               }
+               struct {
+                  string "All Files"
+                  array [
+                     struct {
+                        uint32 0
+                        string "*"
+                     }
+                  ]
+               }
+            ]
+      )
+      dict entry(
+         string "current_filter"
+         variant             struct {
+               string "Plain text document"
+               array [
+                  struct {
+                     uint32 0
+                     string "*.[tT][xX][tT]"
+                  }
+                  struct {
+                     uint32 0
+                     string "*.[tT][eE][xX][tT]"
+                  }
+                  struct {
+                     uint32 0
+                     string "*.[pP][oO][tT]"
+                  }
+                  struct {
+                     uint32 0
+                     string "*.[bB][rR][fF]"
+                  }
+                  struct {
+                     uint32 0
+                     string "*.[sS][rR][tT]"
+                  }
+               ]
+            }
+      )
+      dict entry(
+         string "current_name"
+         variant             string "original.txt"
+      )
+      dict entry(
+         string "current_folder"
+         variant             array of bytes "/var/tmp/.ottrin-picker-qa-9bbk1avt/home/Downloads" + \0
+      )
+   ]

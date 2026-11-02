@@ -1,0 +1,2079 @@
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 19 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 20 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 20 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 21 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 22 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 22 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 23 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 23 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 24 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 24 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 25 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 25 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 26 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 26 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 27 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 27 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 28 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 28 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 29 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* main ci · 41508619836
+Triggered via push about 29 minutes ago
+
+JOBS
+* verify (windows-latest) (ID 125494300779)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  - Install Linux system dependencies
+  - Prepare Linux process isolation
+  ✓ Install Windows test dependencies
+  ✓ Verify native MSIX manifest template
+  ✓ Cargo check
+  - Prepare production Linux HTML sandbox
+  - Verify production HTML pixels and executable mapping policy
+  ✓ Check Windows Move ownership before workspace suite
+  ✓ Check Windows Office contracts before workspace suite
+  ✓ Check Windows native preview boundary before workspace suite
+  ✓ Check Windows Move UI recovery before workspace suite
+  ✓ Check Windows index transport before workspace suite
+  * Cargo test
+  * Verify production Linux desktop integration
+  * Upload Linux portal evidence
+  * Cargo clippy
+  * Release build
+  * Verify Windows executable icons
+  * Prepare release-build artifact
+  * Upload release-build artifact
+  * Upload Windows native boundary failure diagnostics
+  * Retire production Linux HTML integration
+  * Upload Linux HTML sandbox evidence
+  * Post Cache Rust build
+  * Post Checkout
+✓ search-performance (ubuntu-latest) in 1m15s (ID 125494301141)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ search-performance (windows-latest) in 4m43s (ID 125494301144)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Release benchmark smoke test
+  ✓ Upload benchmark artifact
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+✓ verify (ubuntu-latest) in 10m0s (ID 125494301389)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Rust
+  ✓ Cache Rust build
+  ✓ Install Linux system dependencies
+  ✓ Prepare Linux process isolation
+  - Install Windows test dependencies
+  - Verify native MSIX manifest template
+  ✓ Cargo check
+  ✓ Prepare production Linux HTML sandbox
+  ✓ Verify production HTML pixels and executable mapping policy
+  - Check Windows Move ownership before workspace suite
+  - Check Windows Office contracts before workspace suite
+  - Check Windows native preview boundary before workspace suite
+  - Check Windows Move UI recovery before workspace suite
+  - Check Windows index transport before workspace suite
+  ✓ Cargo test
+  ✓ Verify production Linux desktop integration
+  ✓ Upload Linux portal evidence
+  ✓ Cargo clippy
+  ✓ Release build
+  - Verify Windows executable icons
+  ✓ Prepare release-build artifact
+  ✓ Upload release-build artifact
+  - Upload Windows native boundary failure diagnostics
+  ✓ Retire production Linux HTML integration
+  ✓ Upload Linux HTML sandbox evidence
+  ✓ Post Cache Rust build
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+search-performance (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+search-performance (windows-latest): .github#3
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+verify (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+verify (ubuntu-latest): .github#1

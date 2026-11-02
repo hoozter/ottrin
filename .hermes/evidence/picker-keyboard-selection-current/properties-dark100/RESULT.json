@@ -1,0 +1,39 @@
+{
+  "artifact_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+  "scope": "Actual packaged Dark100 Properties, long metadata, normal native-pointer Close, no index/config/source mutation",
+  "native_close_button_clicked": true,
+  "status": "pass",
+  "normal_exit": 0,
+  "source_and_config_preserved": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-wekxaez7",
+    "owned_processes_reaped": [
+      {
+        "pid": 505742,
+        "exit": 0
+      },
+      {
+        "pid": 505748,
+        "exit": 0
+      },
+      {
+        "pid": 505749,
+        "exit": 15
+      },
+      {
+        "pid": 505931,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:64 / /var/tmp/.ottrin-picker-qa-wekxaez7/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

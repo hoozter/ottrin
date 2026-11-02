@@ -1,0 +1,72 @@
+{
+  "status": "pass",
+  "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "artifact_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+  "cases": [
+    {
+      "launch": 0,
+      "fresh_profile": true,
+      "window_mapped_ms_upper_bound": 506.16858195280656,
+      "contents_observed_ms_upper_bound": 1040.1551729883067,
+      "screenshot_sha256": "ca71d3e48c96a4f6612c4a447af15da82982aeca4bd306dd1cdb429a68dab0ac",
+      "normal_cancel_exit": 0
+    },
+    {
+      "launch": 1,
+      "fresh_profile": false,
+      "window_mapped_ms_upper_bound": 372.95133800944313,
+      "contents_observed_ms_upper_bound": 830.1063159597106,
+      "screenshot_sha256": "ca71d3e48c96a4f6612c4a447af15da82982aeca4bd306dd1cdb429a68dab0ac",
+      "normal_cancel_exit": 0
+    },
+    {
+      "launch": 2,
+      "fresh_profile": false,
+      "window_mapped_ms_upper_bound": 326.21769804973155,
+      "contents_observed_ms_upper_bound": 800.878961046692,
+      "screenshot_sha256": "ca71d3e48c96a4f6612c4a447af15da82982aeca4bd306dd1cdb429a68dab0ac",
+      "normal_cancel_exit": 0
+    }
+  ],
+  "scope": "Process-cold actual AppImage on private X11/software renderer. Content-ready upper bounds include screenshot/OCR observation overhead; OS disk caches are retained, not a disk-cold benchmark.",
+  "source_bytes_preserved": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-5qr2pdn2",
+    "owned_processes_reaped": [
+      {
+        "pid": 516891,
+        "exit": 0
+      },
+      {
+        "pid": 516894,
+        "exit": 0
+      },
+      {
+        "pid": 516895,
+        "exit": 15
+      },
+      {
+        "pid": 516998,
+        "exit": 0
+      },
+      {
+        "pid": 517123,
+        "exit": 0
+      },
+      {
+        "pid": 517207,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "143 34 0:64 / /var/tmp/.ottrin-picker-qa-5qr2pdn2/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

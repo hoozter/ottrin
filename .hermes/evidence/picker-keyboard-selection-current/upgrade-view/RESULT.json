@@ -1,0 +1,65 @@
+{
+  "old_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6",
+  "artifact_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+  "sessions": [
+    {
+      "label": "previous",
+      "normal_exit": 0,
+      "saved_view": "Miller",
+      "image_sha256": "1cfb0bf23c1c74b8af693fb9f65ffffba90da1db4988023358abdf0c102cb1f6"
+    },
+    {
+      "label": "updated",
+      "normal_exit": 0,
+      "saved_view": "Miller",
+      "image_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8"
+    },
+    {
+      "label": "reopened",
+      "normal_exit": 0,
+      "saved_view": "Miller",
+      "image_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8"
+    }
+  ],
+  "status": "pass",
+  "scope": "Actual previous/update/reopen AppImage in one private profile; screenshots require visual confirmation of Miller columns",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ld2sir2b",
+    "owned_processes_reaped": [
+      {
+        "pid": 506629,
+        "exit": 0
+      },
+      {
+        "pid": 506640,
+        "exit": 0
+      },
+      {
+        "pid": 506641,
+        "exit": 15
+      },
+      {
+        "pid": 506883,
+        "exit": 0
+      },
+      {
+        "pid": 507206,
+        "exit": 0
+      },
+      {
+        "pid": 507424,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        506888,
+        507078
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "status": "running",
+  "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "artifact_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+  "cases": [],
+  "scope": "Process-cold actual AppImage on private X11/software renderer. Content-ready upper bounds include screenshot/OCR observation overhead; OS disk caches are retained, not a disk-cold benchmark.",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-9bs_3r7q",
+    "owned_processes_reaped": [
+      {
+        "pid": 515328,
+        "exit": 0
+      },
+      {
+        "pid": 515331,
+        "exit": 0
+      },
+      {
+        "pid": 515332,
+        "exit": 15
+      },
+      {
+        "pid": 515430,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "Actual chooser contents did not become ready",
+    "profile_removed": true
+  }
+}

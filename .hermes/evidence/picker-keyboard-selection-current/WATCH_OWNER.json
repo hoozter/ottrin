@@ -1,0 +1,12 @@
+{
+  "remote_run": 41508619836,
+  "remote_state_last_verified": "in_progress;3 green jobs and Windows workspace tests live",
+  "scope": "Only local read-only watch stopped; GitHub run is neither cancelled nor restarted",
+  "owned_processes": [
+    {
+      "pid": 514868,
+      "start_ticks": "29453238"
+    }
+  ],
+  "local_watch_removed": true
+}

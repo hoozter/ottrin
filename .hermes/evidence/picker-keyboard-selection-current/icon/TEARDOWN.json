@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-_ewjhp2p",
+  "owned_processes_reaped": [
+    {
+      "pid": 505743,
+      "exit": 0
+    },
+    {
+      "pid": 505754,
+      "exit": 0
+    },
+    {
+      "pid": 505755,
+      "exit": 15
+    },
+    {
+      "pid": 505967,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

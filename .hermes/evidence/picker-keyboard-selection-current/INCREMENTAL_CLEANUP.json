@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "removed_sessions": 11,
+  "recovered": "0.50 GiB",
+  "consumed_global_manifest_removed": "/home/campbell/.local/state/computer-cleanup/incremental-candidates.json",
+  "manifest_sha256": "fa4e0d648d023ab64b7b622f590439b5a60623de7accf84f81434393444becd1",
+  "preserved": "Newest finalized sessions per exact configuration, source, current binaries, dependency libraries and useful shared caches",
+  "process_reviews": "PROCESS_REVIEWS.json",
+  "initial_refusal_retained": "INCREMENTAL_APPLY.log"
+}

@@ -1,0 +1,72 @@
+{
+  "status": "pass",
+  "browser": "falkon-flatpak",
+  "scope": "Actual installed browser Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+  "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "flatpak_scope": {
+    "application": "org.kde.falkon",
+    "private_browser_data": "/var/tmp/.ottrin-picker-qa-vpyvtrdc/browser",
+    "fixture_direct_filesystem_grant": false,
+    "startup_guard": "Actual sandbox shell requires the outside original file to be invisible before invoking installed falkon; prints real /.flatpak-info",
+    "persistent_overrides_changed": false,
+    "private_runtime_alias": "Sandbox-local symlink from the temporary runtime/doc URL prefix to Flatpak standard /run/flatpak/doc per-app mount; no fixture filesystem access added"
+  },
+  "private_wallet_creation_declined": true,
+  "startup_window_replacements": [
+    {
+      "vanished_window": "4194333",
+      "activation_error": "X Error of failed request:  BadWindow (invalid Window parameter)\n  Major opcode of failed request:  20 (X_GetProperty)\n  Resource id in failed request:  0x40001d\n  Serial number of failed request:  26\n  Current serial number in output stream:  26\n"
+    }
+  ],
+  "chooser_executable": "/var/tmp/.ottrin-picker-qa-vpyvtrdc/t/.mount_OttrinnjYhy9/usr/bin/ottrin",
+  "open_pid": 512268,
+  "actual_browser": "falkon-flatpak",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes from the opened local text document",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "chooser_backend_pid": 512429,
+  "popup_arrow_escape_scope": "Actual Flatpak file-type popup ArrowDown/Escape retains chooser; following Open/Save verifies original folder/file",
+  "no_index_started": true,
+  "identity_scope": "Parent runner verifies actual installed browser attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership.",
+  "actual_portal_app_id": "org.kde.falkon",
+  "identity_evidence": "Actual FileChooser backend OpenFile and SaveFile calls both carry the installed browser app ID",
+  "identity_limit": "Exact installed browser identity on private session; physical desktop and other browser packages remain separate.",
+  "real_flatpak_metadata_observed": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-vpyvtrdc",
+    "owned_processes_reaped": [
+      {
+        "pid": 509745,
+        "exit": 0
+      },
+      {
+        "pid": 509757,
+        "exit": 0
+      },
+      {
+        "pid": 509758,
+        "exit": 15
+      },
+      {
+        "pid": 509873,
+        "exit": -15
+      },
+      {
+        "pid": 509874,
+        "exit": -15
+      },
+      {
+        "pid": 509903,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

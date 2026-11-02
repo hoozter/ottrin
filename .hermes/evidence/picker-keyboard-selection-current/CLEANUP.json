@@ -1,0 +1,42 @@
+{
+  "status": "Completed native/GUI/test consumers cleaned; exact candidate stage and extraction retained only for pending guarded promotion",
+  "compiler_cache_after": {
+    "target/debug/deps": "33358301835\ttarget/debug/deps",
+    "target/debug/incremental": "18178928717\ttarget/debug/incremental",
+    "target/x86_64-pc-windows-gnu/debug/deps": "33224192567\ttarget/x86_64-pc-windows-gnu/debug/deps",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "38912513463\ttarget/x86_64-pc-windows-gnu/debug/incremental",
+    ".hermes/packaging-tmp/.windows-desktop-stage": "292813277\t.hermes/packaging-tmp/.windows-desktop-stage",
+    ".hermes/evidence/picker-keyboard-selection-current": "5375813\t.hermes/evidence/picker-keyboard-selection-current"
+  },
+  "incremental_cleanup": "INCREMENTAL_CLEANUP.json",
+  "completed": [
+    "All private native picker/main/Properties/menu/browser/appearance desktops and their child processes, profiles, displays, buses and mounts removed",
+    "Fresh Fedora and Ubuntu guests and six owned volumes removed; seed/SSH credentials removed by producers",
+    "Temporary tool wrappers, test-workspace HOME/XDG and consumed global incremental manifest removed",
+    "Temporary review contact sheets removed after review; compact original proof retained",
+    "Rejected OCR observer cleaned; exact screenshot and failure retained without claiming product failure"
+  ],
+  "retained_pending": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Current bf3abfd3 four-format Linux candidate; hosted41508619836 must pass before promotion"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+      "purpose": "Exact AppImage payload/runtime-identity inputs for guarded promotion; remove on promotion"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "Previously created independent15.34GiB Windows base, pending actual Ottrin MSI comparison; no domain live"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-stock-client/bootstrap",
+      "purpose": "Previously retained exact12MB driver/guest-agent bootstrap cache for independent Windows fixture"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "purpose": "Previously retained592d56e8 development Windows cohort awaiting installer/delivery work"
+    }
+  ],
+  "preserved": "User AGENTS.md, user data/preferences, current stable Linux/Windows deliverables, current binaries and useful shared compiler caches"
+}

@@ -1,0 +1,30 @@
+{
+  "binary_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": false,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd (deleted)",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    }
+  ],
+  "status": "pass"
+}

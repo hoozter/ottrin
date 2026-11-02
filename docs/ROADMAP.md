@@ -81,7 +81,27 @@ This is scoped project cleanup, not a claim of completed whole-machine cleanup.
 
 Continue in this order:
 
-1. Resolve the still-failed MSI after-execution transaction rollback gate.
+1. Finish the Linux chooser correction delivery from clean `bf3abfd3`.
+   Its four-format build, production content/closure/policy/namespace checks,
+   Dark100/Light150 native main/Inspector/Properties/icon/saved-view/menu and
+   real browser portal gates, live appearance replay with rendered review, and
+   fresh Fedora/Ubuntu normal package lifecycle all pass. Native chooser tests
+   verify exact Up/Down single/range responses, independent concurrent cancellation,
+   source/config preservation and no index startup. Both30-second idle samples
+   measure0.033percent of one core and94–95MiB PSS on the software desktop.
+   Process-cold window mapping is0.321–0.537s; separate actual-content observation
+   is0.801–1.040s including screenshot/OCR overhead with OS caches retained.
+   A full-window OCR false timeout is explicitly rejected, not a product failure.
+   Source461 UI tests and strict Linux/Windows lint pass. Hosted41508619836 has
+   three green jobs and a live Windows test job at this checkpoint. Observe that
+   existing job; do not rebuild or rerun completed fixtures. On full success,
+   run `picker-keyboard-selection-current/promote.py --output
+   .hermes/evidence/picker-keyboard-selection-current` with Python. It retains
+   every existing Linux promotion gate and adds the exact chooser controls.
+   Current stage and extraction remain solely for that consumer; stable592d56e8
+   packages stay unchanged until promotion. All local desktops/guests are removed.
+   Evidence: `picker-keyboard-selection-current/CHECKPOINT.json` and `CLEANUP.json`.
+2. Resolve the still-failed MSI after-execution transaction rollback gate.
    The independent Microsoft Windows11 Enterprise Evaluation26300 installation
    and signed kernel-driver/bootstrap verification now pass. Its MSI runtime is
    5.0.26100.9444. The unchanged immediate control and a second deferred DLL
@@ -103,10 +123,10 @@ Continue in this order:
    `windows-msi-deferred-control-current/stock/OBSERVATION.json`.
    All three completed guests, their overlay/media volumes and private consoles
    are removed; the independent15.34GiB base remains for the actual-MSI consumer.
-2. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
+3. Refresh coherent Windows portable/NSIS/MSI delivery after its required native
    software/installer gates pass. Keep development MSIX acceptance separate from
    signed Store certification; do not promote a failed installer gate.
-3. Audit and finish remaining software/theme/accessibility/resource and supported
+4. Audit and finish remaining software/theme/accessibility/resource and supported
    integration outcomes against the requirements below. The shared themed picker,
    Linux FileChooser portal/FileManager1 and reversible Windows folder actions
    have implementation and scoped native/package evidence; do not reopen their

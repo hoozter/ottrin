@@ -1,0 +1,42 @@
+{
+  "status": "pass",
+  "artifact_sha256": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+  "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "scope": "Private native X11 synthetic-file main/Inspector popup Space ownership observation; no product mutation or personal profile",
+  "main_menu_space_opened_inspector": false,
+  "inspector_menu_space_closed_inspector": false,
+  "normal_space_opens_and_closes_inspector": true,
+  "normal_exit": 0,
+  "source_files_unchanged": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-h3pzggt0",
+    "owned_processes_reaped": [
+      {
+        "pid": 506627,
+        "exit": 0
+      },
+      {
+        "pid": 506632,
+        "exit": 0
+      },
+      {
+        "pid": 506633,
+        "exit": 15
+      },
+      {
+        "pid": 506844,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        506851,
+        507067
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
