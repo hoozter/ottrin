@@ -1,0 +1,18 @@
+{
+  "domain": "ottrin-msi-updated-client",
+  "uuid": "fe9f1bec-ad2c-4ae3-8c79-179b2ad61a36",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [],
+  "status": "preparing",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Fresh disposable offline client overlay; ordinary-user file-only MSI control. No original VM or user profile mutation.",
+  "producer_sha256": "26e9f571b8a5e4ad5b9d346faa4ddfe4906032714e2c8645af24d12ebea80037",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [],
+    "fixture_removed": true,
+    "base_still_off": true
+  }
+}

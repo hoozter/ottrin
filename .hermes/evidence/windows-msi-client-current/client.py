@@ -58,6 +58,7 @@ with ExitStack() as stack:
    path=update_cache/item['filename']
    with path.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==item['sha256']
    os.link(path,fixture/path.name)
+  (fixture/'update-inputs.json').write_text(json.dumps(inputs))
  if args.update_manifest or args.msix_parse_only:
   for filename in ['package-msix.ps1','msix-manifest.xml']:
    shutil.copy2(r/'packaging/windows'/filename,fixture/filename)
@@ -100,10 +101,15 @@ exit $exit
 '''
  (fixture/'controller.ps1').write_text(script);shutil.copy2(fixture/'controller.ps1',e/'controller.ps1');shutil.copy2(fixture/'actor.ps1',e/'actor.ps1')
  iso_inputs=[fixture/n for n in ['runtime.zip','wix.zip','pins.json','actor.ps1','controller.ps1']]
- if args.update_manifest:iso_inputs.extend(fixture/item['filename'] for item in inputs['files'])
+ if args.update_manifest:
+  iso_inputs.extend(fixture/item['filename'] for item in inputs['files'])
+  iso_inputs.append(fixture/'update-inputs.json')
  if args.update_manifest or args.msix_parse_only:
   iso_inputs.extend(fixture/name for name in ['package-msix.ps1','msix-manifest.xml','windows-sdk-buildtools.zip','windows-msix-template.ps1','icon.png'])
- subprocess.run(['genisoimage','-quiet','-udf','-iso-level','3','-J','-joliet-long','-r','-V','OTMSICONTROL','-o',str(fixture/'inputs.iso'),*map(str,iso_inputs)],check=True)
+ # UDF carries the real >4GiB file size; the ISO9660 fallback is limited.
+ # The Windows reader must recheck every update hash before WUSA executes it.
+ large_file_flags=['-allow-limited-size'] if args.update_manifest else []
+ subprocess.run(['genisoimage','-quiet','-udf',*large_file_flags,'-iso-level','3','-J','-joliet-long','-r','-V','OTMSICONTROL','-o',str(fixture/'inputs.iso'),*map(str,iso_inputs)],check=True)
  virsh('vol-create-as','default',iso_volume,str((fixture/'inputs.iso').stat().st_size),'--format','raw');state['volumes'].append(iso_volume);save('OWNER.json',state)
  virsh('vol-upload','--pool','default',iso_volume,str(fixture/'inputs.iso'))
  virsh('vol-create-as','default',volume,'64G','--format','qcow2','--backing-vol',state['base_disk'],'--backing-vol-format','qcow2');state['volumes'].append(volume);save('OWNER.json',state)
@@ -144,6 +150,8 @@ exit $exit
    raise SystemExit(0)
  if args.update_manifest:
   state['status']='servicing owned offline clone with supported Microsoft update';save('OWNER.json',state)
+  verified=ps("$ErrorActionPreference='Stop';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});$d=$disc[0].DeviceID+'\\';$m=Get-Content (Join-Path $d 'update-inputs.json') -Raw|ConvertFrom-Json;$observed=@();foreach($item in $m.files){$p=Join-Path $d $item.filename;$h=(Get-FileHash $p).Hash.ToLowerInvariant();if($h-ne$item.sha256){throw 'Guest UDF update input hash mismatch'};$observed+=@{file=$item.filename;bytes=(Get-Item $p).Length;sha256=$h}};$observed|ConvertTo-Json -Compress",180)
+  save('GUEST_UPDATE_INPUTS.json',{'process_exit':verified.get('exitcode'),'stdout':base64.b64decode(verified.get('out-data','')).decode('utf-8-sig'),'stderr':base64.b64decode(verified.get('err-data','')).decode('utf-8',errors='replace')});assert verified['exitcode']==0
   target=next(item for item in inputs['files'] if 'kb5127648' in item['filename'])
   code="$ErrorActionPreference='Stop';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned update disc missing'};$msu=Join-Path ($disc[0].DeviceID+'\\') '"+target['filename']+"';$p=Start-Process wusa.exe -ArgumentList ('\"'+$msu+'\" /quiet /norestart') -PassThru;$null=$p.Handle;if(-not$p.WaitForExit(1500000)){$p.Kill();throw 'Owned update timed out'};$p.WaitForExit();$code=$p.ExitCode;@{exitcode=$code;update='KB5127648';scope='Only disposable network-isolated clone; WUSA validates update applicability and trust'}|ConvertTo-Json -Compress;if($code-notin@(0,3010,2359302)){exit 1}"
   result=ps(code,1600);text=base64.b64decode(result.get('out-data','')).decode('utf-8-sig');save('SERVICING.json',{'process_exit':result.get('exitcode'),'output':text,'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result['exitcode']==0,'Supported update failed; no policy or signature bypass'
