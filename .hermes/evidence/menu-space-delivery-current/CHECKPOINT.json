@@ -1,0 +1,26 @@
+{
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "status": "candidate passes package/native menu/six GUI/two browser scopes; final promotion gates pending",
+  "completed": [
+    "four Linux format build",
+    "production package content/runtime closure/helper namespace checks",
+    "native main/Inspector arrows Escape and Space; normal Space positive controls",
+    "six main Properties icon saved-view GUI cases",
+    "actual installed Firefox and Flatpak Falkon Open/Save",
+    "exact unchanged daemon and five helper/renderer payloads"
+  ],
+  "pending": [
+    "Fresh Fedora lifecycle currently running",
+    "Fresh Ubuntu lifecycle",
+    "Full Windows hosted verify result",
+    "Gate review and stable Linux promotion"
+  ],
+  "cleanup": "All completed private GUI/browser profiles, processes, buses and mounts removed. Previous Linux/Windows source2540 staging/extraction and fulfilled source archives removed. Current stage/extraction retained for native lifecycle/promotion.",
+  "retained_paths": {
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage": "Current exact candidate; fresh native and promotion consumers",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract": "One extraction for code/runtime identity and promotion checks",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage": "Current portable/NSIS/assembled MSIX; native upgrade/runtime consumers",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/input/previous.msix": "Sole previous0.1.0.1 package for actual0.1.0.2 startup-enabled/disabled updates"
+  },
+  "delivery": "Stable Linux928b7937 and accepted Windows8ede artifacts preserved"
+}

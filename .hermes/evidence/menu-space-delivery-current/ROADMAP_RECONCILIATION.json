@@ -1,0 +1,21 @@
+{
+  "status": "document reconciliation pending package content checks",
+  "discrepancies": [
+    {
+      "location": "docs/ROADMAP.md Current delivery and remaining outcomes prose",
+      "observed": "Claims stable0b6015db while top checkpoint, table and current acceptance receipt use928b7937",
+      "required": "Use authoritative receipt source; update after candidate promotion, preserve historical checkpoints"
+    },
+    {
+      "location": "docs/ROADMAP.md top popup follow-up",
+      "observed": "Next-build instruction predates final shared Space handler source d09569e2",
+      "required": "Replace with exact current build/native/CI state after verification"
+    },
+    {
+      "location": "docs/ROADMAP.md independent queue Windows stage",
+      "observed": "c5 and2540 stage scopes have since been superseded; previous0.1.0.1 input transferred once",
+      "required": "Record final d095 Windows stage, real updated assembly/runtime results and named remaining consumers"
+    }
+  ],
+  "reason_for_sequencing": "Package content verifier compares bundled documentation with unchanged build-source documentation. Edit and publish status after this gate, without relabeling package source."
+}

@@ -1,0 +1,30 @@
+{
+  "domain": "ottrin-msix-assembly",
+  "uuid": "8d4d6620-7e46-4cf1-a451-04050d96d0b8",
+  "base_domain": "win11ltsc",
+  "base_disk": "/var/lib/libvirt/images/win11ltsc.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-assembly-fixture.iso",
+    "ottrin-msix-assembly.qcow2"
+  ],
+  "status": "actual MSIX assembly and payload pass; package retained for pending native deployment",
+  "public_compiler_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/msi-compiler",
+  "scope": "Actual MSIX assembly and payload comparison; deployment remains separate",
+  "producer_sha256": "50e9b023ce0323d8f84b29ed2d7a305d8a159065fa6a8ad42b3e3a70451bd74e",
+  "uploaded_host_iso_removed_bytes": 281057280,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "guest_pid": 6928,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

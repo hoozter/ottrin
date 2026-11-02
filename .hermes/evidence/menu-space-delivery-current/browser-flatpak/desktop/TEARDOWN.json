@@ -1,0 +1,36 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-gbl21_si",
+  "owned_processes_reaped": [
+    {
+      "pid": 362504,
+      "exit": 0
+    },
+    {
+      "pid": 362538,
+      "exit": 0
+    },
+    {
+      "pid": 362542,
+      "exit": 15
+    },
+    {
+      "pid": 362751,
+      "exit": -15
+    },
+    {
+      "pid": 362752,
+      "exit": -15
+    },
+    {
+      "pid": 362784,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "actual_browser": "firefox",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes from the opened local text document",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "chooser_backend_pid": 362324,
+  "popup_arrow_escape_scope": "not exercised by this case",
+  "no_index_started": true,
+  "identity_scope": "Parent runner verifies actual installed browser attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership."
+}

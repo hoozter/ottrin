@@ -1,0 +1,8 @@
+{
+  "XDG_SESSION_TYPE": "x11",
+  "HOME": "/var/tmp/.ottrin-picker-qa-806alm2n/home",
+  "XDG_RUNTIME_DIR": "/var/tmp/.ottrin-picker-qa-806alm2n/runtime",
+  "GDK_BACKEND": "x11",
+  "TMPDIR": "/var/tmp/.ottrin-picker-qa-806alm2n/t",
+  "DISPLAY": ":2"
+}

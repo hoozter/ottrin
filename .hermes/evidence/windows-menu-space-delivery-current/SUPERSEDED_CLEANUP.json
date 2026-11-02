@@ -1,0 +1,13 @@
+{
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage",
+      "bytes": 292804258
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-current-refresh/source.zip",
+      "bytes": 124242698
+    }
+  ],
+  "scope": "Source2540 portable/NSIS and assembled MSIX superseded before deployment; native assembly consumer terminal and removed; previous MSIX input transferred once, stable Windows artifacts untouched"
+}

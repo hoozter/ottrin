@@ -1,0 +1,9 @@
+{
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/source.zip",
+  "status": "prepared",
+  "sha256": "85f2a0dbf1649884e25b5aad7177448478c9f15f0364a4f1f9d5cd0e6d1d6031",
+  "archive_bytes": 124249121,
+  "temporary_clone_removed": true
+}

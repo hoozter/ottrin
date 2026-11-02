@@ -1,0 +1,5 @@
+{
+  "removed": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/source.zip",
+  "bytes": 124249121,
+  "reason": "Native MakeAppx source assembly consumer completed and guest/fixture removed; runtime upgrade uses packaged MSIX and does not consume source archive"
+}

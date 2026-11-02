@@ -1,0 +1,67 @@
+{
+  "old_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5",
+  "artifact_sha256": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910",
+  "sessions": [
+    {
+      "label": "previous",
+      "normal_exit": 0,
+      "saved_view": "Miller",
+      "image_sha256": "af45a0acf9d1baa04f8105c95a00ef6540782243e4bbe65579bffb1f0ebdfeb5"
+    },
+    {
+      "label": "updated",
+      "normal_exit": 0,
+      "saved_view": "Miller",
+      "image_sha256": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910"
+    },
+    {
+      "label": "reopened",
+      "normal_exit": 0,
+      "saved_view": "Miller",
+      "image_sha256": "955f58ffa10e1d4cfdceea81456c8fdef603d1459b7279ab806740c123214910"
+    }
+  ],
+  "status": "pass",
+  "scope": "Actual previous/update/reopen AppImage in one private profile; screenshots require visual confirmation of Miller columns",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-kkmyaq7c",
+    "owned_processes_reaped": [
+      {
+        "pid": 364290,
+        "exit": 0
+      },
+      {
+        "pid": 364297,
+        "exit": 0
+      },
+      {
+        "pid": 364298,
+        "exit": 15
+      },
+      {
+        "pid": 364407,
+        "exit": 0
+      },
+      {
+        "pid": 364588,
+        "exit": 0
+      },
+      {
+        "pid": 364696,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        364416,
+        364535
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "142 34 0:64 / /var/tmp/.ottrin-picker-qa-kkmyaq7c/runtime/doc rw,nosuid,nodev,relatime shared:565 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

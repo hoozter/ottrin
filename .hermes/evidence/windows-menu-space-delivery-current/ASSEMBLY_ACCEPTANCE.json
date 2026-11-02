@@ -1,0 +1,27 @@
+{
+  "status": "Actual revision2 assembly and58-file equality pass; deployment/upgrade/menu runtime pending",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-desktop-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "536f5c72371b17b2faab15ad35d1aebfbb8f26e4917bc8958ec21fc50bc7f1bb",
+  "artifact_bytes": 56836638,
+  "version": "0.1.0.2",
+  "native_payload_files": 58,
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "previous_version_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/input/previous.msix",
+  "pending": [
+    "Actual0.1.0.1 to0.1.0.2 enabled and disabled update, native menu keys, real reboot/login and removal"
+  ]
+}

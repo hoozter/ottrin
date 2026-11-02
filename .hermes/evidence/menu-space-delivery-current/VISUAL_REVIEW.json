@@ -1,0 +1,16 @@
+{
+  "status": "reviewed",
+  "source_revision": "d09569e2e48656979bac0c10a6342687457a1de5",
+  "images": {
+    "menu-space/desktop/main-after-menu-space.png": "2a1036661c3012a4abe1768a62526bc8f4ccbe945339f24379289ea66da3499e",
+    "main-dark100/vcf-inspector.png": "7acf183b511ed314692659f70a5b546f95b967670dd7554c54e69f7904f87aa6",
+    "main-light150/note-after-right.png": "a99c7e7404dd2efcac06540166e8c088c39f386cc2e9dff40c935cd6c3810a36",
+    "properties-dark100/bottom.png": "906d77762096eb06af2a1a1e765bc897e2fcade3dfd6a62fc70461d4e8f65b12",
+    "properties-light150/initial.png": "ea8fe7729b679cd0ebcd2fbbed6773e8d5dd7751c061656c6c0b6cc52ae307ae",
+    "upgrade-view/updated.png": "d01a29cbe22448308cdec27aa67321f65d71852d3fbffdc00dcb4ce4f95c665f",
+    "browser-flatpak/desktop/open-filter-menu.png": "2e65e9cc149c7c6b9b1091ee822a41321cce3c1c9810044a1329085dc4fbae60"
+  },
+  "findings": "Shared leading title alignment and visible Close; long Properties title truncates and body wraps inside card; Light150 text/scrollbar remains in bounds; main menu retains selected row and no Inspector after Space; Miller columns retained after update; chooser filter menu belongs to actual browser caller.",
+  "publication": "Upgrade screenshot includes unrelated host ancestor listings; retain its digest and local review, do not publish raw image.",
+  "scope": "Listed actual-package surfaces; broader theme/physical/whole-roadmap acceptance remains open."
+}

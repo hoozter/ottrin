@@ -1,0 +1,46 @@
+{
+  ".hermes/evidence/desktop-integration-current/build.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/0-build.py",
+    "sha256": "d71d55b319d90ae678ce0a648b5458b5af4203e6bb40b8dd6e0c44653c21de51"
+  },
+  ".hermes/evidence/desktop-integration-current/verify-packages.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/1-verify-packages.py",
+    "sha256": "a2b97e6048ba328f1c64c90ce41da05a2a8fe2f1be37e682e3bb85ea710e23d4"
+  },
+  ".hermes/evidence/desktop-integration-current/main-session.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/2-main-session.py",
+    "sha256": "b9d786213ac68fb2a37ecb447fe8f861e82e967150830f0f3b86c8e8cfc26db8"
+  },
+  ".hermes/evidence/desktop-integration-current/properties-dark.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/3-properties-dark.py",
+    "sha256": "d6346ceb91fff29d41a0a3a06125d7fcb7f7dd9b1cc7f4d688ab29a9c30307ae"
+  },
+  ".hermes/evidence/desktop-integration-current/properties-light.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/4-properties-light.py",
+    "sha256": "8279825524d4f7bbcaa303849cf2c1e24c5c32f68259ec6658b06ad9ad3c60d1"
+  },
+  ".hermes/evidence/desktop-integration-current/icon-check.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/5-icon-check.py",
+    "sha256": "1cbff7d0732d26ba30d84d15eb717354715fb621f63c61b8f4c530f3ced0c753"
+  },
+  ".hermes/evidence/desktop-integration-current/upgrade-view.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/6-upgrade-view.py",
+    "sha256": "658b8001ec5cd2f64f150eee49854338ffb90e0922ad7357a1da9f7e0295efb8"
+  },
+  ".hermes/evidence/menu-space-ownership-current/run.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/7-run.py",
+    "sha256": "48ca3dbb3b5a127cbba49ab0e696b516857103ab506a1c647ca2bd750d9494db"
+  },
+  ".hermes/evidence/menu-keyboard-isolation-current/run.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/8-run.py",
+    "sha256": "a457bae79740ca3c4f8abd47ad82001e14993f3b75bc046633274c1664f0eae7"
+  },
+  ".hermes/evidence/menu-keyboard-isolation-current/check-runtime-identity.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/9-check-runtime-identity.py",
+    "sha256": "5397f52be2cc9043168d3aa02ddd8a59ba7e671835a335ffd66db1c340b4e34d"
+  },
+  ".hermes/evidence/firefox-identity-package-current/run.py": {
+    "frozen": ".hermes/evidence/menu-space-delivery-current/inputs/10-run.py",
+    "sha256": "657c16ba85113254dc213d42cc279bb6d2ab61b56f5a1ba28fb1af22e2aa8ed9"
+  }
+}

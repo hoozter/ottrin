@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-xs_pv5kv",
+  "owned_processes_reaped": [
+    {
+      "pid": 364291,
+      "exit": 0
+    },
+    {
+      "pid": 364296,
+      "exit": 0
+    },
+    {
+      "pid": 364299,
+      "exit": 15
+    },
+    {
+      "pid": 364405,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

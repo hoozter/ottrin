@@ -1,0 +1,13 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-current-refresh/input/previous.msix",
+  "sha256": "ba6783e85a6f97c87b230639a490f1a5cc23843da057b47fbf09b3ba6c1029ed",
+  "version": "0.1.0.1",
+  "scope": "Preserved exact already accepted previous development MSIX solely for new same-identity upgrade consumers; not a second user deliverable",
+  "pending_consumers": [
+    "new enabled-startup update/reboot/removal",
+    "new disabled-startup update/reboot/removal"
+  ],
+  "cleanup_owner": "Current roadmap task; remove after both actual upgrade consumers close",
+  "source_revision": "c5a40fd231332fa578432897319578d1bb035363",
+  "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/input/previous.msix"
+}

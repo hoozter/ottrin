@@ -1,0 +1,36 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-806alm2n",
+  "owned_processes_reaped": [
+    {
+      "pid": 361178,
+      "exit": 0
+    },
+    {
+      "pid": 361183,
+      "exit": 0
+    },
+    {
+      "pid": 361184,
+      "exit": 15
+    },
+    {
+      "pid": 361381,
+      "exit": -15
+    },
+    {
+      "pid": 361382,
+      "exit": -15
+    },
+    {
+      "pid": 361390,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}
