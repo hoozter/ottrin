@@ -1,0 +1,237 @@
+{
+    "source_preserved":  true,
+    "remaining_owned_installed_processes":  0,
+    "package":  {
+                    "source_revision":  "0aac86f98a6411b690ede891f48438d02a9701ea",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d"
+                                  }
+                              ],
+                    "actor_sha256":  "b0a59df1371765f3628d1f5cd413390ad67d4952099a0457a2bb867d8685bac8",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "phase":  "supported uninstall",
+    "scope":  "Exact installed native pointer resize at visible rounded arcs and exclusive titlebar ownership;0/24radius,Native/OpenGL; source/preferences preservation",
+    "status":  "pass native installed pointer resize andexclusive titlebarownership; originalsrequire review",
+    "preferences_preserved":  true,
+    "cases":  [
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     1000,
+                                     650
+                                 ],
+                      "corner":  "SE",
+                      "case":  "main-visible-arc-SE",
+                      "capture":  "Native-main-visible-arc-SE-0.png",
+                      "after":  [
+                                    0,
+                                    0,
+                                    1040,
+                                    680
+                                ],
+                      "pointer_start":  [
+                                            996,
+                                            646
+                                        ],
+                      "radius":  0,
+                      "pointer_delta":  [
+                                            40,
+                                            30
+                                        ],
+                      "renderer":  "Native"
+                  },
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     920,
+                                     640
+                                 ],
+                      "corner":  "NW",
+                      "case":  "settings-titlebar-NW",
+                      "capture":  "Native-settings-titlebar-NW-0.png",
+                      "after":  [
+                                    20,
+                                    20,
+                                    900,
+                                    620
+                                ],
+                      "pointer_start":  [
+                                            4,
+                                            4
+                                        ],
+                      "radius":  0,
+                      "pointer_delta":  [
+                                            20,
+                                            20
+                                        ],
+                      "renderer":  "Native"
+                  },
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     1000,
+                                     650
+                                 ],
+                      "corner":  "SE",
+                      "case":  "main-visible-arc-SE",
+                      "capture":  "Native-main-visible-arc-SE-24.png",
+                      "after":  [
+                                    0,
+                                    0,
+                                    1040,
+                                    680
+                                ],
+                      "pointer_start":  [
+                                            976,
+                                            646
+                                        ],
+                      "radius":  24,
+                      "pointer_delta":  [
+                                            40,
+                                            30
+                                        ],
+                      "renderer":  "Native"
+                  },
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     920,
+                                     640
+                                 ],
+                      "corner":  "NW",
+                      "case":  "settings-titlebar-NW",
+                      "capture":  "Native-settings-titlebar-NW-24.png",
+                      "after":  [
+                                    20,
+                                    20,
+                                    900,
+                                    620
+                                ],
+                      "pointer_start":  [
+                                            24,
+                                            4
+                                        ],
+                      "radius":  24,
+                      "pointer_delta":  [
+                                            20,
+                                            20
+                                        ],
+                      "renderer":  "Native"
+                  },
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     1000,
+                                     650
+                                 ],
+                      "corner":  "SE",
+                      "case":  "main-visible-arc-SE",
+                      "capture":  "OpenGL-main-visible-arc-SE-0.png",
+                      "after":  [
+                                    0,
+                                    0,
+                                    1040,
+                                    680
+                                ],
+                      "pointer_start":  [
+                                            996,
+                                            646
+                                        ],
+                      "radius":  0,
+                      "pointer_delta":  [
+                                            40,
+                                            30
+                                        ],
+                      "renderer":  "OpenGL"
+                  },
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     920,
+                                     640
+                                 ],
+                      "corner":  "NW",
+                      "case":  "settings-titlebar-NW",
+                      "capture":  "OpenGL-settings-titlebar-NW-0.png",
+                      "after":  [
+                                    20,
+                                    20,
+                                    900,
+                                    620
+                                ],
+                      "pointer_start":  [
+                                            4,
+                                            4
+                                        ],
+                      "radius":  0,
+                      "pointer_delta":  [
+                                            20,
+                                            20
+                                        ],
+                      "renderer":  "OpenGL"
+                  },
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     1000,
+                                     650
+                                 ],
+                      "corner":  "SE",
+                      "case":  "main-visible-arc-SE",
+                      "capture":  "OpenGL-main-visible-arc-SE-24.png",
+                      "after":  [
+                                    0,
+                                    0,
+                                    1040,
+                                    680
+                                ],
+                      "pointer_start":  [
+                                            976,
+                                            646
+                                        ],
+                      "radius":  24,
+                      "pointer_delta":  [
+                                            40,
+                                            30
+                                        ],
+                      "renderer":  "OpenGL"
+                  },
+                  {
+                      "before":  [
+                                     0,
+                                     0,
+                                     920,
+                                     640
+                                 ],
+                      "corner":  "NW",
+                      "case":  "settings-titlebar-NW",
+                      "capture":  "OpenGL-settings-titlebar-NW-24.png",
+                      "after":  [
+                                    20,
+                                    20,
+                                    900,
+                                    620
+                                ],
+                      "pointer_start":  [
+                                            24,
+                                            4
+                                        ],
+                      "radius":  24,
+                      "pointer_delta":  [
+                                            20,
+                                            20
+                                        ],
+                      "renderer":  "OpenGL"
+                  }
+              ]
+}

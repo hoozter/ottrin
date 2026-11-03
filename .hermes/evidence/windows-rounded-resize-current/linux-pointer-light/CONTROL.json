@@ -1,0 +1,40 @@
+{
+  "status": "functionalpointercheckspass;originalsrequirereview",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "artifact_sha256": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+  "theme": "Light",
+  "scale": "1.5",
+  "scope": "ExactstagedAppImage/privateX11/software/nativemousegestures; nohostdesktoporpersonaldata",
+  "worker_sha256": "19ea04864c086edc8eb2c3c951a98e9e428e193949f7d65af982301e8ee61562",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-6n19erl9",
+    "owned_processes_reaped": [
+      {
+        "pid": 1225367,
+        "exit": 0
+      },
+      {
+        "pid": 1225370,
+        "exit": 0
+      },
+      {
+        "pid": 1225371,
+        "exit": 15
+      },
+      {
+        "pid": 1225450,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1225459,
+        1225555
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

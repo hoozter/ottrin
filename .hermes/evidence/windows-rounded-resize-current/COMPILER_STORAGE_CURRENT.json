@@ -1,0 +1,32 @@
+{
+  "target/debug/deps": {
+    "before_bytes": 41440995894,
+    "current_bytes": 41440996080,
+    "delta_bytes": 186
+  },
+  "target/debug/incremental": {
+    "before_bytes": 23125053042,
+    "current_bytes": 22659502484,
+    "delta_bytes": -465550558
+  },
+  "target/x86_64-pc-windows-gnu/debug/deps": {
+    "before_bytes": 33292041243,
+    "current_bytes": 33292041429,
+    "delta_bytes": 186
+  },
+  "target/x86_64-pc-windows-gnu/debug/incremental": {
+    "before_bytes": 39658038979,
+    "current_bytes": 39439022407,
+    "delta_bytes": -219016572
+  },
+  "target/release/deps": {
+    "before_bytes": 4290352679,
+    "current_bytes": 4290361250,
+    "delta_bytes": 8571
+  },
+  "target/x86_64-pc-windows-gnu/release/deps": {
+    "before_bytes": 3764567408,
+    "current_bytes": 3764572511,
+    "delta_bytes": 5103
+  }
+}

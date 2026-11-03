@@ -1,0 +1,317 @@
+{
+  "status": "pass exact AppImage native pointer resize and exclusive titlebar ownership",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "artifact_sha256": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+  "cases": 8,
+  "originals_reviewed": 8,
+  "cohorts": [
+    {
+      "control": {
+        "status": "functionalpointercheckspass;originalsrequirereview",
+        "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+        "artifact_sha256": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+        "theme": "Dark",
+        "scale": "1",
+        "scope": "ExactstagedAppImage/privateX11/software/nativemousegestures; nohostdesktoporpersonaldata",
+        "worker_sha256": "19ea04864c086edc8eb2c3c951a98e9e428e193949f7d65af982301e8ee61562",
+        "teardown": {
+          "status": "closed",
+          "profile": "/var/tmp/.ottrin-picker-qa-41bsfsw9",
+          "owned_processes_reaped": [
+            {
+              "pid": 1224344,
+              "exit": 0
+            },
+            {
+              "pid": 1224347,
+              "exit": 0
+            },
+            {
+              "pid": 1224348,
+              "exit": 15
+            },
+            {
+              "pid": 1224414,
+              "exit": 0
+            }
+          ],
+          "owned_children": {
+            "stopped": [
+              1224420,
+              1224487
+            ],
+            "unreadable_foreign_processes_preserved": 3
+          },
+          "owned_mounts_unmounted": [],
+          "profile_removed": true
+        }
+      },
+      "result": {
+        "status": "pass native pointer resize andexclusive titlebarownership",
+        "theme": "Dark",
+        "scale": 1.0,
+        "cases": [
+          {
+            "case": "main-visible-arc-SE",
+            "radius": 0,
+            "scale": 1.0,
+            "before": [
+              100,
+              100,
+              1000,
+              650
+            ],
+            "after": [
+              100,
+              100,
+              1040,
+              680
+            ],
+            "pointer_start": [
+              996,
+              646
+            ],
+            "pointer_delta": [
+              40,
+              30
+            ]
+          },
+          {
+            "case": "settings-titlebar-NW",
+            "radius": 0,
+            "scale": 1.0,
+            "before": [
+              100,
+              100,
+              920,
+              640
+            ],
+            "after": [
+              120,
+              120,
+              900,
+              620
+            ],
+            "pointer_start": [
+              4,
+              4
+            ],
+            "pointer_delta": [
+              20,
+              20
+            ]
+          },
+          {
+            "case": "main-visible-arc-SE",
+            "radius": 24,
+            "scale": 1.0,
+            "before": [
+              100,
+              100,
+              1000,
+              650
+            ],
+            "after": [
+              100,
+              100,
+              1040,
+              680
+            ],
+            "pointer_start": [
+              976,
+              646
+            ],
+            "pointer_delta": [
+              40,
+              30
+            ]
+          },
+          {
+            "case": "settings-titlebar-NW",
+            "radius": 24,
+            "scale": 1.0,
+            "before": [
+              100,
+              100,
+              920,
+              640
+            ],
+            "after": [
+              120,
+              120,
+              900,
+              620
+            ],
+            "pointer_start": [
+              24,
+              4
+            ],
+            "pointer_delta": [
+              20,
+              20
+            ]
+          }
+        ],
+        "source_bytes_preserved": true,
+        "scope": "FouractualX11mousegestures,0/24radius,mainSE/SettingsNW,normalnativeclose; not wholeappearanceorhardwareacceptance"
+      },
+      "originals_reviewed": 4
+    },
+    {
+      "control": {
+        "status": "functionalpointercheckspass;originalsrequirereview",
+        "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+        "artifact_sha256": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+        "theme": "Light",
+        "scale": "1.5",
+        "scope": "ExactstagedAppImage/privateX11/software/nativemousegestures; nohostdesktoporpersonaldata",
+        "worker_sha256": "19ea04864c086edc8eb2c3c951a98e9e428e193949f7d65af982301e8ee61562",
+        "teardown": {
+          "status": "closed",
+          "profile": "/var/tmp/.ottrin-picker-qa-6n19erl9",
+          "owned_processes_reaped": [
+            {
+              "pid": 1225367,
+              "exit": 0
+            },
+            {
+              "pid": 1225370,
+              "exit": 0
+            },
+            {
+              "pid": 1225371,
+              "exit": 15
+            },
+            {
+              "pid": 1225450,
+              "exit": 0
+            }
+          ],
+          "owned_children": {
+            "stopped": [
+              1225459,
+              1225555
+            ],
+            "unreadable_foreign_processes_preserved": 3
+          },
+          "owned_mounts_unmounted": [],
+          "profile_removed": true
+        }
+      },
+      "result": {
+        "status": "pass native pointer resize andexclusive titlebarownership",
+        "theme": "Light",
+        "scale": 1.5,
+        "cases": [
+          {
+            "case": "main-visible-arc-SE",
+            "radius": 0,
+            "scale": 1.5,
+            "before": [
+              100,
+              100,
+              1500,
+              975
+            ],
+            "after": [
+              100,
+              100,
+              1560,
+              1020
+            ],
+            "pointer_start": [
+              1494,
+              969
+            ],
+            "pointer_delta": [
+              60,
+              45
+            ]
+          },
+          {
+            "case": "settings-titlebar-NW",
+            "radius": 0,
+            "scale": 1.5,
+            "before": [
+              100,
+              100,
+              1380,
+              960
+            ],
+            "after": [
+              130,
+              130,
+              1350,
+              930
+            ],
+            "pointer_start": [
+              6,
+              6
+            ],
+            "pointer_delta": [
+              30,
+              30
+            ]
+          },
+          {
+            "case": "main-visible-arc-SE",
+            "radius": 24,
+            "scale": 1.5,
+            "before": [
+              100,
+              100,
+              1500,
+              975
+            ],
+            "after": [
+              100,
+              100,
+              1560,
+              1020
+            ],
+            "pointer_start": [
+              1464,
+              969
+            ],
+            "pointer_delta": [
+              60,
+              45
+            ]
+          },
+          {
+            "case": "settings-titlebar-NW",
+            "radius": 24,
+            "scale": 1.5,
+            "before": [
+              100,
+              100,
+              1380,
+              960
+            ],
+            "after": [
+              130,
+              130,
+              1350,
+              930
+            ],
+            "pointer_start": [
+              36,
+              6
+            ],
+            "pointer_delta": [
+              30,
+              30
+            ]
+          }
+        ],
+        "source_bytes_preserved": true,
+        "scope": "FouractualX11mousegestures,0/24radius,mainSE/SettingsNW,normalnativeclose; not wholeappearanceorhardwareacceptance"
+      },
+      "originals_reviewed": 4
+    }
+  ],
+  "limits": [
+    "Dark100/Light150 private X11 software desktop",
+    "Main SE and Settings NW actual gestures at0/24 radius; no full appearance or hardware acceptance"
+  ]
+}

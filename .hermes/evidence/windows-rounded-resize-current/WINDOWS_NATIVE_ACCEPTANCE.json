@@ -1,0 +1,26 @@
+{
+  "status": "pass exact installed NSIS pointer resize and exclusive titlebar ownership",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "installer_sha256": "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d",
+  "cases": 8,
+  "originals_reviewed": 8,
+  "result": ".hermes/evidence/windows-rounded-resize-current/native-pointer/results/RESULT.json",
+  "source_preferences_preserved": true,
+  "normal_close_supported_uninstall": true,
+  "owned_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Dark/default96DPI software VM; forcedNative and explicitOpenGL",
+    "Main SE and Settings NW actual gestures at0/24 radius",
+    "Live editor radius changes and nondefault Windows DPI remain unverified",
+    "No new GUI CPU pass; prior Native33.54/OpenGL3.70 percent strict2percent failures remain open"
+  ]
+}

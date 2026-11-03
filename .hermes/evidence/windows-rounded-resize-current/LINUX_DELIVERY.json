@@ -1,0 +1,41 @@
+{
+  "status": "pass exact current package-content and native Settings rounded-window shape/resize scope; broader audit incomplete",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "915edec6a7313684da8616bced18dba1d45c72af2883b42c769155ffb6388c15",
+    "Ottrin-0.1.0-x86_64.AppImage": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b59582e7a71d04c003bbac5f8fed61943c979d5ffa57c4423c18a2cdb0144963",
+    "ottrin_0.1.0_amd64.deb": "075474276d3345084ff69da5c47ad631fc2e78cce4ea210494c1704e9e8fad1b"
+  },
+  "evidence": ".hermes/evidence/windows-rounded-resize-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "current_native_fields": ".hermes/evidence/windows-rounded-resize-current/LINUX_NATIVE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/windows-rounded-resize-current/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/windows-rounded-resize-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "indexd_binary_sha256": "0415810e594a2873245ba7f5a3ccb7ef766ad222986bce687c067247fc4e001d",
+  "unchanged_responsibility_basis": {
+    "previous_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+    "previous_receipt": ".hermes/evidence/windows-rounded-resize-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Shared Windows native-region clipping, maximized rectangular frame, visible-arc resize and exclusive titlebar input change shipping GUI behavior. Search source changes only an existing test. Full payload comparisons prove all other helper/library/asset bytes match. Daemon loaded code/data match with explicitly identified build metadata differences; whole-file identity and new CPU acceptance are not claimed. Earlier workflow/lifecycle/picker/media/index scopes retain original hashes."
+  },
+  "hosted_source": {
+    "run": 41708636305,
+    "tested_source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+    "all_four_jobs_success": true
+  },
+  "limits": [
+    "Pre-existing strict software GUI CPU gate failed: Native33.54 and OpenGL3.70 percent one core, stable Native baseline34.21; cause unresolved",
+    "Live Windows DPI remains unverified",
+    "Local unsigned delivery; no public release",
+    "Private X11/software AT-SPI Dark at 100%/Light at 150%; physical graphics and human assistive use separate",
+    "Full remaining roadmap and numeric/color-picker controls and complete UI assistive usability remain unaccepted"
+  ],
+  "cleanup": "Native pointer gesture desktops/profiles/processes/mounts and content extraction removed; exact stage retired by publication; compiler-cache cleanup separately receipted"
+}

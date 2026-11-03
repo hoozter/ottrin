@@ -1,0 +1,83 @@
+{
+  "status": "pass full AppImage file/symlink/mode comparison",
+  "previous_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "candidate_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "previous_artifact_sha256": "8dfa4c60d290eb99ca5b293cb35f85d0d64b465ff68880bd4605b42baf27a6ce",
+  "candidate_artifact_sha256": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+  "entries": 113,
+  "changed": {
+    "usr/bin/ottrin-indexd": {
+      "previous": {
+        "sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+        "mode": 493
+      },
+      "candidate": {
+        "sha256": "0415810e594a2873245ba7f5a3ccb7ef766ad222986bce687c067247fc4e001d",
+        "mode": 493
+      }
+    },
+    "usr/bin/ottrin": {
+      "previous": {
+        "sha256": "01a6e5b81e6e80793b50ebcc6d84540e7cc31ed30372ed864256b5f7d6103adf",
+        "mode": 493
+      },
+      "candidate": {
+        "sha256": "60b9894f864ac72fa3bf1e530842afb2f1d2e376a6d26adb4faf7e4631093612",
+        "mode": 493
+      }
+    },
+    "usr/share/doc/ottrin/SOURCE_REVISION.txt": {
+      "previous": {
+        "sha256": "7d3f2449a376c6b72d2b7f5e8384fd90bd8a5fd3f9caf73524fe47e9b45ad553",
+        "mode": 436
+      },
+      "candidate": {
+        "sha256": "8649baa33811fa7cdf0febc83e8d8d3bfeb5a76f80b11f825115b022ac256679",
+        "mode": 436
+      }
+    },
+    "usr/share/doc/ottrin/README.md": {
+      "previous": {
+        "sha256": "8a410745b2839079e8c49a0514ea6805de929a64c48c7e2848df66d853b7496b",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "93a398321e87f0db4b28a0221acb47a028cc1aa1e8b9a8af853662785d9d0d1a",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/USER_GUIDE.md": {
+      "previous": {
+        "sha256": "a5cafd46628f18cbbb46c11a93594191f7f6efb161ee8eed9c90d5e75ad72960",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "b309d7482ab8e49db2c377c27bb89d01afcf9845a94039917a1f4d9570c892f6",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/RELEASE_NOTES.md": {
+      "previous": {
+        "sha256": "a9cf3ab846fde0b9087bdd8b59477cb13b6a654866c64f27b85f7b6fdcb9f884",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "ea3a2d83c1bf254bdc28091031bdc8a6b177573eb20c95552bafedcc9ecc1357",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/ROADMAP.md": {
+      "previous": {
+        "sha256": "4d9e213bfb59e821150a8aa53dcfc3ddbf3f841ef4e098cbceb445c1d03cacf0",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "3a212772ad80d878738c626bd55cf39260f2b2a75c2904a3dce096432c5d7e97",
+        "mode": 420
+      }
+    }
+  },
+  "unchanged_entries": 106,
+  "scope": "Every runtime library, other helper, font, asset, launcher and policy unchanged. Daemon load-segment identity, except build-id and nonloaded section-header offset, is separately verified in LINUX_INDEX_ELF_COMPARISON.json; full daemon file differs. GUI change independently checked in native captures; roadmap/provenance differences expected. Prior UI scopes remain historical, not freshly rerun.",
+  "temporary_extractions_removed": true
+}

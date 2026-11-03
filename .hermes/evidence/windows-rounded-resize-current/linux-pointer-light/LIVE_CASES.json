@@ -1,0 +1,102 @@
+[
+  {
+    "case": "main-visible-arc-SE",
+    "radius": 0,
+    "scale": 1.5,
+    "before": [
+      100,
+      100,
+      1500,
+      975
+    ],
+    "after": [
+      100,
+      100,
+      1560,
+      1020
+    ],
+    "pointer_start": [
+      1494,
+      969
+    ],
+    "pointer_delta": [
+      60,
+      45
+    ]
+  },
+  {
+    "case": "settings-titlebar-NW",
+    "radius": 0,
+    "scale": 1.5,
+    "before": [
+      100,
+      100,
+      1380,
+      960
+    ],
+    "after": [
+      130,
+      130,
+      1350,
+      930
+    ],
+    "pointer_start": [
+      6,
+      6
+    ],
+    "pointer_delta": [
+      30,
+      30
+    ]
+  },
+  {
+    "case": "main-visible-arc-SE",
+    "radius": 24,
+    "scale": 1.5,
+    "before": [
+      100,
+      100,
+      1500,
+      975
+    ],
+    "after": [
+      100,
+      100,
+      1560,
+      1020
+    ],
+    "pointer_start": [
+      1464,
+      969
+    ],
+    "pointer_delta": [
+      60,
+      45
+    ]
+  },
+  {
+    "case": "settings-titlebar-NW",
+    "radius": 24,
+    "scale": 1.5,
+    "before": [
+      100,
+      100,
+      1380,
+      960
+    ],
+    "after": [
+      130,
+      130,
+      1350,
+      930
+    ],
+    "pointer_start": [
+      36,
+      6
+    ],
+    "pointer_delta": [
+      30,
+      30
+    ]
+  }
+]

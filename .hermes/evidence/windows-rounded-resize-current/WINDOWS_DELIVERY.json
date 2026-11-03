@@ -1,0 +1,347 @@
+{
+  "status": "pass current Windows preview promoted",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "published": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "0f3a64d65974cdc59ae97c99e64d271b64d71f7a8732a42a1725fd589c45ab26",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d",
+    "Ottrin-0.1.0-windows-x64-development.msix": "c6fcf2f43d7431223beacd35cbd71d8c9e6be135536e767bcaeab6f45556ca38"
+  },
+  "all 58_payload_hashes_verified_after_promotion": true,
+  "held_msi_preserved_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "removed_superseded_files": [
+    {
+      "path": "Ottrin-0.1.0-windows-x64-portable.zip",
+      "bytes": 55482328,
+      "sha256": "0364469db5708b79b1fe6c0f3b7771ba740d818f5aa94eed6706a20aed08bb67"
+    },
+    {
+      "path": "Ottrin-0.1.0-windows-x64-setup.exe.sha256",
+      "bytes": 101,
+      "sha256": "851907217b4bb533676fc84158ab10bf8903b0b01844b46b69151320d1873103"
+    },
+    {
+      "path": "Ottrin-0.1.0-windows-x64-development.msix.provenance.json",
+      "bytes": 552,
+      "sha256": "915c3605ea702f812b7365efec26b706f9dcca1fc0e19295de1f83e91c9107ff"
+    },
+    {
+      "path": "Ottrin-0.1.0-windows-x64-development.msix.sha256",
+      "bytes": 108,
+      "sha256": "c8c2149d82b928bf01f8a8e2c51e694fa5967390940140990515244a1010d472"
+    },
+    {
+      "path": "PREVIEW_STATUS.md",
+      "bytes": 947,
+      "sha256": "01011b6da79aa0fc2a05e8303746ba8b520d1761f94b2809835ac7568ae9218f"
+    },
+    {
+      "path": "Ottrin-0.1.0-windows-x64-setup.exe",
+      "bytes": 39787336,
+      "sha256": "12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd"
+    },
+    {
+      "path": "Ottrin-0.1.0-windows-x64-portable.zip.sha256",
+      "bytes": 104,
+      "sha256": "1c00ed2a2d2246b9cb314567da707ada2b07bfede78586e85b1ee6249c150403"
+    },
+    {
+      "path": "Ottrin-0.1.0-windows-x64-development.msix",
+      "bytes": 57004451,
+      "sha256": "62a027b576a3e901900ed1241222f3296cc7e46e02651f49212fc7dde73952db"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/SOURCE_REVISION.txt",
+      "bytes": 140,
+      "sha256": "7d3f2449a376c6b72d2b7f5e8384fd90bd8a5fd3f9caf73524fe47e9b45ad553"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/README.md",
+      "bytes": 8161,
+      "sha256": "8a410745b2839079e8c49a0514ea6805de929a64c48c7e2848df66d853b7496b"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/RUNNING.md",
+      "bytes": 658,
+      "sha256": "1a961da86973822997576f49f3e5fbb6ed0d563deb73baaae9028de5dafb2697"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/LICENSE",
+      "bytes": 1064,
+      "sha256": "2a92e02a6add5bb40115751ebd78bbcdce35ba40d629136b2cd1f8f3884e80bb"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/docs/DEVELOPMENT.md",
+      "bytes": 147144,
+      "sha256": "a58dcd28158578f65d4b7095b38a7c0e34e5f00fe2f786dd4a510a6166741ef9"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/docs/USER_GUIDE.md",
+      "bytes": 40260,
+      "sha256": "a5cafd46628f18cbbb46c11a93594191f7f6efb161ee8eed9c90d5e75ad72960"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/docs/RELEASE_NOTES.md",
+      "bytes": 17134,
+      "sha256": "a9cf3ab846fde0b9087bdd8b59477cb13b6a654866c64f27b85f7b6fdcb9f884"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/docs/RELEASE_CHECKLIST.md",
+      "bytes": 11273,
+      "sha256": "c9fe917fd774f328a8fe4a351b4af6dc1e964381f71f6f07eab9d8f9823790cd"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/docs/ROADMAP.md",
+      "bytes": 598501,
+      "sha256": "4d9e213bfb59e821150a8aa53dcfc3ddbf3f841ef4e098cbceb445c1d03cacf0"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/libEGL.dll",
+      "bytes": 184320,
+      "sha256": "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-priv-helper.exe",
+      "bytes": 3341502,
+      "sha256": "3c7cccd92df60cfb8e79fbdf5a2ad180851ea1bd22bba2aeb699593236652598"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-office-render.exe",
+      "bytes": 426981,
+      "sha256": "6da15e0f01584fdab6381468b7a31322245997593cdb92617f41608e65fb6116"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+      "bytes": 5954052,
+      "sha256": "2648bd2b3a60b1ca29f3689ca35ecaea667d0632f36ca3d3968bfe5cde77a03e"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/opengl32.dll",
+      "bytes": 123904,
+      "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/rg.exe",
+      "bytes": 4218880,
+      "sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/dxil.dll",
+      "bytes": 1503072,
+      "sha256": "cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/libgallium_wgl.dll",
+      "bytes": 76270592,
+      "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin.exe",
+      "bytes": 35509261,
+      "sha256": "e3e59253a2f909d23773b7582f5c16edb30821b2f8e5765e08657662a0ad2559"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/libGLESv2.dll",
+      "bytes": 50176,
+      "sha256": "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-legacy-doc-render.exe",
+      "bytes": 5527673,
+      "sha256": "f8b2a704b879141f485769a2070ac46751b9445d7c61c7b54cc0ad03e2a613ad"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/assets/icon.svg",
+      "bytes": 1829,
+      "sha256": "33746e843fde043387c7ae1f1d2a13c7cab94e9b6bf136cc4144d99f911c94ce"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/assets/icon.png",
+      "bytes": 8217,
+      "sha256": "5d4198a3a9b1acb860e57b3b761e340b2f0c3c2f28a7b9fa5b7cbd830381af04"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/assets/logo.svg",
+      "bytes": 5045,
+      "sha256": "f674b933a13c2a506e617774966b635d74f0ffbb01eb808105063b4b1189ff57"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/assets/icon.ico",
+      "bytes": 21142,
+      "sha256": "3db24c16886d05b2ac588e8c0639ddfa440f7778083544c16806a4c088a9dd42"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/pal1000-LICENSE.txt",
+      "bytes": 1090,
+      "sha256": "9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/Microsoft-DXC-LICENSE-MS.txt",
+      "bytes": 13163,
+      "sha256": "734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/MANIFEST.txt",
+      "bytes": 1457,
+      "sha256": "1789c9fe8d6cdf1f8f351fec9ad49216b9d883c919753b47efc6640bb1994a97"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/BUNDLED_FONTS.md",
+      "bytes": 11658,
+      "sha256": "1a571bfe17cd21d6acc3a7a0c66f03b85a1ad6da062bd06c7e4861a51df468cd"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/pdfium.dll",
+      "bytes": 7220736,
+      "sha256": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/LICENSE",
+      "bytes": 1184,
+      "sha256": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/icu.txt",
+      "bytes": 28286,
+      "sha256": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/libopenjpeg.txt",
+      "bytes": 1794,
+      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/libtiff.txt",
+      "bytes": 1139,
+      "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/abseil.txt",
+      "bytes": 11564,
+      "sha256": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/libpng.txt",
+      "bytes": 5479,
+      "sha256": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/libjpeg_turbo.md",
+      "bytes": 5755,
+      "sha256": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/zlib.txt",
+      "bytes": 1332,
+      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/lcms.txt",
+      "bytes": 1353,
+      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/fast_float.txt",
+      "bytes": 1106,
+      "sha256": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/freetype.txt",
+      "bytes": 6741,
+      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/libjpeg_turbo.ijg",
+      "bytes": 13059,
+      "sha256": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/pdfium.txt",
+      "bytes": 12818,
+      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/llvm-libc.txt",
+      "bytes": 15418,
+      "sha256": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/agg23.txt",
+      "bytes": 725,
+      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/bin/pdfium/licenses/simdutf.txt",
+      "bytes": 1077,
+      "sha256": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/ripgrep/PCRE2-10.45-LICENCE.md",
+      "bytes": 3867,
+      "sha256": "9cf7ac6976099a1d856826d3ef1b093bd6b84489dc6100628ac79e740cf9885a"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/ripgrep/MANIFEST.txt",
+      "bytes": 299,
+      "sha256": "d19f5761aabe865dcc34da2bccdaf3f75edf704e26d650b4b2ffdb2335b51bc6"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/ripgrep/LICENSE-MIT",
+      "bytes": 1102,
+      "sha256": "970813655a1bf777d2ead189cef71ab73ab92ce04dc864027d61a45de03e6728"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/ripgrep/UNLICENSE",
+      "bytes": 1235,
+      "sha256": "640514163b17f977adc997cb16f51871122cfb0555ebad1a3f01e167b7ba8857"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/ripgrep/COPYING",
+      "bytes": 129,
+      "sha256": "dfe7d0a6134a17d3de7409762e08dc02133303912875cab40a74ba07a390f85a"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/docs/license.rst",
+      "bytes": 1816,
+      "sha256": "0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later",
+      "bytes": 13047,
+      "sha256": "8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/licenses/GPL-2.0-only",
+      "bytes": 18424,
+      "sha256": "6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/licenses/SGI-B-2.0",
+      "bytes": 1822,
+      "sha256": "686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0",
+      "bytes": 1649,
+      "sha256": "9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0",
+      "bytes": 10045,
+      "sha256": "7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/licenses/MIT",
+      "bytes": 1372,
+      "sha256": "323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f"
+    },
+    {
+      "path": "windows-payload/Ottrin-0.1.0-windows-x64/third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note",
+      "bytes": 1257,
+      "sha256": "9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f"
+    }
+  ],
+  "removed_superseded_logical_bytes": 293659906,
+  "staging_removed": true,
+  "retired_directory_removed": true
+}

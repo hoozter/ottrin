@@ -1,0 +1,85 @@
+{
+  "batches": [
+    {
+      "bytes": 76838105,
+      "scope": "First producer pass removed completed Linux extraction and native-pointer/assembly consumed transports and private bootstrap. Terminal output recorded exact total. Per-file first-pass listing was overwritten by second pass; producer now appends batches. Independent absence and source/content/native receipts remain."
+    },
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/RESULTS.zip",
+          "bytes": 1163188,
+          "sha256": "f94c71ffcf42314c2ac78e092a68f13e3588354efbafdedc0f430c810eb12046"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "6672d7b8fad11f4b559e380619279bf825365a4eb61d7706cd1b1b71b287a113"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/CONTROLLER_PROCESS.json",
+          "bytes": 1940,
+          "sha256": "bc675e1f4a5e1723516fbff97829006ab049b462a1e0228886a9b0f6f4b76f88"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "7572433fd6e7900cfc5184f10a4002cdea28ea62fba7fa9b70d93c5cefc0ad34"
+        }
+      ],
+      "bytes": 1171132,
+      "scope": "Exact consumed extraction and old immutable fixture transports/private bootstrap only; both current package stages retained for pending live/CI/promotion; fresh native-live-radius resources belong to separate UUID"
+    },
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/readiness.log",
+          "bytes": 1117,
+          "sha256": "34b7b5910764f2a1641020936f17c448808065ecb5b9aa6e20f54ec30ebb7784"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/desktop-ready.png",
+          "bytes": 2521532,
+          "sha256": "69e4e216d36e5d72e80e23e773defc0d47f02f88bb967dec63c61be3e8caeba1"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "60aa9b381138e7f84689c41b576821f67b3c95249ed8e03eca2ef1aa42b37739"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/privacy-accepted-0.png",
+          "bytes": 1492745,
+          "sha256": "8c2a98e040e2f15abaf34ee2a560d00c8d38b657d05bca93d644b8df0c173fdf"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/readiness.log",
+          "bytes": 1117,
+          "sha256": "640b80fef8b4f374ba72180914dfaf29a8b061b2ad5ec4d8cf432778adcd3376"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/desktop-ready.png",
+          "bytes": 2521651,
+          "sha256": "b141fede78ee339f90171fd4cc61e76b878be3ec61760bc163c7a17bbee1601f"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "6590a0d0dd0a5c8e42e5646e24dc624932a1c35814ec2042c01ea1ed7e2a2c4f"
+        },
+        {
+          "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/privacy-accepted-0.png",
+          "bytes": 1491037,
+          "sha256": "ec6544b8e4eaaf487bc534af57014a789eb66c7d7329a3e2011730deb7323404"
+        }
+      ],
+      "bytes": 8029763
+    }
+  ],
+  "scope": "Exact consumed receipt-owned extraction/transports/private bootstrap; package stages retain pending acceptance consumers"
+}

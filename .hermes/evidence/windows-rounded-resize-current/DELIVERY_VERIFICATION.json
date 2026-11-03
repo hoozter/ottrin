@@ -1,0 +1,50 @@
+{
+  "status": "pass exact stable publication and scoped ownership cleanup",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "artifacts": {
+    "dist/packages/ottrin-0.1.0-1.x86_64.rpm": {
+      "sha256": "915edec6a7313684da8616bced18dba1d45c72af2883b42c769155ffb6388c15",
+      "bytes": 27932214,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-x86_64.AppImage": {
+      "sha256": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+      "bytes": 32736448,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "sha256": "b59582e7a71d04c003bbac5f8fed61943c979d5ffa57c4423c18a2cdb0144963",
+      "bytes": 32361008,
+      "sidecar_matches": true
+    },
+    "dist/packages/ottrin_0.1.0_amd64.deb": {
+      "sha256": "075474276d3345084ff69da5c47ad631fc2e78cce4ea210494c1704e9e8fad1b",
+      "bytes": 21541752,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip": {
+      "sha256": "0f3a64d65974cdc59ae97c99e64d271b64d71f7a8732a42a1725fd589c45ab26",
+      "bytes": 55486770,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe": {
+      "sha256": "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d",
+      "bytes": 39799347,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix": {
+      "sha256": "c6fcf2f43d7431223beacd35cbd71d8c9e6be135536e767bcaeab6f45556ca38",
+      "bytes": 56998087,
+      "sidecar_matches": true
+    }
+  },
+  "windows_payload_files": 58,
+  "windows_payload_hashes_match": true,
+  "held_msi_preserved_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "limits": [
+    "Functional local preview; full roadmap remains open",
+    "Strict software GUI idle CPU gate failed; no waiver",
+    "Windows nondefault DPI/full visibility/physical graphics remain unverified",
+    "MSIX11 assembly only; prior lifecycle retains original scope"
+  ]
+}

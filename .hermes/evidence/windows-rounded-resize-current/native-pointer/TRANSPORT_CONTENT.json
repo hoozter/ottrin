@@ -1,0 +1,90 @@
+{
+  "members": [
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "575e70553d6814d3d9dce2f593a4caa072c2a5f575068734079aa14631d90513",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "7d1a61b341c75dea586c073b92a266106e90b11fc5471c0614065c516a29d314",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 90,
+      "sha256": "f46dd2cd05d24dd26b1f469cf8e2f2e99c3ed93e32e4fc79cc7e7ae28bfe209e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-visible-arc-SE-0.png",
+      "bytes": 28745,
+      "sha256": "d96c59ec8fa7d6db94e5c934bf100ae95296e7d9f7d8c7a4d736c708cfbf6372",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-visible-arc-SE-24.png",
+      "bytes": 31954,
+      "sha256": "12a5382da25112b97fa69a9ab28e933cf2228864a3bc8fe65ac22bb9a7d1bfab",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-settings-titlebar-NW-0.png",
+      "bytes": 55182,
+      "sha256": "50e7bc4359332882d718e75e16e692a885e47c7be8217177f6ae3a9c6f54981c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-settings-titlebar-NW-24.png",
+      "bytes": 56032,
+      "sha256": "124a5f714b89a94e9ccedf42d0fe2719fc9d0623d5adafde475f1fc2645e1db4",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-main-visible-arc-SE-0.png",
+      "bytes": 28893,
+      "sha256": "c8e600bc41a43d2007ced3543da91ffccc07d16388c62ce6eb41d0ebc40c7c23",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-main-visible-arc-SE-24.png",
+      "bytes": 32076,
+      "sha256": "f3c2a87b0e1c5cdcd6cb8570053fae67f3e61347bd2f3c068ede04dcf2862a1d",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-settings-titlebar-NW-0.png",
+      "bytes": 56241,
+      "sha256": "515e5abe8a171c93f21d153487cdd10dbf2c9b17e5ac7be993cccd054b83ca2a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-settings-titlebar-NW-24.png",
+      "bytes": 57085,
+      "sha256": "a2d8ae6c564c849fa8d05681886ab8f56d8eef393bf5a06a0946ae4ab49a5095",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "d802ae9c1044efab5d3860585c622a03eff001143ee68600fa0293d9a4649103",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 10416,
+      "sha256": "4f858e0859c2b0409fd86ad833086b1bc290a966e5cb031d9cb4a9dda19eb7bc",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "uninstall-process.json",
+      "bytes": 97,
+      "sha256": "739926ef669ea5a9e5e9a6e933c8c8a33c69fd3a81ef602cd773739d582c67a5",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "archive_sha256": "ff22e184c1adfd986d56dccc2ac9dd6e3771b4f15c658211aa5b42b2dd1bc3c4",
+  "safe_result_members_extracted_equal": true
+}

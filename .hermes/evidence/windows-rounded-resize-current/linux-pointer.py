@@ -1,0 +1,11 @@
+from pathlib import Path
+import argparse,hashlib,importlib.util,json,re
+parser=argparse.ArgumentParser();parser.add_argument('--case',required=True);parser.add_argument('--theme',choices=['Dark','Light'],required=True);a=parser.parse_args();assert re.fullmatch('[a-z0-9-]+',a.case)
+root=Path.cwd();e=Path(__file__).resolve().parent;out=e/a.case;out.mkdir(exist_ok=False);s=importlib.util.spec_from_file_location('desktop',root/'scripts/linux-desktop-qa/session.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+build=json.loads((e/'BUILD_SOURCE.json').read_text());image=Path(build['stage'])/'Ottrin-0.1.0-x86_64.AppImage';accepted=json.loads((e/'PACKAGE_CONTENT_ACCEPTANCE.json').read_text());sha=hashlib.sha256(image.read_bytes()).hexdigest();assert sha==accepted['artifacts'][image.name];scale='1' if a.theme=='Dark' else '1.5';report={'status':'running','source_revision':build['source_revision'],'artifact_sha256':sha,'theme':a.theme,'scale':scale,'scope':'ExactstagedAppImage/privateX11/software/nativemousegestures; nohostdesktoporpersonaldata'}
+try:
+ with m.OwnedDesktop(out,scale=scale) as d:
+  config=json.loads((root/'.hermes/evidence/linux-cli-options-package-current/after100/TEARDOWN.json').read_text())['persisted_config'];config.update(theme=a.theme,bookmarks=[],default_view_mode='List',window_size=[1000,650]);config['search']['include_roots']=[str(d.profile/'home/Documents')];config['search']['content_indexing_enabled']=False;pref=d.profile/'config/ottrin/config.json';pref.parent.mkdir(parents=True);pref.write_text(json.dumps(config)+'\n');d.env.pop('NO_AT_BRIDGE',None);m.run(['gsettings','set','org.gnome.desktop.interface','toolkit-accessibility','true'],d.env);worker=out/'WORKER_SOURCE.py';worker.write_bytes((e/'linux-pointer-worker.py').read_bytes());report['worker_sha256']=hashlib.sha256(worker.read_bytes()).hexdigest();p=d.spawn(['/usr/bin/python3',str(worker),str(image),str(out),a.theme,scale],'worker.log');assert p.wait(timeout=150)==0,'Nativepointerworkflowfailed; inspectretainedlog';report['status']='functionalpointercheckspass;originalsrequirereview'
+finally:
+ if (out/'TEARDOWN.json').exists():report['teardown']=json.loads((out/'TEARDOWN.json').read_text())
+ (out/'CONTROL.json').write_text(json.dumps(report,indent=2)+'\n')

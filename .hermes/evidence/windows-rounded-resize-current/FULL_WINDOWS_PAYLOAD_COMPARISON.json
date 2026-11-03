@@ -1,0 +1,39 @@
+{
+  "status": "pass complete58-file comparison with exact daemon mapped-image identity",
+  "previous_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "candidate_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "entries": 58,
+  "changed": {
+    "SOURCE_REVISION.txt": {
+      "previous_sha256": "7d3f2449a376c6b72d2b7f5e8384fd90bd8a5fd3f9caf73524fe47e9b45ad553",
+      "candidate_sha256": "8649baa33811fa7cdf0febc83e8d8d3bfeb5a76f80b11f825115b022ac256679"
+    },
+    "README.md": {
+      "previous_sha256": "8a410745b2839079e8c49a0514ea6805de929a64c48c7e2848df66d853b7496b",
+      "candidate_sha256": "93a398321e87f0db4b28a0221acb47a028cc1aa1e8b9a8af853662785d9d0d1a"
+    },
+    "docs/USER_GUIDE.md": {
+      "previous_sha256": "a5cafd46628f18cbbb46c11a93594191f7f6efb161ee8eed9c90d5e75ad72960",
+      "candidate_sha256": "b309d7482ab8e49db2c377c27bb89d01afcf9845a94039917a1f4d9570c892f6"
+    },
+    "docs/RELEASE_NOTES.md": {
+      "previous_sha256": "a9cf3ab846fde0b9087bdd8b59477cb13b6a654866c64f27b85f7b6fdcb9f884",
+      "candidate_sha256": "ea3a2d83c1bf254bdc28091031bdc8a6b177573eb20c95552bafedcc9ecc1357"
+    },
+    "docs/ROADMAP.md": {
+      "previous_sha256": "4d9e213bfb59e821150a8aa53dcfc3ddbf3f841ef4e098cbceb445c1d03cacf0",
+      "candidate_sha256": "3a212772ad80d878738c626bd55cf39260f2b2a75c2904a3dce096432c5d7e97"
+    },
+    "bin/ottrin-indexd.exe": {
+      "previous_sha256": "2648bd2b3a60b1ca29f3689ca35ecaea667d0632f36ca3d3968bfe5cde77a03e",
+      "candidate_sha256": "e0a243776f29abf19114e91c86775a9ed51c2e73541d2a1f4c6d495916c54e4d"
+    },
+    "bin/ottrin.exe": {
+      "previous_sha256": "e3e59253a2f909d23773b7582f5c16edb30821b2f8e5765e08657662a0ad2559",
+      "candidate_sha256": "fb2d424f02cc8ab902a38cc4e2cf9565bf45e10f6a00662c9b20f34eccfcc6bf"
+    }
+  },
+  "unchanged_entries": 51,
+  "daemon_identity": "WINDOWS_INDEX_PE_COMPARISON.json",
+  "scope": "GUI independently requires native acceptance; documentation/provenance changes expected. All other helpers, libraries, fonts, icons and transaction payloads byte-identical."
+}

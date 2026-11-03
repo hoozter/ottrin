@@ -9,38 +9,42 @@ Packaged manuals are build-time snapshots; `SOURCE_REVISION.txt` identifies the
 actual runtime source, and the repository's stable acceptance manifests record
 later delivery acceptance.
 
-All seven current local packages now use runtime source
-`cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a`: four Linux formats at
-`dist/packages/`, plus ZIP/NSIS/development MSIX 0.1.0.10 at
+All seven current local packages use runtime source
+`0aac86f98a6411b690ede891f48438d02a9701ea`: four Linux formats at
+`dist/packages/`, plus ZIP/NSIS/development MSIX 0.1.0.11 at
 `dist/windows-candidate/`. The stable AppImage is
 `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`8dfa4c60d290eb99ca5b293cb35f85d0d64b465ff68880bd4605b42baf27a6ce`.
+`510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6`.
 Exact scopes/hashes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. No public release, signing or Store
-submission is implied. The failed ordinary-user MSI remains held.
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. This is a local functional preview;
+strict GUI idle CPU, full roadmap and final acceptance remain open. No public
+release, signing or Store submission is implied. The failed MSI remains held.
 
 | Current work | Verified state |
 | --- | --- |
-| Source | Clean committed/pushed runtime `cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a`: named Settings radio choices, shared centred Create/Rename fields, closed-dialog focus release, and file shortcuts distinguish actual text input from a focused file-row button. |
-| Source checks | 471 UI tests pass, one existing ignored; strict native/Windows UI/app all-target lint and formatting pass. Active text, search, address, command and Inspector ownership remain protected. |
-| Linux delivery | All four formats built and content-checked. Exact AppImage SHA256 `8dfa4c60d290eb99ca5b293cb35f85d0d64b465ff68880bd4605b42baf27a6ce` passes 30 native checks in Dark100/Light150. Explicit native file-row Focus then F2 works without resetting frame focus. All ten original captures reviewed; both private profiles removed. |
-| Windows delivery | ZIP/NSIS built; complete 58-file payload equality and comparison pass. Exact installer SHA256 `12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd`. Installed ordinary-user native fixture passes all22 Dark/Light checks with explicit file-row focus before F2. All8 originals reviewed; normal close and supported uninstall preserve source/preferences. Fixture/domain/2volumes removed. MSIX10 passes actual native assembly/unpack and full58-file equality; its VM/media/source archive are removed. Published ZIP/NSIS/MSIX10 and all58payload bytes are rehashed at the stable path. MSIX10 deployment/update/login is not freshly claimed. |
-| Hosted gates | CI41678522340: all four exact-source Linux/Windows verification and isolated release performance jobs completed successfully. |
+| Source | Committed/pushed 0aac: shared Windows native viewport regions, rectangular maximized frames, theme-radius-aware resize on visible arcs, and exclusive resize/titlebar drag ownership. Search changes only a deterministic lock/recovery test. |
+| Source checks | 473 UI tests pass, one existing ignored; strict native/Windows UI/app all-target lint and formatting pass. |
+| Linux delivery | All four formats built and content-checked. Exact AppImage passes 8 native mouse gestures in Dark100/Light150 at 0/24 radius: mainSE and SettingsNW. All 8 originals reviewed; normal close preserves source, both private profiles removed. |
+| Windows delivery | ZIP/NSIS complete 58-file payload equality; exact installer6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d. Installed Native/OpenGL pass 8 real pointer gestures plus 18 live-editor/Cancel native-region checks. All 26 originals reviewed with explicit taskbar/screen-clipping limits. Source/preferences survive normal close and supported uninstall. Native 36 region/geometry checks across six window types retain source 30ba1 with exact unchanged backend proof. MSIX 11 passes actual MakeAppx/unpack and 58-file equality, not a fresh update/login lifecycle. |
+| Hosted gates | CI 41708636305: all four exact 0aac Linux/Windows verification and isolated release performance jobs succeed. These benchmark jobs do not cover static GUI idle CPU. |
+| GUI performance | Strict below 2% one-core software-VM criterion fails: Native 33.54%, OpenGL 3.70%. Unchanged CBC Native baseline 34.21%. Native region round-trips match; root cause remains unproven. This is GUI CPU, not daemon CPU, and remains a release hold. |
 
-Current evidence/registered producers: `.hermes/evidence/file-row-focus-current/`.
-`DELIVERY_VERIFICATION.json` rehashes all seven published artifacts/sidecars and
-all58Windows payload files. Both candidate stages and the superseded Windows
-candidate are removed; two owned VMs/four volumes/three private profiles, source
-archive, consumed extractions/transports and15obsolete incremental sessions are
-retired. Current packages, compact original evidence, newest useful compiler
-sessions, user data and protected Windows bases remain. Exact accounting is in
-`CLEANUP_FINAL.json`. No owned QA process or pending staging consumer remains.
-The Linux daemon is byte-identical to the stable package; the complete Windows
-daemon differs only in PE timestamp/checksum. This is an identity proof, not a
-new sustained CPU benchmark. Personal services, preferences and data are preserved. A fresh read-only30-second
-observation of the same personal `ottrin-indexd` measures0.267% of one core and
-about26MB RSS; process identity and configuration-file hash are unchanged. This
-is a bounded sample, not a sustained-workload guarantee.
+Current evidence/registered producers: `.hermes/evidence/windows-rounded-resize-current/`.
+`DELIVERY_VERIFICATION.json` rehashes all seven stable artifacts/sidecars and all 58
+Windows payload files. Three owned VMs/six volumes, four private desktops/profiles,
+source archive, consumed extractions/transports and candidate stages are removed;
+superseded stable package output is retired. 21 obsolete compiler sessions were
+removed earlier; the final exact-root inspection identifies 0 more candidates.
+Current packages, compact original evidence, newest useful compiler sessions,
+user data and protected Windows bases remain. See `CLEANUP_FINAL.json` for scope.
+
+Full Linux daemon load segments match CBC except its GNU build-ID and the ELF
+section-header-table offset; all Windows executable sections match, with header
+timestamp/checksum and nonloaded COFF symbol metadata differences. Whole-file
+identity is not claimed. This is an executable identity comparison, not a new
+sustained daemon benchmark. The earlier CBC read-only 30-second personal-daemon
+sample remains historical: 0.267% one core/about 26 MB RSS, no restart/config
+change. Personal services, settings and data were untouched by this delivery.
 
 The earlier `9c914bd6` and `4b0f64a4` candidates were superseded before publication.
 The first correction fixed closed text-editor focus, but native Windows selection
@@ -70,40 +74,29 @@ has actual Linux FileManager1 methods/default restoration/Dolphin preservation a
 all five native Windows menu/default dispatches, repair and supported uninstall
 preservation evidence. Current appearance mapping/draft/preview functions and
 semantic roles remain byte-identical to the original 39-control Linux acceptance.
-Native installed Windows radius comparison now confirms a defect: main, Settings
-and Inspector paint rounded borders while the outside corners remain opaque.
-Six original captures and native region/pixel observations are recorded in
-`windows-window-radius-current/NATIVE_RADIUS_ASSESSMENT.json`; U07 remains open.
-All six captures were reviewed, the same guest actor completed normal close and
-supported uninstall with source/preferences intact, and its VM, both volumes,
-private desktop/profile and consumed transport were removed. No correction or
-new package is claimed. Remaining service states/prompt acceptance and whole-interface
+The historical native Windows comparison confirmed opaque outside corners.
+That defect is now source-fixed and delivered with actual native-region evidence
+on all six window types, pointer gestures and live editor/Cancel propagation as
+scoped above. Nondefault Windows DPI, physical graphics and full-window visual
+layout remain separate acceptance gaps. Remaining service states/prompt acceptance and whole-interface
 scope still require explicit audit. No universal
 Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
 
-1. Finish the Windows window-corner delivery. Native GDI clipping is implemented;
-   source30ba1 passes36 exact native-region/functional checks across main, Settings,
-   editor, Inspector, picker and Properties in both renderers at0/24 radius.
-   All24 primary originals were reviewed. A further source correction makes
-   diagonal resize reachable along large visible arcs and prevents a title-bar
-   drag from stealing an edge press. Its reproduced negative/positive regressions,
-   all473 UI tests and strict Linux/Windows lint pass. Actual pointer gestures,
-   live editor radius/DPI checks and replacement package delivery remain pending;
-   stable packages are still the CBC7 cohort above. Evidence: `windows-window-shape-fix-current/`
-   and `windows-rounded-resize-current/`.
-   Keep the GUI idle finding explicit: strict two-percent software-VM checks fail
-   at33.54% of one core in forced Native and3.70% in OpenGL. The unchanged CBC
-   Native baseline also measures34.21%; native region round-trips match their
-   requests exactly. This does not prove the cause or physical GPU performance.
-   Investigate unconditional frame refresh without masking these failures or
-   confusing GUI CPU with index-daemon CPU. No new package is yet promoted.
-   The watcher polling correction is now closed at its actual scope: all four
-   exact-source b18 CI41693567945 jobs completed successfully. Its244 Search tests,
-   original ten-second polling deadline, strict error/hit assertions and outside-
-   test-function runtime identity remain intact. No runtime/package rebuild is
-   needed for that test-only change.
+1. Continue the remaining Windows appearance/performance acceptance. Shared native
+   window-corner clipping and visible-edge/titlebar resize are now delivered in the
+   exact 0aac cohort above. Do not repeat fulfilled saved-radius/native-region,
+   pointer or live 0/24/Cancel matrices without changed inputs or a reproduced defect.
+   Verify real nondefault Windows DPI and full-window visibility/layout on a
+   sufficiently sized software desktop. UIAutomation focus plus typed numeric
+   input is not a complete visible-control/accessibility audit.
+   Investigate the strict GUI idle failure, including unconditional frame refresh,
+   without masking the failed threshold or confusing GUI CPU with index CPU.
+   The watcher polling correction remains closed at its deterministic-test scope:
+   b18 CI 41693567945 and current0aac CI 41708636305 all four jobs succeed, original
+   polling deadline and strict error/hit assertions retained. Evidence/prose-only
+   pushes skip redundant full CI; production-source changes keep all gates.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
@@ -115,9 +108,9 @@ Continue in this order:
    Current navigation/filename/focus delivery is complete at the scoped52 native
    checks; do not infer whole-interface acceptance from it. Verify the remaining
    Windows window-radius/platform behavior, service states/prompt and menu families.
-   Next appearance implementation: correct the confirmed opaque Windows corners
-   at the shared viewport boundary; test all intended windows, live radius changes,
-   resizing/maximizing and both supported renderers before publishing replacements.
+   The shared Windows opaque-corner correction is delivered at the scopes above;
+   continue actual DPI, fully visible layout and remaining whole-interface controls.
+   The CPU failure is not waived by functional shape/resize success.
 3. Close independently executable picker, Linux FileChooser/FileManager1 and
    reversible Windows folder-integration software/caller gaps. Retain supported
    caller/platform boundaries; Windows cooperating-picker checks do not establish

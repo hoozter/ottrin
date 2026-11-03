@@ -1,0 +1,23 @@
+{
+  "status": "all16originalcaptures directly reviewed",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "originals": {
+    "linux-pointer-dark/main-visible-arc-SE-24.png": "aed559763b5cc61f60855a388951ff4093d5a5b1e0dbc3e27f7fdb61f39fdfdb",
+    "linux-pointer-dark/main-visible-arc-SE-0.png": "acd3b04512bbd39d6aa820ed8b898e7fac2255cf00a0e7f5806d399b485c5f2b",
+    "linux-pointer-dark/settings-titlebar-NW-0.png": "5ff6bd7c63125491b73fc80b5bc798842069feff808af5ddd1be44d8897591d2",
+    "linux-pointer-dark/settings-titlebar-NW-24.png": "f82834b00a4228d7ef83d3d9401e71b816e3b955ada838fec824a3e35400ddb6",
+    "linux-pointer-light/main-visible-arc-SE-24.png": "55ac7940399f493b08de686af4f7cd66b1d1b5f16cadc3cb3eec32a801b7ad73",
+    "linux-pointer-light/main-visible-arc-SE-0.png": "9d5f23c2bb8f06a61860d701cb7e697514303e299e5aad8f59f344b191d6b0c0",
+    "linux-pointer-light/settings-titlebar-NW-0.png": "0f663f8abed1e7e92fd6a559613472ef5ef5ae9c5e2ecc74229f94df60fcb5ba",
+    "linux-pointer-light/settings-titlebar-NW-24.png": "375765cb287a76a164d1aceb286aa1eadb1abbd45e8dc6bb541064c90878949e",
+    "native-pointer/results/Native-main-visible-arc-SE-0.png": "d96c59ec8fa7d6db94e5c934bf100ae95296e7d9f7d8c7a4d736c708cfbf6372",
+    "native-pointer/results/Native-settings-titlebar-NW-0.png": "50e7bc4359332882d718e75e16e692a885e47c7be8217177f6ae3a9c6f54981c",
+    "native-pointer/results/Native-main-visible-arc-SE-24.png": "12a5382da25112b97fa69a9ab28e933cf2228864a3bc8fe65ac22bb9a7d1bfab",
+    "native-pointer/results/Native-settings-titlebar-NW-24.png": "124a5f714b89a94e9ccedf42d0fe2719fc9d0623d5adafde475f1fc2645e1db4",
+    "native-pointer/results/OpenGL-main-visible-arc-SE-0.png": "c8e600bc41a43d2007ced3543da91ffccc07d16388c62ce6eb41d0ebc40c7c23",
+    "native-pointer/results/OpenGL-settings-titlebar-NW-0.png": "515e5abe8a171c93f21d153487cdd10dbf2c9b17e5ac7be993cccd054b83ca2a",
+    "native-pointer/results/OpenGL-main-visible-arc-SE-24.png": "f3c2a87b0e1c5cdcd6cb8570053fae67f3e61347bd2f3c068ede04dcf2862a1d",
+    "native-pointer/results/OpenGL-settings-titlebar-NW-24.png": "a2d8ae6c564c849fa8d05681886ab8f56d8eef393bf5a06a0946ae4ab49a5095"
+  },
+  "findings": "Square0 and rounded24 frames match intended shapes; mainSE grows both axes and SettingsNW shifts origin while shrinking both axes. No visual permission to waive GUI performance failure or accept entire interface."
+}

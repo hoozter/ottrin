@@ -4,39 +4,39 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local candidate
 
-The delivered Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development
-MSIX0.1.0.10 use clean runtime source
-`cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a`. All seven published artifacts/sidecars
-and58Windows payload files are rehashed. Exact source/hashes/scopes are in
-`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. CI41678522340 passes all four exact-source
-Linux/Windows verification and isolated release performance jobs.
+The current Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development
+MSIX 0.1.0.11 use runtime `0aac86f98a6411b690ede891f48438d02a9701ea`.
+All seven stable artifacts/sidecars and 58Windows payload files are rehashed;
+exact source/hashes/scopes are in the stable acceptance manifests. All four
+exact-source CI 41708636305 jobs pass. 473 UI tests pass, one existing ignored;
+strict native/Windows lint and formatting pass.
 
-Settings navigation now has six named native radio choices with correct selection
-and activation. Create File/Folder and Rename use the same centred38-point input.
-Closing a filename dialog releases its text focus; a natively focused file row
-retains file shortcuts instead of being mistaken for active text input. Text,
-search, address, command, menu, picker and Inspector ownership remain protected.
-All471 UI tests pass, with one existing ignored; strict local native/Windows lint
-and formatting pass. The exact AppImage passes30 native Dark100/Light150 checks;
-installed NSIS passes22 Dark/Light checks with explicit row focus before F2.
-All18original captures are reviewed. Normal closure and supported NSIS uninstall
-preserve source files and preferences.
+Windows now applies theme corners to the actual native window region in both
+renderers. Shared resize targets follow the visible arc, and titlebars yield
+edge presses to resizing. Exact-package Linux Dark100/Light150 and installed
+Windows Native/OpenGL pass 16 actual mouse gestures. Windows also passes 18 live
+Window corners edits/Cancel region checks. All 34 current originals are reviewed,
+with screen/taskbar-clipping limits explicitly recorded. Earlier 36 native-region
+checks across six window types retain source 30ba1 and exact backend identity.
+Normal Close and supported Windows uninstall preserve source/preferences.
 
-MSIX10 passes actual native MakeAppx assembly/unpack and complete58-file equality.
-MSIX8 update/login/removal and broader workflow, picker, Office/media, resource
-and installer-fault results retain their exact original source/artifact scopes;
-no fresh MSIX10 lifecycle or physical/human acceptance is implied. Linux daemon
-bytes remain identical, and the complete Windows daemon differs only in PE
-metadata. A bounded read-only30-second personal-daemon sample records0.267% of
-one core/about26MB RSS with no restart or configuration change. MSI remains held
-for ordinary-user registration rollback; no public release or Store submission.
+MSIX 11 passes actual native MakeAppx assembly/unpack and 58-file equality; no
+fresh MSIX 11 deployment/update/login acceptance is implied. Full daemon executable
+contents match CBC aside from specified build-ID/header/nonloaded symbol metadata;
+whole-file identity and new CPU benchmarks are not claimed. Earlier lifecycle,
+picker, Office/media and broader workflow evidence retains original artifact scope.
 
-All owned QA VMs/media/profiles/stages, superseded candidates, source archive,
-consumed extractions/transports and15obsolete compiler sessions are removed.
-Current packages, compact evidence, useful caches, user data and protected bases
-remain. Packaged manuals are build-time snapshots; `SOURCE_REVISION.txt` identifies
-actual runtime source, while repository documents/manifests record later acceptance.
+The strict software GUI idle CPU gate remains failed: Native 33.54% of one
+core and OpenGL 3.70%; unchanged CBC Native baseline 34.21%. Root cause,
+nondefault Windows DPI, fully visible layout and whole-roadmap acceptance remain
+open. This is GUI CPU, not index CPU. MSI registration rollback remains held.
+No public release, Store submission or personal service/settings change occurred.
+
+Owned VMs/media/profiles/stages, superseded packages, consumed archives/extractions
+and obsolete compiler sessions are removed. Current stable packages, compact
+original evidence, useful caches, user data and protected bases remain. Packaged
+manuals are build-time snapshots; repository manifests/documents record later
+acceptance. The roadmap goal remains active.
 
 ## Highlights
 

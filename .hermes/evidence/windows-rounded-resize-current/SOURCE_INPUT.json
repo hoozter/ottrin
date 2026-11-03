@@ -1,0 +1,11 @@
+{
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-rounded-resize-current/source.zip",
+  "status": "consumed by native MSIX11 assembly; owned source archive retired",
+  "sha256": "f7d5390e66d59156a9f1828b811f550f1dadf80a3d5f1fc82f2a355e8088cab0",
+  "archive_bytes": 192279519,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

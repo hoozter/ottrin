@@ -1,13 +1,13 @@
 {
-  "status": "pass exact current package-content and native Settings navigation/filename geometry scope; broader audit incomplete",
-  "source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "status": "pass exact current package-content and native Settings rounded-window shape/resize scope; broader audit incomplete",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "e6fd814827437e246756c77ab83dfc682836cc8afb30e6e554cc5f7438e79769",
-    "Ottrin-0.1.0-x86_64.AppImage": "8dfa4c60d290eb99ca5b293cb35f85d0d64b465ff68880bd4605b42baf27a6ce",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f4c68bbe6bf1c0972e3d272c80c14863359b7c8ae0c42901ee7e4421cd72cd98",
-    "ottrin_0.1.0_amd64.deb": "4225434e6c57e5151c92c47a8778ef63f0b157d0f8a73b3544d845db034c2dfb"
+    "ottrin-0.1.0-1.x86_64.rpm": "915edec6a7313684da8616bced18dba1d45c72af2883b42c769155ffb6388c15",
+    "Ottrin-0.1.0-x86_64.AppImage": "510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b59582e7a71d04c003bbac5f8fed61943c979d5ffa57c4423c18a2cdb0144963",
+    "ottrin_0.1.0_amd64.deb": "075474276d3345084ff69da5c47ad631fc2e78cce4ea210494c1704e9e8fad1b"
   },
-  "evidence": ".hermes/evidence/file-row-focus-current",
+  "evidence": ".hermes/evidence/windows-rounded-resize-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -16,24 +16,26 @@
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
-  "current_native_fields": ".hermes/evidence/file-row-focus-current/LINUX_NATIVE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/file-row-focus-current/SOURCE_SCOPE.json",
-  "full_payload_comparison": ".hermes/evidence/file-row-focus-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
-  "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "current_native_fields": ".hermes/evidence/windows-rounded-resize-current/LINUX_NATIVE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/windows-rounded-resize-current/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/windows-rounded-resize-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "indexd_binary_sha256": "0415810e594a2873245ba7f5a3ccb7ef766ad222986bce687c067247fc4e001d",
   "unchanged_responsibility_basis": {
-    "previous_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
-    "previous_receipt": ".hermes/evidence/file-row-focus-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
-    "scope": "Only Settings navigation widget metadata, shared centred Create/Rename field geometry, and release of the closed filename dialog input focus and recognition of actual text versus focused file-row keyboard ownership change shipping source. Ordinary file editing/operation and preview/picker/index ownership unchanged; helpers/dependencies/assets and daemon bytes unchanged. Prior full workflow, installer/index/preview/browser/theme scopes retain original hashes; they are not newly executed on this cohort."
+    "previous_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+    "previous_receipt": ".hermes/evidence/windows-rounded-resize-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Shared Windows native-region clipping, maximized rectangular frame, visible-arc resize and exclusive titlebar input change shipping GUI behavior. Search source changes only an existing test. Full payload comparisons prove all other helper/library/asset bytes match. Daemon loaded code/data match with explicitly identified build metadata differences; whole-file identity and new CPU acceptance are not claimed. Earlier workflow/lifecycle/picker/media/index scopes retain original hashes."
   },
   "hosted_source": {
-    "run": 41678522340,
-    "tested_source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+    "run": 41708636305,
+    "tested_source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
     "all_four_jobs_success": true
   },
   "limits": [
+    "Pre-existing strict software GUI CPU gate failed: Native33.54 and OpenGL3.70 percent one core, stable Native baseline34.21; cause unresolved",
+    "Live Windows DPI remains unverified",
     "Local unsigned delivery; no public release",
     "Private X11/software AT-SPI Dark at 100%/Light at 150%; physical graphics and human assistive use separate",
     "Full remaining roadmap and numeric/color-picker controls and complete UI assistive usability remain unaccepted"
   ],
-  "cleanup": "Native navigation/geometry-check desktops/profiles/processes/mounts and content extraction removed; exact stage retired by publication; compiler-cache cleanup separately receipted"
+  "cleanup": "Native pointer gesture desktops/profiles/processes/mounts and content extraction removed; exact stage retired by publication; compiler-cache cleanup separately receipted"
 }

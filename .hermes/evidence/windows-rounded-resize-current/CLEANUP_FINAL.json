@@ -1,0 +1,207 @@
+{
+  "status": "complete for current rounded-window task resources",
+  "owned_vms": [
+    {
+      "label": "native-pointer",
+      "uuid": "5c424963-1b40-4c71-b9fb-e3c4d35904ea",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "label": "native-live-radius",
+      "uuid": "917c0d3e-9b13-4431-8bc7-1a12f84d6dd4",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "label": "assembly",
+      "uuid": "3e40ea62-32ba-4d87-b584-85c7b583f27b",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "removed_private_profiles": [
+    "/var/tmp/.ottrin-picker-qa-iznfgt7o",
+    "/var/tmp/.ottrin-picker-qa-yftayke1",
+    "/var/tmp/.ottrin-picker-qa-41bsfsw9",
+    "/var/tmp/.ottrin-picker-qa-6n19erl9"
+  ],
+  "removed_stages_extractions_archives": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-msix-source",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-rounded-resize-current/source.zip"
+  ],
+  "consumed_input_batches": {
+    "batches": [
+      {
+        "bytes": 76838105,
+        "scope": "First producer pass removed completed Linux extraction and native-pointer/assembly consumed transports and private bootstrap. Terminal output recorded exact total. Per-file first-pass listing was overwritten by second pass; producer now appends batches. Independent absence and source/content/native receipts remain."
+      },
+      {
+        "removed": [
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/RESULTS.zip",
+            "bytes": 1163188,
+            "sha256": "f94c71ffcf42314c2ac78e092a68f13e3588354efbafdedc0f430c810eb12046"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/controller.ps1",
+            "bytes": 4866,
+            "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/GUEST_PREPARATION.json",
+            "bytes": 883,
+            "sha256": "6672d7b8fad11f4b559e380619279bf825365a4eb61d7706cd1b1b71b287a113"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/CONTROLLER_PROCESS.json",
+            "bytes": 1940,
+            "sha256": "bc675e1f4a5e1723516fbff97829006ab049b462a1e0228886a9b0f6f4b76f88"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/DESKTOP_SIGNAL.json",
+            "bytes": 255,
+            "sha256": "7572433fd6e7900cfc5184f10a4002cdea28ea62fba7fa9b70d93c5cefc0ad34"
+          }
+        ],
+        "bytes": 1171132,
+        "scope": "Exact consumed extraction and old immutable fixture transports/private bootstrap only; both current package stages retained for pending live/CI/promotion; fresh native-live-radius resources belong to separate UUID"
+      },
+      {
+        "removed": [
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/readiness.log",
+            "bytes": 1117,
+            "sha256": "34b7b5910764f2a1641020936f17c448808065ecb5b9aa6e20f54ec30ebb7784"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/desktop-ready.png",
+            "bytes": 2521532,
+            "sha256": "69e4e216d36e5d72e80e23e773defc0d47f02f88bb967dec63c61be3e8caeba1"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/PRIVACY_STEPS.json",
+            "bytes": 282,
+            "sha256": "60aa9b381138e7f84689c41b576821f67b3c95249ed8e03eca2ef1aa42b37739"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-pointer/privacy-accepted-0.png",
+            "bytes": 1492745,
+            "sha256": "8c2a98e040e2f15abaf34ee2a560d00c8d38b657d05bca93d644b8df0c173fdf"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/readiness.log",
+            "bytes": 1117,
+            "sha256": "640b80fef8b4f374ba72180914dfaf29a8b061b2ad5ec4d8cf432778adcd3376"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/desktop-ready.png",
+            "bytes": 2521651,
+            "sha256": "b141fede78ee339f90171fd4cc61e76b878be3ec61760bc163c7a17bbee1601f"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/PRIVACY_STEPS.json",
+            "bytes": 282,
+            "sha256": "6590a0d0dd0a5c8e42e5646e24dc624932a1c35814ec2042c01ea1ed7e2a2c4f"
+          },
+          {
+            "path": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/privacy-accepted-0.png",
+            "bytes": 1491037,
+            "sha256": "ec6544b8e4eaaf487bc534af57014a789eb66c7d7329a3e2011730deb7323404"
+          }
+        ],
+        "bytes": 8029763
+      }
+    ],
+    "scope": "Exact consumed receipt-owned extraction/transports/private bootstrap; package stages retain pending acceptance consumers"
+  },
+  "superseded_windows": {
+    "files_removed": 66,
+    "logical_bytes": 293659906
+  },
+  "superseded_linux": "Replaced at stable paths through production artifact lifecycle after hash/link/open-consumer checks; no versioned duplicate retained",
+  "compiler_storage_comparison": {
+    "target/debug/deps": {
+      "before_bytes": 41440995894,
+      "current_bytes": 41440996080,
+      "delta_bytes": 186
+    },
+    "target/debug/incremental": {
+      "before_bytes": 23125053042,
+      "current_bytes": 22659502484,
+      "delta_bytes": -465550558
+    },
+    "target/x86_64-pc-windows-gnu/debug/deps": {
+      "before_bytes": 33292041243,
+      "current_bytes": 33292041429,
+      "delta_bytes": 186
+    },
+    "target/x86_64-pc-windows-gnu/debug/incremental": {
+      "before_bytes": 39658038979,
+      "current_bytes": 39439022407,
+      "delta_bytes": -219016572
+    },
+    "target/release/deps": {
+      "before_bytes": 4290352679,
+      "current_bytes": 4290361250,
+      "delta_bytes": 8571
+    },
+    "target/x86_64-pc-windows-gnu/release/deps": {
+      "before_bytes": 3764567408,
+      "current_bytes": 3764572511,
+      "delta_bytes": 5103
+    }
+  },
+  "obsolete_incremental_sessions_removed_earlier": 21,
+  "final_obsolete_incremental_candidates": 0,
+  "protected_domains_retained": [
+    "ottrin-copy-cleanup-qa",
+    "ottrin-index-qa",
+    "ottrin-qa-20261011",
+    "win11ltsc"
+  ],
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-rounded-resize-current",
+      "purpose": "Compact acceptance receipts, frozen producers, original functional captures and raw diagnostic logs; current evidence retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Four current usable Linux deliverables and acceptance manifest"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current ZIP/NSIS/MSIX11 and58-file payload for delivery/identity consumers"
+    }
+  ],
+  "pending_disposable_consumers": [],
+  "scope": "Personal settings/data/services and shared useful compiler caches retained; original strict CPU failure remains recorded separately."
+}

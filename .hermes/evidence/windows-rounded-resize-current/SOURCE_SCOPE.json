@@ -1,0 +1,25 @@
+{
+  "status": "pass inspected exact source scope",
+  "previous_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "candidate_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "changed_files": [
+    "crates/ottrin-search/src/lib.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/picker.rs",
+    "crates/ottrin-ui/src/properties.rs",
+    "crates/ottrin-ui/src/window_chrome.rs",
+    "vendor/eframe/Cargo.toml",
+    "vendor/eframe/OTTRIN_PATCH.md",
+    "vendor/eframe/src/lib.rs",
+    "vendor/eframe/src/native/glow_integration.rs",
+    "vendor/eframe/src/native/wgpu_integration.rs",
+    "vendor/eframe/src/window_shape.rs"
+  ],
+  "shipping_behavior": "SharedWindowsnativeviewportGDIregion, maximized rectangular frame, theme-radius-aware visible-edge resize and exclusive titlebar input. Search change confined to existing cfg(test) function. No daemon runtime, installer, service, picker protocol or media implementation changes.",
+  "native_region_reference": "NATIVE_SCOPE_COMPARISON.json",
+  "daemon_identity": [
+    "LINUX_INDEX_ELF_COMPARISON.json",
+    "WINDOWS_INDEX_PE_COMPARISON.json"
+  ],
+  "limits": "Identity and source inspection carry only unchanged responsibilities, not a newly executed full roadmap matrix."
+}

@@ -1,0 +1,16 @@
+{
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/__pycache__/promote-windows.cpython-312.pyc",
+      "bytes": 17160
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/__pycache__/promote-linux.cpython-312.pyc",
+      "bytes": 9575
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/__pycache__/retire-consumed.cpython-312.pyc",
+      "bytes": 7196
+    }
+  ]
+}

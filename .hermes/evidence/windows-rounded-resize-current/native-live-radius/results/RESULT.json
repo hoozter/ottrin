@@ -1,0 +1,165 @@
+{
+    "source_preserved":  true,
+    "remaining_owned_installed_processes":  0,
+    "package":  {
+                    "source_revision":  "0aac86f98a6411b690ede891f48438d02a9701ea",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d"
+                                  }
+                              ],
+                    "actor_sha256":  "3484b7c9e72411c361a40b4e5d0bd3fd1d8d4b7536d8d7cd460380251046a3e2",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "phase":  "supported uninstall",
+    "scope":  "Exact installed native live editor radius and Cancel propagation;0/24radius,Native/OpenGL; source/preferences preservation",
+    "status":  "pass native live radius propagation and Cancel; originalsrequire review",
+    "preferences_preserved":  true,
+    "cases":  [
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "editor-live",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=1180x760",
+                      "capture":  "Native-editor-live-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "settings-live",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=920x640",
+                      "capture":  "Native-settings-live-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "main-live",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=1100x752",
+                      "capture":  "Native-main-live-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "editor-live",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1180x760",
+                      "capture":  "Native-editor-live-0.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "settings-live",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=920x640",
+                      "capture":  "Native-settings-live-0.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "main-live",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1100x752",
+                      "capture":  "Native-main-live-0.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "editor-before-cancel",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=1180x760",
+                      "capture":  "Native-editor-before-cancel-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "settings-after-cancel",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=920x640",
+                      "capture":  "Native-settings-after-cancel-0.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "main-after-cancel",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1100x752",
+                      "capture":  "Native-main-after-cancel-0.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "editor-live",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=1180x760",
+                      "capture":  "OpenGL-editor-live-24.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "settings-live",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=920x640",
+                      "capture":  "OpenGL-settings-live-24.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "main-live",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=1100x752",
+                      "capture":  "OpenGL-main-live-24.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "editor-live",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1180x760",
+                      "capture":  "OpenGL-editor-live-0.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "settings-live",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=920x640",
+                      "capture":  "OpenGL-settings-live-0.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "main-live",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1100x752",
+                      "capture":  "OpenGL-main-live-0.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  24,
+                      "case":  "editor-before-cancel",
+                      "native_region":  "kind=3 topLeft=False topRight=False bottomLeft=False bottomRight=False center=True dimensions=1180x760",
+                      "capture":  "OpenGL-editor-before-cancel-24.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "settings-after-cancel",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=920x640",
+                      "capture":  "OpenGL-settings-after-cancel-0.png"
+                  },
+                  {
+                      "renderer":  "OpenGL",
+                      "native_expected_region_match":  true,
+                      "radius":  0,
+                      "case":  "main-after-cancel",
+                      "native_region":  "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1100x752",
+                      "capture":  "OpenGL-main-after-cancel-0.png"
+                  }
+              ]
+}

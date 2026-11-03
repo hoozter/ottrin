@@ -1,0 +1,46 @@
+{
+  "status": "pass exact native window-region live radius propagation and Cancel rollback",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "installer_sha256": "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d",
+  "native_region_cases": 18,
+  "originals_directly_reviewed": 18,
+  "captures": {
+    "Native-editor-live-24.png": "a70c137bf3cc8b9f9d179caea8a618c937072aabb28633d3a3b60ad2ae960560",
+    "Native-settings-live-24.png": "ac0d9e6b23d829d5614f523970b0134ca974d750e5de77e0e4b7053f25f977d2",
+    "Native-main-live-24.png": "cdc1603bd6c81ed1629d78c7febb410834544e1df2da568838508f01c5eb514f",
+    "Native-editor-live-0.png": "8db5c9de039850f2e5dfd2fd16049d5d5aa6fed2c30f5831a60526d71bbd86e8",
+    "Native-settings-live-0.png": "7c99271c30d7c2665923ff3cb9b6530f461554cbe1f70d89b10e16d4c5a3ec4d",
+    "Native-main-live-0.png": "be54aa0ebed449adb24b285a5299ab4c7d7dc78531c05abbfccde48d6cc9c007",
+    "Native-editor-before-cancel-24.png": "421ce1a97134e56966bd5e8d64e5fa7eeb0efb65dc953530b9e5a5a09e72b99a",
+    "Native-settings-after-cancel-0.png": "904737b3e0c88460980544580daa4fda2462084dec2cbd4275d5615c7cbe3c4a",
+    "Native-main-after-cancel-0.png": "be54aa0ebed449adb24b285a5299ab4c7d7dc78531c05abbfccde48d6cc9c007",
+    "OpenGL-editor-live-24.png": "b6033221c8279e21fce925034ad9583e51b7bb82a46193387489bd603403423b",
+    "OpenGL-settings-live-24.png": "0ec4ecd85084827ada13a6844b3401352762974f0a0203f63ac4e66215eb66ae",
+    "OpenGL-main-live-24.png": "55db1f25c318071754c575b170d2c0554d0475ee2783b29e7b04ff0c9c6cef25",
+    "OpenGL-editor-live-0.png": "0de41fb040a2c397adc24c612a39e6a231a889843dcb3c11453e3714f608a7fd",
+    "OpenGL-settings-live-0.png": "08f443179549cf85f3158dde2d75eee7b267945b57b38232da3af12c82955c7a",
+    "OpenGL-main-live-0.png": "50b8d8cc7e4edc7a5502168a24d89245616f562fa3b22424685bf1e464c8d582",
+    "OpenGL-editor-before-cancel-24.png": "5232cc38cc18e2f85e01de022b7e50ebf317914230a6740494fa70846f6c17af",
+    "OpenGL-settings-after-cancel-0.png": "74656d01e03ff2bef14fb4b8263059161f31b82f87f3d897547342f365f2f622",
+    "OpenGL-main-after-cancel-0.png": "2db2af8016677a082832b3f881b72b17e645705a4e66bd6f03e5959918033318"
+  },
+  "input": "Actual Window corners numeric control focused through UIAutomation, followed by Ctrl+A, typed0/24 and Enter; no config mutation while running",
+  "behavior": "Main, Settings and editor actual GDI regions all match0/24; Cancel restores0 on existing windows and saved custom-theme radius stays0. Both Native and OpenGL; normal Close and supported uninstall preserve source/preferences.",
+  "limits": [
+    "Dark/default96DPI software VM; nondefault Windows DPI and physical GPU remain unverified",
+    "Some full-window captures include taskbar overlap or screen clipping; reviewed visible regions do not prove full-window visual/layout acceptance. Native GetWindowRgn equality independently checks the complete owned window shape.",
+    "UIAutomation focusing a numeric control is not a visible mouse-control or complete accessibility/usability acceptance",
+    "Strict software GUI idle CPU failure remains open; no new benchmark or waiver"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "result": ".hermes/evidence/windows-rounded-resize-current/native-live-radius/GUEST_RESULT.json"
+}

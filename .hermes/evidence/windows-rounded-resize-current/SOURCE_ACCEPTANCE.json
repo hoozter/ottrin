@@ -1,5 +1,5 @@
 {
-  "status": "source473UIchecks/native-Windowsstrictlintpass; nativepointerandpackagedeliverypending",
+  "status": "source checks pass; all7stable packages delivered;34currentnativechecks/34originals reviewed, historical36regionchecks scoped separately; full acceptance remains open",
   "implementation": "Sharedresizehit-testtakesactualthemeradius; diagonal targets followvisiblearcswhileinterior/closecontrolsremainordinary. Sharedandmain titlebarsyieldedgepressestoone resizecommand. NativeGDIbackendandrendererhooksunchangedfrom36caseWindowsfunctionalcohort.",
   "negative": ".hermes/evidence/windows-window-shape-fix-current/rounded-resize-negative.log",
   "positive": [
@@ -14,9 +14,10 @@
   "native_reference": ".hermes/evidence/windows-window-shape-fix-current/native-complete/GUEST_RESULT.json",
   "native_scope": "36exactregion/functionalcasespassedon30ba1;24primaryoriginalsreviewed; strictsoftwareGUIidle2percentcriteriafailed Native33.54andOpenGL3.70percentonecore. UnchangedCBCNativebaseline34.21percent. NoCPUfix/waiver/fullacceptanceclaim.",
   "pending": [
-    "Actualnativepointerresizeandtitlebarownershiponnewsource",
-    "LiveeditorradiusandDPIsoftwaregaps",
-    "InvestigateGUIidleframerefresh; do notmislabelGUIasindexCPU",
-    "Build/content/nativeQA/MSIXassembly/promotionfornewsource; stableCBC7remainsusable"
-  ]
+    "Real nondefault Windows DPI and fully visible software-desktop layout",
+    "Investigate strict GUI idle CPU failure without confusing it with daemon CPU",
+    "Remaining54roadmap/15supplemental requirement audit, Services states/prompt/menu families and other independently executable outcomes",
+    "Held MSI registration rollback and explicit owner/external waits"
+  ],
+  "delivery": "DELIVERY_VERIFICATION.json"
 }
