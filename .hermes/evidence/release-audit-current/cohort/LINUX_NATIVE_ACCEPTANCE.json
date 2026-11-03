@@ -1,0 +1,23 @@
+{
+  "status": "pass exact staged default Home startup and native Close scope",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "artifact_sha256": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+  "gui_binary_sha256": "bd3385f0bbdf0ed312eeba08c7c04a0bdc00063cbe809609720f521bf79d425d",
+  "captures": {
+    "startup-dark-1": {
+      "sha256": "2396b72391b0f27fc736569173350c81b95e5b24bcc7396edbbab0090efec679",
+      "observations": "Current Home Documents row fully visible at right; coherent titlebar and toolbar; directly reviewed original capture",
+      "receipt": ".hermes/evidence/release-audit-current/cohort/startup-dark-1/RESULT.json"
+    },
+    "startup-light-1.5": {
+      "sha256": "d4d59ea061fbb78658b69808f6252c93b115a80e2803195fc2d57f58d2f79316",
+      "observations": "Current Home Documents row fully visible at right; coherent titlebar and toolbar; directly reviewed original capture",
+      "receipt": ".hermes/evidence/release-audit-current/cohort/startup-light-1.5/RESULT.json"
+    }
+  },
+  "limits": [
+    "Private X11 software desktops only; no physical GPU acceptance",
+    "No full daily-driver workflow claim; earlier guarded workflow failures remain open",
+    "Historical unchanged installer/index/picker scopes retain original artifact hashes"
+  ]
+}

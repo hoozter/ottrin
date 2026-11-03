@@ -1,0 +1,16 @@
+{
+  "status": "failed QA lookup; no acceptance",
+  "error": "Exact Documents name matched two native nodes. Original package screenshot shows Documents in current Home viewport; role-scoped lookup required.",
+  "raw_result": "GUEST_RESULT.json",
+  "scope": "No product failure conclusion from ambiguous untyped selector; repeat exact package with interactive non-text row selector.",
+  "vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

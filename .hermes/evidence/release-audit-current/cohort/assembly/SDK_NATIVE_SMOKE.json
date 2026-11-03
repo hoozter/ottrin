@@ -1,0 +1,5 @@
+{
+  "process_exit": 0,
+  "stdout": "{\"scope\":\"Actual template accepted by native MakeAppx and unpacked with unchanged control bytes; Windows cmd.exe fixture, not Ottrin runtime or deployment acceptance.\",\"status\":\"pass\",\"makeappx_sha256\":\"58D5E69FD0322F960AFBE34AFED0EDA66A5D001811EE838D1C7165130C3D55E5\",\"template_sha256\":\"8D4E640A497C87A03B7BE0D4D7B660EC10A635CE982F24E0EF2825049D7C3018\"}\r\n",
+  "stderr": ""
+}

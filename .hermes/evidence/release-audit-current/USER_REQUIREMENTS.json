@@ -1,0 +1,121 @@
+{
+  "purpose": "User-request acceptance requirements omitted by the54 explicit roadmap bullets; no row is completed merely by a source/test total",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "requirements": [
+    {
+      "id": "U01",
+      "requirement": "Preserve saved view mode across newly built/updated packages; startup must show the actual Home contents.",
+      "current_scope": "Exact staged Linux and installed Windows default Home startup accepted in both themes; actual MSIX6-to7 preference/update preservation remains pending.",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
+        ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
+        ".hermes/evidence/release-audit-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json"
+      ]
+    },
+    {
+      "id": "U02",
+      "requirement": "Indexer must be quiet while idle, use its own process name, survive main-window closure when enabled, and start reliably without a first-launch readiness error.",
+      "current_scope": "Linux and Windows bounded resource evidence exists; service/persistence scopes must be checked individually against unchanged payload.",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/WINDOWS_UNATTENDED_ACCEPTANCE.json",
+        ".hermes/evidence/release-audit-current/cohort/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+        ".hermes/evidence/release-audit-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json"
+      ]
+    },
+    {
+      "id": "U03",
+      "requirement": "Helper lock opens its settings; setup offers an actual administrator prompt with truthful cancellation/failure reporting.",
+      "current_scope": "Source regressions located; concentrated native acceptance review pending.",
+      "evidence": []
+    },
+    {
+      "id": "U04",
+      "requirement": "Services show clear ready/running status dots and appropriate install, repair/reinstall, start, stop and uninstall actions for actual state.",
+      "current_scope": "Concentrated rendered state/action audit pending.",
+      "evidence": []
+    },
+    {
+      "id": "U05",
+      "requirement": "Appearance settings have logical framed groups, meaningful headings, compact controls and consistent text/icon alignment.",
+      "current_scope": "Historical appearance receipts exist; concentrated source/payload and rendered scope review pending.",
+      "evidence": []
+    },
+    {
+      "id": "U06",
+      "requirement": "Theme editor selects the exact production element and only its intended themeable roles, including the tab bar.",
+      "current_scope": "Historical controls acceptance exists; ownership and full control inventory still require concentrated review.",
+      "evidence": []
+    },
+    {
+      "id": "U07",
+      "requirement": "Expose every supported theme property and explain shared defaults; radius/border/color changes must reach every intended window/control.",
+      "current_scope": "Historical appearance verification is scoped; all controls and cross-window behavior require explicit evidence.",
+      "evidence": []
+    },
+    {
+      "id": "U08",
+      "requirement": "Preview selection outlines match actual geometry; production Smart-panel controls and shared themed chrome replace invented preview controls.",
+      "current_scope": "Historical theme-coherence evidence requires current scope inspection.",
+      "evidence": []
+    },
+    {
+      "id": "U09",
+      "requirement": "All menus have complete appropriate icons, compact gutters and consistent text/icon/check alignment.",
+      "current_scope": "Maintained development requirements exist; full current menu inventory/rendered audit pending.",
+      "evidence": []
+    },
+    {
+      "id": "U10",
+      "requirement": "Quick Inspector uses shared window chrome; PDF sidebar fit remains stable when arriving from non-PDF content.",
+      "current_scope": "Exact4a installed Windows temporal VCF-to-PDF acceptance exists; source scope carries unchanged implementation, not a fresh7d rerun.",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/../windows-preview-safety-current/ACCEPTANCE.json",
+        ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json"
+      ]
+    },
+    {
+      "id": "U11",
+      "requirement": "Read-only previews never edit bytes before explicit Edit; native arrows and Space retain preview-navigation/close behavior even after clicking text.",
+      "current_scope": "Exact4a Windows Dark/Light clicked-body checks accepted; explicit Edit/Save separately accepted.",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/WINDOWS_UNATTENDED_ACCEPTANCE.json",
+        ".hermes/evidence/release-audit-current/../windows-preview-safety-current/ACCEPTANCE.json"
+      ]
+    },
+    {
+      "id": "U12",
+      "requirement": "Correct Ottrin application icon on supported Linux/Windows launches.",
+      "current_scope": "Existing icon/packaging evidence requires concentrated current caller review.",
+      "evidence": []
+    },
+    {
+      "id": "U13",
+      "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
+      "current_scope": "Implementation and native caller evidence recorded; remaining browser/platform scopes need requirement-by-requirement audit.",
+      "evidence": []
+    },
+    {
+      "id": "U14",
+      "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
+      "current_scope": "Stable4a retained while7d delivery gates run; CI3/4 passed with Windows verification live. No notification settings changed.",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/cohort/BUILD_SOURCE.json",
+        ".hermes/evidence/release-audit-current/cohort/CI_CURRENT.json"
+      ]
+    },
+    {
+      "id": "U15",
+      "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
+      "current_scope": "Prior cleanup plus completed Linux extraction retired; native fixtures/staging have explicit live consumers.",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/CLEANUP.json",
+        ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json"
+      ]
+    }
+  ],
+  "excluded_from_implementation_authorization": [
+    "Optional tray behavior was a design question; do not invent tray infrastructure from it.",
+    "APT/DNF update repository question confirms feasibility only; no hosting/publication authorization inferred.",
+    "No macOS build; owner signing/Store/final human acceptance remain explicit waits."
+  ]
+}

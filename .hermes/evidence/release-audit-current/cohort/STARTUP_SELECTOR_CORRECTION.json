@@ -1,0 +1,12 @@
+{
+  "status": "pass native viewport-scoped selector; actual duplicate confirmed",
+  "actor_sha256": "37374093761e4dbc02f9e08efac0b2b8dcd4e397dc6f19116dc4479d00f8a116",
+  "source_basis": "Miller exposes ancestor rows as well as current contents; globally unique name assumption invalid. Require exact named non-text row fully inside actual native client; retain later file-viewport bounds, breadcrumb and all payload assertions. Record every matching node role/bounds in native result.",
+  "prior_attempts": [
+    "windows-startup/GUEST_RESULT.json",
+    "windows-startup-controls/GUEST_RESULT.json"
+  ],
+  "scope": "Initial static-label hypothesis disproved; no product or native pass claimed",
+  "evidence": "windows-startup-viewport/GUEST_RESULT.json",
+  "diagnostic": "Two Button nodes: ancestor Documents at x=-1002 and visible current Home Documents at x=720; both falsely report offscreen=false. Actual bounds disambiguate without trusting that flag."
+}

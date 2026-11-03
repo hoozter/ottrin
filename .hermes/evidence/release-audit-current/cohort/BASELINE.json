@@ -1,0 +1,13 @@
+{
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "allocated_bytes": {
+    "target/debug/deps": 41448239104,
+    "target/debug/incremental": 22742679552,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39227678720,
+    "target/release/deps": 4299321344,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769556992
+  },
+  "remaining_free_bytes": 24383520768,
+  "configuration": "Existing standard native/GNU release flags/features, jobs1; existing target/compiler caches; no live QA guest"
+}

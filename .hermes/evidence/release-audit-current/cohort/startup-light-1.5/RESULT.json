@@ -1,0 +1,57 @@
+{
+  "status": "pass within staged default startup/native Close scope; visual review remains required",
+  "artifact_sha256": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "theme": "Light",
+  "desktop_scale": "1.5",
+  "launch_arguments": [],
+  "scope": "Exact staged AppImage default renderer and no-location startup; current Home contents and normal native Close on private X11/software desktop",
+  "gui_binary_sha256": "bd3385f0bbdf0ed312eeba08c7c04a0bdc00063cbe809609720f521bf79d425d",
+  "visible_documents_word": {
+    "left": "1238",
+    "top": "120",
+    "width": "97",
+    "height": "14",
+    "conf": "92.173409"
+  },
+  "normal_exit": 0,
+  "source_unchanged": true,
+  "default_renderer": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-mfs0nst7",
+    "owned_processes_reaped": [
+      {
+        "pid": 851428,
+        "exit": 0
+      },
+      {
+        "pid": 851431,
+        "exit": 0
+      },
+      {
+        "pid": 851432,
+        "exit": 15
+      },
+      {
+        "pid": 851529,
+        "exit": 0
+      },
+      {
+        "pid": 851655,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        851534,
+        851622
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "143 34 0:64 / /var/tmp/.ottrin-picker-qa-mfs0nst7/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

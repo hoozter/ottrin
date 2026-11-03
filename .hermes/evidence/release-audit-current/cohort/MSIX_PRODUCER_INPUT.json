@@ -1,0 +1,8 @@
+{
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "assembly_revision": 7,
+  "assembly_script_sha256": "4382435426cf028019bcf7026625ab291382a9ceb69c3daca9452e3313abc663",
+  "runtime_script_sha256": "ec02e8ef94581d8d52962e62c47eb774e3f9daf6dab27f66ca411ed9da82692a",
+  "runtime_unchanged": true,
+  "scope": "Prepare actual production MSIX7 assembly and existing version-parameterized native runtime assertions; no native acceptance claimed"
+}

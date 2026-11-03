@@ -97,7 +97,24 @@ not a complete daily-driver pass. One initial pointer miss remains a QA timing/
 coordinate question; a separate native probe records correct physical coordinates
 and actual folder navigation. Do not hide the original failures or claim the
 full workflow accepted. The earlier598ffbb2 CI41598116332 now passes all4 jobs;
-it does not accept the new uncommitted startup correction.
+it does not accept the newer startup correction committed as7d10a8b6.
+
+The clean7d10a8b6 Linux four-format and Windows ZIP/NSIS cohorts are now built
+in staging. Exact AppImage no-location/default-renderer startup and native Close
+pass Dark100/Light150. Full payload comparison confirms unchanged Linux indexd
+and Windows daemon code (only PE timestamp/checksum differ); all other runtime
+helpers/libraries/assets match. Native MakeAppx produces development MSIX0.1.0.7
+with all58 payload hashes matching;6-to7 runtime/login/update acceptance remains
+pending. Two Windows startup QA attempts rejected a globally ambiguous Documents
+selector; neither is acceptance. The viewport-scoped actor now passes both themes,
+normal Close, all58 installed hashes and supported uninstall preserving preferences
+and source. Actual diagnostics distinguish an ancestor Documents row at x=-1002
+from the current Home row at x=720; both report offscreen=false. Original native
+captures are reviewed. This is default-DPI/software OpenGL scope, not physical
+Windows acceptance. Existing stable packages remain unchanged. CI41605875200 has3 successful jobs; Windows verification is still live.
+Completed Linux extraction and native assembly VM/media/source archive are removed.
+The15 user-request requirements are now separately retained in
+`release-audit-current/USER_REQUIREMENTS.json`, supplementing the54 roadmap bullets.
 
 Continue in this order:
 

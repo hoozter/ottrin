@@ -1,0 +1,44 @@
+{
+  "service_cleanup_exit": 0,
+  "scope": "Exact staged NSIS ordinary no-location startup from a deep process-owned HOME; Dark/Light native Windows software clone",
+  "phase": "Dark no-location deep Home",
+  "desktop_ready": true,
+  "cases": {},
+  "payload_files": 58,
+  "startup_cases": [],
+  "stack": "at Wait-Name, <No file>: line 53\r\nat <ScriptBlock>, <No file>: line 80\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935"
+      }
+    ],
+    "fixtures": {
+      "01-office.docx": "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471",
+      "02-office.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+      "03-office.pptx": "421f4977f3837fb626b5b64ad1300c9496013762614f8e1b9be03cbc6cc45dfe"
+    },
+    "ui_case": "document"
+  },
+  "identity": {
+    "profile": "C:\\Users\\OTMSI71ba7e21a698",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1056",
+    "administrator": false,
+    "session": 1
+  },
+  "test_kind": "native-no-location-startup",
+  "sources_before": {
+    "b.pdf": "3E272F7250E6BC35AEBDEE16B4CDD107B6CDEE6137A360F249CCDAE08F5A04EE",
+    "a.vcf": "B7750E468FB80AC8D7E5CDDED278AC2D7576D272089B2D5F9656B48284C08108",
+    "c.txt": "BC568E8A8CDBF24640ED62B4D5980795A289E282F0F9091B65782922BD5E5156"
+  },
+  "home": {
+    "path": "C:\\Users\\OTMSI71ba7e21a698\\Documents\\OttrinOwnedPreview\\deep\\one\\two\\three\\four",
+    "scope": "Supported process HOME override to reproduce deep startup; actual ordinary Windows account/profile unchanged"
+  },
+  "status": "failed native no-location startup",
+  "error": "Expected one native control: Documents; found=2",
+  "owned_processes_removed": true
+}

@@ -1,0 +1,15 @@
+{
+  "status": "pass: exactly one shipping constructor call differs from4a",
+  "previous_runtime_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "candidate_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "changed_shipping_path": "crates/ottrin-ui/src/lib.rs",
+  "added_call": "app.request_miller_reveal(app.state.active_tab().id);",
+  "unchanged_shipping_source_sha256": "a3f02df5666467968684293fb3e62dd664dfc24ac998e62e3925a041ef604253",
+  "basis": [
+    "All other crates, dependencies, vendor source, packaging and build inputs unchanged",
+    "Only new one-shot Miller reveal call in shipping UI constructor; added rendered regression is test-only",
+    "Source rendered RED/GREEN, full464-pass suite and native Dark100/Light150 captures recorded in parent",
+    "Payload bytes and native changed-function acceptance remain separate gates"
+  ],
+  "limits": "No older native receipt is relabelled as executed on this build. Current staged binaries still require content/native acceptance."
+}

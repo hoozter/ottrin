@@ -1,0 +1,94 @@
+{
+  "status": "completed resources retired; live consumers explicitly retained",
+  "completed_native_cases": [
+    {
+      "case": "windows-startup",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-startup-controls",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "assembly",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "upgrade-enabled",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-startup-viewport",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "source_archive_removed": true,
+  "linux_extraction": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "files": 115,
+    "logical_bytes": 76506682,
+    "purpose": "Completed exact package content and native staged default-startup consumers",
+    "removed": true
+  },
+  "remaining": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Verified4-format startup cohort awaiting exact-source hosted CI then stable promotion"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "ZIP/NSIS/MSIX7 awaiting native startup/update acceptance and stable promotion"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/previous-input.msix",
+      "purpose": "Hard-linked MSIX6 baseline for enabled/disabled native6-to7 update consumers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/upgrade-enabled-input",
+      "purpose": "Live native MSIX6-to7 update fixture session2148; registered owner teardown"
+    }
+  ],
+  "preserved": "Current stable deliverables, personal profiles/index, protected VMs and shared compiler caches"
+}

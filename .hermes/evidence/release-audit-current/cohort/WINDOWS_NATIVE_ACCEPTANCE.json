@@ -1,0 +1,58 @@
+{
+  "status": "pass exact installed NSIS no-location startup, normal Close and supported removal scope",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "installer_sha256": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935",
+  "native_result": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/GUEST_RESULT.json",
+  "payload_files": 58,
+  "captures": {
+    "Dark": {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/results/Dark-startup.png",
+      "sha256": "2d9343ad15e41c3d739d09d784357e57ac8b03f0714793ed20af91e0900f58e7",
+      "review": "Actual current Home contents fully visible at right; themed titlebar, native window controls and coherent main chrome."
+    },
+    "Light": {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/results/Light-startup.png",
+      "sha256": "8aa34b6274eaa1436b207ee9a1606d5f73650c5d07af9091659b8eaf6e811b60",
+      "review": "Actual current Home contents fully visible at right; themed titlebar, native window controls and coherent main chrome."
+    }
+  },
+  "actual_lookup_diagnostic": [
+    {
+      "name": "Documents",
+      "bounds": [
+        -1002,
+        148,
+        240,
+        25
+      ],
+      "type": "ControlType.Button",
+      "offscreen": false
+    },
+    {
+      "name": "Documents",
+      "bounds": [
+        720,
+        92,
+        240,
+        25
+      ],
+      "type": "ControlType.Button",
+      "offscreen": false
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Retained provider-base clone with fresh ordinary account; not fresh stock Windows",
+    "Default96DPI with bundled OpenGL explicitly selected; physical adapter/scaling separate",
+    "No complete daily-driver workflow acceptance; prior scopes retain original hashes"
+  ]
+}

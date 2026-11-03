@@ -1,0 +1,13 @@
+{
+  "Dark-startup.png": "2d9343ad15e41c3d739d09d784357e57ac8b03f0714793ed20af91e0900f58e7",
+  "Dark-startup.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "Dark-startup.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "DESKTOP_READY.json": "c96b97a16239b43d6f52a756eb30dae2f5943eb3c5b3d43f5dea8b670321f9c3",
+  "install-process.json": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a",
+  "Light-startup.png": "8aa34b6274eaa1436b207ee9a1606d5f73650c5d07af9091659b8eaf6e811b60",
+  "Light-startup.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "Light-startup.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "OWNER.json": "b591548cbed7e830932f1200fa77041782ebb2e41a54a7e9d1e446c7cc7bf8ef",
+  "RESULT.json": "1e6374550fa4cdf6dfcb7490eb81c098f4f95ee502fceee993c9afdff289674e",
+  "uninstall-process.json": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+}
