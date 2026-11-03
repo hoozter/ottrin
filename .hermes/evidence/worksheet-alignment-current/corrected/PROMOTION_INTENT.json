@@ -1,0 +1,8 @@
+{
+  "source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "windows_from": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "windows_to": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "retired": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+  "all_native_consumers_terminal": true,
+  "held_msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9"
+}

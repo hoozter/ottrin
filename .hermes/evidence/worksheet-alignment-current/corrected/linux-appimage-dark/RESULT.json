@@ -1,0 +1,49 @@
+{
+  "status": "running",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "artifact_sha256": "4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a",
+  "artifact_kind": "appimage",
+  "scope": "Actual packaged native spreadsheet fallback, main Miller and Inspector; private X11 software desktop",
+  "theme": "Dark",
+  "scale": "1",
+  "captures": {
+    "main": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-dark/main.png",
+      "sha256": "b8fe0a20cd91e599cb509d12e704b8bd369c07b721c683ce929ded81fb5f206e",
+      "mapped_gui_sha256": "b12d6397a099b7532a6d2f75727254177d649e1f483cf633a4d0899ad5b55140",
+      "ocr": "documents\n\n+\n\nox\n\n+\n\nmm var la tmp lw ottrin-picker-qa-ds8qylbq >i files\u00bb iu owned\u00bb B documents\n\n>\n\nGe documents\n\n; text To 100% + text\n\nOverview Expand preview\n\nBudget\n\nA\n\nA\n\n1\n\nOTTRIN SHEET\n\nFIDELITY\n\nItem\n\nAlpha\n\n4\n\nBeta\n\nTotal\n\nCurrency\n\ntotals and\n\ncalculated\n\npone\n\na\n\nee\n\n\u2018worksheet xlsx: Filetype: XLSX document:\n\nFormat: XLSX- Internal parts: 13,\n\n> worksheet xlsx\n\nExcel Spreadsheet\n\nSez Ka\n\nModified 6 days ag0\n\nLocation vat/tmp/.otrin-pcker-qa-detaylba/f\n\n~ Details\n\nName\n\ny\n\nAZ\n\nfem\n\nhee\n\ni\n\nQ\n\nry\n"
+    }
+  },
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ds8qylbq",
+    "owned_processes_reaped": [
+      {
+        "pid": 762676,
+        "exit": 0
+      },
+      {
+        "pid": 762703,
+        "exit": 0
+      },
+      {
+        "pid": 762707,
+        "exit": 15
+      },
+      {
+        "pid": 762840,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        762847,
+        763225
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "Command '['/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-x86_64.AppImage', '--select', '/var/tmp/.ottrin-picker-qa-ds8qylbq/files/owned/documents/worksheet.xlsx', '--renderer', 'opengl']' timed out after 15 seconds",
+    "profile_removed": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "removed": true,
+  "completed_consumers": [
+    "Production package-content/native daemon namespace verification",
+    "Six exact Linux runtime ELF comparisons"
+  ],
+  "native_GUI_used_actual_AppImage": "All private FUSE mounts/profiles reaped by OwnedDesktop; this extraction was not a running app path"
+}

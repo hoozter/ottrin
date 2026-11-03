@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/linux-worksheet.py", line 58, in <module>
+    observe(image,'appimage',sha(image))
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/linux-worksheet.py", line 38, in observe
+    desktop.run(['xdotool','windowactivate','--sync',window,'key','--clearmodifiers','alt+F4'],d.env);assert app.wait(timeout=15)==0
+                                                                                                             ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2045, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-x86_64.AppImage', '--select', '/var/tmp/.ottrin-picker-qa-ds8qylbq/files/owned/documents/worksheet.xlsx', '--renderer', 'opengl']' timed out after 15 seconds

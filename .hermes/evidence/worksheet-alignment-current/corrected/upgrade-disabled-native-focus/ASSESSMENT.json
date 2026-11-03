@@ -1,0 +1,16 @@
+{
+  "status": "rejected baseline5 focus observation; actual6 update never started",
+  "reason": "Owned window did not acquire foreground focus after bounded native-console wait",
+  "operator_issue": "Bounded normal-console focus window was not serviced before its deadline; repeat with immediate observed native console input. No product/policy changes or weakened foreground assertion.",
+  "source_and_preferences_preserved": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

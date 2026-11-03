@@ -1,0 +1,59 @@
+{
+  "status": "pass native capture and read-only checks; direct typography review required",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "artifact_sha256": "4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a",
+  "artifact_kind": "appimage",
+  "scope": "Actual packaged native spreadsheet fallback, main Miller and Inspector; private X11 software desktop",
+  "theme": "Dark",
+  "scale": "1",
+  "captures": {
+    "main": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-dark-native-close/main.png",
+      "sha256": "808e217aca85da656e9e4adcc1816173a95735d1586101bf7481ee71628963ea",
+      "mapped_gui_sha256": "b12d6397a099b7532a6d2f75727254177d649e1f483cf633a4d0899ad5b55140",
+      "ocr": "documents\n\n+\n\nox\n\n+\n\nma var la tmp mw ottrin-picker-qa-3oohyqsh? la files\u00bb Im owned\u00bb B documents\n\n>\n\nGe documents\n\n=text Text 100% + text\n\nOverview\n\nExpand preview\n\nBudget\n\nA\n\nA\n\n1\n\nOTTRIN SHEET\n\nFIDELITY\n\nItem\n\nQui\n\nAlpha\n\n4\n\nBeta\n\nTotal\n\nCurrency\n\ntotals and\n\ncalculated\n\nFoe\n\ntae\n\nee\n\n\u2018worksheet xlsx: Filetype: XLSX document:\n\nFormat: XLSX- Internal parts: 13,\n\n> worksheet xlsx\n\nExcel Spreadsheet\n\nSeek\n\nModified16 days ag0\n\nLocation /var/tmp/ ottrn-pcker-qa-3oohyash/fiL\n\n~ Details\n\nName\n\ny\n\nAZ\n\nfem\n\nhee\n\ni\n\nQ\n\nry\n"
+    },
+    "inspector": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-dark-native-close/inspector.png",
+      "sha256": "8001cb7dbafa869fc826a5bf80d9b26457434ac2e86f8bc9c96a3e2f4d674fdb",
+      "mapped_gui_sha256": "b12d6397a099b7532a6d2f75727254177d649e1f483cf633a4d0899ad5b55140",
+      "ocr": "Quick inspector \u2014\n\nrksheetxlsx.\n\nText 1\n\n+text\n\nOverview\n\nBudget\n\nOTTRIN SHEET\n\nFIDELITY\n\nItem\n\nPrice\n\nAmount\n\nQuantity\n\nAlpha\n\n1\n\n1250\n\nBeta\n\n2\n\n1375\n\nTotal\n\nCurrency totals and\n\ncalculated formulas\n\n5x Filetype: XLSx do\n\nment - Format: XLSX Inter\n\nTt\n\n13\n"
+    }
+  },
+  "source_bytes_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-3oohyqsh",
+    "owned_processes_reaped": [
+      {
+        "pid": 766669,
+        "exit": 0
+      },
+      {
+        "pid": 766672,
+        "exit": 0
+      },
+      {
+        "pid": 766673,
+        "exit": 15
+      },
+      {
+        "pid": 766745,
+        "exit": 0
+      },
+      {
+        "pid": 766849,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        766749,
+        766805
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "status": "pass: one changed shipping function; portal change is test diagnostics only",
+  "previous_source": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "candidate_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "changed_source_paths": [
+    "crates/ottrin-app/src/portal.rs",
+    "crates/ottrin-ui/src/preview_render.rs"
+  ],
+  "unchanged_shipping_portal_sha256": "1da594183eddec16061a3ae1b5f413c65d8d92541b2f8b7401bf050ef184827a",
+  "changed_shipping_function": "crates/ottrin-ui/src/preview_render.rs::render_spreadsheet_row",
+  "function_sha256": {
+    "previous": "276b8ca6b62e1665d2ca98e3ae26d5fe953e2d5bbfad376d5bcc6120841bc671",
+    "candidate": "5021037bc2e2b5f389c6ebb3fe7fbad9cbf0d9e8d8518a3cb9cf547af0e1437a"
+  },
+  "unchanged_preview_prefix_sha256": "44239a4f2b35633edbf1bf3912686983639bfce3d9c2ef9f7b812717aceadfaf",
+  "unchanged_preview_suffix_sha256": "e9f1e0c5d33c307a348885a14a2ae0496fb1b011d6d21a6470825d7e6537e20c",
+  "basis": [
+    "Git compares all shipping files, dependency versions/features, vendor source and packaging scripts; only the two named source files differ",
+    "Portal code before cfg(test) is byte-identical",
+    "Preview shipping source outside the named row renderer is byte-identical",
+    "Current native Linux/Windows captures and rendered regressions independently accept the changed function",
+    "Full Linux113-entry and Windows58-file payload comparisons establish unchanged helpers/dependencies; Windows daemon is completely equal except timestamp/checksum"
+  ],
+  "limits": "Earlier broad UI, index-resource, integration and installer-fault receipts keep their original artifact hashes/scopes. They are not relabelled as newly executed on this cohort; the identity comparison supports carrying unchanged responsibilities."
+}

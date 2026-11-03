@@ -1,0 +1,28 @@
+{
+  "status": "reviewed",
+  "captures": {
+    "visibility-default.png": {
+      "sha256": "6a130dce8c1a658fe784a066a694fba1ee19a1528490c1c2fd2f6974b4e3ea52",
+      "visible_entries": [
+        "V.txt"
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "9cc4a188a191f0a092165620bcda5fab8ddd9ec85cdce3e4f2a9682ae61fb0db",
+      "visible_entries": [
+        "HD",
+        "SD",
+        "H.txt",
+        "S.txt",
+        "V.txt"
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "6a130dce8c1a658fe784a066a694fba1ee19a1528490c1c2fd2f6974b4e3ea52",
+      "visible_entries": [
+        "V.txt"
+      ]
+    }
+  },
+  "assessment": "All three actual native captures reviewed: default/restored contain only V.txt; show-all contains both hidden/system directories and all three files, in aligned grid slots."
+}

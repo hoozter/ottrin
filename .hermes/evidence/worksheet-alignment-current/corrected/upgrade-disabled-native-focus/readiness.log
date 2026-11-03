@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/privacy-control.py", line 38, in <module>
+    assert time.monotonic()<deadline,'Native desktop/transition OCR was not conclusive; review the private console; no repeated input'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Native desktop/transition OCR was not conclusive; review the private console; no repeated input

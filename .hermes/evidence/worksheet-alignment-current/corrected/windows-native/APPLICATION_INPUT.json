@@ -1,0 +1,15 @@
+{
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "files": [
+    {
+      "name": "current-setup.exe",
+      "sha256": "174d3c46ba4ef74b0db14d39e90765c256018305c2183d17eae6c9165d452ce2"
+    }
+  ],
+  "fixtures": {
+    "01-office.docx": "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471",
+    "02-office.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+    "03-office.pptx": "421f4977f3837fb626b5b64ad1300c9496013762614f8e1b9be03cbc6cc45dfe"
+  },
+  "ui_case": "document"
+}

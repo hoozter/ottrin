@@ -1,0 +1,12 @@
+{
+  "source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "allocated_bytes": {
+    "target/debug/deps": 41448210432,
+    "target/debug/incremental": 23208140800,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39325810688,
+    "target/release/deps": 4299325440,
+    "target/x86_64-pc-windows-gnu/release/deps": 3754377216
+  },
+  "cleanup_owner": "Current roadmap goal; producer tears down failed builds, acceptance consumes and retires successful staging; useful compiler caches retained"
+}

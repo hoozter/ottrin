@@ -1,0 +1,28 @@
+{
+  "status": "reviewed",
+  "captures": {
+    "visibility-default.png": {
+      "sha256": "55074c724948578c59f2906b7a442841f7b42d17bd9dd59999386297560c55e0",
+      "visible_entries": [
+        "V.txt"
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "85924c558e009c6e5432496cfc8d2eb349bbb11017e8243e8ff07f1fb2cc0899",
+      "visible_entries": [
+        "HD",
+        "SD",
+        "H.txt",
+        "S.txt",
+        "V.txt"
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "55074c724948578c59f2906b7a442841f7b42d17bd9dd59999386297560c55e0",
+      "visible_entries": [
+        "V.txt"
+      ]
+    }
+  },
+  "assessment": "Actual default/restored show only V.txt; show-all shows both hidden/system folders and all three files. Native Inspector screenshot shows the unaltered owned plain text and explicit Edit action."
+}

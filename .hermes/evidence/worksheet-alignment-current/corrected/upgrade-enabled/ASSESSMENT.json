@@ -1,0 +1,21 @@
+{
+  "status": "rejected fixture: accepted baseline5 did not acquire foreground; update6 never executed",
+  "actual_result_status": "failed runtime or package-removal gate",
+  "failed_gate": "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+  "source_and_preferences_preserved": true,
+  "owned_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "replacement_inputs": [
+    "All interactive clones get virtual absolute tablet at boot, as already used by the passing Office/native-worksheet fixture",
+    "Runtime observer waits bounded120seconds for actual normal console focus after first API attempt; same foreground/Default checks retained"
+  ],
+  "limits": "No claim that current6 failed, no successful upgrade/login accepted, no signing/focus policy or product code change"
+}

@@ -1,0 +1,32 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-ds8qylbq",
+  "owned_processes_reaped": [
+    {
+      "pid": 762676,
+      "exit": 0
+    },
+    {
+      "pid": 762703,
+      "exit": 0
+    },
+    {
+      "pid": 762707,
+      "exit": 15
+    },
+    {
+      "pid": 762840,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      762847,
+      763225
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Command '['/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-x86_64.AppImage', '--select', '/var/tmp/.ottrin-picker-qa-ds8qylbq/files/owned/documents/worksheet.xlsx', '--renderer', 'opengl']' timed out after 15 seconds",
+  "profile_removed": true
+}

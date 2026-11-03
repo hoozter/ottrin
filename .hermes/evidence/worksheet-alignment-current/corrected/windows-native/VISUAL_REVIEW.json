@@ -1,0 +1,22 @@
+{
+  "status": "reviewed all four exact native captures; typography correction passes",
+  "captures": {
+    "native-main-native.png": {
+      "sha256": "36cafd3c6ae123fdd9bb534e083248bdfb4da4160c2d072b3a959b1556c687e1",
+      "assessment": "Natural unexpanded glyph/word spacing, leading body alignment and centered row/column headings. Wrapped title is complete above the following row; Inspector shows full long sentence with natural wrapping. Main has normal viewport scrolling/clipping."
+    },
+    "native-inspector-native.png": {
+      "sha256": "b63a326fe5c70494c09a8267e2b7b4ad41b7339b7c96d8dde5419247c78c30c8",
+      "assessment": "Natural unexpanded glyph/word spacing, leading body alignment and centered row/column headings. Wrapped title is complete above the following row; Inspector shows full long sentence with natural wrapping. Main has normal viewport scrolling/clipping."
+    },
+    "opengl-main-native.png": {
+      "sha256": "ba9c0c7294df0af389beb8e2adb38b6d92fea7a9b772788e1c9c622fe65736d3",
+      "assessment": "Natural unexpanded glyph/word spacing, leading body alignment and centered row/column headings. Wrapped title is complete above the following row; Inspector shows full long sentence with natural wrapping. Main has normal viewport scrolling/clipping."
+    },
+    "opengl-inspector-native.png": {
+      "sha256": "0a232ca4aa2adbedd38d72a2566f88b3ee628397f357e4e16b7b2b5a2ddc5da8",
+      "assessment": "Natural unexpanded glyph/word spacing, leading body alignment and centered row/column headings. Wrapped title is complete above the following row; Inspector shows full long sentence with natural wrapping. Main has normal viewport scrolling/clipping."
+    }
+  },
+  "scope_limit": "Ordinary software VM/default DPI, Dark theme. Native preference and OpenGL override requested; module presence does not prove an exclusive API or physical GPU. Installed provider is observed but disabled for this native fallback test; prior conversions were not rerun."
+}

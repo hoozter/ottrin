@@ -1,0 +1,26 @@
+{
+  "archive_sha256": "76f9e62ff945f4806cd337b25047fd3acdbc903a4f5e62bbdb789ffb561f7f23",
+  "members": {
+    "ACTOR.json": "79d741541eb48d272c253c8ac9ac8865bba0254cdd2907e0c44e1a5013eeaced",
+    "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "DEPLOYMENT.json": "73153cedcad1464ed482ac7ce64cef21f95825b88a83e17e393b66451d8bac00",
+    "DESKTOP_READY.json": "9bd8498840661bfd0fb7fc1766b45ff360e330014f6e92f71cd1fd1cb4fc456d",
+    "DESKTOP_WAITING.json": "34aa4de8b48427fceb8a5e52c096b77507655eeb1513edae75ac512ad313e460",
+    "disabled-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disabled-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "index-status.json": "1c8380cd60bf6295ec28a4f9bab9295b472cf99fb0a6dd7e1f49d62b4f8815ff",
+    "index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "reenabled-index-status.json": "4805db0a17f930f7c6e3cc98c94e31cba0d140e4e56fd09e53a1cf00b2da1a42",
+    "reenabled-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "RESULT.json": "c28acc3844b3580e4c8b233643dc59769a09b985f477e252e940a28bd834b8e7",
+    "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "service-remove.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-remove.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+    "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+  },
+  "raw_result_equals_driver_result": true
+}

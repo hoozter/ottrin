@@ -1,0 +1,44 @@
+{
+  "status": "pass exact installed native worksheet scope and owned cleanup",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "cc27f1d148b43e24c01f097a49a38bf1a63532904483d20bc18b78bb29281e95",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "174d3c46ba4ef74b0db14d39e90765c256018305c2183d17eae6c9165d452ce2"
+  },
+  "payload_files": 58,
+  "native_result_sha256": "af008ceae6d698f0f34e1f0b206058524c0692064da90af44b4a90002f159616",
+  "native_fixture_identity": {
+    "profile": "C:\\Users\\OTMSI919d2e698498",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1056",
+    "administrator": false,
+    "session": 1
+  },
+  "review": ".hermes/evidence/worksheet-alignment-current/corrected/windows-native/VISUAL_REVIEW.json",
+  "scopes": [
+    "Ordinary-user exact staged NSIS install with58 matching payload files",
+    "Main Miller and standalone Inspector native worksheet; Native preference and OpenGL override; four directly reviewed captures",
+    "Source bytes preserved; normal window exit, supported uninstall preserving preferences, no installed processes",
+    "Private clone volumes/display/viewer/bus/profile removed; protected provider base off with unchanged XML"
+  ],
+  "limits": [
+    "Software VM/default DPI/Dark theme; not physical adapter or all-theme acceptance",
+    "Native UIAutomation names establish content readiness; direct screenshots establish visible typography",
+    "Both graphics module families loaded; DLL presence does not prove exclusive API/device selection",
+    "Actor test_kind is native-worksheet-typography. Generic driver ui_case document and Office provider-base metadata do not claim converted Office/PDF fidelity in this run",
+    "No new upgrade/refusal/resource benchmark claim; unchanged inputs compared separately"
+  ],
+  "cleanup": {
+    "native_fixture": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    },
+    "duplicate_results_archive_removed_after_byte_verification": true,
+    "temporary_boot_transition_captures_removed": true
+  }
+}

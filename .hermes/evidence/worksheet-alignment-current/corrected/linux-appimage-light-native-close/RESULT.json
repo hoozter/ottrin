@@ -1,0 +1,61 @@
+{
+  "status": "pass native capture and read-only checks; direct typography review required",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "artifact_sha256": "4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a",
+  "artifact_kind": "appimage",
+  "scope": "Actual packaged native spreadsheet fallback, main Miller and Inspector; private X11 software desktop",
+  "theme": "Light",
+  "scale": "1.5",
+  "captures": {
+    "main": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-light-native-close/main.png",
+      "sha256": "33e84a7aa1b1993ecd741fba58776cf64f8ff5a347daef35f6b51274e32d655f",
+      "mapped_gui_sha256": "b12d6397a099b7532a6d2f75727254177d649e1f483cf633a4d0899ad5b55140",
+      "ocr": "documents\n\n+\n\n_\n\nOo x\n\n<\n\n@ var) fm tmp\u00bb We ottrin-picker-qa-0z0rabu2 a files\u00bb i owned\u00bb B documents\n\n=m 2\n\n>\n\n(@ documents\n\n>\n\nworksheet.xlsx\n\ntext Text 100% + text\n\nOverview\n\no\n\n8\n\nExpand preview\n\nBudget\n\nA\n\nQ\n\nOTTRIN SHEET\n\nFIDELITY\n\nItem\n\nQue\n\nAlpha\n\nBeta\n\nTotal\n\nCurrency\n\ntotals and\n\ncalculated\n\nEacmidae\n\nworksheet.xlsx - Filetype: XLSX document -\n\nFormat: XLSX - Internal parts: 13\n\n~ worksheet.xlsx\n\nExcel Spreadsheet\n\nSize:7 KB\n\nModified:16 days ago\n\nD\n\nLocation:/var/tmp/.ottrin-picker-qa-0z0rabu2/fi\n\n\u00a5 Details\n\nSort\n\nAZ\n\nOo\n\nName\n\nv\n\n\u2014o\n\n\u00a9)\n\nEs)\n\n1item\n\nworksheet.xlsx\n\n2 2 @\n"
+    },
+    "inspector": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-light-native-close/inspector.png",
+      "sha256": "025742f359d9d1447df0a4bf35d5de7836948a8fabc84fbc9bf34181b933c884",
+      "mapped_gui_sha256": "b12d6397a099b7532a6d2f75727254177d649e1f483cf633a4d0899ad5b55140",
+      "ocr": "g\n\nQuick Inspector \u2014 worksheet.xlsx\n\n\u2014 text\n\nText 100%\n\n+ text\n\nOverview\n\nBudget\n\nA\n\nOTTRIN SHEET\n\nFIDELITY\n\nItem\n\nQuantity\n\nPrice\n\nAmount\n\nAlpha\n\n1\n\n1250\n\nBeta\n\n2\n\n1375\n\nTotal\n\nCurrency totals and\n\ncalculated formulas\n\nworksheet.xlsx - Filetype: XLSX document -\n\nFormat: XLSX - Internal parts: 13\n"
+    }
+  },
+  "source_bytes_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-0z0rabu2",
+    "owned_processes_reaped": [
+      {
+        "pid": 766940,
+        "exit": 0
+      },
+      {
+        "pid": 766943,
+        "exit": 0
+      },
+      {
+        "pid": 766944,
+        "exit": 15
+      },
+      {
+        "pid": 767018,
+        "exit": 0
+      },
+      {
+        "pid": 767130,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        767022,
+        767077
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:64 / /var/tmp/.ottrin-picker-qa-0z0rabu2/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

@@ -1,0 +1,343 @@
+{
+  "status": "complete for worksheet delivery task; no owned running test, VM, profile, staging or archive remains",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "owned_native_fixtures": [
+    {
+      "case": "windows-native",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "assembly",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "upgrade-enabled",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "upgrade-enabled-native-focus",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "upgrade-disabled-native-focus",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "upgrade-disabled-console",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "owned_volume_count_removed": 12,
+  "retired_transports": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/RESULTS.zip",
+      "bytes": 6336,
+      "purpose": "Duplicate transport retired after exact raw member verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/readiness-review.png",
+      "bytes": 2515163,
+      "purpose": "Byte-identical duplicate of retained desktop-ready.png"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/RESULTS.zip",
+      "bytes": 328020,
+      "purpose": "Duplicate transport retired after exact raw member verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/current-desktop.png",
+      "bytes": 1326607,
+      "purpose": "Completed transient console observation; native product/desktop readiness captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/RESULTS.zip",
+      "bytes": 7332,
+      "purpose": "Duplicate transport retired after exact raw member verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/RESULTS.zip",
+      "bytes": 328983,
+      "purpose": "Duplicate transport retired after exact raw member verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/console-watch.png",
+      "bytes": 1686146,
+      "purpose": "Completed transient console observation; native product/desktop readiness captures retained"
+    }
+  ],
+  "incremental_cleanup": {
+    "finished": "2026-11-03T06:34:04.283683+00:00",
+    "removed_sessions": 13,
+    "before": {
+      "total": 502609965056,
+      "used": 473957384192,
+      "available": 23517872128,
+      "free": 28652580864
+    },
+    "after": {
+      "total": 502609965056,
+      "used": 473392488448,
+      "available": 24082767872,
+      "free": 29217476608
+    },
+    "filesystem_free_delta": 564895744
+  },
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected",
+      "purpose": "Compact acceptance receipts, actual rendered captures and reproducible QA source; no pending temporary consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current four-format Linux deliverables"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current ZIP/NSIS/MSIX6 deliverables and complete58-file current payload"
+    }
+  ],
+  "preserved": "Untracked AGENTS.md, user profiles/data/processes, protected Windows bases/retained environments, current shared compiler caches, separately held failing MSI diagnostic",
+  "retired_completed_setup_samples": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/windows-native/privacy-accepted-2.png",
+      "bytes": 205658,
+      "sha256": "5efcbb4cfdeb0a6d2ec38ab19aebb0f54f83de52022ccdf76f31a65ed7bec554",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/windows-native/privacy-accepted-0.png",
+      "bytes": 200683,
+      "sha256": "3c331b93774a010edb94991f48ea7f7fdddf6746a10bbd6bc560dbec79a9fbf7",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/windows-native/privacy-accepted-3.png",
+      "bytes": 1681677,
+      "sha256": "3fce5de04e674a4eb1ce50a9c2d7c617661495555ced01d0ec5b74c85031cb43",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/windows-native/privacy-accepted-1.png",
+      "bytes": 197985,
+      "sha256": "60a591507375255ac829fe2d7bc9f73fb8238cb5a7c888cda3e07b766e8de0a9",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/privacy-accepted-4.png",
+      "bytes": 2513516,
+      "sha256": "2eab808bde17e21d0895b93bb1fdb5b4b42ee7be20ccf4a49b813f5ef04dc3f4",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/privacy-accepted-2.png",
+      "bytes": 198833,
+      "sha256": "56a965d97395c11410c32aa23e01486dda8bf653e49da118601754b62914f116",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/privacy-accepted-0.png",
+      "bytes": 201781,
+      "sha256": "cc274e1ce4900a15f5e34fe11cf1e1398276173e23296d4f855195b2742572d9",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/privacy-accepted-3.png",
+      "bytes": 206629,
+      "sha256": "66ba83d5a32c93f5e998e193046faedf757e985eb53742d60384701497e607c6",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/privacy-accepted-1.png",
+      "bytes": 194271,
+      "sha256": "380e67bb6b4520b3e33c78cdce93843f30ac8db63b36a342c77c85b6ee36fd39",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/privacy-accepted-4.png",
+      "bytes": 938041,
+      "sha256": "2bbec2b75e39b01f7abd747466830607112464c20c6ac38ab96ecc425655355b",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/privacy-accepted-2.png",
+      "bytes": 174043,
+      "sha256": "16f11681adea078ca0f21ab2818590ab9582e9ee19d543a8cd8d6b539dcab978",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/privacy-accepted-0.png",
+      "bytes": 176652,
+      "sha256": "97a99702916ce73e1dd671001b4b98bba6f2c0e8f3656b9b3adbf50aef42ecea",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/privacy-accepted-3.png",
+      "bytes": 181211,
+      "sha256": "0c7e0c59752241b968d4095bc85948b213ddcdd47fe03e4334c8cb2b3e2d6537",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/privacy-accepted-1.png",
+      "bytes": 169540,
+      "sha256": "018e983318faea9a70e8d16df2265190864678c38ec2e5a39e6c762d591b0365",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/privacy-accepted-4.png",
+      "bytes": 1689219,
+      "sha256": "2ffc2b9d11b36b71ee593445578ad1072baafe6572b936b273c2bfc0aef40c26",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/privacy-accepted-2.png",
+      "bytes": 174244,
+      "sha256": "af0a9cb962f602c1b39d354989782d6f250441f7607597cc41343d79999b168e",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/privacy-accepted-0.png",
+      "bytes": 176731,
+      "sha256": "7e1cb8eb6c8e802d827755a9b8637601859ed46d98071786f50419eadf9e3911",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/privacy-accepted-3.png",
+      "bytes": 181245,
+      "sha256": "8b0427860f7e50ddfc381b20368fda424949b4c79b41eb996a54a1c065849cd8",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/privacy-accepted-1.png",
+      "bytes": 169625,
+      "sha256": "a8256a08e775d3d07abba6cd81adafee764d7f1652d7147e33a42e3f8d0eba2f",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/privacy-accepted-4.png",
+      "bytes": 933875,
+      "sha256": "e8b279f56907f191f5314002018f972b3e2395c63c01d55df8bbac2e77d063a4",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/privacy-accepted-2.png",
+      "bytes": 174008,
+      "sha256": "7d8795beb7de706dd32e5d3e57e8427390d0536e742f145196f81265bd805e46",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/privacy-accepted-0.png",
+      "bytes": 177118,
+      "sha256": "a8654ce547abd48363af6df06e1b99dd069feff4eacbaf747891863e29c4af54",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/privacy-accepted-3.png",
+      "bytes": 181301,
+      "sha256": "c98f76ed40ef7bdae6eed1c9c828f92c721340aa721b5ba835a252d357b54335",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/privacy-accepted-1.png",
+      "bytes": 169642,
+      "sha256": "94f5bed043fdeeb8f0c22e4e30a4bb97f62217340572ee2134f132775b036715",
+      "purpose": "Completed finite first-login OCR/transition input; actual desktop-ready and product captures retained"
+    }
+  ],
+  "lossless_transport_log_compression": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/PREVIOUS_WINDOWS_JOB.log",
+      "gzip": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/PREVIOUS_WINDOWS_JOB.log.gz",
+      "sha256": "cb2f927e379cf0d30ebae0635136d2c59d7bb2db8c7fe3219ba9e2ec605c1abb",
+      "bytes": 347617,
+      "gzip_bytes": 72691,
+      "exact_roundtrip": true
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/RESULT_EXPORT_PROCESS.json",
+      "gzip": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/RESULT_EXPORT_PROCESS.json.gz",
+      "sha256": "ba779f68571921c81a07cb5832b8947d3eff8957886bdead6571d486a6a45251",
+      "bytes": 11324,
+      "gzip_bytes": 6837,
+      "exact_roundtrip": true
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/RESULT_EXPORT_PROCESS.json",
+      "gzip": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/RESULT_EXPORT_PROCESS.json.gz",
+      "sha256": "0b04aa62a09d1ac3df0427233ed7b4879f9c1a5f1260ff7717cf07827d9f7367",
+      "bytes": 584920,
+      "gzip_bytes": 417453,
+      "exact_roundtrip": true
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/RESULT_EXPORT_PROCESS.json",
+      "gzip": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/RESULT_EXPORT_PROCESS.json.gz",
+      "sha256": "dd39b68a0f87f01ed83aac0dc52b5f4b5232b07533183837e7161bd37c4c6c43",
+      "bytes": 13096,
+      "gzip_bytes": 7654,
+      "exact_roundtrip": true
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/RESULT_EXPORT_PROCESS.json",
+      "gzip": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/RESULT_EXPORT_PROCESS.json.gz",
+      "sha256": "2859744967a4c88dcd37a0c872cc280b38b4cd7cf351049b4671c45f9bec5f44",
+      "bytes": 583208,
+      "gzip_bytes": 416421,
+      "exact_roundtrip": true
+    }
+  ],
+  "evidence_allocated_bytes": 14573568
+}

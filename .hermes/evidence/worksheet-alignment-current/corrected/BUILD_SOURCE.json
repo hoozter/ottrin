@@ -1,0 +1,8 @@
+{
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Correct native worksheet glyph spacing and full wrapped row height; preserve stable packages until acceptance",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Verified4a Linux cohort promoted; staging removed"
+}

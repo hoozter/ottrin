@@ -1,0 +1,17 @@
+{
+  "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/previous-input.msix",
+  "sha256": "18b37c9880dd6f211215ca1806ea7d1b2b58cb6a9f791c0a134fecf8979e6944",
+  "version": "0.1.0.5",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "purpose": "Actual enabled/disabled MSIX5-to6 update tests; hard link preserves accepted baseline until both consumers close",
+  "pending_consumers": [],
+  "cleanup_owner": "Current roadmap goal; unlink owned input after both fixture teardowns before committing compact evidence",
+  "rejected_attempt": "upgrade-enabled: baseline foreground gate failed before upgrade; raw result and cleanup preserved",
+  "completed_consumers": [
+    "upgrade-enabled-native-focus",
+    "upgrade-disabled-console"
+  ],
+  "input_retired_after_both_consumers": true,
+  "canonical_previous": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
+  "replay_limit": "Exact former package consumed/verified before retirement; raw native input hashes and58-file previous manifest remain historical evidence"
+}

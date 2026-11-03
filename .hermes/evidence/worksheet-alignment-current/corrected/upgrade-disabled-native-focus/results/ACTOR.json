@@ -1,0 +1,62 @@
+{
+    "service_remove_exit":  0,
+    "gui_focus_and_capture":  "failed",
+    "scope":  "Actual packaged ordinary main-window launch, normal close and optional index registration; no upgrade acceptance yet",
+    "session_id":  1,
+    "phase":  "chosen-disabled-service-status.stdout",
+    "actual_process_package":  "Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr",
+    "service_status_exit":  0,
+    "disable_reenable":  "pass",
+    "preferences_before_removal":  "32A0E0CC71EB3EE235BC53D0EC2E48116F6B2DF9EA35CBC1AC5FD67CA4C1D725",
+    "actual_process_elevated":  false,
+    "focus_wait":  {
+                       "scope":  "Wait for normal native private-console input; target window must actually become foreground. No focus policy, security, desktop or OOBE change.",
+                       "geometry":  "client=1024x680 origin=0,0 dpi=96",
+                       "foreground":  66002,
+                       "first_error":  "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+                       "window":  131572
+                   },
+    "main":  {
+                 "path":  "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+                 "pid":  1364,
+                 "binary_sha256":  "D36392AB783A0BE5F4E9272FF6056E4AC31E61B3898E559423B2282922F9331E",
+                 "title":  "Ottrin"
+             },
+    "cli_exits":  {
+                      "reenabled-index-status.json":  0,
+                      "reenable.stdout":  0,
+                      "disabled-status.stdout":  0,
+                      "service-remove.stdout":  0,
+                      "service-status.stdout":  0,
+                      "chosen-disable.stdout":  0,
+                      "service-install.stdout":  0,
+                      "index-status.json":  0,
+                      "chosen-disabled-service-status.stdout":  0
+                  },
+    "administrator":  false,
+    "input_desktop":  "Default",
+    "gui_error":  "Owned window did not acquire foreground focus after bounded native-console wait",
+    "service_install_exit":  0,
+    "daemon":  {
+                   "pid":  3308,
+                   "administrator":  false,
+                   "package":  "Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr"
+               },
+    "index_ready":  "ready",
+    "status":  "partial runtime; GUI focus or close gate failed",
+    "store":  {
+                  "path":  "C:\\Users\\OTMSIXeea4f90f75db\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+                  "bytes":  28672,
+                  "identity":  "9E9485EC9485C76D:000200000001B7070000000000000000"
+              },
+    "window_diagnostics":  {
+                               "foreground":  66012,
+                               "enable_lua":  1,
+                               "window":  131572,
+                               "cloaked":  0,
+                               "process_session":  1,
+                               "minimized":  false,
+                               "console_session":  1
+                           },
+    "normal_close_exit":  0
+}

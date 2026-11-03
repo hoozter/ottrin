@@ -1,0 +1,12 @@
+{
+    "scope":  "Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes",
+    "status":  "running",
+    "actor_sid":  "S-1-5-21-3183210791-1673105385-3262580894-1005",
+    "deployment":  {
+                       "full_name":  "Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr",
+                       "family":  "Ottrin.Development_vs01n017nxmbr",
+                       "location":  "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr",
+                       "version":  "0.1.0.5"
+                   },
+    "source_revision":  "4a1682bdee98b16b63a7723785091399e99b505f"
+}

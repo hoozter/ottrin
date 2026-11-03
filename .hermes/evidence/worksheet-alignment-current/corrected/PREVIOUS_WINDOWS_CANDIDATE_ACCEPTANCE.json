@@ -1,0 +1,45 @@
+{
+  "status": "pass within recorded local Windows preview scopes; required MSI release held separately",
+  "source_commit": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc",
+    "Ottrin-0.1.0-windows-x64-development.msix": "18b37c9880dd6f211215ca1806ea7d1b2b58cb6a9f791c0a134fecf8979e6944"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/assistive-delivery-current",
+  "host_content": "HOST_PAYLOAD.json",
+  "ordinary_nsis_and_portable": ".hermes/evidence/assistive-delivery-current/nsis-native/ACCEPTANCE.json",
+  "rendered_review": ".hermes/evidence/assistive-delivery-current/nsis-native/VISUAL_REVIEW.json",
+  "native_msix": {
+    "upgrade-enabled": ".hermes/evidence/assistive-delivery-current/upgrade-enabled/ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/assistive-delivery-current/upgrade-disabled/ACCEPTANCE.json"
+  },
+  "native_visibility": {
+    "upgrade-enabled": ".hermes/evidence/assistive-delivery-current/upgrade-enabled/NATIVE_VISIBILITY_ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/assistive-delivery-current/upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json"
+  },
+  "native_accessibility": ".hermes/evidence/assistive-delivery-current/WINDOWS_UIA_ACCEPTANCE.json",
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "hosted_source": {
+    "run": 41565016646,
+    "tested_source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+    "exact_source_all_four_jobs_success": true
+  },
+  "public_windows_files_unchanged": true,
+  "limits": [
+    "Local preview; no official GitHub Release or Store submission",
+    "Software VM/default DPI; physical GPU, extended scaling, screen-reader usability and final owner acceptance remain separate",
+    "Populated index CPU observations are with main GUI open; not personal or pure unattended workload acceptance",
+    "Full remaining roadmap audit remains required"
+  ],
+  "cleanup": "All native fixture VMs/media/consoles removed; previous MSIX alias and superseded preview retired only after consumers; stable candidate retains current packages/payload and compact evidence.",
+  "current_installed_office_receipt": ".hermes/evidence/office-installed-current/WINDOWS_OFFICE_ACCEPTANCE.json",
+  "open_preview_typography_issue_receipt": ".hermes/evidence/office-installed-current/WINDOWS_OFFICE_ACCEPTANCE.json"
+}

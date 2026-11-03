@@ -1,0 +1,36 @@
+{
+  "status": "pass within corrected native worksheet scope; package promotion/hosted CI pending",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "artifact_sha256": "4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a",
+  "native_scopes": [
+    "Actual staged AppImage main Miller and standalone Inspector",
+    "Dark100 and Light150 native X11/software",
+    "Mapped release GUI ELF identity",
+    "Read-only authored fixture bytes preserved",
+    "Actual native Close window actions and normal exit0; private displays/profiles/buses/mounts removed"
+  ],
+  "directly_reviewed_captures": {
+    "dark-main": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-dark-native-close/main.png",
+      "sha256": "808e217aca85da656e9e4adcc1816173a95735d1586101bf7481ee71628963ea",
+      "direct_review": "Natural body glyph/word spacing and leading alignment; full wrapped title remains above next row. Column/row headings centered. Inspector also shows full Currency totals and calculated formulas with ordinary wrapping. Main viewport has normal scroll clipping, not overpainted rows."
+    },
+    "dark-inspector": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-dark-native-close/inspector.png",
+      "sha256": "8001cb7dbafa869fc826a5bf80d9b26457434ac2e86f8bc9c96a3e2f4d674fdb",
+      "direct_review": "Natural body glyph/word spacing and leading alignment; full wrapped title remains above next row. Column/row headings centered. Inspector also shows full Currency totals and calculated formulas with ordinary wrapping. Main viewport has normal scroll clipping, not overpainted rows."
+    },
+    "light-main": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-light-native-close/main.png",
+      "sha256": "33e84a7aa1b1993ecd741fba58776cf64f8ff5a347daef35f6b51274e32d655f",
+      "direct_review": "Natural body glyph/word spacing and leading alignment; full wrapped title remains above next row. Column/row headings centered. Inspector also shows full Currency totals and calculated formulas with ordinary wrapping. Main viewport has normal scroll clipping, not overpainted rows."
+    },
+    "light-inspector": {
+      "path": ".hermes/evidence/worksheet-alignment-current/corrected/linux-appimage-light-native-close/inspector.png",
+      "sha256": "025742f359d9d1447df0a4bf35d5de7836948a8fabc84fbc9bf34181b933c884",
+      "direct_review": "Natural body glyph/word spacing and leading alignment; full wrapped title remains above next row. Column/row headings centered. Inspector also shows full Currency totals and calculated formulas with ordinary wrapping. Main viewport has normal scroll clipping, not overpainted rows."
+    }
+  },
+  "rejected_observer": "Initial main capture completed but Alt+F4 close did not exit; original error and teardown retained in linux-appimage-dark. No Alt+F4 acceptance claimed.",
+  "limit": "No Windows, physical display, other themes/formats or whole-roadmap acceptance"
+}

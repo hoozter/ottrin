@@ -2,153 +2,74 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-03. This is the active queue. Historical checkpoints below keep
-their original source/artifact scopes; test totals are not roadmap completion.
+Updated 2026-11-03. This is the single active queue. Historical receipts below
+retain their original source/artifact scope; test totals are not roadmap completion.
+Packaged copies are snapshots taken at build time; this repository copy tracks
+subsequent acceptance and promotion.
 
-The current Linux AppImage, portable archive, DEB and RPM are delivered from clean
-`90ba8639f2e5d6dad7e24ebd5b95382e108e1300` at `dist/packages/`. The stable AppImage is
+Linux AppImage, portable archive, DEB and RPM are now delivered from clean
+`4a1682bdee98b16b63a7723785091399e99b505f` at `dist/packages/`. The stable AppImage is
 `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4`.
-`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` defines all four exact hashes,
-completed scopes and limits. CI41565016646 passes all four Linux/Windows verify
-and performance jobs for that exact package source.
+`4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a`.
+Windows ZIP, NSIS and development MSIX0.1.0.6 from the same source are delivered at
+`dist/windows-candidate/`. Current authorities are
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. All four exact-source CI41585803867
+Linux/Windows verification and performance jobs pass. Public releases and the
+held failing MSI have not been replaced or relabelled.
 
-This cohort restores native accessibility for every main/secondary viewport and
-names icon controls, including Inspector Edit text/More actions. Actual AppImage
-Dark100/Light150 native actions, disabled states, Settings/Inspector independent
-Close, read-only interfaces and private accessibility-bus loss pass. Native
-VCF/text navigation, Space-to-close, menus, Properties, icon pixel identity,
-previous-build→new-build→reopen Miller preference preservation, directory links,
-picker single/range/concurrent cancellation and source/config preservation pass.
-Rendered review verifies shared titlebar color, actual/preview button corners and
-main/Settings/editor/Inspector window corners. Current Dark100 AppImage acceptance
-adds100 temporal text-to-PDF frames with stable settled page bounds, read-only
-VCF/PDF arrows and Space-to-close, plus explicit text editing: drafts preserve
-source until Save, which publishes exact expected bytes and closes normally.
-The first combined observer stopped on a stale AT-SPI node after its PDF/read-only
-assertions; those results remain scoped, and a separate edit-only actor passes.
-Both private desktops/profiles are removed. Receipt:
-`office-installed-current/LINUX_PREVIEW_ACCEPTANCE.json`. It does not repeat the exhaustive
-39-control sweep or certify physical renderers/screen-reader usability.
+The worksheet correction is delivered. Two actual egui regressions reproduce
+forced glyph spacing and later rows painting over wrapped text;463 host UI tests
+pass, with1 existing ignored test. Actual AppImage Dark100/Light150 and installed
+Windows Native-preference/OpenGL-override Miller/Inspector captures verify normal
+spacing, leading body alignment and full wrapped rows. Native labels, source bytes,
+normal window close and private teardown pass. Windows ordinary NSIS installation
+verifies58 payload files and uninstalls while preserving preferences. Actual
+MSIX5→6 updates pass both startup choices, ordinary GUI/menu/hidden-file controls,
+real reboot/login and removal, preserving preferences and native index file
+identity. Disabled login startup is observed for180 seconds before any Ottrin CLI.
 
-Actual installed Firefox and Flatpak Falkon Open/Save pass with correct caller
-identities and exact bytes. Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB pass
-normal setup, real portal frontends, reinstall/refusal, online/offline removal and
-preference restoration, including the independent portable chooser surviving
-native removal. Fedora's actor passed before a protected backing-metadata read
-blocked host teardown; its original controller failure is retained. Libvirt
-metadata inspection recovered cleanup without permission changes, and the corrected
-producer then completes Ubuntu cleanup normally. Both guests/six volumes and
-all completed Linux GUI profiles, buses, displays and mounts are removed.
+Only the shipping worksheet-row function changed from90ba8639; the portal source
+change improves test diagnostics. All113 Linux payload entries match except GUI,
+roadmap and provenance. Windows helpers/dependencies match; indexd differs only
+in PE timestamp/checksum, with every other byte equal. Earlier broad installer,
+resource, Office conversion, accessibility, chooser/browser and workflow receipts
+remain bound to their original hashes and are carried by explicit source/payload
+comparison, not presented as fresh runs. Current evidence and cleanup receipts:
+`.hermes/evidence/worksheet-alignment-current/corrected/`.
 
-The current packaged daemon is freshly tested on private10000-file metadata-only
-and plain-text-content corpora. Live mutations, same-size content edits with
-preserved timestamps, offline changes and restart validation pass. Six30-second
-quiet samples measure0.033–0.067percent of one core and about9–17MiB RSS. Four
-helper/renderer binaries remain byte-identical to the previous delivery. These
-are controlled fixture observations, not a new personal/sustained-workload claim;
-no personal daemon restart is claimed by this delivery.
+The initial source99 staging was rejected for real wrapped-row overlap before
+promotion. Two MSIX baseline focus attempts were rejected and cleaned up before
+an update was accepted; clone-only absolute pointer input and bounded actual
+foreground observation improve the QA producer without policy/product overrides.
+The earlier hosted portal pre-lease failure is not reproduced in20 local groups
+or the successful full current CI run; its exact cause remains unproven and its
+worker error is now exposed. Original failures remain unchanged.
 
-Published-image process-cold chooser mapping observations are0.327–0.518seconds;
-separate actual-content observations are0.790–1.037seconds including screenshot/OCR
-overhead, with shared OS caches retained. Two30-second picker samples measure
-0.000–0.033percent of one core and about94–96MiB PSS. No persistent picker GUI
-or index service is introduced. Linux staging/extraction are removed after
-promotion. One superseded matching release GUI/exact metadata is retired;
-no obsolete incremental sessions were identified. Evidence is
-`.hermes/evidence/assistive-delivery-current/`.
-
-The current usable local Windows preview is now source90ba8639 at
-`dist/windows-candidate`. ZIP, NSIS and development MSIX0.1.0.5 are defined by
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`; all58 payload files agree. Public
-Windows/Store files are unchanged. Complete-cohort native WGPU/OpenGL
-UIAutomation, modal focus/Close, Inspector names, read-only observations,
-picker actions and source/preferences preservation pass. The rebuilt daemon
-indexes10101 entries and measures0.16–0.21percent of one core and about13MiB
-working set in two30-second samples with the GUI open.
-
-Native NSIS fresh installation/removal,656→current running-index upgrade, saved
-Miller view, exact database identity/task security/preferences, all three running/
-startup intent combinations, real locked-cache refusal and supported retry pass.
-Native MSIX4→5 updates preserve preferences/index file identity; real reboot and
-ordinary-user login start the daemon when enabled and leave it absent throughout
-180seconds when disabled, before any Ottrin CLI. Normal package removal leaves
-no index tasks/processes and preserves user preferences. Actual native folder
-visibility and Ctrl+L, Hidden/System controls, menus and Inspector Space/Escape
-also pass. All six Windows guests/twelve owned volumes and private consoles are
-removed. Superseded preview files (292806539 logical bytes), the prior-MSIX
-hardlink alias, source-transfer archive and staging are retired after consumers.
-The exact failed older MSI remains separately retained. Evidence and scope:
-`.hermes/evidence/assistive-delivery-current/DELIVERY.json`.
-
-Current installed Office acceptance now binds the same90ba8639 NSIS package to
-LibreOffice26.8.1.1 in an ordinary account on disposable clones of the retained
-provider base. DOCX main/Inspector, XLSX main/Inspector and PPTX Inspector render
-through actual conversion children; withheld-helper XLSX fallback and its visible
-explanation pass. Native preference and explicit OpenGL are exercised,14 captures
-are reviewed, authored files remain unchanged, and normal uninstall preserves
-preferences and removes processes/temp output. Both API DLL families load; their
-presence alone is not exclusive backend/device proof. The software VM result does
-not certify physical adapters or arbitrary Office fidelity. All test clones/media
-and private consoles are removed. Exact receipt:
-`office-installed-current/WINDOWS_OFFICE_ACCEPTANCE.json`.
-
-Rendered review finds a real shared fallback defect: a narrow Miller worksheet
-stretches letters and words. `render_spreadsheet_row` uses `Ui::put`, whose implicit
-centered-and-justified layout reaches the wrapped cell Label. Conversion and data
-checks pass, but this typography issue remains required work; do not mark full
-preview/UI acceptance complete.
-
-The native ordinary-user MSI rollback/retry boundary remains held on both
-26300/.9444 and26100/.9711. Its sole exact8ede diagnostic input remains under
-`windows-msi-package-control-current/input/`; no format or contract is waived.
-The prepared22.65GiB updated comparison base is retired; do not repeat the fulfilled
-comparison without changed inputs. Owner signing/Store/device/final acceptance
-waits remain below and must not stall dependency-ready software work.
-
-The shared worksheet correction has two rendered regressions. The first fails
-on stretched glyph spacing (`13 != 8`). Actual source99 portable inspection then
-found a second defect: a shorter trailing cell moved the next row up over wrapped
-text, hiding the FIDELITY line. Its new regression reproduces y31 following a row
-ending at y80. Cell child UIs now leave the parent row allocation untouched. All11
-spreadsheet checks are covered by the full UI suite (463 passed,1 existing
-ignored); host strict Clippy, formatting and Windows all-targets UI cross-check
-pass. Evidence: `.hermes/evidence/worksheet-alignment-current/`. Source99 staging
-was rejected and removed before delivery; current usable packages remain90ba8639.
-Actual corrected native captures and package promotion are still required.
-
-Hosted CI41583880122 exposes an independent Linux portal cancellation-test
-pre-lease failure. Its old assertion hid the worker result; the test now reports
-that error without weakening cancellation/identity assertions. Local cancellation
-repetition and the next hosted run must be assessed separately; the exact earlier
-hosted cause is not yet established. Do not label the pipeline fixed from local
-passes alone.
+All six native fixture domains/twelve owned volumes, private displays/profiles,
+source archives, previous-package aliases and superseded packages are removed.
+Thirteen obsolete incremental sessions are retired, retaining the newest per
+configuration and current useful compiler caches. Stable deliverables/payload and
+compact evidence remain. Personal profiles, the personal index service, retained
+Windows bases and the held MSI diagnostic are preserved.
 
 Continue in this order:
 
-1. Correct the shared native worksheet cell layout in
-   `crates/ottrin-ui/src/preview_render.rs`: wrapped body text must retain normal
-   glyph/word spacing and a consistent leading alignment in narrow Miller previews
-   and Inspector. Add a rendered regression that fails on the observed forced
-   justification, then verify the actual corrected fallback on both platforms and
-   publish the affected GUI packages. Preserve the current usable deliverables
-   until correction checks pass. Completed installed Office conversion/fallback
-   and Linux temporal PDF/explicit Save scopes above remain exact90ba8639 evidence;
-   do not repeat unrelated fulfilled lifecycle/fault matrices without changed
-   inputs or a reproduced defect. Native Windows temporal PDF and explicit Save,
-   plus remaining broader workflow/media scopes, still need their current audit.
-2. Complete the concentrated current Linux/Windows daily-driver workflows and
-   remaining supported integration/resource gates against the stable packages.
-   Bind each requirement to direct current evidence or an explicit unchanged
-   implementation/payload comparison; repair missing or contradictory scopes.
-   Do not repeat fulfilled fault matrices without changed inputs or a reproduced
-   defect. Physical devices, owner identities and final owner review stay parked.
-3. Finish the release-candidate requirement audit and documentation. Keep native
-   MSI registration rollback on the explicit waiting list; no failed artifact is
-   labelled current/accepted and no installation contract is silently replaced.
-   The shared themed picker, Linux FileChooser portal/FileManager1 and reversible
-   Windows folder actions retain their implementation and recorded native scopes;
-   accept any remaining software caller/workflow gaps independently of owner waits.
+1. Finish native Windows temporal PDF transition and explicit Edit/Save acceptance,
+   including read-only VCF/text navigation and Space ownership, against the current
+   packaged GUI. Use an owned fresh Windows case; the stock Microsoft client base
+   remains a named pending consumer for this preview-safety audit.
+2. Complete the concentrated Linux/Windows daily-driver, media, supported picker/
+   folder-integration and resource requirement audit. For each requirement inspect
+   direct current evidence or a demonstrated unchanged implementation/payload;
+   repair missing/contradictory software scopes. Do not repeat fulfilled fault
+   matrices without changed inputs or a reproduced defect.
+3. Finish the release-candidate requirement matrix/documentation. The shared themed
+   picker, Linux FileChooser portal/FileManager1 and reversible Windows folder
+   integration retain their implemented/recorded scopes; close any remaining
+   software caller gaps independently. Keep MSI registration rollback, owner
+   identity/signing/Store submission, physical hardware and final owner review on
+   the explicit waiting list. No failed gate is waived and no macOS build is added.
 
 The actual8ede1562 MSI is now tested on the independent Microsoft26300 client.
 Fresh ordinary-user installation and all58 installed-file hashes pass. A real
@@ -1532,8 +1453,8 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Four90ba8639 formats delivered; all four exact-source CI jobs pass. Current native accessibility, dark/light preview/menu/Properties/icon/update-view, Fedora/Ubuntu lifecycle, fresh10k metadata/content resources and actual Firefox/Flatpak Falkon Open/Save pass. | Audit remaining broader software/platform requirements and parked owner/device acceptance. No personal daemon restart or new personal-workload claim. |
-| Windows | Current90ba8639 ZIP/NSIS/development MSIX0.1.0.5 delivered. Complete payload, native WGPU/OpenGL/10k idle, NSIS fresh/upgrade/refusal/retry and actual MSIX4→5 enabled/disabled real-login/removal pass. All owned fixture VMs/staging and superseded preview files removed. | Correct shared narrow worksheet typography and finish remaining daily-driver/software acceptance; current installed Office conversion/fallback scopes pass, with physical renderer acceptance separate. Keep native MSI rollback held. |
+| Linux | Four4a1682bd formats delivered; all four exact-source CI jobs pass. Current worksheet geometry/typography verified Dark100/Light150; all other shipping source and non-GUI payload inputs unchanged from90. Earlier native/browser/lifecycle/resource scopes keep original hashes. | Finish the requirement audit and parked owner/device review; no new personal-workload claim. |
+| Windows | Current4a1682bd ZIP/NSIS/MSIX0.1.0.6 delivered. Native installed worksheet,58-file content, actual5→6 enabled/disabled real-login/removal and current GUI/menu/visibility scopes pass. Other shipping source/helper content unchanged, apart from daemon PE metadata. | Finish native temporal PDF/explicit Save and remaining software audit; preserve held MSI rollback and owner/hardware waits. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 

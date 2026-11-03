@@ -1,0 +1,6 @@
+{
+  "status": "normal desktop directly reviewed; one ownership-checked ready signal",
+  "observed_frame": "desktop-ready.png",
+  "sha256": "b2645a00f2fd3d5d690eaf50b6efc7e7d2a01025e5ccbe01361fe47d8135cf21",
+  "scope": "Exact desktop OCR was inconclusive; original error retained. No setup overlay on reviewed frame; taskbar visible. Existing helper independently verified temporary account/SID/nonce."
+}

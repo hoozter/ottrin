@@ -1,0 +1,23 @@
+{
+  "archive_sha256": "819300f712c24d7950bc6a27cb5155f764628f13b90cdc9d592a56763cfc962c",
+  "members": {
+    "DESKTOP_READY.json": "8b2cab7d8eedbec97c198494e15fb18afeae59784615006d0c0a31dcf8ed75a9",
+    "install-process.json": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a",
+    "native-inspector-native.png": "b63a326fe5c70494c09a8267e2b7b4ad41b7339b7c96d8dde5419247c78c30c8",
+    "native-inspector-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-inspector-native.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-main-native.png": "36cafd3c6ae123fdd9bb534e083248bdfb4da4160c2d072b3a959b1556c687e1",
+    "native-main-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-main-native.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "opengl-inspector-native.png": "0a232ca4aa2adbedd38d72a2566f88b3ee628397f357e4e16b7b2b5a2ddc5da8",
+    "opengl-inspector-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "opengl-inspector-native.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "opengl-main-native.png": "ba9c0c7294df0af389beb8e2adb38b6d92fea7a9b772788e1c9c622fe65736d3",
+    "opengl-main-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "opengl-main-native.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "OWNER.json": "79d0dbcf8b162a5ef936a8da4c5e33e02e830d393b182d8f395c8fc15e938979",
+    "RESULT.json": "af008ceae6d698f0f34e1f0b206058524c0692064da90af44b4a90002f159616",
+    "uninstall-process.json": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "native_result_equals_driver_json": true
+}

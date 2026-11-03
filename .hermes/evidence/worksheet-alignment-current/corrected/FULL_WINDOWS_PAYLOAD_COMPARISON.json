@@ -1,0 +1,27 @@
+{
+  "previous_source": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "candidate_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "entries": 58,
+  "changed": {
+    "SOURCE_REVISION.txt": {
+      "previous_sha256": "3449a6de7846c05a91ce861bc015f506e55f37bab38f8fdbae25e6b41dbef31a",
+      "candidate_sha256": "39cb62db4f482e0144ea969e3752cb0cd4377026a943d6b73bc279cb281040fb"
+    },
+    "docs/ROADMAP.md": {
+      "previous_sha256": "85fc185518174659617dfc153dda717e780af15a390d4b904cfb57df1c7735f1",
+      "candidate_sha256": "1f0c01e08d98738037db620e20c3b2686d3598b79dda8427ea0369661f8dc8a4"
+    },
+    "bin/ottrin-indexd.exe": {
+      "previous_sha256": "8d83bd6a6b4a2fd1117d739a3b4a61d6e21f8a2757b6578ffa7b0eea8cdeb630",
+      "candidate_sha256": "76765ccd9b09f8176245a6e409325c1e4521b92e8ca542a9f8dde38388401ece"
+    },
+    "bin/ottrin.exe": {
+      "previous_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "candidate_sha256": "5052cca724102b9a04ad957a584c26d4cef8820734b81b349146aaca12c23369"
+    }
+  },
+  "unchanged_entries": 54,
+  "status": "pass complete58-file comparison with exact daemon PE metadata-only difference",
+  "daemon_identity": "WINDOWS_INDEX_PE_COMPARISON.json",
+  "scope": "GUI differs and is separately tested natively. Roadmap/provenance differ as expected; daemon only timestamp/checksum differ. Every other helper, DLL, font, icon, policy and installer-side payload input unchanged."
+}

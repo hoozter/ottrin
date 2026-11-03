@@ -1,0 +1,19 @@
+{
+  "allocated_bytes": {
+    "target/debug/deps": 41448210432,
+    "target/debug/incremental": 22745296896,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39226630144,
+    "target/release/deps": 4299321344,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769556992
+  },
+  "delta_from_corrected_baseline": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": -462843904,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": -99180544,
+    "target/release/deps": -4096,
+    "target/x86_64-pc-windows-gnu/release/deps": 15179776
+  },
+  "cache_policy": "Newest finalized sessions retained for every configuration; current release/test binaries and compiler metadata reused in place. No new target tree, blanket clean or user data removal."
+}

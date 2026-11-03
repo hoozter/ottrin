@@ -1,0 +1,52 @@
+{
+    "service_remove_exit":  0,
+    "gui_focus_and_capture":  "pass",
+    "scope":  "Actual packaged ordinary main-window launch, normal close and optional index registration; no upgrade acceptance yet",
+    "session_id":  1,
+    "phase":  "reenabled-index-status.json",
+    "actual_process_package":  "Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr",
+    "service_status_exit":  0,
+    "disable_reenable":  "pass",
+    "actual_process_elevated":  false,
+    "main":  {
+                 "path":  "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+                 "pid":  6792,
+                 "binary_sha256":  "D36392AB783A0BE5F4E9272FF6056E4AC31E61B3898E559423B2282922F9331E",
+                 "title":  "Ottrin"
+             },
+    "cli_exits":  {
+                      "reenabled-index-status.json":  0,
+                      "reenable.stdout":  0,
+                      "disabled-status.stdout":  0,
+                      "service-remove.stdout":  0,
+                      "service-status.stdout":  0,
+                      "service-install.stdout":  0,
+                      "index-status.json":  0
+                  },
+    "administrator":  false,
+    "input_desktop":  "Default",
+    "preferences_before_removal":  "D5E591329D6431ED26A986970384B4DBF6967767F46257F3FC1126F6CDD328B2",
+    "service_install_exit":  0,
+    "daemon":  {
+                   "pid":  8940,
+                   "administrator":  false,
+                   "package":  "Ottrin.Development_0.1.0.5_x64__vs01n017nxmbr"
+               },
+    "index_ready":  "ready",
+    "status":  "pass",
+    "store":  {
+                  "path":  "C:\\Users\\OTMSIX5d70e754f7df\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+                  "bytes":  28672,
+                  "identity":  "9E9485EC9485C76D:000200000001B6FB0000000000000000"
+              },
+    "window_diagnostics":  {
+                               "foreground":  197132,
+                               "enable_lua":  1,
+                               "window":  197132,
+                               "cloaked":  0,
+                               "process_session":  1,
+                               "minimized":  false,
+                               "console_session":  1
+                           },
+    "normal_close_exit":  0
+}

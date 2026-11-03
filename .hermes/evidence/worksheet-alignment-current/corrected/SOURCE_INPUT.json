@@ -1,0 +1,11 @@
+{
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/source.zip",
+  "status": "consumed by native MSIX6 assembly; owned source archive retired",
+  "sha256": "9fc9319b4632b550d1eebd27c7514486201046f9b58feacbcf69fa989cef85a2",
+  "archive_bytes": 153045530,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

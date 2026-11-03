@@ -1,0 +1,25 @@
+{
+  "artifact_sha256": "25BA859BFE3C1969462C6AA8BE226DFDAE5F726ECFFF95C36451906279CB3947",
+  "scope": "Actual clean-source production MSIX assembly and exact portable payload comparison; no deployment, launch, index upgrade or uninstall acceptance yet.",
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "payload_files": 58,
+  "artifact": "C:\\OttrinOwnedMsixAssembly\\output\\Ottrin-0.1.0-windows-x64-development.msix",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "source_script_sha256": "84390CD3D3D8ABDE001838E56E18F8FFC3770457E393CB3335A6114D593CD0EF",
+  "provenance": {
+    "development": true,
+    "version": "0.1.0.6",
+    "signed": false,
+    "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+    "artifact": "Ottrin-0.1.0-windows-x64-development.msix",
+    "sha256": "25ba859bfe3c1969462c6aa8be226dfdae5f726ecfff95c36451906279cb3947",
+    "publisher": "CN=Ottrin Development, OID.2.25.311729368913984317654407730594956997722=1",
+    "scope": "MakeAppx-validated package assembly only; deployment, runtime, index upgrade/removal and Store certification remain separate gates.",
+    "package_name": "Ottrin.Development"
+  },
+  "status": "pass",
+  "artifact_bytes": 56996615
+}

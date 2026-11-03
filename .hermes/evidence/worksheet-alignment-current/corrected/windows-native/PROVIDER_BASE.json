@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "uuid": "9b2e795f-fb04-4adb-95a7-8832f8894c67",
+  "disk": "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+  "xml_sha256": "93f7e706f8aad2ac08582df777b18248f9c51d5e8b97ba27094ba9832d9463fe",
+  "scope": "Retained provider base is shut off and only read through an owned COW overlay; source domain and snapshots never changed"
+}

@@ -1,0 +1,30 @@
+{
+  "archive_sha256": "28471085bfc094d4fa67baf27845fa6047e97ee75bf0e4fec90bf801f789135c",
+  "members": {
+    "ACTOR.json": "048abbc5a0c5addd6c67c8e0923d320e33ac3bf35eadd96b7760ada22f1ba959",
+    "chosen-disable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chosen-disable.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+    "chosen-disabled-service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chosen-disabled-service-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "DEPLOYMENT.json": "73153cedcad1464ed482ac7ce64cef21f95825b88a83e17e393b66451d8bac00",
+    "DESKTOP_READY.json": "706759aef7cf60784a69903e702966bda031d967d86b17e552909a9316c3a610",
+    "DESKTOP_WAITING.json": "3d5996495f8bf4e8fb20992a56bc145db06a27bed941b99410806a56efe682a0",
+    "disabled-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disabled-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "index-status.json": "400a3cf3157354857dcb54124c1e6a183aca4b255145c6b4ee680fc8cfbec064",
+    "index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "reenabled-index-status.json": "742eaf61cd598e3ed41b8a7ba522796c9938698cf942e752ca22a8d8ebe6a336",
+    "reenabled-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "RESULT.json": "346ecfee525cd7db18d87a87dfe5a59b83297c665eb740a8ee8eb2e2fdb3be02",
+    "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "service-remove.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-remove.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+    "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+  },
+  "raw_result_equals_driver_result": true
+}

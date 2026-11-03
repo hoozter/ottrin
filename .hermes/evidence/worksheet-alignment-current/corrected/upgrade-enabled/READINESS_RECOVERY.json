@@ -1,0 +1,7 @@
+{
+  "status": "directly reviewed normal desktop and sent one ownership-checked ready signal",
+  "domain_uuid": "59269e0d-5d2d-4cd7-a14e-952e03eddb65",
+  "observed_frame_sha256": "2cfb0983c752bc40da603461920c49c1aaebf47217b80f65710a87eb4f13857a",
+  "original_observer_error": "readiness.log retained: exact desktop OCR inconclusive",
+  "method": "Visible desktop/taskbar without setup overlay reviewed; existing helper independently verified temporary account/SID/nonce. No repeat privacy input or OOBE policy change."
+}

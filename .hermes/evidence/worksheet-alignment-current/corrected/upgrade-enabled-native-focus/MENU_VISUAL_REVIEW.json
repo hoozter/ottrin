@@ -1,0 +1,8 @@
+{
+  "status": "reviewed current updated Inspector and main popup captures",
+  "captures": {
+    "updated-inspector-before-normal-space.png": "c992db364e5dac83d7aa15a05689ab22ec6b2f3bd69c973e5fcd16bd03dd24bb",
+    "updated-main-menu-after-space.png": "f2ceaf2f28765094a38bb79e7c7fb0f6d1865fb561d048fe154d3ae0561f2159"
+  },
+  "assessment": "Actual Inspector shows the unaltered owned plain text with explicit Edit action; main popup remains visible with compact aligned icons/labels after Space. Raw native actor independently verifies keyboard ownership and source preservation."
+}

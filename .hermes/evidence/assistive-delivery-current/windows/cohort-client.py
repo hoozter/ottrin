@@ -237,10 +237,21 @@ with ExitStack() as stack:
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('application.msi','application-input.json','payload.json','config-template.json')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n $packageInput=Get-Content (Join-Path $root 'application-input.json') -Raw|ConvertFrom-Json;if((Get-FileHash (Join-Path $root 'application.msi')).Hash.ToLowerInvariant()-ne$packageInput.sha256){throw 'Actual MSI input mismatch'}\n"+script[end:]
   if args.office_installed:
-   accepted=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());stage=args.application_nsis_stage.resolve();assert stage==r/'dist/windows-candidate' and not args.application_nsis_stage.is_symlink()
-   setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';assert hashlib.sha256(setup.read_bytes()).hexdigest()==accepted['artifacts'][setup.name];os.link(setup,fixture/'current-setup.exe')
-   payload=json.loads((r/'.hermes/evidence/assistive-delivery-current/PAYLOAD.json').read_text());assert len(payload)==58
-   (fixture/'payload.json').write_text(json.dumps(payload));identity={'source_revision':accepted['source_commit'],'files':[{'name':'current-setup.exe','sha256':accepted['artifacts'][setup.name]}],'fixtures':{},'ui_case':'worksheet' if args.office_worksheet else 'document'}
+   stage=args.application_nsis_stage.resolve();assert not args.application_nsis_stage.is_symlink()
+   if stage==r/'dist/windows-candidate':
+    accepted=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());revision=accepted['source_commit'];artifacts=accepted['artifacts'];receipt_root=(r/accepted['evidence_directory']).resolve();assert receipt_root.is_relative_to(r/'.hermes/evidence');payload=json.loads((receipt_root/'PAYLOAD.json').read_text())
+   else:
+    build=json.loads((e.parent/'windows/BUILD_RESULT.json').read_text());accepted=json.loads((e.parent/'HOST_PAYLOAD.json').read_text())
+    assert stage==r/'.hermes/packaging-tmp/.windows-picker-stage'==Path(build['stage'])
+    assert build['status'].startswith('portable and NSIS build pass') and accepted['status']=='pass within host archive/content scope'
+    assert accepted['source_revision']==build['source_revision'] and accepted['artifacts']==build['artifacts']
+    revision=build['source_revision'];artifacts=accepted['artifacts'];payload=json.loads((e.parent/'PAYLOAD.json').read_text())
+    payload_root=stage/'windows-payload/Ottrin-0.1.0-windows-x64'
+    assert {str(p.relative_to(payload_root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in payload_root.rglob('*') if p.is_file()}==payload
+    assert 'Git revision: '+revision+'\nWorking tree: clean\n' in (payload_root/'SOURCE_REVISION.txt').read_text()
+   setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';assert hashlib.sha256(setup.read_bytes()).hexdigest()==artifacts[setup.name];os.link(setup,fixture/'current-setup.exe')
+   assert len(payload)==58
+   (fixture/'payload.json').write_text(json.dumps(payload));identity={'source_revision':revision,'files':[{'name':'current-setup.exe','sha256':artifacts[setup.name]}],'fixtures':{},'ui_case':'worksheet' if args.office_worksheet else 'document'}
    application_files=['current-setup.exe','payload.json','application-input.json','native-controls.ps1','config-template.json']
    for fixture_name,fixture_source in [('01-office.docx','office-fidelity.docx'),('02-office.xlsx','office-fidelity.xlsx'),('03-office.pptx','office-fidelity.pptx')]:
     path=r/'crates/ottrin-preview/tests/fixtures'/fixture_source;shutil.copy2(path,fixture/fixture_name);application_files.append(fixture_name);identity['fixtures'][fixture_name]=hashlib.sha256(path.read_bytes()).hexdigest()
@@ -250,7 +261,7 @@ with ExitStack() as stack:
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
   if args.application_nsis_stage and not args.office_installed:
-   package_evidence=r/'.hermes/evidence/assistive-delivery-current';receipt=json.loads((package_evidence/'HOST_PAYLOAD.json').read_text());stage=args.application_nsis_stage.resolve();assert stage==r/'.hermes/packaging-tmp/.windows-picker-stage' and not args.application_nsis_stage.is_symlink()
+   package_evidence=e.parent;receipt=json.loads((package_evidence/'HOST_PAYLOAD.json').read_text());stage=args.application_nsis_stage.resolve();assert stage==r/'.hermes/packaging-tmp/.windows-picker-stage' and not args.application_nsis_stage.is_symlink()
    old=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());previous=r/'dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe'
    files=[('portable.zip',stage/'Ottrin-0.1.0-windows-x64-portable.zip',receipt['artifacts']['Ottrin-0.1.0-windows-x64-portable.zip']),('current-setup.exe',stage/'Ottrin-0.1.0-windows-x64-setup.exe',receipt['artifacts']['Ottrin-0.1.0-windows-x64-setup.exe']),('previous-setup.exe',previous,old['artifacts'][previous.name])]
    identity={'source_revision':receipt['source_revision'],'files':[],'previous_source':old['source_commit']}
@@ -314,8 +325,11 @@ with ExitStack() as stack:
  for tag in ['filesystem','hostdev','redirdev']:
   for device in root.findall('./devices/'+tag):root.find('devices').remove(device)
  state.update(host_filesystems=0,host_devices=0,usb_redirection=0);save('OWNER.json',state)
- if args.office_installed and not root.findall("./devices/input[@type='tablet']"):
+ if interactive_case and not root.findall("./devices/input[@type='tablet']"):
   E.SubElement(root.find('devices'),'input',{'type':'tablet','bus':'usb'})
+ if interactive_case:
+  state['absolute_pointer']='Clone-only virtual tablet present at boot; no host device passthrough'
+  save('OWNER.json',state)
  if interactive_case:
   graphics=root.find('./devices/graphics')
   if args.office_installed and graphics.get('type')=='vnc':
