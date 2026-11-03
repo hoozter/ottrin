@@ -19,6 +19,13 @@
     "Finalize docs/release gate with real software outcomes; keep existing owner/external list parked"
   ],
   "producer": ".hermes/evidence/assistive-delivery-current/windows/cohort-client.py --use-stock-base --application-nsis-stage dist/windows-candidate --application-actor EXPLICIT_INPUT --output NEW_CASE",
-  "resources": "No live process/VM/CI handle pending from this turn; retained stock base remains a named pending consumer for broader concentrated Windows GUI workflow audit",
-  "limits": "Current binaries unchanged; no new package build,public release,personal configuration or memory mutation"
+  "resources": "No local test/VM handle remains; exact live CI run41598116332 is pending. Retained stock base remains a named pending consumer for broader concentrated GUI workflow audit.",
+  "limits": "Current binaries unchanged; no new package build,public release,personal configuration or memory mutation",
+  "committed_checkpoint": "598ffbb2b9226a5d17552df0fee8b3159bbe9ff6",
+  "live_ci": {
+    "run": 41598116332,
+    "headSha": "598ffbb2b9226a5d17552df0fee8b3159bbe9ff6",
+    "status": "in_progress",
+    "scope": "Release-note content correction triggers normal full CI; observe this exact live run next; no restart or unnecessary rerun"
+  }
 }

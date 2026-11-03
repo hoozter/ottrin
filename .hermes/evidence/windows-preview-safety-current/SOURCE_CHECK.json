@@ -1,0 +1,7 @@
+{
+  "status": "pass for maintained source/docs",
+  "command": "git diff HEAD^ HEAD --check -- .hermes/evidence/assistive-delivery-current/windows/cohort-client.py docs/ROADMAP.md docs/RELEASE_NOTES.md dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+  "exit": 0,
+  "native_evidence": "Exact raw UTF8/BOM/CRLF native exports intentionally preserved; their CRLF and frozen controller blank lines cause whole-commit whitespace diagnostics. No original result rewritten.",
+  "format_check": "FORMAT_CHECK.json"
+}
