@@ -1,0 +1,16 @@
+{
+  "status": "source correction verified; not packaged",
+  "problem": "No-location startup did not request Miller reveal, leaving current Home contents beyond the right edge",
+  "shipping_change": "OttrinApp constructor requests existing one-shot Miller reveal after initial refresh",
+  "rendered_regression": "startup-red.log fails current content visibility; startup-green.log passes same rendered test",
+  "full_ui": "ui-tests.log:464 pass,1 existing ignored",
+  "source_checks": "SOURCE_CHECKS.json",
+  "native_captures": {
+    "startup-baseline": "0a683fee2f2f6121a04ec5436f3691ed1c54f606edbfdc8828fb40b40bfbe9a5",
+    "startup-source-dark": "e864121e9628163d8b0172f0ab49135c4270d78ec3a59505f3fdcc6b72b09cea",
+    "startup-source-light150": "074ea141087d47176a34f949809474d80865f7195d80985778ff2b95ae2f3246"
+  },
+  "review": "All three original native images reviewed: accepted4a AppImage shows mostly ancestor columns and clipped Home contents; fixed source shows complete Documents row in current Home column at Dark100 and Light150",
+  "source_gui_sha256": "154841ad5a0bd9a67002aae6e5ec0d2ecf465979339e68dd1001c90f836cda89",
+  "limits": "Source GUI only; stable packages remain4a. Full workflow completion and clean rebuilt Linux/Windows cohort acceptance remain required."
+}

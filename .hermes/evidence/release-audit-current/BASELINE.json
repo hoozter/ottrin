@@ -1,0 +1,11 @@
+{
+  "source": "8dc02e192c63eeeb4e3e2018b5e6e1afd21acc0e",
+  "allocated_bytes": {
+    "target/debug/deps": 41448210432,
+    "target/debug/incremental": 22745296896,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39226630144,
+    ".hermes/evidence/release-audit-current": 4096
+  },
+  "cleanup_owner": "cohort-client ExitStack owns VM/volumes/private console/fixture; no compilation planned; compact evidence retained"
+}

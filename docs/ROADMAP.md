@@ -67,9 +67,43 @@ control on the main sidebar; no product defect was hidden. Both domains/four
 volumes, private desktops and transport duplicates are removed. Evidence:
 `.hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json`.
 
+The concentrated audit found a further startup defect: ordinary no-location
+Column-view startup did not request the one-shot current-directory reveal. On a
+deep disposable Home path, its contents were outside the window. The accepted4a
+AppImage reproduces this; a rendered regression fails before and passes after the
+single constructor call. All464 UI tests pass, with1 existing ignored test;
+native source Dark100/Light150 captures show the Home contents. Linux source
+build/strict UI+app Clippy and Windows UI all-target check pass. This correction
+is source-verified and still needs a clean packaged cohort before delivery.
+
+Exact4a installed Windows unattended metadata indexing now passes a fresh
+10000-file corpus plus3 proof files and101 directories with no GUI present:
+30-second one-core CPU samples are0.208% before and0.104% after native workflows,
+with the same daemon instance. RSS is14.0MiB and10.4MiB; this is a bounded synthetic
+measurement, not personal/sustained-workload acceptance. Actual clicks in VCF and
+plain-text preview bodies preserve Down/Up and Space ownership in Dark/Light;
+all sources, normal close/uninstall and preferences pass. Four native captures
+are reviewed; both owned Windows cases and four volumes are removed. The first
+case was interrupted with143 before export and provides no acceptance. The owner
+producer now attempts a bounded diagnostic export on interruption; its actual
+callback passes three isolated tests, without claiming a fresh cancelled-VM run.
+Evidence: `.hermes/evidence/release-audit-current/`.
+
+The legacy daily-driver QA is being refreshed against actual native controls:
+Search is a toggle, breadcrumbs expose full native paths, and offscreen rows
+need their standard scroll action before input. Its partial runs establish
+navigation/search/view switching/Copy and representative Inspector presentation,
+not a complete daily-driver pass. One initial pointer miss remains a QA timing/
+coordinate question; a separate native probe records correct physical coordinates
+and actual folder navigation. Do not hide the original failures or claim the
+full workflow accepted. The earlier598ffbb2 CI41598116332 now passes all4 jobs;
+it does not accept the new uncommitted startup correction.
+
 Continue in this order:
 
-1. Complete the concentrated Linux/Windows daily-driver, media, supported picker/
+1. Deliver the source-verified no-location startup correction as one clean Linux/
+   Windows cohort, retaining current stable packages until focused acceptance.
+2. Complete the concentrated Linux/Windows daily-driver, media, supported picker/
    folder-integration and resource requirement audit. The initial inventory retains
    all54 explicit bullet requirements and their full multiline clauses in
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`; prose milestones and
@@ -78,7 +112,7 @@ Continue in this order:
    payload; repair missing/contradictory software scopes. Include clicked-body
    text-selection/focus variations in the remaining GUI workflow audit. Do not
    repeat fulfilled fault matrices without changed inputs or a reproduced defect.
-2. Finish the release-candidate requirement matrix/documentation. The shared themed
+3. Finish the release-candidate requirement matrix/documentation. The shared themed
    picker, Linux FileChooser portal/FileManager1 and reversible Windows folder
    integration retain their implemented/recorded scopes; close any remaining
    software caller gaps independently. Keep MSI registration rollback, owner

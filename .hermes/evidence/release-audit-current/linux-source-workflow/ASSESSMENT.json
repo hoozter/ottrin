@@ -1,0 +1,8 @@
+{
+  "delete_me_exists": true,
+  "error": "Timed out waiting for accessible control 'Toggle Search'",
+  "fixture_root": "/var/tmp/.ottrin-picker-qa-l1wupic9/workflow",
+  "trash_me_exists": true,
+  "original_diagnostic_sha256": "9810fedcbd8505a2e91f320c971ab001939200b577e4be03931542680a8df943",
+  "retirement": "Incidental ancestor inventory discarded after diagnosis; no passing workflow inferred"
+}

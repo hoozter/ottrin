@@ -1,0 +1,8 @@
+{
+  "delete_me_exists": true,
+  "error": "Timed out waiting for Documents listing",
+  "fixture_root": "/var/tmp/.ottrin-picker-qa-zms1iqz1/workflow",
+  "trash_me_exists": true,
+  "original_diagnostic_sha256": "a82ec2a9f5abcc28e3f61b1809738b60e8c801e6afd56ecab2263aafe849e677",
+  "retirement": "Incidental ancestor inventory discarded after diagnosis; no passing workflow inferred"
+}

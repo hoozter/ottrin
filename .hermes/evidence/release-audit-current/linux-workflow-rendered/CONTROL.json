@@ -1,0 +1,39 @@
+{
+  "status": "failed current packaged workflow",
+  "artifact_sha256": "4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a",
+  "runtime_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "scope": "Existing complete packaged daily-driver smoke in private X11/AT-SPI/software desktop; actual filesystem/UI results required",
+  "driver_sha256": "24367ea0c44ce76ba4a622119344784cf05b783ecf080bea967048c61a186e20",
+  "qa_root": "/var/tmp/.ottrin-picker-qa-_qh9onn4/workflow",
+  "exit": 1,
+  "error": "AssertionError('Actual workflow failed; inspect preserved report/log')",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_qh9onn4",
+    "owned_processes_reaped": [
+      {
+        "pid": 810006,
+        "exit": 0
+      },
+      {
+        "pid": 810009,
+        "exit": 0
+      },
+      {
+        "pid": 810010,
+        "exit": 15
+      },
+      {
+        "pid": 810116,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "Actual workflow failed; inspect preserved report/log",
+    "profile_removed": true
+  }
+}

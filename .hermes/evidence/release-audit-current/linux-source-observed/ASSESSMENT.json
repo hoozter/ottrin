@@ -1,0 +1,8 @@
+{
+  "delete_me_exists": true,
+  "error": "Could not invoke 'Quick Inspector' for 'workbook.xlsx': Timed out waiting for selected entry 'workbook.xlsx' after named context click",
+  "fixture_root": "/var/tmp/.ottrin-picker-qa-vc1r6pty/workflow",
+  "trash_me_exists": true,
+  "original_diagnostic_sha256": "7ea2de01eeb65a2960341ca473df0f1d240cbe4f8f7fedf97648ffc65dc5ae33",
+  "retirement": "Incidental ancestor inventory discarded after diagnosis; no passing workflow inferred"
+}

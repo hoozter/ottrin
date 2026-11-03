@@ -1,0 +1,124 @@
+{
+  "status": "pass within exact installed Windows unattended resource and clicked-text scopes",
+  "runtime_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "nsis_sha256": "174d3c46ba4ef74b0db14d39e90765c256018305c2183d17eae6c9165d452ce2",
+  "daemon_sha256": "76765ccd9b09f8176245a6e409325c1e4521b92e8ca542a9f8dde38388401ece",
+  "installed_payload_files": 58,
+  "native_identity": {
+    "profile": "C:\\Users\\OTMSI6ce56fffc418",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "quiet_before": {
+    "working_set_bytes": 14639104,
+    "seconds": 30.0174664,
+    "pid": 5980,
+    "scope": "Private10000-file metadata corpus plus3 source files and101 directories; no GUI running during sample; ordinary software VM",
+    "private_bytes": 4399104,
+    "name": "no GUI before workflow",
+    "sha256": "76765ccd9b09f8176245a6e409325c1e4521b92e8ca542a9f8dde38388401ece",
+    "cpu_percent_one_core": 0.20821210946704016,
+    "status": {
+      "active_root": null,
+      "active_root_index": 0,
+      "configured_roots": 1,
+      "database_bytes": 28672,
+      "detail": "Ready \u252c\u2556 10104 indexed",
+      "error": null,
+      "estimated_total_items": null,
+      "freelist_bytes": 0,
+      "freelist_pages": 0,
+      "indexed_items": 10104,
+      "last_completed_indexed_items": 10104,
+      "last_progress_unix_secs": 1793697094,
+      "last_scan_completed_unix_secs": 1793697094,
+      "last_scan_duration_ms": null,
+      "last_scan_started_unix_secs": 1793697090,
+      "snapshot_revision": 2,
+      "status": "ready",
+      "total_roots": 1,
+      "wal_bytes": 0,
+      "watched_roots": 1,
+      "watcher_error": null,
+      "watcher_ready": true
+    },
+    "start_utc": "2026-11-03T09:11:11.8599819Z"
+  },
+  "quiet_after": {
+    "working_set_bytes": 10944512,
+    "seconds": 30.012724,
+    "pid": 5980,
+    "scope": "Private10000-file metadata corpus plus3 source files and101 directories; no GUI running during sample; ordinary software VM",
+    "private_bytes": 4362240,
+    "name": "no GUI after workflow",
+    "sha256": "76765ccd9b09f8176245a6e409325c1e4521b92e8ca542a9f8dde38388401ece",
+    "cpu_percent_one_core": 0.10412250484161319,
+    "status": {
+      "active_root": null,
+      "active_root_index": 0,
+      "configured_roots": 1,
+      "database_bytes": 28672,
+      "detail": "Ready \u252c\u2556 10104 indexed",
+      "error": null,
+      "estimated_total_items": null,
+      "freelist_bytes": 0,
+      "freelist_pages": 0,
+      "indexed_items": 10104,
+      "last_completed_indexed_items": 10104,
+      "last_progress_unix_secs": 1793697094,
+      "last_scan_completed_unix_secs": 1793697094,
+      "last_scan_duration_ms": null,
+      "last_scan_started_unix_secs": 1793697090,
+      "snapshot_revision": 2,
+      "status": "ready",
+      "total_roots": 1,
+      "wal_bytes": 0,
+      "watched_roots": 1,
+      "watcher_error": null,
+      "watcher_ready": true
+    },
+    "start_utc": "2026-11-03T09:11:11.8599819Z"
+  },
+  "clicked_text_cases": [
+    {
+      "vcf_next": "b.pdf",
+      "vcf_previous": "a.vcf",
+      "body_click": "actual native UIAutomation content bounds and mouse",
+      "vcf_space_closed": true,
+      "text_space_closed": true,
+      "source_bytes_preserved": true,
+      "theme": "Dark",
+      "main_exit": 0
+    },
+    {
+      "vcf_next": "b.pdf",
+      "vcf_previous": "a.vcf",
+      "body_click": "actual native UIAutomation content bounds and mouse",
+      "vcf_space_closed": true,
+      "text_space_closed": true,
+      "source_bytes_preserved": true,
+      "theme": "Light",
+      "main_exit": 0
+    }
+  ],
+  "native_result_sha256": "44a2b969f5f6332afa95a1e6df1a76f60b123b456c3eee276c8bbbb25b3b8aeb",
+  "review": "windows-unattended/VISUAL_REVIEW.json",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Metadata-only10000-file synthetic corpus; two30-second quiet observations, not sustained or personal-workload acceptance",
+    "Native VM/default DPI/explicit OpenGL; screen-reader and physical-device usability separate",
+    "Human-readable detail in this QA reader has CP437 mojibake; numeric/ASCII protocol fields and GUI bodies verified independently. No CLI Unicode rendering claim.",
+    "Source startup correction is separate and not in this accepted4a package",
+    "Prior windows-software case interrupted with exit143 and no acceptance; original terminal assessment retained"
+  ]
+}

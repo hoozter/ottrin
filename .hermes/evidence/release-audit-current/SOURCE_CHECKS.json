@@ -1,0 +1,47 @@
+{
+  "status": "pass source build/lint/cross-check; native GUI and packaging separate",
+  "scope": "Source startup correction only; current stable packages remain4a",
+  "checks": [
+    {
+      "name": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "ottrin-app",
+        "--bin",
+        "ottrin-app"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-check",
+      "command": [
+        "cargo",
+        "check",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-ui",
+        "--all-targets"
+      ],
+      "exit": 0
+    }
+  ]
+}

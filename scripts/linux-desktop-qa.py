@@ -74,9 +74,12 @@ def ottrin_app():
         app
         for app in desktop
         if app is not None
-        and app.name == "ottrin"
         and app.childCount > 0
-        and (target_process_id is None or app.get_process_id() == target_process_id)
+        and (
+            app.get_process_id() == target_process_id
+            if target_process_id is not None
+            else app.name == "ottrin"
+        )
     ]
     return candidates[-1] if candidates else None
 
@@ -160,7 +163,7 @@ def open_search(window_id: str):
             (
                 item
                 for item in named_nodes("Toggle Search")
-                if item.getRoleName() == "push button"
+                if item.getRoleName() == "toggle button"
                 and pyatspi.STATE_SHOWING in item.getState().getStates()
             ),
             None,
@@ -215,7 +218,9 @@ def x11_point_for_component(component, app, window: dict[str, int]) -> tuple[int
         and component_left + component_width <= app_left + app_width
         and component_top + component_height <= app_top + app_height
     ):
-        raise AssertionError("view switch is outside the accessible Ottrin window")
+        raise AssertionError(
+            f"target {component!r} is outside the accessible Ottrin window {app!r}"
+        )
     return (
         round((component_left + component_width / 2 - app_left) * window["WIDTH"] / app_width),
         round((component_top + component_height / 2 - app_top) * window["HEIGHT"] / app_height),
@@ -364,6 +369,7 @@ def context_menu_entry(window_id: str, name: str):
         # never invoke a menu action while the old row remains selected.
         selected_before_context = False
     node = wait_for(lambda: visible_entry(name), f"selected entry {name!r}")
+    scroll_entry_into_view(node)
     diagnostics = entry_x11_diagnostics(window_id, node)
     target = diagnostics["x11_window_relative_target"]
     run("xdotool", "windowactivate", "--sync", window_id)
@@ -485,14 +491,40 @@ def write_workflow_failure(evidence: Path, qa_root: Path, error: Exception):
         "trash_me_exists": (documents / "trash-me.txt").exists(),
         "visible_nodes": visible_a11y_nodes(),
     }
+    if target_process_id is not None:
+        try:
+            screenshot(evidence, "workflow-failure")
+        except Exception as capture_error:
+            payload["capture_error"] = str(capture_error)
     (evidence / "workflow-failure.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
 
+def scroll_entry_into_view(node):
+    """Use the native row's scroll action, including rows clipped by a footer."""
+    if not node.queryComponent().scrollTo(pyatspi.SCROLL_ANYWHERE):
+        raise AssertionError("native entry refused scrolling into its viewport")
+    time.sleep(0.2)
+
+
 def double_click_entry(window_id: str, name: str) -> dict[str, object]:
-    node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-    diagnostics = entry_x11_diagnostics(window_id, node)
+    node = wait_for(lambda: visible_entry(name), f"entry {name!r}")
+    scroll_entry_into_view(node)
+    previous = None
+
+    def mapped_entry():
+        nonlocal previous
+        node = visible_entry(name)
+        diagnostics = entry_x11_diagnostics(window_id, node) if node is not None else None
+        stable = diagnostics is not None and diagnostics == previous
+        previous = diagnostics
+        return diagnostics if stable else None
+
+    # AT-SPI can expose a Miller row before its pending scroll has brought it
+    # inside the viewport. Keep the checked mapper authoritative and wait for
+    # two matching geometry observations before sending native input.
+    diagnostics = wait_for(mapped_entry, f"rendered entry {name!r}")
     target = diagnostics["x11_window_relative_target"]
     run("xdotool", "windowactivate", "--sync", window_id)
     run(
@@ -516,6 +548,7 @@ def double_click_entry(window_id: str, name: str) -> dict[str, object]:
 def double_click_entry_at_desktop_coordinates(window_id: str, name: str) -> dict[str, object]:
     """Retry a named entry's activation using ordinary desktop-coordinate input."""
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+    scroll_entry_into_view(node)
     x, y = desktop_point_for_node(node)
     diagnostics: dict[str, object] = {"a11y_desktop_target": {"x": x, "y": y}}
     run("xdotool", "windowactivate", "--sync", window_id)
@@ -538,6 +571,7 @@ def double_click_entry_at_desktop_coordinates(window_id: str, name: str) -> dict
 def click_entry(window_id: str, name: str):
     """Select an entry through ordinary pointer routes with named-node proof."""
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+    scroll_entry_into_view(node)
     x, y = x11_point_for_node(window_id, node)
     run("xdotool", "windowactivate", "--sync", window_id)
     run(
@@ -574,6 +608,7 @@ def click_entry(window_id: str, name: str):
 
 def ctrl_click_entry(window_id: str, name: str):
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+    scroll_entry_into_view(node)
     x, y = x11_point_for_node(window_id, node)
     run("xdotool", "windowactivate", "--sync", window_id)
     run(
@@ -1172,7 +1207,10 @@ def run_qa(qa_root: Path) -> int:
         run("xdotool", "windowactivate", "--sync", window_id)
         wait_for(lambda: visible_entry("Documents"), "initial home listing")
 
-        double_click_entry(window_id, "Documents")
+        initial_navigation = double_click_entry(window_id, "Documents")
+        (evidence / "initial-navigation.json").write_text(
+            json.dumps(initial_navigation, indent=2) + "\n", encoding="utf-8"
+        )
         wait_for(lambda: visible_entry("notes.txt"), "Documents listing")
         expected = {
             "Subfolder",
@@ -1240,7 +1278,7 @@ def run_qa(qa_root: Path) -> int:
         # active; its modal input layer then absorbs toolbar clicks.  Toggle it
         # through the same accessible control that opened it before exercising
         # the main view controls.
-        click_accessible_name("Toggle Search", "push button")
+        click_accessible_name("Toggle Search", "toggle button")
         wait_for(
             lambda: not visible_named_nodes("Search result: sample.json"),
             "closed search panel",
@@ -1288,7 +1326,7 @@ def run_qa(qa_root: Path) -> int:
         passed("copy", "Copied notes.txt into Subfolder without changing the source.")
         screenshot(evidence, "04-copy-result")
 
-        click_accessible_name("\ue2c7 Documents", "push button")
+        click_accessible_name(f"Open {documents}", "push button")
         wait_for(lambda: visible_entry("notes.txt"), "Documents after copy")
         open_quick_inspector(
             window_id, "notes.txt", evidence, "05-quick-inspector-text"
@@ -1365,7 +1403,7 @@ def run_qa(qa_root: Path) -> int:
             "multi-select",
             "Selected two entries with Ctrl-click and copied both as one operation.",
         )
-        click_accessible_name("\ue2c7 Documents", "push button")
+        click_accessible_name(f"Open {documents}", "push button")
         wait_for(lambda: visible_entry("sample.json"), "Documents after multi-copy")
 
         xkey(window_id, "ctrl+t")

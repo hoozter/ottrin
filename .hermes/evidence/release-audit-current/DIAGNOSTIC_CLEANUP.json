@@ -1,0 +1,17 @@
+{
+  "retired": [
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-workflow/workflow-failure.json",
+      "bytes": 23536,
+      "sha256": "d2ea7a615ea01f8dfba32819994c15db1e159e2bf89441b9b0aa69073ed8d562",
+      "purpose": "Disposed incidental host ancestor directory inventory; relevant bounded diagnosis retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-workflow-rendered/workflow-failure.json",
+      "bytes": 23624,
+      "sha256": "bbef5276288195b6a27c0ea8711a2047fb700c0785b236689d010287af9d715e",
+      "purpose": "Disposed incidental host ancestor directory inventory; relevant bounded diagnosis retained"
+    }
+  ],
+  "raw_startup_capture": "startup-baseline/startup.png retained for actual product diagnosis"
+}

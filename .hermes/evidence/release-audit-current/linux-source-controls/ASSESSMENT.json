@@ -1,0 +1,8 @@
+{
+  "delete_me_exists": true,
+  "error": "Timed out waiting for accessible control '\\ue2c7 Documents'",
+  "fixture_root": "/var/tmp/.ottrin-picker-qa-qjnt9t9f/workflow",
+  "trash_me_exists": true,
+  "original_diagnostic_sha256": "cc5ba5d89feaca107f8039906275d1596dd9e21de0e98a25fda06bedcd1ec29c",
+  "retirement": "Incidental ancestor inventory discarded after diagnosis; no passing workflow inferred"
+}

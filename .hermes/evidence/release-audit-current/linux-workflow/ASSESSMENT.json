@@ -1,0 +1,8 @@
+{
+  "delete_me_exists": true,
+  "error": "view switch is outside the accessible Ottrin window",
+  "fixture_root": "/var/tmp/.ottrin-picker-qa-vej5ibec/workflow",
+  "trash_me_exists": true,
+  "original_diagnostic_sha256": "d2ea7a615ea01f8dfba32819994c15db1e159e2bf89441b9b0aa69073ed8d562",
+  "retirement": "Unrelated ancestor-directory inventory discarded after geometry diagnosis; source error and fixture-state evidence retained"
+}

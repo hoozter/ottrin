@@ -1,0 +1,26 @@
+{
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "PAM child of the existing systemd user manager PID1202; root-owned non-writable system executable and every parent checked; bytes match installed dpkg checksum. Long-lived desktop service predates these compiler sessions and has no Rust compiler/cache responsibility. This is an explicit inspection exception for inaccessible proc mappings, not a claim those mappings were read. Per-session exclusive locks, no compiler processes and newest finalized cache preservation remain mandatory.",
+      "declared_system_executable": "/usr/lib/systemd/systemd",
+      "package": "systemd",
+      "system_executable_sha256": "9a813714ffd4dadb692afe44384c9c5b334fa323a4ec1dd5157aebdcbbb0667a"
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "existing desktop authentication agent child of user manager PID1202; root-owned non-writable system executable and every parent checked; bytes match installed dpkg checksum. Long-lived desktop service predates these compiler sessions and has no Rust compiler/cache responsibility. This is an explicit inspection exception for inaccessible proc mappings, not a claim those mappings were read. Per-session exclusive locks, no compiler processes and newest finalized cache preservation remain mandatory.",
+      "declared_system_executable": "/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1",
+      "package": "polkit-kde-agent-1",
+      "system_executable_sha256": "68bcfd9bc84dc1df7fe032dc66d2889637ba2fac8719141e4166334153826e05"
+    }
+  ],
+  "revalidated_at": "2026-11-03T08:38:52.602485+00:00",
+  "scope": "Same long-lived PAM/desktop polkit agents revalidated by PID/start ticks/command hash/root-owned immutable path and installed package checksum. No access to unreadable mappings claimed. No compiler consumer running; session locking remains required."
+}

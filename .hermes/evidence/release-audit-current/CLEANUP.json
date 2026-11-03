@@ -1,0 +1,175 @@
+{
+  "status": "complete for consumed audit fixtures; package construction not started yet",
+  "windows_cases": [
+    "windows-software",
+    "windows-unattended"
+  ],
+  "owned_domains_removed": 2,
+  "owned_volumes_removed": 4,
+  "linux_private_teardowns": [
+    {
+      "case": "linux-source-observed",
+      "teardown_status": "failed",
+      "profile_removed": true
+    },
+    {
+      "case": "linux-workflow",
+      "teardown_status": "failed",
+      "profile_removed": true
+    },
+    {
+      "case": "linux-source-controls",
+      "teardown_status": "failed",
+      "profile_removed": true
+    },
+    {
+      "case": "scroll-probe",
+      "teardown_status": "closed",
+      "profile_removed": true
+    },
+    {
+      "case": "linux-source-workflow",
+      "teardown_status": "failed",
+      "profile_removed": true
+    },
+    {
+      "case": "linux-source-scrolled",
+      "teardown_status": "failed",
+      "profile_removed": true
+    },
+    {
+      "case": "startup-source-dark",
+      "teardown_status": "closed",
+      "profile_removed": true
+    },
+    {
+      "case": "linux-source-breadcrumbs",
+      "teardown_status": "failed",
+      "profile_removed": true
+    },
+    {
+      "case": "linux-workflow-rendered",
+      "teardown_status": "failed",
+      "profile_removed": true
+    },
+    {
+      "case": "startup-source-light150",
+      "teardown_status": "closed",
+      "profile_removed": true
+    },
+    {
+      "case": "pointer-probe",
+      "teardown_status": "closed",
+      "profile_removed": true
+    },
+    {
+      "case": "startup-baseline",
+      "teardown_status": "closed",
+      "profile_removed": true
+    }
+  ],
+  "retired_disposable": [
+    {
+      "path": ".hermes/evidence/release-audit-current/windows-software/privacy-accepted-0.png",
+      "bytes": 1933312,
+      "sha256": "40d627df19addd39faa2e49f5574248d21e29dee11cbf0baf1a11181e8d3484e"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/windows-software/native-progress.png",
+      "bytes": 1211748,
+      "sha256": "950a1a63c76eda14519a4296331021e828d09ed0a65b156ae3b51a76540f779c"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/windows-software/actual-desktop.png",
+      "bytes": 1211712,
+      "sha256": "e40dc9739c08bc603d9cc9b4d7626a92c2511d29b29901248e3759a1d895f125"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/windows-unattended/privacy-accepted-0.png",
+      "bytes": 2143073,
+      "sha256": "7a1ac49093a650f723a17b233d58521ccdeaa14ab592f9c98bc0feebb882e31e"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/windows-unattended/observed-desktop.png",
+      "bytes": 1211313,
+      "sha256": "7080a194c8f106d206e2401a85d29d29c7931c61aab6c8e6248d2f4225dd10ef"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/windows-unattended/current-phase.png",
+      "bytes": 2142991,
+      "sha256": "61f216cd90644d77c8552027f16627966ed8c40a93667be9211add459e1874a7"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/windows-unattended/RESULTS.zip",
+      "bytes": 73266,
+      "sha256": "370c3f184ef35e60161387ae6ed3dd812c0bcb691da3b2ec7953085cb6d48359"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-source-observed/workflow-failure.json",
+      "bytes": 3049,
+      "sha256": "7ea2de01eeb65a2960341ca473df0f1d240cbe4f8f7fedf97648ffc65dc5ae33"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-source-controls/workflow-failure.json",
+      "bytes": 2418,
+      "sha256": "cc5ba5d89feaca107f8039906275d1596dd9e21de0e98a25fda06bedcd1ec29c"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-source-workflow/workflow-failure.json",
+      "bytes": 24316,
+      "sha256": "9810fedcbd8505a2e91f320c971ab001939200b577e4be03931542680a8df943"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-source-scrolled/workflow-failure.json",
+      "bytes": 23565,
+      "sha256": "a035d77615063664c0df855f271e11e8c9770a90efc11db0469ac8e6b4a519d9"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-source-breadcrumbs/workflow-failure.json",
+      "bytes": 23565,
+      "sha256": "a82ec2a9f5abcc28e3f61b1809738b60e8c801e6afd56ecab2263aafe849e677"
+    }
+  ],
+  "incremental": "20/20 obsolete sessions removed through canonical guarded helper;0.83GiB recovered; latest finalized session per crate/config retained",
+  "test_executable_identity": {
+    "startup-red.log": [
+      "target/debug/deps/ottrin_ui-11a85ca5198af5b6"
+    ],
+    "startup-green.log": [
+      "target/debug/deps/ottrin_ui-11a85ca5198af5b6"
+    ],
+    "ui-tests.log": [
+      "target/debug/deps/ottrin_ui-11a85ca5198af5b6"
+    ]
+  },
+  "current_native_debug_gui": "target/debug/ottrin-app retained for current source verification; normal app configuration in existing target only",
+  "allocated_bytes_after": {
+    "target/debug/deps": 41448239104,
+    "target/debug/incremental": 22742679552,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39227678720,
+    ".hermes/evidence/release-audit-current": 7118848
+  },
+  "allocated_delta": {
+    "target/debug/deps": 28672,
+    "target/debug/incremental": -2617344,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 1048576,
+    ".hermes/evidence/release-audit-current": 7114752
+  },
+  "remaining_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current",
+      "purpose": "Compact exact receipts, native captures, failed diagnostics and reusable audit producers; no pending temporary fixture consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Unchanged4a current usable Linux deliverables"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Unchanged4a current usable Windows deliverables and58-file payload"
+    }
+  ],
+  "preserved": "Untracked AGENTS.md, personal config/services/data, protected/retained Windows bases, current useful compiler outputs and caches, held MSI diagnostic"
+}

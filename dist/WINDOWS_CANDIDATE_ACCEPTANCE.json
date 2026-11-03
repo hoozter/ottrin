@@ -45,5 +45,6 @@
     "Remaining concentrated roadmap software audit and owner/external waits still required"
   ],
   "cleanup": "All native fixture VMs/media/consoles removed. Previous alias and superseded cohort retired after native consumers. Current stable payload and compact receipts retained.",
-  "current_native_preview_safety": ".hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json"
+  "current_native_preview_safety": ".hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json",
+  "current_unattended_index_and_clicked_text": ".hermes/evidence/release-audit-current/WINDOWS_UNATTENDED_ACCEPTANCE.json"
 }

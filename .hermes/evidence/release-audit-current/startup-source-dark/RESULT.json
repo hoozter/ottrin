@@ -1,0 +1,38 @@
+{
+  "artifact_sha256": "154841ad5a0bd9a67002aae6e5ec0d2ecf465979339e68dd1001c90f836cda89",
+  "scope": "No-argument startup from deeply nested disposable HOME; native screenshot only, not a workflow pass",
+  "native_window": "10485763",
+  "home": "/var/tmp/.ottrin-picker-qa-_bsr5mle/home",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_bsr5mle",
+    "owned_processes_reaped": [
+      {
+        "pid": 822996,
+        "exit": 0
+      },
+      {
+        "pid": 823003,
+        "exit": 0
+      },
+      {
+        "pid": 823004,
+        "exit": 15
+      },
+      {
+        "pid": 823061,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        823122
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "723 34 0:70 / /var/tmp/.ottrin-picker-qa-_bsr5mle/runtime/doc rw,nosuid,nodev,relatime shared:686 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

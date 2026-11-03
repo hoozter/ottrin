@@ -1,0 +1,22 @@
+()
+
+(process:805978): dbind-WARNING **: 08:51:09.972: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'
+XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)
+XGetWindowProperty[_NET_ACTIVE_WINDOW] failed (code=1)
+()
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 1175, in run_qa
+    double_click_entry(window_id, "Documents")
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 495, in double_click_entry
+    diagnostics = entry_x11_diagnostics(window_id, node)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 252, in entry_x11_diagnostics
+    x, y = x11_point_for_entry(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 227, in x11_point_for_entry
+    return x11_point_for_component(component, app, window)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 218, in x11_point_for_component
+    raise AssertionError("view switch is outside the accessible Ottrin window")
+AssertionError: view switch is outside the accessible Ottrin window

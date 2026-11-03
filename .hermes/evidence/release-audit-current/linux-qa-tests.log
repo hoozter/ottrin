@@ -1,0 +1,16 @@
+................E.............
+======================================================================
+ERROR: test_double_click_targets_the_named_entry_inside_its_x11_window (test_linux_desktop_qa.X11CoordinateTranslationTests.test_double_click_targets_the_named_entry_inside_its_x11_window)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/scripts/tests/test_linux_desktop_qa.py", line 428, in test_double_click_targets_the_named_entry_inside_its_x11_window
+    qa.double_click_entry("0x123", "Subfolder")
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 504, in double_click_entry
+    target = diagnostics["x11_window_relative_target"]
+             ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'object' object is not subscriptable
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.052s
+
+FAILED (errors=1)

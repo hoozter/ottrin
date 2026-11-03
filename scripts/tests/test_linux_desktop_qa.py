@@ -66,6 +66,21 @@ class A11yRegistryPreflightTests(unittest.TestCase):
         with patch.object(qa.pyatspi.Registry, "getDesktop", return_value=[None]):
             self.assertIsNone(qa.ottrin_app())
 
+    def test_owned_pid_selects_source_or_package_without_a_foreign_name_match(self):
+        owned = MagicMock(name="source application")
+        owned.name = "ottrin-app"
+        owned.childCount = 1
+        owned.get_process_id.return_value = 777
+        foreign = MagicMock(name="other installed application")
+        foreign.name = "ottrin"
+        foreign.childCount = 1
+        foreign.get_process_id.return_value = 888
+        with (
+            patch.object(qa, "target_process_id", 777),
+            patch.object(qa.pyatspi.Registry, "getDesktop", return_value=[owned, foreign]),
+        ):
+            self.assertIs(qa.ottrin_app(), owned)
+
     def test_records_workflow_failure_with_fixture_state(self):
         evidence = Path(self.id().replace(".", "-"))
         qa_root = Path("/tmp/ottrin-desktop-qa-fixture")
@@ -384,7 +399,7 @@ class X11CoordinateTranslationTests(unittest.TestCase):
     def test_ctrl_click_keeps_control_held_for_the_second_entry_click(self):
         commands = []
         with (
-            patch.object(qa, "wait_for", return_value=object()),
+            patch.object(qa, "wait_for", return_value=MagicMock()),
             patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
             patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
             patch.object(qa.time, "sleep"),
@@ -416,7 +431,7 @@ class X11CoordinateTranslationTests(unittest.TestCase):
     def test_double_click_targets_the_named_entry_inside_its_x11_window(self):
         commands = []
         with (
-            patch.object(qa, "wait_for", return_value=object()),
+            patch.object(qa, "visible_entry", return_value=MagicMock()),
             patch.object(
                 qa,
                 "entry_x11_diagnostics",
@@ -447,6 +462,39 @@ class X11CoordinateTranslationTests(unittest.TestCase):
                 ),
             ],
         )
+
+    def test_double_click_waits_for_scrolled_entry_bounds_before_input(self):
+        commands = []
+        target = {"x11_window_relative_target": {"x": 280, "y": 330}}
+        with (
+            patch.object(qa, "visible_entry", return_value=MagicMock()),
+            patch.object(
+                qa,
+                "entry_x11_diagnostics",
+                side_effect=[AssertionError("outside the viewport"), target, target],
+            ) as mapping,
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            self.assertEqual(qa.double_click_entry("0x123", "Subfolder"), target)
+
+        self.assertEqual(mapping.call_count, 3)
+        self.assertEqual(len(commands), 2)
+        self.assertEqual(commands[1][-1], "1")
+
+    def test_double_click_does_not_use_a_target_while_it_is_still_moving(self):
+        initial = {"x11_window_relative_target": {"x": 500, "y": 330}}
+        settled = {"x11_window_relative_target": {"x": 280, "y": 330}}
+        commands = []
+        with (
+            patch.object(qa, "visible_entry", return_value=MagicMock()),
+            patch.object(qa, "entry_x11_diagnostics", side_effect=[initial, settled, settled]),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            self.assertEqual(qa.double_click_entry("0x123", "Subfolder"), settled)
+        self.assertIn("280", commands[1])
+        self.assertNotIn("500", commands[1])
 
 
     def test_double_click_retry_targets_the_named_entry_at_desktop_coordinates(self):

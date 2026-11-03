@@ -4028,6 +4028,7 @@ impl OttrinApp {
         app.search_service
             .update_config(app.state.config.search.clone());
         app.refresh_active_tab();
+        app.request_miller_reveal(app.state.active_tab().id);
         app.privileged_availability = app.platform.privileged_availability();
         app
     }
@@ -36093,6 +36094,41 @@ mod tests {
             app.tab_ui[&tab_id].miller_preview_visible,
             "a pointer-selected file must reveal the complete preview, without requiring a keyboard navigation event"
         );
+    }
+
+    #[test]
+    fn startup_miller_reveals_home_without_launcher_navigation() {
+        let config = AppConfig {
+            default_view_mode: ViewMode::Miller,
+            ..AppConfig::default()
+        };
+        let mut app = OttrinApp::new_with_config_and_graphics_status(
+            config,
+            GraphicsRuntimeStatus::default(),
+        );
+        let tab_id = app.state.active_tab().id;
+        let ctx = Context::default();
+        for frame in 0..120 {
+            app.poll_listing_results();
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(400.0, 600.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            );
+        }
+        assert!(
+            app.tab_ui[&tab_id].miller_current_visible,
+            "ordinary no-argument startup must show Home contents, not only its ancestors"
+        );
+        assert!(app.tab_ui[&tab_id].miller_reveal.is_none());
     }
 
     #[test]

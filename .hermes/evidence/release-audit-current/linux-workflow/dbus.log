@@ -1,0 +1,30 @@
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.0' (uid=1000 pid=805904 comm="kwin_x11 --replace" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.freedesktop.portal.Documents' requested by ':1.1' (uid=1000 pid=805910 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.2' (uid=1000 pid=805917 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'org.freedesktop.portal.Documents'
+Ignoring invalid max threads value 4294967295 > max (100000).
+
+(/usr/libexec/xdg-desktop-portal:805910): xdg-desktop-portal-WARNING **: 08:51:08.214: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+
+(/usr/libexec/xdg-desktop-portal:805910): xdg-desktop-portal-WARNING **: 08:51:08.214: The preferred method to match portal implementations to desktop environments is to use the portals.conf(5) configuration file
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.1' (uid=1000 pid=805910 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.freedesktop.impl.portal.desktop.kde' requested by ':1.1' (uid=1000 pid=805910 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'org.freedesktop.impl.portal.desktop.kde'
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.kde.KSplash' requested by ':1.0' (uid=1000 pid=805904 comm="kwin_x11 --replace" label="unconfined")
+
+(/usr/libexec/xdg-desktop-portal:805910): xdg-desktop-portal-WARNING **: 08:51:08.769: Failed connect to PipeWire: Couldn't connect to PipeWire
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.freedesktop.impl.portal.desktop.kwallet' requested by ':1.1' (uid=1000 pid=805910 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'org.freedesktop.impl.portal.desktop.kwallet'
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'org.freedesktop.portal.Desktop'
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.a11y.Bus' requested by ':1.11' (uid=1000 pid=805978 comm="/usr/bin/python3 -c import importlib.util,pathlib," label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[805990]: Activating service name='org.a11y.atspi.Registry' requested by ':1.0' (uid=1000 pid=805978 comm="/usr/bin/python3 -c import importlib.util,pathlib," label="unconfined")
+dbus-daemon[805990]: Successfully activated service 'org.a11y.atspi.Registry'
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='ca.desrt.dconf' requested by ':1.12' (uid=1000 pid=805983 comm="/usr/libexec/at-spi-bus-launcher" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Successfully activated service 'ca.desrt.dconf'
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activating service name='org.freedesktop.systemd1' requested by ':1.19' (uid=1000 pid=806084 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[805900]: [session uid=1000 pid=805900] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+
+(/usr/libexec/xdg-document-portal:805917): GLib-GIO-WARNING **: 08:51:12.294: Error releasing name org.freedesktop.portal.Documents: The connection is closed

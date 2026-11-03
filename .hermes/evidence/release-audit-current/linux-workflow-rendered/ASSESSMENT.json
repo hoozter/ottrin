@@ -1,0 +1,8 @@
+{
+  "delete_me_exists": true,
+  "error": "Timed out waiting for rendered entry 'Documents': target (1722, 452, 240, 25) is outside the accessible Ottrin window (448, 380, 1024, 680)",
+  "fixture_root": "/var/tmp/.ottrin-picker-qa-_qh9onn4/workflow",
+  "trash_me_exists": true,
+  "original_diagnostic_sha256": "bbef5276288195b6a27c0ea8711a2047fb700c0785b236689d010287af9d715e",
+  "retirement": "Unrelated ancestor-directory inventory discarded after geometry diagnosis; source error and fixture-state evidence retained"
+}

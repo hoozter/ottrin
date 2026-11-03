@@ -1,0 +1,11 @@
+{
+  "status": "all four original native captures reviewed",
+  "captures": {
+    "Light-text-clicked.png": "7c1636984753003ab8e7ff2e8c70f374b5fc880e70c55f7a6852ef43a377795f",
+    "Dark-vcf-clicked.png": "44f2cf0ccdbd6774924258bc22be551e119d3b5abfbd576bbec1dc51695fa6f2",
+    "Dark-text-clicked.png": "f440178cde484a0761876112e3b14fdc7aa2efea404ff2a5c9174cf2438fab53",
+    "Light-vcf-clicked.png": "fb78aa809fe3a826e95d9d4c6c9d0564436217015e994625a9a089c162fd98aa"
+  },
+  "assessment": "Dark/Light VCF and plain text body content remains readable/selectable, with separate explicit Edit action and shared edge-aligned titlebar. Native input after actual body clicks preserves file navigation and Space close; exact hashes show no source changes.",
+  "limits": "Default-DPI software VM, explicit OpenGL; no physical adapter or arbitrary document claim"
+}

@@ -1,0 +1,30 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-fnp2ma01",
+  "owned_processes_reaped": [
+    {
+      "pid": 825066,
+      "exit": 0
+    },
+    {
+      "pid": 825072,
+      "exit": 0
+    },
+    {
+      "pid": 825073,
+      "exit": 15
+    },
+    {
+      "pid": 825143,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      825207
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

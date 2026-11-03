@@ -1,0 +1,130 @@
+{
+    "scope":  "Current installed daemon unattended10000-file resource and clicked-text Inspector keyboard ownership; Dark/Light ordinary stock-client software VM",
+    "phase":  "normal supported uninstall",
+    "desktop_ready":  true,
+    "cases":  {
+
+              },
+    "payload_files":  58,
+    "owned_processes_removed":  true,
+    "uninstall":  "pass",
+    "package":  {
+                    "source_revision":  "4a1682bdee98b16b63a7723785091399e99b505f",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "174d3c46ba4ef74b0db14d39e90765c256018305c2183d17eae6c9165d452ce2"
+                                  }
+                              ],
+                    "actor_sha256":  "f27cbcf52b461a1f267a027701d10aad5a36bb3d1e4da231ebfee1c4ead92066",
+                    "scope":  "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+                },
+    "initial_query_total":  10000,
+    "preferences_preserved_by_removal":  true,
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSI6ce56fffc418",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "test_kind":  "unattended-index-and-clicked-read-only-text",
+    "clicked_text_cases":  [
+                               {
+                                   "vcf_next":  "b.pdf",
+                                   "vcf_previous":  "a.vcf",
+                                   "body_click":  "actual native UIAutomation content bounds and mouse",
+                                   "vcf_space_closed":  true,
+                                   "text_space_closed":  true,
+                                   "source_bytes_preserved":  true,
+                                   "theme":  "Dark",
+                                   "main_exit":  0
+                               },
+                               {
+                                   "vcf_next":  "b.pdf",
+                                   "vcf_previous":  "a.vcf",
+                                   "body_click":  "actual native UIAutomation content bounds and mouse",
+                                   "vcf_space_closed":  true,
+                                   "text_space_closed":  true,
+                                   "source_bytes_preserved":  true,
+                                   "theme":  "Light",
+                                   "main_exit":  0
+                               }
+                           ],
+    "sources_before":  {
+                           "b.pdf":  "3E272F7250E6BC35AEBDEE16B4CDD107B6CDEE6137A360F249CCDAE08F5A04EE",
+                           "a.vcf":  "B7750E468FB80AC8D7E5CDDED278AC2D7576D272089B2D5F9656B48284C08108",
+                           "c.txt":  "BC568E8A8CDBF24640ED62B4D5980795A289E282F0F9091B65782922BD5E5156"
+                       },
+    "unrelated_sources_preserved":  true,
+    "status":  "pass within unattended10000-file and clicked-text scope; direct captures require review",
+    "quiet_after":  {
+                        "working_set_bytes":  10944512,
+                        "seconds":  30.012724,
+                        "pid":  5980,
+                        "scope":  "Private10000-file metadata corpus plus3 source files and101 directories; no GUI running during sample; ordinary software VM",
+                        "private_bytes":  4362240,
+                        "name":  "no GUI after workflow",
+                        "sha256":  "76765ccd9b09f8176245a6e409325c1e4521b92e8ca542a9f8dde38388401ece",
+                        "cpu_percent_one_core":  0.10412250484161319,
+                        "status":  {
+                                       "active_root":  null,
+                                       "active_root_index":  0,
+                                       "configured_roots":  1,
+                                       "database_bytes":  28672,
+                                       "detail":  "Ready ┬╖ 10104 indexed",
+                                       "error":  null,
+                                       "estimated_total_items":  null,
+                                       "freelist_bytes":  0,
+                                       "freelist_pages":  0,
+                                       "indexed_items":  10104,
+                                       "last_completed_indexed_items":  10104,
+                                       "last_progress_unix_secs":  1793697094,
+                                       "last_scan_completed_unix_secs":  1793697094,
+                                       "last_scan_duration_ms":  null,
+                                       "last_scan_started_unix_secs":  1793697090,
+                                       "snapshot_revision":  2,
+                                       "status":  "ready",
+                                       "total_roots":  1,
+                                       "wal_bytes":  0,
+                                       "watched_roots":  1,
+                                       "watcher_error":  null,
+                                       "watcher_ready":  true
+                                   },
+                        "start_utc":  "2026-11-03T09:11:11.8599819Z"
+                    },
+    "quiet_before":  {
+                         "working_set_bytes":  14639104,
+                         "seconds":  30.0174664,
+                         "pid":  5980,
+                         "scope":  "Private10000-file metadata corpus plus3 source files and101 directories; no GUI running during sample; ordinary software VM",
+                         "private_bytes":  4399104,
+                         "name":  "no GUI before workflow",
+                         "sha256":  "76765ccd9b09f8176245a6e409325c1e4521b92e8ca542a9f8dde38388401ece",
+                         "cpu_percent_one_core":  0.20821210946704016,
+                         "status":  {
+                                        "active_root":  null,
+                                        "active_root_index":  0,
+                                        "configured_roots":  1,
+                                        "database_bytes":  28672,
+                                        "detail":  "Ready ┬╖ 10104 indexed",
+                                        "error":  null,
+                                        "estimated_total_items":  null,
+                                        "freelist_bytes":  0,
+                                        "freelist_pages":  0,
+                                        "indexed_items":  10104,
+                                        "last_completed_indexed_items":  10104,
+                                        "last_progress_unix_secs":  1793697094,
+                                        "last_scan_completed_unix_secs":  1793697094,
+                                        "last_scan_duration_ms":  null,
+                                        "last_scan_started_unix_secs":  1793697090,
+                                        "snapshot_revision":  2,
+                                        "status":  "ready",
+                                        "total_roots":  1,
+                                        "wal_bytes":  0,
+                                        "watched_roots":  1,
+                                        "watcher_error":  null,
+                                        "watcher_ready":  true
+                                    },
+                         "start_utc":  "2026-11-03T09:11:11.8599819Z"
+                     }
+}

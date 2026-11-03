@@ -120,6 +120,22 @@ def cleanup():
 def finish(kind,error,trace):
  if error is not None and not (isinstance(error,SystemExit) and error.code==0):
   state.update(status='failed or interrupted; see retained scope and error',error=repr(error))
+  # Preserve owned actor output before destroying a cancelled application case.
+  # A partial/running result is diagnostic evidence, never an acceptance result.
+  preparation=e/'GUEST_PREPARATION.json'
+  if application_case and preparation.exists() and not (e/'RESULTS.zip').exists() and callable(globals().get('ps')):
+   try:
+    prepared=json.loads(preparation.read_text());guest_root=prepared['root']
+    assert re.fullmatch(r'C:\\WINDOWS\\TEMP\\ottrin-msi-[a-f0-9]{32}',guest_root,re.I)
+    assert name in virsh('list','--all','--name').splitlines() and virsh('domuuid',name)==uid
+    code="$ErrorActionPreference='Stop';$p='"+guest_root+"\\results';if(-not(Test-Path $p)){throw 'Owned actor result directory missing'};$zip='"+guest_root+"\\interrupted-results.zip';Compress-Archive -LiteralPath $p -DestinationPath $zip;[Convert]::ToBase64String([IO.File]::ReadAllBytes($zip))"
+    exported=ps(code,25)
+    save('INTERRUPTED_EXPORT_PROCESS.json',{'exitcode':exported.get('exitcode'),'stderr':base64.b64decode(exported.get('err-data','')).decode('utf-8',errors='replace'),'scope':'Owned output captured on interruption; no terminal or passing native result inferred'})
+    assert exported.get('exitcode')==0
+    raw=base64.b64decode(base64.b64decode(exported['out-data']).decode('utf-8-sig').strip())
+    (e/'INTERRUPTED_RESULTS.zip').write_bytes(raw)
+    state['interrupted_output']='INTERRUPTED_RESULTS.zip; inspect exact actor status before accepting any scope'
+   except BaseException as export_error:state['interrupted_export_error']=repr(export_error)
   if args.prepare_updated_base and state.get('servicing_completed') and volume in state['volumes']:
    save('RECOVERY_BASE.json',{'status':'not accepted; pending owned updated-baseline recovery','path':'/var/lib/libvirt/images/'+volume,'volume':volume,'backing_original':state['base_disk'],'scope':'Successful servicing must not be repeated because its observer failed. Owned domain is stopped and removed; this sole owned disk remains for independent recovery and exact version/clean-shutdown verification.','cleanup_owner':'windows-msi-updated-client-current; current autonomous goal must recover or explicitly retire after consumers close'})
    state['retained_pending_volume']=volume

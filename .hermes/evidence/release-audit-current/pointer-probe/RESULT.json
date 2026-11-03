@@ -1,0 +1,65 @@
+{
+  "accessible_entry": {
+    "x": 1204,
+    "y": 392,
+    "width": 240,
+    "height": 25
+  },
+  "accessible_window": {
+    "x": 410,
+    "y": 320,
+    "width": 1100,
+    "height": 800
+  },
+  "x11_window": {
+    "X": 410,
+    "Y": 320,
+    "WIDTH": 1100,
+    "HEIGHT": 800
+  },
+  "x11_window_relative_target": {
+    "x": 914,
+    "y": 84
+  },
+  "a11y_desktop_target": {
+    "x": 1324,
+    "y": 404
+  },
+  "actual_pointer": "X=1324\nY=404\nSCREEN=0\nWINDOW=10485763\n",
+  "double_click": {
+    "accessible_entry": {
+      "x": 1204,
+      "y": 392,
+      "width": 240,
+      "height": 25
+    },
+    "accessible_window": {
+      "x": 410,
+      "y": 320,
+      "width": 1100,
+      "height": 800
+    },
+    "x11_window": {
+      "X": 410,
+      "Y": 320,
+      "WIDTH": 1100,
+      "HEIGHT": 800
+    },
+    "x11_window_relative_target": {
+      "x": 914,
+      "y": 84
+    },
+    "a11y_desktop_target": {
+      "x": 1324,
+      "y": 404
+    }
+  },
+  "breadcrumbs": [
+    "push button | Open /",
+    "push button | Open /var",
+    "push button | Open /var/tmp",
+    "push button | Open /var/tmp/.ottrin-picker-qa-xcz2_xxe",
+    "push button | Open /var/tmp/.ottrin-picker-qa-xcz2_xxe/home",
+    "push button | Open /var/tmp/.ottrin-picker-qa-xcz2_xxe/home/Documents"
+  ]
+}

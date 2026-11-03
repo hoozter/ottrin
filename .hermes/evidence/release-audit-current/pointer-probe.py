@@ -1,0 +1,11 @@
+from pathlib import Path
+import importlib.util,json,subprocess,time
+r=Path.cwd();e=r/'.hermes/evidence/release-audit-current/pointer-probe';e.mkdir(exist_ok=True)
+spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+with m.OwnedDesktop(e) as d:
+ d.env.pop('NO_AT_BRIDGE',None);home=d.profile/'home';(home/'Documents').mkdir(parents=True);(home/'Documents/proof.txt').write_text('Owned pointer proof.\n')
+ config=json.loads((r/'.hermes/evidence/linux-cli-options-package-current/after100/TEARDOWN.json').read_text())['persisted_config'];config.update(default_view_mode='Miller',bookmarks=[]);config['search'].update(include_roots=[str(home)],content_indexing_enabled=False);p=d.profile/'config/ottrin/config.json';p.parent.mkdir(parents=True);p.write_text(json.dumps(config))
+ subprocess.run(['gdbus','call','--session','--dest','org.a11y.Bus','--object-path','/org/a11y/bus','--method','org.freedesktop.DBus.Properties.Set','org.a11y.Status','IsEnabled','<true>'],env=d.env,check=True,capture_output=True)
+ app=d.spawn([str(r/'target/debug/ottrin-app'),'--renderer','opengl'],'app.log')
+ code="import importlib.util,pathlib,sys,time,json;spec=importlib.util.spec_from_file_location('qa',sys.argv[1]);q=importlib.util.module_from_spec(spec);spec.loader.exec_module(q);q.target_process_id=int(sys.argv[2]);e=pathlib.Path(sys.argv[3]);n=q.wait_for(lambda:q.visible_entry('Documents'),'Documents');w=q.run('xdotool','search','--all','--onlyvisible','--pid',sys.argv[2],'--name','^Ottrin$',capture=True).stdout.strip().splitlines()[-1];q.run('xdotool','windowactivate','--sync',w);time.sleep(.5);q.scroll_entry_into_view(n);diag=q.entry_x11_diagnostics(w,n);t=diag['x11_window_relative_target'];q.run('xdotool','mousemove','--window',w,str(t['x']),str(t['y']));diag['actual_pointer']=q.run('xdotool','getmouselocation','--shell',capture=True).stdout;q.screenshot(e,'before');diag['double_click']=q.double_click_entry(w,'Documents');time.sleep(.7);q.screenshot(e,'after');diag['breadcrumbs']=[n for n in q.visible_a11y_nodes() if 'Open /' in n];(e/'RESULT.json').write_text(json.dumps(diag,indent=2)+'\\n')"
+ child=d.spawn(['/usr/bin/python3','-c',code,str(r/'scripts/linux-desktop-qa.py'),str(app.pid),str(e)],'probe.log');assert child.wait(timeout=30)==0

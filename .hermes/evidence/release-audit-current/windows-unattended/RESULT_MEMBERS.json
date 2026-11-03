@@ -1,0 +1,20 @@
+{
+  "Dark-main.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "Dark-main.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "Dark-text-clicked.png": "f440178cde484a0761876112e3b14fdc7aa2efea404ff2a5c9174cf2438fab53",
+  "Dark-vcf-clicked.png": "44f2cf0ccdbd6774924258bc22be551e119d3b5abfbd576bbec1dc51695fa6f2",
+  "DESKTOP_READY.json": "38d8303e8d605e3809b30d741b1bf38d18cf36d2283d378d792e5a5400c87459",
+  "index-status-process.json": "91ff863f8a7d5fe7a0aed430e3ca1557ee4f3ac2316037c17d57cb4eed23089a",
+  "initial-index-process.json": "91ff863f8a7d5fe7a0aed430e3ca1557ee4f3ac2316037c17d57cb4eed23089a",
+  "initial-query-process.json": "a03db9d5ee1583eb52179b62fe5f8e88e754c38d82988e116c4b61a1ec6a9ce8",
+  "install-process.json": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a",
+  "Light-main.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "Light-main.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "Light-text-clicked.png": "7c1636984753003ab8e7ff2e8c70f374b5fc880e70c55f7a6852ef43a377795f",
+  "Light-vcf-clicked.png": "fb78aa809fe3a826e95d9d4c6c9d0564436217015e994625a9a089c162fd98aa",
+  "no-GUI-after-workflow.json": "46c881c9d9cfb84023266a87643f611c80ddc2795477d14889bff73a0ff1b14a",
+  "no-GUI-before-workflow.json": "28ec68f58b56344b20f747c21dc78229cfcb08387d8b4a930f2f2d375331d26c",
+  "OWNER.json": "8e9ca226249e6d614692138c39e3ab4e20499805d87ae8eeb7ba0540ba4dd083",
+  "RESULT.json": "44a2b969f5f6332afa95a1e6df1a76f60b123b456c3eee276c8bbbb25b3b8aeb",
+  "uninstall-process.json": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+}

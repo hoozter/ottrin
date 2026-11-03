@@ -1,0 +1,18 @@
+{
+  "status": "interrupted; no native resource or clicked-body acceptance",
+  "driver_exit": 143,
+  "recorded_error": "SystemExit(143)",
+  "last_observed_phase": "waiting for unattended10000-file index",
+  "cause": "SIGTERM origin unproven; no timeout/root cause claim",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "remaining_work": "Run current exact input again only after recording this terminal handle and cleanup; add failure-time result export to the owner producer before next case"
+}
