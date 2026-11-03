@@ -26,6 +26,14 @@ with (out/'app.log').open('w') as log:
   f=begin('New Folder','CreatedFolder');q.screenshot(out,'new-folder');q.click_named_control(window,'Create');q.wait_for(lambda:(docs/'CreatedFolder').is_dir(),'created folder');assert not list((docs/'CreatedFolder').iterdir());cases.append({'case':'new-folder','field':f,'status':'pass'})
   f=begin('New File','cancelled.txt');q.click_accessible_name('Cancel','push button');assert not (docs/'cancelled.txt').exists();cases.append({'case':'cancel-new-file','field':f,'status':'pass'})
   q.xkey(window,'F2');restored=q.wait_for(lambda:next((n for n in q.all_nodes(q.ottrin_app()) if n.getRoleName()=='entry' and n.name=='New name'),None),'F2 after native Cancel releases filename input');assert restored.queryText().getText(0,-1)=='preserve.txt';field_bounds(restored,'New name');q.click_accessible_name('Cancel','push button');cases.append({'case':'native-cancel-restores-file-shortcuts','status':'pass','rename_value':'preserve.txt','source_bytes_preserved':original.read_bytes()==b'owned original\n'})
+  row=q.wait_for(lambda:q.visible_entry('preserve.txt'),'actual selected production row before native focus')
+  assert row.queryComponent().grabFocus(),'Native file row focus request rejected'
+  q.wait_for(lambda:q.pyatspi.STATE_FOCUSED in q.visible_entry('preserve.txt').getState().getStates(),'actual file row keyboard focus')
+  # Do not use xkey here: it deliberately focuses the accessible frame first.
+  q.run('xdotool','key','--clearmodifiers','F2')
+  focused_rename=q.wait_for(lambda:next((n for n in q.all_nodes(q.ottrin_app()) if n.getRoleName()=='entry' and n.name=='New name'),None),'F2 with native file-row focus')
+  assert focused_rename.queryText().getText(0,-1)=='preserve.txt';field_bounds(focused_rename,'New name');q.click_accessible_name('Cancel','push button')
+  assert original.read_bytes()==b'owned original\n';cases.append({'case':'native-focused-file-row-f2','status':'pass','native_focus':True,'frame_focus_reset_before_key':False,'source_bytes_preserved':True})
   f=begin('New File','preserve.txt');q.wait_for(lambda:any(n.name=='An entry with that name already exists.' for n in q.all_nodes(q.ottrin_app())),'existing-entry refusal');q.screenshot(out,'existing-entry-refusal');q.click_accessible_name('Cancel','push button');assert original.read_bytes()==b'owned original\n';cases.append({'case':'existing-file-refused','field':f,'status':'pass'})
   location();q.click_entry(window,'preserve.txt');q.xkey(window,'F2')
   field=q.wait_for(lambda:next((n for n in q.all_nodes(q.ottrin_app()) if n.getRoleName()=='entry' and n.name=='New name'),None),'named rename editor')

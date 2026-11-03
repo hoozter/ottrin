@@ -1,0 +1,455 @@
+{
+  "status": "pass exact new AppImage native focused-file-row F2, Cancel focus, navigation and filename geometry scope",
+  "source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "artifact_sha256": "8dfa4c60d290eb99ca5b293cb35f85d0d64b465ff68880bd4605b42baf27a6ce",
+  "cases": [
+    {
+      "case": "linux-native-dark",
+      "theme": "Dark",
+      "desktop_scale": 1.0,
+      "view": "List",
+      "native_navigation_choices": [
+        {
+          "name": "Services",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Services"
+          ]
+        },
+        {
+          "name": "Appearance",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Appearance"
+          ]
+        },
+        {
+          "name": "Files",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Files"
+          ]
+        },
+        {
+          "name": "Search",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Search"
+          ]
+        },
+        {
+          "name": "Cache",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Cache"
+          ]
+        },
+        {
+          "name": "General",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "General"
+          ]
+        }
+      ],
+      "field_geometry": [
+        {
+          "field": "File name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "Folder name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "File name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "New name",
+          "x": 730,
+          "y": 702,
+          "width": 460,
+          "height": 38
+        },
+        {
+          "field": "New name",
+          "x": 730,
+          "y": 702,
+          "width": 460,
+          "height": 38
+        },
+        {
+          "field": "File name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "New name",
+          "x": 730,
+          "y": 702,
+          "width": 460,
+          "height": 38
+        }
+      ],
+      "functional_cases": [
+        {
+          "case": "new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "created.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "new-folder",
+          "field": {
+            "role": "entry",
+            "accessible_name": "Folder name",
+            "initial_value": "",
+            "typed_value": "CreatedFolder"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "cancel-new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "cancelled.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "native-cancel-restores-file-shortcuts",
+          "status": "pass",
+          "rename_value": "preserve.txt",
+          "source_bytes_preserved": true
+        },
+        {
+          "case": "native-focused-file-row-f2",
+          "status": "pass",
+          "native_focus": true,
+          "frame_focus_reset_before_key": false,
+          "source_bytes_preserved": true
+        },
+        {
+          "case": "existing-file-refused",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "preserve.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-rename-edit-cancel",
+          "field": {
+            "role": "entry",
+            "accessible_name": "New name",
+            "typed_value": "cancelled-rename.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-location",
+          "value": "/var/tmp/.ottrin-picker-qa-dwblvyoh/home/Documents",
+          "status": "pass"
+        },
+        {
+          "case": "named-search",
+          "value": "",
+          "status": "pass"
+        }
+      ],
+      "directly_reviewed_originals": {
+        "rename.png": "908e35fc48296c8537d85a88023b0a977af4ae1c1888bdf9a69f6600eaddf631",
+        "new-file.png": "e40d43f465e9d1d03b2efdc8c471c786fb8094425f2979466678d38df7b61ae9",
+        "existing-entry-refusal.png": "d11563984d804c9f96d8ce5d87a85b0b54109f9c1659aa8a96d8e5c5536468ec",
+        "settings-services.png": "fbe9a1f32164bce4b6b44cb19b03d6faed3e694c84e4a7ee6984fcffb31179cf",
+        "new-folder.png": "914e59f1b36ff0f9e2a3f409d7bcddfc659533ccee78a8634056c7a9e9d82f99"
+      },
+      "normal_close_exit": 0,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-dwblvyoh",
+        "owned_processes_reaped": [
+          {
+            "pid": 1112042,
+            "exit": 0
+          },
+          {
+            "pid": 1112049,
+            "exit": 0
+          },
+          {
+            "pid": 1112051,
+            "exit": 15
+          },
+          {
+            "pid": 1112176,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1112188,
+            1112324
+          ],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    },
+    {
+      "case": "linux-native-light",
+      "theme": "Light",
+      "desktop_scale": 1.5,
+      "view": "List",
+      "native_navigation_choices": [
+        {
+          "name": "Services",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Services"
+          ]
+        },
+        {
+          "name": "Appearance",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Appearance"
+          ]
+        },
+        {
+          "name": "Files",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Files"
+          ]
+        },
+        {
+          "name": "Search",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Search"
+          ]
+        },
+        {
+          "name": "Cache",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Cache"
+          ]
+        },
+        {
+          "name": "General",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "General"
+          ]
+        }
+      ],
+      "field_geometry": [
+        {
+          "field": "File name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "Folder name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "File name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "New name",
+          "x": 615,
+          "y": 693,
+          "width": 690,
+          "height": 57
+        },
+        {
+          "field": "New name",
+          "x": 615,
+          "y": 693,
+          "width": 690,
+          "height": 57
+        },
+        {
+          "field": "File name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "New name",
+          "x": 615,
+          "y": 693,
+          "width": 690,
+          "height": 57
+        }
+      ],
+      "functional_cases": [
+        {
+          "case": "new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "created.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "new-folder",
+          "field": {
+            "role": "entry",
+            "accessible_name": "Folder name",
+            "initial_value": "",
+            "typed_value": "CreatedFolder"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "cancel-new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "cancelled.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "native-cancel-restores-file-shortcuts",
+          "status": "pass",
+          "rename_value": "preserve.txt",
+          "source_bytes_preserved": true
+        },
+        {
+          "case": "native-focused-file-row-f2",
+          "status": "pass",
+          "native_focus": true,
+          "frame_focus_reset_before_key": false,
+          "source_bytes_preserved": true
+        },
+        {
+          "case": "existing-file-refused",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "preserve.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-rename-edit-cancel",
+          "field": {
+            "role": "entry",
+            "accessible_name": "New name",
+            "typed_value": "cancelled-rename.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-location",
+          "value": "/var/tmp/.ottrin-picker-qa-5m1xou9h/home/Documents",
+          "status": "pass"
+        },
+        {
+          "case": "named-search",
+          "value": "",
+          "status": "pass"
+        }
+      ],
+      "directly_reviewed_originals": {
+        "rename.png": "3b448924b98f75c278118e47fe178dd6a0f8dffcde523fb749383381ecf122d2",
+        "new-file.png": "9fc3da3c01f95237b06eddb7a06ce7360efb375d9f11248689b143f2b6db614b",
+        "existing-entry-refusal.png": "e39e842e956c0a4c7abf59ff455e0643eb8ffbe8ee34767b3f3df05ba2a0b053",
+        "settings-services.png": "9caf443f804334d1548ccd8bb77563c9701bc79e439c6fc65c5dbf6798a6b24c",
+        "new-folder.png": "b02ed75389741ba9998f856d2e4aa8c71372a727fe7231c0452673c128c6c11b"
+      },
+      "normal_close_exit": 0,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-5m1xou9h",
+        "owned_processes_reaped": [
+          {
+            "pid": 1112043,
+            "exit": 0
+          },
+          {
+            "pid": 1112048,
+            "exit": 0
+          },
+          {
+            "pid": 1112050,
+            "exit": 15
+          },
+          {
+            "pid": 1112177,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1112189,
+            1112325
+          ],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    }
+  ],
+  "case_count": 30,
+  "directly_reviewed_originals": 10,
+  "review": "Original Dark100 and Light150 captures directly inspected: centred filename text, matching input heights, shared Settings chrome/aligned navigation, duplicate-name refusal. Native Cancel then F2 and explicit native file-row Focus followed by F2 without resetting frame focus both pass; original bytes and normal Settings/main Close preserved.",
+  "limits": [
+    "Private X11/software AT-SPI scope; physical GPU, Wayland and human assistive usability separate",
+    "Focused navigation/filename/keyboard ownership scope; no fresh full39-control theme replay",
+    "System helper/sandbox setup not invoked; observed availability is not a new privileged setup proof"
+  ]
+}

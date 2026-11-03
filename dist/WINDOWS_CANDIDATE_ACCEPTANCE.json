@@ -1,32 +1,37 @@
 {
-  "status": "pass current scoped local Windows main-field preview; required MSI release held separately",
-  "source_commit": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "status": "pass current scoped local Windows navigation/filename geometry preview; required MSI release held separately",
+  "source_commit": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "d2eac2aa45f18f3750f05e62f01c7fa37f580dccaf6213656fe89d07b9a2c3dd",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd",
-    "Ottrin-0.1.0-windows-x64-development.msix": "be50a0bb7457ae0e4bbbb347d448ac3768b2b27db95e58c0b6465e6be23178ec"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "0364469db5708b79b1fe6c0f3b7771ba740d818f5aa94eed6706a20aed08bb67",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd",
+    "Ottrin-0.1.0-windows-x64-development.msix": "62a027b576a3e901900ed1241222f3296cc7e46e02651f49212fc7dde73952db"
   },
   "payload_files": 58,
-  "evidence_directory": ".hermes/evidence/editable-fields-current",
+  "evidence_directory": ".hermes/evidence/file-row-focus-current",
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/editable-fields-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+  "current_native_fields": ".hermes/evidence/file-row-focus-current/WINDOWS_NATIVE_ACCEPTANCE.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/editable-fields-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_assembly": ".hermes/evidence/file-row-focus-current/ASSEMBLY_ACCEPTANCE.json",
     "historical_lifecycle": {
-      "upgrade-enabled": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/ACCEPTANCE.json"
+      "current_assembly": ".hermes/evidence/editable-fields-current/ASSEMBLY_ACCEPTANCE.json",
+      "historical_lifecycle": {
+        "upgrade-enabled": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/ACCEPTANCE.json"
+      },
+      "historical_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+      "limit": "No fresh MSIX revision 9 deployment/update/login/removal run; earlier MSIX revision 8 runtime gate keeps exact source/artifact scope. Shipping installation/startup/daemon source unchanged, all 58 assembled payload bytes match current native-checked NSIS/ZIP."
     },
-    "historical_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
-    "limit": "No fresh MSIX revision 9 deployment/update/login/removal run; earlier MSIX revision 8 runtime gate keeps exact source/artifact scope. Shipping installation/startup/daemon source unchanged, all 58 assembled payload bytes match current native-checked NSIS/ZIP."
+    "historical_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "limit": "No fresh MSIX revision 10 deployment/update/login/removal run; earlier MSIX revision 8 runtime gate keeps exact source/artifact scope. Shipping installation/startup/daemon source unchanged, all 58 assembled payload bytes match current native-checked NSIS/ZIP."
   },
-  "source_scope": ".hermes/evidence/editable-fields-current/SOURCE_SCOPE.json",
-  "full_payload_comparison": ".hermes/evidence/editable-fields-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
-  "daemon_pe_identity": ".hermes/evidence/editable-fields-current/WINDOWS_INDEX_PE_COMPARISON.json",
+  "source_scope": ".hermes/evidence/file-row-focus-current/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/file-row-focus-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+  "daemon_pe_identity": ".hermes/evidence/file-row-focus-current/WINDOWS_INDEX_PE_COMPARISON.json",
   "unchanged_responsibility_basis": {
-    "previous_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
-    "previous_receipt": ".hermes/evidence/editable-fields-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
-    "scope": "Only text-control names/shared native-label helper and associated tests change shipping source. Earlier lifecycle, picker, installer-fault, Office/media, resource and broader UI scopes retain original hashes. Every other non-GUI payload matches; daemon PE differs only in timestamp/checksum."
+    "previous_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "previous_receipt": ".hermes/evidence/file-row-focus-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "scope": "Only Settings navigation widget metadata, centred shared Create/Rename field geometry, and release of the closed filename dialog input focus and recognition of actual text versus focused file-row keyboard ownership, plus associated tests, change shipping source. Earlier lifecycle, picker, installer-fault, Office/media, resource and broader UI scopes retain original hashes. Every other non-GUI payload matches; daemon PE differs only in timestamp/checksum."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
@@ -34,8 +39,8 @@
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
   "hosted_source": {
-    "run": 41639409624,
-    "tested_source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "run": 41678522340,
+    "tested_source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
     "exact_source_all_four_jobs_success": true
   },
   "public_release_published": false,
@@ -43,7 +48,7 @@
     "Local unsigned preview; no public release or Store submission",
     "Software VM/default DPI; no physical graphics/human assistive or final owner acceptance",
     "Whole roadmap and numeric/color-picker accessibility remain unaccepted",
-    "Current main-field native scope and MSIX revision 9 assembly only; historical lifecycle scopes are explicitly linked"
+    "Current main-field native scope and MSIX revision 10 assembly only; historical lifecycle scopes are explicitly linked"
   ],
   "cleanup": "Both native VMs/media/private console removed; stage and superseded candidate retired after consumers; current58-file payload and compact evidence retained."
 }

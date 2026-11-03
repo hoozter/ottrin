@@ -488,7 +488,7 @@ with ExitStack() as stack:
     try:g.qga('guest-file-close',{'handle':handle})
     finally:
      if not transferred:destination.unlink(missing_ok=True)
-   state['status']='actual MSIX assembly and payload pass; package retained for pending native deployment';save('OWNER.json',state)
+   state['status']='actual MSIX assembly and payload pass; candidate returned for separately scoped consumers';save('OWNER.json',state)
    raise SystemExit(0)
  if args.update_manifest:
   state['status']='servicing owned offline clone with supported Microsoft update';save('OWNER.json',state)

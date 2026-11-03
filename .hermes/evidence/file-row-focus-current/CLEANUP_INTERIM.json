@@ -1,0 +1,40 @@
+{
+  "status": "all owned native fixtures/extractions/archives/transports removed;2candidate stages remain for verified pending publication",
+  "owned_domain_UUIDs_absent": [
+    "89612e46-cec5-41ec-a168-3474d888d338",
+    "d84c07e1-b096-414a-aa9e-70989808a76f"
+  ],
+  "owned_vm_volumes_removed": 4,
+  "removed_private_profiles": [
+    "/var/tmp/.ottrin-picker-qa-dwblvyoh",
+    "/var/tmp/.ottrin-picker-qa-5m1xou9h",
+    "/var/tmp/.ottrin-picker-qa-esm2vlge"
+  ],
+  "protected_domains_present": {
+    "win11ltsc": "4e160378-2610-4072-b528-048e4c9f509e",
+    "ottrin-copy-cleanup-qa": "9b2e795f-fb04-4adb-95a7-8832f8894c67",
+    "ottrin-index-qa": "d798c8c4-bbf7-458c-8549-47ba8832fd34",
+    "ottrin-qa-20261011": "95c4bcbe-9688-4f8f-83b4-fa275095ca5d"
+  },
+  "compiler_cleanup": "INCREMENTAL_CLEANUP_RESULT.json:15 obsolete sessions,0.44GiB reported recovered; newest sessions retained",
+  "retained_candidate_stages": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "bytes": 114576140,
+      "purpose": "Current accepted candidate files/payload awaiting exact-source hosted gate then guarded stable publication",
+      "pending_consumer": "promote-linux.py"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "bytes": 293658959,
+      "purpose": "Current accepted candidate files/payload awaiting exact-source hosted gate then guarded stable publication",
+      "pending_consumer": "promote-windows.py"
+    }
+  ],
+  "retained_evidence": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-row-focus-current",
+    "purpose": "Current compact source/content/native proofs, originals, failure audits and reproducible producers"
+  },
+  "personal_daemon": "PERSONAL_INDEX_OBSERVATION.json:existing process/config unchanged; not a test-owned process; preserve",
+  "held_msi": "Original failed diagnostic input retained for independent remaining release gate; no policy/elevation/ACL change"
+}

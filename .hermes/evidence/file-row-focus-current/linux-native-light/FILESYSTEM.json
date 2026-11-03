@@ -1,0 +1,52 @@
+[
+  {
+    "name": "CreatedFolder",
+    "directory": true,
+    "symlink": false,
+    "mode": 509,
+    "uid": 1000,
+    "device": 66306,
+    "inode": 17972849,
+    "children": []
+  },
+  {
+    "name": ".ottrin-txn-83ee5f5e3910f2d6f859b9444272f6b3",
+    "directory": true,
+    "symlink": false,
+    "mode": 448,
+    "uid": 1000,
+    "device": 66306,
+    "inode": 17972604,
+    "children": []
+  },
+  {
+    "name": "preserve.txt",
+    "directory": false,
+    "symlink": false,
+    "mode": 436,
+    "uid": 1000,
+    "device": 66306,
+    "inode": 17972636,
+    "children": null
+  },
+  {
+    "name": "created.txt",
+    "directory": false,
+    "symlink": false,
+    "mode": 384,
+    "uid": 1000,
+    "device": 66306,
+    "inode": 17972829,
+    "children": null
+  },
+  {
+    "name": ".ottrin-txn-7621ef819e4dc2ef13af29bfcc95206e",
+    "directory": true,
+    "symlink": false,
+    "mode": 448,
+    "uid": 1000,
+    "device": 66306,
+    "inode": 17972817,
+    "children": []
+  }
+]

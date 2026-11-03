@@ -1,0 +1,158 @@
+
+==> Building Linux portable tarball
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 11m 27s
+    Finished `release` profile [optimized] target(s) in 0.64s
+    Finished `release` profile [optimized] target(s) in 0.26s
+/tmp/tmp.ukgvhnpeGd/pdfium.tgz: OK
+/tmp/tmp.RbktljpKuu/archive: OK
+/tmp/tmp.RbktljpKuu/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+
+==> Building Linux AppImage
+    Finished `release` profile [optimized] target(s) in 0.57s
+    Finished `release` profile [optimized] target(s) in 0.29s
+    Finished `release` profile [optimized] target(s) in 0.27s
+/tmp/tmp.7054SwrDsy/pdfium.tgz: OK
+/tmp/tmp.sVag7DfznU/archive: OK
+/tmp/tmp.sVag7DfznU/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/dist/appimagetool-x86_64.AppImage: OK
+appimagetool, continuous build (commit 5735cc5), build <local dev build> built on 2023-03-08 22:52:04 UTC
+Using architecture x86_64
+Deleting pre-existing .DirIcon
+Creating .DirIcon symlink based on information from desktop file
+AppStream upstream metadata found in usr/share/metainfo/org.ottrin.Ottrin.appdata.xml
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.appimage.w1UQxA/AppDir should be packaged as /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.appimage.w1UQxA/Ottrin-0.1.0-x86_64.AppImage
+Trying to validate AppStream information with the appstreamcli tool
+In case of issues, please refer to https://github.com/ximion/appstream
+org.ottrin.Ottrin.appdata.xml
+
+✔ Validation was successful: pedantic: 1
+Generating squashfs...
+Parallel mksquashfs: Using 16 processors
+Creating 4.0 filesystem on /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.appimage.w1UQxA/Ottrin-0.1.0-x86_64.AppImage, block size 131072.
+[===============================================================/] 674/674 100%
+
+Exportable Squashfs 4.0 filesystem, gzip compressed, data block size 131072
+	compressed data, compressed metadata, compressed fragments,
+	compressed xattrs, compressed ids
+	duplicates are removed
+Filesystem size 31780.32 Kbytes (31.04 Mbytes)
+	42.53% of uncompressed filesystem size (74733.25 Kbytes)
+Inode table size 3241 bytes (3.17 Kbytes)
+	47.22% of uncompressed inode table size (6864 bytes)
+Directory table size 1714 bytes (1.67 Kbytes)
+	50.13% of uncompressed directory table size (3419 bytes)
+Number of duplicate files found 7
+Number of inodes 141
+Number of files 112
+Number of fragments 15
+Number of symbolic links  1
+Number of device nodes 0
+Number of fifo nodes 0
+Number of socket nodes 0
+Number of directories 28
+Number of ids (unique uids + gids) 1
+Number of uids 1
+	root (0)
+Number of gids 1
+	root (0)
+Embedding ELF...
+Marking the AppImage as executable...
+Embedding MD5 digest
+Success
+
+Please consider submitting your AppImage to AppImageHub, the crowd-sourced
+central directory of available AppImages, by opening a pull request
+at https://github.com/AppImage/appimage.github.io
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/Ottrin-0.1.0-x86_64.AppImage
+
+==> Building native Debian package
+/tmp/tmp.biDgL29App/pdfium.tgz: OK
+/tmp/tmp.o0SiUFryRY/archive: OK
+/tmp/tmp.o0SiUFryRY/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.deb.BXswMn/package
+dpkg-deb: building package 'ottrin' in '/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.deb.BXswMn/ottrin_0.1.0_amd64.deb'.
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/ottrin_0.1.0_amd64.deb
+
+==> Building native RPM package
+/tmp/tmp.vuMVbN2ODU/pdfium.tgz: OK
+/tmp/tmp.CM6V7IaRmC/archive: OK
+/tmp/tmp.CM6V7IaRmC/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/SOURCES/stage
+Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.P6Gg2e
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%build): /bin/sh -e /var/tmp/rpm-tmp.yan2u9
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.E5RAXv
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ /bin/mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT
++ /bin/mkdir /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ mkdir -p /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ cp -a /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/SOURCES/stage/. /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-compress /usr
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-elfperms
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-static-archive /usr/bin/strip
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/brp-remove-la-files
+Processing files: ottrin-0.1.0-1.x86_64
+warning: Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+Provides: application() application(org.ottrin.Ottrin.desktop) libpdfium.so()(64bit) metainfo() metainfo(org.ottrin.Ottrin.appdata.xml) ottrin = 0.1.0-1 ottrin(x86-64) = 0.1.0-1
+Requires(interp): /bin/sh /bin/sh
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+Requires(preun): /bin/sh
+Requires(posttrans): /bin/sh
+Requires: /bin/sh ld-linux-x86-64.so.2()(64bit) ld-linux-x86-64.so.2(GLIBC_2.3)(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.10)(64bit) libc.so.6(GLIBC_2.11)(64bit) libc.so.6(GLIBC_2.14)(64bit) libc.so.6(GLIBC_2.15)(64bit) libc.so.6(GLIBC_2.16)(64bit) libc.so.6(GLIBC_2.17)(64bit) libc.so.6(GLIBC_2.18)(64bit) libc.so.6(GLIBC_2.2.5)(64bit) libc.so.6(GLIBC_2.25)(64bit) libc.so.6(GLIBC_2.27)(64bit) libc.so.6(GLIBC_2.28)(64bit) libc.so.6(GLIBC_2.29)(64bit) libc.so.6(GLIBC_2.3)(64bit) libc.so.6(GLIBC_2.3.2)(64bit) libc.so.6(GLIBC_2.3.4)(64bit) libc.so.6(GLIBC_2.30)(64bit) libc.so.6(GLIBC_2.32)(64bit) libc.so.6(GLIBC_2.33)(64bit) libc.so.6(GLIBC_2.34)(64bit) libc.so.6(GLIBC_2.39)(64bit) libc.so.6(GLIBC_2.4)(64bit) libc.so.6(GLIBC_2.5)(64bit) libc.so.6(GLIBC_2.7)(64bit) libc.so.6(GLIBC_2.9)(64bit) libfontconfig.so.1()(64bit) libgcc_s.so.1()(64bit) libgcc_s.so.1(GCC_3.0)(64bit) libgcc_s.so.1(GCC_3.3)(64bit) libgcc_s.so.1(GCC_4.2.0)(64bit) libgio-2.0.so.0()(64bit) libglib-2.0.so.0()(64bit) libgobject-2.0.so.0()(64bit) libgstapp-1.0.so.0()(64bit) libgstbase-1.0.so.0()(64bit) libgstreamer-1.0.so.0()(64bit) libm.so.6()(64bit) libm.so.6(GLIBC_2.2.5)(64bit) libm.so.6(GLIBC_2.27)(64bit) libm.so.6(GLIBC_2.29)(64bit) libm.so.6(GLIBC_2.35)(64bit) libpthread.so.0()(64bit) libpthread.so.0(GLIBC_2.2.5)(64bit) libpthread.so.0(GLIBC_2.3.2)(64bit) rtld(GNU_HASH)
+Checking for unpackaged file(s): /home/campbell/Projects/Ottrin/.hermes/tools/rpm/usr/lib/rpm/check-files /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
+Wrote: /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/RPMS/x86_64/ottrin-0.1.0-1.x86_64.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.CPTiz1
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILD
++ /bin/rm -rf /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64
++ RPM_EC=0
++ jobs -p
++ exit 0
+Executing(rmbuild): /bin/sh -e /var/tmp/rpm-tmp.QEk6Fa
++ umask 022
++ cd /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILD
++ RPM_EC=0
++ jobs -p
++ exit 0
+    Missing build-id in /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/.rpm.NJEzp3/rpmbuild/BUILDROOT/ottrin-0.1.0-1.x86_64/usr/libexec/ottrin/rg
+
+RPM build warnings:
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.yHU3Ng/linux/ottrin-0.1.0-1.x86_64.rpm
+portable: packaged helper and policy path PASS
+appimage: packaged helper and policy path PASS
+deb: packaged helper and policy path PASS
+rpm: packaged helper and policy path PASS
+Ottrin-0.1.0-linux-x86_64-portable.tar.gz: OK
+Ottrin-0.1.0-x86_64.AppImage: OK
+ottrin_0.1.0_amd64.deb: OK
+ottrin-0.1.0-1.x86_64.rpm: OK
+
+Built artifacts:
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-x86_64.AppImage
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/Ottrin-0.1.0-x86_64.AppImage.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/ottrin_0.1.0_amd64.deb
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/ottrin_0.1.0_amd64.deb.sha256
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/ottrin-0.1.0-1.x86_64.rpm
+  /home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/ottrin-0.1.0-1.x86_64.rpm.sha256

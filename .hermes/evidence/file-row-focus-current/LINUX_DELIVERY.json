@@ -1,0 +1,39 @@
+{
+  "status": "pass exact current package-content and native Settings navigation/filename geometry scope; broader audit incomplete",
+  "source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "e6fd814827437e246756c77ab83dfc682836cc8afb30e6e554cc5f7438e79769",
+    "Ottrin-0.1.0-x86_64.AppImage": "8dfa4c60d290eb99ca5b293cb35f85d0d64b465ff68880bd4605b42baf27a6ce",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f4c68bbe6bf1c0972e3d272c80c14863359b7c8ae0c42901ee7e4421cd72cd98",
+    "ottrin_0.1.0_amd64.deb": "4225434e6c57e5151c92c47a8778ef63f0b157d0f8a73b3544d845db034c2dfb"
+  },
+  "evidence": ".hermes/evidence/file-row-focus-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "current_native_fields": ".hermes/evidence/file-row-focus-current/LINUX_NATIVE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/file-row-focus-current/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/file-row-focus-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "unchanged_responsibility_basis": {
+    "previous_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "previous_receipt": ".hermes/evidence/file-row-focus-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Only Settings navigation widget metadata, shared centred Create/Rename field geometry, and release of the closed filename dialog input focus and recognition of actual text versus focused file-row keyboard ownership change shipping source. Ordinary file editing/operation and preview/picker/index ownership unchanged; helpers/dependencies/assets and daemon bytes unchanged. Prior full workflow, installer/index/preview/browser/theme scopes retain original hashes; they are not newly executed on this cohort."
+  },
+  "hosted_source": {
+    "run": 41678522340,
+    "tested_source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+    "all_four_jobs_success": true
+  },
+  "limits": [
+    "Local unsigned delivery; no public release",
+    "Private X11/software AT-SPI Dark at 100%/Light at 150%; physical graphics and human assistive use separate",
+    "Full remaining roadmap and numeric/color-picker controls and complete UI assistive usability remain unaccepted"
+  ],
+  "cleanup": "Native navigation/geometry-check desktops/profiles/processes/mounts and content extraction removed; exact stage retired by publication; compiler-cache cleanup separately receipted"
+}

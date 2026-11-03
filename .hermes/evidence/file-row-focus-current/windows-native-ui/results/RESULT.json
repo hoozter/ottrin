@@ -1,0 +1,357 @@
+{
+    "scope":  "Exact installed Windows Settings native navigation role/action/selected state and coherent Create/Rename field geometry; source and preference preservation",
+    "focus_before_f2":  {
+                            "control_type":  "ControlType.Button",
+                            "name":  "preserve.txt",
+                            "owned":  true,
+                            "has_keyboard_focus":  true
+                        },
+    "phase":  "supported uninstall",
+    "location_observed":  {
+                              "expected":  "\\\\?\\C:\\Users\\OTMSI6d46a861cd59\\Documents\\OttrinFields",
+                              "field":  {
+                                            "value":  "\\\\?\\C:\\Users\\OTMSI6d46a861cd59\\Documents\\OttrinFields",
+                                            "name":  "Location",
+                                            "read_only":  false,
+                                            "width":  856,
+                                            "role":  "Edit",
+                                            "height":  20
+                                        }
+                          },
+    "preferences_preserved":  true,
+    "cases":  [
+                  {
+                      "initial":  {
+                                      "value":  "",
+                                      "name":  "File name",
+                                      "read_only":  false,
+                                      "width":  400,
+                                      "role":  "Edit",
+                                      "height":  38
+                                  },
+                      "case":  "creation-File",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "value":  "draft-file",
+                                    "name":  "File name",
+                                    "read_only":  false,
+                                    "width":  400,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "theme":  "Dark"
+                  },
+                  {
+                      "initial":  {
+                                      "value":  "",
+                                      "name":  "Folder name",
+                                      "read_only":  false,
+                                      "width":  400,
+                                      "role":  "Edit",
+                                      "height":  38
+                                  },
+                      "case":  "creation-Folder",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "value":  "draft-folder",
+                                    "name":  "Folder name",
+                                    "read_only":  false,
+                                    "width":  400,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "theme":  "Dark"
+                  },
+                  {
+                      "field":  {
+                                    "value":  "preserve.txt",
+                                    "name":  "New name",
+                                    "read_only":  false,
+                                    "width":  460,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "case":  "rename-geometry-and-cancel",
+                      "typed":  {
+                                    "value":  "cancelled-rename.txt",
+                                    "name":  "New name",
+                                    "read_only":  false,
+                                    "width":  460,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "creation_heights":  [
+                                               38,
+                                               38
+                                           ],
+                      "theme":  "Dark"
+                  },
+                  {
+                      "label":  "Services",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Services"
+                                        ],
+                      "theme":  "Dark"
+                  },
+                  {
+                      "label":  "Appearance",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Appearance"
+                                        ],
+                      "theme":  "Dark"
+                  },
+                  {
+                      "label":  "Files",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Files"
+                                        ],
+                      "theme":  "Dark"
+                  },
+                  {
+                      "label":  "Search",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Search"
+                                        ],
+                      "theme":  "Dark"
+                  },
+                  {
+                      "label":  "Cache",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Cache"
+                                        ],
+                      "theme":  "Dark"
+                  },
+                  {
+                      "label":  "General",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "General"
+                                        ],
+                      "theme":  "Dark"
+                  },
+                  {
+                      "field":  {
+                                    "value":  "\\\\?\\C:\\Users\\OTMSI6d46a861cd59\\Documents\\OttrinFields",
+                                    "name":  "Location",
+                                    "read_only":  false,
+                                    "width":  856,
+                                    "role":  "Edit",
+                                    "height":  20
+                                },
+                      "case":  "location",
+                      "expected_native_path":  "\\\\?\\C:\\Users\\OTMSI6d46a861cd59\\Documents\\OttrinFields",
+                      "theme":  "Dark"
+                  },
+                  {
+                      "field":  {
+                                    "value":  "",
+                                    "name":  "Search files and folders",
+                                    "read_only":  false,
+                                    "width":  354,
+                                    "role":  "Edit",
+                                    "height":  20
+                                },
+                      "case":  "search",
+                      "theme":  "Dark"
+                  },
+                  {
+                      "initial":  {
+                                      "value":  "",
+                                      "name":  "File name",
+                                      "read_only":  false,
+                                      "width":  400,
+                                      "role":  "Edit",
+                                      "height":  38
+                                  },
+                      "case":  "creation-File",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "value":  "draft-file",
+                                    "name":  "File name",
+                                    "read_only":  false,
+                                    "width":  400,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "theme":  "Light"
+                  },
+                  {
+                      "initial":  {
+                                      "value":  "",
+                                      "name":  "Folder name",
+                                      "read_only":  false,
+                                      "width":  400,
+                                      "role":  "Edit",
+                                      "height":  38
+                                  },
+                      "case":  "creation-Folder",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "value":  "draft-folder",
+                                    "name":  "Folder name",
+                                    "read_only":  false,
+                                    "width":  400,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "theme":  "Light"
+                  },
+                  {
+                      "field":  {
+                                    "value":  "preserve.txt",
+                                    "name":  "New name",
+                                    "read_only":  false,
+                                    "width":  460,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "case":  "rename-geometry-and-cancel",
+                      "typed":  {
+                                    "value":  "cancelled-rename.txt",
+                                    "name":  "New name",
+                                    "read_only":  false,
+                                    "width":  460,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "creation_heights":  [
+                                               38,
+                                               38
+                                           ],
+                      "theme":  "Light"
+                  },
+                  {
+                      "label":  "Services",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Services"
+                                        ],
+                      "theme":  "Light"
+                  },
+                  {
+                      "label":  "Appearance",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Appearance"
+                                        ],
+                      "theme":  "Light"
+                  },
+                  {
+                      "label":  "Files",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Files"
+                                        ],
+                      "theme":  "Light"
+                  },
+                  {
+                      "label":  "Search",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Search"
+                                        ],
+                      "theme":  "Light"
+                  },
+                  {
+                      "label":  "Cache",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "Cache"
+                                        ],
+                      "theme":  "Light"
+                  },
+                  {
+                      "label":  "General",
+                      "case":  "native-navigation",
+                      "native_action":  "SelectionItem.Select",
+                      "role":  "RadioButton",
+                      "only_selected":  [
+                                            "General"
+                                        ],
+                      "theme":  "Light"
+                  },
+                  {
+                      "field":  {
+                                    "value":  "\\\\?\\C:\\Users\\OTMSI6d46a861cd59\\Documents\\OttrinFields",
+                                    "name":  "Location",
+                                    "read_only":  false,
+                                    "width":  856,
+                                    "role":  "Edit",
+                                    "height":  20
+                                },
+                      "case":  "location",
+                      "expected_native_path":  "\\\\?\\C:\\Users\\OTMSI6d46a861cd59\\Documents\\OttrinFields",
+                      "theme":  "Light"
+                  },
+                  {
+                      "field":  {
+                                    "value":  "",
+                                    "name":  "Search files and folders",
+                                    "read_only":  false,
+                                    "width":  354,
+                                    "role":  "Edit",
+                                    "height":  20
+                                },
+                      "case":  "search",
+                      "theme":  "Light"
+                  }
+              ],
+    "package":  {
+                    "source_revision":  "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd"
+                                  }
+                              ],
+                    "actor_sha256":  "46698f48ad644c4f5efae3a1ea18000d4d1a5b7f24e1e175f3f177a15e9da909",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "selection_probe":  {
+                            "states":  [
+                                           "On"
+                                       ],
+                            "elapsed_ms":  590.24200000000008,
+                            "theme":  "Light"
+                        },
+    "source_preserved":  true,
+    "file_entry_patterns":  {
+                                "patterns":  [
+                                                 "TogglePatternIdentifiers.Pattern"
+                                             ],
+                                "name":  "preserve.txt",
+                                "theme":  "Light"
+                            },
+    "named_fields":  [
+
+                     ],
+    "status":  "pass native installed navigation and filename geometry scope; captures require review",
+    "remaining_owned_installed_processes":  0
+}

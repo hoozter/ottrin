@@ -1,0 +1,29 @@
+{
+  "status": "baseline comparison after completed builds and guarded15-session cleanup",
+  "baseline": {
+    "target/debug/deps": 41440816685,
+    "target/debug/incremental": 22658108384,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292030833,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438092289,
+    "target/release/deps": 4290350725,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764505027
+  },
+  "current": {
+    "target/debug/deps": 41440832815,
+    "target/debug/incremental": 22658399586,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292031515,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438163668,
+    "target/release/deps": 4290352679,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764507157
+  },
+  "delta_bytes": {
+    "target/debug/deps": 16130,
+    "target/debug/incremental": 291202,
+    "target/x86_64-pc-windows-gnu/debug/deps": 682,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 71379,
+    "target/release/deps": 1954,
+    "target/x86_64-pc-windows-gnu/release/deps": 2130
+  },
+  "preserved": "Current binaries, matching test executable/compiler configuration, dependencies and newest useful sessions. No extra target tree/configuration.",
+  "pending": "None; final candidate stages/retired directory removed by verified publication. Useful compiler state retained."
+}

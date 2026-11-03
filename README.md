@@ -36,6 +36,14 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
+The current seven local artifacts use clean runtime `cbc7cd7c`. All four
+exact-source hosted jobs pass. Focused native checks cover30Linux and22Windows
+cases, including F2 from a natively focused file row, coherent filename fields
+and all six Settings navigation choices; all18original captures are reviewed.
+Development MSIX0.1.0.10 passes native assembly/unpack and58-file payload equality;
+its update/login lifecycle is not freshly claimed. Full daily-driver/release and
+owner-dependent acceptance remain separate.
+
 ### Linux
 
 File-operation provenance requires Linux 6.8 or newer. Ottrin uses unique mount

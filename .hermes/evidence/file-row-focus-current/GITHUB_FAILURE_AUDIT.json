@@ -1,0 +1,62 @@
+{
+  "status": "current100-run inventory and representative recent failures inspected; not a claim to classify every historical failure",
+  "window": {
+    "newest": "2026-11-03T16:51:58Z",
+    "oldest": "2026-10-25T15:35:23Z",
+    "runs": 100
+  },
+  "conclusions": {
+    "success": 52,
+    "cancelled": 18,
+    "failure": 30
+  },
+  "workflows": {
+    "ci": 94,
+    "Native MSI rollback control": 2,
+    "HTML sandbox profile probe": 4
+  },
+  "representative_failures": [
+    {
+      "run": 41658014132,
+      "job": "Windows Cargo test",
+      "cause": "Watcher poll immediately unwraps transient SQLite DatabaseBusy; current focused-row source has no index runtime change",
+      "state": "Intermittent polling contract still requires repair; currentCBC full Windows suite passes. Do not relabel older failure or ignore persistent contention."
+    },
+    {
+      "run": 41400086555,
+      "job": "Windows Cargo test",
+      "cause": "500k-query debug/concurrent timing320ms exceeded250ms; sourcea10792db retains exact correctness and enforces250ms in a dedicated isolated release benchmark on both platforms",
+      "state": "Source corrected earlier; fresh hosted release gates still required on currentCBC",
+      "log": "previous-windows-ci-failure.log"
+    },
+    {
+      "run": 41365916700,
+      "job": "Ubuntu production HTML pixels/executable policy",
+      "cause": "Observed renderer startupseccomp0; current code requires current helper with inherited startup filter and retains every security sample rather than discarding unprotected samples",
+      "state": "Previously fixed; later hosted gates passed actual security/pixel scope. CurrentCBC job must pass independently.",
+      "log": "previous-linux-ci-failure.log"
+    }
+  ],
+  "existing_noise_controls": [
+    "Push-only evidence/dist/prose paths-ignore; pull requests retain all gates",
+    "Branch concurrency cancels superseded builds; current source still runs every gate",
+    "No email preference change or blanket workflow disablement"
+  ],
+  "limits": [
+    "GitHub notifications do not map1:1 to workflow run counts",
+    "Native MSI diagnostic failures remain held; not relabelled successful release tests",
+    "No manual rerun was issued during this inspection"
+  ],
+  "current_log_observation": {
+    "job": 126065826189,
+    "run": 41678522340,
+    "result": "404 BlobNotFound from current job log endpoint while authoritative job remains in_progress; no termination or restart inferred",
+    "action": "Continue observing same job; discard transient HTTP error files"
+  },
+  "current_run": {
+    "run": 41678522340,
+    "source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+    "status": "completed success",
+    "all_four_jobs_pass": true
+  }
+}

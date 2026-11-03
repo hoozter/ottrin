@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-esm2vlge",
+  "owned_processes_reaped": [
+    {
+      "pid": 1113177,
+      "exit": 0
+    },
+    {
+      "pid": 1113180,
+      "exit": 0
+    },
+    {
+      "pid": 1113181,
+      "exit": 15
+    },
+    {
+      "pid": 1113233,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

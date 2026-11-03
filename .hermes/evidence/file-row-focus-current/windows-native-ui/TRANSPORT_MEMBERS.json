@@ -1,0 +1,76 @@
+{
+  "archive_sha256": "a17cdebb284e7365a9fa66a0d98627fffca311a805e161aa56ea5d24008216c3",
+  "members": [
+    {
+      "member": "Dark-File.png",
+      "bytes": 159392,
+      "sha256": "87daacb48e98dec7bb5b07cf1a43619593c263c733a5ca72ea0c5bb44414a7ca"
+    },
+    {
+      "member": "Dark-Folder.png",
+      "bytes": 159838,
+      "sha256": "8693b61f98b8d4743ccdebbb02d789ffa3c5d7037bac59db3d1ac85452b13ea3"
+    },
+    {
+      "member": "Dark-Rename.png",
+      "bytes": 155067,
+      "sha256": "baf79e91d70f6c4ca2de8c09846b146d673af254985f4126959698ccfbbd50dd"
+    },
+    {
+      "member": "Dark-Settings-Services.png",
+      "bytes": 104985,
+      "sha256": "1b299a7364483862515ba3a54a890a7edf99cad95accb31938c4acfcc63f833e"
+    },
+    {
+      "member": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "368d54c98fbe919d31bde47398d235f5533a98ecdfbdbb1247bf6d93e14a1e52"
+    },
+    {
+      "member": "index-remove-process.json",
+      "bytes": 248,
+      "sha256": "55553d8b2887b7fa85cf2048a6ab05b961531d5fe75486688ad2a6f06725465c"
+    },
+    {
+      "member": "install-process.json",
+      "bytes": 97,
+      "sha256": "310a591b2a0a845d005ed976fc86f4552d063efbf51b83f42f2c97c9f6d47780"
+    },
+    {
+      "member": "Light-File.png",
+      "bytes": 49733,
+      "sha256": "496c5075ff054abcd28e47b3dd79b8d9ba847686653cce497ab929f813bae7c1"
+    },
+    {
+      "member": "Light-Folder.png",
+      "bytes": 50124,
+      "sha256": "3fafde7d8491430a45cb91fc3fd52e603ce8bbf00eb2e4081b7987064ae3fe08"
+    },
+    {
+      "member": "Light-Rename.png",
+      "bytes": 51213,
+      "sha256": "015979eec9e66135eb394983f995e50be33d9ecb7d1096769b12bd410ad59a54"
+    },
+    {
+      "member": "Light-Settings-Services.png",
+      "bytes": 96422,
+      "sha256": "3aeaed9f6437217adf75e5890543aa9108ff1f84a8b335e588bb0f559adf33e4"
+    },
+    {
+      "member": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "9497fd3cea10292f2cef4ede91f2255c6a89d5a2e93dabe06a7a897e7ac2a263"
+    },
+    {
+      "member": "RESULT.json",
+      "bytes": 17028,
+      "sha256": "7a11f4c8382ce842f507f8a40f2b358ee715be88ed932d6cbe8ebb3154648e26"
+    },
+    {
+      "member": "uninstall-process.json",
+      "bytes": 88,
+      "sha256": "86126ba35f3b35f6cc81a63e3e314343b13e38f848a629af1111b437ccfcc2be"
+    }
+  ],
+  "all_members_extracted_and_byte_verified": true
+}

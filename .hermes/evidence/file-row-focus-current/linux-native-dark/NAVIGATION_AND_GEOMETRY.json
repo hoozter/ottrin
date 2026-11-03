@@ -1,0 +1,105 @@
+{
+  "status": "pass native navigation action/selected state and equal filename input heights",
+  "navigation": [
+    {
+      "name": "Services",
+      "role": "radio button",
+      "native_action": true,
+      "only_checked_choice": [
+        "Services"
+      ]
+    },
+    {
+      "name": "Appearance",
+      "role": "radio button",
+      "native_action": true,
+      "only_checked_choice": [
+        "Appearance"
+      ]
+    },
+    {
+      "name": "Files",
+      "role": "radio button",
+      "native_action": true,
+      "only_checked_choice": [
+        "Files"
+      ]
+    },
+    {
+      "name": "Search",
+      "role": "radio button",
+      "native_action": true,
+      "only_checked_choice": [
+        "Search"
+      ]
+    },
+    {
+      "name": "Cache",
+      "role": "radio button",
+      "native_action": true,
+      "only_checked_choice": [
+        "Cache"
+      ]
+    },
+    {
+      "name": "General",
+      "role": "radio button",
+      "native_action": true,
+      "only_checked_choice": [
+        "General"
+      ]
+    }
+  ],
+  "field_geometry": [
+    {
+      "field": "File name",
+      "x": 760,
+      "y": 700,
+      "width": 400,
+      "height": 38
+    },
+    {
+      "field": "Folder name",
+      "x": 760,
+      "y": 700,
+      "width": 400,
+      "height": 38
+    },
+    {
+      "field": "File name",
+      "x": 760,
+      "y": 700,
+      "width": 400,
+      "height": 38
+    },
+    {
+      "field": "New name",
+      "x": 730,
+      "y": 702,
+      "width": 460,
+      "height": 38
+    },
+    {
+      "field": "New name",
+      "x": 730,
+      "y": 702,
+      "width": 460,
+      "height": 38
+    },
+    {
+      "field": "File name",
+      "x": 760,
+      "y": 700,
+      "width": 400,
+      "height": 38
+    },
+    {
+      "field": "New name",
+      "x": 730,
+      "y": 702,
+      "width": 460,
+      "height": 38
+    }
+  ],
+  "limits": "Actual native AT-SPI extents; painted text centring is separately rendered-test and original-screenshot checked"
+}

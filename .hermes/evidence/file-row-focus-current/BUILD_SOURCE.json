@@ -1,0 +1,9 @@
+{
+  "source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Deliver native focused-file-row keyboard ownership plus Settings navigation/filename geometry/dialog Cancel fixes; preserve stable runtime36 until actual native acceptance",
+  "pending_consumers": [],
+  "cleanup_owner": "file-row-focus-current producers",
+  "cleanup_complete": true,
+  "delivery_status": "Verified navigation/filename geometry Linux cohort published; staging removed"
+}

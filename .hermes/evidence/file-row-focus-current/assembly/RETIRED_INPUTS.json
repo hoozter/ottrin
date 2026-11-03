@@ -1,0 +1,11 @@
+{
+  "removed": [
+    {
+      "path": "controller.ps1",
+      "bytes": 6844,
+      "sha256": "0a84d4ce5b0a5f53749440631977e2b702afb408963e0b0a01df5443eb90541f"
+    }
+  ],
+  "purpose": "Duplicate generated controller removed after actual native assembly process and owned VM/media teardown; exact frozen actor/driver/assembly result retained",
+  "original_status_limit": "Original OWNER wording mentions pending deployment; this run assembles/returns bytes only. ASSEMBLY_ACCEPTANCE.json keeps current assembly and historical lifecycle separate. Future producer wording corrected without relabelling this original."
+}

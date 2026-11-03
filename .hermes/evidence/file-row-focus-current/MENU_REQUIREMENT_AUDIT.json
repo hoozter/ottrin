@@ -1,0 +1,52 @@
+{
+  "status": "source inventory and explicit historical scope comparison; complete whole-interface acceptance separate",
+  "current_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "historical_source": "5849d38dd8974b9ad7fbeb1fd520f885639247a0",
+  "native_appearance_receipt": ".hermes/evidence/menu-visual-review-current/ACCEPTANCE.json",
+  "exact_functions": {
+    "aligned_menu_button": {
+      "file": "crates/ottrin-ui/src/widget_style.rs",
+      "byte_identical": false,
+      "historical_sha256": "0f8266465346df743c35576241973526b60eaf336301372c2d233b8471d0232e",
+      "current_sha256": "ebae29908168f26c9bceb3cc56c19e8215757dd3598b13fb7cac6d5f12467fce"
+    },
+    "aligned_submenu": {
+      "file": "crates/ottrin-ui/src/widget_style.rs",
+      "byte_identical": true,
+      "historical_sha256": "460f9b975170491be1044495039db7f70af6f853074c33d4503dd42a4c09c4e9",
+      "current_sha256": "460f9b975170491be1044495039db7f70af6f853074c33d4503dd42a4c09c4e9"
+    },
+    "themed_menu_button": {
+      "file": "crates/ottrin-ui/src/widget_style.rs",
+      "byte_identical": true,
+      "historical_sha256": "10619f7b5678af6f42be3618f1fde96c1527f7951cf2766f2aeb42c386ec6e78",
+      "current_sha256": "10619f7b5678af6f42be3618f1fde96c1527f7951cf2766f2aeb42c386ec6e78"
+    },
+    "menu_item": {
+      "file": "crates/ottrin-ui/src/lib.rs",
+      "byte_identical": true,
+      "historical_sha256": "7218eac1d751801ea3450af653528b59c9ebc2c2319a997e6eac91c53c357a68",
+      "current_sha256": "7218eac1d751801ea3450af653528b59c9ebc2c2319a997e6eac91c53c357a68"
+    },
+    "render_view_options_menu": {
+      "file": "crates/ottrin-ui/src/lib.rs",
+      "byte_identical": true,
+      "historical_sha256": "868ee581b94132fd51d6a5018e911156077e4eec35974bdfd2fa1813b6796dda",
+      "current_sha256": "868ee581b94132fd51d6a5018e911156077e4eec35974bdfd2fa1813b6796dda"
+    }
+  },
+  "single_line_literal_empty_menu_item_calls": [],
+  "source_inspection": [
+    "View/sort loop supplies semantic icons for Column/List/Grid and Name/Type/Size/Modified; hidden-file control uses visibility icon; disabled preview retains image icon and choice indicator column",
+    "Action-only rows omit unused indicator column; choice rows reserve separate indicator/icon/label columns in shared AlignedMenuButton",
+    "Settings checkbox choices intentionally have no action icon; not treated as missing icons in a menu",
+    "Standing consistency/scale/visual requirements remain docs/DEVELOPMENT.md and docs/RELEASE_CHECKLIST.md"
+  ],
+  "current_rendered_regressions": [
+    "full-ui-tests.log: action_menu_omits_unused_check_column_and_keeps_icons_near_edge",
+    "full-ui-tests.log: menu_rows_align_labels_and_icons_across_states_themes_and_text_scales"
+  ],
+  "remaining": "Confirm every current menu family and native/platform scope against direct receipts; five function comparisons do not constitute a whole-interface visual audit. Record changed helpers explicitly rather than treating history as fresh.",
+  "aligned_menu_button_change": "--- historical\n+++ current\n@@ -11,6 +11,7 @@\n         label: label.to_owned(),\n         colors: *colors,\n         framed: false,\n+        selected: false,\n         min_size: egui::Vec2::new(188.0 * colors.font_scale, 28.0 * colors.font_scale),\n         submenu: false,\n         width: None,",
+  "rendered_regressions_verified_in_current_log": true
+}

@@ -1,0 +1,50 @@
+{
+  "updated_utc": "2026-11-03T17:54:00.805634+00:00",
+  "source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "status": "delivery complete for CBC7source; no owned build/GUI/VM/staging work remains",
+  "live_handles": {},
+  "terminal_handles": {
+    "source_checks": 31293,
+    "real_git_source": 93124,
+    "prior_windows_native": 37577,
+    "linux4formats": 55934,
+    "windowsZIP_NSIS": 91139,
+    "linux_content": 56831,
+    "windows_content": 88537,
+    "linux_dark_native": 74734,
+    "linux_light_native": 52217,
+    "windows_native": 11510,
+    "native_msix_assembly": 94878,
+    "assembly_assessment": 95697,
+    "incremental_cleanup": 88411,
+    "personal_readonly_observation": 46071
+  },
+  "hosted_run": 41678522340,
+  "notes": "Handles last polled live; this file is a lookup hint only, always re-poll authoritative handles. Linux and Windows share target/cache locks normally; do not restart from lock waits.",
+  "next": [
+    "Commit/push final delivery manifests/evidence/docs checkpoint",
+    "Repair demonstrated watcher-test DatabaseBusy polling under existing deadline; no runtime-code change",
+    "Continue requirement54/U15audit, including Windows window radius, Services/prompt and remaining native release gates"
+  ],
+  "retained_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-row-focus-current",
+      "purpose": "Compact reproducible source/content/native/hosted acceptance evidence and original18captures; retained for delivery audit",
+      "pending_consumer": null
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current4 verified Linux deliverables and authority receipt",
+      "pending_consumer": "User testing/acceptance and later release"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current3 verified Windows candidates and58-file payload",
+      "pending_consumer": "User testing/acceptance; MSIX signing/Store/lifecycle scope remains explicit"
+    }
+  ],
+  "stable_delivery": "All7current artifacts now runtimeCBC7source;52focused native UI cases,18reviewed originals, MSIX10assembly only",
+  "hosted_job": 126065826189,
+  "retired_source_archive": true,
+  "hosted_status": "41678522340 all4 jobs success; terminal"
+}

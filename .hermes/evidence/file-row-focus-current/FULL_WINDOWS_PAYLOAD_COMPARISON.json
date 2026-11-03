@@ -1,0 +1,39 @@
+{
+  "status": "pass complete58-file comparison with exact daemon PE metadata-only difference",
+  "previous_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "candidate_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "entries": 58,
+  "changed": {
+    "SOURCE_REVISION.txt": {
+      "previous_sha256": "9ff0fac733104b262f8df00c44ca94aa98bfee181cad408d16e71064e6146197",
+      "candidate_sha256": "7d3f2449a376c6b72d2b7f5e8384fd90bd8a5fd3f9caf73524fe47e9b45ad553"
+    },
+    "README.md": {
+      "previous_sha256": "bc682dfb552c9efd00a15b9b0928d7f8b895e3d86645efd49a08394b7de543fc",
+      "candidate_sha256": "8a410745b2839079e8c49a0514ea6805de929a64c48c7e2848df66d853b7496b"
+    },
+    "docs/USER_GUIDE.md": {
+      "previous_sha256": "0016ba3a1602428491495cc200cba2ecb9933e68f9f2b15b2cdc0c29f581c9fc",
+      "candidate_sha256": "a5cafd46628f18cbbb46c11a93594191f7f6efb161ee8eed9c90d5e75ad72960"
+    },
+    "docs/RELEASE_NOTES.md": {
+      "previous_sha256": "febc8bf3a09a5184a50940072bb2e2ceeb9328fa865b80177ab0d40a21b22b87",
+      "candidate_sha256": "a9cf3ab846fde0b9087bdd8b59477cb13b6a654866c64f27b85f7b6fdcb9f884"
+    },
+    "docs/ROADMAP.md": {
+      "previous_sha256": "f7fb320022ab1edc2f0ecd74f6559be0ffbcf402059c27cf7640d7ab004db781",
+      "candidate_sha256": "4d9e213bfb59e821150a8aa53dcfc3ddbf3f841ef4e098cbceb445c1d03cacf0"
+    },
+    "bin/ottrin-indexd.exe": {
+      "previous_sha256": "963185900617959ab680a90d5fe1245d85b7fb07bb162bc50a8b7ed5b2ee5464",
+      "candidate_sha256": "2648bd2b3a60b1ca29f3689ca35ecaea667d0632f36ca3d3968bfe5cde77a03e"
+    },
+    "bin/ottrin.exe": {
+      "previous_sha256": "92c2f25ef5904af3cc60c68c51c70e0088fa2d9b99e19cabc3c29816f99e7022",
+      "candidate_sha256": "e3e59253a2f909d23773b7582f5c16edb30821b2f8e5765e08657662a0ad2559"
+    }
+  },
+  "unchanged_entries": 51,
+  "daemon_identity": "WINDOWS_INDEX_PE_COMPARISON.json",
+  "scope": "GUI independently requires native acceptance; documentation/provenance changes expected. All other helpers, libraries, fonts, icons and transaction payloads byte-identical."
+}

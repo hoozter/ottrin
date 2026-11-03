@@ -1,0 +1,48 @@
+{
+  "status": "pass exact appearance mapping comparison; complete native/platform acceptance separate",
+  "historical_source": "a3a76ac1d26a88c3cde026faaf74d934e25faad5",
+  "current_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "original_39_control_receipt": ".hermes/evidence/appearance-redesign/FINAL_CONTROL_ACCEPTANCE.json",
+  "functions": {
+    "theme_color_field_order": {
+      "byte_identical": true,
+      "historical_sha256": "22b6a93576a832f17d4f0d39def9ef21cc6664f4d9cdd4948bee18ddf7366318",
+      "current_sha256": "22b6a93576a832f17d4f0d39def9ef21cc6664f4d9cdd4948bee18ddf7366318"
+    },
+    "theme_color_field_value": {
+      "byte_identical": true,
+      "historical_sha256": "4812479003f7aae0e4c720524f46b257640ae9376bcb5447f062ebceaf979152",
+      "current_sha256": "4812479003f7aae0e4c720524f46b257640ae9376bcb5447f062ebceaf979152"
+    },
+    "theme_color_field_value_mut": {
+      "byte_identical": true,
+      "historical_sha256": "fb59a30a79aeec83212bded7e51f4c4925abf73aa5017395582f76bfe3a5398f",
+      "current_sha256": "fb59a30a79aeec83212bded7e51f4c4925abf73aa5017395582f76bfe3a5398f"
+    },
+    "theme_editor_draft": {
+      "byte_identical": true,
+      "historical_sha256": "12bc44c3849fb1af9624adec50d2592663cf0de0b2bd1958c2685468cb64ac7e",
+      "current_sha256": "12bc44c3849fb1af9624adec50d2592663cf0de0b2bd1958c2685468cb64ac7e"
+    },
+    "theme_editor_preview_colors": {
+      "byte_identical": true,
+      "historical_sha256": "b9e9bb31dbcef91c329cbe2b96fe203f7092d3d5e9eb664c06b906af76326296",
+      "current_sha256": "b9e9bb31dbcef91c329cbe2b96fe203f7092d3d5e9eb664c06b906af76326296"
+    }
+  },
+  "semantic_style_whole_file": {
+    "byte_identical": true,
+    "sha256": "4af9914310b5363012ffa38221535098430b9156132e08867fd980078c0c9902"
+  },
+  "shared_style_movement_proof": ".hermes/evidence/desktop-integration-audit-current/APPEARANCE_MAPPING_PROJECTION.json",
+  "limits": [
+    "No fresh39-control replay claimed",
+    "Only named mapping/draft/preview/semantic responsibilities compared; source alone does not prove every window/backend rendering outcome"
+  ],
+  "remaining_platform_question": {
+    "requirement": "U07: theme window radius reaches every intended window",
+    "observed_source": "window_chrome::paint_viewport_frame uses app_radius, but rounded_alpha_callback_enabled returns false on Windows and Windows viewports are opaque. A rounded preview outline alone cannot establish native window shape control.",
+    "classification": "Native Windows0/max-radius comparison remains required; do not mark this requirement accepted from Linux screenshots or shared palette code.",
+    "next": "After focused-row delivery, use actual installed themed main/Settings/editor/Inspector windows to measure radius and border behavior on supported Windows software renderer; fix any mismatch before completion."
+  }
+}

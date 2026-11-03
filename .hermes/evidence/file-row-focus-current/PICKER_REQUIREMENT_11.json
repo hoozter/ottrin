@@ -1,0 +1,72 @@
+{
+  "requirement_id": 11,
+  "classification": "pass current source ownership and original native no-index/on-demand scope",
+  "runtime_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "historical_native_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "exact_modules": {
+    "crates/ottrin-ui/src/picker.rs": {
+      "byte_identical": true,
+      "historical_sha256": "b1d95726a0030bc66c2da2b1a8e404c12cc8f235b036dcc738cd8560b6261c42",
+      "current_sha256": "b1d95726a0030bc66c2da2b1a8e404c12cc8f235b036dcc738cd8560b6261c42"
+    },
+    "crates/ottrin-ui/src/internal_picker.rs": {
+      "byte_identical": true,
+      "historical_sha256": "f376b436977692d6befe374102ba1d9262d6aa2915cb58114f9d740048a9453c",
+      "current_sha256": "f376b436977692d6befe374102ba1d9262d6aa2915cb58114f9d740048a9453c"
+    },
+    "crates/ottrin-ui/src/picker_preferences.rs": {
+      "byte_identical": true,
+      "historical_sha256": "1f10d0ec41d6eaedbfdbd0a277ba8fb536090d8dd06be356f5bade9bcd552c05",
+      "current_sha256": "1f10d0ec41d6eaedbfdbd0a277ba8fb536090d8dd06be356f5bade9bcd552c05"
+    },
+    "crates/ottrin-ui/src/picker_preview.rs": {
+      "byte_identical": true,
+      "historical_sha256": "4c86d33c4c93cf23fcf524f77a4e533d4cc5bef1fb3556211f7d128ca122d34f",
+      "current_sha256": "4c86d33c4c93cf23fcf524f77a4e533d4cc5bef1fb3556211f7d128ca122d34f"
+    },
+    "crates/ottrin-ui/src/picker_parent.rs": {
+      "byte_identical": true,
+      "historical_sha256": "c69c57792284e4f394dac2831cbe4c707e44343a8c929c567623bca22648d732",
+      "current_sha256": "c69c57792284e4f394dac2831cbe4c707e44343a8c929c567623bca22648d732"
+    },
+    "crates/ottrin-search/src/daemon_client.rs": {
+      "byte_identical": true,
+      "historical_sha256": "f7f0f2a11edeebf4c567b12eaf62bcf4e311bfd24069427aec6355e0b3d3893d",
+      "current_sha256": "f7f0f2a11edeebf4c567b12eaf62bcf4e311bfd24069427aec6355e0b3d3893d"
+    },
+    "crates/ottrin-app/src/main.rs": {
+      "byte_identical": true,
+      "historical_sha256": "7df0b6ef72935e4268fbdcacab7db248dee6b5adaf158cebe9e2ce0cc5ebb095",
+      "current_sha256": "7df0b6ef72935e4268fbdcacab7db248dee6b5adaf158cebe9e2ce0cc5ebb095"
+    },
+    "crates/ottrin-app/src/portal.rs": {
+      "byte_identical": true,
+      "historical_sha256": "9ebe0ede90b18c5a5410e39382c8e590ac0093332bed2cda5b534f4eb32f740d",
+      "current_sha256": "9ebe0ede90b18c5a5410e39382c8e590ac0093332bed2cda5b534f4eb32f740d"
+    },
+    "crates/ottrin-app/src/portal_options.rs": {
+      "byte_identical": true,
+      "historical_sha256": "66f0a68865158eb42540801edcda95b57e6a472cb5a269c488f5acb6b1c5f36c",
+      "current_sha256": "66f0a68865158eb42540801edcda95b57e6a472cb5a269c488f5acb6b1c5f36c"
+    }
+  },
+  "inspected_responsibilities": [
+    "main.rs picker branch reads bounded request, invokes dedicated PickerApp and returns before ordinary main-window/index startup",
+    "PickerDialog starts with indexed=false and uses Work::Scan/listing::list_directory for direct browsing",
+    "Only explicit indexed search queues Work::Search; empty search dispatches nothing, cancellation is generation-scoped and does not index files",
+    "SearchDaemonClient::connect_default only constructs socket/user identity; queries transact against existing daemon without an ensure/spawn path",
+    "Linux portal chooser spawns one picker --cancel-on-disconnect on demand, with owned child cancellation/reaping; no warm full-GUI retention path",
+    "PickerApp owns the dialog/appearance and saves picker preferences at exit; ordinary OttrinApp indexing responsibilities are not embedded"
+  ],
+  "current_test_evidence": "full-ui-tests.log:471 UI pass,1existing ignored; includes unchanged picker cases; focus-row ownership change outside these modules",
+  "native_evidence": [
+    ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json:exact d6 installed14 cases, no index and independent callers/cleanup",
+    ".hermes/evidence/assistive-delivery-current/picker-dark/RESULT.json and picker-light/RESULT.json:original Linux process-cold/idle/concurrent no-index scope"
+  ],
+  "limits": [
+    "No fresh currentCBC picker performance measurement claimed; exact original artifact metrics retained",
+    "Shared text-control label helper changed at36; source_scope and named-field regression checks address that responsibility separately, while launch/directory/index ownership modules above are identical",
+    "No universal Windows system dialog replacement, always-resident full GUI or unmeasured warm-start optimization introduced"
+  ],
+  "comparison_basis": "Fresh complete byte comparison of9 current modules against actual historical native source; directory/index launch ownership identical, not a fresh timing measurement."
+}

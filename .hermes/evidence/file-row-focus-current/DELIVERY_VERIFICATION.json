@@ -1,0 +1,50 @@
+{
+  "status": "pass final published7-artifact hashes/sidecars and58-file payload verification",
+  "runtime_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "hosted_run": 41678522340,
+  "artifacts": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/ottrin-0.1.0-1.x86_64.rpm",
+      "sha256": "e6fd814827437e246756c77ab83dfc682836cc8afb30e6e554cc5f7438e79769",
+      "bytes": 27932449
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+      "sha256": "8dfa4c60d290eb99ca5b293cb35f85d0d64b465ff68880bd4605b42baf27a6ce",
+      "bytes": 32740544
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz",
+      "sha256": "f4c68bbe6bf1c0972e3d272c80c14863359b7c8ae0c42901ee7e4421cd72cd98",
+      "bytes": 32359815
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/ottrin_0.1.0_amd64.deb",
+      "sha256": "4225434e6c57e5151c92c47a8778ef63f0b157d0f8a73b3544d845db034c2dfb",
+      "bytes": 21542718
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip",
+      "sha256": "0364469db5708b79b1fe6c0f3b7771ba740d818f5aa94eed6706a20aed08bb67",
+      "bytes": 55482328
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe",
+      "sha256": "12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd",
+      "bytes": 39787336
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
+      "sha256": "62a027b576a3e901900ed1241222f3296cc7e46e02651f49212fc7dde73952db",
+      "bytes": 57004451
+    }
+  ],
+  "windows_payload_files": 58,
+  "stages_and_retired_directory_absent": true,
+  "held_msi_preserved_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "limits": [
+    "Local unsigned preview; no public release or Store submission",
+    "MSIX10 current assembly/native unpack only; original MSIX8 lifecycle keeps exact historical scope",
+    "Focused native Linux30/Windows22 checks, not a full remaining-roadmap claim"
+  ]
+}

@@ -4,31 +4,39 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local candidate
 
-The locally delivered Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/
-development MSIX 0.1.0.9 use runtime source `36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7`.
-Their exact hashes/scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`
-and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. All four exact-source hosted jobs
-pass, including Linux/Windows workspace tests and strict lint.
+The delivered Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development
+MSIX0.1.0.10 use clean runtime source
+`cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a`. All seven published artifacts/sidecars
+and58Windows payload files are rehashed. Exact source/hashes/scopes are in
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. CI41678522340 passes all four exact-source
+Linux/Windows verification and isolated release performance jobs.
 
-Existing text controls now expose contextual native names while preserving roles,
-values, selection and editing behavior.469 UI tests pass (one existing ignored).
-The new AppImage passes 14 native Dark at 100%/Light at 150% creation/rename/location/search
-checks; installed NSIS passes eight Dark/Light creation/cancellation/location/search
-checks. Source preservation, normal close, removal-preserved preferences and all 12
-original native captures are verified within those stated scopes.
+Settings navigation now has six named native radio choices with correct selection
+and activation. Create File/Folder and Rename use the same centred38-point input.
+Closing a filename dialog releases its text focus; a natively focused file row
+retains file shortcuts instead of being mistaken for active text input. Text,
+search, address, command, menu, picker and Inspector ownership remain protected.
+All471 UI tests pass, with one existing ignored; strict local native/Windows lint
+and formatting pass. The exact AppImage passes30 native Dark100/Light150 checks;
+installed NSIS passes22 Dark/Light checks with explicit row focus before F2.
+All18original captures are reviewed. Normal closure and supported NSIS uninstall
+preserve source files and preferences.
 
-Development MSIX revision 9 passes native MakeAppx assembly/unpack and58-file equality.
-Earlier MSIX8 update/login/removal and broader workflow, picker, Office/media,
-resource and installer-fault results retain their exact original hashes; the
-roadmap records the unchanged source/payload basis. No fresh MSIX9 lifecycle,
-physical graphics or complete UI/assistive acceptance is implied. MSI remains held
-for ordinary-user registration rollback. No public release or Store submission.
+MSIX10 passes actual native MakeAppx assembly/unpack and complete58-file equality.
+MSIX8 update/login/removal and broader workflow, picker, Office/media, resource
+and installer-fault results retain their exact original source/artifact scopes;
+no fresh MSIX10 lifecycle or physical/human acceptance is implied. Linux daemon
+bytes remain identical, and the complete Windows daemon differs only in PE
+metadata. A bounded read-only30-second personal-daemon sample records0.267% of
+one core/about26MB RSS with no restart or configuration change. MSI remains held
+for ordinary-user registration rollback; no public release or Store submission.
 
-Packaged documents are a build-time delivery snapshot; `SOURCE_REVISION.txt`
-identifies actual package source. Repository documents and stable acceptance
-manifests record subsequent delivery and acceptance. All task-owned QA VMs/media,
-profiles, stages and superseded output are removed; current packages and compact
-evidence are retained.
+All owned QA VMs/media/profiles/stages, superseded candidates, source archive,
+consumed extractions/transports and15obsolete compiler sessions are removed.
+Current packages, compact evidence, useful caches, user data and protected bases
+remain. Packaged manuals are build-time snapshots; `SOURCE_REVISION.txt` identifies
+actual runtime source, while repository documents/manifests record later acceptance.
 
 ## Highlights
 

@@ -28,6 +28,11 @@ cd Ottrin-*-linux-x86_64
 
 Install the local `.deb` with `sudo apt install ./ottrin_0.1.0_amd64.deb`, or the local `.rpm` with `sudo dnf install ./ottrin-0.1.0-1.x86_64.rpm`.
 
+Local preview builds currently share version0.1.0. To replace an already installed
+preview with a newly downloaded build of that same version, use
+`sudo apt-get install --reinstall ./ottrin_0.1.0_amd64.deb` or
+`sudo dnf reinstall ./ottrin-0.1.0-1.x86_64.rpm`.
+
 Current packages do not install an Ottrin APT/DNF repository. Uploading a new GitHub release alone does not update an installed copy; download and install the newer package manually. A signed update repository can be added later, but is not configured by these builds.
 
 Removing the DEB or RPM stops native index daemons and removes Ottrin’s native user and Administrator service registrations. Reinstalling refreshes running native services; stopped services stay stopped. Independent portable/AppImage indexers, preferences, saved indexes and your files are retained. If an offline user has a customized service override whose ownership cannot be established, removal stops with an error before changing services. Resolve that override under the owning account before retrying removal. See [ROADMAP.md](ROADMAP.md) for the tested scope and remaining native installation gates.
@@ -42,7 +47,7 @@ Unzip `Ottrin-*-windows-x64-portable.zip`, then run:
 
 ### Windows Installer
 
-Run `Ottrin-*-windows-x64-setup.exe` to install under the current user's local application directory. The installer creates Start Menu shortcuts and does not request administrator access. Its uninstaller removes scheduled/background integration and generated search/preview data before removing the application; saved preferences are retained. If background cleanup cannot start or fails, uninstall stops before deleting application files. If application-file deletion cannot complete, Installed Apps registration is retained so uninstall can be retried. The per-user `Ottrin-*-windows-x64.msi` provides the same application-owned background setup and cleanup ordering. Recorded MSI/NSIS candidates have scoped ordinary-user native installation, upgrade, indexing and uninstall checks. Failed-transaction MSI rollback currently fails native tests: Windows can lose product registration even while Ottrin's files remain, and a later repair or uninstall can fail. MSI acceptance is blocked; the broader installer matrix remains incomplete. [ROADMAP.md](ROADMAP.md) identifies exact artifacts and acceptance limits.
+Run `Ottrin-*-windows-x64-setup.exe` to install under the current user's local application directory. The installer creates Start Menu shortcuts and does not request administrator access. Its uninstaller removes scheduled/background integration and generated search/preview data before removing the application; saved preferences are retained. If background cleanup cannot start or fails, uninstall stops before deleting application files. If application-file deletion cannot complete, Installed Apps registration is retained so uninstall can be retried. MSI is held outside the usable candidates: failed-transaction rollback can lose product registration while Ottrin's files remain, preventing a later repair or uninstall. Use the NSIS installer or portable ZIP; broader release acceptance remains separate. [ROADMAP.md](ROADMAP.md) identifies exact artifacts and acceptance limits.
 
 ### macOS
 
