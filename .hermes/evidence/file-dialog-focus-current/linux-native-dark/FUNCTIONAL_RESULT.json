@@ -1,0 +1,75 @@
+{
+  "status": "pass packaged main-menu creation/cancellation/refusal scope",
+  "cases": [
+    {
+      "case": "new-file",
+      "field": {
+        "role": "entry",
+        "accessible_name": "File name",
+        "initial_value": "",
+        "typed_value": "created.txt"
+      },
+      "status": "pass"
+    },
+    {
+      "case": "new-folder",
+      "field": {
+        "role": "entry",
+        "accessible_name": "Folder name",
+        "initial_value": "",
+        "typed_value": "CreatedFolder"
+      },
+      "status": "pass"
+    },
+    {
+      "case": "cancel-new-file",
+      "field": {
+        "role": "entry",
+        "accessible_name": "File name",
+        "initial_value": "",
+        "typed_value": "cancelled.txt"
+      },
+      "status": "pass"
+    },
+    {
+      "case": "native-cancel-restores-file-shortcuts",
+      "status": "pass",
+      "rename_value": "preserve.txt",
+      "source_bytes_preserved": true
+    },
+    {
+      "case": "existing-file-refused",
+      "field": {
+        "role": "entry",
+        "accessible_name": "File name",
+        "initial_value": "",
+        "typed_value": "preserve.txt"
+      },
+      "status": "pass"
+    },
+    {
+      "case": "named-rename-edit-cancel",
+      "field": {
+        "role": "entry",
+        "accessible_name": "New name",
+        "typed_value": "cancelled-rename.txt"
+      },
+      "status": "pass"
+    },
+    {
+      "case": "named-location",
+      "value": "/var/tmp/.ottrin-picker-qa-bojbveok/home/Documents",
+      "status": "pass"
+    },
+    {
+      "case": "named-search",
+      "value": "",
+      "status": "pass"
+    }
+  ],
+  "source_bytes_preserved": true,
+  "created_file_empty": true,
+  "created_folder_empty": true,
+  "normal_close_exit": 0,
+  "limit": "Native AT-SPI creation/rename/location/search field names and values; whole UI, assistive usability and other platforms separate"
+}

@@ -1,0 +1,10 @@
+{
+  "status": "pass guarded obsolete-session cleanup",
+  "removed_sessions": 15,
+  "all_removed_paths_absent": true,
+  "newest_per_configuration_retained": true,
+  "producer_log": "incremental-apply.log",
+  "process_identity_review": "PROCESS_INSPECTION.json",
+  "reported_reclaimed_gib": 0.03,
+  "scope": "Only reviewed finalized compiler sessions; no binary, source, user data, VM or useful current cache removed"
+}

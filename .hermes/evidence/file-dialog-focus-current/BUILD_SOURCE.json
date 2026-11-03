@@ -1,0 +1,12 @@
+{
+  "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Final navigation/filename geometry and native dialog Cancel focus correction; preserve stable runtime36 until acceptance",
+  "pending_consumers": [
+    "Exact package-content/provenance and unchanged payload checks",
+    "Native focus/navigation/geometry on Linux and Windows; real MSIX10 assembly",
+    "Exact-source hosted gate then stable publication and owned cleanup"
+  ],
+  "cleanup_owner": "file-dialog-focus-current producers",
+  "cleanup_complete": false
+}

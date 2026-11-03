@@ -115,6 +115,17 @@ validation keeps its input. The corrected List fixture checks native Cancel then
 F2 for File, Folder and Rename, with original bytes preserved. All 471 UI tests
 pass, with one existing ignored, plus strict Linux/Windows UI/app lint and formatting.
 Final source/package/native delivery is now owned by `file-dialog-focus-current/`.
+Clean committed source `4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8` now has four
+staged Linux formats plus Windows ZIP/NSIS. The exact new AppImage passes 28 native
+checks across Dark100/Light150, including actual Cancel immediately followed by F2,
+all six named Settings radio actions/selected states, matching 38/57-pixel filename
+fields, refusal and source-byte preservation. All ten original captures are reviewed;
+both owned Linux profiles are removed. The Windows ZIP/NSIS payloads match in all
+58 files. Comparison with the current delivery proves the Linux daemon byte-identical
+and Windows daemon identical except PE timestamp/checksum; these are identity proofs,
+not newly run CPU benchmarks. The installed Windows native fixture is in progress;
+MSIX10 assembly, final hosted gates, stable publication and owned cleanup remain
+pending. The seven stable runtime36 packages above are still the current delivery.
 All six unpublished `9c914bd6` packages, the unused MSIX source archive, three Windows environments
 and five Linux sessions are retired. The accepted stable seven packages remain runtime36.
 

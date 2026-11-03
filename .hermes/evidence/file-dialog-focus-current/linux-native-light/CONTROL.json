@@ -1,0 +1,39 @@
+{
+  "status": "functional checks pass; native captures require review",
+  "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
+  "artifact_sha256": "6db70d921906415ba9504256058f26aef5376c04b74b3791508f589f71528550",
+  "theme": "Light",
+  "scope": "Private X11/software Dark100 or Light150 exact staged AppImage native Cancel-to-F2 focus lifecycle, Settings navigation roles/actions, matching filename geometry and source preservation; no whole-roadmap or complete accessibility claim",
+  "worker_sha256": "a9d72a7f11a7d33d77167cf7c1e5f1626b009dd2ddd8209228559963be0d4bfa",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-31tkkfjl",
+    "owned_processes_reaped": [
+      {
+        "pid": 1082401,
+        "exit": 0
+      },
+      {
+        "pid": 1082409,
+        "exit": 0
+      },
+      {
+        "pid": 1082411,
+        "exit": 15
+      },
+      {
+        "pid": 1082546,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1082558,
+        1082693
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

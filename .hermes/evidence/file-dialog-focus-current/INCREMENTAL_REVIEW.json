@@ -1,0 +1,140 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1nom567jhjlgb/s-hntidtkset-11ca1w8-b6ur8utjfp7fwix6kdviligti",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1nom567jhjlgb/s-hntidtkset-11ca1w8.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1nom567jhjlgb/s-hntkec8z1t-0jrr2or-56ub4nnr00oocw3l6o4ef7jh9",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1nom567jhjlgb/s-hntkec8z1t-0jrr2or-56ub4nnr00oocw3l6o4ef7jh9. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1yizdbrjrbs3w/s-hntidu776r-0155fgt-axoy95cehlcz3ujahr7wxstsc",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1yizdbrjrbs3w/s-hntidu776r-0155fgt.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1yizdbrjrbs3w/s-hntkeczcob-1ns3x99-ajy3i45esgrew3ffx2rfxz4ui",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1yizdbrjrbs3w/s-hntkeczcob-1ns3x99-ajy3i45esgrew3ffx2rfxz4ui. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-0zmqgz4t9yb0h/s-hntiduyjvv-1ydpavu-dxunanhje7tsmys9gtmu2jq6w",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-0zmqgz4t9yb0h/s-hntiduyjvv-1ydpavu.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-0zmqgz4t9yb0h/s-hntkecv45h-1dah48z-d5xaytx8yeyuqu7pvztqdi63e",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-0zmqgz4t9yb0h/s-hntkecv45h-1dah48z-d5xaytx8yeyuqu7pvztqdi63e. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-1pbn7oq0mhwcn/s-hntiduqgfs-1ksznge-e2brapaiskhekr0c6w5tb25f1",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-1pbn7oq0mhwcn/s-hntiduqgfs-1ksznge.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-1pbn7oq0mhwcn/s-hntkec4dk9-1ofgy7b-0vhvld259p4uxglp13n5ayohr",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-1pbn7oq0mhwcn/s-hntkec4dk9-1ofgy7b-0vhvld259p4uxglp13n5ayohr. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-1lst89su9eh34/s-hntidr4yyy-0bzob6b-69t1xszx21a9j1bwa7dcc656k",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-1lst89su9eh34/s-hntidr4yyy-0bzob6b.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-1lst89su9eh34/s-hntke9zyvk-02utpi4-7d3n4480mgmsb0fzv02yug0jb",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-1lst89su9eh34/s-hntke9zyvk-02utpi4-7d3n4480mgmsb0fzv02yug0jb. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-2k2c9h8rq3wai/s-hntidv4v3w-1cyx76a-bwyuyvi43qvdzxvgckhpxubym",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-2k2c9h8rq3wai/s-hntidv4v3w-1cyx76a.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-2k2c9h8rq3wai/s-hntkedgxn5-0tnddjt-a9mqkkobhgbz5bi9chl58rrd4",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-2k2c9h8rq3wai/s-hntkedgxn5-0tnddjt-a9mqkkobhgbz5bi9chl58rrd4. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-3efy7e7mbtzof/s-hntk6cxakr-0r8z090-3k2wnhs0pw62qzqinqk8jbkf7",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-3efy7e7mbtzof/s-hntk6cxakr-0r8z090.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-3efy7e7mbtzof/s-hntke1svkt-1jw1w1p-0gumegg1c9lx4aglcb87whqbv",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-3efy7e7mbtzof/s-hntke1svkt-1jw1w1p-0gumegg1c9lx4aglcb87whqbv. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental/persisted_search_cli-3k5jo5tteyw6m/s-hntiduwerc-0bvryw2-5rwzxy191ujq6ostcyajskibc",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/debug/incremental/persisted_search_cli-3k5jo5tteyw6m/s-hntiduwerc-0bvryw2.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/debug/incremental/persisted_search_cli-3k5jo5tteyw6m/s-hntkect8j4-1hb4hup-5rwzxy191ujq6ostcyajskibc",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/debug/incremental/persisted_search_cli-3k5jo5tteyw6m/s-hntkect8j4-1hb4hup-5rwzxy191ujq6ostcyajskibc. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-0y9i2vi3nlard/s-hntie9ec9i-01t48x9-788afx0w39v7xgaiobieu14fz",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-0y9i2vi3nlard/s-hntie9ec9i-01t48x9.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-0y9i2vi3nlard/s-hntkennb4s-001h34b-5kgehx6trhiyypdu5u0majffh",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-0y9i2vi3nlard/s-hntkennb4s-001h34b-5kgehx6trhiyypdu5u0majffh. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-1ds5a2ii0mfpp/s-hntie8zvnv-0mp6s8r-ek6plb1u9aow18gejd0ruxwe8",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-1ds5a2ii0mfpp/s-hntie8zvnv-0mp6s8r.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-1ds5a2ii0mfpp/s-hntkejj0dm-0z1j6vo-3pqt61zi2u98yy9sbcpjtjmo5",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-1ds5a2ii0mfpp/s-hntkejj0dm-0z1j6vo-3pqt61zi2u98yy9sbcpjtjmo5. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-0480fu8e5cksy/s-hntie9pupm-11yfpoo-0gz153g9v6ucb5ndj7ts8cjv9",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-0480fu8e5cksy/s-hntie9pupm-11yfpoo.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-0480fu8e5cksy/s-hntkenypz8-1wb0h0f-8v9yvv55epe9noj4p2bkgiodh",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-0480fu8e5cksy/s-hntkenypz8-1wb0h0f-8v9yvv55epe9noj4p2bkgiodh. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-3pbnm4lbjb99f/s-hntie4qvhh-0j5mghq-707ecygu7d43h3l1okuclc57i",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-3pbnm4lbjb99f/s-hntie4qvhh-0j5mghq.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-3pbnm4lbjb99f/s-hntkek1wgz-0qcsmw6-aefpzeo345fd66j9nuiggs2ad",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-3pbnm4lbjb99f/s-hntkek1wgz-0qcsmw6-aefpzeo345fd66j9nuiggs2ad. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0ltpehfm7ccp6/s-hntie4wtmx-19fj26e-65zscfosllkpy17l0xyrh7lt3",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0ltpehfm7ccp6/s-hntie4wtmx-19fj26e.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0ltpehfm7ccp6/s-hntkek7uta-1kczzhy-cvch75unu25kjh2dmfoxfdb6g",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0ltpehfm7ccp6/s-hntkek7uta-1kczzhy-cvch75unu25kjh2dmfoxfdb6g. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3h71da4zp2v4o/s-hntidzrdzq-1mwl2l1-2zfnxczlbs29aitqykf5t89n9",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3h71da4zp2v4o/s-hntidzrdzq-1mwl2l1.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3h71da4zp2v4o/s-hntkehbffk-0xkwdtv-5oo4g1f9voxvp75gxw99y48nx",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3h71da4zp2v4o/s-hntkehbffk-0xkwdtv-5oo4g1f9voxvp75gxw99y48nx. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/persisted_search_cli-1e6x1so6ote9a/s-hntie8yoph-1p2b0b4-043c06gt3s9m4ku4bqk69skvi",
+      "kind": "build-cache",
+      "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/persisted_search_cli-1e6x1so6ote9a/s-hntie8yoph-1p2b0b4.lock",
+      "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/persisted_search_cli-1e6x1so6ote9a/s-hntkejhqvw-1w4eg8b-043c06gt3s9m4ku4bqk69skvi",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/persisted_search_cli-1e6x1so6ote9a/s-hntkejhqvw-1w4eg8b-043c06gt3s9m4ku4bqk69skvi. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Existing non-dumpable systemd PAM session helper predates this task; observed exact comm/argv0/UID and start identity. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this system process and its authority. Scoped removal covers only rustc-obsolete debug incremental sessions with exclusive session locks and newest per-configuration state retained; no current binaries or data. Identity exception applies only to this exact recorded process."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Existing non-dumpable KDE polkit authentication agent predates this task; observed exact comm/argv0/UID and start identity. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this system process and its authority. Scoped removal covers only rustc-obsolete debug incremental sessions with exclusive session locks and newest per-configuration state retained; no current binaries or data. Identity exception applies only to this exact recorded process."
+    }
+  ]
+}

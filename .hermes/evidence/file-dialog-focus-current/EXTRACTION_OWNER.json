@@ -1,0 +1,586 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
+  "pending_consumers": [],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks",
+  "cleanup_complete": true,
+  "removed_files": [
+    {
+      "path": "squashfs-root/AppRun",
+      "bytes": 352,
+      "sha256": "ead34ac432c8495760acb72e705810fee58d7b308143ba8cb8bea6c8868cf974"
+    },
+    {
+      "path": "squashfs-root/ottrin.svg",
+      "bytes": 1829,
+      "sha256": "33746e843fde043387c7ae1f1d2a13c7cab94e9b6bf136cc4144d99f911c94ce"
+    },
+    {
+      "path": "squashfs-root/ottrin.png",
+      "bytes": 8217,
+      "sha256": "5d4198a3a9b1acb860e57b3b761e340b2f0c3c2f28a7b9fa5b7cbd830381af04"
+    },
+    {
+      "path": "squashfs-root/org.ottrin.Ottrin.desktop",
+      "bytes": 199,
+      "sha256": "bd50119fd7e20abaab6e5346f2f082b20e5159e5b82a8c4941937e878625110c"
+    },
+    {
+      "path": "deb-control/control",
+      "bytes": 561,
+      "sha256": "a5a8a744d972087f5efa30150a0c4a9ad0521f827dde1acddbb9e21f62b0a872"
+    },
+    {
+      "path": "deb-control/postinst",
+      "bytes": 108,
+      "sha256": "4622dd92308e21002b7346661a9a85bd1c752d419043bd7695dfcc7a94268192"
+    },
+    {
+      "path": "deb-control/prerm",
+      "bytes": 104,
+      "sha256": "45627d388d1d06d6e8595b4a4ccc4624be1763627629fcd8c7a0ffdf62b28f90"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libxcb.so.1",
+      "bytes": 162392,
+      "sha256": "7958a0136b121bdc4c708968569ad152a9ed208ab026e2537b1005dde64ca440"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libX11-xcb.so.1",
+      "bytes": 14024,
+      "sha256": "941ab0ca78131e168817049d4c9935bb0e29b584cf05b58c47e3071f1fa81cf8"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libX11.so.6",
+      "bytes": 1302184,
+      "sha256": "edd2ddf6e00a81c40b8645f7dbb6d6603c6a0a78d583bdbe7491d8a84de6e3b6"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libmount.so.1",
+      "bytes": 309960,
+      "sha256": "7472255ae5799059b37ddd544788f5665dbd3e1cb78259f52180293039efc2a5"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libgio-2.0.so.0",
+      "bytes": 1887632,
+      "sha256": "373801faa40cd4eb46a40ce02bd0945b4905160a59894b600636e0fadfb78f2b"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libXcursor.so.1",
+      "bytes": 43464,
+      "sha256": "09bd5941a53ee7fb06898fa066709cf098df8e33a45042e065d2f8461d92672c"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libxkbcommon.so.0",
+      "bytes": 293432,
+      "sha256": "3eb6c7315985803a7c72cb81aa3293b763e6cfc907b70b7b2f641c2827cd90f9"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libexpat.so.1",
+      "bytes": 186624,
+      "sha256": "286682ecbc5e59a638963b1a4e6351e65eb32fcf4bdcb9cb7569b6a61fe06a8d"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libmd.so.0",
+      "bytes": 55536,
+      "sha256": "423e18586b6ea740f4465afd64f7a9a4cb7264ed979c8e7256f9085af5345fef"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libXdmcp.so.6",
+      "bytes": 26776,
+      "sha256": "667d97d6da16016400ab10de9f83ef4ab209ceb6adf68ff9650225ec13e723b0"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libfontconfig.so.1",
+      "bytes": 325712,
+      "sha256": "a94b4059b27766f563894c8f7e61762b6f6b2e25c59ef36b730164d4b75c6c98"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libselinux.so.1",
+      "bytes": 174472,
+      "sha256": "0ec0843463f90e227b0e138e1f379774f50b5514bd7f5dbd4c8a87aca0aa6670"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libbrotlidec.so.1",
+      "bytes": 51512,
+      "sha256": "d5060475e7259904af3600d01e809710305b296441815bcaa540119a66530a70"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libpng16.so.16",
+      "bytes": 223304,
+      "sha256": "89c0c6569a8c00480d451401ad4c0a74942e62dc57f229a970592fdc5adb29e8"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libXi.so.6",
+      "bytes": 76320,
+      "sha256": "a51348c921ce1a35123fa7c99dc59bfd3e815be6829874fe15ae55172901d3e4"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libpcre2-8.so.0",
+      "bytes": 883528,
+      "sha256": "b5b9bf1afd7b27be732c3046b57a40b0e65257830cce8060624e6987ff2eabb3"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libgobject-2.0.so.0",
+      "bytes": 399752,
+      "sha256": "2bf396b14b469ca2eed46a785b3bc0bd1fd979261c6bf505bc4debdcd0a6870a"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libffi.so.8",
+      "bytes": 47672,
+      "sha256": "00f593fe192f2851b8ce23b25cec2488d769beb5a8f63e8c9e563071e1075153"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libblkid.so.1",
+      "bytes": 236592,
+      "sha256": "9c3860ffab5422410ff9e073d3e82267f00bc68ff1248cbb191640ee2ff045bc"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libXau.so.6",
+      "bytes": 18696,
+      "sha256": "8040da3f8516c1acfe39f04ff022480cdb273705ba5e7a4ca70bbdb1527cd67a"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libxkbcommon-x11.so.0",
+      "bytes": 39848,
+      "sha256": "109a5c2095ab6bcc36f751d3c0deb3b066ecbfb664a36904b6ca212f987a408a"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libfreetype.so.6",
+      "bytes": 833608,
+      "sha256": "992dac80abe3a3854f3eb2668da4207c029664ceca5f122ddb46e2a8169e9499"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libbz2.so.1.0",
+      "bytes": 78944,
+      "sha256": "cc08c9f50a8009ffd6391e0116a100369b11ca9238fa52392c019e6645b122a1"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libXrender.so.1",
+      "bytes": 43600,
+      "sha256": "250977e0e004b6c0556144c3e683487063b4582dc83d205196ec3aa65d54e2c6"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libgmodule-2.0.so.0",
+      "bytes": 22736,
+      "sha256": "1d3459ce2cd1a1fd276b08f75aa191597ece3e44bbe12ddd6bf0fe1dc8c27181"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libglib-2.0.so.0",
+      "bytes": 1343056,
+      "sha256": "448d9d271e77a7f6c4d057336df40c34b02c794f551caf8fa03b5122f25e601b"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libbsd.so.0",
+      "bytes": 80888,
+      "sha256": "e86cd4f0019f42c2ba5e60602e0edc8694d2948377d98c3654d0f6bddb5254bb"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libxcb-xkb.so.1",
+      "bytes": 116968,
+      "sha256": "f6b3ca63ff23f3e82d122af4622aaebed49c58614e2f840568a0bb4c9048436c"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libbrotlicommon.so.1",
+      "bytes": 141640,
+      "sha256": "f8cd338ec62f719333abd5cba29a6e0bdb4597dfdffed000ffb868b47e02f2e9"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libXfixes.so.3",
+      "bytes": 26800,
+      "sha256": "89e5897f438456013d2297850a7558cd28c9ad1f6978447197568949fb6a0fd9"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libXext.so.6",
+      "bytes": 77512,
+      "sha256": "2907e6a996465de5b32a0dd10534d4416b87f1dee5670aaa7b19301a1fc93f44"
+    },
+    {
+      "path": "squashfs-root/usr/lib/libz.so.1",
+      "bytes": 113000,
+      "sha256": "f61677c7bdb7c2aa2a243ea781bfd16afcb361cede7b4ef76127a9d8eb9a5242"
+    },
+    {
+      "path": "squashfs-root/usr/bin/ottrin-indexd",
+      "bytes": 5842176,
+      "sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0"
+    },
+    {
+      "path": "squashfs-root/usr/bin/ottrin",
+      "bytes": 38555112,
+      "sha256": "65f0705ffedd8a4372ca214f8ab52f5adb0310992414d11d1656bdf10059fe7e"
+    },
+    {
+      "path": "squashfs-root/usr/bin/ottrin-legacy-doc-render",
+      "bytes": 5374528,
+      "sha256": "0c85f0615777cc686ad4d4e0bb55a8bf881b92c6b3922e8222ce109bd8ff2a57"
+    },
+    {
+      "path": "squashfs-root/usr/bin/ottrin-media-playback",
+      "bytes": 578440,
+      "sha256": "d8b602a62cebb37d212629fd61cfeb700dd10dddfc87c8e9f22544ba3d205ca3"
+    },
+    {
+      "path": "squashfs-root/usr/libexec/ottrin/ottrin-priv-helper",
+      "bytes": 1661440,
+      "sha256": "041770a6db79578a7271eab56f8bd5127a0a155f5b9ed1bb185420da7cf6c41d"
+    },
+    {
+      "path": "squashfs-root/usr/libexec/ottrin/rg",
+      "bytes": 5408904,
+      "sha256": "e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849"
+    },
+    {
+      "path": "squashfs-root/usr/libexec/ottrin/ottrin-html-render",
+      "bytes": 493120,
+      "sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/LICENSE",
+      "bytes": 1177,
+      "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/lib/libpdfium.so",
+      "bytes": 7621800,
+      "sha256": "3019ad1cd6980e51d900bb9266f8980cb846cb8e0c1f6553c52a7a1626469020"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/icu.txt",
+      "bytes": 27718,
+      "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/libopenjpeg.txt",
+      "bytes": 1794,
+      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/libtiff.txt",
+      "bytes": 1139,
+      "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/abseil.txt",
+      "bytes": 11361,
+      "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/libpng.txt",
+      "bytes": 5345,
+      "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/libjpeg_turbo.md",
+      "bytes": 5620,
+      "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/zlib.txt",
+      "bytes": 1332,
+      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/lcms.txt",
+      "bytes": 1353,
+      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/fast_float.txt",
+      "bytes": 1079,
+      "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/freetype.txt",
+      "bytes": 6741,
+      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/libjpeg_turbo.ijg",
+      "bytes": 12799,
+      "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/pdfium.txt",
+      "bytes": 12818,
+      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/llvm-libc.txt",
+      "bytes": 15140,
+      "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/agg23.txt",
+      "bytes": 725,
+      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5"
+    },
+    {
+      "path": "squashfs-root/usr/bin/pdfium/licenses/simdutf.txt",
+      "bytes": 1059,
+      "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f"
+    },
+    {
+      "path": "squashfs-root/usr/share/ottrin/ottrin-index.service.in",
+      "bytes": 186,
+      "sha256": "1fe5e8466abf80f4a88640a039a36f193bc6b0639287f3dc2e0afff0c0f1f269"
+    },
+    {
+      "path": "squashfs-root/usr/share/ottrin/ottrin-html-render.apparmor",
+      "bytes": 962,
+      "sha256": "a8f6c1bc4e4e610aa955b0cce20432df14fdbaef754766bd98923a0d64e39d2d"
+    },
+    {
+      "path": "squashfs-root/usr/share/applications/org.ottrin.Ottrin.desktop",
+      "bytes": 199,
+      "sha256": "bd50119fd7e20abaab6e5346f2f082b20e5159e5b82a8c4941937e878625110c"
+    },
+    {
+      "path": "squashfs-root/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml",
+      "bytes": 1058,
+      "sha256": "1f88c8fe54aa99dca1054e92f3997e5118c05fe8c9cce7fdd32e935319a9e71e"
+    },
+    {
+      "path": "squashfs-root/usr/share/icons/hicolor/scalable/apps/ottrin.svg",
+      "bytes": 1829,
+      "sha256": "33746e843fde043387c7ae1f1d2a13c7cab94e9b6bf136cc4144d99f911c94ce"
+    },
+    {
+      "path": "squashfs-root/usr/share/icons/hicolor/256x256/apps/ottrin.png",
+      "bytes": 8217,
+      "sha256": "5d4198a3a9b1acb860e57b3b761e340b2f0c3c2f28a7b9fa5b7cbd830381af04"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/DEVELOPMENT.md",
+      "bytes": 147144,
+      "sha256": "a58dcd28158578f65d4b7095b38a7c0e34e5f00fe2f786dd4a510a6166741ef9"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/SOURCE_REVISION.txt",
+      "bytes": 140,
+      "sha256": "cf819c99950ccecb1cd3c5a01faa13ee36e551cdff136f7bc0d8407316571193"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/README.md",
+      "bytes": 8161,
+      "sha256": "8a410745b2839079e8c49a0514ea6805de929a64c48c7e2848df66d853b7496b"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/USER_GUIDE.md",
+      "bytes": 40260,
+      "sha256": "a5cafd46628f18cbbb46c11a93594191f7f6efb161ee8eed9c90d5e75ad72960"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/RELEASE_NOTES.md",
+      "bytes": 17134,
+      "sha256": "a9cf3ab846fde0b9087bdd8b59477cb13b6a654866c64f27b85f7b6fdcb9f884"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/RELEASE_CHECKLIST.md",
+      "bytes": 11273,
+      "sha256": "c9fe917fd774f328a8fe4a351b4af6dc1e964381f71f6f07eab9d8f9823790cd"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/SEARCH_PERFORMANCE.md",
+      "bytes": 27931,
+      "sha256": "511e2ebfacb02c44429dbf8e451698fd33c882703c1bc4df8adedf14aa66c446"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/ROADMAP.md",
+      "bytes": 596418,
+      "sha256": "a89ba3dec27930b1432a6af763cb1de6a8e02c7b72fedc54d8da74a904c2cf50"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/LICENSE",
+      "bytes": 1064,
+      "sha256": "2a92e02a6add5bb40115751ebd78bbcdce35ba40d629136b2cd1f8f3884e80bb"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/BUNDLED_FONTS.md",
+      "bytes": 11658,
+      "sha256": "1a571bfe17cd21d6acc3a7a0c66f03b85a1ad6da062bd06c7e4861a51df468cd"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/ripgrep/PCRE2-10.45-LICENCE.md",
+      "bytes": 3867,
+      "sha256": "9cf7ac6976099a1d856826d3ef1b093bd6b84489dc6100628ac79e740cf9885a"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/ripgrep/MANIFEST.txt",
+      "bytes": 305,
+      "sha256": "44a83b367ea07119b458422db83bc6e4b909ffaca21494cdfa1bf3423d74d63f"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/ripgrep/LICENSE-MIT",
+      "bytes": 1081,
+      "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/ripgrep/UNLICENSE",
+      "bytes": 1211,
+      "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/ripgrep/COPYING",
+      "bytes": 126,
+      "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxkbcommon0.copyright",
+      "bytes": 3566,
+      "sha256": "5eeaeb1b6e029a0274e1573765bb0bae2926ef96a3679203faa4fd00fdaeaa88"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libx11-6.copyright",
+      "bytes": 47102,
+      "sha256": "0b380a7fd5b2228f26e9585e56f14812efd3350f3df307507d2bc055dfd8de3e"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt",
+      "bytes": 6577,
+      "sha256": "5121a5331683ad575cd699063bbe66aca045a9cd5af172c225e6c2428ac8d281"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libfreetype6.copyright",
+      "bytes": 31209,
+      "sha256": "ce6d766883ea111e7f47acc09e9d49be8827daa6a03f2c2707243a425d41f0e9"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxext6.copyright",
+      "bytes": 10421,
+      "sha256": "bc57e445ca1d9fe082c8d54189dd411ff26caa8552c9c63d44ea06a982f32124"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libpcre2-8-0.copyright",
+      "bytes": 6627,
+      "sha256": "e915cde4251f96ec6af107ecd2e194440a4e69440893b0c982802f8a1e4ae40a"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libpng16-16t64.copyright",
+      "bytes": 13051,
+      "sha256": "4620d402b97601a910946acccbbe2e15bdffac11615bf9046520990d3b00f2b9"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxcb1.copyright",
+      "bytes": 1781,
+      "sha256": "4f7cb9db6bf6542f5417e3d674c780d3a5fd12291a54d63054fb576ee0cfae80"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxcursor1.copyright",
+      "bytes": 2774,
+      "sha256": "817abc0ccc9e2591057be256b0f6d80edb134221ced29dd545a9eafaf40b423c"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxau6.copyright",
+      "bytes": 1224,
+      "sha256": "118dd263a7b91c8f21c489f949bf13281dff9e766deea92b829dac4dce66601a"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libfontconfig1.copyright",
+      "bytes": 1301,
+      "sha256": "b215a61cdd3e62b5b17cc28b1852c78acb3dd38be0fb30706f7efc050dba91db"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libbsd0.copyright",
+      "bytes": 22396,
+      "sha256": "978426553ab7b9cfb4503d98e578a77b8c3142c099100aa9791fd21be5a95f97"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxi6.copyright",
+      "bytes": 4435,
+      "sha256": "c812f9c54513ae593aab9580b54a4b18219648df7068d49ca1daa47f522ba3fa"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libffi8.copyright",
+      "bytes": 10165,
+      "sha256": "737ff68f0eb104d3b0d96b291c3a8f40a775a3ec2b53f9b2e4bcfe3188bde118"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libblkid1.copyright",
+      "bytes": 23160,
+      "sha256": "3492fb92cb56cf517d9a899828b4f989038421a38736e49e5525ffbd33196eab"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libbrotli1.copyright",
+      "bytes": 1354,
+      "sha256": "24a64e5bb83d0960d1835696a1e23c0896ad6055b0ca47c66ab0eb9a766324b1"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxkbcommon-x11-0.copyright",
+      "bytes": 3566,
+      "sha256": "5eeaeb1b6e029a0274e1573765bb0bae2926ef96a3679203faa4fd00fdaeaa88"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libexpat1.copyright",
+      "bytes": 1756,
+      "sha256": "60919fe1a156395ff14511bb6ff79756c50ade2fff59ac60c9bae1d8a7fe6292"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxdmcp6.copyright",
+      "bytes": 1265,
+      "sha256": "1bcbb50f8603fe8b86d330bfa460b772ea04fbd3c70e4499f0768b5340b9fd6e"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxfixes3.copyright",
+      "bytes": 2320,
+      "sha256": "051ffe073ab38244c504bb379903b4ecda6081fb3d97d0d3dce44bc11712eef2"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/zlib1g.copyright",
+      "bytes": 2927,
+      "sha256": "9e5b96d63773a5d177ba264254390f792be07e41748ebd94730981c6cac31cc6"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libmount1.copyright",
+      "bytes": 23160,
+      "sha256": "3492fb92cb56cf517d9a899828b4f989038421a38736e49e5525ffbd33196eab"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxrender1.copyright",
+      "bytes": 2252,
+      "sha256": "ed2a78123a5076b4f11da38cb1ffb85b5cb9fdc26b5746c517b1d7e7a9029704"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libbz2-1.0.copyright",
+      "bytes": 2228,
+      "sha256": "832ed535ff3c3d025a8d2348eb1b697b89addcf2eaadbc17650262040b9145e2"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libxcb-xkb1.copyright",
+      "bytes": 1781,
+      "sha256": "4f7cb9db6bf6542f5417e3d674c780d3a5fd12291a54d63054fb576ee0cfae80"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libselinux1.copyright",
+      "bytes": 1957,
+      "sha256": "864f1bb189f609075d580b8c4aada16d85a44546884f1687989e1cacc8c56751"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libmd0.copyright",
+      "bytes": 8018,
+      "sha256": "4365ef6255ad553fce69dd4bc0e093472c5d0e41b8ea493a545cc926ce171aa6"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libglib2.0-0t64.copyright",
+      "bytes": 54957,
+      "sha256": "b52574b109fb876dfa71dea7a98b8aee1bb583f6aa90c327d1e4dc0a1d59f211"
+    },
+    {
+      "path": "squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/libx11-xcb1.copyright",
+      "bytes": 47102,
+      "sha256": "0b380a7fd5b2228f26e9585e56f14812efd3350f3df307507d2bc055dfd8de3e"
+    },
+    {
+      "path": "squashfs-root/usr/share/xdg-desktop-portal/portals/ottrin.portal",
+      "bytes": 120,
+      "sha256": "caed280d5896837a4eaeb24205b2116ba0c3be72fbbb1828963e705aa50ea3a4"
+    },
+    {
+      "path": "squashfs-root/usr/share/polkit-1/actions/org.ottrin.filesystem.policy",
+      "bytes": 931,
+      "sha256": "2df13b82cd905acb38b3be589dacdf3d9b7ea0cffb1126997b751766c64cb969"
+    }
+  ],
+  "removed_bytes": 76513981,
+  "indexd_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0"
+}

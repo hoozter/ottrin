@@ -1,0 +1,29 @@
+{
+  "status": "partial requirement audit; native authentication and full service state matrix remain unproven",
+  "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "dddc9a60481a1a348c7fd9feba58d58d7af248613cb1651b70d30db72b981968",
+    "crates/ottrin-platform/src/helper_setup.rs": "f65e54948cc6b91ad4484a4e485d96c161052c362ff7a0765f20746132b5f2f2"
+  },
+  "U03": {
+    "verified_source": "Both helper status button branches invoke open_services_settings; named Manage administrator helper and Manage index service route to Services. Setup stages helper plus HTML companion outside AppImage FUSE in private0700 tempdir, invokes pkexec --disable-internal-agent --install, removes staging on all exits, distinguishes126 cancellation from execution/authentication failures and retains stderr cause.",
+    "current_ui_test_evidence": [
+      "full-ui-tests.log: services_shortcut_opens_setup_and_refreshes_status",
+      "full-ui-tests.log: service_action_surfaces_cancel_and_success_without_blocking_ui"
+    ],
+    "not_proven_by_these_checks": "A real desktop authentication prompt and actual administrator setup success/cancel/failure lifecycle; helper_setup unit tests inspect invocation substitutes, not real authentication. Current Services screenshot merely observes existing helper availability.",
+    "next_action": "Locate actual native packaged prompt evidence; if absent run owned Linux desktop/system fixture with real polkit agent and preserve production policies and personal helper."
+  },
+  "U04": {
+    "verified_source": "Separate helper readiness and daemon runtime dots; sign-in state is explicit Off rather than Not installed. Index ready/loading/indexing green, stopped muted, unavailable-with-endpoint error. Startup setup label depends on package ownership and registration. Start/restart and Stop available, Uninstall only for installed unmanaged registration, package startup gets disable rather than unsupported uninstall. Actions serialize after initial startup and refresh cached statuses.",
+    "current_native_evidence": "LINUX_NATIVE_ACCEPTANCE.json and original Dark/Light settings-services.png show actual ready daemon and automatic startup Off with Enable automatic startup; no install-background-service label.",
+    "current_ui_test_evidence": "full-ui-tests.log: index_service_changes_wait_for_startup_before_stopping_or_replacing_it",
+    "not_proven_by_these_checks": "Complete rendered installed/stopped/failed/package-managed state/action matrix; current capture is one actual runtime state in two themes.",
+    "next_action": "Inspect existing native lifecycle receipts and rendered tests against each explicit state; exercise only missing state/action outcomes."
+  },
+  "limits": [
+    "No U03/U04 complete claim",
+    "No personal service restart, system policy mutation, authentication prompt or additional build performed during this audit",
+    "Earlier Services-refresh acceptance covers folder/portal asynchronous repair layout, not the entire index/helper matrix"
+  ]
+}
