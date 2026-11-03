@@ -1,0 +1,10 @@
+{
+  "policy": "Frozen exact producer snapshots for this package acceptance; no product runtime implementation duplicated",
+  "sources": {
+    "build.py": ".hermes/evidence/assistive-delivery-current/build.py",
+    "windows/build-portable.py": ".hermes/evidence/assistive-delivery-current/windows/build-portable.py",
+    "verify-packages.py": ".hermes/evidence/assistive-delivery-current/verify-packages.py",
+    "verify-windows-cohort.py": ".hermes/evidence/assistive-delivery-current/verify-windows-cohort.py"
+  },
+  "Linux_GUI": "scripts/linux-desktop-qa/session.py remains authoritative for owned display/process/profile teardown"
+}

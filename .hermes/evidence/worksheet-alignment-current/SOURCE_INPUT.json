@@ -1,0 +1,11 @@
+{
+  "source_revision": "99ed2b61f28d128c618f099b53dccc4cbeceeb99",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/source.zip",
+  "status": "retired unconsumed rejected source99 archive",
+  "sha256": "e8118076f591e0f6c0d186dfa555c7c2f1f4d4a682f05231433b11f70bb7634e",
+  "archive_bytes": 152881569,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "reason": "Native portable typography review found overlapping rows before delivery; no native MSIX assembly consumer started"
+}

@@ -1,0 +1,22 @@
+{
+  "status": "pass corrected source checks; native corrected package acceptance remains pending",
+  "source_before": "99ed2b61f28d128c618f099b53dccc4cbeceeb99",
+  "files": {
+    "crates/ottrin-ui/src/preview_render.rs": "f47a087d3577ecbc5ca5cf7fa157a81e208416eebc52bf4b80b25d4693d74599",
+    "crates/ottrin-app/src/portal.rs": "9ebe0ede90b18c5a5410e39382c8e590ac0093332bed2cda5b534f4eb32f740d"
+  },
+  "red_green": [
+    "red.log: original forced glyph spacing fails",
+    "green.log: spacing fix passes10 checks",
+    "row-red.log: actual second row overlaps measured wrapped row",
+    "ui-tests-final.log: corrected layout463 passing1 existing ignored"
+  ],
+  "checks": [
+    "Host UI/app strict Clippy",
+    "Windows UI all-targets cross check",
+    "Formatting",
+    "20 repeated real portal cancellation test groups;80 passing tests"
+  ],
+  "hosted_limit": "CI41583880122 Linux pre-lease chooser failure not reproduced locally. Earlier assertion hid its worker result; improved diagnostic retained. Hosted root cause/next run remain open.",
+  "packaging_limit": "Rejected source99 staging never promoted. Stable Linux/Windows remains90ba8639. Corrected clean-source build and native acceptance next."
+}

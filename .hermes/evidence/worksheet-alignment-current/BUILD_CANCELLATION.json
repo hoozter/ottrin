@@ -1,0 +1,20 @@
+{
+  "reason": "Actual native portable capture revealed overlapping wrapped rows; refuse source99 packages and correct authoritative layout before delivery",
+  "drivers": [
+    {
+      "pid": 745641,
+      "arguments": [
+        "python3",
+        ".hermes/evidence/worksheet-alignment-current/build.py"
+      ]
+    },
+    {
+      "pid": 748742,
+      "arguments": [
+        "python3",
+        ".hermes/evidence/worksheet-alignment-current/windows/build-portable.py"
+      ]
+    }
+  ],
+  "stable_deliverables": "unchanged90ba8639"
+}

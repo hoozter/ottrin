@@ -1397,17 +1397,17 @@ fn render_spreadsheet_row(
             Align::Center
         };
         // Ui::put justifies wrapped labels, stretching their glyphs to the cell width.
-        ui.scope_builder(
+        // The row already reserves the tallest cell. A scoped allocation would move
+        // the parent cursor back up when a later cell has shorter or empty content.
+        let mut cell_ui = ui.new_child(
             egui::UiBuilder::new()
                 .max_rect(rect.shrink2(padding))
                 .layout(egui::Layout::top_down(alignment)),
-            |ui| {
-                ui.add(
-                    egui::Label::new(RichText::new(*text).font(font.clone()).color(visual.text))
-                        .wrap()
-                        .selectable(matches!(kind, SpreadsheetCellKind::Body)),
-                );
-            },
+        );
+        cell_ui.add(
+            egui::Label::new(RichText::new(*text).font(font.clone()).color(visual.text))
+                .wrap()
+                .selectable(matches!(kind, SpreadsheetCellKind::Body)),
         );
         left += width;
     }
@@ -2331,6 +2331,44 @@ mod tests {
                 "each wrapped line must start at the cell's leading inset"
             );
         }
+    }
+
+    #[test]
+    fn spreadsheet_rows_reserve_the_tallest_wrapped_cell() {
+        let context = egui::Context::default();
+        let output = context.run(egui::RawInput::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                for (number, value) in [
+                    ("1", "Currency totals and calculated formulas"),
+                    ("2", "Next row"),
+                ] {
+                    render_spreadsheet_row(
+                        ui,
+                        &[
+                            (number, SpreadsheetCellKind::Header),
+                            (value, SpreadsheetCellKind::Body),
+                            ("", SpreadsheetCellKind::Body),
+                        ],
+                        &[42.0, 110.0, 110.0],
+                        false,
+                        1.0,
+                    );
+                }
+            });
+        });
+        let cells: Vec<_> = output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::Shape::Rect(rect) if rect.stroke.width == 0.5 => Some(rect.rect),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(cells.len(), 6);
+        assert!(
+            cells[3].top() >= cells[1].bottom(),
+            "a trailing empty cell must not pull the next row over wrapped text: {cells:?}"
+        );
     }
 
     #[test]

@@ -1,0 +1,10 @@
+{
+  "status": "rejected source99 native row overlap before delivery",
+  "source_revision": "99ed2b61f28d128c618f099b53dccc4cbeceeb99",
+  "capture": ".hermes/evidence/worksheet-alignment-current/linux-portable-dark/main.png",
+  "capture_sha256": "5ebb6c53bdfb952b47d8e9e182c2497ac8a0785fae1a70b97cd20bfa07863f63",
+  "direct_review": "Currency sentence glyph spacing is corrected, but the following row covers the FIDELITY line of A1. The observer requiring FIDELITY correctly refused. No relaxation of its content check.",
+  "rendered_regression": "row-red.log: first row ends at y80; next starts y31 with trailing empty cell",
+  "correction": "Use a child cell UI without allocating content into the parent; the row already reserves its measured tallest-cell height. Keep natural wrapping, body selection and centered column/row headings.",
+  "disposition": "Both staged builds cancelled through exact owned drivers; registered teardown removed packages and test profile. Stable90 packages retained."
+}

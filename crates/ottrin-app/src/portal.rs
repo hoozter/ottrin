@@ -613,16 +613,16 @@ mod tests {
         let child_state = state.clone();
         let worker =
             std::thread::spawn(move || chooser(&executable, &Default::default(), child_state));
-        let owner = OwnedTest {
+        let mut owner = OwnedTest {
             state,
             worker: Some(worker),
         };
         let deadline = Instant::now() + Duration::from_secs(5);
         while owner.state.stdin.lock().unwrap().is_none() {
-            assert!(
-                !owner.worker.as_ref().unwrap().is_finished(),
-                "Chooser exited before publishing its lease"
-            );
+            if owner.worker.as_ref().unwrap().is_finished() {
+                let result = owner.join();
+                panic!("Chooser exited before publishing its lease: {result:?}");
+            }
             assert!(Instant::now() < deadline);
             std::thread::sleep(Duration::from_millis(5));
         }

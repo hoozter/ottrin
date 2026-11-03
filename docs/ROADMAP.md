@@ -106,14 +106,23 @@ The prepared22.65GiB updated comparison base is retired; do not repeat the fulfi
 comparison without changed inputs. Owner signing/Store/device/final acceptance
 waits remain below and must not stall dependency-ready software work.
 
-Shared worksheet correction is now source-fixed: the actual rendered regression
-failed on forced glyph justification (`13 != 8`), then all10 spreadsheet checks
-and the full UI library suite (462 passed,1 existing ignored) pass. Host strict
-Clippy, formatting and Windows all-targets UI cross-check pass. Body text now
-wraps with natural spacing and a consistent leading inset; headers remain
-centered. Evidence: `.hermes/evidence/worksheet-alignment-current/`. This is not
-yet a package-delivery or native corrected-rendering claim; stable packages
-remain90ba8639 until those gates pass.
+The shared worksheet correction has two rendered regressions. The first fails
+on stretched glyph spacing (`13 != 8`). Actual source99 portable inspection then
+found a second defect: a shorter trailing cell moved the next row up over wrapped
+text, hiding the FIDELITY line. Its new regression reproduces y31 following a row
+ending at y80. Cell child UIs now leave the parent row allocation untouched. All11
+spreadsheet checks are covered by the full UI suite (463 passed,1 existing
+ignored); host strict Clippy, formatting and Windows all-targets UI cross-check
+pass. Evidence: `.hermes/evidence/worksheet-alignment-current/`. Source99 staging
+was rejected and removed before delivery; current usable packages remain90ba8639.
+Actual corrected native captures and package promotion are still required.
+
+Hosted CI41583880122 exposes an independent Linux portal cancellation-test
+pre-lease failure. Its old assertion hid the worker result; the test now reports
+that error without weakening cancellation/identity assertions. Local cancellation
+repetition and the next hosted run must be assessed separately; the exact earlier
+hosted cause is not yet established. Do not label the pipeline fixed from local
+passes alone.
 
 Continue in this order:
 

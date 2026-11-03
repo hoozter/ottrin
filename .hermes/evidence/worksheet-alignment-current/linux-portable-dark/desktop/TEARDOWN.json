@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-9j47s209",
+  "owned_processes_reaped": [
+    {
+      "pid": 749422,
+      "exit": 0
+    },
+    {
+      "pid": 749425,
+      "exit": 0
+    },
+    {
+      "pid": 749426,
+      "exit": 15
+    },
+    {
+      "pid": 749553,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      749615
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "('Worksheet fallback did not paint', 'main')",
+  "profile_removed": true
+}

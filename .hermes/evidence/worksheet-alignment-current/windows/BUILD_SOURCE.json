@@ -1,0 +1,11 @@
+{
+  "source_revision": "99ed2b61f28d128c618f099b53dccc4cbeceeb99",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "purpose": "Correct shared native worksheet typography; complete package cohort staged without replacing stable deliverables",
+  "pending_consumers": [
+    "Native corrected worksheet acceptance",
+    "Package content/source verification",
+    "Promotion and staging retirement"
+  ],
+  "cleanup_owner": "Current roadmap goal; producer owns failed build teardown, acceptance owns successful staging"
+}

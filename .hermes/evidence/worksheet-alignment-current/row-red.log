@@ -1,0 +1,19 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 10.68s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 1 test
+
+thread 'preview_render::tests::spreadsheet_rows_reserve_the_tallest_wrapped_cell' (750965) panicked at crates/ottrin-ui/src/preview_render.rs:2368:9:
+a trailing empty cell must not pull the next row over wrapped text: [[[8.0 8.0] - [50.0 80.0]], [[50.0 8.0] - [160.0 80.0]], [[160.0 8.0] - [270.0 80.0]], [[8.0 31.0] - [50.0 61.0]], [[50.0 31.0] - [160.0 61.0]], [[160.0 31.0] - [270.0 61.0]]]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test preview_render::tests::spreadsheet_rows_reserve_the_tallest_wrapped_cell ... FAILED
+
+failures:
+
+failures:
+    preview_render::tests::spreadsheet_rows_reserve_the_tallest_wrapped_cell
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 463 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

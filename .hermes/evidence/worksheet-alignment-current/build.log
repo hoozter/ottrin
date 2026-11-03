@@ -1,0 +1,15 @@
+
+==> Building Linux portable tarball
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `release` profile [optimized] target(s) in 5m 31s
+    Finished `release` profile [optimized] target(s) in 0.68s
+    Finished `release` profile [optimized] target(s) in 0.21s
+/tmp/tmp.rg1RRlS0n8/pdfium.tgz: OK
+/tmp/tmp.DISmXofx1Q/archive: OK
+/tmp/tmp.DISmXofx1Q/extract/ripgrep-15.2.0-x86_64-unknown-linux-musl/rg: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage/.build-all.4VCqzJ/linux/Ottrin-0.1.0-linux-x86_64-portable.tar.gz
+
+==> Building Linux AppImage
+    Blocking waiting for file lock on artifact directory
+Terminated

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/linux-worksheet.py", line 53, in <module>
+    observe(root/'bin/ottrin','portable',digest)
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/linux-worksheet.py", line 34, in observe
+    else:raise AssertionError(('Worksheet fallback did not paint',surface))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('Worksheet fallback did not paint', 'main')

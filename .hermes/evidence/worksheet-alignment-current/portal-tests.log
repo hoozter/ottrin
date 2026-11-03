@@ -1,0 +1,13 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `test` profile [optimized + debuginfo] target(s) in 10.08s
+     Running unittests src/main.rs (target/debug/deps/ottrin_app-8443172d8770f5ec)
+
+running 4 tests
+test portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok
+test portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok
+test portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok
+test portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s
+
