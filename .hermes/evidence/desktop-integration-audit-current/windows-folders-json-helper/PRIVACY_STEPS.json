@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "scope": "Known first-login pages observed by OCR and completed with native input on owned private console; optional collection declined; no policy bypass",
+  "domain_uuid": "3ac15982-9e76-4daf-88b5-3af5707ff9db",
+  "steps": [],
+  "desktop_observed": true
+}

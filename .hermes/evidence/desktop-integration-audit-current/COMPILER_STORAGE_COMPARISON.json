@@ -1,0 +1,37 @@
+{
+  "substantial_builds_this_turn": false,
+  "new_target_configurations": false,
+  "paths": {
+    "target/debug/deps": {
+      "baseline": 41448361984,
+      "current": 41448361984,
+      "delta": 0
+    },
+    "target/debug/incremental": {
+      "baseline": 22743330816,
+      "current": 22743330816,
+      "delta": 0
+    },
+    "target/x86_64-pc-windows-gnu/debug/deps": {
+      "baseline": 33310941184,
+      "current": 33310941184,
+      "delta": 0
+    },
+    "target/x86_64-pc-windows-gnu/debug/incremental": {
+      "baseline": 39531646976,
+      "current": 39531646976,
+      "delta": 0
+    },
+    "target/release/deps": {
+      "baseline": 4299345920,
+      "current": 4299345920,
+      "delta": 0
+    },
+    "target/x86_64-pc-windows-gnu/release/deps": {
+      "baseline": 3769569280,
+      "current": 3769569280,
+      "delta": 0
+    }
+  },
+  "decision": "No task-created compiler output; preserve useful caches and current binaries. Native VM QA uses separate owned ephemeral overlays."
+}

@@ -1,0 +1,47 @@
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.0' (uid=1000 pid=1005544 comm="kwin_x11 --replace" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.portal.Documents' requested by ':1.1' (uid=1000 pid=1005552 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.2' (uid=1000 pid=1005568 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.portal.Documents'
+Ignoring invalid max threads value 4294967295 > max (100000).
+
+(/usr/libexec/xdg-desktop-portal:1005552): xdg-desktop-portal-WARNING **: 15:06:50.331: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+
+(/usr/libexec/xdg-desktop-portal:1005552): xdg-desktop-portal-WARNING **: 15:06:50.331: The preferred method to match portal implementations to desktop environments is to use the portals.conf(5) configuration file
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.1' (uid=1000 pid=1005552 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.impl.portal.desktop.kde' requested by ':1.1' (uid=1000 pid=1005552 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.impl.portal.desktop.kde'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.FileManager1' requested by ':1.9' (uid=1000 pid=1005630 comm="gdbus call --session --dest org.freedesktop.FileMa" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.kde.KSplash' requested by ':1.0' (uid=1000 pid=1005544 comm="kwin_x11 --replace" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.FileManager1'
+
+(/usr/libexec/xdg-desktop-portal:1005552): xdg-desktop-portal-WARNING **: 15:06:50.989: Failed connect to PipeWire: Couldn't connect to PipeWire
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.impl.portal.desktop.kwallet' requested by ':1.1' (uid=1000 pid=1005552 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.impl.portal.desktop.kwallet'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.portal.Desktop'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.a11y.Bus' requested by ':1.17' (uid=1000 pid=1005650 comm="/var/tmp/.ottrin-picker-qa-g_9mnws5/t/.mount_Ottri" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.systemd1' requested by ':1.27' (uid=1000 pid=1005869 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.systemd1' requested by ':1.31' (uid=1000 pid=1005995 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.systemd1' requested by ':1.38' (uid=1000 pid=1006176 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.systemd1' requested by ':1.39' (uid=1000 pid=1006174 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.FileManager1' requested by ':1.45' (uid=1000 pid=1006312 comm="gdbus call --session --dest org.freedesktop.FileMa" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.freedesktop.FileManager1'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.kde.kdeconnect' requested by ':1.54' (uid=1000 pid=1006417 comm="/usr/bin/dolphin --new-window /var/tmp/.ottrin-pic" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Successfully activated service 'org.kde.kdeconnect'
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Activating service name='org.freedesktop.Notifications' requested by ':1.60' (uid=1000 pid=1006445 comm="/usr/bin/kdeconnectd" label="unconfined")
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration
+dbus-daemon[1005543]: [session uid=1000 pid=1005543] Reloaded configuration

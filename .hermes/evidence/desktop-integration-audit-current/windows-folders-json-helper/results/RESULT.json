@@ -1,0 +1,69 @@
+{
+    "scope":  "Exact installed Windows optional folder/default integration, native ShellExecute dispatch, GUI Services and supported uninstall restoration",
+    "powershell_cli_alias":  "Clear-Item",
+    "phase":  "actual merged menu verbs",
+    "cleanup_folders":  {
+                            "stdout":  "Ottrin folder commands removed; owned defaults restored and later choices kept\n",
+                            "stderr":  "",
+                            "seconds":  0.31102779999999997,
+                            "exit":  0
+                        },
+    "cases":  [
+                  {
+                      "verb":  "Ottrin.Open",
+                      "command_line":  "\"C:\\Users\\OTMSI02b544d8347b\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI02b544d8347b\\Documents\\Ottrin folders %1 100% literal\\.\"",
+                      "case":  "directory-verb",
+                      "exit":  0,
+                      "merged_class":  "Directory",
+                      "executable":  "C:\\Users\\OTMSI02b544d8347b\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+                      "native_location":  "\\\\?\\C:\\Users\\OTMSI02b544d8347b\\Documents\\Ottrin folders %1 100% literal",
+                      "requested":  "C:\\Users\\OTMSI02b544d8347b\\Documents\\Ottrin folders %1 100% literal"
+                  },
+                  {
+                      "verb":  "Ottrin.Open",
+                      "command_line":  "\"C:\\Users\\OTMSI02b544d8347b\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI02b544d8347b\\Documents\\Ottrin folders %1 100% literal\\.\"",
+                      "case":  "background-verb",
+                      "exit":  0,
+                      "merged_class":  "Directory\\Background",
+                      "executable":  "C:\\Users\\OTMSI02b544d8347b\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+                      "native_location":  "\\\\?\\C:\\Users\\OTMSI02b544d8347b\\Documents\\Ottrin folders %1 100% literal",
+                      "requested":  "C:\\Users\\OTMSI02b544d8347b\\Documents\\Ottrin folders %1 100% literal"
+                  },
+                  {
+                      "verb":  "Ottrin.Open",
+                      "command_line":  "\"C:\\Users\\OTMSI02b544d8347b\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\\\.\"",
+                      "case":  "drive-verb",
+                      "exit":  0,
+                      "merged_class":  "Drive",
+                      "executable":  "C:\\Users\\OTMSI02b544d8347b\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+                      "native_location":  "\\\\?\\C:\\",
+                      "requested":  "C:\\"
+                  }
+              ],
+    "cleanup_index":  {
+                          "stdout":  "Session indexing stopped; no background Ottrin index task was installed.\n",
+                          "stderr":  "",
+                          "seconds":  2.9309974999999997,
+                          "exit":  0
+                      },
+    "payload_files":  58,
+    "stack":  "at Node, \u003cNo file\u003e: line 23\r\nat Invoke, \u003cNo file\u003e: line 24\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 60\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "package":  {
+                    "source_revision":  "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd"
+                                  }
+                              ],
+                    "actor_sha256":  "c542ddc6244e40ea4fb04cd3c7028ab4d94d5f1a45b3ff892846800cf7ae0f9b",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "named_fields":  [
+
+                     ],
+    "error":  "Missing unique Services count=0",
+    "default_baseline":  "{\"Software\\\\Classes\\\\Directory\\\\shell\":{\"exists\":false,\"kind\":\"\",\"value\":null},\"Software\\\\Classes\\\\Directory\\\\Background\\\\shell\":{\"exists\":false,\"kind\":\"\",\"value\":null},\"Software\\\\Classes\\\\Drive\\\\shell\":{\"exists\":false,\"kind\":\"\",\"value\":null}}",
+    "status":  "failed native folder integration audit",
+    "remaining_owned_installed_processes":  0
+}

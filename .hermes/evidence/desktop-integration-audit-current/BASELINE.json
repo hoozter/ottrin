@@ -1,0 +1,101 @@
+{
+  "head": "99b8ca528a1a8ad338b40e78dae93864803a8c0b",
+  "compiler_allocated_bytes": {
+    "target/debug/deps": 41448361984,
+    "target/debug/incremental": 22743330816,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33310941184,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39531646976,
+    "target/release/deps": 4299345920,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769569280
+  },
+  "purpose": "Audit explicit picker/folder/theme requirements; exact current package integration QA without compiling or mutating personal integration",
+  "stable_linux": {
+    "status": "pass exact current package-content and native main-field name/value scope; broader audit incomplete",
+    "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "b85a791d420d5ef0dc50af0512c45111f6db7263c91512099457fff3df15fda7",
+      "Ottrin-0.1.0-x86_64.AppImage": "5d4fdcb88ad5d633bf8d50e74898e1980925d593404c4151bb6d566cbaa6d97f",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "141eb4a7abca6bffeb02719bdad6706ce4bebb2242a6fb537c63e93a8f6edaa2",
+      "ottrin_0.1.0_amd64.deb": "65e9360beb0d5ecf4f411d87f80a476dbbafa3a348bb22c26e0a636375406b4d"
+    },
+    "evidence": ".hermes/evidence/editable-fields-current",
+    "checks": [
+      "production portable/AppImage runtime closure and playback checks",
+      "production native payload, dependencies, policy, hooks and code identity blocks",
+      "exact bundled-font notice in all four formats",
+      "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+      "exact current documentation and clean source notes",
+      "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+    ],
+    "current_native_fields": ".hermes/evidence/editable-fields-current/LINUX_NATIVE_ACCEPTANCE.json",
+    "source_scope": ".hermes/evidence/editable-fields-current/SOURCE_SCOPE.json",
+    "full_payload_comparison": ".hermes/evidence/editable-fields-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+    "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+    "unchanged_responsibility_basis": {
+      "previous_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+      "previous_receipt": ".hermes/evidence/editable-fields-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+      "scope": "Only existing main/dialog/theme/document text-control names and the shared native-label helper changed shipping source. Rendering/focus/read-only/selection behavior is preserved; helpers/dependencies/assets and daemon source unchanged. Prior full workflow, installer/index/preview/browser/theme scopes retain original hashes; they are not newly executed on this cohort."
+    },
+    "hosted_source": {
+      "run": 41639409624,
+      "tested_source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+      "all_four_jobs_success": true
+    },
+    "limits": [
+      "Local unsigned delivery; no public release",
+      "Private X11/software AT-SPI Dark at 100%/Light at 150%; physical graphics and human assistive use separate",
+      "Full remaining roadmap and numeric/color-picker controls and complete UI assistive usability remain unaccepted"
+    ],
+    "cleanup": "Native field-check desktops/profiles/processes/mounts and content extraction removed; exact stage retired by publication; compiler-cache cleanup separately receipted"
+  },
+  "stable_windows": {
+    "status": "pass current scoped local Windows main-field preview; required MSI release held separately",
+    "source_commit": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "working_tree_at_build": "clean",
+    "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+    "artifacts": {
+      "Ottrin-0.1.0-windows-x64-portable.zip": "d2eac2aa45f18f3750f05e62f01c7fa37f580dccaf6213656fe89d07b9a2c3dd",
+      "Ottrin-0.1.0-windows-x64-setup.exe": "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd",
+      "Ottrin-0.1.0-windows-x64-development.msix": "be50a0bb7457ae0e4bbbb347d448ac3768b2b27db95e58c0b6465e6be23178ec"
+    },
+    "payload_files": 58,
+    "evidence_directory": ".hermes/evidence/editable-fields-current",
+    "host_content": "HOST_PAYLOAD.json",
+    "current_native_fields": ".hermes/evidence/editable-fields-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+    "native_msix": {
+      "current_assembly": ".hermes/evidence/editable-fields-current/ASSEMBLY_ACCEPTANCE.json",
+      "historical_lifecycle": {
+        "upgrade-enabled": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/ACCEPTANCE.json"
+      },
+      "historical_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+      "limit": "No fresh MSIX revision 9 deployment/update/login/removal run; earlier MSIX revision 8 runtime gate keeps exact source/artifact scope. Shipping installation/startup/daemon source unchanged, all 58 assembled payload bytes match current native-checked NSIS/ZIP."
+    },
+    "source_scope": ".hermes/evidence/editable-fields-current/SOURCE_SCOPE.json",
+    "full_payload_comparison": ".hermes/evidence/editable-fields-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+    "daemon_pe_identity": ".hermes/evidence/editable-fields-current/WINDOWS_INDEX_PE_COMPARISON.json",
+    "unchanged_responsibility_basis": {
+      "previous_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+      "previous_receipt": ".hermes/evidence/editable-fields-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+      "scope": "Only text-control names/shared native-label helper and associated tests change shipping source. Earlier lifecycle, picker, installer-fault, Office/media, resource and broader UI scopes retain original hashes. Every other non-GUI payload matches; daemon PE differs only in timestamp/checksum."
+    },
+    "native_msi_rollback": {
+      "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+      "release_accepted": false,
+      "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+    },
+    "hosted_source": {
+      "run": 41639409624,
+      "tested_source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+      "exact_source_all_four_jobs_success": true
+    },
+    "public_release_published": false,
+    "limits": [
+      "Local unsigned preview; no public release or Store submission",
+      "Software VM/default DPI; no physical graphics/human assistive or final owner acceptance",
+      "Whole roadmap and numeric/color-picker accessibility remain unaccepted",
+      "Current main-field native scope and MSIX revision 9 assembly only; historical lifecycle scopes are explicitly linked"
+    ],
+    "cleanup": "Both native VMs/media/private console removed; stage and superseded candidate retired after consumers; current58-file payload and compact evidence retained."
+  },
+  "cleanup_owner": "Native desktop helpers register complete teardown before allocation; retire current-format extraction after consumers; retain compact receipts/originals only"
+}

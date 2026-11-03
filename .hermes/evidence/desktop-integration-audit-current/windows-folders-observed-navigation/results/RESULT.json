@@ -1,0 +1,82 @@
+{
+    "scope":  "Exact installed Windows optional folder/default integration, native ShellExecute dispatch, GUI Services and supported uninstall restoration",
+    "powershell_cli_alias":  "Clear-Item",
+    "phase":  "default Windows folder dispatch",
+    "cleanup_folders":  {
+                            "stdout":  "Ottrin folder commands removed; owned defaults restored and later choices kept\n",
+                            "stderr":  "",
+                            "seconds":  0.1688249,
+                            "exit":  0
+                        },
+    "services_navigation":  {
+                                "method":  "native pointer at directly reviewed 920x640 screenshot row",
+                                "logical_y":  202,
+                                "logical_x":  78,
+                                "limitation":  "Custom painted Settings navigation has no named accessibility node in this package"
+                            },
+    "cleanup_index":  {
+                          "stdout":  "Session indexing stopped; no background Ottrin index task was installed.\n",
+                          "stderr":  "",
+                          "seconds":  3.6151196999999997,
+                          "exit":  0
+                      },
+    "payload_files":  58,
+    "stack":  "at Dispatch, \u003cNo file\u003e: line 48\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 61\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "cases":  [
+                  {
+                      "verb":  "Ottrin.Open",
+                      "command_line":  "\"C:\\Users\\OTMSI96f314920eb6\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI96f314920eb6\\Documents\\Ottrin folders %1 100% literal\\.\"",
+                      "case":  "directory-verb",
+                      "exit":  0,
+                      "merged_class":  "Directory",
+                      "executable":  "C:\\Users\\OTMSI96f314920eb6\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+                      "native_location":  "\\\\?\\C:\\Users\\OTMSI96f314920eb6\\Documents\\Ottrin folders %1 100% literal",
+                      "requested":  "C:\\Users\\OTMSI96f314920eb6\\Documents\\Ottrin folders %1 100% literal"
+                  },
+                  {
+                      "verb":  "Ottrin.Open",
+                      "command_line":  "\"C:\\Users\\OTMSI96f314920eb6\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI96f314920eb6\\Documents\\Ottrin folders %1 100% literal\\.\"",
+                      "case":  "background-verb",
+                      "exit":  0,
+                      "merged_class":  "Directory\\Background",
+                      "executable":  "C:\\Users\\OTMSI96f314920eb6\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+                      "native_location":  "\\\\?\\C:\\Users\\OTMSI96f314920eb6\\Documents\\Ottrin folders %1 100% literal",
+                      "requested":  "C:\\Users\\OTMSI96f314920eb6\\Documents\\Ottrin folders %1 100% literal"
+                  },
+                  {
+                      "verb":  "Ottrin.Open",
+                      "command_line":  "\"C:\\Users\\OTMSI96f314920eb6\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\\\.\"",
+                      "case":  "drive-verb",
+                      "exit":  0,
+                      "merged_class":  "Drive",
+                      "executable":  "C:\\Users\\OTMSI96f314920eb6\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+                      "native_location":  "\\\\?\\C:\\",
+                      "requested":  "C:\\"
+                  }
+              ],
+    "gui_enabled":  {
+                        "enabled":  true,
+                        "ready":  true,
+                        "detail":  "Enabled ΓÇö Open in Ottrin is available in folder menus",
+                        "default_enabled":  true,
+                        "default_ready":  true
+                    },
+    "named_fields":  [
+
+                     ],
+    "error":  "Exception calling \"Launch\" with \"3\" argument(s): \"No application is associated with the specified file for this operation\"",
+    "default_baseline":  "{\"Software\\\\Classes\\\\Directory\\\\shell\":{\"exists\":false,\"kind\":\"\",\"value\":null},\"Software\\\\Classes\\\\Directory\\\\Background\\\\shell\":{\"exists\":false,\"kind\":\"\",\"value\":null},\"Software\\\\Classes\\\\Drive\\\\shell\":{\"exists\":false,\"kind\":\"\",\"value\":null}}",
+    "status":  "failed native folder integration audit",
+    "package":  {
+                    "source_revision":  "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd"
+                                  }
+                              ],
+                    "actor_sha256":  "1790a1242e75c2116e954aa179af3e55d64e8832ccf09ef4115cc9f6c63ff6c7",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "remaining_owned_installed_processes":  0
+}

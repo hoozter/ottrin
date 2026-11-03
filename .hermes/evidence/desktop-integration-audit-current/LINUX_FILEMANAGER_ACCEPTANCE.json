@@ -1,0 +1,65 @@
+{
+  "status": "pass exact current AppImage FileManager1 scope",
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "artifact_sha256": "5d4fdcb88ad5d633bf8d50e74898e1980925d593404c4151bb6d566cbaa6d97f",
+  "runtime_result": "GUI_RESULT.json",
+  "reviewed_originals": {
+    "reveal-link.png": "8b0230add638610c7f45251934cbd3e1aa88b21a20248ef55fc33d7536c6031d",
+    "kept-open.png": "af745e7e3eade93b482ba57948ed0c1d5795b4f7b5a6579f354c38f6fe1723cd",
+    "reveal-link-location.png": "ff5010eaaa0698f73e7803faea0cde4c0266e70f4aeb0b8aa2aaff55f254c1a7",
+    "folder-location.png": "dc475430b9b206830d0d8fb9a042c4b7ea8368642cf10a61adf0eee3a98084d3",
+    "reactivated.png": "af745e7e3eade93b482ba57948ed0c1d5795b4f7b5a6579f354c38f6fe1723cd",
+    "properties.png": "51f6b612614ca2ce5c784fb9b60c7995959e7b74c040952897d995156935b1e5",
+    "folder.png": "41a559997fcd1af4fd5998731be3eea31faca59b3b3705b24abb6f2bb75e3e6d"
+  },
+  "visual_review": [
+    "ShowFolders displays expected two-file folder; native non-UTF8 byte renders a placeholder, not proof of byte identity",
+    "ShowItems selects broken-link in actual containing folder; Location matches visible native path representation",
+    "Properties multi-item selector displays broken-link details and permissions; single preserve.txt Properties survives restart and reactivates",
+    "Shared title bars, aligned file rows and framed Properties groups directly reviewed at captured geometry"
+  ],
+  "limits": [
+    "Exact native byte identity is proven by recorded process argv, not lossy displayed text",
+    "Private X11 software desktop only; synthetic startup property propagation, not a real compositor activation grant",
+    "Five-second zero-tick backend sample is bounded, not sustained index/picker resource acceptance",
+    "One intentionally retained child has normal_close false; separate lifetime assertions and teardown cover its intended survival"
+  ],
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-g_9mnws5",
+    "owned_processes_reaped": [
+      {
+        "pid": 1005540,
+        "exit": 0
+      },
+      {
+        "pid": 1005543,
+        "exit": 0
+      },
+      {
+        "pid": 1005544,
+        "exit": 15
+      },
+      {
+        "pid": 1006417,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1005638,
+        1005808,
+        1005876,
+        1006500
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "other_provider": {
+    "program": "/usr/bin/dolphin",
+    "pid": 1006417,
+    "enable_and_disable_preserved_same_name_owner": true
+  }
+}

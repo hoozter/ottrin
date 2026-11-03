@@ -1,0 +1,34 @@
+{
+  "scope": "Exact installed Windows optional folder/default integration, native ShellExecute dispatch, GUI Services and supported uninstall restoration",
+  "phase": "install exact current NSIS",
+  "cleanup_folders": {
+    "stdout": "Ottrin folder commands are off\n",
+    "stderr": "",
+    "seconds": 0.1106572,
+    "exit": 0
+  },
+  "cases": [],
+  "cleanup_index": {
+    "stdout": "Session indexing stopped; no background Ottrin index task was installed.\n",
+    "stderr": "",
+    "seconds": 2.8688599,
+    "exit": 0
+  },
+  "payload_files": 58,
+  "stack": "at <ScriptBlock>, <No file>: line 55\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd"
+      }
+    ],
+    "actor_sha256": "77d665e5306d977af23cbc9c4f2916767c2ce40aa26e775f8b866cdcfb688097",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "named_fields": [],
+  "error": "A positional parameter cannot be found that accepts argument 'baseline-status'.",
+  "status": "failed native folder integration audit",
+  "remaining_owned_installed_processes": 0
+}

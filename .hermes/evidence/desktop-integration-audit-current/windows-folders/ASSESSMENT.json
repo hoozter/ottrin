@@ -1,0 +1,16 @@
+{
+  "status": "failed before folder tests; exact NSIS payload installed and owned cleanup passed",
+  "error": "A positional parameter cannot be found that accepts argument 'baseline-status'.",
+  "fixture_correction": "PowerShell cli alias takes precedence over a same-name function. Producer now uses FolderJson and records actual alias definition; no alias/global policy mutation.",
+  "product_scope": "No folder/default acceptance inferred. Same current installer retained for corrected native case.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

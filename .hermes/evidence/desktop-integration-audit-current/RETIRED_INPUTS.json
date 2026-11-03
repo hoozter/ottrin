@@ -1,0 +1,50 @@
+[
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders/RESULTS.zip",
+    "bytes": 2806,
+    "sha256": "1f7d499455bba3dec640c5ccf59a6da7af5774a9e5b96820409773298629b107",
+    "basis": "Terminal case; extracted raw members all hash verified; frozen driver and actor retain producer"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal case; extracted raw members all hash verified; frozen driver and actor retain producer"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-json-helper/RESULTS.zip",
+    "bytes": 165270,
+    "sha256": "e3001f49d7deba465c447188ef2861034569d81eb6d612c4489b8c703f563c0b",
+    "basis": "Terminal case; extracted raw members all hash verified; frozen driver and actor retain producer"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-json-helper/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal case; extracted raw members all hash verified; frozen driver and actor retain producer"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-observed-navigation/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal failed case; extracted raw members verified; frozen driver and actor retained"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-observed-navigation/RESULTS.zip",
+    "bytes": 367572,
+    "sha256": "6997f8d453f802f18aaccfec812337af998f382e9c10b8a85e5cbe1467b8903d",
+    "basis": "Terminal failed case; extracted raw members verified; frozen driver and actor retained"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-native-null/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal incomplete case; extracted raw transport members verified and frozen actor/driver retained"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-native-null/RESULTS.zip",
+    "bytes": 34315,
+    "sha256": "36a21fc15329caa4a4966b144b901bb2fed191ab5cd3652eeaa69443879336f9",
+    "basis": "Terminal incomplete case; extracted raw transport members verified and frozen actor/driver retained"
+  }
+]

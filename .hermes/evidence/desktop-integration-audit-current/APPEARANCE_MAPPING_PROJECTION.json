@@ -1,0 +1,84 @@
+{
+  "status": "partial responsibility comparison; no new 39-control native claim",
+  "historical_revision": "a3a76ac1d26a88c3cde026faaf74d934e25faad5",
+  "current_revision": "99b8ca528a1a8ad338b40e78dae93864803a8c0b",
+  "historical_artifact_sha256": "2aca0c0376dd6f99e235fbb386e79982b856c15fbe2ba58d99cb062d070ae8ac",
+  "historical_native_controls": [
+    "panel",
+    "panel_raised",
+    "accent",
+    "text",
+    "text_dim",
+    "text_muted",
+    "text_heading",
+    "hover",
+    "error",
+    "titlebar",
+    "toolbar",
+    "bookmarks_bar",
+    "background",
+    "selected_bg",
+    "smart_panel",
+    "statusbar",
+    "button_bg",
+    "button_text",
+    "text_folder",
+    "text_file",
+    "folder",
+    "border",
+    "window_border",
+    "palette_soft_white",
+    "palette_folder_blue",
+    "palette_link_blue",
+    "palette_steel",
+    "palette_green",
+    "palette_orange",
+    "palette_purple",
+    "palette_pink",
+    "palette_red",
+    "palette_yellow",
+    "file_label_blend",
+    "button_radius",
+    "window_border_width",
+    "app_radius",
+    "border_radius",
+    "font_scale"
+  ],
+  "historical_native_scope": "39 controls edited/reset/saved/restarted in actual Linux AppImage; original receipt retained",
+  "exact_functions": {
+    "theme_color_field_order": {
+      "byte_identical": true,
+      "historical_sha256": "22b6a93576a832f17d4f0d39def9ef21cc6664f4d9cdd4948bee18ddf7366318",
+      "current_sha256": "22b6a93576a832f17d4f0d39def9ef21cc6664f4d9cdd4948bee18ddf7366318"
+    },
+    "theme_color_field_value": {
+      "byte_identical": true,
+      "historical_sha256": "4812479003f7aae0e4c720524f46b257640ae9376bcb5447f062ebceaf979152",
+      "current_sha256": "4812479003f7aae0e4c720524f46b257640ae9376bcb5447f062ebceaf979152"
+    },
+    "theme_color_field_value_mut": {
+      "byte_identical": true,
+      "historical_sha256": "fb59a30a79aeec83212bded7e51f4c4925abf73aa5017395582f76bfe3a5398f",
+      "current_sha256": "fb59a30a79aeec83212bded7e51f4c4925abf73aa5017395582f76bfe3a5398f"
+    },
+    "theme_editor_draft": {
+      "byte_identical": true,
+      "historical_sha256": "12bc44c3849fb1af9624adec50d2592663cf0de0b2bd1958c2685468cb64ac7e",
+      "current_sha256": "12bc44c3849fb1af9624adec50d2592663cf0de0b2bd1958c2685468cb64ac7e"
+    },
+    "theme_editor_preview_colors": {
+      "byte_identical": true,
+      "historical_sha256": "b9e9bb31dbcef91c329cbe2b96fe203f7092d3d5e9eb664c06b906af76326296",
+      "current_sha256": "b9e9bb31dbcef91c329cbe2b96fe203f7092d3d5e9eb664c06b906af76326296"
+    }
+  },
+  "semantic_style_whole_file_identical": true,
+  "remaining": "Audit current target/grouping and native accessibility/geometry separately; historical original 39-control receipt is not a fresh current-package sweep.",
+  "theme_colors_original_file_identical_after_removing_new_shared_apply_function": true,
+  "shared_context_style_comparison": {
+    "all_original_visual_font_and_scroll_assignments_identical": true,
+    "normalization": "Moved self.colors argument to c; removed one indent level and redundant local binding",
+    "only_additional_behavior": "// Ottrin resolves System mode and editor previews into this palette.\n    // Keep egui on its matching style when a later OS appearance event arrives.\n    // Raw system_theme remains available to our own mode resolution.\n    ctx.set_theme(if visuals.dark_mode {\n        egui::Theme::Dark\n    } else {\n        egui::Theme::Light\n    });",
+    "assessment": "Pins egui style to resolved Ottrin Dark/Light after an OS appearance event; existing palette/geometry mappings unchanged. Later native picker/appearance evidence retains its own source scope."
+  }
+}

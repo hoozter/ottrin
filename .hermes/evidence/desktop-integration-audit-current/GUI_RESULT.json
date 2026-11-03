@@ -1,0 +1,103 @@
+{
+  "artifact_sha256": "5d4fdcb88ad5d633bf8d50e74898e1980925d593404c4151bb6d566cbaa6d97f",
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "expected_gui_sha256": "5eddf4b95eb15c0ff8571aac216a2d27f639122eae89f89f034afd2249c94eae",
+  "cases": [
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 1005650,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowFolders",
+      "native_argv_preserved": true,
+      "window_pid": 1005803,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItems",
+      "native_argv_preserved": true,
+      "window_pid": 1005934,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 1006226,
+      "normal_close": false,
+      "startup_property_matches_request": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 1006328,
+      "normal_close": true,
+      "startup_property_matches_request": true
+    }
+  ],
+  "scope": "Exact current AppImage FileManager1, three public methods, native paths, independent child reaping, repair and reversible folder defaults on private X11; synthetic startup property handoff only, no real compositor-grant claim",
+  "backend_smaps_rollup": {
+    "Rss": "10368 kB",
+    "Pss": "8115 kB",
+    "Private_Clean": "6628 kB",
+    "Private_Dirty": "1472 kB"
+  },
+  "backend_memory_kib": {
+    "VmSize": "313688 kB",
+    "VmRSS": "10368 kB"
+  },
+  "idle": {
+    "duration_seconds": 5,
+    "cpu_ticks": 0,
+    "clock_ticks_per_second": 100
+  },
+  "later_batch_child_reaped_while_first_open": true,
+  "active_window_survived_backend_restart": true,
+  "previous_directory_handler_restored": true,
+  "real_other_provider_preserved": {
+    "program": "/usr/bin/dolphin",
+    "pid": 1006417,
+    "enable_and_disable_preserved_same_name_owner": true
+  },
+  "status": "pass",
+  "source_preserved": true,
+  "registration_removed": true,
+  "existing_ottrin_owner_not_replaced": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-g_9mnws5",
+    "owned_processes_reaped": [
+      {
+        "pid": 1005540,
+        "exit": 0
+      },
+      {
+        "pid": 1005543,
+        "exit": 0
+      },
+      {
+        "pid": 1005544,
+        "exit": 15
+      },
+      {
+        "pid": 1006417,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1005638,
+        1005808,
+        1005876,
+        1006500
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

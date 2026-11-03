@@ -1,0 +1,19 @@
+{
+  "status": "failed fixture; partial product evidence only",
+  "passed": [
+    "exact NSIS installed payload 58 files",
+    "Directory merged Ottrin.Open dispatch",
+    "Directory Background merged Ottrin.Open dispatch",
+    "Drive merged Ottrin.Open dispatch",
+    "normal GUI closure for all three dispatches"
+  ],
+  "failure": "Services custom-painted row has no named accessibility node; Button lookup cannot locate it",
+  "next_action": "Use directly reviewed native row position for current package scope; correct source accessibility in next coherent UI delivery",
+  "unproven": [
+    "GUI default enable and restore",
+    "default ShellExecute dispatch",
+    "repair preserves default",
+    "uninstall preserves later user choice"
+  ],
+  "cleanup": "Guest result and owner receipts retain actual teardown evidence"
+}

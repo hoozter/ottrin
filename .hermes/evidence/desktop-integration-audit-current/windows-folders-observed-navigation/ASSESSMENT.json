@@ -1,0 +1,17 @@
+{
+  "status": "failed fixture; current default dispatch not accepted",
+  "product_proven": [
+    "58 exact installed payload files",
+    "three merged menu dispatches and normal Close",
+    "actual GUI Services enable reaches default_ready true"
+  ],
+  "failure": "ShellExecute helper tests className==null but PowerShell string parameter conversion can pass empty string for null, leading OpenSubKey(empty) to HKCR root and erroneous SEE_MASK_CLASSKEY lookup",
+  "next": "Normalize empty optional native string arguments to null before class selection; record native received branch",
+  "unproven": [
+    "normal default dispatch",
+    "repair after default choice",
+    "GUI restore",
+    "supported uninstall restoration/later choice"
+  ],
+  "cleanup": "Terminal canonical driver removed overlay and profile; guest folders/index cleanup exit0 and installed owned processes0"
+}

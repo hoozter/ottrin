@@ -1,0 +1,159 @@
+{
+  "original_result": ".hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/results/RESULT.json",
+  "original_result_sha256": "0c36daf832e601043db855e16a6fdc7342bea64fb195dc6981a2625f08a51c52",
+  "package": {
+    "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "2e612ad931d05c8fa6d36aa477a125949f234505ff78a988168643d2652399bd"
+      }
+    ],
+    "actor_sha256": "49c1ca1383f56e8821f9cc704ea4c56b51ffd6e5de07ffcf604c95d6385166a0",
+    "scope": "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+  },
+  "status": "pass within native cooperating-picker/resource scope; actual captures require review",
+  "cases": [
+    {
+      "case": "Dark-cold",
+      "mode": "open",
+      "mapped_ms_upper_bound": 300.0061,
+      "normal_exit": 0,
+      "idle": {
+        "scope": "Visible ready picker; process-cold start with OS caches retained, no index process",
+        "cpu_percent_one_core": 0.10405374372866838,
+        "seconds": 30.032438199999998,
+        "working_set_bytes": 55549952,
+        "private_bytes": 36532224
+      },
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "Dark-folder",
+      "mode": "folder",
+      "mapped_ms_upper_bound": 489.5167,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "Dark-repeated",
+      "mode": "open",
+      "mapped_ms_upper_bound": 255.31990000000002,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "Light-cold",
+      "mode": "open",
+      "mapped_ms_upper_bound": 192.8843,
+      "normal_exit": 0,
+      "idle": {
+        "scope": "Visible ready picker; process-cold start with OS caches retained, no index process",
+        "cpu_percent_one_core": 0,
+        "seconds": 30.006780199999998,
+        "working_set_bytes": 59801600,
+        "private_bytes": 37408768
+      },
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "Light-folder",
+      "mode": "folder",
+      "mapped_ms_upper_bound": 200.46,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "Light-repeated",
+      "mode": "open",
+      "mapped_ms_upper_bound": 186.09470000000002,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "multiple",
+      "mode": "open",
+      "mapped_ms_upper_bound": 207.0076,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "save-new",
+      "mode": "save",
+      "mapped_ms_upper_bound": 258.0493,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "save-overwrite",
+      "mode": "save",
+      "mapped_ms_upper_bound": 197.5774,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "custom-theme",
+      "mode": "open",
+      "mapped_ms_upper_bound": 209.7713,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "disconnect",
+      "mode": "open",
+      "mapped_ms_upper_bound": 196.0858,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "owner-loss",
+      "mode": "open",
+      "mapped_ms_upper_bound": 478.3953,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "concurrent-one",
+      "mode": "open",
+      "mapped_ms_upper_bound": 261.5088,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    },
+    {
+      "case": "concurrent-two",
+      "mode": "open",
+      "mapped_ms_upper_bound": 246.6023,
+      "normal_exit": 0,
+      "native_parent_verified": true,
+      "caller_enabled_state_preserved": true,
+      "no_index": true
+    }
+  ],
+  "limits": "Historical exact installed package, stock ordinary Windows/software rendering/default DPI; process-cold with OS caches retained, two bounded30-second samples. Not current36 fresh measurements or physical performance guarantee."
+}

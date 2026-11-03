@@ -1,0 +1,9 @@
+{
+  "status": "observed native display recovered with one Escape key",
+  "domain_uuid": "265a92d1-be7c-4a71-bff6-bbb153d06acd",
+  "before_sha256": "794e304b22dab6b5b93604bc86e85055b7e903ec144620cf4540a34c1ac08fbe",
+  "after_sha256": "4b9b3a4e8246885bff907c3b8a14bef9367156d2f277a3de508dfd1200b242a5",
+  "observed": "Black guest content before input; actual owned desktop with expected fixture account after Escape",
+  "action": "One Escape in private owned viewer; no reboot, account change or policy change",
+  "limit": "Cause of black frame not proven; automatic observer remains responsible for ownership-checked desktop readiness"
+}

@@ -1,0 +1,35 @@
+{
+  "scope": "FileManager1 historical producer inputs compared to actual current tree; whole-file differences require responsibility review and current native package check, not an unchanged claim",
+  "files": [
+    {
+      "path": "crates/ottrin-app/src/file_manager.rs",
+      "historical_sha256": "5bac4e88c13a47d71dc45b20b799225097187ecd0f2ed826c83d9a97b194466d",
+      "current_sha256": "5bac4e88c13a47d71dc45b20b799225097187ecd0f2ed826c83d9a97b194466d",
+      "identical": true
+    },
+    {
+      "path": "crates/ottrin-app/src/main.rs",
+      "historical_sha256": "92b1fc2c4418aed4be4a5cb580d73c4d2141066f7d8ef248466f8b798855528d",
+      "current_sha256": "7df0b6ef72935e4268fbdcacab7db248dee6b5adaf158cebe9e2ce0cc5ebb095",
+      "identical": false
+    },
+    {
+      "path": "crates/ottrin-ui/src/startup_notification.rs",
+      "historical_sha256": "3a5e88934bfe954c3de790c17c8320cb71b9180be56bc0610cfd2597890be192",
+      "current_sha256": "3a5e88934bfe954c3de790c17c8320cb71b9180be56bc0610cfd2597890be192",
+      "identical": true
+    },
+    {
+      "path": "crates/ottrin-ui/src/lib.rs",
+      "historical_sha256": "46e1943e3350b807aa86047f85e73c6b366167467e0c59f60e17868030f754ca",
+      "current_sha256": "01cf347c114e713ab7ed84144e51166a92c5d0409c020c1a65938f4adcffc974",
+      "identical": false
+    },
+    {
+      "path": "crates/ottrin-ui/Cargo.toml",
+      "historical_sha256": "cd9e37655843910f4bbcb343d8b042bbcfba2c7d8d56dbd99b352627c16a3203",
+      "current_sha256": "94c954348604eb1e4fbbd380ebf4fb79e9325e215b0a94900d4fca868d03e147",
+      "identical": false
+    }
+  ]
+}

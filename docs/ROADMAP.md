@@ -62,8 +62,8 @@ Native Close remains verified; Alt+F4 is a separate fixture/acceptance question.
 The delivery checkpoint also corrects the push-only CI filter for README, user
 guide and release-note prose. Runtime/packaging/license/workflow changes, every
 pull request and the release workflows retain their gates. This workflow change
-is locally parsed/checked and will trigger its own hosted run; it is distinct
-from the four-success runtime36 run above.
+passes its own hosted CI41647811020 with all four Linux/Windows jobs successful;
+it is distinct from the four-success runtime36 run above.
 
 Evidence: `.hermes/evidence/editable-fields-current/`. Four owned Windows cases,
 eight volumes, seven private desktops/profiles/buses and all mounts are removed.
@@ -73,6 +73,37 @@ the guarded producer, preserving newest sessions, current binaries and useful ca
 Exact baseline comparisons/remaining retained paths are in `CLEANUP_FINAL.json`.
 Current deliverables and compact original evidence remain; user data, protected
 Windows bases and the held MSI are preserved.
+
+Current integration audit: the exact runtime36 AppImage now passes all three
+FileManager1 methods, native-byte argv preservation, independent child reaping,
+repair with an open window, restored directory defaults, and preservation of a
+real running Dolphin provider through enable/disable. Seven original screenshots
+are directly reviewed; this is private X11 with synthetic startup-property handoff,
+not physical Wayland activation acceptance. Evidence:
+`desktop-integration-audit-current/LINUX_FILEMANAGER_ACCEPTANCE.json`.
+
+The current installed Windows NSIS passes all three merged folder menu dispatches
+and normal GUI Close, but the first GUI Services check found that the custom
+painted Settings navigation exposes no named native accessibility control. Correct
+that source responsibility in the next UI delivery, including selected state and
+native activation; current packages must not be described as fixed. Complete the
+current-package default-folder/restore/uninstall fixture separately. Initial
+PowerShell alias and unnamed-row assumptions remain recorded as failed attempts.
+Later native default-dispatch checks remain unaccepted: optional null strings
+needed normalization in the PowerShell/C# fixture, and its next run failed an
+immediate loaded-image assertion without recording the actual returned image.
+The producer now records PID/image/command and waits for an initially unavailable
+image; the next fresh native run is still required. All four Windows attempts
+and their overlays/profiles are terminal and removed. See `CLEANUP_FINAL.json`.
+All 39 original appearance controls have native edit/reset/save/restart evidence.
+Current color ordering/getters/setters, saved draft and preview-color resolution
+are byte-identical to that accepted source; the original palette file is unchanged
+apart from moving the shared context-style function into it. The moved assignments
+are identical, with a separate addition pinning egui to the resolved Light/Dark mode.
+`APPEARANCE_MAPPING_PROJECTION.json` retains exact comparison hashes; this is not
+a fresh 39-control UI sweep. Original Windows picker resource values are directly
+inspected in `WINDOWS_PICKER_MEASUREMENT_AUDIT.json`.
+No product source or current deliverable has changed in this audit checkpoint.
 
 Continue in this order:
 

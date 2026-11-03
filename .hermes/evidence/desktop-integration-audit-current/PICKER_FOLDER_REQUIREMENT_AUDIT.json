@@ -1,0 +1,72 @@
+{
+  "status": "partial concentrated audit; outcome 4 not yet closed",
+  "requirements_source": ".hermes/evidence/windows-preview-safety-current/AUDIT_REQUIREMENTS.json",
+  "user_requirement": "U13",
+  "inspected_receipts": [
+    ".hermes/evidence/appearance-redesign/FINAL_CONTROL_ACCEPTANCE.json",
+    ".hermes/evidence/assistive-delivery-current/picker-dark/RESULT.json",
+    ".hermes/evidence/assistive-delivery-current/picker-light/RESULT.json",
+    ".hermes/evidence/assistive-delivery-current/browser-firefox/RESULT.json",
+    ".hermes/evidence/assistive-delivery-current/browser-flatpak/RESULT.json",
+    ".hermes/evidence/assistive-delivery-current/ubuntu/results/RESULT.json",
+    ".hermes/evidence/assistive-delivery-current/fedora/results/RESULT.json",
+    ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+    ".hermes/evidence/editable-fields-current/SOURCE_SCOPE.json"
+  ],
+  "requirements": [
+    {
+      "id": 8,
+      "classification": "substantial native evidence; complete clause cross-check remains",
+      "evidence": [
+        "picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json:14 actual installed cooperating cases including Dark/Light custom theme, filters, multiple, overwrite, parent and cancel",
+        "assistive-delivery-current/picker-dark and picker-light:actual Linux selection, accepted native paths, repeated launches and stopped-index scope"
+      ],
+      "remaining": "Map each familiar-places/breadcrumb/search/file-view/preview/footer and request-precedence clause to rendered/source evidence; do not treat fourteen case count as full coverage."
+    },
+    {
+      "id": 9,
+      "classification": "native external callers and provider restoration proven at original artifact scope; current in-app callsite audit remains",
+      "evidence": [
+        "assistive-delivery-current/browser-firefox and browser-flatpak:actual installed Firefox and sandboxed Falkon Open/Save",
+        "assistive-delivery-current/ubuntu and fedora:production portal enable/removal, independent portable provider retained",
+        "picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json:cooperating callers only"
+      ],
+      "limits": "Linux browsers use private definition projection; production installation tested separately. No universal Windows interception."
+    },
+    {
+      "id": 10,
+      "classification": "current AppImage scope passed; current NSIS default/restore/uninstall still running",
+      "evidence": [
+        "LINUX_FILEMANAGER_ACCEPTANCE.json:all methods, native bytes, child cleanup, restart and real Dolphin preservation",
+        "windows-folders-json-helper:three actual merged-menu verbs and normal Close passed, then unnamed Settings row halted GUI default scope"
+      ],
+      "remaining": "Next fresh native actor must verify default dispatch, repair, GUI restoration and uninstall. Four prior cases terminal/cleaned. Loaded-image readiness/identity diagnostics corrected in producer; null argument normalization itself has not yet reached default dispatch. Settings navigation source accessibility correction also pending."
+    },
+    {
+      "id": 11,
+      "classification": "native no-index and on-demand scope supported; complete async-search source check remains",
+      "evidence": [
+        "Linux picker Dark/Light results:independent processes, no index; cancellation and concurrent request cleanup",
+        "Windows14-case installed picker:no index process; caller lifetime and independent concurrency"
+      ],
+      "remaining": "Inspect authoritative current directory/search ownership; confirm no extra residency or duplicate indexing path."
+    },
+    {
+      "id": 12,
+      "classification": "measured original-package resource and lifecycle evidence exists; exact-source projection required",
+      "evidence": [
+        "Linux30-second samples:Dark0.0% one core/RSS131264KiB/PSS96436KiB; Light separate receipt",
+        "Linuxfirst process-cold window mapped upper bound531.23ms; repeat422ms range in Dark, OS caches retained",
+        "Windows installed14-case raw result contains own timing/resource scope; do not reuse Linux numbers",
+        "Linux native DEB/RPM removal restores provider choices and retains source/preferences",
+        "WINDOWS_PICKER_MEASUREMENT_AUDIT.json:directly inspected14 original cases; Dark300ms first/255ms repeat,30.03s idle0.104% one core/working set55,549,952B/private36,532,224B; Light192.9ms first,30.01s idle0%, independent scope"
+      ],
+      "remaining": "Bind current unchanged responsibilities to historical exact artifact measurements; do not label process-cold as cold boot or physical acceptance."
+    },
+    {
+      "id": 48,
+      "classification": "incomplete",
+      "remaining": "All outcome4 clauses above must be proven; current Windows fixture default/restore/uninstall scope and Settings accessibility remain incomplete."
+    }
+  ]
+}

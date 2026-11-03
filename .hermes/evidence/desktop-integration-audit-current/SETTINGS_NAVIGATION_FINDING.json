@@ -1,0 +1,15 @@
+{
+  "status": "confirmed source accessibility gap; fix not shipped",
+  "runtime_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "source": "crates/ottrin-ui/src/lib.rs:settings_navigation_row",
+  "function_sha256": "8e04914c8e7ecb58a06307499d10256beb048d26a3c6b2f0f670efa123986956",
+  "observed": "Services is visibly painted but native UIAutomation cannot find a named Button; source returns raw custom click response without widget_info or accessible label",
+  "evidence": "windows-folders-json-helper/results/missing-control.png",
+  "required_correction": [
+    "Expose actual navigation label and selected state through shared widget metadata",
+    "Preserve current icon/text geometry and theme",
+    "Verify native activation and selected state on actual Settings, not only painter tests",
+    "Rebuild and verify stable deliverables before claiming shipped"
+  ],
+  "limits": "No finding that ordinary native pointer selection fails; current pointer Services navigation works. This does not establish every other control accessibility state."
+}

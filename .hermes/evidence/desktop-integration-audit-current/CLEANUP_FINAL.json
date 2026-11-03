@@ -1,0 +1,92 @@
+{
+  "status": "all four owned Windows cases and private Linux session terminal and removed",
+  "cases": [
+    {
+      "case": "windows-folders",
+      "uuid": "4c151b26-f922-4178-8a1a-dbaeb15b233f",
+      "terminal_status": "control finished; inspect exact result, not assumed pass",
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-nsis-client-fixture.iso",
+        "ottrin-nsis-client.qcow2"
+      ],
+      "profile_removed": "/var/tmp/.ottrin-picker-qa-vot2amm3",
+      "fixture_removed": true
+    },
+    {
+      "case": "windows-folders-json-helper",
+      "uuid": "3ac15982-9e76-4daf-88b5-3af5707ff9db",
+      "terminal_status": "control finished; inspect exact result, not assumed pass",
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-nsis-client-fixture.iso",
+        "ottrin-nsis-client.qcow2"
+      ],
+      "profile_removed": "/var/tmp/.ottrin-picker-qa-iu1v4fjs",
+      "fixture_removed": true
+    },
+    {
+      "case": "windows-folders-observed-navigation",
+      "uuid": "265a92d1-be7c-4a71-bff6-bbb153d06acd",
+      "terminal_status": "control finished; inspect exact result, not assumed pass",
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-nsis-client-fixture.iso",
+        "ottrin-nsis-client.qcow2"
+      ],
+      "profile_removed": "/var/tmp/.ottrin-picker-qa-hqbwov6p",
+      "fixture_removed": true
+    },
+    {
+      "case": "windows-folders-native-null",
+      "uuid": "96541565-63a5-4eef-96c6-53fc7e03a0dc",
+      "terminal_status": "control finished; inspect exact result, not assumed pass",
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-nsis-client-fixture.iso",
+        "ottrin-nsis-client.qcow2"
+      ],
+      "profile_removed": "/var/tmp/.ottrin-picker-qa-ogivpsrb",
+      "fixture_removed": true
+    }
+  ],
+  "linux_teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-g_9mnws5",
+    "owned_processes_reaped": [
+      {
+        "pid": 1005540,
+        "exit": 0
+      },
+      {
+        "pid": 1005543,
+        "exit": 0
+      },
+      {
+        "pid": 1005544,
+        "exit": 15
+      },
+      {
+        "pid": 1006417,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1005638,
+        1005808,
+        1005876,
+        1006500
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "compiler_storage": "COMPILER_STORAGE_COMPARISON.json:all six roots unchanged; no builds/configurations created",
+  "retired_inputs": "RETIRED_INPUTS.json:verified extracted transports and duplicate generated controllers retired",
+  "retained_path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-audit-current",
+  "retained_purpose": "Compact original native evidence, frozen producers and requirement/source audit; consumer is active roadmap completion audit and next corrected Windows fixture",
+  "remaining_task_created_runtime_storage": [],
+  "source_and_deliverables": "No product source, packages, personal integration or protected VM bases changed"
+}

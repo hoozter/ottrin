@@ -1,0 +1,15 @@
+{
+  "status": "inconclusive native identity assertion; incomplete current integration scope",
+  "passed": [
+    "58 installed payload identities",
+    "Directory merged menu dispatch and normal Close"
+  ],
+  "failure": "Immediate Get-Process.MainModule.FileName assertion failed on next dispatch; actor omitted actual module path and process command line before assertion",
+  "root_cause": "Not established. Earlier same-background verb succeeds in two recorded runs. Loaded-image initialization race is a hypothesis, not proven.",
+  "next": "Record returned PID/native image/command for every launch and bounded loaded-module readiness before exact expected executable assertion. Preserve mismatch if nonempty.",
+  "unproven": [
+    "Default ShellExecute lookup after null normalization",
+    "remaining GUI restore/repair/uninstall scopes"
+  ],
+  "cleanup": "Terminal canonical driver; guest owned folder/index cleanup0, remaining installed processes0; overlay/profile removed"
+}
