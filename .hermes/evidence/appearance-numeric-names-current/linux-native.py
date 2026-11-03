@@ -10,7 +10,7 @@ try:
   config=json.loads((r/'.hermes/evidence/linux-cli-options-package-current/after100/TEARDOWN.json').read_text())['persisted_config'];config.update(theme=args.theme,bookmarks=[],default_view_mode='List');config['search']['include_roots']=[str(d.profile/'home/Documents')];config['search']['content_indexing_enabled']=False;pref=d.profile/'config/ottrin/config.json';pref.parent.mkdir(parents=True);pref.write_text(json.dumps(config)+'\n')
   d.env.pop('NO_AT_BRIDGE',None);m.run(['gsettings','set','org.gnome.desktop.interface','toolkit-accessibility','true'],d.env)
   (out/'WORKER_SOURCE.py').write_bytes((e/'linux-worker.py').read_bytes());report['worker_sha256']=hashlib.sha256((out/'WORKER_SOURCE.py').read_bytes()).hexdigest()
-  p=d.spawn(['/usr/bin/python3',str(out/'WORKER_SOURCE.py'),str(image),str(out)],'worker.log');assert p.wait(timeout=180)==0,'Native numeric workflow failed; inspect preserved log';report['status']='functional checks pass; native captures require review'
+  p=d.spawn(['/usr/bin/python3',str(out/'WORKER_SOURCE.py'),str(image),str(out),args.theme,'1' if args.theme=='Dark' else '1.5'],'worker.log');assert p.wait(timeout=180)==0,'Native numeric workflow failed; inspect preserved log';report['status']='functional checks pass; native captures require review'
 except BaseException as error:
  report.update(status='failed native creation workflow',error=repr(error));raise
 finally:

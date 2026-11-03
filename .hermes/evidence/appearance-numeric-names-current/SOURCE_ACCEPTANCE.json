@@ -16,9 +16,19 @@
   "actual_actions": "Rendered native SetValue changes the real theme radius and colors; named restore Click restores the editor opening value in Light/Dark. This is not yet native installed OS acceptance.",
   "scope": "SOURCE_CHECKS.json and logs; current stable packages remain0aac until exact candidate content/native/hosted gates and promotion",
   "pending": [
-    "All7replacement formats and package content",
-    "Actual named Linux controls and Windows144DPI native shape/restore/Cancel/full visible captures",
-    "Current-source hosted gates",
-    "Owned staging/source archive/compiler-session cleanup"
-  ]
+    "Installed Windows144DPI named numeric typing/restore/Cancel and all-six-window full visible native captures",
+    "Exact-source hosted gates",
+    "Stable promotion and owned native/staging/compiler cleanup"
+  ],
+  "delivery_progress": {
+    "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+    "linux_content": "PACKAGE_CONTENT_ACCEPTANCE.json",
+    "linux_native": "LINUX_NATIVE_ACCEPTANCE.json",
+    "windows_content": "HOST_PAYLOAD.json",
+    "native_msix12_assembly": "ASSEMBLY_ACCEPTANCE.json",
+    "daemon_scope": [
+      "LINUX_INDEX_ELF_COMPARISON.json",
+      "WINDOWS_INDEX_PE_COMPARISON.json"
+    ]
+  }
 }

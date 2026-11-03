@@ -1,0 +1,11 @@
+{
+  "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "purpose": "Exact named numeric-control source replacement; stable packages retained until native/content/hosted acceptance",
+  "cleanup_owner": "appearance-numeric-names-current",
+  "pending_consumers": [
+    "package content verification",
+    "native GUI acceptance",
+    "stable delivery promotion"
+  ]
+}

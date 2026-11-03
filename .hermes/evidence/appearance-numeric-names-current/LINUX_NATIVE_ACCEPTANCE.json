@@ -1,0 +1,43 @@
+{
+  "status": "pass6native action cases and4directly reviewed captures",
+  "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+  "artifact_sha256": "12479c0b08cceef5f905cd5ed21fdbbc552e1e054071d27207040984e281bbe0",
+  "cases": [
+    "Dark100",
+    "Light150"
+  ],
+  "checks": [
+    "actual named AT-SPI spin button typing24",
+    "specifically named restore to0",
+    "Cancel keeps both saved variants at0",
+    "normal Settings and main window closure",
+    "fixture source bytes preserved"
+  ],
+  "captures": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current/dark100/editor-restored-0.png",
+      "sha256": "0463e4ab497e0216b488d0075de8edc06d797cca30ff0908399d669d681d348a",
+      "observed": "Window corners value and preview/actual editor outer corners agree at24 and restored0; field and restore action visible, footer controls inside the window; theme palette consistent",
+      "scope": "Direct original capture review; no full settings/platform acceptance inferred"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current/dark100/editor-typed-24.png",
+      "sha256": "865730de2ce549755084233acd57cfb06afb76755b50641d9c5e5eb38ab94f3a",
+      "observed": "Window corners value and preview/actual editor outer corners agree at24 and restored0; field and restore action visible, footer controls inside the window; theme palette consistent",
+      "scope": "Direct original capture review; no full settings/platform acceptance inferred"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current/light150/editor-restored-0.png",
+      "sha256": "9c5d55727e7aa955a56561b2be75c1935464d4a87b089ff20650a3110254fcc3",
+      "observed": "Window corners value and preview/actual editor outer corners agree at24 and restored0; field and restore action visible, footer controls inside the window; theme palette consistent",
+      "scope": "Direct original capture review; no full settings/platform acceptance inferred"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current/light150/editor-typed-24.png",
+      "sha256": "404540e3c4d290dd23f73bd83814cc8168c061626b38bd91ea892aa03d0647a1",
+      "observed": "Window corners value and preview/actual editor outer corners agree at24 and restored0; field and restore action visible, footer controls inside the window; theme palette consistent",
+      "scope": "Direct original capture review; no full settings/platform acceptance inferred"
+    }
+  ],
+  "owned_desktops_and_profiles_removed": true
+}

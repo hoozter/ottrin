@@ -1,0 +1,80 @@
+{
+  "status": "pass: complete PE before nonloaded COFF symbol table equal apart from timestamp/checksum",
+  "versions": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+      "sha256": "e0a243776f29abf19114e91c86775a9ed51c2e73541d2a1f4c6d495916c54e4d",
+      "bytes": 5954065,
+      "coff_symbol_offset": 4964864,
+      "coff_symbol_count": 22082,
+      "coff_string_bytes": 591725
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+      "sha256": "f9d33975fbbfbc3436eaf6760c6c15d34e9f7d9e3f666c8890f018b5b15e7c3d",
+      "bytes": 5954065,
+      "coff_symbol_offset": 4964864,
+      "coff_symbol_count": 22082,
+      "coff_string_bytes": 591725
+    }
+  ],
+  "all_sections": {
+    ".text": {
+      "offset": 1024,
+      "bytes": 4038656,
+      "sha256": "b496e5fd7027b1a5021f4dc413d9878775d35122d7fe03ef5715b05830e2311f"
+    },
+    ".data": {
+      "offset": 4039680,
+      "bytes": 20992,
+      "sha256": "de80dde513ceffd53065851d1e4092628eb4949bcf6678696bf049fb3d6cd2ab"
+    },
+    ".rdata": {
+      "offset": 4060672,
+      "bytes": 701440,
+      "sha256": "1c7cd2bdcc1b23b5cfb916673b32fd82aa55a7684b6363b637518bf158ccba51"
+    },
+    ".pdata": {
+      "offset": 4762112,
+      "bytes": 58368,
+      "sha256": "3f3f5468afc8a046db5833c9aeb01864f8edf63ac7a8e66631096be3eb24867a"
+    },
+    ".xdata": {
+      "offset": 4820480,
+      "bytes": 90112,
+      "sha256": "cef12d97a0487621c536c2050ece54d00fb52708990cd98288c3fd180f22e690"
+    },
+    ".bss": {
+      "offset": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    ".idata": {
+      "offset": 4910592,
+      "bytes": 8704,
+      "sha256": "bf78b39cecab20e1c55fc3f04fa1bfa8e1310de9a4bc84c5181f3f68589c5e73"
+    },
+    ".CRT": {
+      "offset": 4919296,
+      "bytes": 512,
+      "sha256": "141ae0a9919f66c3dd7119bb6a36408bcdf2dd20c007a19ba1e535fbdc0c0c8c"
+    },
+    ".tls": {
+      "offset": 4919808,
+      "bytes": 512,
+      "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+    },
+    ".rsrc": {
+      "offset": 4920320,
+      "bytes": 22016,
+      "sha256": "657bb4f8458ea959350c773425ea3e2c381ace6b40c433030badfb74d17f1067"
+    },
+    ".reloc": {
+      "offset": 4942336,
+      "bytes": 22528,
+      "sha256": "53cd12a7915ef726b436ae9592dfb2c303209d7a80acbf84e470b824af750472"
+    }
+  },
+  "normalized_mapped_file_sha256": "4ff6bac3fed8242f4866fcee7f8c34ec548daa7a6d413bfcddf58005ac53e3d2",
+  "scope": "Every section including code/data/resources/imports/unwind/relocation identical; only header timestamp/checksum and nonloaded COFF symbol/string tables differ. Whole-file identity is not claimed. Prior CPU/runtime receipts retain original hashes; no fresh benchmark claimed."
+}

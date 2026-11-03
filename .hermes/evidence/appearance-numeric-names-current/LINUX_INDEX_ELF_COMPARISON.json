@@ -1,0 +1,19 @@
+{
+  "status": "pass exact complete Linux daemon file identity and all ELF load-segments",
+  "versions": [
+    {
+      "sha256": "0415810e594a2873245ba7f5a3ccb7ef766ad222986bce687c067247fc4e001d",
+      "bytes": 5842168
+    },
+    {
+      "sha256": "0415810e594a2873245ba7f5a3ccb7ef766ad222986bce687c067247fc4e001d",
+      "bytes": 5842168
+    }
+  ],
+  "different_loaded_offsets": [],
+  "build_id_descriptor": {
+    "offset": 812,
+    "bytes": 20
+  },
+  "scope": "Complete daemon files and all load-segments are byte-identical in this cohort; no fresh daemon performance claim."
+}

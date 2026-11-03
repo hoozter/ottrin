@@ -92,8 +92,16 @@ Continue in this order:
    visible title and each restore button its property-specific name, preserving
    native role/value/actions. The original rendered regression fails; all 26
    appearance tests, 475 UI tests (one existing ignored), strict native/Windows lint
-   and formatting pass. Replacement packages and named native controls/DPI checks
-   are pending; all seven stable packages remain the 0aac cohort above.
+   and formatting pass. All four Linux formats plus Windows ZIP/NSIS and
+   development MSIX revision 12 are built from clean source `84ea8742`.
+   Linux package contents and six native typed-value/restore/Cancel checks pass
+   in Dark100/Light150; all four original captures were reviewed. Windows ZIP
+   and NSIS have identical 58-file payloads; native MakeAppx assembly/unpack
+   confirms the same payload in MSIX12. Owned Linux desktops/profiles, package
+   extraction and the MSIX assembly VM/source archive are removed.
+   Installed Windows144DPI/Native/OpenGL checks and exact-source hosted CI are
+   still running. Promotion and final compiler/staging cleanup remain pending;
+   all seven stable packages remain the 0aac cohort above.
    Evidence: `windows-dpi-current/` retains exact failed setup/lookup scopes and
    all completed clone teardown; `appearance-numeric-names-current/` owns the
    correction, future candidate builds and acceptance. No numeric/OS/DPI failure

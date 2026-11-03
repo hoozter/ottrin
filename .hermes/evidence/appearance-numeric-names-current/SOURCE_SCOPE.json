@@ -1,0 +1,14 @@
+{
+  "status": "pass exact production source comparison",
+  "previous_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "candidate_source": "84ea87420d2947a05105f287310b191107e8338e",
+  "changed_files": [
+    "crates/ottrin-ui/src/appearance_editor.rs"
+  ],
+  "shipping_behavior": "Shared appearance numeric widgets receive their visible title through existing name_control, and restore actions receive property-specific names. Rendered role/value/action regressions added. No layout, palette, geometry, daemon, service, installer, picker protocol or media source changes.",
+  "daemon_identity": [
+    "LINUX_INDEX_ELF_COMPARISON.json",
+    "WINDOWS_INDEX_PE_COMPARISON.json"
+  ],
+  "limits": "Prior responsibility receipts retain their exact historical source/package scopes. Current native control and DPI checks are separately required; this is not full roadmap acceptance."
+}

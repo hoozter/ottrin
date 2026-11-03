@@ -1,0 +1,11 @@
+{
+  "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current/source.zip",
+  "status": "consumed by native MSIX12 assembly; owned source archive retired",
+  "sha256": "3b6e4cd6422240aef2fae6664a902ef29df73088346d950bfe5c532b0c201433",
+  "archive_bytes": 194347398,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}
