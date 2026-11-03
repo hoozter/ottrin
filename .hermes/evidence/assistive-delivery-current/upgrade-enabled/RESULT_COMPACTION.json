@@ -1,0 +1,5 @@
+{
+  "removed_transport_sha256": "87d0139a10deb59bde657c9b23ad3091539396293eec4384c739e0c58ee23095",
+  "removed_transport_bytes": 583542,
+  "authority": "results/* plus RESULT_MEMBERS.json; native RESULT.json independently compared to RUNTIME_RESULT.json"
+}

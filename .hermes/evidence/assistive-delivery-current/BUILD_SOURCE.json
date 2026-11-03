@@ -1,0 +1,8 @@
+{
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Refresh Linux four-format native accessibility cohort using verified viewport and Inspector action-label source",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Accepted local Linux cohort promoted; staging/extraction removed"
+}

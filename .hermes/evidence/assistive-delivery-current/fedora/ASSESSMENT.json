@@ -1,0 +1,58 @@
+{
+  "status": "pass native Fedora actor scopes with separately recovered owned teardown",
+  "source": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "package_sha256": "a1599427d2b88ccef67ef8fa1fb1dccc70f93436576dc2a256f6db84cb4fe92f",
+  "actor_result": {
+    "source": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+    "scope": "Exact fedora same-version reinstall/removal; native online/offline folder/picker and independent portable choice",
+    "status": "pass",
+    "picker_frontend": {
+      "ottrinqa": {
+        "expected_executable": "/usr/bin/ottrin",
+        "chooser_pid": 2335,
+        "mapped_ms": 267,
+        "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+        "status": "pass"
+      },
+      "offlineqa": {
+        "expected_executable": "/usr/bin/ottrin",
+        "chooser_pid": 2384,
+        "mapped_ms": 203,
+        "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+        "status": "pass"
+      },
+      "portableqa": {
+        "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+        "chooser_pid": 2435,
+        "mapped_ms": 202,
+        "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+        "status": "pass"
+      }
+    },
+    "configured": {
+      "ottrinqa": 2329,
+      "offlineqa": 2379,
+      "portableqa": 2427
+    },
+    "reinstall": "pass; selected integrations retained; active picker PIDs unchanged",
+    "modified_native_asset": "refused before native or portable picker stopped",
+    "native_removal": "pass; online/offline preferences restored and native receipts removed; app preferences/source retained",
+    "native_activation_removed": true,
+    "portable_registration_and_process": "preserved",
+    "portable_system_definition_present": true,
+    "portable_frontend_after_native_removal": {
+      "expected_executable": "/home/portableqa/portable/Ottrin-0.1.0-linux-x86_64/libexec/ottrin/ottrin",
+      "chooser_pid": 3511,
+      "mapped_ms": 125,
+      "window_title": "Ottrin \u2014 Ottrin Native Picker QA",
+      "status": "pass"
+    },
+    "portable_picker_after_native_removal": "pass; real frontend restart and backend readiness"
+  },
+  "initial_controller_status": "fail",
+  "initial_controller_failure": "Host user could not directly read protected qcow2 backing metadata after actor passed; original result retained",
+  "cleanup": "VM_CLEANUP.json",
+  "protected_images_permissions_unchanged": true,
+  "setup_control": false,
+  "pending": "Normal Ubuntu APT/DEB comparison and complete cohort promotion"
+}

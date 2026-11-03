@@ -1,0 +1,398 @@
+﻿[
+    {
+        "rect":  [
+                     1039,
+                     162,
+                     28,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Close window",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     163,
+                     169,
+                     60,
+                     14
+                 ],
+        "focusable":  false,
+        "name":  " Settings",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     223,
+                     58,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "Preferences",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     245,
+                     126,
+                     30
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     278,
+                     126,
+                     30
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     311,
+                     126,
+                     30
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     344,
+                     126,
+                     30
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     404,
+                     32,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "Search",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     426,
+                     126,
+                     30
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     176,
+                     459,
+                     126,
+                     30
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     218,
+                     51,
+                     17
+                 ],
+        "focusable":  false,
+        "name":  "General",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     238,
+                     232,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "Default behavior and application preferences.",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     266,
+                     67,
+                     14
+                 ],
+        "focusable":  false,
+        "name":  "Default view",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     289,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Column view",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     320,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "List view",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     351,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Grid view",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     415,
+                     158,
+                     15
+                 ],
+        "focusable":  false,
+        "name":  "Default thumbnail behavior",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     433,
+                     370,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "These defaults also change when you toggle thumbnails from View Options.",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     455,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Show thumbnails in Grid view",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     486,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Show thumbnails in List view",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     550,
+                     102,
+                     15
+                 ],
+        "focusable":  false,
+        "name":  "Graphics renderer",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     568,
+                     471,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "Effective now: Bundled OpenGL compatibility, selected because command-line OpenGL override.",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     584,
+                     512,
+                     12
+                 ],
+        "focusable":  false,
+        "name":  "Changes apply the next time Ottrin starts. Command-line diagnostics override this setting for that launch only.",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     605,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Automatic",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     636,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Native",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     667,
+                     705,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "OpenGL compatibility",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     698,
+                     139,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Reset to Automatic",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     795,
+                     46,
+                     15
+                 ],
+        "focusable":  false,
+        "name":  "Cleanup",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     813,
+                     640,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "Use this before deleting an AppImage/portable build if you enabled background indexing or want Ottrin\u0027s generated data removed.",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     835,
+                     125,
+                     26
+                 ],
+        "focusable":  true,
+        "name":  "Cleanup Ottrin data",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     868,
+                     178,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Remove preferences files",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     340,
+                     218,
+                     717,
+                     563
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     1055,
+                     218,
+                     2,
+                     563
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Custom",
+        "enabled":  true
+    }
+]

@@ -1,0 +1,39 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-eylzmuv4",
+  "owned_processes_reaped": [
+    {
+      "pid": 692376,
+      "exit": 0
+    },
+    {
+      "pid": 692379,
+      "exit": 0
+    },
+    {
+      "pid": 692380,
+      "exit": 15
+    },
+    {
+      "pid": 692440,
+      "exit": 0
+    },
+    {
+      "pid": 692551,
+      "exit": 0
+    },
+    {
+      "pid": 692664,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      692555,
+      692639
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

@@ -1,0 +1,29 @@
+{
+  "scope": "Read-only exact protected core metadata recheck; no core file or permission changed",
+  "checks": [
+    {
+      "path": "/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst",
+      "state": "absent"
+    },
+    {
+      "path": "/var/lib/systemd/coredump/core.chrome.1000.eeed43c73b3a47998b6355d43295a2ad.2138656.1792952026000000.zst",
+      "state": "absent"
+    },
+    {
+      "path": "/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst",
+      "state": "present",
+      "bytes": 3582882,
+      "uid": 0
+    },
+    {
+      "path": "/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst",
+      "state": "present",
+      "bytes": 5095020,
+      "uid": 0
+    }
+  ],
+  "obsolete_wait_rows_removed": [
+    "Privileged cleanup of owned X11 test core",
+    "Privileged cleanup of owned Chrome diagnostic core"
+  ]
+}

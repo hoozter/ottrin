@@ -1,0 +1,66 @@
+{
+  "status": "pass within exact Linux package, private GUI and fresh native distribution scopes",
+  "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "aba45c43b3e74c8cc6d761e9c6968dd1ecf1596f693da1bb713818a2de38ba9e",
+    "Ottrin-0.1.0-x86_64.AppImage": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "40461a63c21e3fb43ea6ff192c495c9a9b78dc2d845b5a76d27dcaccf9136f9b",
+    "ottrin_0.1.0_amd64.deb": "3f1363bc1ada28682839e447b45d2de03d9e3f2437561038992a09d28e32885a"
+  },
+  "evidence": ".hermes/evidence/picker-keyboard-selection-current",
+  "indexd_binary_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+  "html_binary_sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "gui_sessions": {
+    "main-dark100": ".hermes/evidence/picker-keyboard-selection-current/main-dark100/RESULT.json",
+    "main-light150": ".hermes/evidence/picker-keyboard-selection-current/main-light150/RESULT.json",
+    "properties-dark100": ".hermes/evidence/picker-keyboard-selection-current/properties-dark100/RESULT.json",
+    "properties-light150": ".hermes/evidence/picker-keyboard-selection-current/properties-light150/RESULT.json",
+    "icon": ".hermes/evidence/picker-keyboard-selection-current/icon/RESULT.json",
+    "upgrade-view": ".hermes/evidence/picker-keyboard-selection-current/upgrade-view/RESULT.json"
+  },
+  "picker_keyboard_sessions": [
+    "picker-dark/RESULT.json",
+    "picker-light/RESULT.json"
+  ],
+  "appearance_receipt": ".hermes/evidence/picker-keyboard-selection-current/APPEARANCE_ACCEPTANCE.json",
+  "browser_sessions": [
+    "browser-firefox/RESULT.json",
+    "browser-flatpak/RESULT.json"
+  ],
+  "menu_keyboard_sessions": [
+    "menu-keys/RESULT.json",
+    "menu-space/RESULT.json"
+  ],
+  "symlink_gui_receipt": ".hermes/evidence/picker-keyboard-selection-current/symlink-gui-final/RESULT.json",
+  "native_distribution_lifecycle": [
+    "Fedora44 DNF/RPM",
+    "Ubuntu24.04 APT/DEB"
+  ],
+  "native_scope": "Normal setup without controls, actual portal chooser, idle status, same-version reinstall, modified-asset refusal, online/offline native removal and preference restoration, portable picker surviving native removal. Source/config unchanged.",
+  "resource_identity": {
+    "daemon_binary_identical_to_previous": true,
+    "receipts": {
+      "POPULATED_INDEX.json": ".hermes/evidence/linux-search-delivery-current/POPULATED_INDEX.json",
+      "CONTENT_INDEX.json": ".hermes/evidence/linux-search-delivery-current/CONTENT_INDEX.json"
+    },
+    "note": "Prior exact source928b7937 10000-file metadata/content controls retain original source/artifact scopes; complete daemon/helper binary equality binds unchanged runtime evidence. Current GUI/browser/native lifecycle checked separately. No new personal or sustained workload claim."
+  },
+  "hosted_source": {
+    "run": 41508619836,
+    "tested_source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+    "product_inputs_match_package_source": true,
+    "linux": "success",
+    "performance": "success",
+    "windows_state_at_linux_promotion": "completed"
+  },
+  "scope": "Local four-format Linux delivery. Physical graphics/devices, external production picker use and final owner acceptance remain separate. Windows internal candidate and failed MSI rollback gate unchanged.",
+  "cleanup": "Owned GUI profiles/processes/displays/buses/mounts and both native VM domains/volumes/credentials removed; staging/extraction retired after promotion. Current compiler caches and compact receipts retained."
+}

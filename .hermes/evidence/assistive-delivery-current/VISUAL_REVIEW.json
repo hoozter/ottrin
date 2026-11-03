@@ -1,0 +1,44 @@
+{
+  "status": "reviewed actual staged Dark100/Light150 rendered captures",
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "titlebar_marker_rgb_by_window": {
+    "main-custom-titlebar.png": [
+      113,
+      58,
+      82
+    ],
+    "settings-custom-titlebar.png": [
+      113,
+      58,
+      82
+    ],
+    "editor-custom-titlebar.png": [
+      113,
+      58,
+      82
+    ]
+  },
+  "light_corner_leading_dark_pixels_row0": {
+    "main-before-window-radius.png": 5,
+    "main-window-radius-20.png": 24,
+    "settings-before-window-radius.png": 5,
+    "settings-window-radius-20.png": 24,
+    "editor-window-radius-20.png": 24,
+    "editor-window-radius-confirm-5.png": 5,
+    "inspector-window-radius-20.png": 24,
+    "inspector-radius-confirm-5.png": 5
+  },
+  "reviewed": [
+    "Shared main/Settings/editor titlebar marker color matches",
+    "Preview and actual Buttons are rounded at the14px setting",
+    "Main/Settings/editor/Inspector large window corners match; confirmed5px editor/Inspector corners are smaller",
+    "Grouped editor controls and matching smart-panel icon rail",
+    "Current updated Miller screenshot visibly has columns"
+  ],
+  "rejected_observer_scope": "First single-click numeric5 attempt did not commit the DragValue edit; its Inspector screenshot remains20. Accepted confirmation uses explicit double-click/text/Return, visibly5px in editor and Inspector. Raw initial capture retained.",
+  "limits": [
+    "No exhaustive39-control replay claimed",
+    "No physical-renderer or screen-reader usability acceptance"
+  ]
+}

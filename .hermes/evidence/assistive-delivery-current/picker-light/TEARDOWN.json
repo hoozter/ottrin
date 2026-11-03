@@ -1,0 +1,48 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-b44fdxwy",
+  "owned_processes_reaped": [
+    {
+      "pid": 680928,
+      "exit": 0
+    },
+    {
+      "pid": 680945,
+      "exit": 0
+    },
+    {
+      "pid": 680949,
+      "exit": 15
+    },
+    {
+      "pid": 681037,
+      "exit": 0
+    },
+    {
+      "pid": 681238,
+      "exit": 0
+    },
+    {
+      "pid": 681333,
+      "exit": 0
+    },
+    {
+      "pid": 681426,
+      "exit": 0
+    },
+    {
+      "pid": 681519,
+      "exit": 0
+    },
+    {
+      "pid": 681571,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

@@ -1,0 +1,340 @@
+{
+  "current_main": {
+    "status": "pass",
+    "saved_view": "Miller",
+    "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+    "geometry": "client=1100x752 origin=0,0 dpi=96",
+    "exit": 0
+  },
+  "fresh_main": {
+    "status": "pass",
+    "saved_view": "Miller",
+    "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+    "geometry": "client=1100x752 origin=0,0 dpi=96",
+    "exit": 0
+  },
+  "scope": "Exact ordinary-user portable chooser and NSIS fresh/upgrade/intent/refusal/retry workflows",
+  "phase": "supported uninstall retry",
+  "fresh_install_exit": 0,
+  "desktop_ready": true,
+  "owned_portable_extraction_removed": true,
+  "running_index_upgrade": "pass",
+  "before_upgrade": {
+    "live": {
+      "instance": "{C5D7B386-8E2B-4D1F-B98C-3336EBC3A81B}",
+      "pid": 4316
+    },
+    "database_identity": "402E2E37:00090000000250A2",
+    "security": "O:S-1-5-21-3790294415-2606194316-2422870471-1002G:S-1-5-21-3790294415-2606194316-2422870471-513D:AI(A;ID;0x1f019f;;;BA)(A;ID;0x1f019f;;;SY)(A;ID;FA;;;S-1-5-21-3790294415-2606194316-2422870471-1002)",
+    "preferences": "D5DC565886FA2CA63ED5DCD89B40D3085E2F47DF4CC4766EB12CF03E5AE25CC1",
+    "enabled": true
+  },
+  "payload_files": 58,
+  "last_picker_window": {
+    "foreground": 721486,
+    "geometry": "client=940x640 origin=0,0 dpi=96",
+    "input_idle": true,
+    "window": 721486,
+    "title": "Ottrin \u2014 Selection proof",
+    "enabled": true
+  },
+  "picker_cases": [
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0062006500740061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "beta.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-dark-baseline",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0061006c007000680061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "alpha.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-dark-up-single",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0061006c007000680061002e007400780074"
+          },
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0062006500740061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "alpha.txt",
+        "beta.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-dark-up-range",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c00670061006d006d0061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "gamma.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-dark-down-single",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0062006500740061002e007400780074"
+          },
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c00670061006d006d0061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "gamma.txt",
+        "beta.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-dark-down-range",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0062006500740061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "beta.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-light-baseline",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0061006c007000680061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "alpha.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-light-up-single",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0061006c007000680061002e007400780074"
+          },
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0062006500740061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "alpha.txt",
+        "beta.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-light-up-range",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c00670061006d006d0061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "gamma.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-light-down-single",
+      "exit": 0,
+      "status": "pass"
+    },
+    {
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c0062006500740061002e007400780074"
+          },
+          {
+            "encoding": "windows-utf16-le",
+            "units_hex": "0043003a005c00550073006500720073005c004f0054004d00530049006400340031006100610031003300660037003500640034005c004f0074007400720069006e004f0077006e0065006400530065006c0065006300740069006f006e005c00670061006d006d0061002e007400780074"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "expected_names": [
+        "gamma.txt",
+        "beta.txt"
+      ],
+      "binary_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+      "case": "picker-light-down-range",
+      "exit": 0,
+      "status": "pass"
+    }
+  ],
+  "uninstall_retry": "pass",
+  "package": {
+    "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945"
+      },
+      {
+        "name": "current-setup.exe",
+        "sha256": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc"
+      },
+      {
+        "name": "previous-setup.exe",
+        "sha256": "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b"
+      }
+    ],
+    "previous_source": "656768852a930e4e69dcf37e901d5bf00c6b6175"
+  },
+  "portable_picker_without_index": "pass",
+  "identity": {
+    "profile": "C:\\Users\\OTMSId41aa13f75d4",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "refused_uninstall": {
+    "exit": 1,
+    "source_preserved": true,
+    "task_and_security_preserved": true,
+    "database_identity": "402E2E37:00090000000250A2",
+    "after": {
+      "instance": "{2AE1DF07-452F-4B01-B360-7D3FD27BEFF1}",
+      "pid": 2416
+    },
+    "payload_preserved": true,
+    "before": {
+      "instance": "{2AE1DF07-452F-4B01-B360-7D3FD27BEFF1}",
+      "pid": 2416
+    },
+    "status": "pass",
+    "preferences_preserved": true
+  },
+  "runtime_cases": [
+    {
+      "status": "pass",
+      "running": true,
+      "enabled": false
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": true
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": false
+    }
+  ],
+  "status": "pass",
+  "previous_main": {
+    "status": "pass",
+    "saved_view": "Miller",
+    "binary_sha256": "667a88bfb0d2f4fc4754908000ab91c19dbe44777f2028c5c01415d9593d56ba",
+    "geometry": "client=1100x752 origin=0,0 dpi=96",
+    "exit": 0
+  },
+  "fresh_install_uninstall": "pass",
+  "after_upgrade": {
+    "live": {
+      "instance": "{0259B771-D591-4DDF-94CE-4A1B844F7A69}",
+      "pid": 6808
+    },
+    "database_identity": "402E2E37:00090000000250A2",
+    "preferences": "D5DC565886FA2CA63ED5DCD89B40D3085E2F47DF4CC4766EB12CF03E5AE25CC1"
+  }
+}

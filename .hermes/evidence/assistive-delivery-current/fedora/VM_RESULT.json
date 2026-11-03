@@ -1,0 +1,25 @@
+{
+  "setup_control": false,
+  "distro": "fedora",
+  "domain": "ottrin-native-fedora-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "status": "fail",
+  "package_sha256": "a1599427d2b88ccef67ef8fa1fb1dccc70f93436576dc2a256f6db84cb4fe92f",
+  "uuid": "e337bec1-9c9f-4a7d-b12d-3e689b1c562b",
+  "cloud_init": {
+    "exit": 2,
+    "status": "done",
+    "recoverable_errors": {
+      "WARNING": [
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)",
+        "Failed to set the hostname to ottrin-native-fedora-desktop-qa (ottrin-native-fedora-desktop-qa)"
+      ]
+    },
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "RuntimeError(\"['qemu-img', 'info', '--force-share', '--backing-chain', '--output=json', '/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2']: 1:  qemu-img: Could not open '/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2': Could not open '/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2': Permission denied\\n\")",
+  "temporary_seed_and_ssh_keys_removed": true
+}

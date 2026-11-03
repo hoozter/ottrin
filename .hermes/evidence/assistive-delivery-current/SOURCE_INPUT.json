@@ -1,0 +1,11 @@
+{
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-delivery-current/source.zip",
+  "status": "consumed by native assembly; owned source archive retired",
+  "sha256": "005f769ae1ef84c09791b4c1da6613980df6ab78718aa7311ba5d63ad7b3f33d",
+  "archive_bytes": 141573282,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

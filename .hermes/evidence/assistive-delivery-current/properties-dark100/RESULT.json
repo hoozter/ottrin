@@ -1,0 +1,37 @@
+{
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "scope": "Actual packaged Dark100 Properties, long metadata, normal native-pointer Close, no index/config/source mutation",
+  "native_close_button_clicked": true,
+  "status": "pass",
+  "normal_exit": 0,
+  "source_and_config_preserved": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_15i98h_",
+    "owned_processes_reaped": [
+      {
+        "pid": 688534,
+        "exit": 0
+      },
+      {
+        "pid": 688537,
+        "exit": 0
+      },
+      {
+        "pid": 688538,
+        "exit": 15
+      },
+      {
+        "pid": 688595,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

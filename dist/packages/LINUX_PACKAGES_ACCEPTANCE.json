@@ -1,14 +1,14 @@
 {
   "status": "pass within exact Linux package, private GUI and fresh native distribution scopes",
-  "source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "aba45c43b3e74c8cc6d761e9c6968dd1ecf1596f693da1bb713818a2de38ba9e",
-    "Ottrin-0.1.0-x86_64.AppImage": "1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "40461a63c21e3fb43ea6ff192c495c9a9b78dc2d845b5a76d27dcaccf9136f9b",
-    "ottrin_0.1.0_amd64.deb": "3f1363bc1ada28682839e447b45d2de03d9e3f2437561038992a09d28e32885a"
+    "ottrin-0.1.0-1.x86_64.rpm": "a1599427d2b88ccef67ef8fa1fb1dccc70f93436576dc2a256f6db84cb4fe92f",
+    "Ottrin-0.1.0-x86_64.AppImage": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "37f5563cee3f6801f011e010c334b1cc73cb95f3d525b7234fe65084bc457300",
+    "ottrin_0.1.0_amd64.deb": "ad142e72907b820e2bdf70a888a132a9e15fdce11337b137b0859fee1efa60ab"
   },
-  "evidence": ".hermes/evidence/picker-keyboard-selection-current",
-  "indexd_binary_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+  "evidence": ".hermes/evidence/assistive-delivery-current",
+  "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
   "html_binary_sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
@@ -19,18 +19,23 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "gui_sessions": {
-    "main-dark100": ".hermes/evidence/picker-keyboard-selection-current/main-dark100/RESULT.json",
-    "main-light150": ".hermes/evidence/picker-keyboard-selection-current/main-light150/RESULT.json",
-    "properties-dark100": ".hermes/evidence/picker-keyboard-selection-current/properties-dark100/RESULT.json",
-    "properties-light150": ".hermes/evidence/picker-keyboard-selection-current/properties-light150/RESULT.json",
-    "icon": ".hermes/evidence/picker-keyboard-selection-current/icon/RESULT.json",
-    "upgrade-view": ".hermes/evidence/picker-keyboard-selection-current/upgrade-view/RESULT.json"
+    "main-dark100": ".hermes/evidence/assistive-delivery-current/main-dark100/RESULT.json",
+    "main-light150": ".hermes/evidence/assistive-delivery-current/main-light150/RESULT.json",
+    "properties-dark100": ".hermes/evidence/assistive-delivery-current/properties-dark100/RESULT.json",
+    "properties-light150": ".hermes/evidence/assistive-delivery-current/properties-light150/RESULT.json",
+    "icon": ".hermes/evidence/assistive-delivery-current/icon/RESULT.json",
+    "upgrade-view": ".hermes/evidence/assistive-delivery-current/upgrade-view/RESULT.json"
   },
   "picker_keyboard_sessions": [
     "picker-dark/RESULT.json",
     "picker-light/RESULT.json"
   ],
-  "appearance_receipt": ".hermes/evidence/picker-keyboard-selection-current/APPEARANCE_ACCEPTANCE.json",
+  "appearance_receipt": ".hermes/evidence/assistive-delivery-current/APPEARANCE_ACCEPTANCE.json",
+  "native_accessibility_receipts": [
+    "native-dark100/NATIVE_RESULT.json",
+    "native-light150/NATIVE_RESULT.json",
+    "main-lifecycle/NATIVE_RESULT.json"
+  ],
   "browser_sessions": [
     "browser-firefox/RESULT.json",
     "browser-flatpak/RESULT.json"
@@ -39,23 +44,23 @@
     "menu-keys/RESULT.json",
     "menu-space/RESULT.json"
   ],
-  "symlink_gui_receipt": ".hermes/evidence/picker-keyboard-selection-current/symlink-gui-final/RESULT.json",
+  "symlink_gui_receipt": ".hermes/evidence/assistive-delivery-current/symlink-gui-final/RESULT.json",
   "native_distribution_lifecycle": [
     "Fedora44 DNF/RPM",
     "Ubuntu24.04 APT/DEB"
   ],
   "native_scope": "Normal setup without controls, actual portal chooser, idle status, same-version reinstall, modified-asset refusal, online/offline native removal and preference restoration, portable picker surviving native removal. Source/config unchanged.",
   "resource_identity": {
-    "daemon_binary_identical_to_previous": true,
+    "daemon_binary_identical_to_previous": false,
     "receipts": {
-      "POPULATED_INDEX.json": ".hermes/evidence/linux-search-delivery-current/POPULATED_INDEX.json",
-      "CONTENT_INDEX.json": ".hermes/evidence/linux-search-delivery-current/CONTENT_INDEX.json"
+      "POPULATED_INDEX.json": ".hermes/evidence/assistive-delivery-current/INDEX_METADATA.json",
+      "CONTENT_INDEX.json": ".hermes/evidence/assistive-delivery-current/INDEX_CONTENT.json"
     },
-    "note": "Prior exact source928b7937 10000-file metadata/content controls retain original source/artifact scopes; complete daemon/helper binary equality binds unchanged runtime evidence. Current GUI/browser/native lifecycle checked separately. No new personal or sustained workload claim."
+    "note": "Current exact AppImage daemon freshly passes10000-file metadata/content, live/offline mutation and restart controls with six30-second quiet samples. Four helpers remain byte-identical to previous delivery. Current GUI/browser/native lifecycle and accessibility checked separately. No personal or sustained workload claim."
   },
   "hosted_source": {
-    "run": 41508619836,
-    "tested_source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+    "run": 41565016646,
+    "tested_source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
     "product_inputs_match_package_source": true,
     "linux": "success",
     "performance": "success",

@@ -1,0 +1,10 @@
+﻿{
+    "class":  "Window Class",
+    "title":  "Ottrin Settings",
+    "actor_apartment":  "STA",
+    "process":  9212,
+    "name":  "Ottrin Settings",
+    "type":  "ControlType.Window",
+    "framework":  "Win32",
+    "provider_description_api_available":  false
+}

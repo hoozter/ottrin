@@ -1,0 +1,15 @@
+{
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "at": "2026-11-03T02:29:57.688296+00:00",
+  "allocated_bytes": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769548800,
+    ".hermes/evidence/assistive-delivery-current": 2125824,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 114618368,
+    ".hermes/packaging-tmp/.linux-desktop-extract": 76918784
+  },
+  "cleanup_owner": "Current roadmap goal; registered producer teardown; retain stage only for current native lifecycle/MSIX/promotion consumers; stable Windows preview unchanged"
+}

@@ -1,0 +1,7 @@
+{
+  "status": "Both complete-cohort UIA guests/four volumes/private desktops removed; wrapper alias/metadata retired",
+  "canonical_current_zip_preserved": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-portable.zip",
+  "canonical_archive_sha256": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+  "canonical_nlink_after": 1,
+  "retired_wrapper": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage"
+}

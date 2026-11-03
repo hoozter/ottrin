@@ -1,0 +1,65 @@
+﻿{
+    "flow":  "all",
+    "inspector_glyph_buttons":  [
+
+                                ],
+    "scope":  "Actual complete current portable cohort, ordinary native UIAutomation and private10000-file daemon idle observations; installer/MSIX/physical acceptance separate",
+    "phase":  "native Windows observation complete; service teardown follows",
+    "renderer":  "opengl",
+    "desktop_ready":  true,
+    "index_idle":  {
+                       "working_set_bytes":  13094912,
+                       "seconds":  30.0124896,
+                       "executable":  "C:\\Users\\OTMSI6d31445def20\\OttrinOwnedAssistivePayload\\Ottrin-0.1.0-windows-x64\\bin\\ottrin-indexd.exe",
+                       "watcher_ready":  true,
+                       "pid":  5896,
+                       "indexed_items":  10101,
+                       "sha256":  "8d83bd6a6b4a2fd1117d739a3b4a61d6e21f8a2757b6578ffa7b0eea8cdeb630",
+                       "cpu_percent_one_core":  0.15618497707034609,
+                       "scope":  "Private10000-file metadata corpus plus proof file; no personal or physical-workload claim",
+                       "start_time":  "2026-11-03T04:07:23.8186341Z"
+                   },
+    "service_cleanup_exit":  0,
+    "picker_native_close_exit":  0,
+    "inspector_native_close":  true,
+    "settings_native_close":  true,
+    "inspector_value_controls":  [
+
+                                 ],
+    "input":  {
+                  "source_revision":  "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+                  "application_sha256":  "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+                  "archive_sha256":  "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+                  "renderer":  "opengl",
+                  "flow":  "all",
+                  "payload_kind":  "complete current cohort",
+                  "indexd_sha256":  "8d83bd6a6b4a2fd1117d739a3b4a61d6e21f8a2757b6578ffa7b0eea8cdeb630",
+                  "scope":  "Exact newly built portable ZIP, not borrowed runtime;10000-file metadata idle and native UIAutomation; installation/MSIX remain separate"
+              },
+    "main_native_close_exit":  0,
+    "source_preserved":  true,
+    "settings_foreground":  true,
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSI6d31445def20",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "service_cleanup_stderr":  "",
+    "picker_preferences_preserved":  true,
+    "status":  "pass native Windows UIAutomation observations",
+    "picker_response":  {
+                            "accepted":  false,
+                            "paths":  [
+
+                                      ],
+                            "current_filter":  null,
+                            "choices":  {
+
+                                        }
+                        },
+    "forward_disabled":  true,
+    "parent_enabled":  true,
+    "service_cleanup_stdout":  "Session indexing stopped; no background Ottrin index task was installed.\n",
+    "inspector_foreground":  true
+}

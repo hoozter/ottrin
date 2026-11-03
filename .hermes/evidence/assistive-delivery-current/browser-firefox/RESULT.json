@@ -1,0 +1,65 @@
+{
+  "status": "pass",
+  "browser": "firefox",
+  "scope": "Actual installed browser Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "appimage_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "firefox_scope": {
+    "unit": "app-firefox-ottrinqa3ad9a5fd529181aa.scope",
+    "desktop_entry": "/usr/share/applications/firefox.desktop",
+    "purpose": "Correct real application attribution; inner Firefox retains only explicitly selected private session/environment values"
+  },
+  "chooser_executable": "/var/tmp/.ottrin-picker-qa-kxhkue24/t/.mount_OttrinrMFhXx/usr/bin/ottrin",
+  "open_pid": 695166,
+  "actual_browser": "firefox",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes from the opened local text document",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "chooser_backend_pid": 695389,
+  "popup_arrow_escape_scope": "not exercised by this case",
+  "no_index_started": true,
+  "identity_scope": "Parent runner verifies actual installed browser attribution independently from the frontend log; this controller verifies Open/Save bytes and chooser ownership.",
+  "actual_portal_app_id": "firefox",
+  "identity_evidence": "Actual FileChooser backend OpenFile and SaveFile calls both carry the installed browser app ID",
+  "identity_limit": "Exact installed browser identity on private session; physical desktop and other browser packages remain separate.",
+  "owned_firefox_scope_cleanup": {
+    "unit": "app-firefox-ottrinqa3ad9a5fd529181aa.scope",
+    "load_state": "not-found"
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-kxhkue24",
+    "owned_processes_reaped": [
+      {
+        "pid": 694802,
+        "exit": 0
+      },
+      {
+        "pid": 694805,
+        "exit": 0
+      },
+      {
+        "pid": 694806,
+        "exit": 15
+      },
+      {
+        "pid": 694854,
+        "exit": -15
+      },
+      {
+        "pid": 694855,
+        "exit": -15
+      },
+      {
+        "pid": 694864,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

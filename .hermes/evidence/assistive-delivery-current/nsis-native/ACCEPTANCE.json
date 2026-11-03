@@ -1,0 +1,96 @@
+{
+  "status": "pass within exact ordinary-user current portable chooser and NSIS lifecycle scope",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "package_inputs": {
+    "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945"
+      },
+      {
+        "name": "current-setup.exe",
+        "sha256": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc"
+      },
+      {
+        "name": "previous-setup.exe",
+        "sha256": "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b"
+      }
+    ],
+    "previous_source": "656768852a930e4e69dcf37e901d5bf00c6b6175"
+  },
+  "native_identity": {
+    "profile": "C:\\Users\\OTMSId41aa13f75d4",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "native_result_sha256": "83abffc165dbeecbdaa5b9882271a2740d9de27f46f6693253e76fd3dd752602",
+  "result_authority": "Exact UTF8 native results/RESULT.json; console progress snapshot is not an acceptance input",
+  "picker_cases": [
+    "picker-dark-baseline",
+    "picker-dark-up-single",
+    "picker-dark-up-range",
+    "picker-dark-down-single",
+    "picker-dark-down-range",
+    "picker-light-baseline",
+    "picker-light-up-single",
+    "picker-light-up-range",
+    "picker-light-down-single",
+    "picker-light-down-range"
+  ],
+  "themes": [
+    "Dark",
+    "Light"
+  ],
+  "display_scope": "Native Windows software desktop at its default DPI; no150percent or physical-GPU claim",
+  "fresh_current_install_uninstall": "pass",
+  "accepted_baseline_running_index_upgrade": "pass",
+  "saved_miller_configuration_and_native_database_identity": "pass",
+  "independent_startup_running_intent_matrix": [
+    {
+      "status": "pass",
+      "running": true,
+      "enabled": false
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": true
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": false
+    }
+  ],
+  "real_cache_lock_refusal_preserves_live_index": {
+    "exit": 1,
+    "source_preserved": true,
+    "task_and_security_preserved": true,
+    "database_identity": "402E2E37:00090000000250A2",
+    "after": {
+      "instance": "{2AE1DF07-452F-4B01-B360-7D3FD27BEFF1}",
+      "pid": 2416
+    },
+    "payload_preserved": true,
+    "before": {
+      "instance": "{2AE1DF07-452F-4B01-B360-7D3FD27BEFF1}",
+      "pid": 2416
+    },
+    "status": "pass",
+    "preferences_preserved": true
+  },
+  "supported_uninstall_retry": "pass",
+  "owned_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope_limit": "No MSI rollback, Store certification or whole-roadmap acceptance. Current installed/portable GUI captures still need direct rendered review."
+}

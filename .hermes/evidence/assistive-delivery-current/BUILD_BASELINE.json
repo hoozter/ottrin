@@ -1,0 +1,15 @@
+{
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "at": "2026-11-03T02:14:20.848283+00:00",
+  "allocated_bytes": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    "target/release/deps": 4102455296,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769548800,
+    ".hermes/evidence/assistive-viewports-current": 8179712
+  },
+  "staging_absent_before": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "cleanup_owner": "Current roadmap goal; producer registers process/tool teardown and removes failed stage; accepted stage retained only for content/native/daemon/promotion consumers"
+}

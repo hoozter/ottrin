@@ -1,0 +1,234 @@
+{
+  "baseline-index-process.json": {
+    "bytes": 752,
+    "sha256": "00f9b54945cda11ccc6099cad33e1c6eab769ba329a261d2cb66d9b85bdda108"
+  },
+  "baseline-install-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "67f60b59e5d2baa74bfbb8cc5a5b23763741c099d1c81c56f2ce3e370d31994e"
+  },
+  "fresh-index-process.json": {
+    "bytes": 752,
+    "sha256": "aa5eecc5c794bf585150e53f13c3c1425cc3b332d47524ebf34723cebc331a77"
+  },
+  "fresh-install-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "fresh-main.png": {
+    "bytes": 87818,
+    "sha256": "2814657ccb4a4646119bb79e0068dcbaa57239a587e54f839e16cc4206e69941"
+  },
+  "fresh-uninstall-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "locked-uninstall-process.json": {
+    "bytes": 60,
+    "sha256": "3b0e76b031cbc51615fe6bcd312ca455a7c949d2ff30038474191bbf08c12277"
+  },
+  "OWNER.json": {
+    "bytes": 1076,
+    "sha256": "f035f76f92f1a8e8bd492aa884ad577e28915fc3d2f836bf293b5e9f15fc5428"
+  },
+  "picker-dark-baseline-before.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-baseline-mapped.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-baseline-selected.png": {
+    "bytes": 36705,
+    "sha256": "0fef6c5eccdab73501af8fb72a585f01143824abe1e2eabe42570c928301123c"
+  },
+  "picker-dark-down-range-before.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-down-range-mapped.png": {
+    "bytes": 43868,
+    "sha256": "ad5294b8318cd52b2cd95bc019caadbd953e7939cce952d75b8f4e3a5dede5a0"
+  },
+  "picker-dark-down-range-selected.png": {
+    "bytes": 39521,
+    "sha256": "df42d632b2581c8d316b487dd54da976a923fc6878dd21b80cad998f134a4da0"
+  },
+  "picker-dark-down-single-before.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-down-single-mapped.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-down-single-selected.png": {
+    "bytes": 39547,
+    "sha256": "cf0b029f2fad00c8c1c3db900e473c3cea7373eff45106e3d35b672e97dae48b"
+  },
+  "picker-dark-up-range-before.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-up-range-mapped.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-up-range-selected.png": {
+    "bytes": 39413,
+    "sha256": "1709e8d7980bbd20bf3fa23bdd2bc9795da2015a1176e85be570b42294fe5553"
+  },
+  "picker-dark-up-single-before.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-up-single-mapped.png": {
+    "bytes": 35603,
+    "sha256": "23bb10f16538a3049c1ee29e254467f02c36b05a77366404df9ffd88fb78f1e3"
+  },
+  "picker-dark-up-single-selected.png": {
+    "bytes": 39318,
+    "sha256": "be43c123cf20a88c891a6e6c5b2eb8e6798c4ca5910ded31189eff73b0a4d87e"
+  },
+  "picker-light-baseline-before.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-baseline-mapped.png": {
+    "bytes": 35030,
+    "sha256": "49958b47a98bdb43b629dd341cb09bb787fd68ea713ca85f3502d1419bcda764"
+  },
+  "picker-light-baseline-selected.png": {
+    "bytes": 32888,
+    "sha256": "4e337b7a712ba249dc194613edae4bc02877b96d4a89ed346e87c7d68f925e86"
+  },
+  "picker-light-down-range-before.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-down-range-mapped.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-down-range-selected.png": {
+    "bytes": 33599,
+    "sha256": "680402ee25fda18dc457af379c9c5fdc76e61c7068e5a3cdc79de9ad28e717f4"
+  },
+  "picker-light-down-single-before.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-down-single-mapped.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-down-single-selected.png": {
+    "bytes": 33180,
+    "sha256": "4d054d381283287f60ab86d77c59e4e8010544226f417dc9c18e2e1142af07b8"
+  },
+  "picker-light-up-range-before.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-up-range-mapped.png": {
+    "bytes": 33916,
+    "sha256": "163890a9d5c3f66a0ea8a2811f04f8e5a440c15762e9891f3482679b28fd8aaf"
+  },
+  "picker-light-up-range-selected.png": {
+    "bytes": 33543,
+    "sha256": "7b57ee169b2b74870a4af93fb46a6da8407d04055de36ba2748c91fabe94c592"
+  },
+  "picker-light-up-single-before.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-up-single-mapped.png": {
+    "bytes": 31766,
+    "sha256": "7802f258dcfac84306b0f537ec93a1e9de2f47e16b10e3af2418ae07c44d31ad"
+  },
+  "picker-light-up-single-selected.png": {
+    "bytes": 33090,
+    "sha256": "461feaddf498f2d0e4ff91504a1614d80c86b381a32570f3213beae12de7518b"
+  },
+  "previous-main.png": {
+    "bytes": 87818,
+    "sha256": "2814657ccb4a4646119bb79e0068dcbaa57239a587e54f839e16cc4206e69941"
+  },
+  "query-accepted baseline install-process.json": {
+    "bytes": 1068,
+    "sha256": "aef0e1d87fc5ed803ad1f302c98fd6cad9aeead7609113d4f17414a6d3568e55"
+  },
+  "query-current fresh install-process.json": {
+    "bytes": 1068,
+    "sha256": "aef0e1d87fc5ed803ad1f302c98fd6cad9aeead7609113d4f17414a6d3568e55"
+  },
+  "query-current upgrade with running index-process.json": {
+    "bytes": 1068,
+    "sha256": "aef0e1d87fc5ed803ad1f302c98fd6cad9aeead7609113d4f17414a6d3568e55"
+  },
+  "query-real locked-cache uninstall refusal-process.json": {
+    "bytes": 1068,
+    "sha256": "aef0e1d87fc5ed803ad1f302c98fd6cad9aeead7609113d4f17414a6d3568e55"
+  },
+  "query-reinstall-False-False-process.json": {
+    "bytes": 1068,
+    "sha256": "aef0e1d87fc5ed803ad1f302c98fd6cad9aeead7609113d4f17414a6d3568e55"
+  },
+  "RESULT.json": {
+    "bytes": 23635,
+    "sha256": "83abffc165dbeecbdaa5b9882271a2740d9de27f46f6693253e76fd3dd752602"
+  },
+  "running-upgrade-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "setup-reinstall-False-False-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "setup-reinstall-False-True-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "setup-reinstall-True-False-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "status-accepted baseline install-process.json": {
+    "bytes": 752,
+    "sha256": "00f9b54945cda11ccc6099cad33e1c6eab769ba329a261d2cb66d9b85bdda108"
+  },
+  "status-current fresh install-process.json": {
+    "bytes": 752,
+    "sha256": "aa5eecc5c794bf585150e53f13c3c1425cc3b332d47524ebf34723cebc331a77"
+  },
+  "status-current upgrade with running index-process.json": {
+    "bytes": 755,
+    "sha256": "cc8f22418b715310b38e8d9e8e2e0693afc4dcf434c9290501ee5d56987e6c58"
+  },
+  "status-reinstall-False-False-process.json": {
+    "bytes": 749,
+    "sha256": "22f610cfb3be65a645ba15d2003362e06c6da9b3075c1f9903860af00af7f85a"
+  },
+  "stop-reinstall-False-False-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "stop-reinstall-True-False-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "uninstall-retry-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "upgraded-main.png": {
+    "bytes": 87818,
+    "sha256": "2814657ccb4a4646119bb79e0068dcbaa57239a587e54f839e16cc4206e69941"
+  }
+}

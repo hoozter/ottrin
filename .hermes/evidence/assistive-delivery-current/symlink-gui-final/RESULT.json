@@ -1,0 +1,55 @@
+{
+  "status": "pass",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "scope": "Actual AppImage main List and chooser directory/file/broken symlink rendering and directory navigation, private native X11 software desktop",
+  "main_directory_link_navigates": true,
+  "picker_response": {
+    "accepted": true,
+    "paths": [
+      {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d5f6f71307a3369322f666978747572652f736f757263652f44697253686f72746375742f496e7369646550726f6f662e747874"
+      }
+    ],
+    "current_filter": null,
+    "choices": {}
+  },
+  "chooser_directory_link_navigates_and_selects_child": true,
+  "fixtures_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_oq0z3i2",
+    "owned_processes_reaped": [
+      {
+        "pid": 689008,
+        "exit": 0
+      },
+      {
+        "pid": 689011,
+        "exit": 0
+      },
+      {
+        "pid": 689012,
+        "exit": 15
+      },
+      {
+        "pid": 689062,
+        "exit": 0
+      },
+      {
+        "pid": 689198,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        689066,
+        689130
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

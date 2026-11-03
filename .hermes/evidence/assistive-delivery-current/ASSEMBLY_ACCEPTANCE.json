@@ -1,0 +1,23 @@
+{
+  "status": "pass native MSIX assembly and58-file equality; deployment/update/login/removal pending",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "18b37c9880dd6f211215ca1806ea7d1b2b58cb6a9f791c0a134fecf8979e6944",
+  "version": "0.1.0.5",
+  "native_payload_files": 58,
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "Native real-Git MakeAppx production assembly; not Store/signing/runtime acceptance"
+}

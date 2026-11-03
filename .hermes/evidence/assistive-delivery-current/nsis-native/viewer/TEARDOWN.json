@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-jy25y32s",
+  "owned_processes_reaped": [
+    {
+      "pid": 698455,
+      "exit": 0
+    },
+    {
+      "pid": 698458,
+      "exit": 0
+    },
+    {
+      "pid": 698459,
+      "exit": 15
+    },
+    {
+      "pid": 698509,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

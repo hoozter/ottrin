@@ -1,0 +1,40 @@
+{
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "status": "pass",
+  "actual_pixels_equal_source_icon": true,
+  "dimensions": [
+    256,
+    256
+  ],
+  "pixels": 65536,
+  "source_icon_sha256": "5d4198a3a9b1acb860e57b3b761e340b2f0c3c2f28a7b9fa5b7cbd830381af04",
+  "scope": "Complete actual chooser X11 icon property; main uses the same embedded icon loader. Physical taskbar acceptance remains separate.",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-3_97mkdc",
+    "owned_processes_reaped": [
+      {
+        "pid": 688866,
+        "exit": 0
+      },
+      {
+        "pid": 688869,
+        "exit": 0
+      },
+      {
+        "pid": 688870,
+        "exit": 15
+      },
+      {
+        "pid": 688934,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

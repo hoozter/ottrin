@@ -1,0 +1,38 @@
+{
+  "domain": "ottrin-uia-client",
+  "uuid": "0805e664-c01b-4380-a82f-82eacad54f14",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-uia-client-fixture.iso",
+    "ottrin-uia-client.qcow2"
+  ],
+  "status": "control finished; inspect exact result, not assumed pass",
+  "public_compiler_cache": null,
+  "scope": "Actual current complete portable cohort; ordinary-user UIAutomation and owned10000-file metadata idle observations. Installer/MSIX and physical adapter acceptance separate.",
+  "producer_sha256": "590127e3ce02f205339b41ccad03ce5c02f8352c940835e625d855f06958be8e",
+  "uploaded_host_iso_removed_bytes": 56395776,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 687019,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-b5036fua/home"
+  },
+  "guest_pid": 3556,
+  "desktop_observer_pid": 687439,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-uia-client.qcow2",
+      "ottrin-uia-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

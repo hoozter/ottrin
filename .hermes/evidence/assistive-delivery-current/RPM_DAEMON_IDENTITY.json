@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "rpm_binary_sha256": "806c2f42fefde2bf62a961788eeab4da9982d3d8a08b01c4343317d4a4e9a75c",
+  "appimage_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "matched_code_sections": {
+    ".text": "5df98f00ef878f92aa54fd514a61dbb605e49aaec89a778b02d0342e618407d1",
+    ".rodata": "1c726ebea2bea5d8dfbeee22d6c880f7454e83d85c3e873aed3b672142ace2cf"
+  },
+  "basis": "Same code-section comparison as production verify-release-artifacts.sh; RPM symbol stripping changes complete ELF bytes",
+  "temporary_extraction_removed_on_context_exit": true
+}

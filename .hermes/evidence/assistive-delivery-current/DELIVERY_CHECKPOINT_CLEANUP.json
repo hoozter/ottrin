@@ -1,0 +1,42 @@
+{
+  "removed_completed_readiness_captures": [
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/nsis-native/desktop-ready.png",
+      "bytes": 2522439,
+      "sha256": "54159bff4096185d88829e5da1dfbe6ff17cc4f459a2075fd7de6f3eabb81b60",
+      "basis": "Completed first-login readiness capture; final actual application captures and native result retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/windows/cohort-native/desktop-ready.png",
+      "bytes": 1694511,
+      "sha256": "b0d51b3f18b2f826a32517143d779f794019843013d8688945db839de6ebc77e",
+      "basis": "Completed first-login readiness capture; final actual application captures and native result retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/windows/cohort-opengl/desktop-ready.png",
+      "bytes": 2523246,
+      "sha256": "04f45719ecff2fc952c8ad47c038978ac4040aa44916d5c8e14760b43dd92f18",
+      "basis": "Completed first-login readiness capture; final actual application captures and native result retained"
+    }
+  ],
+  "enabled_runtime_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-delivery-current/upgrade-disabled",
+      "purpose": "Live exact MSIX4\u21925 disabled-login/removal consumer; registered teardown"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Exact new Windows cohort and previous MSIX alias; pending disabled-runtime/promotion consumer"
+    }
+  ]
+}

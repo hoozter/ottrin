@@ -1,0 +1,38 @@
+{
+  "status": "pass: current bytes identified; four helper/renderer binaries unchanged; current daemon independently retested",
+  "candidate_source": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "previous_source": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+  "payload": {
+    "usr/bin/ottrin": {
+      "previous_sha256": "065b81245778a22f8f367bc2ba3edb6c5faaa6179d22b47ee4d21e5889b78ae8",
+      "candidate_sha256": "dbe4fef1047958e9cd1e64f7522d881df4dca7f1be3dd8a610be854a1b9fee1c",
+      "identical": false
+    },
+    "usr/bin/ottrin-indexd": {
+      "previous_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+      "candidate_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+      "identical": false
+    },
+    "usr/bin/ottrin-media-playback": {
+      "previous_sha256": "d8b602a62cebb37d212629fd61cfeb700dd10dddfc87c8e9f22544ba3d205ca3",
+      "candidate_sha256": "d8b602a62cebb37d212629fd61cfeb700dd10dddfc87c8e9f22544ba3d205ca3",
+      "identical": true
+    },
+    "usr/bin/ottrin-legacy-doc-render": {
+      "previous_sha256": "0c85f0615777cc686ad4d4e0bb55a8bf881b92c6b3922e8222ce109bd8ff2a57",
+      "candidate_sha256": "0c85f0615777cc686ad4d4e0bb55a8bf881b92c6b3922e8222ce109bd8ff2a57",
+      "identical": true
+    },
+    "usr/libexec/ottrin/ottrin-priv-helper": {
+      "previous_sha256": "041770a6db79578a7271eab56f8bd5127a0a155f5b9ed1bb185420da7cf6c41d",
+      "candidate_sha256": "041770a6db79578a7271eab56f8bd5127a0a155f5b9ed1bb185420da7cf6c41d",
+      "identical": true
+    },
+    "usr/libexec/ottrin/ottrin-html-render": {
+      "previous_sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
+      "candidate_sha256": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed",
+      "identical": true
+    }
+  },
+  "temporary_previous_extraction_removed": true
+}

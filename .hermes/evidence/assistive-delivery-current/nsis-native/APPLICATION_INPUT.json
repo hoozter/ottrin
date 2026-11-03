@@ -1,0 +1,18 @@
+{
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "files": [
+    {
+      "name": "portable.zip",
+      "sha256": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945"
+    },
+    {
+      "name": "current-setup.exe",
+      "sha256": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc"
+    },
+    {
+      "name": "previous-setup.exe",
+      "sha256": "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b"
+    }
+  ],
+  "previous_source": "656768852a930e4e69dcf37e901d5bf00c6b6175"
+}

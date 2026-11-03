@@ -1,0 +1,10 @@
+{
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "application_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+  "archive_sha256": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+  "renderer": "native",
+  "flow": "all",
+  "payload_kind": "complete current cohort",
+  "indexd_sha256": "8d83bd6a6b4a2fd1117d739a3b4a61d6e21f8a2757b6578ffa7b0eea8cdeb630",
+  "scope": "Exact newly built portable ZIP, not borrowed runtime;10000-file metadata idle and native UIAutomation; installation/MSIX remain separate"
+}

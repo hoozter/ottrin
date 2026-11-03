@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-03T02:21:46.780868+00:00",
+  "state": "active Linux four-format cohort producer; do not restart while exact PID/start identity is live",
+  "source_revision": "90ba8639",
+  "exec_session_id": 90714,
+  "live_processes": [
+    {
+      "pid": 668190,
+      "start_ticks": "31832819",
+      "argv": [
+        "python3",
+        ".hermes/evidence/assistive-delivery-current/build.py"
+      ]
+    }
+  ],
+  "build_log": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-delivery-current/build.log",
+  "terminal_authority": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-delivery-current/BUILD_RESULT.json",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "next": "Wait for same live producer. On success verify content/closure/current daemon byte identities, then exact native main/modal/picker/resource and affected DEB/RPM workflows. Keep stable packages until accepted promotion; finish stage/extraction/compiler cleanup. Windows private GUI d363 native+OpenGL passes source55; whole Windows cohort refresh still required.",
+  "completed_cleanup": "assistive-viewports-current/CLEANUP.json; ten Windows guests/twenty volumes, seven Linux native profiles, fourteen superseded GUI/test executables, twenty-seven obsolete incremental sessions, both private UIA stages removed",
+  "external_waits": "Keep existing owner/Store/signing/device/final acceptance/MSI engine boundary; do not pause other dependency-ready work"
+}

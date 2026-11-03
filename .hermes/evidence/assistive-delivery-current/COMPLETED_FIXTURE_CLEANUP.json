@@ -1,0 +1,150 @@
+{
+  "status": "Completed native result archives compacted; all completed private profiles removed; current runtime excluded",
+  "retired": [
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/windows/cohort-native/RESULTS.zip",
+      "bytes": 185333,
+      "reason": "Exact native members retained and final result equality verified"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/windows/cohort-native/privacy-accepted-0.png",
+      "bytes": 1082136,
+      "reason": "Final native/rendered/readiness/token receipts retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/windows/cohort-opengl/RESULTS.zip",
+      "bytes": 186753,
+      "reason": "Exact native members retained and final result equality verified"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/windows/cohort-opengl/privacy-accepted-0.png",
+      "bytes": 1492828,
+      "reason": "Final native/rendered/readiness/token receipts retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/nsis-native/RESULTS.zip",
+      "bytes": 1022798,
+      "reason": "Exact native members retained and final result equality verified"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/nsis-native/privacy-accepted-0.png",
+      "bytes": 1627840,
+      "reason": "Final native/rendered/readiness/token receipts retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/fedora/VM_RESULTS.tar.gz",
+      "bytes": 1754,
+      "reason": "Exact native actor/log members retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/ubuntu/VM_RESULTS.tar.gz",
+      "bytes": 1935,
+      "reason": "Exact native actor/log members retained"
+    }
+  ],
+  "completed_profiles": [
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/upgrade-view/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-eylzmuv4"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/picker-dark/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-jh0k_eim"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/picker-light/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-b44fdxwy"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/properties-light150/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-9by2qoyk"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/appearance-light150/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-6blbdgpp"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/main-dark100/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-hut9zqv7"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/icon/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-3_97mkdc"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/main-light150/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-cu980e5e"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/appearance-dark100/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-x7y4dr01"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/properties-dark100/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-_15i98h_"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/first-paint/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-yus3tpvg"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/symlink-gui-final/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-_oq0z3i2"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/windows/cohort-opengl/viewer/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-6vkdva_0"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/windows/cohort-native/viewer/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-b5036fua"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/menu-keys/desktop/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-z5i5p4hp"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/menu-space/desktop/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-le0rmp3p"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/native-dark100/desktop/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-a_wa5zrm"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/browser-firefox/desktop/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-kxhkue24"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/main-lifecycle/desktop/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-nccofvo8"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/native-light150/desktop/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-3k9n_sn6"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/nsis-native/viewer/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-jy25y32s"
+    },
+    {
+      "receipt": ".hermes/evidence/assistive-delivery-current/browser-flatpak/desktop/TEARDOWN.json",
+      "removed_profile": "/var/tmp/.ottrin-picker-qa-gkhn8gnw"
+    }
+  ],
+  "remaining": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Current Windows portable/NSIS/MSIX5 cohort and deliberate previous4 hardlink alias; pending enabled/disabled actual-login lifecycle, promotion and teardown"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-delivery-current/upgrade-enabled",
+      "purpose": "Active owned MSIX update/login test; registered VM/media/desktop teardown"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-delivery-current",
+      "purpose": "Compact current delivery/acceptance/source/cleanup evidence"
+    }
+  ],
+  "linux_stage_and_extraction_removed": true
+}

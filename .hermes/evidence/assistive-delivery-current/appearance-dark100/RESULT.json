@@ -1,0 +1,171 @@
+{
+  "status": "native actions complete; visual review required",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "scope": "Actual packaged Settings/theme editor native pointer/keyboard audit on owned X11/software desktop",
+  "case": "dark100",
+  "actions": [
+    {
+      "op": "click",
+      "x": 1074,
+      "y": 54
+    },
+    {
+      "op": "click",
+      "x": 1000,
+      "y": 322
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 85,
+      "y": 130
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-appearance"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 389,
+      "y": 324
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 500,
+      "y": 150
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 990,
+      "y": 251
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "ctrl+a"
+    },
+    {
+      "op": "text",
+      "window": "Ottrin Theme Editor",
+      "value": "#713A52"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "Return"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-custom-titlebar"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-custom-titlebar"
+    },
+    {
+      "op": "capture",
+      "name": "main-custom-titlebar"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 582,
+      "y": 668
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-buttons-selected"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 976,
+      "y": 378
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "ctrl+a"
+    },
+    {
+      "op": "text",
+      "window": "Ottrin Theme Editor",
+      "value": "14"
+    },
+    {
+      "op": "key",
+      "window": "Ottrin Theme Editor",
+      "value": "Return"
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Theme Editor",
+      "name": "editor-button-radius-14"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Theme Editor",
+      "x": 1020,
+      "y": 731
+    },
+    {
+      "op": "capture",
+      "window": "Ottrin Settings",
+      "name": "settings-after-cancel"
+    },
+    {
+      "op": "click",
+      "window": "Ottrin Settings",
+      "x": 897,
+      "y": 18
+    },
+    {
+      "op": "capture",
+      "name": "main-after-cancel"
+    },
+    {
+      "op": "finish"
+    }
+  ],
+  "normal_exit": 0,
+  "source_and_config_preserved": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-x7y4dr01",
+    "owned_processes_reaped": [
+      {
+        "pid": 689301,
+        "exit": 0
+      },
+      {
+        "pid": 689304,
+        "exit": 0
+      },
+      {
+        "pid": 689305,
+        "exit": 15
+      },
+      {
+        "pid": 689367,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        689371,
+        689436
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

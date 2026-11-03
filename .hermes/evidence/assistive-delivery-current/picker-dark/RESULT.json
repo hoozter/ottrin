@@ -1,0 +1,144 @@
+{
+  "status": "pass",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "theme": "Dark",
+  "scale": "1",
+  "cases": [
+    {
+      "case": "up-range",
+      "normal_exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6a68306b5f65696d2f73656c656374696f6e2f616c7068612e747874"
+          },
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6a68306b5f65696d2f73656c656374696f6e2f626574612e747874"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "window_mapped_ms_upper_bound": 531.23,
+      "launch_scope": "Fresh-profile process-cold"
+    },
+    {
+      "case": "up-single",
+      "normal_exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6a68306b5f65696d2f73656c656374696f6e2f616c7068612e747874"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "window_mapped_ms_upper_bound": 422.53,
+      "launch_scope": "Repeated process-cold; existing profile and OS caches retained"
+    },
+    {
+      "case": "down-range",
+      "normal_exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6a68306b5f65696d2f73656c656374696f6e2f626574612e747874"
+          },
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6a68306b5f65696d2f73656c656374696f6e2f67616d6d612e747874"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "window_mapped_ms_upper_bound": 422.6,
+      "launch_scope": "Repeated process-cold; existing profile and OS caches retained"
+    },
+    {
+      "case": "down-single",
+      "normal_exit": 0,
+      "response": {
+        "accepted": true,
+        "paths": [
+          {
+            "encoding": "unix-bytes",
+            "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d6a68306b5f65696d2f73656c656374696f6e2f67616d6d612e747874"
+          }
+        ],
+        "current_filter": null,
+        "choices": {}
+      },
+      "window_mapped_ms_upper_bound": 422.26,
+      "launch_scope": "Repeated process-cold; existing profile and OS caches retained"
+    }
+  ],
+  "scope": "Native X11/software AppImage chooser selection and accepted paths; same-frame modifier regression separately verified through actual egui event frames",
+  "idle": {
+    "seconds": 30.00009103002958,
+    "cpu_percent_one_core": 0.0,
+    "rss_kib": 131264,
+    "pss_kib": 96436
+  },
+  "two_concurrent_requests_cancel_independently": true,
+  "source_bytes_preserved": true,
+  "main_config_preserved": true,
+  "no_index_started": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-jh0k_eim",
+    "owned_processes_reaped": [
+      {
+        "pid": 680064,
+        "exit": 0
+      },
+      {
+        "pid": 680067,
+        "exit": 0
+      },
+      {
+        "pid": 680068,
+        "exit": 15
+      },
+      {
+        "pid": 680162,
+        "exit": 0
+      },
+      {
+        "pid": 680492,
+        "exit": 0
+      },
+      {
+        "pid": 680574,
+        "exit": 0
+      },
+      {
+        "pid": 680659,
+        "exit": 0
+      },
+      {
+        "pid": 680755,
+        "exit": 0
+      },
+      {
+        "pid": 680814,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

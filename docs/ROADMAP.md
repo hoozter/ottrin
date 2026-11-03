@@ -2,284 +2,91 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-03. This is the active queue; dated checkpoints below retain
-only their original source/artifact scopes. Test totals are not roadmap completion.
+Updated 2026-11-03. This is the active queue. Historical checkpoints below keep
+their original source/artifact scopes; test totals are not roadmap completion.
 
-Active work: finish the native accessibility refresh, then rebuild and accept the
-Linux/Windows package cohort. The viewport fix is committed at ac740023; native
-Windows WGPU main/modal and picker scopes are verified on its exact GUI. Final
-Inspector action labels are committed at55d78d0c and verified on Linux and native
-Windows (default WGPU and OpenGL recovery). Refreshed package delivery remains
-required. Current usable packages
-remain at the earlier sources below. Owner signing/Store/hardware/final acceptance
-waits do not block this work.
+The current Linux AppImage, portable archive, DEB and RPM are delivered from clean
+`90ba8639f2e5d6dad7e24ebd5b95382e108e1300` at `dist/packages/`. The stable AppImage is
+`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4`.
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` defines all four exact hashes,
+completed scopes and limits. CI41565016646 passes all four Linux/Windows verify
+and performance jobs for that exact package source.
 
-The stable Linux AppImage, portable archive, DEB and RPM now use clean source
-`bf3abfd32fc7654108e3f723f6a95c2f5866c5af`. Their exact hashes, completed scopes
-and limits are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. The stable
-AppImage remains `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
-`1a2f58ab21ea664bb42e00a7728e84ba45a7ee112a3b8005ad66e02a13639cc8`.
+This cohort restores native accessibility for every main/secondary viewport and
+names icon controls, including Inspector Edit text/More actions. Actual AppImage
+Dark100/Light150 native actions, disabled states, Settings/Inspector independent
+Close, read-only interfaces and private accessibility-bus loss pass. Native
+VCF/text navigation, Space-to-close, menus, Properties, icon pixel identity,
+previous-build→new-build→reopen Miller preference preservation, directory links,
+picker single/range/concurrent cancellation and source/config preservation pass.
+Rendered review verifies shared titlebar color, actual/preview button corners and
+main/Settings/editor/Inspector window corners. It does not repeat the exhaustive
+39-control sweep or certify physical renderers/screen-reader usability.
 
-The chooser now uses the modifiers on each arrow-key press, preserving range
-selection when Shift changes later in the same frame. Its rendered regression
-fails before repair. All26 picker tests and461 Linux UI tests pass, with one
-existing ignored namespace fixture; strict Linux/Windows all-target UI lint passes.
-Hosted41508619836 passes all four jobs, including Windows tests/lint/release build.
-The exact package source equals the hosted tested source. Earlier listing fixes
-retain directory-link target type and Windows Hidden/System filtering.
+Actual installed Firefox and Flatpak Falkon Open/Save pass with correct caller
+identities and exact bytes. Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB pass
+normal setup, real portal frontends, reinstall/refusal, online/offline removal and
+preference restoration, including the independent portable chooser surviving
+native removal. Fedora's actor passed before a protected backing-metadata read
+blocked host teardown; its original controller failure is retained. Libvirt
+metadata inspection recovered cleanup without permission changes, and the corrected
+producer then completes Ubuntu cleanup normally. Both guests/six volumes and
+all completed Linux GUI profiles, buses, displays and mounts are removed.
 
-All four formats pass production content/closure/policy/namespace checks. The exact
-AppImage passes Dark100/Light150 main and read-only VCF/text Inspector workflows,
-Properties/icon/saved-view update/reopen, native menu arrows/Escape/Space, actual
-installed Firefox and Flatpak Falkon Open/Save with correct caller identities
-and exact bytes, and main/chooser directory-link navigation. Live appearance
-replay plus rendered review verifies shared titlebar color, actual/preview button
-corners, main/Settings/editor/Inspector window corners, Inspector Space and full
-configuration/source preservation after Cancel. This does not repeat the exhaustive
-39-control sweep or establish physical-renderer acceptance.
+The current packaged daemon is freshly tested on private10000-file metadata-only
+and plain-text-content corpora. Live mutations, same-size content edits with
+preserved timestamps, offline changes and restart validation pass. Six30-second
+quiet samples measure0.033–0.067percent of one core and about9–17MiB RSS. Four
+helper/renderer binaries remain byte-identical to the previous delivery. These
+are controlled fixture observations, not a new personal/sustained-workload claim;
+no personal daemon restart is claimed by this delivery.
 
-Native chooser Up/Down single/range responses, independent concurrent cancellation,
-source/config preservation and operation without indexing pass at both scales.
-Process-cold window mapping is0.321–0.537seconds; separate actual-content observation
-is0.801–1.040seconds including screenshot/OCR overhead with OS caches retained.
-Both30-second idle samples measure0.033percent of one core and94–95MiB PSS on
-this software desktop. The rejected whole-window OCR timeout remains explicit
-observer evidence. No always-running picker GUI or new index service is introduced.
-Fresh Fedora44 DNF/RPM and Ubuntu24.04 APT/DEB pass normal setup, actual portal
-requests, reinstall/refusal, online/offline removal/preference restoration and
-portable picker survival without diagnostic setup controls.
+Published-image process-cold chooser mapping observations are0.327–0.518seconds;
+separate actual-content observations are0.790–1.037seconds including screenshot/OCR
+overhead, with shared OS caches retained. Two30-second picker samples measure
+0.000–0.033percent of one core and about94–96MiB PSS. No persistent picker GUI
+or index service is introduced. Linux staging/extraction are removed after
+promotion. One superseded matching release GUI/exact metadata is retired;
+no obsolete incremental sessions were identified. Evidence is
+`.hermes/evidence/assistive-delivery-current/`.
 
-The daemon and five helper/renderer payloads remain byte-identical to the previous
-accepted delivery. Original928b7937 metadata/content10000-file resource receipts
-retain their source/package identity; their six30-second quiet samples measured
-0.067percent of one core and about13–17MiB RSS. No new sustained personal-workload
-claim is made. During that Linux promotion, the personal enabled index service
-was observed active on PID262779 and was not restarted. That historical
-observation is not a new measurement of the personal service.
+The current usable local Windows preview remains source65676885 at
+`dist/windows-candidate`, with ZIP/NSIS/development MSIX0.1.0.4 defined by
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Public Windows/Store files are unchanged.
+The new complete90ba8639 ZIP/NSIS cohort is staged at
+`.hermes/packaging-tmp/.windows-picker-stage`; all58 payload files agree. Actual
+complete-cohort native WGPU/OpenGL UIAutomation, modal focus/Close, Inspector names,
+read-only observations, picker actions and source/preferences preservation pass.
+The rebuilt daemon indexes10101 entries and measures0.16–0.21percent of one core
+and about13MiB working set in two30-second samples with the GUI open. Both owned
+UIA guests/four volumes and the temporary archive alias are removed. Native NSIS
+fresh installation/removal,656→current running-index upgrade, saved Miller view,
+exact database identity/task security/preferences, all three running/startup
+intent combinations, real locked-cache refusal and supported retry now pass;
+its guest/two volumes are removed. Native MSIX0.1.0.5 assembly and actual4→5
+update, enabled real-login startup and removal pass with saved preferences/index
+identity preserved; the enabled guest/two volumes are removed. The disabled
+real-login case is running before whole Windows-cohort promotion. Source-only/native-GUI
+acceptance is not labelled a published Windows package.
 
-Current Linux evidence is `.hermes/evidence/picker-keyboard-selection-current/`.
-All completed native/GUI/browser profiles, processes, displays, buses and mounts,
-both Linux guests and their six volumes, and the current Linux stage/extraction
-are removed. Published bytes and all four checksum sidecars are rechecked after
-promotion. Eleven superseded incremental sessions were removed through the locked
-helper after explicit process-identity checks, recovering0.50GiB; current compiler
-caches and binaries remain. Earlier source/NTFS evidence keeps its original scope
-in `listing-metadata-current/ACCEPTANCE.json`.
-
-Public Windows release files remain unchanged. The stable local Windows preview
-is now source65676885 at `dist/windows-candidate`; the required MSI is held
-separately on its native rollback boundary, with its exact8ede diagnostic input
-retained under `windows-msi-package-control-current/input/`. The preceding source592d56e8 development checkpoint
-built ZIP/NSIS and native MakeAppx MSIX0.1.0.3 with58-file equality and invalid
-revision refusal. Actual0.1.0.2→0.1.0.3 startup-enabled upgrade passes ordinary
-GUI/menu keys/normal Close, retained configuration/native index identity, actual
-reboot/login with Windows-started daemon before any Ottrin CLI, and clean
-removal. Its guest/volumes/profile are removed. The first attempt is rejected:
-its second Space was sent within the existing180ms opening guard. The accepted
-driver observes a settled child before a single close press; it does not retry
-input. Its separate visibility screenshots hit Services instead of the eye,
-so they do not accept show-all/restored visibility. Native Ctrl+L does visibly
-reach the separate fixture. The disabled-startup upgrade also passes: after a real reboot, no daemon starts
-for180.015seconds before any Ottrin CLI; saved startup/configuration/index identity
-survive clean removal. The corrected native Ctrl+L and Hidden/System toggle are
-visually accepted: initial/restored show only V.txt, show-all displays HD/SD folders
-and H.txt/S.txt/V.txt, with native attributes and exact bytes independently checked.
-Hash-bound review of the original screenshots, icon-slot counts and identical
-restored file-view pixels establish the rendered control. Full-window OCR misread
-the small filename and is rejected observer evidence, not a passed OCR gate.
-Both accepted guests/disks/private profiles are removed; the sole56.8MB previous
-MSIX2 input is removed after both consumers complete. That MSIX3/ZIP/NSIS stage was retained until the current65676885 replacement
-passed both3→4 upgrade consumers below, then retired.
-Evidence: `windows-listing-delivery-current/ASSEMBLY_ACCEPTANCE.json`,
-`upgrade-enabled-verified/ACCEPTANCE.json`, `upgrade-disabled/ACCEPTANCE.json` and
-`upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json`.
-
-The earlier clean-up audit removed28 superseded standalone test executables and their
-56 exact dep-info/fingerprint companions after compiler/configuration, current
-replacement, reference, symlink, hard-link and process checks. It recovers
-13.62GiB; source, libraries, incremental caches, current configurations and all
-current deliverables remain. Exact evidence: `listing-storage-current/CLEANUP.json`.
-This is scoped project cleanup, not a claim of completed whole-machine cleanup.
-
-The current65676885 Windows portable ZIP, per-user NSIS installer and native
-MakeAppx development MSIX0.1.0.4 are now delivered at the stable local preview path
-`dist/windows-candidate/`. `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` and
-`windows-picker-delivery-current/DELIVERY.json` bind their exact hashes and scopes.
-All58 application files agree across the formats; published bytes and payload
-hashes are rechecked after promotion. The superseded candidate is retired; its
-sole52.5MB failing MSI is retained as a diagnostic input, not a usable current
-preview. No MSI scope is waived or installation contract silently changed.
-
-Actual ordinary-user portable chooser testing passes10 cases across Dark/Light:
-baseline and Up/Down single/range selection, exact native paths, unchanged
-preferences/source and operation without indexing. Native NSIS passes fresh
-install/removal, accepted8ede→current running-index upgrade, saved Miller view,
-exact configuration/task security/native database identity and search continuity.
-All three independent startup/running-intent combinations survive reinstall. A
-real locked-cache uninstall refusal preserves the same daemon PID/task instance,
-full task/security, data and payload; supported retry succeeds after releasing
-only that owned lock. Actual fresh/upgraded Miller windows and representative
-Dark/Light range captures pass direct review at96DPI/software rendering.
-
-Actual MSIX3→4 enabled/disabled updates, ordinary main/Inspector/menu operation,
-normal Close, saved configuration/database identity, real reboot/login, native
-Hidden/System visibility and clean removal also pass. Enabled login observes the
-ordinary0.1.0.4 daemon before any Ottrin CLI; disabled login observes no daemon for
-180.240seconds before any CLI. Native password sign-in for the exact disposable
-accounts is recorded separately; it does not run Ottrin or change startup policy.
-
-Three rejected NSIS observer attempts remain explicit: a short-title lookup, then
-foreground checks with the owned PowerShell console occluding the chooser. The
-accepted controller hides its noninteractive console and retains foreground
-verification. A lossy PowerShell console copy changed one em dash to a hyphen;
-all acceptance uses the intact exact UTF8 native result. The command adapter now
-passes a separate native Swedish/Japanese/emoji roundtrip and rejects the legacy
-codepage negative control. No completed product workflow was repeated for that
-transport-only recovery.
-
-All completed NSIS/observer/transport and MSIX guests, owned media/private desktops,
-extractions, source archives and redundant exports are removed. The obsolete592d
-stage/previous MSIX3 input and superseded8ede candidate files are retired after
-consumers complete. The current delivered preview, sole held MSI, clean native
-base for remaining platform audit and useful bootstrap cache remain. Exact paths,
-consumers and cleanup are in `windows-picker-delivery-current/CLEANUP.json`.
-Public/official release assets and Store submission remain unchanged.
-
-The exact held8ede MSI now also completes its ordinary-user comparison on
-Windows26100 with Installer5.0.26100.9711. Fresh installation verifies all58 files;
-a real locked-cache uninstall refusal still leaves ProductState1 and retry1603.
-The same daemon/task instance, configuration, source and native database identity
-remain intact, and search succeeds. This confirms the26300/.9444 failure rather
-than accepting MSI. Native service cleanup exits0 before the terminal result.
-Evidence is `windows-msi-package-control-current/updated-runtime/ASSESSMENT.json`.
-The fixed-order first-login observer is explicitly rejected and recovered on the
-same live guest by observing optional pages in actual order; no product input,
-security policy or installer contract changes. The guest, two volumes and private
-desktop are removed. The final consumer closes the prepared22.65GiB base, which
-is removed through libvirt after domain, snapshot and backing-reference checks;
-all protected environments and current deliverables remain. Exact retained
-paths and compact evidence are in that case's `CLEANUP.json`.
-
-The bounded Linux assistive recheck now passes with AccessKit enabled in the
-existing debug configuration. Native private AT-SPI registration exposes the
-chooser file/Open/Cancel controls and main file row (29/60 nodes). The chooser
-survives accessibility-bus loss and cancels normally; the main window survives
-private session-bus loss and its actual client Close exits0, with source bytes
-preserved. `GetRoleName` and WM Alt+F4 observers are explicitly rejected; numeric
-roles/native names and client Close provide the corrected observations. The
-locked production debug build has identical bytes to this tested candidate.
-The obsolete blanket AccessKit disable is removed in source. Linux check,
-49 app/2 daemon/3 persisted-CLI/461 UI tests and strict app/UI all-target lint
-pass (one existing UI ignored fixture). Current delivered packages remain at
-their earlier sources. Windows native UI Automation, remaining glyph-only
-button names, Settings/Inspector interaction and exact refreshed delivery remain
-required; this is not full accessibility or screen-reader usability acceptance.
-Evidence is `assistive-integration-current/ACCEPTANCE.json`. All four owned
-desktop profiles, processes, displays and buses are removed. Seven obsolete
-incremental sessions and ten superseded standalone binaries with exact dep-info/
-fingerprints are pruned after compiler/profile/consumer/link checks; current
-executables, dependency libraries and useful caches remain. Exact retained
-paths and pending consumers are in that checkpoint's `CLEANUP.json`.
-
-The visible main-window and picker control names are now repaired in source.
-The shared themed button renderer replaces icon-font names without changing
-layout or existing metadata; navigation, smart panel, service status, hidden
-files, command bar, breadcrumbs, tab creation, view reset, bookmark controls and
-shared window chrome receive meaningful labels. Exact native trees have no
-private-use glyphs in visible push-button names. Native accessibility actions
-switch the actual picker between Grid/List (rendered screenshots reviewed) and
-Close both windows with source bytes preserved. A genuine disabled-state defect
-was exposed: the pinned AT-SPI translation layer reports disabled Forward as
-Enabled/Sensitive. The sole compatible mapping implementation now backports the
-upstream disabled-node guard, with original crate checksum, exact one-file diff
-and three origin licenses verified. Native Forward changes from enabled/sensitive
-to disabled/insensitive while Parent remains enabled. The first action-count
-observer and later assumption that startup Back has no history are explicitly
-rejected; corrected observations retain actual native methods/state. Final461 UI
-tests plus3 scoped subprocess controls, strict app/UI all-target lint and format
-checks pass; one existing ignored UI fixture remains. All8 owned desktop profiles,
-processes, buses and displays are removed. Four superseded binaries with exact
-dep-info/fingerprints and all27 identified obsolete incremental sessions are
-removed after guarded checks; current source/test outputs and useful caches stay.
-Evidence and exact remaining storage/consumers are in
-`assistive-control-names-current/ACCEPTANCE.json` and `CLEANUP.json`.
-This is native Linux source acceptance; delivered packages, Windows UI Automation,
-Settings/Inspector flows and actual screen-reader usability remain separate.
-
-Native Windows UI Automation for source837606a7 now verifies all eight required
-main-window names, disabled Forward and enabled Parent, and actual Settings menu
-invocation. The Settings HWND exists but its controls have no accessible subtree.
-Linux reproduces the same secondary-window omission. The pinned eframe native
-factories initialized AccessKit only for the root. The authoritative per-viewport
-initialization now installs adapters before first visibility in Glow and WGPU.
-Original crate checksum, two-file source diff and origin licenses are verified.
-Linux native Settings/Inspector open/Close, automatic focus, read-only Inspector
-interfaces, multi-window bus loss and source preservation pass on debug GUI
-SHA2569fe0c5bd7a27bce6c24a887578b216de9fcd92bd6d6d0de6f63dd46cb62c5890.
-The locked build, app/UI suites and strict all-target lint pass. This remains
-source/native Linux acceptance; the new Windows build, native UIA and refreshed
-package cohort are next. No screen-reader usability or updated package claim is
-made. Hosted41549356308 passes all four jobs for preceding837606a7, not this patch.
-Evidence: `assistive-viewports-current/`, `assistive-modals-current/` and
-`windows-assistive-current/`. All six baseline Windows guests/twelve volumes,
-private desktops/profiles and old private UIA input stage are removed. The native
-Linux profiles/displays/buses are also removed. Current compiler outputs/caches
-remain for verified replacement and pending Windows build; obsolete-output
-pruning is required before handoff. Stable delivered package bytes are unchanged.
-
-Sourceac740023 Windows GNU release GUI SHA256661841c326efa2b32f260dd2b1399f674e9ba7fe79f5304bfdaff7d34ce0ded1
-now passes native WGPU main names/states, automatic Settings/Inspector focus,
-independent child Close and main Close0. The picker observer first selected a
-hidden Winit event target; that attempt is rejected for picker/source-hash scope.
-A picker-only corrected observer requires the exact visible title. Native WGPU
-Grid/List actions, rendered review, Close/cancel and source/preferences preservation
-pass without starting indexing. Both guests/four volumes and the private stage
-are removed. No whole-cohort or screen-reader usability acceptance is inferred.
-The modal audit also exposed Inspector edit/overflow buttons with glyph-only names.
-Shared preview buttons now use their action labels; overflow uses More actions.
-Native Linux verifies Edit text/More actions, no Inspector glyph-only buttons,
-read-only interfaces, both child Close actions and source preservation on GUI
-SHA256dfe289200841108914358f946d41f0d0bdc4ab6bdde6acd47ad59fcccdb2f88e.
-The full app/UI suites, strict lint and formatting pass. Windows verification of
-these final labels, supported OpenGL recovery and refreshed delivery remain next.
-Three superseded binaries/exact metadata recover2.31GiB; guarded removal of27
-obsolete incremental sessions recovers another1.03GiB. Compact acceptance and
-exact retained paths are in `assistive-viewports-current/CLEANUP.json`.
-
-The final55d78d0c standard Windows release GUI has SHA256d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e.
-Actual ordinary-user UIAutomation passes independently on WGPU and OpenGL:
-main names/states, Settings/Inspector automatic foreground focus and independent
-Close, Edit text/More actions labels with no Inspector glyph-only buttons,
-read-only interface observations, chooser Grid/List native actions and Close/cancel,
-source/preferences preservation and service cleanup0. Both guests/four volumes,
-private desktops/profiles/extractions and the final private stage are removed.
-Eleven obsolete matching GNU release GUI executables and exact dep-info/fingerprints
-are removed after compiler/configuration, reference, consumer and hard-link checks,
-recovering364519208bytes; all current binaries/libraries/caches remain.
-Evidence: `assistive-viewports-current/windows/modal-labels/ACCEPTANCE.json` and
-`windows/RELEASE_PE_CLEANUP.json`. These are exact GUI candidate scopes with a
-borrowed accepted runtime, not a refreshed package cohort. Current Windows
-indexd bytes differ from the delivered preview; fresh daemon/startup/resource
-acceptance is required before next promotion. The roadmap now distinguishes
-implemented local development MSIX from pending owner Store submission and binds
-the historical personal daemon PID observation to its original promotion.
+The native ordinary-user MSI rollback/retry boundary remains held on both
+26300/.9444 and26100/.9711. Its sole exact8ede diagnostic input remains under
+`windows-msi-package-control-current/input/`; no format or contract is waived.
+The prepared22.65GiB updated comparison base is retired; do not repeat the fulfilled
+comparison without changed inputs. Owner signing/Store/device/final acceptance
+waits remain below and must not stall dependency-ready software work.
 
 Continue in this order:
 
-1. Audit the remaining software/platform/theme/resource and supported integration
-   requirements against their actual source, package and native evidence. Finish
-   dependency-ready outcomes whose evidence is missing, weak or contradictory;
-   do not repeat the fulfilled current Windows/Linux package workflows without
-   changed inputs or a reproduced defect. Finish the restored AccessKit source
-   gate: inspect hosted Linux/Windows CI, verify native Windows UI Automation,
-   audit remaining modal control names and check Settings/Inspector interaction, then
-   rebuild and deliver the exact accepted cohort. Check remaining Windows
-   caller/folder/helper/Office/media/resource scopes against explicit requirements
-   before parking only genuinely owner/device/external acceptance.
-   The named application-level26100/.9711 MSI comparison is now complete and
-   reproduces the26300/.9444 failure. Both actual observations are retained; the
-   prepared22.65GiB base is retired after its final consumer and reference checks.
-   Do not repeat either fulfilled comparison without changed inputs.
+1. Finish the native MSIX0.1.0.5 disabled real-login startup/removal case and
+   rendered visibility review, then promote the whole
+   accepted Windows cohort and remove its staging/media/obsolete outputs. Preserve
+   current usable previews until those gates pass. Audit all remaining software,
+   platform/theme/resource and supported integration requirements against exact
+   source/package/native evidence. Repair missing, weak or contradictory scopes;
+   do not repeat fulfilled tests without changed inputs or a reproduced defect.
+   Park only genuine owner/device/external acceptance.
 2. Keep the native MSI rollback boundary on the explicit waiting list while
    completing that audit. MSI remains required; no failed artifact is labelled
    current/accepted and no ordinary-user contract is silently replaced. Retained
@@ -1619,8 +1426,6 @@ Do not move a fixable implementation or test failure onto this list.
 
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
-| Privileged cleanup of owned X11 test core | Remove only `/var/lib/systemd/coredump/core.ottrin.1000.eeed43c73b3a47998b6355d43295a2ad.2095619.1792948091000000.zst` (4,096,895 bytes). Noninteractive sudo requires a password; ownership is recorded in `linux-ci-package-current/dark100/CORE_CLEANUP.json`. | All engineering; private profiles, processes, mounts and package extractions are already removed. |
-| Privileged cleanup of owned Chrome diagnostic core | Remove only `/var/lib/systemd/coredump/core.chrome.1000.eeed43c73b3a47998b6355d43295a2ad.2138656.1792952026000000.zst` (2,509,878 bytes). Noninteractive sudo requires a password; `hosted-isolation-current/CORE_CLEANUP.json` records ownership and LimitCORE=0 producer correction. | All engineering; synthetic profile and transient unit are gone. |
 | Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
@@ -1632,7 +1437,6 @@ Do not move a fixable implementation or test failure onto this list.
 When a new external dependency is established, record the exact missing resource,
 its affected outcome and evidence here. Resume another ready outcome. Keep the
 project's active resume point above current after every verified checkpoint.
-
 ## Current delivery and remaining outcomes
 
 The stable Linux AppImage, portable archive, DEB and RPM are published at
@@ -1643,7 +1447,7 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux cohort uses clean `bf3abfd3`; the delivered local Windows
+The stable Linux cohort uses clean `90ba8639`; the delivered local Windows
 preview uses clean `65676885` for ZIP/NSIS/development MSIX0.1.0.4. The sole
 `8ede1562` MSI is a held diagnostic input, not a current usable package.
 The delivery checkpoint at the top and authoritative receipts define exact package
@@ -1674,8 +1478,8 @@ fresh-distro lifecycle or full-application resource acceptance.
 
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
-| Linux | Fourbf3abfd3 formats; full hosted Linux/performance, exact dark/light AppImage/read-only/Properties/icon/upgrade-view checks, fresh Fedora/Ubuntu lifecycle, exact10k metadata/content resource controls and actual installed Firefox/Flatpak Falkon Open/Save. Personal service refreshed with configuration/data preserved. | Popup routing is delivered with native positive controls; remaining broader software/theme gates and then parked owner/device acceptance. |
-| Windows | Current65676885 ZIP/NSIS/development MSIX0.1.0.4 at `dist/windows-candidate`, with58 matching files. Native chooser, NSIS fresh install/upgrade/refusal/retry and MSIX3→4 enabled/disabled startup update/reboot pass their exact receipts. | Audit remaining software/platform scopes. The held8ede MSI still requires a supported correction for native ordinary-user rollback/retry. Public packages stay unchanged until their own gates pass. |
+| Linux | Four90ba8639 formats delivered; all four exact-source CI jobs pass. Current native accessibility, dark/light preview/menu/Properties/icon/update-view, Fedora/Ubuntu lifecycle, fresh10k metadata/content resources and actual Firefox/Flatpak Falkon Open/Save pass. | Audit remaining broader software/platform requirements and parked owner/device acceptance. No personal daemon restart or new personal-workload claim. |
+| Windows | Current65676885 ZIP/NSIS/development MSIX0.1.0.4 remains usable. New90ba8639 complete portable/NSIS content, native WGPU/OpenGL/10k idle and NSIS fresh/upgrade/refusal/retry pass; MSIX0.1.0.5 native assembly passes. | Finish actual4→5 enabled/disabled real-login update/removal and promote accepted cohort. Continue remaining software scope audit; keep the native MSI rollback boundary held. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 

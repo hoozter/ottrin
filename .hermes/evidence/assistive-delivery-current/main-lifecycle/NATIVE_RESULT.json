@@ -1,0 +1,99 @@
+{
+  "status": "pass multi-viewport private accessibility-bus loss and actual client Close",
+  "scope": "Actual staged AppImage multi-viewport private accessibility-bus loss; not physical desktop or screen-reader usability acceptance",
+  "binary_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 679512,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 679515,
+  "tree_nodes": 60,
+  "visible_names": [
+    "ottrin",
+    "Manage administrator helper",
+    "Manage index service",
+    "Show hidden files",
+    "Show command bar",
+    "1 item",
+    "fixture",
+    "New tab",
+    "Close window",
+    "Maximize or restore window",
+    "Minimize window",
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Menu",
+    "Switch to Grid view",
+    "View Options",
+    "Open /",
+    "\u203a",
+    "Open /var",
+    "\u203a",
+    "Open /var/tmp",
+    "\u203a",
+    "Open /var/tmp/.ottrin-picker-qa-nccofvo8",
+    "\u203a",
+    "Open /var/tmp/.ottrin-picker-qa-nccofvo8/fixture",
+    "Sort",
+    "A-Z",
+    "100%",
+    "Reset current view size",
+    "proof.txt",
+    "Expand locations rail",
+    "Home \u00b7 /var/tmp/.ottrin-picker-qa-nccofvo8/home",
+    "Root \u00b7 /",
+    "Show or hide info panel",
+    "Show or hide drop-folder panel",
+    "Toggle Search",
+    "Show or hide Activity",
+    "Show or hide Trash"
+  ],
+  "cancel_control_exposed": false,
+  "visible_file_exposed": true,
+  "expected_names": [
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Close window",
+    "Minimize window",
+    "Maximize or restore window"
+  ],
+  "control_states": {
+    "Back": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Forward": {
+      "enabled": false,
+      "sensitive": false
+    },
+    "Parent folder": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Close window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Minimize window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Maximize or restore window": {
+      "enabled": true,
+      "sensitive": true
+    }
+  },
+  "glyph_only_buttons": [],
+  "main_and_child_alive_after_private_atspi_loss": true,
+  "native_close_exit": 0,
+  "source_bytes_preserved": true
+}

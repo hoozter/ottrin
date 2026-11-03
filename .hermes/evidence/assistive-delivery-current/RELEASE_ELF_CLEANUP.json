@@ -1,0 +1,21 @@
+{
+  "items": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-0b6719a16a211aa1",
+      "bytes": 37209208,
+      "sha256": "065b81245778a22f8f367bc2ba3edb6c5faaa6179d22b47ee4d21e5889b78ae8",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/release/deps/ottrin_app-0b6719a16a211aa1.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/release/.fingerprint/ottrin-app-0b6719a16a211aa1",
+      "replacement": "/home/campbell/Projects/Ottrin/target/release/ottrin-app",
+      "replacement_sha256": "dbe4fef1047958e9cd1e64f7522d881df4dca7f1be3dd8a610be854a1b9fee1c"
+    }
+  ],
+  "references": [
+    ".hermes/evidence/linux-search-delivery-current/RELEASE_EXECUTABLE_CLEANUP_PLAN.json",
+    ".hermes/evidence/picker-popup-keyboard-current/STORAGE_AFTER.json"
+  ],
+  "basis": "Same compiler/target/profile/features/rustflags; verified delivered replacement; candidate links and exact companions identified",
+  "status": "Removed superseded matching release GUI and exact dep-info/fingerprint after reference/link/consumer checks",
+  "reference_classification": "Historical completed cleanup record and storage inventory; no producer references. Same hashed filename was regenerated for a later build; current SHA and inode checked independently.",
+  "removed_binary_bytes": 37209208
+}

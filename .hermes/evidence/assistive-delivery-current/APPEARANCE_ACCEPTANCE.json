@@ -1,0 +1,21 @@
+{
+  "status": "pass: native actions and rendered review within documented scope",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "cases": [
+    "appearance-dark100/RESULT.json",
+    "appearance-light150/RESULT.json"
+  ],
+  "visual_review": "VISUAL_REVIEW.json",
+  "checks": [
+    "live shared titlebar color",
+    "actual and preview action-button corners",
+    "shared main/Settings/editor/Inspector window geometry",
+    "Inspector Space routing",
+    "source bytes and complete config restored by Cancel"
+  ],
+  "limits": [
+    "No exhaustive39-control replay claimed",
+    "No physical-renderer or screen-reader usability acceptance"
+  ]
+}

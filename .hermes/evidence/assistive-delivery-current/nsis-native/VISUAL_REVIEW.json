@@ -1,0 +1,14 @@
+{
+  "status": "reviewed",
+  "captures": {
+    "fresh-main.png": "2814657ccb4a4646119bb79e0068dcbaa57239a587e54f839e16cc4206e69941",
+    "upgraded-main.png": "2814657ccb4a4646119bb79e0068dcbaa57239a587e54f839e16cc4206e69941",
+    "picker-dark-down-range-selected.png": "df42d632b2581c8d316b487dd54da976a923fc6878dd21b80cad998f134a4da0",
+    "picker-light-up-range-selected.png": "7b57ee169b2b74870a4af93fb46a6da8407d04055de36ba2748c91fabe94c592"
+  },
+  "observations": [
+    "Fresh installed and upgraded actual main windows display Miller columns, aligned shared titlebar, filename and icon rows, toolbar and smart-panel icons.",
+    "Dark chooser shows beta and gamma selected; Light chooser shows alpha and beta selected. Shared titlebar, ordered Places rows and visible Cancel/Open match the selected theme."
+  ],
+  "scope": "Direct rendered review of these four native default-DPI software desktop captures; not exhaustive theme/physical renderer acceptance."
+}

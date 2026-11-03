@@ -1,0 +1,8 @@
+{
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage",
+  "archive_hardlink_target": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-portable.zip",
+  "archive_sha256": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+  "expected_nlink": 2,
+  "purpose": "Native complete-cohort UIAutomation/daemon CPU in native and recovery renderers",
+  "cleanup_owner": "Roadmap task after both native consumers; remove only wrapper alias after inode/hash checks, preserve the canonical current ZIP"
+}
