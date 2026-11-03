@@ -1,6 +1,13 @@
 use crate::Colors;
 use egui::{Button, CornerRadius, Response, Stroke, Ui, Widget};
 
+/// Name the native control without replacing its role, value or selection metadata.
+pub(crate) fn name_control(response: &Response, name: impl Into<String>) {
+    response
+        .ctx
+        .accesskit_node_builder(response.id, |node| node.set_label(name.into()));
+}
+
 /// Keep sort markers visible when a column truncates its label. Icon spacing
 /// belongs to layout, and both header renderers use the installed icon font.
 pub(crate) fn paint_sort_header(
@@ -128,8 +135,7 @@ impl Widget for ThemeButton<'_> {
         let response = self.button.ui(ui);
         ui.set_style(previous_style);
         if let Some(name) = self.accessible_name {
-            ui.ctx()
-                .accesskit_node_builder(response.id, |node| node.set_label(name));
+            name_control(&response, name);
         }
         response
     }
@@ -167,8 +173,7 @@ impl ThemeTextEdit<'_> {
         let background = ui.painter().add(egui::epaint::Shape::Noop);
         let output = self.edit.frame(false).show(ui);
         if let Some(name) = self.accessible_name {
-            ui.ctx()
-                .accesskit_node_builder(output.response.id, |node| node.set_label(name));
+            name_control(&output.response, name);
         }
         let stroke = if output.response.has_focus() && ui.is_enabled() {
             Stroke::new(1.0, self.colors.accent)

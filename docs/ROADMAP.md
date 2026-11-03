@@ -83,6 +83,19 @@ compiler/dependency caches. Protected Windows bases, user data, current delivera
 and the held MSI remain. Exact cleanup and retained-evidence paths are in
 `picker-accessibility-current/CLEANUP_FINAL.json`.
 
+The next source correction names all production TextEdit fields outside the
+picker, including File name/Folder name creation, New name, Location, search,
+command, include/exclude patterns, theme name and per-color hex, read-only preview
+text and explicit document/source editors. One shared metadata helper preserves
+widget roles, values, selection and existing raw/themed visuals. Four new rendered
+tests exercise actual composed creation/rename keyboard editing, location/source,
+search/command and theme fields in Dark/Light.469 UI tests pass (one existing
+ignored), with native/Windows strict Clippy and formatting. Two initial test
+fixture/role assumptions failed and were corrected without weakening product
+safety. This source work is not yet a delivered-package claim. Native Linux/Windows
+checks, exact package acceptance and publication remain next; numeric/color-picker
+controls and private-desktop Alt+F4 remain unaccepted audit items.
+
 Continue in this order:
 
 1. Audit and name editable controls outside the picker, starting with the confirmed

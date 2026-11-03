@@ -4,25 +4,30 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local candidate
 
-The local Linux AppImage, portable archive, DEB and RPM and Windows portable ZIP,
-NSIS installer and development MSIX0.1.0.7 use runtime source
-`7d10a8b6eba74e642fcf5028af737a98bb5c0958`. The stable delivery paths are
-`dist/packages/` and `dist/windows-candidate/`; the acceptance receipts there
-record exact artifact hashes and tested scopes. All four Linux/Windows CI jobs
-pass for this source. The worksheet preview correction has actual Linux and
-installed Windows render acceptance: normal character spacing, leading body
-alignment, centered headers and complete wrapped rows.
+The currently delivered Linux AppImage, portable archive, DEB and RPM and Windows
+ZIP/NSIS/development MSIX0.1.0.8 use runtime source
+`d6ebd918ed62660a346e51508bdef4b8c91f9c97`. Stable delivery paths are
+`dist/packages/` and `dist/windows-candidate/`; their acceptance receipts are the
+authority for exact artifact hashes and tested scopes. All four CI jobs pass for
+that source. Native Linux and Windows checks verify named picker fields without
+replacing their roles or values. The MSIX8 evidence includes an actual7-to8 update,
+GUI operation, a recovered fixture login followed by Windows-started indexing,
+and removal preserving preferences and native index identity. The roadmap records
+the material fixture recovery and all limits; earlier startup-disabled and broad
+workflow receipts retain their original source/artifact scope.
 
-The current development MSIX passes an actual6→7 update, ordinary GUI operation,
-real reboot/login with startup enabled and disabled, and removal while preserving
-preferences and native index identity. Earlier broad workflow, provider, resource
-and installer-fault receipts keep their original hashes; the roadmap records the
-source/payload identity basis for unchanged responsibilities. The required MSI
-remains held for its ordinary-user registration rollback failure. No public
-release, Store submission or owner acceptance is implied by local delivery.
+A subsequent source correction names creation, rename, location, search, command,
+pattern, theme and document text fields. Rendered tests check roles/names/values
+and actual creation/rename keyboard editing;469 UI tests pass with one existing
+ignored, alongside native/Windows strict lint and formatting. This correction
+is not yet in the delivered packages listed above: new package/native acceptance
+and publication remain pending. Numeric/color-picker accessibility is a separate
+remaining audit; this is not a claim that every control is accessible.
 
-Packaged documentation is a build-time snapshot. This repository copy and the
-roadmap track acceptance completed after assembly.
+The required MSI remains held for its ordinary-user registration rollback failure.
+No public release, Store submission or final owner acceptance is implied by local
+delivery. Packaged documentation is a build-time snapshot; the repository roadmap
+and stable acceptance manifests track subsequent delivery.
 
 ## Highlights
 

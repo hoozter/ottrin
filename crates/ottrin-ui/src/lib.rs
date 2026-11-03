@@ -112,8 +112,8 @@ mod system_appearance;
 mod widget_style;
 use path_display::{path_crumbs, path_label};
 use widget_style::{
-    ThemeButtonExt, ThemeTextEditExt, aligned_menu_button, aligned_submenu, paint_sort_header,
-    themed_menu_button,
+    ThemeButtonExt, ThemeTextEditExt, aligned_menu_button, aligned_submenu, name_control,
+    paint_sort_header, themed_menu_button,
 };
 mod theme_colors;
 mod theme_import;
@@ -12992,7 +12992,8 @@ impl OttrinApp {
                         .font(FontId::proportional(14.0 * c.font_scale))
                         .text_color(c.text_muted)
                         .desired_width(ui.available_width())
-                        .themed(&c),
+                        .themed(&c)
+                        .accessible_name("Location"),
                 );
                 if response.lost_focus() {
                     if ui.input(|i| i.key_pressed(Key::Enter)) {
@@ -13347,13 +13348,14 @@ impl OttrinApp {
                                                     ui.add(img.max_height(preview_size.y).max_width(preview_size.x));
                                                     ui.add_space(6.0);
                                                 } else if let Some(mut snippet) = text_snippet {
-                                                    ui.add_sized(
+                                                    let preview_text = ui.add_sized(
                                                         preview_size,
                                                         egui::TextEdit::multiline(&mut snippet)
                                                             .font(FontId::monospace(10.0 * c.font_scale))
                                                             .desired_rows(6)
                                                             .interactive(false),
                                                     );
+                                                    name_control(&preview_text, "Preview text");
                                                     ui.add_space(6.0);
                                                 } else {
                                                     ui.label(RichText::new(icon).size(34.0 * c.font_scale).color(icon_color));
@@ -15172,7 +15174,8 @@ impl OttrinApp {
                             .frame(false)
                             .hint_text("Search files and folders…")
                             .font(FontId::proportional(13.0 * c.font_scale))
-                            .themed(&c),
+                            .themed(&c)
+                            .accessible_name("Search files and folders"),
                     );
                     if self.search_ui.request_focus {
                         resp.request_focus();
@@ -16144,7 +16147,8 @@ impl OttrinApp {
                             .frame(false)
                             .desired_width(ui.available_width())
                             .hint_text("type a command — or 'help' for a list")
-                            .themed(&c),
+                            .themed(&c)
+                            .accessible_name("Command"),
                     );
 
                     if self.command_frame.request_focus {
@@ -18205,13 +18209,14 @@ impl OttrinApp {
                         }
                         let text_w = (width - pad * 2.0).max(120.0);
                         let text_h = max_preview_h.min(preview_h * 0.7).max(60.0);
-                        ui.add_sized(
+                        let preview_text = ui.add_sized(
                             Vec2::new(text_w, text_h),
                             egui::TextEdit::multiline(&mut snippet)
                                 .font(FontId::monospace(11.0 * c.font_scale))
                                 .desired_rows(12)
                                 .interactive(false),
                         );
+                        name_control(&preview_text, "Preview text");
                     } else {
                         ui.add_space((preview_h * 0.3).max(16.0));
                         ui.label(RichText::new(icon).size(52.0 * c.font_scale).color(icon_color));
@@ -19728,6 +19733,7 @@ impl OttrinApp {
                                                     .desired_rows(24)
                                                     .lock_focus(true),
                                             );
+                                            name_control(&response, "Document text");
                                             if std::mem::take(&mut editor.request_focus) {
                                                 response.request_focus();
                                             }
@@ -19738,6 +19744,7 @@ impl OttrinApp {
                                                     .desired_rows(18)
                                                     .lock_focus(true),
                                             );
+                                            name_control(&response, "Document text");
                                             if std::mem::take(&mut editor.request_focus) {
                                                 response.request_focus();
                                             }
@@ -20226,7 +20233,11 @@ impl OttrinApp {
                                 .desired_width(ui.available_width())
                                 .font(FontId::proportional(13.0 * c.font_scale))
                                 .text_color(c.text)
-                                .themed(&c),
+                                .themed(&c)
+                                .accessible_name(match pending.kind {
+                                    CreationKind::File => "File name",
+                                    CreationKind::Folder => "Folder name",
+                                }),
                         );
                         if pending.request_focus {
                             response.request_focus();
@@ -20369,7 +20380,8 @@ impl OttrinApp {
                                 .desired_width(ui.available_width())
                                 .font(FontId::proportional(13.0 * c.font_scale))
                                 .text_color(c.text)
-                                .themed(&c),
+                                .themed(&c)
+                                .accessible_name("New name"),
                         );
                         if pending.request_focus {
                             response.request_focus();
@@ -22308,7 +22320,7 @@ impl OttrinApp {
                                             if self.search_ui.show_exclude_glob_input {
                                                 ui.horizontal(|ui| {
                                                     let resp = ui.add_sized([ui.available_width() - 54.0, 24.0],
-                                                        egui::TextEdit::singleline(&mut self.search_ui.exclude_glob_input).hint_text("e.g. *.log").themed(&c));
+                                                        egui::TextEdit::singleline(&mut self.search_ui.exclude_glob_input).hint_text("e.g. *.log").themed(&c).accessible_name("Exclude pattern"));
                                                     let enter = resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
                                                     if ui.add_sized([44.0, 24.0], egui::Button::new("Add").themed(&c)).clicked() || enter {
                                                         let g = self.search_ui.exclude_glob_input.trim().to_string();
@@ -22367,7 +22379,7 @@ impl OttrinApp {
                                             if self.search_ui.show_include_glob_input {
                                                 ui.horizontal(|ui| {
                                                     let resp = ui.add_sized([ui.available_width() - 54.0, 24.0],
-                                                        egui::TextEdit::singleline(&mut self.search_ui.include_glob_input).hint_text("e.g. *.pdf").themed(&c));
+                                                        egui::TextEdit::singleline(&mut self.search_ui.include_glob_input).hint_text("e.g. *.pdf").themed(&c).accessible_name("Include pattern"));
                                                     let enter = resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
                                                     if ui.add_sized([44.0, 24.0], egui::Button::new("Add").themed(&c)).clicked() || enter {
                                                         let g = self.search_ui.include_glob_input.trim().to_string();
@@ -23785,7 +23797,8 @@ fn render_source_editor(
             egui::TextEdit::singleline(&mut editor.search_query)
                 .desired_width(180.0)
                 .hint_text("Text in this file")
-                .themed(&c),
+                .themed(&c)
+                .accessible_name("Find in this file"),
         );
         if query.changed() {
             editor.search_next_char = 0;
@@ -23863,6 +23876,7 @@ fn render_source_editor(
                     .layouter(&mut layouter)
                     .lock_focus(true)
                     .show(ui);
+                name_control(&output.response, "Source code");
                 // Transfer focus after TextEdit handles the click on Next;
                 // otherwise its click-outside handling can surrender it again.
                 if std::mem::take(&mut editor.request_focus) || search_match.is_some() {
@@ -32915,6 +32929,194 @@ mod tests {
                 request_focus: true,
             })
         );
+    }
+
+    pub(super) fn rendered_text_fields(output: &egui::FullOutput) -> Vec<(String, String)> {
+        output
+            .platform_output
+            .accesskit_update
+            .as_ref()
+            .unwrap()
+            .nodes
+            .iter()
+            .filter(|(_, node)| {
+                matches!(
+                    node.role(),
+                    egui::accesskit::Role::TextInput | egui::accesskit::Role::MultilineTextInput
+                )
+            })
+            .map(|(_, node)| {
+                (
+                    node.label().unwrap_or_default().into(),
+                    node.value().unwrap_or_default().into(),
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn rendered_creation_and_rename_fields_keep_names_values_and_keyboard_editing() {
+        for dark in [false, true] {
+            for kind in [CreationKind::File, CreationKind::Folder] {
+                let (root, mut app, source) = clipboard_keyboard_fixture();
+                let ctx = Context::default();
+                ctx.enable_accesskit();
+                ctx.set_visuals(if dark {
+                    egui::Visuals::dark()
+                } else {
+                    egui::Visuals::light()
+                });
+                let tab = app.state.active_tab().id;
+                app.open_creation_dialog(kind, tab, root.path().into());
+                let label = match kind {
+                    CreationKind::File => "File name",
+                    CreationKind::Folder => "Folder name",
+                };
+                for step in 0..3 {
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(900.0, 700.0),
+                            )),
+                            events: if step == 2 {
+                                vec![egui::Event::Text("新 name.txt".into())]
+                            } else {
+                                vec![]
+                            },
+                            ..Default::default()
+                        },
+                        |ctx| app.render_creation_modal(ctx),
+                    );
+                    if step != 0 {
+                        let expected = if step == 2 { "新 name.txt" } else { "" };
+                        assert_eq!(
+                            rendered_text_fields(&output),
+                            vec![(label.into(), expected.into())]
+                        );
+                        assert_eq!(app.pending_creation.as_ref().unwrap().name_input, expected);
+                    }
+                }
+                assert!(!root.path().join("新 name.txt").exists());
+                app.pending_creation = None;
+                app.begin_rename_path(tab, source.clone());
+                for step in 0..3 {
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(900.0, 700.0),
+                            )),
+                            events: if step == 2 {
+                                vec![egui::Event::Text("-draft".into())]
+                            } else {
+                                vec![]
+                            },
+                            ..Default::default()
+                        },
+                        |ctx| app.render_rename_modal(ctx),
+                    );
+                    if step != 0 {
+                        let expected = if step == 2 {
+                            "source.txt-draft"
+                        } else {
+                            "source.txt"
+                        };
+                        assert_eq!(
+                            rendered_text_fields(&output),
+                            vec![("New name".into(), expected.into())]
+                        );
+                    }
+                }
+                assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+                assert!(!root.path().join("source.txt-draft").exists());
+            }
+        }
+    }
+
+    #[test]
+    fn rendered_search_and_command_fields_keep_native_names_and_values() {
+        for dark in [false, true] {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            ctx.set_visuals(if dark {
+                egui::Visuals::dark()
+            } else {
+                egui::Visuals::light()
+            });
+            app.search_ui.query = "新 query".into();
+            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| app.render_search_sidebar(ui));
+            });
+            assert!(
+                rendered_text_fields(&output)
+                    .contains(&("Search files and folders".into(), "新 query".into()))
+            );
+            app.command_frame.visible = true;
+            app.command_frame.input = "draft command".into();
+            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                app.render_command_frame(ctx)
+            });
+            assert!(
+                rendered_text_fields(&output).contains(&("Command".into(), "draft command".into()))
+            );
+            assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        }
+    }
+
+    #[test]
+    fn rendered_location_and_source_fields_keep_native_names_and_values() {
+        for dark in [false, true] {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            ctx.set_visuals(if dark {
+                egui::Visuals::dark()
+            } else {
+                egui::Visuals::light()
+            });
+            let tab = app.state.active_tab().id;
+            let bar = app.address_bar_state_mut(tab);
+            bar.text = "/新/location".into();
+            bar.editing = true;
+            bar.tab_id = Some(tab);
+            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| app.render_address_bar(ui, tab));
+            });
+            assert_eq!(
+                rendered_text_fields(&output),
+                vec![("Location".into(), "/新/location".into())]
+            );
+            let document_root = text_edit_fixture_root();
+            let document = document_root.path().join("source.txt");
+            std::fs::write(&document, "source original").unwrap();
+            let mut editor = PreviewTextEditor {
+                session: TextEditSession::open(&document).unwrap(),
+                buffer: "unsaved 新 text".into(),
+                error: None,
+                search_query: "新".into(),
+                search_next_char: 0,
+                request_focus: false,
+            };
+            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    render_source_editor(ui, &mut editor, &document, "txt", 13.0, app.colors)
+                });
+            });
+            let fields = rendered_text_fields(&output);
+            assert!(
+                fields.contains(&("Find in this file".into(), "新".into())),
+                "{fields:?}"
+            );
+            assert!(
+                fields.contains(&("Source code".into(), "unsaved 新 text".into())),
+                "{fields:?}"
+            );
+            assert!(fields.iter().all(|(name, _)| !name.is_empty()));
+            assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+            assert_eq!(std::fs::read(document).unwrap(), b"source original");
+        }
     }
 
     #[test]

@@ -251,8 +251,8 @@ impl OttrinApp {
             Frame::new().inner_margin(16).show(ui, |ui| {
             ui.add_space(10.0);
             ui.horizontal(|ui| {
-                ui.label(if creating { "Theme name" } else { "Name" });
-                ui.add(egui::TextEdit::singleline(&mut self.theme_editor.save_as_name).desired_width(220.0).themed(&c));
+                ui.label("Theme name");
+                ui.add(egui::TextEdit::singleline(&mut self.theme_editor.save_as_name).desired_width(220.0).themed(&c).accessible_name("Theme name"));
                 if self.theme_editor_is_dirty() {
                     ui.label(RichText::new("Unsaved changes").small().color(c.accent));
                 }
@@ -518,7 +518,7 @@ impl OttrinApp {
                         egui::TextEdit::singleline(&mut hex)
                             .id(egui::Id::new(("appearance_hex", field)))
                             .desired_width(88.0 * self.colors.font_scale)
-                            .text_color(if valid_hex { self.colors.text } else { self.colors.error }).themed(&self.colors),
+                            .text_color(if valid_hex { self.colors.text } else { self.colors.error }).themed(&self.colors).accessible_name(format!("{} (hex)", Self::theme_color_field_label(field))),
                     )
                     .on_hover_text(if valid_hex {
                         "RGB color: three or six hexadecimal digits. Use the color picker to change opacity."
@@ -1076,6 +1076,49 @@ fn property_group(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rendered_theme_fields_name_the_theme_and_each_visible_color() {
+        for mode in [ThemeMode::Light, ThemeMode::Dark] {
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            let mut app = OttrinApp::default();
+            app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+            app.switch_theme_editor_variant(mode, &ctx);
+            app.theme_editor.selected_region = ThemePreviewRegion::Navigation;
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1180.0, 1600.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_theme_editor_embedded(ctx);
+                },
+            );
+            let fields = super::super::tests::rendered_text_fields(&output);
+            assert!(
+                fields.contains(&("Theme name".into(), app.theme_editor.save_as_name.clone())),
+                "{fields:?}"
+            );
+            let colors: Vec<_> = fields
+                .iter()
+                .filter(|(name, _)| name.ends_with(" (hex)"))
+                .collect();
+            assert!(!colors.is_empty(), "{fields:?}");
+            assert!(
+                colors
+                    .iter()
+                    .all(|(_, value)| parse_hex_rgb(value).is_some())
+            );
+            assert!(
+                fields.iter().all(|(name, _)| !name.is_empty()),
+                "{fields:?}"
+            );
+        }
+    }
 
     #[test]
     fn preview_uses_real_smart_panel_icons_and_toggle_behavior() {
