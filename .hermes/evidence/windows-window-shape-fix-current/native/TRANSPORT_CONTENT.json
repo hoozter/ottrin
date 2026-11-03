@@ -1,0 +1,84 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 162,
+      "sha256": "6a6ed3e1c0776e1925e1d904ff2956baa3759e3eacdbf19f2902bd5e13de6f6d",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "3a9bebd14079ea78248e7316e2332c48c938593d242e9fab26817f599669264d",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 257,
+      "sha256": "71d19c132f40f34526d4efd5c226e3722afb0afd1dd813043f6535bb8a820705",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 89,
+      "sha256": "2b294aca551df6ee57aec30b3e186d14d2337de762fe8d5747e55c22a6b2ade2",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-0.png",
+      "bytes": 106347,
+      "sha256": "de87abb1c1c5413db3ed878607f2e662803faee08f3e66d0dcf1202cf42d33db",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-inspector-0.png",
+      "bytes": 16458,
+      "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-0.png",
+      "bytes": 29477,
+      "sha256": "b31b6fc11d219dd318c8a57f8259b9ad6dd099bc43219ce5ea2dcbae4f7450ff",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-maximized-0.png",
+      "bytes": 30721,
+      "sha256": "26a9109afc7fdc5a77c51da399643d3ad8b2acb35d001c59888585e338e8d44b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-resized-0.png",
+      "bytes": 28724,
+      "sha256": "4a4ac2b5e686658d46f5b6c806c9f6e60e4beb941c22d126c9999a2a45c1b541",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-restored-0.png",
+      "bytes": 28724,
+      "sha256": "4a4ac2b5e686658d46f5b6c806c9f6e60e4beb941c22d126c9999a2a45c1b541",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-settings-0.png",
+      "bytes": 55720,
+      "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "81e1804644d47517521f29405530a60f92906cf769834621ef10b62d2456cbe0",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 5014,
+      "sha256": "e51617fb9960468fc360590e37d33bb7c3f49e2457c919bc78e22bc4404d4247",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "archive_sha256": "e824e68b18e5d1581ea82815731a628c73fa4a5ef3264c55484fc129fc437684",
+  "safe_result_members_extracted_equal": true
+}

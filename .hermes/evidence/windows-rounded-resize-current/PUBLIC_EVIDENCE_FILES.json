@@ -1,0 +1,569 @@
+{
+  "scope": "Curatedsource/nativefunctionalscope/strictfailedCPUcomparisonandcleanup; credential-bootstrap/controller archivesandpackagesexcluded",
+  "files": [
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/actor.ps1",
+      "sha256": "5422c355eedbe8766f1c0d7d0efdb3f0f940c5d45f928a88d2acaf612131d796"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/actor-corrected.ps1",
+      "sha256": "641d1c02ca77781276b06ee68231191a69636c3df56ae891cdb8000e7cce8dae"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/actor-collect-all.ps1",
+      "sha256": "c0898d11bc6fadd6caa3dc776e80e87a4b188d39bb71d6a8c220ecd90cfec279"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/actor-baseline-diagnostic.ps1",
+      "sha256": "ab47d495a354984fc6d347f5ea4568e1e7e2eeb9690ddf12c37501340511a928"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/verify-windows-cohort.py",
+      "sha256": "4b287a1df507c6703a90588f5e2d8211969d1bf5dc3404419fdbdbdfac83d5dc"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/HOST_PAYLOAD.json",
+      "sha256": "36b8fc75d8a52f822966d47bed83ba34283c18dd9c546d9016af62bcd5a2a2dd"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/PAYLOAD.json",
+      "sha256": "e442c5f766f747387d02caf4f578d112694b36d6056d62a2bbaf3a4f781c8d7c"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/CPU_BASELINE_COMPARISON.json",
+      "sha256": "2b8aaa882dbeea1679e0726f53ce96bb093d8959a4bf3a262b99fad7c72bac1e"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/NATIVE_FUNCTIONAL_ACCEPTANCE.json",
+      "sha256": "34d528c9541a5bf6c862f96e5f83098574646b1fb3842d3ed1db61c310d398fb"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/CANDIDATE_RETIRED.json",
+      "sha256": "524cd4137065153398904116b7de773ad9a17882170e4032ee782d9f390a01ef"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/rounded-resize-negative.log",
+      "sha256": "e73fe186cc65bbf7e5a2b60ae329a2e23a043ee10936a91440ae2b7054dc0bcb"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/rounded-resize-positive.log",
+      "sha256": "77776b7e8b07c62424e77e92001affe46d9d359e6de6a9e3039b7cfe244f6c13"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/titlebar-resize-positive.log",
+      "sha256": "01454fbcacee4b7f2cf2fa0181eceec12538ff2ed82a6b3cf1c1e5f6ef3fa435"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/actor.ps1",
+      "sha256": "5422c355eedbe8766f1c0d7d0efdb3f0f940c5d45f928a88d2acaf612131d796"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/OWNER.json",
+      "sha256": "34b3051b5346e2ae7f911c3d8f6cc350961000f1cbcc5589341c9f8dd6d89df7"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/GUEST_RESULT.json",
+      "sha256": "e698dc90d3d924a6d12e59b0c4adbac640ec46f0a0c493532ffc2d47035335b0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/TRANSPORT_CONTENT.json",
+      "sha256": "2d823c72d74bc7d07213e6fc725bc109fcb2d41f05a1950416421c2b4a56f40f"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/RETIRED_INPUTS.json",
+      "sha256": "49510c5b2e49c100f2868bc421b221e483376ec1932a6072abcfb8a272c550d3"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/ASSESSMENT.json",
+      "sha256": "1936d62e95d97711ab0ac64c1067f776ecdf0a5339490c2feb743c7e6cd893b9"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/ORIGINAL_REVIEW.json",
+      "sha256": "2c53d5d26f13ea31a6123b2cd2594b5cceb11d3f1877fd407b9d5955fcb59869"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/viewer/TEARDOWN.json",
+      "sha256": "fb391af73883e3b7502ab9cdb84615c5d8068033061480e7963afe05ed3a196d"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-0.png",
+      "sha256": "b31b6fc11d219dd318c8a57f8259b9ad6dd099bc43219ce5ea2dcbae4f7450ff"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-resized-0.png",
+      "sha256": "4a4ac2b5e686658d46f5b6c806c9f6e60e4beb941c22d126c9999a2a45c1b541"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/install-process.json",
+      "sha256": "2b294aca551df6ee57aec30b3e186d14d2337de762fe8d5747e55c22a6b2ade2"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-maximized-0.png",
+      "sha256": "26a9109afc7fdc5a77c51da399643d3ad8b2acb35d001c59888585e338e8d44b"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-settings-0.png",
+      "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-restored-0.png",
+      "sha256": "4a4ac2b5e686658d46f5b6c806c9f6e60e4beb941c22d126c9999a2a45c1b541"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-inspector-0.png",
+      "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/RESULT.json",
+      "sha256": "e51617fb9960468fc360590e37d33bb7c3f49e2457c919bc78e22bc4404d4247"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/cleanup-index-remove-process.json",
+      "sha256": "6a6ed3e1c0776e1925e1d904ff2956baa3759e3eacdbf19f2902bd5e13de6f6d"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-editor-0.png",
+      "sha256": "de87abb1c1c5413db3ed878607f2e662803faee08f3e66d0dcf1202cf42d33db"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/index-remove-process.json",
+      "sha256": "71d19c132f40f34526d4efd5c226e3722afb0afd1dd813043f6535bb8a820705"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/actor.ps1",
+      "sha256": "641d1c02ca77781276b06ee68231191a69636c3df56ae891cdb8000e7cce8dae"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/OWNER.json",
+      "sha256": "b073a5ed8a429168a0effff86275b57531d97c7f526290d042b40db4890f462b"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/GUEST_RESULT.json",
+      "sha256": "d0f864e99a3d8bb45333796e1ff7ebb42afa5733f6ff26b3fe1f35872daaa68e"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/TRANSPORT_CONTENT.json",
+      "sha256": "3bdab0753fd7542af6b226934d1e802355df290eb72f83583308ce575a211d2b"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/RETIRED_INPUTS.json",
+      "sha256": "92580f9ba42a4ab928c26f0c1febb8d46355b7765d52f6349c7ea87f123c2e47"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/viewer/TEARDOWN.json",
+      "sha256": "02e42d563917de2e32e1323cec9bda99aab2f9c75914f9ca5911307bcd84c1b0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-editor-24.png",
+      "sha256": "4da10061243af9b20be75fd6ea13871730894e8c046d2988ee85ddbb8f7db9d4"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-main-0.png",
+      "sha256": "682a4529cfa237866a8862cec2d0de6b7ff4aa3d25513cab9a39a53460dff2a7"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-main-resized-24.png",
+      "sha256": "a0bba7521c7d611e702e605b3f9bb52f2aac8271312dff91e5ee54623cd564a4"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-main-resized-0.png",
+      "sha256": "a351b767a39fc084e59fe1d62c8cdb0a2613750a3321768ff0cf53d36cb0e802"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-picker-0.png",
+      "sha256": "4beb58adfe8eaaa4b9b5e529683c3a6d6a682f0d0e97847117a4650171847b10"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/install-process.json",
+      "sha256": "8359125bec868d0ab536db6fe60e7a4f6f6592aae509c90dd4bef5c8897bb0e2"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-main-maximized-0.png",
+      "sha256": "2e0dc6e4271e5efebef14b139e0456944a66d39a617fa387da4cbdd1f81fed0e"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-settings-24.png",
+      "sha256": "0a70887548f688c604049ca50b689a8414e1fc0e9b44050b7635a5c77be99478"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-properties-0.png",
+      "sha256": "8eb85789e12f1c9ea3ed76d7ed3132aa91f4ca99049a5e72255650d4cd9799e8"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-main-24.png",
+      "sha256": "e173b88bae233c0c76d4cbec501991574034e6643e116baf58ed53532a0d6d53"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-inspector-24.png",
+      "sha256": "defe7ce96369714de94d933ce00b06fd3af470db786cb01090116ecc9b7366aa"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-settings-0.png",
+      "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-main-restored-0.png",
+      "sha256": "a351b767a39fc084e59fe1d62c8cdb0a2613750a3321768ff0cf53d36cb0e802"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-inspector-0.png",
+      "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/RESULT.json",
+      "sha256": "c67b7db28c6731a156e0ca83be05a9f69af8db3ee5959196301b7f7291aeb8d2"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/cleanup-index-remove-process.json",
+      "sha256": "7ffdc6bf23e44099b620da3185ba5cf430813b82c875cb1e12cc577a61e123ea"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-editor-0.png",
+      "sha256": "90ea779ead5894e47b0fa870cc3a3f396d36a1f68c98f41850d0f762a9edc62e"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/Native-main-restored-24.png",
+      "sha256": "a0bba7521c7d611e702e605b3f9bb52f2aac8271312dff91e5ee54623cd564a4"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/results/index-remove-process.json",
+      "sha256": "41d5cd66e7a234b82108db2cd592d81f4422f60db43b921428660ff85265b959"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/actor.ps1",
+      "sha256": "ab47d495a354984fc6d347f5ea4568e1e7e2eeb9690ddf12c37501340511a928"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/OWNER.json",
+      "sha256": "0321d3f6b26576f6964e276c22019457526012f02fed3051c311fdec2351ae03"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/GUEST_RESULT.json",
+      "sha256": "4d89e397038f613267fc153a5fdad7b3ce47dd3b288614356668ecac8222ca2b"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/TRANSPORT_CONTENT.json",
+      "sha256": "f613f696d1da8e7b19758acaff83a6a73c5147d3b8eb5c58344a8c24a3cd0649"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/RETIRED_INPUTS.json",
+      "sha256": "ae8e820db41380fc9c8f8eec27d3939b9f44fca625dad6d736a75efe4dbaf0ec"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/viewer/TEARDOWN.json",
+      "sha256": "1ad1b25f4e1b2519f2b8253bbe00558bdce22f95a7154d5bdc08e5a8c60b4ee3"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-editor-24.png",
+      "sha256": "0a9d84bec34002ad649fd321dd8b11061972a37a065c0ce564cdcc353a6968c1"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-main-resized-24.png",
+      "sha256": "810793d805d4616789780dfcb2b0897e0d37e91cf87679cab04c605d92656574"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/uninstall-process.json",
+      "sha256": "bb9838d16ec8a7d2f1ace9fce6b60785b957c4b5d11b19d54346884cc060d11c"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/install-process.json",
+      "sha256": "1456d58eb0feaffc063900142f70a78b7d255d1202c3f4c62bab19e5c0fc81e3"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-main-maximized-0.png",
+      "sha256": "52552824f8285bc61cabc7efe720e5f4a22bdab8314d6c8fae507f6b67a2353b"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-properties-24.png",
+      "sha256": "342ede85f22b67a3985f4b3905aea6d9e8e57747560e24d485c458f8caa8f66a"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-settings-24.png",
+      "sha256": "9d58fd119d194f24fcc7d560b4b555f516f661454faa481b3d15490359ee6f71"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-picker-24.png",
+      "sha256": "13e4c17c9bee927cfeea771383a4c0d2cce4f0f7149d7356513da6673ef6cbc8"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-main-24.png",
+      "sha256": "59d87185c532c1b445ce90ef247e3e20b7c8b59d3c570b2ac1c55affb6a8635f"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-inspector-24.png",
+      "sha256": "ee3c708b4adec3d4ac72dbdb07065211edab8204e9147cf8e96ead20f2be7aa8"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/RESULT.json",
+      "sha256": "a7da6cc25ad321b890298804a06df07b42ef4d36b69cc88d9a77a02b829f4df1"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/Native-main-restored-24.png",
+      "sha256": "810793d805d4616789780dfcb2b0897e0d37e91cf87679cab04c605d92656574"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/baseline-diagnostic/results/index-remove-process.json",
+      "sha256": "4b159c6d3f0c56af24941b32dd3f6ea579cb361a0d52583bcff857a627e18052"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/actor.ps1",
+      "sha256": "c0898d11bc6fadd6caa3dc776e80e87a4b188d39bb71d6a8c220ecd90cfec279"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/OWNER.json",
+      "sha256": "3885aa134a425701e3a334c4a84a62118e68cca60188dce683d1a040b1f1a8d3"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/GUEST_RESULT.json",
+      "sha256": "3247cd2f7e186436730116180c4c94655bb0704f3bdf8bcbecc89732f9e953c0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/TRANSPORT_CONTENT.json",
+      "sha256": "7f898e8d21bc356349b66500a3ce7f61bdd1c817771098e6c418dde0749ab515"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/RETIRED_INPUTS.json",
+      "sha256": "746a463d184904080a24fe97c1e973fb86d1fccd57088f172a8d5b21d72154a9"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/ORIGINAL_REVIEW.json",
+      "sha256": "539fdd8f9ec8e8b462e3f3dfd8b37012294cd5486833718fee465d324e852643"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/viewer/TEARDOWN.json",
+      "sha256": "fb61414034b3116b25de7fa3a2ee62f79c991101a8de8fbca647f366a834265b"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-properties-24-configured-24.png",
+      "sha256": "3eb531ed9a86fc4558f1fa876d606400affb5ded977cbd61253ed59616b3d228"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-maximized-0-configured-24.png",
+      "sha256": "01376afddabba88c2371d8025320de77754d3b2b379f9fb9a7ed70710ce7579c"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-picker-24-configured-24.png",
+      "sha256": "05e3723cb161113a95c7c956fa79c64edcd16ece26dc199c9a4dd2a9edb701db"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/uninstall-process.json",
+      "sha256": "c7246dcb00658669145531fc9d794a240a1a16857d4158753b77f23fe99114ef"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-inspector-0-configured-0.png",
+      "sha256": "441cb7eab9cdf742f9a60b54159d898fb360b5d8f2ea319ff5505c595403035c"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-0-configured-0.png",
+      "sha256": "8be0f208fe7fa6636c8efa461f441e2e0bfb937640341ba317af8e2b5025ffc0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-0-configured-0.png",
+      "sha256": "a3d1d49f282fc7d606a6046de1055d3643be3ff6d46e4044ed37ad1687f72c86"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-inspector-24-configured-24.png",
+      "sha256": "24df5e0277411b9bf4d9cf6a396bf3412b2b88242e42be3cb7375020e54fb72b"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/install-process.json",
+      "sha256": "5768556e59a07a374745fc962da034174fe736d6c8fd0274d0527379a7258bea"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-editor-0-configured-0.png",
+      "sha256": "66412076feab3232c91cc286a889a727981f0143c4d050cebcf101afe7e32d4f"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-24-configured-24.png",
+      "sha256": "6c06226c5a31c4278de7e7e1a732759f86a1feb86a3e32dca288fa7b4ea3f25c"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-resized-24-configured-24.png",
+      "sha256": "3885bb371e7d87b39e90e96a719aa63c28779b69288daf69ee19c67e9b7f7611"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-inspector-0-configured-0.png",
+      "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-editor-0-configured-0.png",
+      "sha256": "de87abb1c1c5413db3ed878607f2e662803faee08f3e66d0dcf1202cf42d33db"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-inspector-24-configured-24.png",
+      "sha256": "f5cacfd0dccd2f83112b03d1da7003c2d9f32a7c9f1e8123d37ab9192322e964"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-maximized-0-configured-0.png",
+      "sha256": "fca4dd6eed79b098654b16279947701172b88813ddca20b9b100d50a0afd2523"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-restored-0-configured-0.png",
+      "sha256": "589e6a08f0ed98ac1299d3399333484e4e92d7ecb968a99da2bb10b89a90397e"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-resized-0-configured-0.png",
+      "sha256": "589e6a08f0ed98ac1299d3399333484e4e92d7ecb968a99da2bb10b89a90397e"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-24-configured-24.png",
+      "sha256": "ac5d4ae986de93294bfdfd3f93ec2cc501d63ce8da79015ca0a6434461090b37"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-properties-24-configured-24.png",
+      "sha256": "cef852ed0309a4add0ba3e71ac6fdcfc9a99e5bccd1aa1266dda992f55dff9df"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-resized-0-configured-0.png",
+      "sha256": "ab8ac162c2a09ab25cb04f909abac3341ce6cb35bf7fadbb42ff74de95df3901"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-properties-0-configured-0.png",
+      "sha256": "9b75cd6d9bcccb35a12de853f8181e4134ac739c72c126f21e328df541d6d4c0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-restored-24-configured-24.png",
+      "sha256": "3885bb371e7d87b39e90e96a719aa63c28779b69288daf69ee19c67e9b7f7611"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-restored-0-configured-0.png",
+      "sha256": "ab8ac162c2a09ab25cb04f909abac3341ce6cb35bf7fadbb42ff74de95df3901"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/RESULT.json",
+      "sha256": "2ef62601d8c41f0751e8749d059e1ed7400e78ac74006ec7ec29a777b51a52a3"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-settings-0-configured-0.png",
+      "sha256": "af1ac4d9b26ad04eab6cee89d464b776a26a4a34579ca75e76cae90434f17f9f"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-properties-0-configured-0.png",
+      "sha256": "0c920a80590b9967ce395dbf9402041dcd65a0a6789ce018b354550bd81987e6"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-resized-24-configured-24.png",
+      "sha256": "f47ff595c9725fa34f7cba7a15b349090d1033307b8e4c8a7797d3b2dee5fafd"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-restored-24-configured-24.png",
+      "sha256": "f47ff595c9725fa34f7cba7a15b349090d1033307b8e4c8a7797d3b2dee5fafd"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-picker-24-configured-24.png",
+      "sha256": "29f90ed89a2616d0d1064f6a8e2869c63782187f829458fc78af7134c32a6454"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-settings-0-configured-0.png",
+      "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-maximized-0-configured-0.png",
+      "sha256": "01376afddabba88c2371d8025320de77754d3b2b379f9fb9a7ed70710ce7579c"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-maximized-0-configured-24.png",
+      "sha256": "fca4dd6eed79b098654b16279947701172b88813ddca20b9b100d50a0afd2523"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-editor-24-configured-24.png",
+      "sha256": "8c2f49c635e9d295c41c95ffa6586210470fd544c8ee6ff19423ff660e61246d"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-settings-24-configured-24.png",
+      "sha256": "a1b6e985145ad9d4f51eaa3d5876c00c28e92848a500dac7c4847461f6565190"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-editor-24-configured-24.png",
+      "sha256": "83de5896aee605e2091920cf106f976099ff650961402b36aedbd4df04554b6a"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-settings-24-configured-24.png",
+      "sha256": "c9d83bcc8ad6d72c7baef53d3ee688ee03836b04b9dfbdb46b30efa05f1dfc6d"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/index-remove-process.json",
+      "sha256": "cfcec7208f3f4fd6c22608deddaba6dc3db306bb36ea4dfb92a9863230d27be3"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-picker-0-configured-0.png",
+      "sha256": "33ea0fd26726dfea74a6b611667b15fb9b0d04fb122a83bef39f40c4edaa68d0"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-picker-0-configured-0.png",
+      "sha256": "ede8d6d5236e310cad3b8f0baf7e7665acdf29f40cfe52196a1613edb82680bf"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/BASELINE.json",
+      "sha256": "90dc2a2d64fbe07fa313e75406b6d960ffea069b434bab609f68a6823c034bd4"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/SOURCE_ACCEPTANCE.json",
+      "sha256": "4dc453eefee6e61b6f9539caa1cd99ddbcf8d7ae70c8f1d67d5deda9b7182d4c"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/SOURCE_CHECKS.json",
+      "sha256": "c39426192b1f6d4016337a8914685881514fc5cbd03a70fff62eb96d9254aa37"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/source-checks.py",
+      "sha256": "16e22eccc81554e97a750e4bb538305f1f4aae4b0bd49e0fdab27dbd35744597"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/full-ui-tests.log",
+      "sha256": "92582bd89def00bc7351200c09a8669c276b00f95240875a8efeec51e5d48bed"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/native-clippy.log",
+      "sha256": "3994fcb975c1746de9c154073c8eca3ec15d544eedeb1a5f0c3ef2692561870b"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/windows-clippy.log",
+      "sha256": "a16226441fc264b81c41f4aa70c119ee0b2904cb98e87a0530537b4a36228d5e"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/CLEANUP_SOURCE.json",
+      "sha256": "b7032ebe744230a2e6201ebab1c6e50578861ca9c466f6cda0181bac2f5ee5de"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/NATIVE_SCOPE_COMPARISON.json",
+      "sha256": "4ac4f7e115f334dfa1ecb05c160bc9ee71fa4de98bb5809a296ffbbd8e583235"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/PROCESS_INSPECTION.json",
+      "sha256": "7b6f594e463dbc8f42232bff9d8f6b1f908ee5739e028e33aca5f590d4750218"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/INCREMENTAL_REVIEW.json",
+      "sha256": "aa9f5499fe8276b32aa085a506c43132a6d3078c6a7fad2f681077b55f142643"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/incremental-inspection.log",
+      "sha256": "9b46c59736f1eb8ae0e0e23df383f46c50b46d127d1020f8a26410f020c99960"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/incremental-apply.log",
+      "sha256": "ec12b4bee6fdb6f39a379960afe0d48ba93e06c1892d4c1a41780a082ef408c4"
+    },
+    {
+      "path": ".hermes/evidence/windows-rounded-resize-current/incremental-apply-retry.log",
+      "sha256": "4257b46b40ee462543fa131c943a7fa09ef22417d8bdb59589a7c3cb5ca1b248"
+    },
+    {
+      "path": ".hermes/evidence/watcher-poll-ci-current/SOURCE_ACCEPTANCE.json",
+      "sha256": "9f7b2b8a8d2a1ab0a9d813f2c0151628a8b463b54420973fe6890f6eda69ea20"
+    },
+    {
+      "path": ".hermes/evidence/watcher-poll-ci-current/CI_CURRENT.json",
+      "sha256": "203bbded234848471ad0234f5017b8e5fa15b012a1d4cef4366ee2c244516eee"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/PRIVATE_INPUTS_RETIRED.json",
+      "sha256": "45c19acae08782eb42d3d2161e89998c2124feb4af531c1a97af8d21bad7633a"
+    }
+  ]
+}

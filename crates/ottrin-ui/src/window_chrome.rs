@@ -53,6 +53,7 @@ pub(crate) fn render_custom_titlebar(
     if allow_drag {
         // Use the full titlebar rect (excluding close button) as the drag area.
         let bar_rect = title_bar.response.rect;
+        let viewport_rect = ctx.viewport_rect();
         let can_drag = ctx.input(|i| {
             if !i.pointer.primary_pressed() {
                 return false;
@@ -61,6 +62,13 @@ pub(crate) fn render_custom_titlebar(
                 return false;
             };
             if !bar_rect.contains(pos) {
+                return false;
+            }
+            if !i.viewport().maximized.unwrap_or(false)
+                && !i.viewport().fullscreen.unwrap_or(false)
+                && resize_direction_for_pos(viewport_rect, pos, 6.0, f32::from(colors.app_radius))
+                    .is_some()
+            {
                 return false;
             }
             // Don't drag when clicking the close button.
@@ -138,17 +146,38 @@ pub(crate) fn resize_direction_for_pos(
     rect: Rect,
     pos: egui::Pos2,
     margin: f32,
+    corner_radius: f32,
 ) -> Option<ResizeDirection> {
+    if !rect.contains(pos) {
+        return None;
+    }
     let left = pos.x <= rect.left() + margin;
     let right = pos.x >= rect.right() - margin;
     let top = pos.y <= rect.top() + margin;
     let bottom = pos.y >= rect.bottom() - margin;
 
+    // A native rounded region removes the small square at each corner. Keep
+    // diagonal resize reachable along the visible arc, within the edge strip;
+    // the interior and title-bar buttons must not become resize targets.
+    let corner = corner_radius.max(margin);
+    let corner_left = pos.x <= rect.left() + corner;
+    let corner_right = pos.x >= rect.right() - corner;
+    let corner_top = pos.y <= rect.top() + corner;
+    let corner_bottom = pos.y >= rect.bottom() - corner;
+    if (top && corner_left) || (left && corner_top) {
+        return Some(ResizeDirection::NorthWest);
+    }
+    if (top && corner_right) || (right && corner_top) {
+        return Some(ResizeDirection::NorthEast);
+    }
+    if (bottom && corner_left) || (left && corner_bottom) {
+        return Some(ResizeDirection::SouthWest);
+    }
+    if (bottom && corner_right) || (right && corner_bottom) {
+        return Some(ResizeDirection::SouthEast);
+    }
+
     match (left, right, top, bottom) {
-        (true, false, true, false) => Some(ResizeDirection::NorthWest),
-        (false, true, true, false) => Some(ResizeDirection::NorthEast),
-        (true, false, false, true) => Some(ResizeDirection::SouthWest),
-        (false, true, false, true) => Some(ResizeDirection::SouthEast),
         (true, false, false, false) => Some(ResizeDirection::West),
         (false, true, false, false) => Some(ResizeDirection::East),
         (false, false, true, false) => Some(ResizeDirection::North),
@@ -316,7 +345,7 @@ pub(crate) fn paint_viewport_frame(ctx: &Context, colors: Colors, is_windows: bo
 }
 
 /// Shared edge resize behavior for undecorated application windows.
-pub(crate) fn handle_viewport_resize(ctx: &Context) {
+pub(crate) fn handle_viewport_resize(ctx: &Context, corner_radius: u8) {
     let (maximized, fullscreen) = ctx.input(|i| {
         let viewport = i.viewport();
         (
@@ -333,7 +362,7 @@ pub(crate) fn handle_viewport_resize(ctx: &Context) {
         return;
     };
 
-    if let Some(direction) = resize_direction_for_pos(rect, pos, 6.0) {
+    if let Some(direction) = resize_direction_for_pos(rect, pos, 6.0, f32::from(corner_radius)) {
         ctx.set_cursor_icon(cursor_icon_for_resize_direction(direction));
         let primary_pressed = ctx.input(|i| i.pointer.primary_pressed());
         if primary_pressed {
@@ -523,26 +552,122 @@ mod tests {
     }
 
     #[test]
+    fn rounded_window_resize_targets_follow_visible_edges() {
+        let rect = Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(100.0, 80.0));
+        // These points are inside the visible radius-24 arc, beyond the old
+        // six-point corner square that native clipping removes completely.
+        for (point, expected) in [
+            (egui::pos2(24.0, 4.0), ResizeDirection::NorthWest),
+            (egui::pos2(76.0, 4.0), ResizeDirection::NorthEast),
+            (egui::pos2(24.0, 76.0), ResizeDirection::SouthWest),
+            (egui::pos2(76.0, 76.0), ResizeDirection::SouthEast),
+        ] {
+            assert_eq!(
+                resize_direction_for_pos(rect, point, 6.0, 24.0),
+                Some(expected)
+            );
+        }
+        for point in [
+            egui::pos2(82.0, 18.0), // close control, away from the resize strip
+            egui::pos2(18.0, 18.0), // ordinary title-bar content
+            egui::pos2(50.0, 40.0),
+            egui::pos2(-1.0, 40.0),
+        ] {
+            assert_eq!(resize_direction_for_pos(rect, point, 6.0, 24.0), None);
+        }
+        assert_eq!(
+            resize_direction_for_pos(rect, egui::pos2(50.0, 4.0), 6.0, 24.0),
+            Some(ResizeDirection::North),
+        );
+    }
+
+    #[test]
+    fn titlebar_edges_request_resize_without_starting_a_window_drag() {
+        for radius in [0, 24] {
+            let ctx = Context::default();
+            crate::install_application_fonts(&ctx);
+            let mut colors = Colors::preset(ottrin_core::ThemePreset::Ottrin, true);
+            colors.app_radius = radius;
+            let position = egui::pos2(f32::from(radius.max(4)), 4.0);
+            for frame in 0..4 {
+                let mut events = Vec::new();
+                if frame >= 2 {
+                    events.push(egui::Event::PointerMoved(position));
+                    events.push(egui::Event::PointerButton {
+                        pos: position,
+                        button: egui::PointerButton::Primary,
+                        pressed: frame == 2,
+                        modifiers: egui::Modifiers::NONE,
+                    });
+                }
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(1000.0, 700.0),
+                        )),
+                        events,
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default()
+                            .frame(Frame::NONE)
+                            .show(ctx, |ui| {
+                                let mut close = false;
+                                render_custom_titlebar(
+                                    ui,
+                                    ctx,
+                                    colors,
+                                    colors.titlebar_bg,
+                                    "Settings",
+                                    true,
+                                    &mut close,
+                                );
+                            });
+                        handle_viewport_resize(ctx, radius);
+                    },
+                );
+                if frame == 2 {
+                    let commands = &output.viewport_output[&egui::ViewportId::ROOT].commands;
+                    assert!(
+                        commands.iter().any(|command| matches!(
+                            command,
+                            egui::ViewportCommand::BeginResize(ResizeDirection::NorthWest)
+                        )),
+                        "Visible corner did not request diagonal resize: {commands:?}"
+                    );
+                    assert!(
+                        !commands
+                            .iter()
+                            .any(|command| matches!(command, egui::ViewportCommand::StartDrag)),
+                        "Title-bar drag stole a resize press: {commands:?}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
     fn resize_direction_detects_edges_and_corners() {
         let rect = Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(100.0, 80.0));
         assert_eq!(
-            resize_direction_for_pos(rect, egui::pos2(2.0, 2.0), 6.0),
+            resize_direction_for_pos(rect, egui::pos2(2.0, 2.0), 6.0, 0.0),
             Some(ResizeDirection::NorthWest)
         );
         assert_eq!(
-            resize_direction_for_pos(rect, egui::pos2(98.0, 2.0), 6.0),
+            resize_direction_for_pos(rect, egui::pos2(98.0, 2.0), 6.0, 0.0),
             Some(ResizeDirection::NorthEast)
         );
         assert_eq!(
-            resize_direction_for_pos(rect, egui::pos2(50.0, 78.0), 6.0),
+            resize_direction_for_pos(rect, egui::pos2(50.0, 78.0), 6.0, 0.0),
             Some(ResizeDirection::South)
         );
         assert_eq!(
-            resize_direction_for_pos(rect, egui::pos2(1.0, 40.0), 6.0),
+            resize_direction_for_pos(rect, egui::pos2(1.0, 40.0), 6.0, 0.0),
             Some(ResizeDirection::West)
         );
         assert_eq!(
-            resize_direction_for_pos(rect, egui::pos2(50.0, 40.0), 6.0),
+            resize_direction_for_pos(rect, egui::pos2(50.0, 40.0), 6.0, 0.0),
             None
         );
     }

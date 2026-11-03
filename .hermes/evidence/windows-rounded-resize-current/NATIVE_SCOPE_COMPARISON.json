@@ -1,0 +1,13 @@
+{
+  "status": "exactnativebackendidentity; resizedinputbehaviorrequiresnewnativegesturechecks",
+  "native_test_source": "30ba1db54bbbec9dbf9c76bd4bb8ce34fb6c35d9",
+  "files_byte_identical": {
+    "vendor/eframe/src/window_shape.rs": "dac12c15cafa672a43ec8c70d42e9df0d6037062553d5c467195a49f19bb265b",
+    "vendor/eframe/src/native/glow_integration.rs": "14d8a5b781a28900e491c691cc68c92e71ee1ad1af21177f7f457ae92b6c5cb2",
+    "vendor/eframe/src/native/wgpu_integration.rs": "c016afa1a442fcc742d83dc730caac29bbbacf9f5d56241fd910595811238e25",
+    "vendor/eframe/src/lib.rs": "a596595d1e578c313dcf799f45b44bbbfa5ee5a2f488ecaf3cdd05f99327adc9",
+    "vendor/eframe/Cargo.toml": "8a634efabeea68a8b0a2e2e2e4158e2f7caf33c72ddd783abbcaad00a4b796c3"
+  },
+  "carried_evidence": ".hermes/evidence/windows-window-shape-fix-current/native-complete/GUEST_RESULT.json",
+  "scope": "36actualnative-regionmatchesinDark/defaultDPI at0/24,bothrenderers,sixwindowtypes. Newsourceonlychangesvisible-arcresizeclassification,titlebardragownershipandforwardsthemeCornersfromsameColors. No newnativepointer/live/DPI orperformancepassclaimed."
+}

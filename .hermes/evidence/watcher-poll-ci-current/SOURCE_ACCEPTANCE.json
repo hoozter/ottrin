@@ -17,5 +17,11 @@
   "shipping_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
   "delivery_unchanged": ".hermes/evidence/file-row-focus-current/DELIVERY_VERIFICATION.json",
   "hosted_gate": "Pending after commit/push; no hosted pass inferred from local checks",
-  "cleanup": "CLEANUP_FINAL.json"
+  "cleanup": "CLEANUP_FINAL.json",
+  "hosted_confirmation": {
+    "status": "all4exactsourcejobscompleted successfully",
+    "source_revision": "b18f7b48927545c947140592b1f14b4dc9104348",
+    "run_id": 41693567945,
+    "scope": "FullLinux/Windowsworkspace verification,lint,releasebuild andbothisolatedreleaseperformancegates. ShippingruntimeCBCremainsunchangedbythisone-testfunctionfix."
+  }
 }

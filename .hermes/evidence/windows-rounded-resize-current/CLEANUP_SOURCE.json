@@ -1,0 +1,46 @@
+{
+  "status": "sourcecheckandparentfixturecleanupcomplete; nextdeliveryworkpending",
+  "obsolete_incremental_sessions_removed": 21,
+  "first_apply": "GuardedpartialremovalstoppedontransientunreadablePID1205207; processconfirmedgonebeforecanonicalretry. Noexceptionadded.",
+  "retry_removed": 18,
+  "reported_retry_reclaimed_gib": 0.51,
+  "all21obsoletepaths_absent_andnewestretained": true,
+  "compiler_after": {
+    "target/debug/deps": 41440996080,
+    "target/debug/incremental": 22659502484,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292041429,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39439022407,
+    "target/release/deps": 4290352679,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764567408
+  },
+  "task_parent_baseline": ".hermes/evidence/windows-window-shape-fix-current/BASELINE.json",
+  "native_parent_cleanup": "FourownedVMlifecycles/eightvolumeallocations/fourprivatedesktops/profilesremoved; consumedcredential-bearingbootstrap/controller/transportsretired; compact originaldiagnostics retained.",
+  "superseded_candidate": {
+    "source_revision": "30ba1db54bbbec9dbf9c76bd4bb8ce34fb6c35d9",
+    "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "removed_logical_bytes": 236657892,
+    "artifacts": {
+      "Ottrin-0.1.0-windows-x64-portable.zip": "21450f86c6616710c61d64d6503d2b030f9e0e6e24b34f612191f873340720f3",
+      "Ottrin-0.1.0-windows-x64-setup.exe": "d02e4ae39ba1bcfb77df59fbeac62593dfb0885d654aba4d2c87f9334929e4bc"
+    },
+    "all58payloadfilesverified": true,
+    "allnativeconsumers_terminal_and_ownedVMs_removed": true,
+    "reason": "Superseded beforepublication byroundedvisible-arccornerresize/input-ownership correction. Functional36/nativeCPUresults retained; failedCPUcriteria not waived. No MSIX source/archive wasallocated. Currentstable7CBCpackagespreserved.",
+    "pending_native_consumer": null,
+    "next_owner": ".hermes/evidence/windows-rounded-resize-current"
+  },
+  "no_owned_local_processes_live": true,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-window-shape-fix-current",
+      "purpose": "Native36functionalcases/24reviewedoriginals, baselineCPUandregionroundtrip, failedattempts/frozenactors",
+      "pending_consumer": "Scopecomparisonandremainingappearance/resourceaudit"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-rounded-resize-current",
+      "purpose": "Source473checksandnewresize/inputownershipregressions, guardedcleanupreceipts",
+      "pending_consumer": "Newnativepointer/packagecohort"
+    }
+  ],
+  "preserved": "Currentstable7CBCpackages,all58Windowsfiles,userAGENTS/data/services/settings,protectedVMbasesandusefulcompilerstate"
+}

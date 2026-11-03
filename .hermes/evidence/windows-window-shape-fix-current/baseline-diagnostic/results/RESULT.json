@@ -1,0 +1,114 @@
+{
+    "scope":  "Diagnostic stableCBCNative24baseline GUIidle andowned Win32region roundtrip; no native corner correction or release acceptance",
+    "phase":  "supported uninstall",
+    "preferences_preserved":  true,
+    "cases":  [
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "main",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=1100x752",
+                      "geometry":  "client=1100x752 origin=0,0 dpi=96",
+                      "capture":  "Native-main-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "main-resized",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=1000x700",
+                      "geometry":  "client=1000x700 origin=0,0 dpi=96",
+                      "capture":  "Native-main-resized-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  0,
+                      "case":  "main-maximized",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=1296x768",
+                      "geometry":  "client=1280x752 origin=0,0 dpi=96",
+                      "capture":  "Native-main-maximized-0.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "main-restored",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=1000x700",
+                      "geometry":  "client=1000x700 origin=0,0 dpi=96",
+                      "capture":  "Native-main-restored-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "settings",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=920x640",
+                      "geometry":  "client=920x640 origin=0,0 dpi=96",
+                      "capture":  "Native-settings-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "editor",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=1180x720",
+                      "geometry":  "client=1180x720 origin=0,0 dpi=96",
+                      "capture":  "Native-editor-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "inspector",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=720x560",
+                      "geometry":  "client=720x560 origin=0,0 dpi=96",
+                      "capture":  "Native-inspector-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "picker",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=940x640",
+                      "geometry":  "client=940x640 origin=0,0 dpi=96",
+                      "capture":  "Native-picker-24.png"
+                  },
+                  {
+                      "renderer":  "Native",
+                      "radius":  24,
+                      "case":  "properties",
+                      "native_region":  "kind=0 topLeft=False topRight=False bottomLeft=False bottomRight=False center=False dimensions=720x540",
+                      "geometry":  "client=720x540 origin=0,0 dpi=96",
+                      "capture":  "Native-properties-24.png"
+                  }
+              ],
+    "picker_child":  {
+                         "stdout":  "{\"accepted\":false,\"paths\":[],\"current_filter\":null,\"choices\":{}}\n",
+                         "stderr":  "",
+                         "exit":  0
+                     },
+    "idle":  [
+                 {
+                     "gdi_after":  19,
+                     "seconds":  30.0131935,
+                     "cpu_one_core_percent":  34.206914521598577,
+                     "gdi_before":  23,
+                     "renderer":  "Native"
+                 }
+             ],
+    "package":  {
+                    "source_revision":  "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd"
+                                  }
+                              ],
+                    "actor_sha256":  "ab47d495a354984fc6d347f5ea4568e1e7e2eeb9690ddf12c37501340511a928",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "source_preserved":  true,
+    "named_fields":  [
+
+                     ],
+    "region_roundtrip":  [
+                             "extra=0 kind=3 equal=True expected=0,0,999,699 actual=0,0,999,699",
+                             "extra=1 kind=3 equal=True expected=0,0,1000,700 actual=0,0,1000,700"
+                         ],
+    "status":  "pass diagnostic baseline measurement execution; no performance or window-shape acceptance",
+    "remaining_owned_installed_processes":  0
+}

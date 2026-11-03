@@ -11897,6 +11897,7 @@ impl OttrinApp {
             .rect;
 
         // Drag only from non-interactive tab-row areas so button clicks do not race StartDrag.
+        let viewport_rect = ctx.viewport_rect();
         let can_drag = ctx.input(|i| {
             if !i.pointer.primary_pressed() {
                 return false;
@@ -11905,6 +11906,18 @@ impl OttrinApp {
                 return false;
             };
             if !panel_rect.contains(pos) {
+                return false;
+            }
+            if !i.viewport().maximized.unwrap_or(false)
+                && !i.viewport().fullscreen.unwrap_or(false)
+                && window_chrome::resize_direction_for_pos(
+                    viewport_rect,
+                    pos,
+                    6.0,
+                    f32::from(c.app_radius),
+                )
+                .is_some()
+            {
                 return false;
             }
             !blocked_drag_rects.iter().any(|r| r.contains(pos))
@@ -23155,7 +23168,7 @@ impl OttrinApp {
         {
             return;
         }
-        window_chrome::handle_viewport_resize(ctx);
+        window_chrome::handle_viewport_resize(ctx, self.colors.app_radius);
     }
 }
 

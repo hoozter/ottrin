@@ -1543,7 +1543,7 @@ impl PickerApp {
             });
         crate::window_chrome::paint_viewport_frame(ctx, colors, self.is_windows);
         if self.dialog.overwrite.is_none() {
-            crate::window_chrome::handle_viewport_resize(ctx);
+            crate::window_chrome::handle_viewport_resize(ctx, colors.app_radius);
         }
         if self.finish_response() {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);

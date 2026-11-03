@@ -1,0 +1,30 @@
+{
+  "reason": "Firstfixtureterminal; allsafe result members byte-extracted and7originals reviewed; privatebootstrap/tokenmembers omitted andconsumedcredential-bearingarchive/controller/preparation retired. Frozenactor, rawresult, sourcechecks andcleanup retained. Newcorrectedfixtureuses sameinstaller, no package rebuild.",
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/RESULTS.zip",
+      "bytes": 259985,
+      "sha256": "e824e68b18e5d1581ea82815731a628c73fa4a5ef3264c55484fc129fc437684"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/controller.ps1",
+      "bytes": 4866,
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/GUEST_PREPARATION.json",
+      "bytes": 883,
+      "sha256": "2ef62caf594839ab8c84f5969f7b0e839a05a1644ed0cf20cb3f46e6c6b104d1"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/CONTROLLER_PROCESS.json",
+      "bytes": 1938,
+      "sha256": "a08c7918e25a513094afed05e4d0e94088d5ac3cd3b9b64af943578a103cb7ac"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/DESKTOP_SIGNAL.json",
+      "bytes": 255,
+      "sha256": "f8c8f480b76b745a7c72023eff69da5e82465a0dac444f7ae301e8f9dcfa9801"
+    }
+  ]
+}

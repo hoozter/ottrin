@@ -1,0 +1,30 @@
+{
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/RESULTS.zip",
+      "bytes": 563538,
+      "sha256": "ac68ee68fb1ae077e7e953700b82f86ca05e8243e1680fe12fee62f6f1cb69aa"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/controller.ps1",
+      "bytes": 4866,
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/GUEST_PREPARATION.json",
+      "bytes": 883,
+      "sha256": "a88affc790ef57feb5b2cd2fa4822d1340887be63cf6986fe2787960b422a850"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/CONTROLLER_PROCESS.json",
+      "bytes": 1938,
+      "sha256": "a08c7918e25a513094afed05e4d0e94088d5ac3cd3b9b64af943578a103cb7ac"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-corrected/DESKTOP_SIGNAL.json",
+      "bytes": 255,
+      "sha256": "83e233059b092b8fb640ee679b909ac39cfd5238d6e6dcac946b75c552dea45b"
+    }
+  ],
+  "reason": "Terminalownedfixture, safe resultmembersbyteverified; privatebootstrap/transportcredential-and-token material andgeneratedcontrollerconsumed; immutablefrozenactor/results/diagnosticoriginals retained"
+}

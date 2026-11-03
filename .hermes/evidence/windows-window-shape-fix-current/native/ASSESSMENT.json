@@ -1,0 +1,20 @@
+{
+  "status": "partial native product checks pass; fixture request authoring defect terminates this run",
+  "source_revision": "30ba1db54bbbec9dbf9c76bd4bb8ce34fb6c35d9",
+  "installer_sha256": "d02e4ae39ba1bcfb77df59fbeac62593dfb0885d654aba4d2c87f9334929e4bc",
+  "passed_checks": 7,
+  "scope": "OnlyNative renderer/radius0/mainresizedmaxrestoredSettingseditorInspector; no24/OpenGL/picker/Properties/idle success claim",
+  "failure": "Missing owned window Ottrin \u2014 Radius probe",
+  "diagnosis": "Originalactor encodesPickerRequest.initial_directory asJSONstring. TheprotocolrequiresPickerPathnativeencodingobject; existingacceptedactor NativePath useswindows-utf16-le/units_hex. Actualrejectionstderr wasnotretained byoriginalactor; nextfixture correctsencoding andcaptureschildoutcomes. No production validation weakened or package rebuilt.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next": "Newownedfixture withsameexactinstaller andcorrectedrequest. Originalactor/results remainimmutable."
+}

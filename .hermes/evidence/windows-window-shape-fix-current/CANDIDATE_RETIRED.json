@@ -1,0 +1,14 @@
+{
+  "source_revision": "30ba1db54bbbec9dbf9c76bd4bb8ce34fb6c35d9",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "removed_logical_bytes": 236657892,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "21450f86c6616710c61d64d6503d2b030f9e0e6e24b34f612191f873340720f3",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "d02e4ae39ba1bcfb77df59fbeac62593dfb0885d654aba4d2c87f9334929e4bc"
+  },
+  "all58payloadfilesverified": true,
+  "allnativeconsumers_terminal_and_ownedVMs_removed": true,
+  "reason": "Superseded beforepublication byroundedvisible-arccornerresize/input-ownership correction. Functional36/nativeCPUresults retained; failedCPUcriteria not waived. No MSIX source/archive wasallocated. Currentstable7CBCpackagespreserved.",
+  "pending_native_consumer": null,
+  "next_owner": ".hermes/evidence/windows-rounded-resize-current"
+}

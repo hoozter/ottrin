@@ -1,0 +1,85 @@
+{
+  "cleanup_index_remove": {
+    "stdout": "Session indexing stopped; no background Ottrin index task was installed.\n",
+    "stderr": "",
+    "seconds": 3.1594843,
+    "exit": 0
+  },
+  "remaining_owned_installed_processes": 0,
+  "idle": [],
+  "package": {
+    "source_revision": "30ba1db54bbbec9dbf9c76bd4bb8ce34fb6c35d9",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "d02e4ae39ba1bcfb77df59fbeac62593dfb0885d654aba4d2c87f9334929e4bc"
+      }
+    ],
+    "actor_sha256": "5422c355eedbe8766f1c0d7d0efdb3f0f940c5d45f928a88d2acaf612131d796",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "phase": "Native radius 0",
+  "scope": "Exact installed native Windows region shape across main Settings editor Inspector picker Properties,0/24radius,Native/OpenGL,resize/maximize andboundedidle; source/preferences preservation",
+  "stack": "at Await, <No file>: line 54\r\nat <ScriptBlock>, <No file>: line 69\r\nat <ScriptBlock>, <No file>: line 1",
+  "cases": [
+    {
+      "renderer": "Native",
+      "radius": 0,
+      "case": "main",
+      "native_region": "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1100x752",
+      "geometry": "client=1100x752 origin=0,0 dpi=96",
+      "capture": "Native-main-0.png"
+    },
+    {
+      "renderer": "Native",
+      "radius": 0,
+      "case": "main-resized",
+      "native_region": "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1000x700",
+      "geometry": "client=1000x700 origin=0,0 dpi=96",
+      "capture": "Native-main-resized-0.png"
+    },
+    {
+      "renderer": "Native",
+      "radius": 0,
+      "case": "main-maximized",
+      "native_region": "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1296x768",
+      "geometry": "client=1280x752 origin=0,0 dpi=96",
+      "capture": "Native-main-maximized-0.png"
+    },
+    {
+      "renderer": "Native",
+      "radius": 0,
+      "case": "main-restored",
+      "native_region": "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1000x700",
+      "geometry": "client=1000x700 origin=0,0 dpi=96",
+      "capture": "Native-main-restored-0.png"
+    },
+    {
+      "renderer": "Native",
+      "radius": 0,
+      "case": "settings",
+      "native_region": "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=920x640",
+      "geometry": "client=920x640 origin=0,0 dpi=96",
+      "capture": "Native-settings-0.png"
+    },
+    {
+      "renderer": "Native",
+      "radius": 0,
+      "case": "editor",
+      "native_region": "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=1180x720",
+      "geometry": "client=1180x720 origin=0,0 dpi=96",
+      "capture": "Native-editor-0.png"
+    },
+    {
+      "renderer": "Native",
+      "radius": 0,
+      "case": "inspector",
+      "native_region": "kind=2 topLeft=True topRight=True bottomLeft=True bottomRight=True center=True dimensions=720x560",
+      "geometry": "client=720x560 origin=0,0 dpi=96",
+      "capture": "Native-inspector-0.png"
+    }
+  ],
+  "status": "failed native main field audit",
+  "error": "Missing owned window Ottrin \u2014 Radius probe",
+  "named_fields": []
+}

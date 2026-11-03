@@ -193,7 +193,7 @@ impl eframe::App for PropertiesApp {
                     });
             });
         window_chrome::paint_viewport_frame(ctx, colors, self.is_windows);
-        window_chrome::handle_viewport_resize(ctx);
+        window_chrome::handle_viewport_resize(ctx, colors.app_radius);
         if close {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }

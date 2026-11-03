@@ -1,0 +1,126 @@
+{
+  "scope": "24primaryoriginals reviewed: sixactualwindowtypes,bothrenderers,0/24radius; genuine desktopvisibleoutsidearcs, sharedchrome/themepaletteandlegiblelayouts. Twelveadditionalresize/max/restorecases haveexactnative-region/geometrychecks; notall12neworiginals directlyreviewed.",
+  "images": [
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-0-configured-0.png",
+      "sha256": "8be0f208fe7fa6636c8efa461f441e2e0bfb937640341ba317af8e2b5025ffc0",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-settings-0-configured-0.png",
+      "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-editor-0-configured-0.png",
+      "sha256": "de87abb1c1c5413db3ed878607f2e662803faee08f3e66d0dcf1202cf42d33db",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-inspector-0-configured-0.png",
+      "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-picker-0-configured-0.png",
+      "sha256": "33ea0fd26726dfea74a6b611667b15fb9b0d04fb122a83bef39f40c4edaa68d0",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-properties-0-configured-0.png",
+      "sha256": "0c920a80590b9967ce395dbf9402041dcd65a0a6789ce018b354550bd81987e6",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-main-24-configured-24.png",
+      "sha256": "ac5d4ae986de93294bfdfd3f93ec2cc501d63ce8da79015ca0a6434461090b37",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-settings-24-configured-24.png",
+      "sha256": "c9d83bcc8ad6d72c7baef53d3ee688ee03836b04b9dfbdb46b30efa05f1dfc6d",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-editor-24-configured-24.png",
+      "sha256": "8c2f49c635e9d295c41c95ffa6586210470fd544c8ee6ff19423ff660e61246d",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-inspector-24-configured-24.png",
+      "sha256": "24df5e0277411b9bf4d9cf6a396bf3412b2b88242e42be3cb7375020e54fb72b",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-picker-24-configured-24.png",
+      "sha256": "05e3723cb161113a95c7c956fa79c64edcd16ece26dc199c9a4dd2a9edb701db",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/Native-properties-24-configured-24.png",
+      "sha256": "3eb531ed9a86fc4558f1fa876d606400affb5ded977cbd61253ed59616b3d228",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-0-configured-0.png",
+      "sha256": "a3d1d49f282fc7d606a6046de1055d3643be3ff6d46e4044ed37ad1687f72c86",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-settings-0-configured-0.png",
+      "sha256": "af1ac4d9b26ad04eab6cee89d464b776a26a4a34579ca75e76cae90434f17f9f",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-editor-0-configured-0.png",
+      "sha256": "66412076feab3232c91cc286a889a727981f0143c4d050cebcf101afe7e32d4f",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-inspector-0-configured-0.png",
+      "sha256": "441cb7eab9cdf742f9a60b54159d898fb360b5d8f2ea319ff5505c595403035c",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-picker-0-configured-0.png",
+      "sha256": "ede8d6d5236e310cad3b8f0baf7e7665acdf29f40cfe52196a1613edb82680bf",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-properties-0-configured-0.png",
+      "sha256": "9b75cd6d9bcccb35a12de853f8181e4134ac739c72c126f21e328df541d6d4c0",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-main-24-configured-24.png",
+      "sha256": "6c06226c5a31c4278de7e7e1a732759f86a1feb86a3e32dca288fa7b4ea3f25c",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-settings-24-configured-24.png",
+      "sha256": "a1b6e985145ad9d4f51eaa3d5876c00c28e92848a500dac7c4847461f6565190",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-editor-24-configured-24.png",
+      "sha256": "83de5896aee605e2091920cf106f976099ff650961402b36aedbd4df04554b6a",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-inspector-24-configured-24.png",
+      "sha256": "f5cacfd0dccd2f83112b03d1da7003c2d9f32a7c9f1e8123d37ab9192322e964",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-picker-24-configured-24.png",
+      "sha256": "29f90ed89a2616d0d1064f6a8e2869c63782187f829458fc78af7134c32a6454",
+      "original_directly_reviewed": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native-complete/results/OpenGL-properties-24-configured-24.png",
+      "sha256": "cef852ed0309a4add0ba3e71ac6fdcfc9a99e5bccd1aa1266dda992f55dff9df",
+      "original_directly_reviewed": true
+    }
+  ],
+  "performance_not_accepted": true
+}

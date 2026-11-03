@@ -1,0 +1,15 @@
+{
+  "base_source": "30ba1db54bbbec9dbf9c76bd4bb8ce34fb6c35d9",
+  "updated_utc": "2026-11-03T19:48:51.618621+00:00",
+  "parent_task_baseline": ".hermes/evidence/windows-window-shape-fix-current/BASELINE.json",
+  "compiler_roots": {
+    "target/debug/deps": 41440995894,
+    "target/debug/incremental": 23125053042,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292041243,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39658038979,
+    "target/release/deps": 4290352679,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764567408
+  },
+  "purpose": "Finish rounded-window correction with reachable resize arcs, exclusive drag/resize ownership and native gesture verification; carry byte-identical native region backend36case evidence; preserve stableCBC7packagesuntilnewdeliveryacceptance",
+  "build_policy": "Existingtargetroots/features only; cleanupownerwindows-rounded-resize-current afterallconsumersfinish"
+}

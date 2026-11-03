@@ -1,0 +1,29 @@
+{
+  "status": "absolute2percentGUIgate failed oncandidateandunchangedbaseline; no newCPUregression established",
+  "candidate_source": "30ba1db54bbbec9dbf9c76bd4bb8ce34fb6c35d9",
+  "baseline_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "candidate": [
+    {
+      "gdi_after": 21,
+      "seconds": 30.014434599999998,
+      "cpu_one_core_percent": 33.684457255799444,
+      "gdi_before": 21,
+      "renderer": "Native"
+    }
+  ],
+  "baseline": [
+    {
+      "gdi_after": 19,
+      "seconds": 30.0131935,
+      "cpu_one_core_percent": 34.20691452159858,
+      "gdi_before": 23,
+      "renderer": "Native"
+    }
+  ],
+  "native_region_roundtrip": [
+    "extra=0 kind=3 equal=True expected=0,0,999,699 actual=0,0,999,699",
+    "extra=1 kind=3 equal=True expected=0,0,1000,700 actual=0,0,1000,700"
+  ],
+  "interpretation": "Native WGPUwas explicitly forced onthe software-onlyVM. Baseline hasno regionAPI yetshows samehighGUICPU. Region roundtrip preserves exactrequestedgeometry. ThisdoesnotestablishthereasonforbaselineCPUorphysicalGPUperformance; keepresourceacceptance open andcontinue independentfunctionalchecks. IndexdaemonCPU is notthisGUImeasurement.",
+  "next": "CollectallwindowandrenderercheckswithoutabortingontheknownCPUgate; retainfailedCPUcriteria explicitly andinvestigateframeactivity/defaultOpenGLbeforepromotionorbroaderperformanceclaims."
+}

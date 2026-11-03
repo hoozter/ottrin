@@ -55,9 +55,10 @@ The 100-run GitHub audit snapshot contains 30 failures, 18 cancellations and
 52 successes after the current exact-source run completed. Representative raw logs establish the earlier
 Windows debug benchmark timing and HTML startup-filter failures; subsequent fixes
 retain strict isolated release budgets and every renderer security sample. A
-Windows watcher polling test also unwraps transient SQLite DatabaseBusy and needs
-its polling contract closed without accepting wrong hits, raising deadlines or
-suppressing other database errors. Evidence/prose pushes skip redundant full CI;
+Windows watcher polling test previously unwrapped transient SQLite DatabaseBusy.
+Its deterministic lock/recovery correction now passes all four exact-source b18
+hosted gates without accepting wrong hits, raising deadlines or suppressing other
+database errors. Evidence/prose pushes skip redundant full CI;
 pull requests, shipping source, packaging, security and workflow changes retain
 all gates. Notifications and production policies have not been changed.
 
@@ -82,16 +83,27 @@ Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
 
-1. Finish hosted confirmation of the watcher-test polling correction. A real
-   committed FTS database lock reproduces the original DatabaseBusy panic;
-   bounded retry then recovers and retains every update/move/delete/disable check.
-   All244 Search tests pass with two existing storage-measurement fixtures ignored;
-   strict native/Windows all-target Search lint and formatting pass. The complete
-   file outside this one existing test function is byte-identical. No runtime
-   deadline/error/fallback changes or package rebuild are needed. The original
-   ten-second polling budget remains; other errors and persistent contention fail.
-   Evidence: `watcher-poll-ci-current/`. Do not rerun unrelated package matrices
-   without changed shipping inputs or a reproduced runtime defect.
+1. Finish the Windows window-corner delivery. Native GDI clipping is implemented;
+   source30ba1 passes36 exact native-region/functional checks across main, Settings,
+   editor, Inspector, picker and Properties in both renderers at0/24 radius.
+   All24 primary originals were reviewed. A further source correction makes
+   diagonal resize reachable along large visible arcs and prevents a title-bar
+   drag from stealing an edge press. Its reproduced negative/positive regressions,
+   all473 UI tests and strict Linux/Windows lint pass. Actual pointer gestures,
+   live editor radius/DPI checks and replacement package delivery remain pending;
+   stable packages are still the CBC7 cohort above. Evidence: `windows-window-shape-fix-current/`
+   and `windows-rounded-resize-current/`.
+   Keep the GUI idle finding explicit: strict two-percent software-VM checks fail
+   at33.54% of one core in forced Native and3.70% in OpenGL. The unchanged CBC
+   Native baseline also measures34.21%; native region round-trips match their
+   requests exactly. This does not prove the cause or physical GPU performance.
+   Investigate unconditional frame refresh without masking these failures or
+   confusing GUI CPU with index-daemon CPU. No new package is yet promoted.
+   The watcher polling correction is now closed at its actual scope: all four
+   exact-source b18 CI41693567945 jobs completed successfully. Its244 Search tests,
+   original ten-second polling deadline, strict error/hit assertions and outside-
+   test-function runtime identity remain intact. No runtime/package rebuild is
+   needed for that test-only change.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them

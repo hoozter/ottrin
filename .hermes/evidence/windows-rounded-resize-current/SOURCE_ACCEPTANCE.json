@@ -1,0 +1,22 @@
+{
+  "status": "source473UIchecks/native-Windowsstrictlintpass; nativepointerandpackagedeliverypending",
+  "implementation": "Sharedresizehit-testtakesactualthemeradius; diagonal targets followvisiblearcswhileinterior/closecontrolsremainordinary. Sharedandmain titlebarsyieldedgepressestoone resizecommand. NativeGDIbackendandrendererhooksunchangedfrom36caseWindowsfunctionalcohort.",
+  "negative": ".hermes/evidence/windows-window-shape-fix-current/rounded-resize-negative.log",
+  "positive": [
+    ".hermes/evidence/windows-window-shape-fix-current/rounded-resize-positive.log",
+    ".hermes/evidence/windows-window-shape-fix-current/titlebar-resize-positive.log"
+  ],
+  "full_ui": {
+    "passed": 473,
+    "existing_ignored": 1
+  },
+  "source_checks": "SOURCE_CHECKS.json",
+  "native_reference": ".hermes/evidence/windows-window-shape-fix-current/native-complete/GUEST_RESULT.json",
+  "native_scope": "36exactregion/functionalcasespassedon30ba1;24primaryoriginalsreviewed; strictsoftwareGUIidle2percentcriteriafailed Native33.54andOpenGL3.70percentonecore. UnchangedCBCNativebaseline34.21percent. NoCPUfix/waiver/fullacceptanceclaim.",
+  "pending": [
+    "Actualnativepointerresizeandtitlebarownershiponnewsource",
+    "LiveeditorradiusandDPIsoftwaregaps",
+    "InvestigateGUIidleframerefresh; do notmislabelGUIasindexCPU",
+    "Build/content/nativeQA/MSIXassembly/promotionfornewsource; stableCBC7remainsusable"
+  ]
+}

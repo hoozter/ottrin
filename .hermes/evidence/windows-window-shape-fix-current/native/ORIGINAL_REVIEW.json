@@ -1,0 +1,41 @@
+{
+  "scope": "Seven actual original captures reviewed for Native/radius0partialrun; allrectangular, sharedchrome, coherentSettings/editor groups, no clippedcontrols. Maxcaptureincludesnativeoffscreenframeandtaskbar; no claim thosepixels areappcontent.",
+  "images": [
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-editor-0.png",
+      "sha256": "de87abb1c1c5413db3ed878607f2e662803faee08f3e66d0dcf1202cf42d33db",
+      "direct_original_review": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-inspector-0.png",
+      "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa",
+      "direct_original_review": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-0.png",
+      "sha256": "b31b6fc11d219dd318c8a57f8259b9ad6dd099bc43219ce5ea2dcbae4f7450ff",
+      "direct_original_review": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-maximized-0.png",
+      "sha256": "26a9109afc7fdc5a77c51da399643d3ad8b2acb35d001c59888585e338e8d44b",
+      "direct_original_review": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-resized-0.png",
+      "sha256": "4a4ac2b5e686658d46f5b6c806c9f6e60e4beb941c22d126c9999a2a45c1b541",
+      "direct_original_review": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-main-restored-0.png",
+      "sha256": "4a4ac2b5e686658d46f5b6c806c9f6e60e4beb941c22d126c9999a2a45c1b541",
+      "direct_original_review": true
+    },
+    {
+      "path": ".hermes/evidence/windows-window-shape-fix-current/native/results/Native-settings-0.png",
+      "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0",
+      "direct_original_review": true
+    }
+  ],
+  "complete_cohort_accepted": false
+}

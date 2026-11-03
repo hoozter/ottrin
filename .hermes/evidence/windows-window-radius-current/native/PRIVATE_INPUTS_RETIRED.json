@@ -1,0 +1,25 @@
+{
+  "reason": "Terminal native actor results andcleanuparepreserved; ownedVM/account/media removed; privatebootstrap/readinesscredential-or-nonce inputs have no remainingconsumer andwere never published",
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/GUEST_PREPARATION.json",
+      "bytes": 883,
+      "sha256": "c962c4357b2cc2ed21a4b5eadba059128b66a305de170df4664e188cf3afa6d2"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/CONTROLLER_PROCESS.json",
+      "bytes": 1939,
+      "sha256": "b198fb805eed4ce6762f6f2d659123d41d7ac6231ff7cfc11b6e1fd8f020b894"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/DESKTOP_SIGNAL.json",
+      "bytes": 255,
+      "sha256": "0addceef19bc3c5db731bf31f575b627941255f2519e996c3db590f86f80c1f4"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/results/DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "c84e41f55e160871c9b0b825472df10a1affa9d35997953c69d6fbda810e180d"
+    }
+  ]
+}
