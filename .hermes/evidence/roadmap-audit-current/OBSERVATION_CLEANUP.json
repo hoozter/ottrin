@@ -1,0 +1,42 @@
+{
+  "status": "complete for terminal attempts only",
+  "removed": [
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/observed-desktop-2.png",
+      "bytes": 481596,
+      "sha256": "a55b856b668fc997758facb8c91ae35e0a254d140557ddaafc30ec5109e3e6f2",
+      "reason": "Superseded readiness/boot observation; desktop-ready, privacy decisions, actual picker capture and failure results retained"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/observed-desktop-3.png",
+      "bytes": 414402,
+      "sha256": "b5b339e364e8b761c1cfbbaaa0b6f21ddd7d214dbbdb123672e6635831ef56d7",
+      "reason": "Superseded readiness/boot observation; desktop-ready, privacy decisions, actual picker capture and failure results retained"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/observed-desktop.png",
+      "bytes": 481596,
+      "sha256": "a55b856b668fc997758facb8c91ae35e0a254d140557ddaafc30ec5109e3e6f2",
+      "reason": "Superseded readiness/boot observation; desktop-ready, privacy decisions, actual picker capture and failure results retained"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/observed-desktop-5.png",
+      "bytes": 2522418,
+      "sha256": "6e376d758c2438a74559ded21af7ab83f2862752c4de71d02aeb488f319c181f",
+      "reason": "Superseded readiness/boot observation; desktop-ready, privacy decisions, actual picker capture and failure results retained"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/observed-desktop-4.png",
+      "bytes": 15166,
+      "sha256": "94a562b389b0f10538f49ee6b78a114a349443a0927a77da819b625b4aad2d08",
+      "reason": "Superseded readiness/boot observation; desktop-ready, privacy decisions, actual picker capture and failure results retained"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/picker-observed.png",
+      "bytes": 2522354,
+      "sha256": "6d63e62ee84ddf38dfda2dc561f3e4b99b33c0021da6de517cb87eea3c12201d",
+      "reason": "Superseded readiness/boot observation; desktop-ready, privacy decisions, actual picker capture and failure results retained"
+    }
+  ],
+  "active_case_preserved": "windows-picker-native-title"
+}

@@ -82,9 +82,26 @@ workflow receipts are in its parent. Superseded packages/staging, source archive
 owned profiles/VMs/media and unreferenced observations are retired. Personal data,
 protected Windows bases, useful compiler caches and the held MSI are preserved.
 
+The exact installed Windows NSIS now passes14 cooperating-picker functional
+cases: Open/Save/folder, native parent ownership, filters, multiple selection,
+explicit overwrite confirmation, caller EOF/owner loss and independent concurrent
+requests. Sources/preferences remain unchanged; supported removal and complete
+owned VM/media/profile teardown pass. All four Dark/Light/custom/overwrite native
+captures are reviewed. Process-cold mapping is189–670ms with OS caches retained;
+visible-ready30-second samples use0.052–0.156% of one core,73–75MB working set and
+37MB private memory on this software VM. This is not physical/boot performance.
+The same audit proves a software gap: search and filename Edit controls have empty
+Windows UI Automation names. Name them in the shared picker and verify native
+packaged results before accepting accessibility. Receipt:
+`.hermes/evidence/roadmap-audit-current/WINDOWS_PICKER_AUDIT.json`. Two earlier
+actor attempts failed on installer-created index state and native-title lookup;
+those failures remain recorded and are not product acceptance.
+
 Continue in this order:
 
-1. Complete the concentrated requirement-by-requirement Linux/Windows audit.
+1. Fix the confirmed unnamed picker search/filename fields and verify the native
+   packaged accessibility result. Continue the concentrated requirement-by-requirement
+   Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains54 full multiline
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
    with15 explicit user UI/service/delivery requirements. Inspect direct current

@@ -1,0 +1,26 @@
+{
+  "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 46\r\nat <ScriptBlock>, <No file>: line 1",
+  "payload_files": 58,
+  "remaining_owned_installed_processes": 1,
+  "package": {
+    "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935"
+      }
+    ],
+    "actor_sha256": "dec81934139f0c1187e0cd280fb6ae9348bc33445a3559359f4a0d16aefadb01",
+    "scope": "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+  },
+  "phase": "install exact delivered NSIS",
+  "scope": "Exact installed current Windows cooperating-picker and resource acceptance on ordinary software desktop",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "failed owned process teardown",
+  "error": "Unexpected index baseline",
+  "cases": []
+}

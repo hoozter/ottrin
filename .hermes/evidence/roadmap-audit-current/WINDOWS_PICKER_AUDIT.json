@@ -1,0 +1,58 @@
+{
+  "status": "functional/resource scope passed; accessibility requirement incomplete",
+  "runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "installer_sha256": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935",
+  "native_result": "windows-picker-native-title/results/RESULT.json",
+  "actor_sha256": "05c89d11e7cd3a4e19d54d41ab357ca1244e0aa9ab8585cf12a85d407ee20dfa",
+  "cases": 14,
+  "scope": "Ordinary Windows stock-client VM, explicit bundled software OpenGL, default DPI, actual installed NSIS; cooperating callers only",
+  "visual_review": {
+    "status": "all four native originals directly inspected",
+    "images": {
+      "Dark-picker.png": "dfac7970a19e61fe7a35a9534ba5b03939277bd5d6929a525ac70a2a09ee071e",
+      "Light-picker.png": "4e6181c3b59a435edf192233cb8d4fb564b39f0f892df9a607ac25ad04726496",
+      "custom-picker.png": "e50e1bd4ae0695c48f3fb4f8ff7d6967d9186b462b40d204b90acfef98713803",
+      "overwrite-confirmation.png": "622defc94214b006d55926379945da79a65eedcd149df4411e9a873093e409d4"
+    },
+    "observed": "Dark/Light selected file, actual custom font/color/border/corners and explicit overwrite confirmation; no physical GPU or exhaustive appearance-control claim"
+  },
+  "confirmed_gap": {
+    "requirement": "Accessible names for editable picker controls",
+    "native_evidence": [
+      {
+        "name": "",
+        "bounds": [
+          603,
+          62,
+          318,
+          25
+        ]
+      },
+      {
+        "name": "",
+        "bounds": [
+          96,
+          505,
+          831,
+          25
+        ]
+      }
+    ],
+    "next_action": "Name folder search and filename controls at the shared UI source; verify the rendered accessibility tree and exact packaged native Windows result"
+  },
+  "limits": [
+    "Process-cold map times retain OS caches; not cold-boot timing",
+    "Ready visible-picker 30-second samples do not prove every workload or host resource budget",
+    "No universal Windows file-dialog replacement"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

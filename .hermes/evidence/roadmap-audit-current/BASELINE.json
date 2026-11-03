@@ -1,0 +1,14 @@
+{
+  "source_revision": "9568affdbc6db083dacf91512b93c5ebf2b13605",
+  "runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "compiler_allocated_bytes": {
+    "target/debug/deps": 41448239104,
+    "target/debug/incremental": 22742679552,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39227678720
+  },
+  "evidence_bytes": 4096,
+  "free_bytes": 24086917120,
+  "purpose": "Concentrated requirement audit and exact delivered Windows cooperating-picker/resource acceptance; no Rust compilation or extra target configuration",
+  "cleanup_owner": "Canonical cohort-client ExitStack owns clone/volumes/console/profile; new evidence root refuses reuse; retire completed transport duplicates and retain compact receipts"
+}

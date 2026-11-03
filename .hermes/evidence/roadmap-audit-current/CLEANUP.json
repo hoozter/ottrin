@@ -1,0 +1,86 @@
+{
+  "status": "all owned native cases terminal and cleaned",
+  "cases": [
+    {
+      "case": "windows-picker",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "private_console_profile_removed": true
+    },
+    {
+      "case": "windows-picker-index-disabled",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "private_console_profile_removed": true
+    },
+    {
+      "case": "windows-picker-native-title",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "private_console_profile_removed": true
+    }
+  ],
+  "retired_superseded_observations": [
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-native-title/observed-desktop-2.png",
+      "bytes": 21843,
+      "sha256": "b85942013c7a12bfecac9e7bffa119414e743a00b0d9a7f67728676d0e217f70"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-native-title/observed-desktop-3.png",
+      "bytes": 9083,
+      "sha256": "794e304b22dab6b5b93604bc86e85055b7e903ec144620cf4540a34c1ac08fbe"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-native-title/observed-desktop.png",
+      "bytes": 479795,
+      "sha256": "a262e830f632bb780526255ad72f07c53065246e394e4a9e7ab09c5fc1203aa3"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-native-title/observed-desktop-4.png",
+      "bytes": 2522331,
+      "sha256": "b76f8d0570887e5c5f36f0092b5d995b7222b70a0a64b753c1011d2860f7b01d"
+    },
+    {
+      "path": ".hermes/evidence/roadmap-audit-current/windows-picker-native-title/picker-current.png",
+      "bytes": 1061352,
+      "sha256": "da7b90c5bcde581b05a2413e00176d71064781f1f2eaa9d8f046fc42fb15854e"
+    }
+  ],
+  "retired_result_transport": "windows-picker-native-title/RESULTS.zip; all extracted member hashes in TRANSPORT_MEMBERS.json",
+  "remaining_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/roadmap-audit-current",
+      "purpose": "Compact audit plans, actors, failures, native results and reviewed original screenshots; no live consumers or disposable VM/staging"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/linux-portable-launcher",
+      "purpose": "Completed portable workflow acceptance and reviewed originals; no live consumers"
+    }
+  ],
+  "builds": "No Rust builds or extra target trees; compiler caches preserved"
+}

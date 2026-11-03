@@ -1,0 +1,12 @@
+{
+  "requirements": [
+    8,
+    9,
+    11,
+    12
+  ],
+  "runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "installer_sha256": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935",
+  "scope": "Exact current NSIS, fresh ordinary stock-client account, explicit bundled OpenGL software desktop. Native Win32 cooperating parent, Open/Save/folder/multiple/filter/overwrite/EOF/owner-loss/concurrency, no indexing, cold/repeated startup and bounded idle memory/CPU; actual custom-theme capture. No universal Windows dialog replacement or physical-GPU claim.",
+  "cleanup": "Registered before VM allocation by maintained controller; actor stops every owned process/form and uses supported uninstall preserving sources/preferences"
+}

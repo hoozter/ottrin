@@ -44,5 +44,6 @@
     "Software VM/default DPI; physical graphics, extended scaling and final owner review separate",
     "Complete remaining cross-platform roadmap audit, physical hardware and final owner acceptance remain separate"
   ],
-  "cleanup": "All native fixture VMs/media/consoles removed. Previous alias and superseded cohort retired after native consumers. Current stable payload and compact receipts retained."
+  "cleanup": "All native fixture VMs/media/consoles removed. Previous alias and superseded cohort retired after native consumers. Current stable payload and compact receipts retained.",
+  "current_cooperating_picker_audit": ".hermes/evidence/roadmap-audit-current/WINDOWS_PICKER_AUDIT.json"
 }
