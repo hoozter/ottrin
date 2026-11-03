@@ -84,7 +84,21 @@ Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
 
-1. Continue the remaining Windows appearance/performance acceptance. Shared native
+1. Deliver the current appearance numeric naming correction, then continue Windows
+   appearance/performance acceptance. Actual 144 DPI setup now works with a signed
+   VirtIO display driver installed only in disposable clones. The old native
+   spatial lookup failed amid scrolling; its captured tree confirmed unnamed
+   numeric controls. Shared production number_row now gives each number its
+   visible title and each restore button its property-specific name, preserving
+   native role/value/actions. The original rendered regression fails; all 26
+   appearance tests, 475 UI tests (one existing ignored), strict native/Windows lint
+   and formatting pass. Replacement packages and named native controls/DPI checks
+   are pending; all seven stable packages remain the 0aac cohort above.
+   Evidence: `windows-dpi-current/` retains exact failed setup/lookup scopes and
+   all completed clone teardown; `appearance-numeric-names-current/` owns the
+   correction, future candidate builds and acceptance. No numeric/OS/DPI failure
+   is being relabelled as a successful installed radius test.
+   Continue the remaining Windows appearance/performance acceptance. Shared native
    window-corner clipping and visible-edge/titlebar resize are now delivered in the
    exact 0aac cohort above. Do not repeat fulfilled saved-radius/native-region,
    pointer or live 0/24/Cancel matrices without changed inputs or a reproduced defect.

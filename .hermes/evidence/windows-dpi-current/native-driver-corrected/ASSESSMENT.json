@@ -1,0 +1,18 @@
+{
+  "status": "harness acknowledgement timed out; no Ottrin DPI acceptance",
+  "native_environment": "Microsoft catalog Valid; pnputil0 installed signed VirtIO display driver; native1920x1440 mode selected and Windows150percent Scale directly observed",
+  "cause": "Host acknowledgement incorrectly looked for OWNER.json inside actor root; producer stores it under C:\\OttrinMsiCleanClientResults. Signal never reached actor before bounded360second wait.",
+  "product_cases": 0,
+  "next": "Remove host handshake; use observed native Scale ComboBox and150percent ListItem through UIAutomation, then require actual144DPI before product launch",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "original_manual_selection": "scale150-selected.png"
+}

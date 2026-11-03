@@ -1,0 +1,13 @@
+{
+  "source_head": "981a1d38442b212c37ddf88de8237e34d5421208",
+  "compiler_roots": {
+    "target/debug/deps": 41440996080,
+    "target/debug/incremental": 22659502484,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292041429,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39439022407,
+    "target/release/deps": 4290361250,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764572511
+  },
+  "purpose": "Give actual appearance numeric widgets/restore buttons semantic names, preserve their native value/actions, verify and deliver coherent replacements; stable0aac packages preserved until acceptance",
+  "cleanup_owner": "appearance-numeric-names-current; shared caches/configurations only; no new target roots"
+}

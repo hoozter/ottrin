@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/RESULTS.zip",
+          "bytes": 373277,
+          "sha256": "a2ea81e7ea43e56fee37a1e5d54b7fa2a8a470772f92cb5a4d4afbd6bd684c24"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "2de94271cde12cf3642c230304a3da5a3b3f560afd737d9e900d9d003f669224"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "37fa45dee79f51b85eacf7e241f2255d1dca3aecf97d0f49dea9132ea3ace951"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/readiness.log",
+          "bytes": 1117,
+          "sha256": "2f266822bedb3f9eca837ab4be278c0751069ecfb2402be75764672a36706932"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/desktop-ready.png",
+          "bytes": 3743397,
+          "sha256": "07b6d49e747658bbcb10a6fa5101543223e28ed4dec7546b690b50875d58d392"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "e6c3f69c26f23ef73b87ba27d14ddbca680a475c839c34c27f5b66264a9cbf6a"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-window-discovery/privacy-accepted-0.png",
+          "bytes": 4674806,
+          "sha256": "1857caa32b292c173c68be25bc7434cf240a2bd091d1b27462cecfbf2d2aaf63"
+        }
+      ],
+      "bytes": 8800821
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

@@ -739,7 +739,7 @@ fn number_row(
                     ui.add(egui::Label::new(title).wrap());
                 },
             );
-            changed |= ui
+            let number = ui
                 .add_sized(
                     [value_width, 28.0],
                     egui::DragValue::new(value)
@@ -758,12 +758,17 @@ fn number_row(
                             _ => " px",
                         }),
                 )
-                .on_hover_text(if title == "Neutral text blend" { "Blend category-colored labels toward neutral text: 0 is the category color, 1 is neutral file/folder text. Neutral labels are unchanged." } else { "Drag or type a value" })
-                .changed();
-            if appearance_icon_button(ui, MI_SETTINGS_BACKUP_RESTORE, c)
-                .on_hover_text("Restore this value to its value when the editor opened")
-                .clicked()
-            {
+                .on_hover_text(if title == "Neutral text blend" {
+                    "Blend category-colored labels toward neutral text: 0 is the category color, 1 is neutral file/folder text. Neutral labels are unchanged."
+                } else {
+                    "Drag or type a value"
+                });
+            name_control(&number, title);
+            changed |= number.changed();
+            let restore = appearance_icon_button(ui, MI_SETTINGS_BACKUP_RESTORE, c)
+                .on_hover_text("Restore this value to its value when the editor opened");
+            name_control(&restore, format!("Restore {title}"));
+            if restore.clicked() {
                 *value = default;
                 changed = true;
             }
@@ -1076,6 +1081,136 @@ fn property_group(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn appearance_numeric_controls_expose_their_visible_names() {
+        use egui::accesskit::Role;
+
+        for mode in [ThemeMode::Light, ThemeMode::Dark] {
+            for pixels_per_point in [1.0, 1.5] {
+                let ctx = Context::default();
+                ctx.enable_accesskit();
+                ctx.set_pixels_per_point(pixels_per_point);
+                let mut app = OttrinApp::default();
+                app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+                app.switch_theme_editor_variant(mode, &ctx);
+                let mut names = std::collections::BTreeSet::new();
+                for region in REGIONS {
+                    app.theme_editor.selected_region = region;
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(1180.0, 1600.0),
+                            )),
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            app.render_theme_editor_embedded(ctx);
+                        },
+                    );
+                    for (_, node) in output.platform_output.accesskit_update.unwrap().nodes {
+                        if node.role() == Role::SpinButton {
+                            names.insert(node.label().unwrap_or_default().to_owned());
+                        }
+                    }
+                }
+                for title in [
+                    "Text size",
+                    "Window corners",
+                    "Surface corners",
+                    "Button corners",
+                    "Window border thickness",
+                    "Neutral text blend",
+                ] {
+                    assert!(
+                        names.contains(title),
+                        "Missing native numeric name {title}: {names:?}"
+                    );
+                }
+                assert!(!names.contains(""), "Unnamed appearance numeric control");
+            }
+        }
+    }
+
+    #[test]
+    fn named_window_corner_actions_edit_and_restore_the_actual_theme() {
+        use egui::accesskit::{Action, ActionData, ActionRequest, Role};
+
+        fn render(
+            app: &mut OttrinApp,
+            ctx: &Context,
+            events: Vec<egui::Event>,
+        ) -> egui::FullOutput {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1180.0, 1600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_theme_editor_embedded(ctx);
+                },
+            )
+        }
+
+        for mode in [ThemeMode::Light, ThemeMode::Dark] {
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            ctx.set_pixels_per_point(1.5);
+            let mut app = OttrinApp::default();
+            app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+            app.switch_theme_editor_variant(mode, &ctx);
+            app.theme_editor.selected_region = ThemePreviewRegion::Defaults;
+            let seed = app.theme_editor.custom.app_radius;
+            let output = render(&mut app, &ctx, vec![]);
+            let nodes = output.platform_output.accesskit_update.unwrap().nodes;
+            let fields: Vec<_> = nodes
+                .iter()
+                .filter(|(_, node)| {
+                    node.role() == Role::SpinButton && node.label() == Some("Window corners")
+                })
+                .collect();
+            assert_eq!(fields.len(), 1, "One named Window corners native control");
+            let (id, node) = fields[0];
+            assert_eq!(node.numeric_value(), Some(f64::from(seed)));
+            assert!(node.supports_action(Action::SetValue));
+            let output = render(
+                &mut app,
+                &ctx,
+                vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                    action: Action::SetValue,
+                    target: *id,
+                    data: Some(ActionData::NumericValue(24.0)),
+                })],
+            );
+            assert_eq!(app.theme_editor.custom.app_radius, 24.0);
+            assert_eq!(app.colors.app_radius, 24);
+            let nodes = output.platform_output.accesskit_update.unwrap().nodes;
+            let resets: Vec<_> = nodes
+                .iter()
+                .filter(|(_, node)| {
+                    node.role() == Role::Button && node.label() == Some("Restore Window corners")
+                })
+                .collect();
+            assert_eq!(resets.len(), 1, "One specifically named restore button");
+            assert!(resets[0].1.supports_action(Action::Click));
+            let _ = render(
+                &mut app,
+                &ctx,
+                vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                    action: Action::Click,
+                    target: resets[0].0,
+                    data: None,
+                })],
+            );
+            assert_eq!(app.theme_editor.custom.app_radius, seed);
+            assert_eq!(app.colors.app_radius, seed as u8);
+        }
+    }
 
     #[test]
     fn rendered_theme_fields_name_the_theme_and_each_visible_color() {

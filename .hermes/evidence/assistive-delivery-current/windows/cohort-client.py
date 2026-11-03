@@ -4,10 +4,12 @@ from contextlib import ExitStack
 import argparse, base64, re, hashlib, importlib.util, json, os, shutil, signal, subprocess, sys, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);parser.add_argument('--display-resolution',choices=['2560x1600']);parser.add_argument('--display-driver',type=Path);args=parser.parse_args()
 assert not args.office_worksheet or args.office_installed,'Worksheet surface requires the installed Office fixture'
 assert not args.office_installed or (args.application_nsis_stage and args.output and not args.use_stock_base and not args.use_updated_base),'Installed Office uses its exact declared retained-provider clone'
 assert not args.application_actor or (args.application_nsis_stage and args.use_stock_base and args.output and not args.office_installed),'Explicit actor requires a receipt-bound package and stock-client case'
+assert not args.display_resolution or args.application_actor,'Explicit virtual resolution requires an owned stock-client application actor'
+assert not args.display_driver or (args.display_resolution and args.application_actor),'Display driver setup is only for an explicitly configured owned application clone'
 assert not args.application_actor or (args.application_actor.is_file() and not args.application_actor.is_symlink()),'Actor must be a regular reviewable input'
 application_case=bool(args.application_msi or args.application_nsis_stage or args.application_uia_stage)
 assert not args.native_transport_probe or (args.use_stock_base and args.output and not any([application_case,args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'Transport probe requires an isolated stock case'
@@ -336,6 +338,16 @@ with ExitStack() as stack:
   if args.msix_stage:iso_inputs.extend(fixture/name for name in ['portable.zip','source.zip','mingit.zip','assembly-inputs.json','assembly.ps1'])
  # UDF carries the real >4GiB file size; the ISO9660 fallback is limited.
  # The Windows reader must recheck every update hash before WUSA executes it.
+ if args.display_driver:
+  driver=args.display_driver.resolve();assert driver==r/'.hermes/tools/windows-display-driver' and not args.display_driver.is_symlink()
+  manifest=json.loads((driver/'DRIVER_INPUT.json').read_text());assert set(manifest['files'])=={'viogpudo.inf','viogpudo.cat','viogpudo.sys'}
+  for filename,digest in manifest['files'].items():
+   p=driver/filename;assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==digest
+   os.link(p,fixture/filename);iso_inputs.append(fixture/filename)
+  shutil.copy2(driver/'DRIVER_INPUT.json',fixture/'display-driver-input.json');iso_inputs.append(fixture/'display-driver-input.json')
+  prepare_source=r/'.hermes/evidence/windows-dpi-current/prepare-display-driver.ps1';shutil.copy2(prepare_source,fixture/'prepare-display-driver.ps1');iso_inputs.append(fixture/'prepare-display-driver.ps1')
+  (e/'DISPLAY_DRIVER_PREPARE_SOURCE.ps1').write_bytes((fixture/'prepare-display-driver.ps1').read_bytes());state['display_driver_prepare_sha256']=hashlib.sha256((fixture/'prepare-display-driver.ps1').read_bytes()).hexdigest()
+  state['display_driver_input']=manifest;save('OWNER.json',state)
  large_file_flags=['-allow-limited-size'] if args.update_manifest else []
  assert name==state['domain'],'VM allocation name changed during fixture preparation'
  subprocess.run(['genisoimage','-quiet','-udf',*large_file_flags,'-iso-level','3','-J','-joliet-long','-r','-V','OTMSICONTROL','-o',str(fixture/'inputs.iso'),*map(str,iso_inputs)],check=True)
@@ -364,6 +376,11 @@ with ExitStack() as stack:
  if interactive_case:
   state['absolute_pointer']='Clone-only virtual tablet present at boot; no host device passthrough'
   save('OWNER.json',state)
+ if args.display_resolution:
+  video=root.find('./devices/video/model');assert video is not None and video.get('type')=='virtio'
+  for existing in list(video.findall('resolution')):video.remove(existing)
+  width,height=args.display_resolution.split('x');E.SubElement(video,'resolution',{'x':width,'y':height})
+  state['virtual_display_resolution']={'width':int(width),'height':int(height),'scope':'Minimum virtual video resolution for this owned clone only; no physical GPU or base-domain mutation'};save('OWNER.json',state)
  if interactive_case:
   graphics=root.find('./devices/graphics')
   if args.office_installed and graphics.get('type')=='vnc':
@@ -427,6 +444,10 @@ with ExitStack() as stack:
   receipt.update(status='normal reboot verified',after_boot_ticks=after);save(filename,receipt)
  result=ps("$ErrorActionPreference='Stop';$o=Get-CimInstance Win32_OperatingSystem;@{caption=$o.Caption;build=$o.BuildNumber;msi=(Get-Item \"$env:SystemRoot\\System32\\msi.dll\").VersionInfo.FileVersion;disable_msi=(Get-ItemProperty 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\Installer' -ErrorAction SilentlyContinue).DisableMsi}|ConvertTo-Json -Compress")
  assert result['exitcode']==0;save('CLIENT_VERSION.json',json.loads(base64.b64decode(result['out-data']).decode('utf-8-sig')))
+ if args.display_driver:
+  code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned driver media missing'};$path=Join-Path ($disc[0].DeviceID+'\\') 'prepare-display-driver.ps1';$source=[IO.File]::ReadAllText($path); & ([ScriptBlock]::Create($source)) -Output 'C:\\OttrinOwnedDisplayDriver' -SourceDirectory (Split-Path $path)"
+  installed=ps(code,150);save('DISPLAY_DRIVER_PROCESS.json',installed);assert installed.get('exitcode')==0,'Native signed driver setup failed; inspect exact process result'
+  driver_result=json.loads(base64.b64decode(installed.get('out-data','')).decode('utf-8-sig'));save('DISPLAY_DRIVER_PREPARATION.json',driver_result)
  if args.native_transport_probe:
   code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});if($disc.Count-ne1){throw 'Owned transport media missing'};$value=Get-Content (Join-Path ($disc[0].DeviceID+'\\') 'transport.json') -Raw -Encoding UTF8|ConvertFrom-Json;$value|ConvertTo-Json -Compress"
   result=ps(code,30);assert result.get('exitcode')==0

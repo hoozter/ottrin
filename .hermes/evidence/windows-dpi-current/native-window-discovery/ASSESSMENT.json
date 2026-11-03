@@ -1,0 +1,21 @@
+{
+  "status": "Native Windows144DPI setup accepted; app numeric lookup failed before shape/edit assertions",
+  "settings_dpi": 144,
+  "display_mode": "1920x1440",
+  "source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "product_cases": 0,
+  "error": "Window corners numeric control count=0",
+  "finding": "Captured live tree contains unnamed Spinner fields. Window corners label and numeric value align in the later dump, so the zero-match spatial lookup does not prove radius failure. Scrolling can change positions between separate reads.",
+  "corrective_work": "Shared production number_row now names numeric/restore controls from the actual visible title. Rendered regression fails original empty names;26appearance tests and475UI tests pass with real native action semantics. New package and semantic native lookup still pending.",
+  "tree": "results/numeric-tree.json",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

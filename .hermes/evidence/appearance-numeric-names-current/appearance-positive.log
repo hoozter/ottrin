@@ -1,0 +1,33 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 8.81s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 26 tests
+test appearance_editor::tests::appearance_every_preset_seeds_without_changing_its_colors ... ok
+test appearance_editor::tests::appearance_miniature_reflects_button_and_accent_edits ... ok
+test appearance_editor::tests::appearance_surface_and_selection_colors_do_not_alias_other_elements ... ok
+test appearance_editor::tests::appearance_card_pencil_and_body_are_independent_click_targets ... ok
+test appearance_editor::tests::appearance_preview_elides_long_names_at_enlarged_text_size ... ok
+test appearance_editor::tests::appearance_preview_selection_matches_painted_row_and_square_canvas ... ok
+test appearance_editor::tests::appearance_component_selection_does_not_change_preview_ink ... ok
+test appearance_editor::tests::preview_uses_real_smart_panel_icons_and_toggle_behavior ... ok
+test appearance_editor::tests::appearance_imported_draft_remains_unsaved_until_create_or_cancel ... ok
+test appearance_editor::tests::appearance_variants_are_independent_and_global_preference_survives ... ok
+test appearance_editor::tests::appearance_cancel_restores_full_theme_and_does_not_save_preview ... ok
+test appearance_editor::tests::appearance_save_copy_preserves_original_and_rename_is_explicit ... ok
+test appearance_editor::tests::appearance_save_applies_named_theme_and_survives_reopening ... ok
+test appearance_editor::tests::deleting_active_saved_theme_keeps_its_visible_mode_for_the_base_palette ... ok
+test appearance_editor::tests::invalid_hex_entry_is_safe_visible_and_keeps_the_applied_color ... ok
+test appearance_editor::tests::settings_navigation_rows_keep_icon_and_text_centred_inside_their_surface ... ok
+test appearance_editor::tests::file_canvas_paints_content_color_without_sidebar_color_leaking_into_it ... ok
+test appearance_editor::tests::appearance_tabs_share_actual_fill_geometry_and_inspector_values ... ok
+test appearance_editor::tests::settings_surface_and_title_do_not_inherit_content_background ... ok
+test appearance_editor::tests::rendered_theme_fields_name_the_theme_and_each_visible_color ... ok
+test appearance_editor::tests::dialogs_use_panel_and_window_shape_roles_independently_of_inputs ... ok
+test appearance_editor::tests::appearance_hex_typing_does_not_rewrite_input_midway ... ok
+test appearance_editor::tests::named_window_corner_actions_edit_and_restore_the_actual_theme ... ok
+test appearance_editor::tests::settings_navigation_exposes_named_choices_and_accepts_native_activation ... ok
+test appearance_editor::tests::appearance_inspector_exposes_all_properties_and_keeps_rows_aligned ... ok
+test appearance_editor::tests::appearance_numeric_controls_expose_their_visible_names ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 450 filtered out; finished in 0.07s

@@ -1,0 +1,9 @@
+{
+  "source": "Exact read-only native query in the first owned guest, independently of screenshot watermark",
+  "cim_build": "26300",
+  "cim_version": "10.0.26300",
+  "kernel_file_version": "10.0.26100.9457 (WinBuild.160101.0800)",
+  "kernel_product_version": "10.0.26100.9457",
+  "runtime_version": "10.0.26300.0",
+  "scope": "Observed version interfaces recorded separately; no explanation inferred from a desktop watermark"
+}

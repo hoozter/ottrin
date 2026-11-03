@@ -1,0 +1,20 @@
+{
+  "status": "fixture display precondition failed; no Ottrin DPI acceptance",
+  "runtime_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "installer_sha256": "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d",
+  "cause": "Exception calling \"LargeMode\" with \"0\" argument(s): \"Driver has no supported1920x1440-or-larger mode\"",
+  "product_cases": 0,
+  "next_action": "Existing producer now requests explicit2560x1600 minimum resolution on the owned virtio clone; enumerate actual driver modes and retain full DPI/region/work-area assertions",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "immutable_failed_actor": "actor.ps1",
+  "scope": "Installer and owned-service removal executed, but not a full uninstall/product/DPI pass. VM and both volumes removed through registered teardown."
+}

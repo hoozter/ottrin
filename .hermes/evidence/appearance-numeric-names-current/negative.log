@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 12.65s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 1 test
+test appearance_editor::tests::appearance_numeric_controls_expose_their_visible_names ... FAILED
+
+failures:
+
+---- appearance_editor::tests::appearance_numeric_controls_expose_their_visible_names stdout ----
+
+thread 'appearance_editor::tests::appearance_numeric_controls_expose_their_visible_names' (1275122) panicked at crates/ottrin-ui/src/appearance_editor.rs:1121:21:
+Missing native numeric name Text size: {""}
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    appearance_editor::tests::appearance_numeric_controls_expose_their_visible_names
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 475 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

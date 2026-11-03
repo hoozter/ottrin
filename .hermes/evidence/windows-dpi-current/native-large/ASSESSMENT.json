@@ -1,0 +1,18 @@
+{
+  "status": "fixture display precondition failed; no product DPI acceptance",
+  "display_modes": [
+    "1280x800x32"
+  ],
+  "product_cases": 0,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "finding": "Explicit virtual resolution did not change the single native1280x800 mode. Clean bootstrap includes serial/guest agent only; install signed display driver in isolated clone before retrying."
+}

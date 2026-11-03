@@ -1,0 +1,15 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-driver/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        }
+      ],
+      "bytes": 4866
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

@@ -1,0 +1,40 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-automatic/RESULTS.zip",
+          "bytes": 1503,
+          "sha256": "3bba71d881c08509c74af4cabebf02384e0cce73ce0d741504d8aeb897cd3aae"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-automatic/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-automatic/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "aeaff105bd6c88a2a788928c27ea970b8b338a3794179bacc2f7d4536d6f2c59"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-automatic/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-automatic/readiness.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-automatic/privacy-accepted-0.png",
+          "bytes": 1410696,
+          "sha256": "19ad06ed04eb0a44f26634c8cfa486b5e2387b93d10f7bae9768c8df42db3464"
+        }
+      ],
+      "bytes": 1419886
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

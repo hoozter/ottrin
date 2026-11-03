@@ -1,0 +1,24 @@
+{
+  "status": "source naming/role/value/action checks pass; packaged/native DPI and delivery pending",
+  "previous_runtime": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "shipping_files": {
+    "crates/ottrin-ui/src/appearance_editor.rs": "c4942cdc4f3691b3f3d56bb19048645c04dc1d6a4824a402823293cf9280a841"
+  },
+  "behavior": "Shared appearance numeric controls get the actual visible title through existing name_control; restore buttons identify that property. Native role, numeric value/range and actions remain intact. No layout/palette/geometry/daemon change.",
+  "negative": "Original source fails rendered numeric-name regression, matching actual installed Windows tree with unnamed Spinner nodes",
+  "source_checks": {
+    "appearance_tests": 26,
+    "full_ui_passed": 475,
+    "existing_ignored": 1,
+    "strict_native_and_windows_lint": true,
+    "format": true
+  },
+  "actual_actions": "Rendered native SetValue changes the real theme radius and colors; named restore Click restores the editor opening value in Light/Dark. This is not yet native installed OS acceptance.",
+  "scope": "SOURCE_CHECKS.json and logs; current stable packages remain0aac until exact candidate content/native/hosted gates and promotion",
+  "pending": [
+    "All7replacement formats and package content",
+    "Actual named Linux controls and Windows144DPI native shape/restore/Cancel/full visible captures",
+    "Current-source hosted gates",
+    "Owned staging/source archive/compiler-session cleanup"
+  ]
+}

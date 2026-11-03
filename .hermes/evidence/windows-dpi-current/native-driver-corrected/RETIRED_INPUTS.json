@@ -1,0 +1,40 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/RESULTS.zip",
+          "bytes": 51926,
+          "sha256": "42ced885d3d19747d095cdf23dfb69fd1777de788b8ecd23946d9852c2ce373f"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "58f6e0ced0010094addf849335dfc7abfb70267bbf454110e8ed2402ecaa4bee"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/CONTROLLER_PROCESS.json",
+          "bytes": 1937,
+          "sha256": "b901d747a7e9abdbb7cd38a15f8e04cbe33b3d2ac30e5b94e59dd9aa57f8b447"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/readiness.log",
+          "bytes": 1494,
+          "sha256": "9fb58e6b5f4591c88195aaf455de021b5deeeca78ac02a18adef504191fb29ae"
+        },
+        {
+          "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/privacy-accepted-0.png",
+          "bytes": 580818,
+          "sha256": "c94f3771f3fd5929aa26daa7bd3bff46f79cd33c8e11e7a933594e790242aa14"
+        }
+      ],
+      "bytes": 641924
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

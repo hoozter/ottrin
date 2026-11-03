@@ -1,0 +1,16 @@
+{
+  "status": "QA bootstrap invocation failed before driver or product execution",
+  "cause": "Direct.ps1 invocation rejected by the guest execution policy; exact encoded native error retained",
+  "source": "DISPLAY_DRIVER_PROCESS_DECODED.json",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next": "Existing ScriptBlock execution pattern with explicit source-directory argument; no execution-policy change"
+}

@@ -1,0 +1,25 @@
+{
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-dpi-current/signal-dpi.py",
+      "bytes": 2208,
+      "sha256": "9ff1f87baacfb075e87a67c3954cb279512155acc4d1ea3351f79ecc937e6d05"
+    },
+    {
+      "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/corrected-display-current.png",
+      "bytes": 3072971,
+      "sha256": "e0d6825f71c1d8bfdc016b9b486c27a646e71af390cd314fd86d90f5153a32ed"
+    },
+    {
+      "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/scale-options.png",
+      "bytes": 3055820,
+      "sha256": "bd4431517d21f776e5ad1b98b9a567f3e11862bdd36748d577dbf69c8421bd94"
+    },
+    {
+      "path": ".hermes/evidence/windows-dpi-current/native-driver-corrected/display-returned.png",
+      "bytes": 3050671,
+      "sha256": "fadefc1a195b3f0a01d9b7f975fb1d5b75a1f4e902dcf221fe26e3a4cdc34687"
+    }
+  ],
+  "scope": "Unused manual acknowledgement producer and redundant transitional setup screenshots; original failed actors/results and final observed Scale menu/150 selection retained"
+}

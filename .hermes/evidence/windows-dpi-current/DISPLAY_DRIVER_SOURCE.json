@@ -1,0 +1,17 @@
+{
+  "url": "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.302-1/virtio-win-0.1.302.iso",
+  "expected_bytes": 877373440,
+  "expected_sha256": "303f7ae40dad495d6ae474fdc571df58958a4dbc5c37a522d80f9a203867949d",
+  "status": "selected display payload extracted; native signature/install acceptance pending",
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-dpi-current/fetch-display-driver.py",
+  "purpose": "Exact Windows11 amd64 signed virtual display driver for owned DPI QA; no host/base installation",
+  "actual_sha256": "303f7ae40dad495d6ae474fdc571df58958a4dbc5c37a522d80f9a203867949d",
+  "cache": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-display-driver",
+  "files": {
+    "viogpudo.inf": "be012d9ed48645bb966483bf15e70cdf5eb0f84bd3bbeb1f4d4aec2d096d5c0d",
+    "viogpudo.sys": "adb624a34dc1b6519af0601268af7c1e3e8972c16c69467f6e3144e66b67f5e1",
+    "viogpudo.cat": "f6803e01dedd4168a8fa0e4caa11fa93b4150735c4d32f4a9369c9758e57ae20"
+  },
+  "selected_bytes": 166378,
+  "consumed_iso_removed": true
+}
