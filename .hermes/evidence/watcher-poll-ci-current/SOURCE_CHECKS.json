@@ -1,0 +1,58 @@
+{
+  "status": "pass full Search tests/native and Windows strict lint/format; test-only runtime-prefix proof separate",
+  "scope": "Test-only bounded SQLiteBusy polling with deterministic real-lock regression and unchanged exact watcher outcomes; shipping runtime prefix unchanged",
+  "checks": [
+    {
+      "name": "full-search-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-search",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-search",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-search",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ]
+}

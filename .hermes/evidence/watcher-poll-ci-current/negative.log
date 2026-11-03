@@ -1,0 +1,19 @@
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Finished `test` profile [optimized + debuginfo] target(s) in 43.44s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_search-ea268e832702de9b)
+
+running 1 test
+
+thread 'tests::content_only_watcher_updates_moves_deletes_and_detaches_when_disabled' (1142398) panicked at crates/ottrin-search/src/lib.rs:7602:74:
+called `Result::unwrap()` on an `Err` value: Sql(SqliteFailure(Error { code: DatabaseBusy, extended_code: 5 }, Some("database is locked")))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::content_only_watcher_updates_moves_deletes_and_detaches_when_disabled ... FAILED
+
+failures:
+
+failures:
+    tests::content_only_watcher_updates_moves_deletes_and_detaches_when_disabled
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.89s
+
+error: test failed, to rerun pass `-p ottrin-search --lib`

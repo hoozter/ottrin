@@ -75,12 +75,16 @@ Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
 
-1. Close the demonstrated watcher-test polling contract: tolerate only transient
-   DatabaseBusy inside the existing deadline, retain all exact hit/disable checks,
-   fail on every other database error and on persistent contention. Verify source
-   and hosted Windows behavior. Current shipping runtime is unchanged by a
-   test-only correction; do not rerun whole package matrices without changed
-   shipping inputs or a reproduced runtime defect.
+1. Finish hosted confirmation of the watcher-test polling correction. A real
+   committed FTS database lock reproduces the original DatabaseBusy panic;
+   bounded retry then recovers and retains every update/move/delete/disable check.
+   All244 Search tests pass with two existing storage-measurement fixtures ignored;
+   strict native/Windows all-target Search lint and formatting pass. The complete
+   file outside this one existing test function is byte-identical. No runtime
+   deadline/error/fallback changes or package rebuild are needed. The original
+   ten-second polling budget remains; other errors and persistent contention fail.
+   Evidence: `watcher-poll-ci-current/`. Do not rerun unrelated package matrices
+   without changed shipping inputs or a reproduced runtime defect.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them

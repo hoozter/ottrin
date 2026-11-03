@@ -1,0 +1,21 @@
+{
+  "status": "pass local deterministic SQLiteBusy regression and full Search checks; hosted native Windows verification pending",
+  "source_before": "97743fd834e9112c196fb3a02da29fcc8beae48d",
+  "change": "Only one existing cfg(test) watcher function changes: polling retries DatabaseBusy under its original10-second deadline and30ms cadence; other errors/persistent contention still fail. A real committed FTS store is locked until that Busy retry is observed, proving recovery rather than sleeping past the race.",
+  "negative": "negative.log: exact DatabaseBusy/extended5 database is locked reproduced with original unwrap",
+  "positive": "positive.log: same controlled lock recovers and all original update/move/delete/detach checks remain; required observed-busy counter increments",
+  "checks": {
+    "full_search_tests": {
+      "pass": 244,
+      "ignored_existing_storage_measurements": 2
+    },
+    "native_search_all_target_strict_lint": "pass",
+    "windows_gnu_search_all_target_strict_lint": "pass",
+    "format": "pass"
+  },
+  "runtime_proof": "RUNTIME_SCOPE.json: entire file outside the existing test function unchanged",
+  "shipping_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "delivery_unchanged": ".hermes/evidence/file-row-focus-current/DELIVERY_VERIFICATION.json",
+  "hosted_gate": "Pending after commit/push; no hosted pass inferred from local checks",
+  "cleanup": "CLEANUP_FINAL.json"
+}

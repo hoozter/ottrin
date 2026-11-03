@@ -1,0 +1,9 @@
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Finished `test` profile [optimized + debuginfo] target(s) in 31.00s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_search-ea268e832702de9b)
+
+running 1 test
+test tests::content_only_watcher_updates_moves_deletes_and_detaches_when_disabled ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 2.65s
+

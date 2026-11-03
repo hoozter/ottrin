@@ -1,0 +1,17 @@
+{
+  "source_before": "97743fd834e9112c196fb3a02da29fcc8beae48d",
+  "sizes": {
+    "target/debug/deps": 41440832815,
+    "target/debug/incremental": 22658399586,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292031515,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438163668,
+    "target/release/deps": 4290352679,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764507157
+  },
+  "purpose": "Close actual hosted Windows test-only SQLiteBusy polling failure without runtime/timeout/result changes",
+  "cleanup_owner": "watcher-poll-ci-current; isolated test-workspace profiles/processes plus exact obsolete incremental sessions after checks",
+  "runtime_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "production_prefix_sha256_before": "478ee0cd1c02188f74a56d565fb95e3d7e2ea4fd5f7e642b3559faec28d59533",
+  "source_file_sha256_before": "de6c1408540d2595382b7dbed6130822e8e969c3ce1e80db407b614d34ffd7aa",
+  "parent_delivery": ".hermes/evidence/file-row-focus-current/DELIVERY_VERIFICATION.json"
+}

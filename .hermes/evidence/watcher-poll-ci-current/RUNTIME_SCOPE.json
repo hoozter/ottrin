@@ -1,0 +1,14 @@
+{
+  "status": "pass test-only source boundary proof",
+  "source_file": "crates/ottrin-search/src/lib.rs",
+  "production_prefix_sha256": "478ee0cd1c02188f74a56d565fb95e3d7e2ea4fd5f7e642b3559faec28d59533",
+  "matches_before": true,
+  "all_changes_inside_cfg_test_module": true,
+  "shipping_runtime_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "shipping_delivery": ".hermes/evidence/file-row-focus-current/DELIVERY_VERIFICATION.json",
+  "scope": "Busy retry, deterministic lock reproduction and watcher assertions only. Runtime query timeout, error/fallback behavior, file/index policy and every application payload remain unchanged.",
+  "outside_existing_test_function_sha256": "8d8554f88ad8430e7b1d506be034e5fc48764c7fa2dd1ab56b93c168677bc656",
+  "outside_existing_test_function_identical": true,
+  "changed_function": "tests::content_only_watcher_updates_moves_deletes_and_detaches_when_disabled",
+  "new_source_sha256": "ab943d0456f27ee83329f8de4a57f3d309155a75986377a60fbcd0a84630cf56"
+}

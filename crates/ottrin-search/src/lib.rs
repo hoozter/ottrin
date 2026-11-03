@@ -7576,6 +7576,8 @@ mod tests {
 
     #[test]
     fn content_only_watcher_updates_moves_deletes_and_detaches_when_disabled() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
         let root = crate::test_temp_dir().join("content-only-live-watcher");
         let bodies = root.join("bodies");
         fs::create_dir_all(&bodies).unwrap();
@@ -7592,11 +7594,26 @@ mod tests {
         let mut service = SearchService::new_with_store_path(config.clone(), store.clone());
         service.start();
         service.rebuild_index_blocking().unwrap();
+        let busy_reads = Arc::new(AtomicUsize::new(0));
         let wait = |term: &str, expected: &[PathBuf]| {
             let plan = plan::ScanPlan::new(&config).unwrap();
             let deadline = Instant::now() + Duration::from_secs(10);
             loop {
-                let hits = db::indexed_content_hits(&store, &plan, term).unwrap();
+                let hits = match db::indexed_content_hits(&store, &plan, term) {
+                    Ok(hits) => hits,
+                    Err(db::SearchDbError::Sql(error))
+                        if error.sqlite_error_code() == Some(rusqlite::ErrorCode::DatabaseBusy) =>
+                    {
+                        assert!(
+                            Instant::now() < deadline,
+                            "saved watcher poll stayed busy for {term}: {error}"
+                        );
+                        busy_reads.fetch_add(1, Ordering::SeqCst);
+                        std::thread::sleep(Duration::from_millis(30));
+                        continue;
+                    }
+                    Err(error) => panic!("saved watcher poll failed for {term}: {error}"),
+                };
                 let got = hits
                     .into_iter()
                     .map(|hit| hit.item.path)
@@ -7616,6 +7633,44 @@ mod tests {
         let file = directory.join("document.txt");
         fs::write(&file, "olderneedle").unwrap();
         wait("olderneedle", std::slice::from_ref(&file));
+
+        // Reproduce the hosted reader's transient SQLite lock after the saved
+        // content is committed. Release it only after polling observes Busy,
+        // rather than depending on a sleep winning a scheduling race.
+        let generation: i64 = rusqlite::Connection::open_with_flags(
+            &store,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+        )
+        .unwrap()
+        .query_row(
+            "SELECT active_generation_id FROM search_store_state WHERE singleton = 1",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+        let content_path = db::generation_content_db_path(&store, generation);
+        let busy_before = busy_reads.load(Ordering::SeqCst);
+        let observed_busy = Arc::clone(&busy_reads);
+        let (locked, ready) = std::sync::mpsc::channel();
+        let blocker = std::thread::spawn(move || {
+            let connection = rusqlite::Connection::open(content_path).unwrap();
+            connection.execute_batch("BEGIN EXCLUSIVE").unwrap();
+            locked.send(()).unwrap();
+            let deadline = Instant::now() + Duration::from_secs(10);
+            while observed_busy.load(Ordering::SeqCst) == busy_before {
+                assert!(
+                    Instant::now() < deadline,
+                    "poll did not observe the held lock"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            connection.execute_batch("ROLLBACK").unwrap();
+        });
+        ready.recv_timeout(Duration::from_secs(10)).unwrap();
+        wait("olderneedle", std::slice::from_ref(&file));
+        blocker.join().unwrap();
+        assert!(busy_reads.load(Ordering::SeqCst) > busy_before);
+
         fs::write(&file, "freshneedle").unwrap();
         wait("freshneedle", std::slice::from_ref(&file));
         wait("olderneedle", &[]);

@@ -1,0 +1,42 @@
+{
+  "status": "pass local source-check cleanup",
+  "owned_runtime_fixtures": "Common scripts/test-workspace.py registers isolated HOME/XDG and owned process-group/renderer teardown on every exit; negative and positive/full runs terminal. No VM/display/bus or application payload stage allocated.",
+  "obsolete_incremental_sessions_removed": 10,
+  "reported_filesystem_reclaimed_gib": 0.25,
+  "removed_paths_absent_and_newest_retained": true,
+  "compiler_baseline": {
+    "target/debug/deps": 41440832815,
+    "target/debug/incremental": 22658399586,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292031515,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438163668,
+    "target/release/deps": 4290352679,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764507157
+  },
+  "compiler_after": {
+    "target/debug/deps": 41440964965,
+    "target/debug/incremental": 22658905319,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292031625,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438437229,
+    "target/release/deps": 4290352679,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764507157
+  },
+  "compiler_delta_bytes": {
+    "target/debug/deps": 132150,
+    "target/debug/incremental": 505733,
+    "target/x86_64-pc-windows-gnu/debug/deps": 110,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 273561,
+    "target/release/deps": 0,
+    "target/x86_64-pc-windows-gnu/release/deps": 0
+  },
+  "current_test_replacement": "target/debug/deps/ottrin_search-ea268e832702de9b:matching original optimized-test compiler configuration retained; no blanket Cargo cleanup",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/watcher-poll-ci-current",
+      "purpose": "Compact negative/positive/full checks, runtime-boundary proof and exact guarded cleanup evidence",
+      "pending_consumer": "Hosted source gate and roadmap audit"
+    }
+  ],
+  "live_local_work": [],
+  "preserved": "All current7shipping packages/58Windows payloads, useful caches/current binaries, user data/processes/settings and protected VM bases",
+  "finalized_utc": "2026-11-03T18:21:14.214838+00:00"
+}
