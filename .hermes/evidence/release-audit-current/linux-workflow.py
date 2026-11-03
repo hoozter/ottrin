@@ -1,12 +1,14 @@
 from pathlib import Path
 from contextlib import ExitStack
 import hashlib,importlib.util,json,os,signal,subprocess,sys,time
-root=Path.cwd();e=root/'.hermes/evidence/release-audit-current'/(sys.argv[2] if len(sys.argv)>2 else 'linux-workflow-rendered');e.mkdir(parents=True,exist_ok=True)
-binary=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else root/'dist/packages/Ottrin-0.1.0-x86_64.AppImage';accepted=json.loads((root/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json').read_text());digest=hashlib.file_digest(binary.open('rb'),'sha256').hexdigest();assert len(sys.argv)>1 or digest==accepted['artifacts'][binary.name]
+import argparse,re
+parser=argparse.ArgumentParser();parser.add_argument('--case',required=True);parser.add_argument('--binary',type=Path);args=parser.parse_args();assert re.fullmatch('[a-z0-9-]+',args.case)
+root=Path.cwd();e=root/'.hermes/evidence/release-audit-current'/args.case;e.mkdir(exist_ok=False)
+binary=args.binary.resolve() if args.binary else root/'dist/packages/Ottrin-0.1.0-x86_64.AppImage';accepted=json.loads((root/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json').read_text());digest=hashlib.file_digest(binary.open('rb'),'sha256').hexdigest();assert args.binary or digest==accepted['artifacts'][binary.name]
 spec=importlib.util.spec_from_file_location('desktop',root/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(spec);spec.loader.exec_module(desktop)
 report={'status':'running','artifact_sha256':digest,'runtime_source':accepted['source_revision'],'scope':'Existing complete packaged daily-driver smoke in private X11/AT-SPI/software desktop; actual filesystem/UI results required','driver_sha256':hashlib.sha256((root/'scripts/linux-desktop-qa.py').read_bytes()).hexdigest()}
 def save():(e/'CONTROL.json').write_text(json.dumps(report,indent=2)+'\n')
-if len(sys.argv)>1:report.update(scope='Source GUI daily-driver smoke; no package acceptance',source_patch_sha256=hashlib.sha256(subprocess.check_output(['git','diff','--','crates'])).hexdigest())
+if args.binary:report.update(scope='Source GUI daily-driver smoke; no package acceptance',source_patch_sha256=hashlib.sha256(subprocess.check_output(['git','diff','--','crates'])).hexdigest())
 save()
 try:
  with desktop.OwnedDesktop(e) as d:

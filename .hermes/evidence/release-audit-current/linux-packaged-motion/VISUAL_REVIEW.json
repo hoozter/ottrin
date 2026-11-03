@@ -1,0 +1,29 @@
+{
+  "status": "pass within captured Dark/X11 workflow scope",
+  "artifact_sha256": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+  "images": {
+    "15-multi-select.png": "eb2f4598898938dbbdb15447d137d9d5b7088e243f40631e531d3077f3977e79",
+    "06-quick-inspector-image.png": "8a594396b944b51db849b3b98ace88c451297ecfb9232c063cc02064506458c8",
+    "01a-search-result-context.png": "c455afbb475ba4205f71470bee517dbc90dcd2c904f7e930f3b14f9deaeb0f4c",
+    "10-quick-inspector-xlsm.png": "ebe8460f26890349ac99bd414e63ddabcff07e49364aa555140aa41a87abe237",
+    "18-tandem.png": "400fecf98b44451db47bc68d583cd5ba562b4610aecf0ea49dca2d65d69f0dc5",
+    "09-quick-inspector-xlsx.png": "ee65e9a412c31d8afa8a73c143772a7b2475c12275ab108dd970afda276fc225",
+    "01-miller-documents.png": "53cfe14f8dfb1c51e202f0b4836e1ca6fdbaf48588ddd76b7da81b5a758b8f86",
+    "13-quick-inspector-folder.png": "8ee999f27d8a9ba763cc161934ba0c20888b3f0518293ead6378455cde015b59",
+    "12-quick-inspector-archive.png": "ebe409f49ab16c9cb8a22b7cd0867776311a50027bd61ccdc9680358da75e0a7",
+    "14-quick-inspector-generic.png": "ae4d480ce8e38b59ade62178166d6837c0550f54469885ec470e4f96d6dfade0",
+    "07a-quick-inspector-second-pdf.png": "4e431c0befaf584e836e28b6b60a1f771168d5937567e5709eedb6e7ded3e29d",
+    "08a-quick-inspector-svg.png": "885afe203e1d5ba01f0e72f556cba54ee8dd74689dd845155716c6142a57a7c1",
+    "11-quick-inspector-pptx.png": "72e706f31d043caf88246a0497f091ca9a22cf8bbfb33242a913d0235b2c3750",
+    "02-list-documents.png": "51d16fad6b42aba29b497ec1e8d90cb9676a0a98e5164197b63f56759adfb362",
+    "07-quick-inspector-pdf.png": "175b424b3aaaaa0b77ba43349edba3d97503864c10c3d3f3e9beb0c86d6aa436",
+    "08-quick-inspector-docx.png": "cd2b94d15b3b3a1db0bf6b908a2e961e5b8c9ab1266e119ea68288e3b027e6d7",
+    "04-copy-result.png": "46fcdb6d712f2313372f9c4018ff027533d00acc6aa15e832d1f8d64a83ccccf",
+    "05-quick-inspector-text.png": "c4af23ca053c991e56db7cd8ab09822db209be4391d6d8c20e5fb1454aba6125",
+    "01a-search-result.png": "d7428988d87beccd21607e20612bd87e64fbf75b5069eb2d27e7ca993ae35afa",
+    "03-grid-documents.png": "ce02cffa7158f84c6b71c17f765744ba6b6bd4ed49419b4d0dffcdba71a942b8",
+    "17-tabs.png": "a10d1c66f73ee9fc170d3b334971f9f447cb5187900439d651e8942a355019ff"
+  },
+  "review": "All21 original captures reviewed: Miller/List/Grid, search and menus, text/image/two PDFs, native DOCX/XLSX/XLSM plus truthful PPTX text fallback, SVG/archive/folder/generic, multi-selection/tabs/Tandem. No Office source-fidelity claim for native fallback renderers.",
+  "limits": "One theme/software X11; every appearance control, physical graphics and final user review remain separate"
+}

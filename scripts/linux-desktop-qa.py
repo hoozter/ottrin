@@ -9,8 +9,10 @@ Run it with the system Python because Ubuntu installs PyAT-SPI there.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import signal
@@ -509,6 +511,7 @@ def scroll_entry_into_view(node):
 
 
 def double_click_entry(window_id: str, name: str) -> dict[str, object]:
+    run("xdotool", "windowactivate", "--sync", window_id)
     node = wait_for(lambda: visible_entry(name), f"entry {name!r}")
     scroll_entry_into_view(node)
     previous = None
@@ -526,14 +529,20 @@ def double_click_entry(window_id: str, name: str) -> dict[str, object]:
     # two matching geometry observations before sending native input.
     diagnostics = wait_for(mapped_entry, f"rendered entry {name!r}")
     target = diagnostics["x11_window_relative_target"]
-    run("xdotool", "windowactivate", "--sync", window_id)
     run(
         "xdotool",
         "mousemove",
+        "--sync",
         "--window",
         window_id,
         str(target["x"]),
         str(target["y"]),
+    )
+    # Give the application a rendered pointer-motion frame before the press.
+    # Process focus and pointer motion before issuing the button events.
+    time.sleep(0.15)
+    run(
+        "xdotool",
         "click",
         "--repeat",
         "2",
@@ -1124,6 +1133,45 @@ def native_preview_matrix(binary: Path, evidence: Path, qa_root: Path, env: dict
     return 0
 
 
+def fixture_file_hashes(root: Path) -> dict[str, str]:
+    result = {}
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            raise AssertionError(f"Unexpected fixture symlink: {path}")
+        if path.is_file():
+            result[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return result
+
+
+def verify_fixture_copy_journals(documents: Path, paths: list[str]) -> dict[str, object]:
+    """Recognize only the three actual Copy publications in this owned fixture."""
+    pairs = {documents / "Subfolder/notes.txt": documents / "notes.txt",
+             documents / "MultiTarget/notes.txt": documents / "notes.txt",
+             documents / "MultiTarget/sample.json": documents / "sample.json"}
+    records = {}
+    publications = set()
+    native = lambda path: {"encoding": "unix-bytes", "units_hex": os.fsencode(path).hex()}
+    for name in paths:
+        path = documents / name
+        assert path.name == "copy-journal" and re.fullmatch(r"\.ottrin-txn-[0-9a-f]{32}", path.parent.name)
+        assert path.parent.parent in (documents / "Subfolder", documents / "MultiTarget")
+        assert path.parent.stat().st_uid == os.getuid() and path.parent.stat().st_mode & 0o777 == 0o700
+        record = json.loads(path.read_bytes())
+        assert record["schema"] == 5 and record["phase"] == "published"
+        assert record["transaction"] == native(path.parent)
+        assert record["displaced_content"] is None and record["displaced_objects"] is None
+        matching = [target for target, source in pairs.items()
+                    if record["publication"] == native(target) and record["source"] == native(source)]
+        assert len(matching) == 1 and matching[0] not in publications
+        publications.add(matching[0])
+        for directory, key in ((path.parent, "transaction_identity"), (path.parent.parent, "parent_identity")):
+            metadata = directory.stat()
+            assert (record[key]["device"], record[key]["inode"]) == (metadata.st_dev, metadata.st_ino)
+        records[name] = record
+    assert publications == pairs.keys(), "Missing, duplicate or unrelated retained Copy record"
+    return records
+
+
 def run_qa(qa_root: Path) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -1164,6 +1212,7 @@ def run_qa(qa_root: Path) -> int:
     (documents / "trash-me.txt").write_text("recoverable disposable\n", encoding="utf-8")
     shutil.copy2("assets/icon.png", documents / "image.png")
     create_preview_fixtures(Path.cwd(), documents)
+    original_files = fixture_file_hashes(documents)
 
     env = disposable_environment(qa_root)
     if args.native_previews:
@@ -1455,6 +1504,35 @@ def run_qa(qa_root: Path) -> int:
         wait_for(lambda: (documents / "renamed.json").is_file(), "renamed file")
         assert not (documents / "sample.json").exists()
         passed("rename", "Renamed sample.json to renamed.json through the packaged UI.")
+
+        expected_files = original_files.copy()
+        for name in ("delete-me.txt", "trash-me.txt"):
+            del expected_files[name]
+        expected_files["renamed.json"] = expected_files.pop("sample.json")
+        expected_files["Subfolder/notes.txt"] = original_files["notes.txt"]
+        expected_files["MultiTarget/notes.txt"] = original_files["notes.txt"]
+        expected_files["MultiTarget/sample.json"] = original_files["sample.json"]
+        actual_files = fixture_file_hashes(documents)
+        integrity = {"status": "checking", "original_files": original_files,
+                     "expected_files": expected_files, "actual_files": actual_files,
+                     "unexpected": sorted(actual_files.keys() - expected_files.keys()),
+                     "missing": sorted(expected_files.keys() - actual_files.keys()),
+                     "changed": sorted(name for name in expected_files.keys() & actual_files.keys()
+                                       if expected_files[name] != actual_files[name])}
+        integrity_path = evidence / "FILESYSTEM_INTEGRITY.json"
+        integrity_path.write_text(json.dumps(integrity, indent=2) + "\n", encoding="utf-8")
+        records = verify_fixture_copy_journals(documents, integrity["unexpected"])
+        data_files = {name: digest for name, digest in actual_files.items() if name not in records}
+        integrity["retained_copy_journals"] = records
+        integrity["data_files"] = data_files
+        integrity_path.write_text(json.dumps(integrity, indent=2) + "\n", encoding="utf-8")
+        assert data_files == expected_files, "Workflow changed unexpected source or copied bytes"
+        trash_files = list((qa_root / "data/Trash/files").glob("trash-me*"))
+        assert len(trash_files) == 1 and trash_files[0].is_file()
+        assert hashlib.sha256(trash_files[0].read_bytes()).hexdigest() == original_files["trash-me.txt"]
+        integrity.update(status="pass", trash_bytes_preserved=True)
+        integrity_path.write_text(json.dumps(integrity, indent=2) + "\n", encoding="utf-8")
+        passed("filesystem-integrity", "All original, renamed, copied and trashed fixture bytes match the exact intended changes.")
 
         passed("process-health", "Packaged process remained alive through the workflow.")
         (evidence / "results.json").write_text(

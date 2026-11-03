@@ -1,0 +1,12 @@
+{
+  "status": "observed personal running service, no mutation",
+  "pid": 262779,
+  "process_name": "ottrin-indexd",
+  "binary_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+  "elapsed_seconds": 30.000334155978635,
+  "one_core_cpu_percent": 0.4333285066896259,
+  "rss_before_bytes": 21864448,
+  "rss_after_bytes": 21889024,
+  "start_ticks": 26684135,
+  "scope": "Actual existing personal user service; bounded30-second observation under concurrent private QA host load. Activity state and sustained idle/workload behavior not inferred. No restart, reconfiguration or CLI invocation."
+}

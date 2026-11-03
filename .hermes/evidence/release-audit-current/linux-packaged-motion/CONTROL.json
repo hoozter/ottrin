@@ -1,0 +1,169 @@
+{
+  "status": "pass within actual workflow scope",
+  "artifact_sha256": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+  "runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "scope": "Existing complete packaged daily-driver smoke in private X11/AT-SPI/software desktop; actual filesystem/UI results required",
+  "driver_sha256": "8a7f3778359b5eb7386abe3c7bc3c7f65bc0ad54ce01454bc858119b6cee55ff",
+  "qa_root": "/var/tmp/.ottrin-picker-qa-zghb8n49/workflow",
+  "exit": 0,
+  "checks": [
+    {
+      "check": "address-navigation",
+      "status": "passed",
+      "detail": "Opened /var/tmp/.ottrin-picker-qa-zghb8n49/workflow/home/Documents and exposed all fixture entries."
+    },
+    {
+      "check": "search",
+      "status": "passed",
+      "detail": "Found sample.json through the packaged filename search interface."
+    },
+    {
+      "check": "search-space-preview",
+      "status": "passed",
+      "detail": "Selected a search result and opened its full Quick Inspector with Space."
+    },
+    {
+      "check": "search-context-actions",
+      "status": "passed",
+      "detail": "Opened the shared search-result context menu and copied its selected item."
+    },
+    {
+      "check": "list-view",
+      "status": "passed",
+      "detail": "Cycled from Miller to List with named selectable rows."
+    },
+    {
+      "check": "grid-view",
+      "status": "passed",
+      "detail": "Cycled from List to Grid with named selectable cells."
+    },
+    {
+      "check": "copy",
+      "status": "passed",
+      "detail": "Copied notes.txt into Subfolder without changing the source."
+    },
+    {
+      "check": "quick-inspector-text",
+      "status": "passed",
+      "detail": "Opened the packaged text preview from its accessible menu."
+    },
+    {
+      "check": "quick-inspector-image",
+      "status": "passed",
+      "detail": "Opened the packaged image preview."
+    },
+    {
+      "check": "quick-inspector-pdf",
+      "status": "passed",
+      "detail": "Opened the packaged rendered PDF plus metadata preview for preview.pdf."
+    },
+    {
+      "check": "quick-inspector-pdf",
+      "status": "passed",
+      "detail": "Opened the packaged second rendered PDF in the same process preview for preview-second.pdf."
+    },
+    {
+      "check": "quick-inspector-docx",
+      "status": "passed",
+      "detail": "Opened the packaged DOCX preview for letter.docx."
+    },
+    {
+      "check": "quick-inspector-svg",
+      "status": "passed",
+      "detail": "Opened the packaged rendered SVG preview for ottrin-preview.svg."
+    },
+    {
+      "check": "quick-inspector-xlsx",
+      "status": "passed",
+      "detail": "Opened the packaged XLSX preview for workbook.xlsx."
+    },
+    {
+      "check": "quick-inspector-xlsm",
+      "status": "passed",
+      "detail": "Opened the packaged XLSM preview for macros.xlsm."
+    },
+    {
+      "check": "quick-inspector-pptx",
+      "status": "passed",
+      "detail": "Opened the packaged PPTX preview for slides.pptx."
+    },
+    {
+      "check": "quick-inspector-zip",
+      "status": "passed",
+      "detail": "Opened the packaged archive preview for archive.zip."
+    },
+    {
+      "check": "quick-inspector-previewfolder",
+      "status": "passed",
+      "detail": "Opened the packaged folder summary preview for PreviewFolder."
+    },
+    {
+      "check": "quick-inspector-bin",
+      "status": "passed",
+      "detail": "Opened the packaged generic fallback preview for opaque.bin."
+    },
+    {
+      "check": "trash-delete",
+      "status": "passed",
+      "detail": "Moved only the disposable fixture into isolated XDG Trash."
+    },
+    {
+      "check": "permanent-delete",
+      "status": "passed",
+      "detail": "Permanently deleted only the disposable fixture."
+    },
+    {
+      "check": "multi-select",
+      "status": "passed",
+      "detail": "Selected two entries with Ctrl-click and copied both as one operation."
+    },
+    {
+      "check": "tabs",
+      "status": "passed",
+      "detail": "Created a second tab, navigated it independently, and switched back."
+    },
+    {
+      "check": "tandem",
+      "status": "passed",
+      "detail": "Opened Subfolder in Tandem and switched the active pane by keyboard."
+    },
+    {
+      "check": "rename",
+      "status": "passed",
+      "detail": "Renamed sample.json to renamed.json through the packaged UI."
+    },
+    {
+      "check": "process-health",
+      "status": "passed",
+      "detail": "Packaged process remained alive through the workflow."
+    }
+  ],
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-zghb8n49",
+    "owned_processes_reaped": [
+      {
+        "pid": 877023,
+        "exit": 0
+      },
+      {
+        "pid": 877029,
+        "exit": 0
+      },
+      {
+        "pid": 877030,
+        "exit": 15
+      },
+      {
+        "pid": 877177,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

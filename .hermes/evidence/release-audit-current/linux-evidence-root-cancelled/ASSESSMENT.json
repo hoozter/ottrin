@@ -1,0 +1,23 @@
+{
+  "status": "cancelled wrong evidence-root run; no acceptance",
+  "reason": "Default wrapper reused existing Linux failure folder. Registered SIGTERM cleanup completed; original tracked evidence restored byte-exactly from Git; new run observations moved here.",
+  "new_run_members": {
+    "TEARDOWN.json": "27070c20f5455fe8eb3145c266b50d896bfd61e9390ea9afcda9fdcc1b5d5a0b",
+    "workflow.log": "6dc2fcef74542ade20fd897d923335453dc3a4e15cf89c13c93a4407b5cde0e2",
+    "initial-navigation.json": "ee27ecb0841dd15efc9e2ba5d9654fae76ef9598f968076f7b8cb73c63be1c8b",
+    "01a-search-result-context.a11y.txt": "d34ac5f53dbc8437f61d8d4dbe62e1d39989495de7357cc1f9de5f06e7f1097c",
+    "06-quick-inspector-image.png": "8a594396b944b51db849b3b98ace88c451297ecfb9232c063cc02064506458c8",
+    "01a-search-result-context.png": "88f4251c769c0c637d3e2f426962bc8a3c4e4c5d51dbd68c368cb7ef854b9ee2",
+    "01-miller-documents.png": "a1ae086c1c83d0243829876937da9a0ccfc51c0db3b14462d75705dc28d66753",
+    "CONTROL.json": "0f62b1648ad458ed3377d41eb158f998ca8794515a00e1c195d4b564674afad4",
+    "dbus.log": "a225873e383fc72285d07674a98a71237a243d837cd4a5d35c833c0c4e864981",
+    "02-list-documents.png": "6647b6ab163e812cb58987d20639838b8947226d18f949e3fc44d4ecea0741fb",
+    "07-quick-inspector-pdf.png": "175b424b3aaaaa0b77ba43349edba3d97503864c10c3d3f3e9beb0c86d6aa436",
+    "04-copy-result.png": "658ef2781e76ad6c6bf5f7dbae474f6cd850489164e82df51c079b4f168df59d",
+    "05-quick-inspector-text.png": "c4af23ca053c991e56db7cd8ab09822db209be4391d6d8c20e5fb1454aba6125",
+    "01a-search-result.png": "24c58680863f56c0b5f6a1d694402bb5935df638c3820b7e673fea4904f14678",
+    "xvfb.log": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50",
+    "03-grid-documents.png": "e27bade82ff6c4e19aaedece6ef9a45bde8b3c75eb82ef3923d744e04dbaba5d"
+  },
+  "original_root_restored": true
+}

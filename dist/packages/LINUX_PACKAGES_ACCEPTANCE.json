@@ -1,14 +1,13 @@
 {
-  "status": "pass exact current package/worksheet scopes; unchanged responsibilities carried by source and payload identity",
-  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "status": "pass exact current package content and default startup scope; broader audit incomplete",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "f2942b638ea2c909f1297fd769f975366aac6886f46ff0f6fa1b756d10d00b10",
-    "Ottrin-0.1.0-x86_64.AppImage": "4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2ab951d5dfe9e8423b6b3f1304c92116e7b9dd95e2d728cba2caaac8a4abf737",
-    "ottrin_0.1.0_amd64.deb": "d9cdb29fd0c84d3a3b2fbe3ae5a8e3b57cd3adab893286367a79398042c38b38"
+    "ottrin-0.1.0-1.x86_64.rpm": "c8f77315d74954d00a68b23f2b0bd40dd410d43edd8c56bdac6beae09ac08e76",
+    "Ottrin-0.1.0-x86_64.AppImage": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b800e23d7c0cb821a813b4300cb93c149ebb36ebc8838eae9b2e2d591e2fea84",
+    "ottrin_0.1.0_amd64.deb": "ce46d7499f182458ab3963c463141f3d838421eceaae7962bce15fb1975b6a72"
   },
-  "evidence": ".hermes/evidence/worksheet-alignment-current/corrected",
-  "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "evidence": ".hermes/evidence/release-audit-current/cohort",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,23 +16,25 @@
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
-  "current_native_worksheet_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/LINUX_NATIVE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/worksheet-alignment-current/corrected/SOURCE_SCOPE.json",
-  "full_payload_comparison": ".hermes/evidence/worksheet-alignment-current/corrected/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "current_native_startup_receipt": ".hermes/evidence/release-audit-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/release-audit-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
   "unchanged_responsibility_basis": {
-    "previous_source": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
-    "previous_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
-    "scope": "Every runtime dependency/helper/asset/policy/launcher unchanged; shipping code differs only in independently verified worksheet row function. Previous integration/installer/resource/accessibility/workflow scopes remain historical, not relabelled as fresh runs."
+    "previous_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+    "previous_receipt": ".hermes/evidence/release-audit-current/cohort/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Every non-GUI runtime/helper/asset/library/launcher unchanged. Shipping GUI change is one constructor reveal call. Earlier installer/index/preview/picker scopes retain original hashes and are not fresh reruns."
   },
   "hosted_source": {
-    "run": 41585803867,
-    "tested_source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+    "run": 41605875200,
+    "tested_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
     "all_four_jobs_success": true
   },
   "limits": [
-    "Local delivery, no signed public release",
-    "Native X11/software Dark100/Light150; physical devices/GPU/final owner acceptance separate",
-    "Only worksheet GUI scope freshly rerun; broader unchanged scopes retain their original artifact hashes"
+    "Local unsigned delivery; no public release",
+    "Private software X11 Dark100/Light150; physical GPU and final owner acceptance separate",
+    "Broader daily-driver and concentrated remaining roadmap audit not accepted"
   ],
-  "cleanup": "All private GUI and native namespace fixtures/extractions removed; owned Linux staging retired after publication; current compiler caches retained."
+  "cleanup": "Private startup desktops/profiles and completed extraction removed; exact staging retired after publication; compiler caches preserved.",
+  "current_workflow": ".hermes/evidence/release-audit-current/cohort/LINUX_WORKFLOW_ACCEPTANCE.json"
 }

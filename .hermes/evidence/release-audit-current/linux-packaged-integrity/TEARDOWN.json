@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-q98es3jq",
+  "owned_processes_reaped": [
+    {
+      "pid": 880455,
+      "exit": 0
+    },
+    {
+      "pid": 880461,
+      "exit": 0
+    },
+    {
+      "pid": 880462,
+      "exit": 15
+    },
+    {
+      "pid": 880591,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Actual workflow failed; inspect preserved report/log",
+  "profile_removed": true
+}

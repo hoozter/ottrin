@@ -1,0 +1,38 @@
+{
+  "status": "failed current packaged workflow",
+  "artifact_sha256": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+  "runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "scope": "Existing complete packaged daily-driver smoke in private X11/AT-SPI/software desktop; actual filesystem/UI results required",
+  "driver_sha256": "56c2f6e5ff8ec22d8f6e6a19b85ea68ce24777b1b79b38aaad3adb6381f4b913",
+  "qa_root": "/var/tmp/.ottrin-picker-qa-fbpeoth_/workflow",
+  "error": "SystemExit(143)",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-fbpeoth_",
+    "owned_processes_reaped": [
+      {
+        "pid": 873006,
+        "exit": 0
+      },
+      {
+        "pid": 873009,
+        "exit": 0
+      },
+      {
+        "pid": 873012,
+        "exit": 15
+      },
+      {
+        "pid": 873094,
+        "exit": 143
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "error": "143",
+    "profile_removed": true
+  }
+}

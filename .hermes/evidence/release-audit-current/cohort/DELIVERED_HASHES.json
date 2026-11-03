@@ -1,0 +1,12 @@
+{
+  "status": "pass all7 stable artifact and sidecar hashes after delivery",
+  "artifacts": {
+    "dist/packages/ottrin-0.1.0-1.x86_64.rpm": "c8f77315d74954d00a68b23f2b0bd40dd410d43edd8c56bdac6beae09ac08e76",
+    "dist/packages/Ottrin-0.1.0-x86_64.AppImage": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+    "dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b800e23d7c0cb821a813b4300cb93c149ebb36ebc8838eae9b2e2d591e2fea84",
+    "dist/packages/ottrin_0.1.0_amd64.deb": "ce46d7499f182458ab3963c463141f3d838421eceaae7962bce15fb1975b6a72",
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip": "2901a9c5df46b96c86e9f0a41d81d466ed5ca5494d47282becdb9f2648bb459f",
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935",
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix": "1f4fc891519b537d78460835fc25cd8588f065e4fd147600cd5d3671389db5bf"
+  }
+}

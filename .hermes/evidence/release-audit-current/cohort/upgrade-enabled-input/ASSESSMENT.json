@@ -1,0 +1,16 @@
+{
+  "status": "failed baseline GUI focus; no6-to7 update acceptance",
+  "result": "RUNTIME_RESULT.json",
+  "scope": "Baseline6 installation, index disable/re-enable and cleanup pass. Ordinary main foreground requirement failed before update. Original failure retained; no security/foreground-policy workaround.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next_action": "Retry exact inputs with observed private native input while focus wait is active; record actual console/guest mapping before input."
+}

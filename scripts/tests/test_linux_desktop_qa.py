@@ -449,10 +449,14 @@ class X11CoordinateTranslationTests(unittest.TestCase):
                 (
                     "xdotool",
                     "mousemove",
+                    "--sync",
                     "--window",
                     "0x123",
                     "280",
                     "330",
+                ),
+                (
+                    "xdotool",
                     "click",
                     "--repeat",
                     "2",
@@ -479,8 +483,8 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             self.assertEqual(qa.double_click_entry("0x123", "Subfolder"), target)
 
         self.assertEqual(mapping.call_count, 3)
-        self.assertEqual(len(commands), 2)
-        self.assertEqual(commands[1][-1], "1")
+        self.assertEqual(len(commands), 3)
+        self.assertEqual(commands[2][-1], "1")
 
     def test_double_click_does_not_use_a_target_while_it_is_still_moving(self):
         initial = {"x11_window_relative_target": {"x": 500, "y": 330}}

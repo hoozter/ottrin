@@ -1,0 +1,7 @@
+{
+  "status": "failed original run; no acceptance",
+  "scope": "Initial no-location pointer navigation missed Documents; no complete workflow acceptance.",
+  "controller": "CONTROL.json",
+  "raw_diagnostics_retained_locally": true,
+  "superseding_acceptance": "cohort/LINUX_WORKFLOW_ACCEPTANCE.json"
+}

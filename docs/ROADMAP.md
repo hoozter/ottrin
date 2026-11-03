@@ -3,172 +3,103 @@
 ## Current delivery and next work
 
 Updated 2026-11-03. This is the single active queue. Historical receipts below
-retain their original source/artifact scope; test totals are not roadmap completion.
-Packaged copies are snapshots taken at build time; this repository copy tracks
-subsequent acceptance and promotion.
+retain their original source/artifact scope; passing checks are not completion
+of the full roadmap. Packaged documentation is a build-time snapshot.
 
-Linux AppImage, portable archive, DEB and RPM are now delivered from clean
-`4a1682bdee98b16b63a7723785091399e99b505f` at `dist/packages/`. The stable AppImage is
+Linux AppImage, portable archive, DEB and RPM at `dist/packages/`, and Windows
+ZIP/NSIS/development MSIX0.1.0.7 at `dist/windows-candidate/`, now use clean runtime
+source `7d10a8b6eba74e642fcf5028af737a98bb5c0958`. Exact-source CI41605875200 passes
+all four Linux/Windows verification and performance jobs. The stable AppImage is
 `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`4fc743773265b7b3f339aa50620d7bbeff8c3eeeb34b82c984b460f65def9a8a`.
-Windows ZIP, NSIS and development MSIX0.1.0.6 from the same source are delivered at
-`dist/windows-candidate/`. Current authorities are
+`b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005`.
+The package authorities record every hash and exact scope:
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. All four exact-source CI41585803867
-Linux/Windows verification and performance jobs pass. Public releases and the
-held failing MSI have not been replaced or relabelled.
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. No public release or Store submission is
+implied. The failed MSI is held separately and has not been replaced or waived.
 
-The worksheet correction is delivered. Two actual egui regressions reproduce
-forced glyph spacing and later rows painting over wrapped text;463 host UI tests
-pass, with1 existing ignored test. Actual AppImage Dark100/Light150 and installed
-Windows Native-preference/OpenGL-override Miller/Inspector captures verify normal
-spacing, leading body alignment and full wrapped rows. Native labels, source bytes,
-normal window close and private teardown pass. Windows ordinary NSIS installation
-verifies58 payload files and uninstalls while preserving preferences. Actual
-MSIX5→6 updates pass both startup choices, ordinary GUI/menu/hidden-file controls,
-real reboot/login and removal, preserving preferences and native index file
-identity. Disabled login startup is observed for180 seconds before any Ottrin CLI.
+Ordinary no-location Column startup now requests the existing one-shot Home
+reveal. A rendered regression fails before and passes after the single constructor
+call;464 host UI tests pass, with1 existing ignored test. Exact AppImage startup/
+native Close passes Dark100 and Light150 with the default renderer. Actual installed
+NSIS startup, normal Close,58-file payload identity and supported uninstall preserving
+preferences/source pass Dark/Light with software OpenGL. Two earlier Windows QA
+lookups incorrectly required Documents to be globally unique across Miller ancestor
+columns. The accepted actor records both an ancestor at x=-1002 and the current Home
+row at x=720; actual bounds disambiguate them. Neither rejected attempt is acceptance.
 
-Only the shipping worksheet-row function changed from90ba8639; the portal source
-change improves test diagnostics. All113 Linux payload entries match except GUI,
-roadmap and provenance. Windows helpers/dependencies match; indexd differs only
-in PE timestamp/checksum, with every other byte equal. Earlier broad installer,
-resource, Office conversion, accessibility, chooser/browser and workflow receipts
-remain bound to their original hashes and are carried by explicit source/payload
-comparison, not presented as fresh runs. Current evidence and cleanup receipts:
-`.hermes/evidence/worksheet-alignment-current/corrected/`.
+Actual development MSIX6-to7 updates pass both login startup choices, ordinary
+non-elevated GUI, menu/Space/Escape ownership, Hidden/System visibility, real
+reboot/login and supported removal. Preferences and native index file identity are
+preserved. Disabled login startup is observed for180 seconds before any Ottrin CLI.
+All22 native captures are directly reviewed. The first new baseline focus attempt
+failed before update; the accepted console fixture uses observed normal taskbar
+input without security/foreground-policy changes. All fixture VMs/media/consoles
+are removed. This is default-DPI/software OpenGL, not physical-GPU/Store acceptance.
 
-The initial source99 staging was rejected for real wrapped-row overlap before
-promotion. Two MSIX baseline focus attempts were rejected and cleaned up before
-an update was accepted; clone-only absolute pointer input and bounded actual
-foreground observation improve the QA producer without policy/product overrides.
-The earlier hosted portal pre-lease failure is not reproduced in20 local groups
-or the successful full current CI run; its exact cause remains unproven and its
-worker error is now exposed. Original failures remain unchanged.
+The exact delivered Linux AppImage now completes27 private X11 workflow checks:
+address/search/context actions, Miller/List/Grid, copy/multi-copy, text/image/two
+PDFs/DOCX/SVG/XLSX/XLSM/PPTX/archive/folder/generic Inspector, Trash/permanent delete,
+tabs/Tandem/rename and process health. All intended original/copied/renamed/trashed
+fixture bytes match. Exactly three destination-local Published Copy journals are
+validated against their source/publication paths and directory identities; they
+are intentional recovery metadata. An initial strengthened check rejected those
+journals as unexpected, with no missing or changed data files. All21 original
+same-artifact workflow captures are reviewed. This is synthetic Dark/X11 scope,
+not complete daily-driver or every appearance-control acceptance. The QA producer
+now separates focus/motion from double-click input, checks scrolled row bounds,
+and refuses an existing evidence root before allocation. An accidentally reused
+root was cancelled and its original tracked bytes restored exactly from Git.
 
-All six native fixture domains/twelve owned volumes, private displays/profiles,
-source archives, previous-package aliases and superseded packages are removed.
-Thirteen obsolete incremental sessions are retired, retaining the newest per
-configuration and current useful compiler caches. Stable deliverables/payload and
-compact evidence remain. Personal profiles, the personal index service, retained
-Windows bases and the held MSI diagnostic are preserved.
+The personal Linux service was still running an older daemon. Ottrin's supported
+`index service-install` refresh now runs the exact delivered indexd binary, with
+saved preferences unchanged. It reports Ready,167516 indexed items and a ready
+watcher. A30-second observation under concurrent QA host load used0.233% of one
+core (previous running binary0.433%); no sustained-idle or universal workload claim
+is made. Existing exact4a Windows unattended10000-file metadata evidence measured
+0.208% and0.104% in two30-second samples with no GUI present. Clicked VCF/plain-text
+body navigation and Space ownership pass Dark/Light; Windows temporal VCF-to-PDF
+and explicit Edit/Save have separately bound native acceptance. Those original
+receipts are carried by demonstrated unchanged source/payload, not relabelled as
+new runs.
 
-Current installed Windows preview-safety acceptance now passes on a fresh
-ordinary stock-client desktop using this exact NSIS. A real VCF→PDF transition
-has identical measured bounds in all70 settled samples from100 observations;
-four original frames show stable width fit and reserved scrollbar space. Inspector
-Down/Up navigates VCF/PDF and Space closes without source changes. Explicit Edit
-keeps the source unchanged until Ctrl+S, which publishes exact intended bytes;
-Escape closes afterward. All58 installed hashes, normal close, uninstall and
-preference preservation pass. Seven original captures are reviewed. This is Dark/
-default-DPI/explicit OpenGL software-VM acceptance, not every focus variation,
-PDF, theme or physical adapter. First attempt rejected an Inspector-only readiness
-control on the main sidebar; no product defect was hidden. Both domains/four
-volumes, private desktops and transport duplicates are removed. Evidence:
-`.hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json`.
-
-The concentrated audit found a further startup defect: ordinary no-location
-Column-view startup did not request the one-shot current-directory reveal. On a
-deep disposable Home path, its contents were outside the window. The accepted4a
-AppImage reproduces this; a rendered regression fails before and passes after the
-single constructor call. All464 UI tests pass, with1 existing ignored test;
-native source Dark100/Light150 captures show the Home contents. Linux source
-build/strict UI+app Clippy and Windows UI all-target check pass. This correction
-is source-verified and still needs a clean packaged cohort before delivery.
-
-Exact4a installed Windows unattended metadata indexing now passes a fresh
-10000-file corpus plus3 proof files and101 directories with no GUI present:
-30-second one-core CPU samples are0.208% before and0.104% after native workflows,
-with the same daemon instance. RSS is14.0MiB and10.4MiB; this is a bounded synthetic
-measurement, not personal/sustained-workload acceptance. Actual clicks in VCF and
-plain-text preview bodies preserve Down/Up and Space ownership in Dark/Light;
-all sources, normal close/uninstall and preferences pass. Four native captures
-are reviewed; both owned Windows cases and four volumes are removed. The first
-case was interrupted with143 before export and provides no acceptance. The owner
-producer now attempts a bounded diagnostic export on interruption; its actual
-callback passes three isolated tests, without claiming a fresh cancelled-VM run.
-Evidence: `.hermes/evidence/release-audit-current/`.
-
-The legacy daily-driver QA is being refreshed against actual native controls:
-Search is a toggle, breadcrumbs expose full native paths, and offscreen rows
-need their standard scroll action before input. Its partial runs establish
-navigation/search/view switching/Copy and representative Inspector presentation,
-not a complete daily-driver pass. One initial pointer miss remains a QA timing/
-coordinate question; a separate native probe records correct physical coordinates
-and actual folder navigation. Do not hide the original failures or claim the
-full workflow accepted. The earlier598ffbb2 CI41598116332 now passes all4 jobs;
-it does not accept the newer startup correction committed as7d10a8b6.
-
-The clean7d10a8b6 Linux four-format and Windows ZIP/NSIS cohorts are now built
-in staging. Exact AppImage no-location/default-renderer startup and native Close
-pass Dark100/Light150. Full payload comparison confirms unchanged Linux indexd
-and Windows daemon code (only PE timestamp/checksum differ); all other runtime
-helpers/libraries/assets match. Native MakeAppx produces development MSIX0.1.0.7
-with all58 payload hashes matching;6-to7 runtime/login/update acceptance remains
-pending. Two Windows startup QA attempts rejected a globally ambiguous Documents
-selector; neither is acceptance. The viewport-scoped actor now passes both themes,
-normal Close, all58 installed hashes and supported uninstall preserving preferences
-and source. Actual diagnostics distinguish an ancestor Documents row at x=-1002
-from the current Home row at x=720; both report offscreen=false. Original native
-captures are reviewed. This is default-DPI/software OpenGL scope, not physical
-Windows acceptance. Existing stable packages remain unchanged. CI41605875200 has3 successful jobs; Windows verification is still live.
-Completed Linux extraction and native assembly VM/media/source archive are removed.
-The15 user-request requirements are now separately retained in
-`release-audit-current/USER_REQUIREMENTS.json`, supplementing the54 roadmap bullets.
+Only the startup constructor call changes shipping code from4a. All Linux helpers,
+libraries/assets/policies are byte-identical. Windows daemon differs only in PE
+timestamp/checksum; all other daemon bytes and non-GUI helpers/libraries/assets
+match. Historical installer, Office provider, resource, picker/browser, appearance
+and accessibility scopes retain original hashes. Current cohort evidence is in
+`.hermes/evidence/release-audit-current/cohort/`; personal-service observations and
+workflow receipts are in its parent. Superseded packages/staging, source archive,
+owned profiles/VMs/media and unreferenced observations are retired. Personal data,
+protected Windows bases, useful compiler caches and the held MSI are preserved.
 
 Continue in this order:
 
-1. Deliver the source-verified no-location startup correction as one clean Linux/
-   Windows cohort, retaining current stable packages until focused acceptance.
-2. Complete the concentrated Linux/Windows daily-driver, media, supported picker/
-   folder-integration and resource requirement audit. The initial inventory retains
-   all54 explicit bullet requirements and their full multiline clauses in
-   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`; prose milestones and
-   user-specific UI requirements also need decomposition. For each requirement
-   inspect direct current evidence or a demonstrated unchanged implementation/
-   payload; repair missing/contradictory software scopes. Include clicked-body
-   text-selection/focus variations in the remaining GUI workflow audit. Do not
-   repeat fulfilled fault matrices without changed inputs or a reproduced defect.
-3. Finish the release-candidate requirement matrix/documentation. The shared themed
-   picker, Linux FileChooser portal/FileManager1 and reversible Windows folder
-   integration retain their implemented/recorded scopes; close any remaining
-   software caller gaps independently. Keep MSI registration rollback, owner
-   identity/signing/Store submission, physical hardware and final owner review on
-   the explicit waiting list. No failed gate is waived and no macOS build is added.
+1. Complete the concentrated requirement-by-requirement Linux/Windows audit.
+   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains54 full multiline
+   roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
+   with15 explicit user UI/service/delivery requirements. Inspect direct current
+   evidence and unchanged source/payload for each clause; do not equate totals or
+   the27-check smoke with full acceptance. Finish appearance-role ownership,
+   Services states/actions, remaining media/picker/browser/folder-integration and
+   platform workflow scopes; repair actual missing or contradictory software.
+2. Close independently executable software/caller gaps for the shared themed
+   picker, Linux FileChooser/FileManager1 and reversible Windows folder integration.
+   These retain their implemented/native scopes; do not defer them again merely
+   because owner signing, hardware or final review waits exist. Do not repeat
+   fulfilled fault matrices without changed inputs or a reproduced defect.
+3. Reconcile the final release-candidate requirement matrix and documentation,
+   leaving only actual owner/external waits. The [waiting list](#ownerexternal-waiting-list)
+   retains owner identity/signing/Store submission, unavailable physical hardware,
+   personal administrator setup and final owner acceptance. No macOS build is added.
 
-The actual8ede1562 MSI is now tested on the independent Microsoft26300 client.
-Fresh ordinary-user installation and all58 installed-file hashes pass. A real
-locked-cache uninstall refusal preserves the exact daemon PID/task instance,
-task XML/security, preferences, source bytes, native database file identity and
-fixture query. Windows Installer nevertheless leaves product state1; ordinary
-uninstall retry returns1603 and leaves the payload. All78 genuine/unknown rollback
-failures remain, after separately classifying the one success-coded terminal End
-marker. Current installer authoring is unchanged from that candidate. This is a
-failed release gate, not a data-loss claim or a passing cleanup result. The first
-QA actor exposed terminal status before its finally block, so its explicit guest
-service-cleanup outcome was unproven. The producer now signals completion only
-after recording cleanup. A separate validation fixture confirms service-remove
-exit0, numeric58-file count, matching final native/parent snapshots and complete
-owned VM/media/console teardown, with the same failed MSI registration outcome.
-
-The same native file-only authoring reproduces registration failure without
-Ottrin or WiX. Its22 tables and execution checks match across ordinary/elevated
-controls except generated identifiers and explicit role/scope substitutions.
-The elevated diagnostic restores registration, files and supported recovery/
-cleanup. This isolates execution security context but does not authorize a
-production elevation workaround. No policy/ACL changes or manual installer
-registry repair are introduced. Original actor outputs remain unchanged; only
-the exact adjacent terminal End/return5 marker is separated by the strict assessor.
-Do not keep repeating fulfilled controls or add compensating registry code.
-Evidence: `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json`,
-`windows-msi-security-context-current/COMPARISON.json`, and the earlier independent
-ordinary/deferred controls. Actual/diagnostic guests, overlays/media and private
-consoles are removed; the clean15.34GiB base now has the named Windows-cohort
-acceptance consumer above.
-
-Owner identities/signing/submission, unavailable physical hardware, personal
-administrator setup and final owner acceptance remain on the explicit
-[waiting list](#ownerexternal-waiting-list). They do not block independent work.
+The MSI ordinary-user registration rollback gate remains failed. Independent
+file-only native authoring reproduces it without Ottrin/WiX; matching elevated
+diagnostics isolate execution context but do not authorize an elevation, ACL,
+policy or manual-registry workaround. Original failures and the strict terminal
+status assessment remain intact. Actual/diagnostic VM/media teardown is verified;
+see `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json` and
+`windows-msi-security-context-current/COMPARISON.json`. This held gate must not
+stall dependency-ready work or be counted as a successful MSI release.
 
 ## Picker Shift selection — source correction, 2026-11-02
 

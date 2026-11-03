@@ -1,0 +1,7 @@
+{
+  "status": "failed original run; no acceptance",
+  "scope": "Exact byte maps show no missing or changed data files; exactly three Copy journals were the extra files. This original rejection is retained; later scoped validator verifies those records before accepting27 checks.",
+  "controller": "CONTROL.json",
+  "raw_diagnostics_retained_locally": true,
+  "superseding_acceptance": "cohort/LINUX_WORKFLOW_ACCEPTANCE.json"
+}

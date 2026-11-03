@@ -1,0 +1,48 @@
+{
+  "status": "pass",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "artifact_sha256": "1f4fc891519b537d78460835fc25cd8588f065e4fd147600cd5d3671389db5bf",
+  "images": {
+    "visibility-restored.png": "d68dc432661b5f63318bf12e65ee615c3e3d51856e5f5030dbb9dae2fe430196",
+    "main.png": "00bbab26c76ac15fb29b6531f170ff93b1c129544955b93be1435e61837e72f9",
+    "visibility-show-all.png": "278d4920908e7e648ee9ecc2e614214388d7fa5cd061a8a7d470186c52908b00",
+    "updated-main.png": "ddd42d8ffce7b9a81703d4c559371de882510e3ab3ab861eb5bf629a499e934b",
+    "updated-main-menu-after-space.png": "58f06496eb7eff5ada1023ddc36837d9e2322bb9e9346a0b1382b61a2d4c77ed",
+    "updated-inspector-before-normal-space.png": "c992db364e5dac83d7aa15a05689ab22ec6b2f3bd69c973e5fcd16bd03dd24bb",
+    "visibility-address-input.png": "0a361c29e05e8ff7de0239e5eb4986d89cb3e5ddfb2c2048be9776e03ead0d05",
+    "updated-inspector-menu.png": "97438e27f64396c047e436283f5a7bf06b034ba68787c5b2f0714ad76315e2c6",
+    "updated-main-menu-before-space.png": "58f06496eb7eff5ada1023ddc36837d9e2322bb9e9346a0b1382b61a2d4c77ed",
+    "visibility-default.png": "d68dc432661b5f63318bf12e65ee615c3e3d51856e5f5030dbb9dae2fe430196",
+    "updated-fixture-selected.png": "2f8cd7c8a0e75d4ee40a2252687008c886d4d5110512836d027f5c79fb36c082"
+  },
+  "review": "All11 original native images directly reviewed. Default/restored shows V.txt only; Show hidden files exposes HD, SD, H.txt, S.txt and V.txt. Native address field enters actual owned fixture. Main/Inspector menus have consistent compact icons/alignment; popup Space/Escape ownership is separately asserted by actual actor.",
+  "native_attribute_evidence": {
+    "scope": "Ordinary package GUI native Ctrl+L input and Hidden/System toggle screenshots; no GUI outcome inferred from filesystem alone",
+    "status": "captured, requires host rendered OCR/review gate",
+    "attributes": [
+      {
+        "name": "HD",
+        "attributes": 18
+      },
+      {
+        "name": "SD",
+        "attributes": 20
+      },
+      {
+        "name": "H.txt",
+        "attributes": 34
+      },
+      {
+        "name": "S.txt",
+        "attributes": 36
+      },
+      {
+        "name": "V.txt",
+        "attributes": 32
+      }
+    ],
+    "source_bytes_preserved": true,
+    "fixture_entries_preserved": true
+  },
+  "scope": "Default-DPI Dark/software OpenGL package, no physical GPU or whole-interface usability claim"
+}

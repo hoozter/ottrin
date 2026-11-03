@@ -1,0 +1,6 @@
+{
+    "events":  [
+
+               ],
+    "scope":  "Only events naming this owned package installation"
+}

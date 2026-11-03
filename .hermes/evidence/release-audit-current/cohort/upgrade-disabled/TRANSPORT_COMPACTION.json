@@ -1,0 +1,7 @@
+{
+  "status": "lossless compressed transport; duplicate ZIP retired after exact members verified",
+  "original_transport_bytes": 588460,
+  "original_transport_sha256": "3383ab2e02de74e678033a992f86e46acd7b9e599c6336cb6496f725f94767eb",
+  "compressed": "RESULT_EXPORT_PROCESS.json.gz",
+  "raw_result_members": "RESULT_MEMBERS.json"
+}

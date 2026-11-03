@@ -1,0 +1,180 @@
+{
+  "status": "pass27 actual packaged workflow and exact intended fixture byte changes",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "artifact_sha256": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+  "native_workflow": ".hermes/evidence/release-audit-current/linux-packaged-retained-integrity/results.json",
+  "filesystem_integrity": ".hermes/evidence/release-audit-current/linux-packaged-retained-integrity/FILESYSTEM_INTEGRITY.json",
+  "visual_scope": ".hermes/evidence/release-audit-current/linux-packaged-motion/VISUAL_REVIEW.json",
+  "retained_copy_journals": "Exactly three Published schema5 records validated against fixture source/publication paths and directory identities; these are intentional recovery metadata, not data-file mutations.",
+  "checks": [
+    {
+      "check": "address-navigation",
+      "status": "passed",
+      "detail": "Opened /var/tmp/.ottrin-picker-qa-h0mzfcct/workflow/home/Documents and exposed all fixture entries."
+    },
+    {
+      "check": "search",
+      "status": "passed",
+      "detail": "Found sample.json through the packaged filename search interface."
+    },
+    {
+      "check": "search-space-preview",
+      "status": "passed",
+      "detail": "Selected a search result and opened its full Quick Inspector with Space."
+    },
+    {
+      "check": "search-context-actions",
+      "status": "passed",
+      "detail": "Opened the shared search-result context menu and copied its selected item."
+    },
+    {
+      "check": "list-view",
+      "status": "passed",
+      "detail": "Cycled from Miller to List with named selectable rows."
+    },
+    {
+      "check": "grid-view",
+      "status": "passed",
+      "detail": "Cycled from List to Grid with named selectable cells."
+    },
+    {
+      "check": "copy",
+      "status": "passed",
+      "detail": "Copied notes.txt into Subfolder without changing the source."
+    },
+    {
+      "check": "quick-inspector-text",
+      "status": "passed",
+      "detail": "Opened the packaged text preview from its accessible menu."
+    },
+    {
+      "check": "quick-inspector-image",
+      "status": "passed",
+      "detail": "Opened the packaged image preview."
+    },
+    {
+      "check": "quick-inspector-pdf",
+      "status": "passed",
+      "detail": "Opened the packaged rendered PDF plus metadata preview for preview.pdf."
+    },
+    {
+      "check": "quick-inspector-pdf",
+      "status": "passed",
+      "detail": "Opened the packaged second rendered PDF in the same process preview for preview-second.pdf."
+    },
+    {
+      "check": "quick-inspector-docx",
+      "status": "passed",
+      "detail": "Opened the packaged DOCX preview for letter.docx."
+    },
+    {
+      "check": "quick-inspector-svg",
+      "status": "passed",
+      "detail": "Opened the packaged rendered SVG preview for ottrin-preview.svg."
+    },
+    {
+      "check": "quick-inspector-xlsx",
+      "status": "passed",
+      "detail": "Opened the packaged XLSX preview for workbook.xlsx."
+    },
+    {
+      "check": "quick-inspector-xlsm",
+      "status": "passed",
+      "detail": "Opened the packaged XLSM preview for macros.xlsm."
+    },
+    {
+      "check": "quick-inspector-pptx",
+      "status": "passed",
+      "detail": "Opened the packaged PPTX preview for slides.pptx."
+    },
+    {
+      "check": "quick-inspector-zip",
+      "status": "passed",
+      "detail": "Opened the packaged archive preview for archive.zip."
+    },
+    {
+      "check": "quick-inspector-previewfolder",
+      "status": "passed",
+      "detail": "Opened the packaged folder summary preview for PreviewFolder."
+    },
+    {
+      "check": "quick-inspector-bin",
+      "status": "passed",
+      "detail": "Opened the packaged generic fallback preview for opaque.bin."
+    },
+    {
+      "check": "trash-delete",
+      "status": "passed",
+      "detail": "Moved only the disposable fixture into isolated XDG Trash."
+    },
+    {
+      "check": "permanent-delete",
+      "status": "passed",
+      "detail": "Permanently deleted only the disposable fixture."
+    },
+    {
+      "check": "multi-select",
+      "status": "passed",
+      "detail": "Selected two entries with Ctrl-click and copied both as one operation."
+    },
+    {
+      "check": "tabs",
+      "status": "passed",
+      "detail": "Created a second tab, navigated it independently, and switched back."
+    },
+    {
+      "check": "tandem",
+      "status": "passed",
+      "detail": "Opened Subfolder in Tandem and switched the active pane by keyboard."
+    },
+    {
+      "check": "rename",
+      "status": "passed",
+      "detail": "Renamed sample.json to renamed.json through the packaged UI."
+    },
+    {
+      "check": "filesystem-integrity",
+      "status": "passed",
+      "detail": "All original, renamed, copied and trashed fixture bytes match the exact intended changes."
+    },
+    {
+      "check": "process-health",
+      "status": "passed",
+      "detail": "Packaged process remained alive through the workflow."
+    }
+  ],
+  "cleanup": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-h0mzfcct",
+    "owned_processes_reaped": [
+      {
+        "pid": 886236,
+        "exit": 0
+      },
+      {
+        "pid": 886242,
+        "exit": 0
+      },
+      {
+        "pid": 886243,
+        "exit": 15
+      },
+      {
+        "pid": 886348,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [
+      "1158 34 0:71 / /var/tmp/.ottrin-picker-qa-h0mzfcct/runtime/doc rw,nosuid,nodev,relatime shared:686 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "limits": [
+    "Synthetic owned Dark/X11/software workflow only; not complete roadmap acceptance",
+    "Earlier failures remain unchanged; previous26-check run supplies same-artifact21-original-capture review; final27-check run adds independent byte-integrity proof"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "status": "failed original run; no acceptance",
+  "scope": "First strengthened byte check failed without exporting its maps; no acceptance inferred. Later independent diagnostic maps establish three retained Copy records with no missing or changed data.",
+  "controller": "CONTROL.json",
+  "raw_diagnostics_retained_locally": true,
+  "superseding_acceptance": "cohort/LINUX_WORKFLOW_ACCEPTANCE.json"
+}

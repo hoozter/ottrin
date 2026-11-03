@@ -1,0 +1,26 @@
+{
+  "status": "actual existing user service after supported refresh",
+  "diagnostics": {
+    "status": "ready",
+    "indexed_items": 167516,
+    "last_completed_indexed_items": 167516,
+    "estimated_total_items": null,
+    "snapshot_revision": 8,
+    "configured_roots": 1,
+    "watched_roots": 1,
+    "watcher_ready": true,
+    "database_bytes": 939851776,
+    "wal_bytes": 346112,
+    "last_scan_duration_ms": null
+  },
+  "reported_error": false,
+  "reported_watcher_error": false,
+  "scope": "Counts/state only; personal paths and diagnostic text intentionally not exported",
+  "sample": {
+    "seconds": 30.000270274002105,
+    "one_core_cpu_percent": 0.23333123122114405,
+    "pid": 885280,
+    "binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+    "scope": "Bounded30seconds under concurrent QA host load; no sustained-idle inference"
+  }
+}

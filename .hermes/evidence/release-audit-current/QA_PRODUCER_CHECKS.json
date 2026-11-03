@@ -1,0 +1,12 @@
+{
+  "status": "pass33 focused QA producer checks and27 native packaged workflow checks",
+  "source_sha256": {
+    "scripts/linux-desktop-qa.py": "c1ecd06bd3e836d5b0b320b3a644db740a138831a15ba60ab30e9d3e5b6a577e",
+    "scripts/tests/test_linux_desktop_qa.py": "664188bba1880103907b691d43a51d1f2b30fe7ce1137e07318cfb761befb537",
+    ".hermes/evidence/release-audit-current/linux-workflow.py": "8d47403ec0fb28e589ec2e5a9ead95ca37d1d62a7e9a9e42a5af9bb670ee2b4a"
+  },
+  "local_test_log": "QA_PRODUCER_TESTS.log",
+  "native_workflow": "cohort/LINUX_WORKFLOW_ACCEPTANCE.json",
+  "collision_guard": "EVIDENCE_COLLISION_GUARD.json",
+  "scope": "QA-only source changes; shipping Rust code/dependencies/assets unchanged from delivered7d. Full hosted runtime-source gates retain exact7d source receipt."
+}

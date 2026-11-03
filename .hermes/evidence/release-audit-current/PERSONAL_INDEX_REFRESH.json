@@ -1,0 +1,20 @@
+{
+  "status": "pass supported personal service refresh to exact delivered daemon; saved preferences unchanged",
+  "before": {
+    "pid": 262779,
+    "daemon_sha256": "1d329af9a04d2d122fc0558a2d06d0f922173df6ca1a90e9c37f3d7af4413399",
+    "config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+    "wrapper_sha256": "adb5f46b824d3ebcac5d0f694f83559e90d0b98decbfc28f7fd6abdf8088be4d"
+  },
+  "expected_daemon_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "scope": "Existing personal service only; prior user authorization permits restart; no source file operation or personal configuration edit",
+  "after": {
+    "pid": 885280,
+    "process_name": "ottrin-indexd",
+    "daemon_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+    "config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "service_enabled": "enabled",
+    "service_state": "active"
+  }
+}

@@ -1,0 +1,12 @@
+()
+
+(process:880591): dbind-WARNING **: 10:52:05.919: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'
+XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)
+XGetWindowProperty[_NET_ACTIVE_WINDOW] failed (code=1)
+()
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 1486, in run_qa
+    assert actual_files == expected_files, "Workflow changed unexpected source or copied bytes"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Workflow changed unexpected source or copied bytes

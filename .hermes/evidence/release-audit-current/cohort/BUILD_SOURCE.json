@@ -2,11 +2,8 @@
   "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
   "purpose": "Deliver source-verified ordinary Column startup reveal; stable4a packages retained until focused exact-cohort acceptance",
-  "pending_consumers": [
-    "Package-content and runtime identity comparison",
-    "Exact staged no-location startup and focused native UI acceptance",
-    "Native Windows MSIX7 construction/update acceptance where changed",
-    "Stable promotion or explicit retirement after failed acceptance"
-  ],
-  "cleanup_owner": "release-audit-current; build failure removes owned stage, successful stage remains for the named current goal consumers"
+  "pending_consumers": [],
+  "cleanup_owner": "release-audit-current; build failure removes owned stage, successful stage remains for the named current goal consumers",
+  "cleanup_complete": true,
+  "delivery_status": "Verified7d Linux cohort promoted; staging removed"
 }

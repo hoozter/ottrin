@@ -1,0 +1,145 @@
+{
+  "status": "all cohort fixtures/staging/source/archive/baseline aliases retired after named consumers",
+  "native_cases": [
+    {
+      "case": "windows-startup",
+      "uuid": "3470973c-9eef-48f4-aa10-d8770f0afa96",
+      "owned_volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "case": "windows-startup-controls",
+      "uuid": "0ce5241f-45b7-4f89-b309-048d53199043",
+      "owned_volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "case": "windows-startup-viewport",
+      "uuid": "8f800fc8-8938-44a2-9aa8-33f303c8fb3a",
+      "owned_volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "case": "assembly",
+      "uuid": "af6f7e8c-44cf-4970-85b7-9b79e09b7ffb",
+      "owned_volumes_removed": [
+        "ottrin-msix-assembly.qcow2",
+        "ottrin-msix-assembly-fixture.iso"
+      ]
+    },
+    {
+      "case": "upgrade-enabled",
+      "uuid": "b06ab531-2a26-471b-a4c8-41a22010e598",
+      "owned_volumes_removed": []
+    },
+    {
+      "case": "upgrade-enabled-input",
+      "uuid": "50fe6a34-1cd0-4382-9552-fb48107f092f",
+      "owned_volumes_removed": [
+        "ottrin-msix-runtime.qcow2",
+        "ottrin-msix-runtime-fixture.iso"
+      ]
+    },
+    {
+      "case": "upgrade-enabled-console",
+      "uuid": "a4626d42-54d6-4225-88d6-daef4def8d49",
+      "owned_volumes_removed": [
+        "ottrin-msix-runtime.qcow2",
+        "ottrin-msix-runtime-fixture.iso"
+      ]
+    },
+    {
+      "case": "upgrade-disabled",
+      "uuid": "8c9cdaac-41fe-4417-be1e-a22037a40562",
+      "owned_volumes_removed": [
+        "ottrin-msix-runtime.qcow2",
+        "ottrin-msix-runtime-fixture.iso"
+      ]
+    }
+  ],
+  "native_volumes_removed": 14,
+  "private_profiles_removed": [
+    "/var/tmp/.ottrin-picker-qa-ekkclv20",
+    "/var/tmp/.ottrin-picker-qa-fprr_f_8",
+    "/var/tmp/.ottrin-picker-qa-buuj_dsq",
+    "/var/tmp/.ottrin-picker-qa-ldv4ay0a",
+    "/var/tmp/.ottrin-picker-qa-xxayf22m",
+    "/var/tmp/.ottrin-picker-qa-r74hg292",
+    "/var/tmp/.ottrin-picker-qa-bis85dby",
+    "/var/tmp/.ottrin-picker-qa-mfs0nst7",
+    "/var/tmp/.ottrin-picker-qa-fbpeoth_",
+    "/var/tmp/.ottrin-picker-qa-ib1znh9z",
+    "/var/tmp/.ottrin-picker-qa-zghb8n49",
+    "/var/tmp/.ottrin-picker-qa-q98es3jq",
+    "/var/tmp/.ottrin-picker-qa-zbtnuqxb",
+    "/var/tmp/.ottrin-picker-qa-h0mzfcct"
+  ],
+  "retired_paths": [
+    ".hermes/packaging-tmp/.linux-native-desktop-stage",
+    ".hermes/packaging-tmp/.linux-desktop-extract",
+    ".hermes/packaging-tmp/.windows-picker-stage",
+    ".hermes/packaging-tmp/.windows-msix-source",
+    ".hermes/packaging-tmp/.windows-candidate-retired",
+    ".hermes/evidence/release-audit-current/cohort/previous-input.msix",
+    ".hermes/evidence/release-audit-current/cohort/source.zip"
+  ],
+  "compiler_storage": {
+    "target/debug/deps": {
+      "baseline": 41448239104,
+      "current": 41448239104,
+      "delta": 0
+    },
+    "target/debug/incremental": {
+      "baseline": 22742679552,
+      "current": 22742679552,
+      "delta": 0
+    },
+    "target/x86_64-pc-windows-gnu/debug/deps": {
+      "baseline": 33280208896,
+      "current": 33280208896,
+      "delta": 0
+    },
+    "target/x86_64-pc-windows-gnu/debug/incremental": {
+      "baseline": 39227678720,
+      "current": 39227678720,
+      "delta": 0
+    },
+    "target/release/deps": {
+      "baseline": 4299321344,
+      "current": 4299317248,
+      "delta": -4096
+    },
+    "target/x86_64-pc-windows-gnu/release/deps": {
+      "baseline": 3769556992,
+      "current": 3769556992,
+      "delta": 0
+    }
+  },
+  "cargo_scope": "No Rust compilation in this continuation; no new Cargo configuration, test executable, fingerprint or incremental session generated. Existing shared/current caches preserved. Prior exact incremental cleanup remains separately receipted.",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current",
+      "purpose": "Compact acceptance/failure receipts, source producers and original native product captures; retained evidence, no pending process"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current usable Linux four-format7d delivery"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current usable7d ZIP/NSIS/development MSIX7 and58-file payload"
+    }
+  ],
+  "personal_service": "Supported refresh intentionally retained as the normal user service, not a QA process. Saved preferences unchanged; exact delivered daemon verified.",
+  "protected_bases_preserved": {
+    "win11ltsc": "4e160378-2610-4072-b528-048e4c9f509e",
+    "ottrin-copy-cleanup-qa": "9b2e795f-fb04-4adb-95a7-8832f8894c67"
+  },
+  "no_public_release_or_notification_settings_changed": true
+}

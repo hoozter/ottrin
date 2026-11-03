@@ -1,0 +1,6 @@
+()
+
+(process:873094): dbind-WARNING **: 10:39:03.264: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'
+XGetWindowProperty[_NET_WM_DESKTOP] failed (code=1)
+XGetWindowProperty[_NET_ACTIVE_WINDOW] failed (code=1)
+()

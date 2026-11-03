@@ -1,0 +1,42 @@
+{
+  "status": "removed exact unused console observations",
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup/observed-desktop.png",
+      "bytes": 9083,
+      "sha256": "794e304b22dab6b5b93604bc86e85055b7e903ec144620cf4540a34c1ac08fbe",
+      "reason": "Superseded console observation; actual native acceptance/failure captures and desktop readiness proof retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup/desktop-after-escape.png",
+      "bytes": 1190070,
+      "sha256": "3fb6bcff8d202fc9593440d7353d205fc96fcbaaa818b1eca08cae2841a9f2c2",
+      "reason": "Superseded console observation; actual native acceptance/failure captures and desktop readiness proof retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup/native-current.png",
+      "bytes": 597360,
+      "sha256": "b612b2da27e12f95f9affbc5983ba2b496c113091925b6702395c057886e83dd",
+      "reason": "Superseded console observation; actual native acceptance/failure captures and desktop readiness proof retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup-controls/readiness-observation.png",
+      "bytes": 26680,
+      "sha256": "230cb8dcfabb405744089d3fb321c3a3fb4bcec651b092911f2d544d942247a6",
+      "reason": "Superseded console observation; actual native acceptance/failure captures and desktop readiness proof retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup-controls/readiness-latest.png",
+      "bytes": 2513037,
+      "sha256": "4bb758a92a6650608a76bdd4290e4cbfaf7ed281527fab12963cec87f51ec3aa",
+      "reason": "Superseded console observation; actual native acceptance/failure captures and desktop readiness proof retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup-viewport/readiness-current.png",
+      "bytes": 1189578,
+      "sha256": "0ea54e81ca82680fd3d76391e5aead532a88a311401689a23b8ab797f2d56710",
+      "reason": "Superseded console observation; actual native acceptance/failure captures and desktop readiness proof retained"
+    }
+  ],
+  "retained": "Original native failure/success captures, desktop-ready and first-login evidence, current live fixture"
+}

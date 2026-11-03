@@ -1,0 +1,9 @@
+{
+  "status": "duplicate successful transport blob retired after raw members verified",
+  "raw_process_exit": 0,
+  "original_transport_sha256": "3383ab2e02de74e678033a992f86e46acd7b9e599c6336cb6496f725f94767eb",
+  "original_transport_bytes": 588460,
+  "compressed_bytes_removed": 419852,
+  "raw_result_members_retained": 47,
+  "member_receipt": "RESULT_MEMBERS.json"
+}

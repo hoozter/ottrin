@@ -5,21 +5,23 @@
     {
       "id": "U01",
       "requirement": "Preserve saved view mode across newly built/updated packages; startup must show the actual Home contents.",
-      "current_scope": "Exact staged Linux and installed Windows default Home startup accepted in both themes; actual MSIX6-to7 preference/update preservation remains pending.",
+      "current_scope": "Delivered clean7d Linux/Windows startup acceptance and actual MSIX6-to7 preference-preserving updates pass.",
       "evidence": [
         ".hermes/evidence/release-audit-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
-        ".hermes/evidence/release-audit-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json"
+        ".hermes/evidence/release-audit-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json",
+        ".hermes/evidence/release-audit-current/cohort/WINDOWS_DELIVERY.json"
       ]
     },
     {
       "id": "U02",
       "requirement": "Indexer must be quiet while idle, use its own process name, survive main-window closure when enabled, and start reliably without a first-launch readiness error.",
-      "current_scope": "Linux and Windows bounded resource evidence exists; service/persistence scopes must be checked individually against unchanged payload.",
+      "current_scope": "Actual personal service refreshed to exact delivered daemon, saved preferences unchanged; Ready167516 items/watcher ready and bounded30-second0.233% one-core observation. Synthetic Windows no-GUI resource receipts remain separately bound. Sustained workload scope is not inferred.",
       "evidence": [
         ".hermes/evidence/release-audit-current/WINDOWS_UNATTENDED_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
-        ".hermes/evidence/release-audit-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json"
+        ".hermes/evidence/release-audit-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json",
+        ".hermes/evidence/release-audit-current/PERSONAL_INDEX_AFTER_REFRESH.json"
       ]
     },
     {
@@ -61,8 +63,10 @@
     {
       "id": "U09",
       "requirement": "All menus have complete appropriate icons, compact gutters and consistent text/icon/check alignment.",
-      "current_scope": "Maintained development requirements exist; full current menu inventory/rendered audit pending.",
-      "evidence": []
+      "current_scope": "Current native Windows main/Inspector menus and Linux search-result menu directly reviewed with compact aligned icons. Remaining whole-interface/menu inventory still requires concentrated audit.",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/NATIVE_VISIBILITY_ACCEPTANCE.json"
+      ]
     },
     {
       "id": "U10",
@@ -97,19 +101,21 @@
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable4a retained while7d delivery gates run; CI3/4 passed with Windows verification live. No notification settings changed.",
+      "current_scope": "Clean7d delivered at stable Linux and Windows paths; all4 exact-runtime CI jobs pass. Current checkpoint will include QA-only producer/integrity/documentation changes; no public release or notification-policy change.",
       "evidence": [
         ".hermes/evidence/release-audit-current/cohort/BUILD_SOURCE.json",
+        ".hermes/evidence/release-audit-current/cohort/CI_CURRENT.json",
         ".hermes/evidence/release-audit-current/cohort/CI_CURRENT.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Prior cleanup plus completed Linux extraction retired; native fixtures/staging have explicit live consumers.",
+      "current_scope": "All cohort fixture VMs/volumes/profiles, source archives, staging and baseline aliases retired; current deliverables, compact evidence and useful compiler caches retained.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
-        ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json"
+        ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
+        ".hermes/evidence/release-audit-current/cohort/CLEANUP_FINAL.json"
       ]
     }
   ],

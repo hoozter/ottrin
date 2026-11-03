@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-fbpeoth_",
+  "owned_processes_reaped": [
+    {
+      "pid": 873006,
+      "exit": 0
+    },
+    {
+      "pid": 873009,
+      "exit": 0
+    },
+    {
+      "pid": 873012,
+      "exit": 15
+    },
+    {
+      "pid": 873094,
+      "exit": 143
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "143",
+  "profile_removed": true
+}

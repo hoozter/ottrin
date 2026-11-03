@@ -1,0 +1,7 @@
+{
+  "status": "pass existing evidence refused before allocation",
+  "existing_control_sha256": "f1e2be9b8d5459820cc1f31df665cdb5099383451ea3d3aaa46e3af86d4c7cc7",
+  "exit": 1,
+  "error": "FileExistsError",
+  "original_bytes_unchanged": true
+}

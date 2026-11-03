@@ -1,0 +1,22 @@
+{
+  "ACTOR.json": "e664884ca139e7033bd9fca7a5d4a53cababd182ece17a966e12e1ce6585e8c0",
+  "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+  "DEPLOYMENT.json": "2d7fd48a1cb57a61d99533999649378bf3177505cd473d5f1a883fdc4d72f122",
+  "DESKTOP_READY.json": "e7f51261c4fea54ae241941020680292925556be8947ec9c57db4e9428bc467f",
+  "DESKTOP_WAITING.json": "6340bf01d1d6961e3ad5015303b55908cb9e66ec8bf3ab498d06d07254668b66",
+  "disabled-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "disabled-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+  "index-status.json": "e6b365585bd1650ebc160d3165600dfded66e950d55d5819c3d080b4c29369ea",
+  "index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "reenable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "reenable.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+  "reenabled-index-status.json": "a7b2d34f725fd483216778714e9a3084848736f196d2390831f0a92abc27adc5",
+  "reenabled-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "RESULT.json": "872a09ac5f7543d60073b207ae91d4907150a06f055d588fc72d53ba704e2d5a",
+  "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+  "service-remove.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "service-remove.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+  "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+}

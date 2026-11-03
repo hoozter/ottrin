@@ -1,0 +1,246 @@
+{
+  "status": "completed unreferenced QA images retired",
+  "removed": [
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/readiness-current.png",
+      "bytes": 2513610,
+      "sha256": "cfb3f15a3b52afce9723856667346c7b49f6aeeb512e45dc0795fc44c8a1905f",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/privacy-accepted-4.png",
+      "bytes": 2513563,
+      "sha256": "0e855549252c430a0d0cc7670cb5ff237647a295954d9167aa4b0bfabd26cf3b",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/privacy-accepted-2.png",
+      "bytes": 198790,
+      "sha256": "dbbc125c5c4455caedb4bd9e36d43004f73ba3f5b986824baa06f19b2738cc94",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/privacy-accepted-0.png",
+      "bytes": 201473,
+      "sha256": "f3eb0db0f49e97f578849a8920e6e089cfad437ddd4121341081c0e5fad726de",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/privacy-accepted-3.png",
+      "bytes": 206502,
+      "sha256": "218717f3919ac211c4676987c789b68da1e3ea33e04ac8f186b8216b5a6538de",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/privacy-accepted-1.png",
+      "bytes": 194021,
+      "sha256": "80d09b3b5c56646ed457dc00fe287701be44c91932cef8cab5d393164fea7217",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/readiness-latest.png",
+      "bytes": 2135028,
+      "sha256": "6a81b97f2bb7047054da2066466f35fcaf689e6239afb8ae45c57c6829778097",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/readiness-current.png",
+      "bytes": 170564,
+      "sha256": "26d7f8108ec66ad119be7b22daea03c588c611152c5352b965929db6bdce155e",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/privacy-accepted-4.png",
+      "bytes": 2135028,
+      "sha256": "6a81b97f2bb7047054da2066466f35fcaf689e6239afb8ae45c57c6829778097",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/privacy-accepted-2.png",
+      "bytes": 176312,
+      "sha256": "6305ed522d405364241d5df9dc5d7b58f8f671a1c12c05efe93a547a112a30c9",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/privacy-accepted-0.png",
+      "bytes": 179356,
+      "sha256": "b8f7bfd6cc37a379b7ebfd6f1cbffb329e450382acb4108f1f5c9fc92ae4f456",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/privacy-accepted-3.png",
+      "bytes": 184362,
+      "sha256": "f70a18997f420d8112a9af9840966dd383684b1b1d61a67c69a629072b58acc9",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/privacy-accepted-1.png",
+      "bytes": 171590,
+      "sha256": "2078aaf6dddc4137bb7d0ab9dd685cdb28d7933cce16f15abf7f3001232485d5",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/readiness-current.png",
+      "bytes": 2135089,
+      "sha256": "21baf4b68d49e029d3eda250ac9d809d3521715749279417f12363ad3334b7f2",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/privacy-accepted-4.png",
+      "bytes": 2135020,
+      "sha256": "f50cc8fa73667cafebbc41d4a6a446292b9a90dcd718754de10d1bfd9c031c47",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/privacy-accepted-2.png",
+      "bytes": 176220,
+      "sha256": "3a342d5bbe21bebccbc400dffc0634c8efe33e0bf1c7b27695493b15c2afa6ae",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/privacy-accepted-0.png",
+      "bytes": 179314,
+      "sha256": "ca4fe568e8ebb18fd6f8ddc716285441e141307e41526cc9ca700aff3a8d0033",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/privacy-accepted-3.png",
+      "bytes": 184306,
+      "sha256": "5317798bf3ca6806140d984a597628d4e77890d2bfb837f2df1cb7a34ea78788",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/privacy-accepted-1.png",
+      "bytes": 171605,
+      "sha256": "2bebb8f43139cc50af5963fd05c17a1214a8b2b66c717f6e9a5bd8cd28356fc9",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup/privacy-accepted-2.png",
+      "bytes": 183361,
+      "sha256": "3bc403eb6d63e62b26c4bbb0f6c80867058d9ee4dc5691ae40eb03086f095d22",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup/privacy-accepted-0.png",
+      "bytes": 178338,
+      "sha256": "c86748579d510b919eaee72ef98b5643ee21104d30ee29598bf5e08ec1adbd69",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup/privacy-accepted-3.png",
+      "bytes": 1189660,
+      "sha256": "dc180acc5b0bf9dd849e0667a41170f6a352af6e7b89e14a6dbf21417fa2f3ef",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup/privacy-accepted-1.png",
+      "bytes": 175334,
+      "sha256": "4b0627a70e11a0a2a141b2a895e0f05904584a9745e9d9e5b7ab2acffd126d3a",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-controls/privacy-accepted-2.png",
+      "bytes": 205652,
+      "sha256": "b9ce23954037998a4bcbeadea03f148f216110cf6974d1b5146c56692ac80e32",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-controls/privacy-accepted-0.png",
+      "bytes": 200634,
+      "sha256": "0f9a7e89aaf0a7fd0708c0752844ac8c7193e365ad73876d871d9a8cef63f0b9",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-controls/privacy-accepted-3.png",
+      "bytes": 1607278,
+      "sha256": "f9ba5ae60dafdc177d30923e7d5de51d2a91db0a4c61b300c9ea97480db198ab",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-controls/privacy-accepted-1.png",
+      "bytes": 197964,
+      "sha256": "ddeaecda865480abe0aacd6ec75954f90a868d59002e1b2c943f64d0b9aacc64",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/privacy-accepted-2.png",
+      "bytes": 183384,
+      "sha256": "0a5b5c23fd9e15753567f71831ccc9bb49b9ea759699b4616952f9f7b9143946",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/privacy-accepted-0.png",
+      "bytes": 178333,
+      "sha256": "c0d8a573ad47f1cee98356166107f5cccd2277915706f8fa3692e90e247055d9",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/privacy-accepted-3.png",
+      "bytes": 1189578,
+      "sha256": "0ea54e81ca82680fd3d76391e5aead532a88a311401689a23b8ab797f2d56710",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/privacy-accepted-1.png",
+      "bytes": 175272,
+      "sha256": "cd1a29bcb95bc303024c8a5f0ebe860f16fbb8f357fdf52ce524d604042ccb54",
+      "reason": "Completed unreferenced readiness observation; actual desktop-ready, identity and native product captures retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/06-quick-inspector-image.png",
+      "bytes": 21541,
+      "sha256": "8a594396b944b51db849b3b98ace88c451297ecfb9232c063cc02064506458c8",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/01a-search-result-context.png",
+      "bytes": 91935,
+      "sha256": "88f4251c769c0c637d3e2f426962bc8a3c4e4c5d51dbd68c368cb7ef854b9ee2",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/01-miller-documents.png",
+      "bytes": 65702,
+      "sha256": "a1ae086c1c83d0243829876937da9a0ccfc51c0db3b14462d75705dc28d66753",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/02-list-documents.png",
+      "bytes": 87790,
+      "sha256": "6647b6ab163e812cb58987d20639838b8947226d18f949e3fc44d4ecea0741fb",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/07-quick-inspector-pdf.png",
+      "bytes": 18629,
+      "sha256": "175b424b3aaaaa0b77ba43349edba3d97503864c10c3d3f3e9beb0c86d6aa436",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/04-copy-result.png",
+      "bytes": 33920,
+      "sha256": "658ef2781e76ad6c6bf5f7dbae474f6cd850489164e82df51c079b4f168df59d",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/05-quick-inspector-text.png",
+      "bytes": 22854,
+      "sha256": "c4af23ca053c991e56db7cd8ab09822db209be4391d6d8c20e5fb1454aba6125",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/01a-search-result.png",
+      "bytes": 78854,
+      "sha256": "24c58680863f56c0b5f6a1d694402bb5935df638c3820b7e673fea4904f14678",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    },
+    {
+      "path": ".hermes/evidence/release-audit-current/linux-evidence-root-cancelled/03-grid-documents.png",
+      "bytes": 49405,
+      "sha256": "e27bade82ff6c4e19aaedece6ef9a45bde8b3c75eb82ef3923d744e04dbaba5d",
+      "reason": "Cancelled partial workflow; full same-artifact27-check workflow and original21 captures accepted; cancellation and teardown retained"
+    }
+  ],
+  "removed_bytes": 22097171
+}
