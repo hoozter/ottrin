@@ -1,0 +1,285 @@
+{
+  "status": "confirmed native Windows defect; U07 remains open",
+  "source_revision": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "installer_sha256": "12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd",
+  "native_cases": 6,
+  "configuration_boundary": {
+    "requested": [
+      0,
+      32
+    ],
+    "ui_supported_range": [
+      0,
+      24
+    ],
+    "effective_runtime": [
+      0,
+      24
+    ],
+    "reason": "theme_colors::Colors::custom clamps custom.app_radius to0..24 before painting;32 deliberately also checks saved out-of-range input handling, and must never be described as a supported32px rendered radius"
+  },
+  "observed": "All three real windows change painted border curvature with radius, but outside-arc corner pixels remain opaque application-colored rectangles instead of showing the underlying desktop/window. Native GetWindowRgn reports no explicit region in all6cases. Shared rounded stroke is insufficient for native window shape.",
+  "source_explanation": {
+    "viewport_clear_color": "Windows uses opaque background",
+    "rounded_alpha_callback_enabled": "false onWindows",
+    "paint_viewport_frame": "only curved stroke onWindows; Linux alpha mask skipped"
+  },
+  "captures": [
+    {
+      "window": "main",
+      "captures": [
+        {
+          "requested_radius": 0,
+          "effective_radius": 0,
+          "path": ".hermes/evidence/windows-window-radius-current/native/results/main-0.png",
+          "sha256": "ce032ba8325d42822f1cdaa602061f2b21ba945f107854085ccf15d65ed1a6c5",
+          "size": [
+            1100,
+            752
+          ],
+          "top_left_rgb": {
+            "(0, 0)": [
+              52,
+              55,
+              60
+            ],
+            "(1, 1)": [
+              30,
+              32,
+              35
+            ],
+            "(2, 2)": [
+              30,
+              32,
+              35
+            ],
+            "(6, 6)": [
+              25,
+              26,
+              29
+            ],
+            "(12, 12)": [
+              25,
+              26,
+              29
+            ]
+          },
+          "original_directly_reviewed": true
+        },
+        {
+          "requested_radius": 32,
+          "effective_radius": 24,
+          "path": ".hermes/evidence/windows-window-radius-current/native/results/main-32.png",
+          "sha256": "29253cd38dd3f89b422440aee96b9e6eedd61304028a17de2c805cbaaff90078",
+          "size": [
+            1100,
+            752
+          ],
+          "top_left_rgb": {
+            "(0, 0)": [
+              30,
+              32,
+              35
+            ],
+            "(1, 1)": [
+              30,
+              32,
+              35
+            ],
+            "(2, 2)": [
+              30,
+              32,
+              35
+            ],
+            "(6, 6)": [
+              25,
+              26,
+              29
+            ],
+            "(12, 12)": [
+              25,
+              26,
+              29
+            ]
+          },
+          "original_directly_reviewed": true
+        }
+      ]
+    },
+    {
+      "window": "settings",
+      "captures": [
+        {
+          "requested_radius": 0,
+          "effective_radius": 0,
+          "path": ".hermes/evidence/windows-window-radius-current/native/results/settings-0.png",
+          "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0",
+          "size": [
+            920,
+            640
+          ],
+          "top_left_rgb": {
+            "(0, 0)": [
+              52,
+              55,
+              60
+            ],
+            "(1, 1)": [
+              30,
+              32,
+              35
+            ],
+            "(2, 2)": [
+              30,
+              32,
+              35
+            ],
+            "(6, 6)": [
+              30,
+              32,
+              35
+            ],
+            "(12, 12)": [
+              30,
+              32,
+              35
+            ]
+          },
+          "original_directly_reviewed": true
+        },
+        {
+          "requested_radius": 32,
+          "effective_radius": 24,
+          "path": ".hermes/evidence/windows-window-radius-current/native/results/settings-32.png",
+          "sha256": "9d58fd119d194f24fcc7d560b4b555f516f661454faa481b3d15490359ee6f71",
+          "size": [
+            920,
+            640
+          ],
+          "top_left_rgb": {
+            "(0, 0)": [
+              23,
+              24,
+              27
+            ],
+            "(1, 1)": [
+              30,
+              32,
+              35
+            ],
+            "(2, 2)": [
+              30,
+              32,
+              35
+            ],
+            "(6, 6)": [
+              30,
+              32,
+              35
+            ],
+            "(12, 12)": [
+              30,
+              32,
+              35
+            ]
+          },
+          "original_directly_reviewed": true
+        }
+      ]
+    },
+    {
+      "window": "inspector",
+      "captures": [
+        {
+          "requested_radius": 0,
+          "effective_radius": 0,
+          "path": ".hermes/evidence/windows-window-radius-current/native/results/inspector-0.png",
+          "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa",
+          "size": [
+            720,
+            560
+          ],
+          "top_left_rgb": {
+            "(0, 0)": [
+              52,
+              55,
+              60
+            ],
+            "(1, 1)": [
+              30,
+              32,
+              35
+            ],
+            "(2, 2)": [
+              30,
+              32,
+              35
+            ],
+            "(6, 6)": [
+              30,
+              32,
+              35
+            ],
+            "(12, 12)": [
+              30,
+              32,
+              35
+            ]
+          },
+          "original_directly_reviewed": true
+        },
+        {
+          "requested_radius": 32,
+          "effective_radius": 24,
+          "path": ".hermes/evidence/windows-window-radius-current/native/results/inspector-32.png",
+          "sha256": "ee3c708b4adec3d4ac72dbdb07065211edab8204e9147cf8e96ead20f2be7aa8",
+          "size": [
+            720,
+            560
+          ],
+          "top_left_rgb": {
+            "(0, 0)": [
+              23,
+              24,
+              27
+            ],
+            "(1, 1)": [
+              30,
+              32,
+              35
+            ],
+            "(2, 2)": [
+              30,
+              32,
+              35
+            ],
+            "(6, 6)": [
+              30,
+              32,
+              35
+            ],
+            "(12, 12)": [
+              30,
+              32,
+              35
+            ]
+          },
+          "original_directly_reviewed": true
+        }
+      ]
+    }
+  ],
+  "fixture_controls": {
+    "ordinary_owned_user": true,
+    "native_renderer": true,
+    "software_vm_default_dpi": 96,
+    "source_and_preferences_preserved": true,
+    "supported_uninstall": true,
+    "owned_processes_remaining": 0,
+    "original_controller_terminated": 143,
+    "same_guest_actor_recovered_without_restart": true,
+    "desktop_readiness": "Original private console directly reviewed; ownership-checked readiness signal after nativeEscape; no Windows policy or security bypass"
+  },
+  "next": "Implement actual Windows native window clipping/shape at the shared viewport boundary; verify all intended windows and renderer/resize/maximize behavior before packaging. Do not claim this fixed or require owner hardware before software correction.",
+  "scope_limit": "No editor/picker/radius live-change or physical compositor acceptance claimed; native no-region alone is not failure proof, combined opaque-pixel/rendering evidence is."
+}

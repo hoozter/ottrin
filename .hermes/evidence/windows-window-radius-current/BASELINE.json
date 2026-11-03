@@ -1,0 +1,26 @@
+{
+  "source": "b18f7b48927545c947140592b1f14b4dc9104348",
+  "created_utc": "2026-11-03T18:36:43.221804+00:00",
+  "purpose": "Native0/32radius measurement across actual installed main Settings Inspector; no source build or package changes; owned VM teardown registered by canonical cohort client before allocation",
+  "storage_baseline": {
+    "target/debug/deps": 41440964965,
+    "target/debug/incremental": 22658905319,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292031625,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438437229
+  },
+  "radius_probe_boundary": {
+    "requested": [
+      0,
+      32
+    ],
+    "ui_supported_range": [
+      0,
+      24
+    ],
+    "effective_runtime": [
+      0,
+      24
+    ],
+    "reason": "theme_colors::Colors::custom clamps custom.app_radius to0..24 before painting;32 deliberately also checks saved out-of-range input handling, and must never be described as a supported32px rendered radius"
+  }
+}

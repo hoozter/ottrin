@@ -1,0 +1,20 @@
+{
+  "removed": [
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/RESULTS.zip",
+      "bytes": 179678,
+      "sha256": "18a2e481962f5920765d55f0e4b0550697b6b8d103e8f825cbb16f86d7119a88"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/controller.ps1",
+      "bytes": 4866,
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+    },
+    {
+      "path": ".hermes/evidence/windows-window-radius-current/native/privacy-accepted-0.png",
+      "bytes": 1211919,
+      "sha256": "28056af3f2da627dfeabda2b07a8d00738be17b0e51e7cd6e39f820e1234a9f8"
+    }
+  ],
+  "reason": "Same native actor terminal; all transport members extracted byte-equal;6originalapplicationcaptures directly reviewed; private desktop readiness retained separately; consumed credential-bearing generated controller never published"
+}

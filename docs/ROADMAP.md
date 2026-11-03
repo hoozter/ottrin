@@ -69,8 +69,15 @@ has actual Linux FileManager1 methods/default restoration/Dolphin preservation a
 all five native Windows menu/default dispatches, repair and supported uninstall
 preservation evidence. Current appearance mapping/draft/preview functions and
 semantic roles remain byte-identical to the original 39-control Linux acceptance.
-Complete native Windows window-radius behavior, remaining service states/prompt
-acceptance and whole-interface scope still require explicit audit. No universal
+Native installed Windows radius comparison now confirms a defect: main, Settings
+and Inspector paint rounded borders while the outside corners remain opaque.
+Six original captures and native region/pixel observations are recorded in
+`windows-window-radius-current/NATIVE_RADIUS_ASSESSMENT.json`; U07 remains open.
+All six captures were reviewed, the same guest actor completed normal close and
+supported uninstall with source/preferences intact, and its VM, both volumes,
+private desktop/profile and consumed transport were removed. No correction or
+new package is claimed. Remaining service states/prompt acceptance and whole-interface
+scope still require explicit audit. No universal
 Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
@@ -96,6 +103,9 @@ Continue in this order:
    Current navigation/filename/focus delivery is complete at the scoped52 native
    checks; do not infer whole-interface acceptance from it. Verify the remaining
    Windows window-radius/platform behavior, service states/prompt and menu families.
+   Next appearance implementation: correct the confirmed opaque Windows corners
+   at the shared viewport boundary; test all intended windows, live radius changes,
+   resizing/maximizing and both supported renderers before publishing replacements.
 3. Close independently executable picker, Linux FileChooser/FileManager1 and
    reversible Windows folder-integration software/caller gaps. Retain supported
    caller/platform boundaries; Windows cooperating-picker checks do not establish

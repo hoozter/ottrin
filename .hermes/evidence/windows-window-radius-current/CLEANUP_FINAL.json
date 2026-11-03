@@ -1,0 +1,47 @@
+{
+  "status": "owned fixture cleanup complete",
+  "vm": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_desktop": {
+    "canonical_vm_cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    },
+    "private_profile_removed": "/var/tmp/.ottrin-picker-qa-sgag_30f",
+    "owned_processes_stopped": [
+      1158124,
+      1158127,
+      1158128,
+      1158131,
+      1158138,
+      1158143,
+      1158154,
+      1158165,
+      1158175,
+      1158178
+    ],
+    "current_packages_preserved": true
+  },
+  "no_builds_or_new_target_configuration": true,
+  "retained_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-window-radius-current",
+      "purpose": "Compact native defect evidence,6originals, frozen actor and recovery/cleanup records",
+      "pending_consumer": "Shared native Windows viewport shape correction and regression acceptance"
+    }
+  ]
+}

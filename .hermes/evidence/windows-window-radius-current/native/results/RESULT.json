@@ -1,0 +1,66 @@
+{
+    "source_preserved":  true,
+    "remaining_owned_installed_processes":  0,
+    "package":  {
+                    "source_revision":  "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "12385c02fe484c0c8a68d0193bc146d7d2f87ddf8bafb1c5b4570ff893b78ddd"
+                                  }
+                              ],
+                    "actor_sha256":  "887ddec864881138c8554b5f78c04bdd6a7f3bd54cdee7132e31d1f41f6c50bb",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "phase":  "supported uninstall",
+    "scope":  "Exact installed Windows main Settings and Inspector window radius0/32 comparison; captures and native region report, not acceptance of actual theme compliance",
+    "cases":  [
+                  {
+                      "radius":  0,
+                      "case":  "main",
+                      "native_region":  "kind=0 point1=False point12=False",
+                      "capture":  "main-0.png",
+                      "geometry":  "client=1100x752 origin=0,0 dpi=96"
+                  },
+                  {
+                      "radius":  0,
+                      "case":  "settings",
+                      "native_region":  "kind=0 point1=False point12=False",
+                      "capture":  "settings-0.png",
+                      "geometry":  "client=920x640 origin=0,0 dpi=96"
+                  },
+                  {
+                      "radius":  0,
+                      "case":  "inspector",
+                      "native_region":  "kind=0 point1=False point12=False",
+                      "capture":  "inspector-0.png",
+                      "geometry":  "client=720x560 origin=0,0 dpi=96"
+                  },
+                  {
+                      "radius":  32,
+                      "case":  "main",
+                      "native_region":  "kind=0 point1=False point12=False",
+                      "capture":  "main-32.png",
+                      "geometry":  "client=1100x752 origin=0,0 dpi=96"
+                  },
+                  {
+                      "radius":  32,
+                      "case":  "settings",
+                      "native_region":  "kind=0 point1=False point12=False",
+                      "capture":  "settings-32.png",
+                      "geometry":  "client=920x640 origin=0,0 dpi=96"
+                  },
+                  {
+                      "radius":  32,
+                      "case":  "inspector",
+                      "native_region":  "kind=0 point1=False point12=False",
+                      "capture":  "inspector-32.png",
+                      "geometry":  "client=720x560 origin=0,0 dpi=96"
+                  }
+              ],
+    "status":  "pass native installed radius comparison execution; captures require review and compliance assessment",
+    "preferences_preserved":  true,
+    "named_fields":  [
+
+                     ]
+}

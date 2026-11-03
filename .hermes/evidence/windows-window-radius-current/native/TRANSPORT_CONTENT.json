@@ -1,0 +1,61 @@
+{
+  "archive_sha256": "18a2e481962f5920765d55f0e4b0550697b6b8d103e8f825cbb16f86d7119a88",
+  "members": [
+    {
+      "name": "DESKTOP_READY.json",
+      "sha256": "c84e41f55e160871c9b0b825472df10a1affa9d35997953c69d6fbda810e180d",
+      "bytes": 280
+    },
+    {
+      "name": "index-remove-process.json",
+      "sha256": "2cf36616345e3bb39949eae119a0b38ed0b6aa9fff7d9151d094639f6340afe5",
+      "bytes": 248
+    },
+    {
+      "name": "inspector-0.png",
+      "sha256": "9b8f724d7c3cc6dcbecb5f27fa09a2a5f513c91c6031d9336984e8ea10542aaa",
+      "bytes": 16458
+    },
+    {
+      "name": "inspector-32.png",
+      "sha256": "ee3c708b4adec3d4ac72dbdb07065211edab8204e9147cf8e96ead20f2be7aa8",
+      "bytes": 17479
+    },
+    {
+      "name": "install-process.json",
+      "sha256": "ccd3a98a50cc622ee8867945c0924965f86d01723a84cdf71af6756dbcfd03a7",
+      "bytes": 97
+    },
+    {
+      "name": "main-0.png",
+      "sha256": "ce032ba8325d42822f1cdaa602061f2b21ba945f107854085ccf15d65ed1a6c5",
+      "bytes": 29390
+    },
+    {
+      "name": "main-32.png",
+      "sha256": "29253cd38dd3f89b422440aee96b9e6eedd61304028a17de2c805cbaaff90078",
+      "bytes": 30391
+    },
+    {
+      "name": "RESULT.json",
+      "sha256": "167ecd8ed7b9971c41133fd7e7e6b055236c0c4a635d17f4932fe5557f14b2c4",
+      "bytes": 3335
+    },
+    {
+      "name": "settings-0.png",
+      "sha256": "c139228f06e5e5fb112cc767e60958163fb3fbee92df925576469b03c459e3c0",
+      "bytes": 55720
+    },
+    {
+      "name": "settings-32.png",
+      "sha256": "9d58fd119d194f24fcc7d560b4b555f516f661454faa481b3d15490359ee6f71",
+      "bytes": 56711
+    },
+    {
+      "name": "uninstall-process.json",
+      "sha256": "0b8a7d80f0ada59220a2761aab42214ce2fa3e9c36974d8719b31caf61fd7ac2",
+      "bytes": 97
+    }
+  ],
+  "all_members_extracted_equal": true
+}

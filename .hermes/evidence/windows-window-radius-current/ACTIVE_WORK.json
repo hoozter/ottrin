@@ -1,0 +1,47 @@
+{
+  "updated_utc": "2026-11-03T18:43:40.651372+00:00",
+  "previous_goal_turn_classification": "progress: completed6native installed Windows radius comparisons; confirmed actual opaque-corner defect; preservedsource/prefs and removedallownedVM/media/profile/transport. Sameguestactorrecovered withoutrelaunch afterhostcontrollerexit143.",
+  "goal_status": "active; fullobjective not achieved",
+  "current_runtime_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
+  "no_runtime_or_package_change_this_checkpoint": true,
+  "live_ci": {
+    "id": 41693567945,
+    "source": "b18f7b48927545c947140592b1f14b4dc9104348",
+    "status": "in_progress",
+    "conclusion": "",
+    "jobs": [
+      {
+        "name": "search-performance (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "verify (windows-latest)",
+        "status": "in_progress",
+        "conclusion": ""
+      },
+      {
+        "name": "verify (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "search-performance (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "next": [
+    "Correct confirmedWindowsnativewindowshape insharedviewportboundary and verify beforedelivery",
+    "Finish samehostedtest-onlyCIrun; do not restartfromelapsedtime",
+    "Continuefull54+15requirementaudit includingservicesprompt/states andmenufamilies"
+  ],
+  "retained_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-window-radius-current",
+      "purpose": "Compact native defect evidence,6originals, frozen actor and recovery/cleanup records",
+      "pending_consumer": "Shared native Windows viewport shape correction and regression acceptance"
+    }
+  ]
+}
