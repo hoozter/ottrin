@@ -1,0 +1,7 @@
+{
+  "status": "superseded; no owned job/session/fixture remains",
+  "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
+  "replacement_evidence": ".hermes/evidence/file-row-focus-current",
+  "cleanup": "CLEANUP_FINAL.json",
+  "hosted_ci_note": "41672693221 may still run independently on GitHub; inspect exact hosted status, never treat this ledger as liveness proof"
+}

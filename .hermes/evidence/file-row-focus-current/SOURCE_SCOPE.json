@@ -1,0 +1,20 @@
+{
+  "status": "pass source regression/full UI/strict native and Windows lint; fresh native package acceptance pending",
+  "source_before": "7c88524a",
+  "source_sha256": "6a82dd54ac4f5f4cf8cfc74981fbf809b777720556bc94eb781d786a4955ee0b",
+  "change": "File shortcut ownership inspects the focused TextEdit state rather than egui wants_keyboard_input, which also reports native focused file-row buttons. Existing command/preview/search/address/menu/picker barriers remain. Closed filename dialogs still surrender their own text focus.",
+  "negative": "focused-row-negative.log: actual shared production row receives native AccessKit Focus, then Ctrl+A is wrongly blocked; source bytes retained",
+  "positive": "focused-row-positive.log: Ctrl+A/F2/Delete work for a native focused file row and remain blocked for active text/search/Inspector/command/address ownership; Delete still only requests confirmation",
+  "checks": "471 UI pass,1existing ignored; strict native and GNU Windows UI/app all-target lint, formatting pass",
+  "native_failure_basis": ".hermes/evidence/file-dialog-focus-current/windows-native-ui/GUEST_RESULT.json",
+  "pending_consumers": [
+    "Commit clean final source",
+    "Build6 formats then actual MSIX10 assembly",
+    "Native Linux and installed Windows focus/navigation/geometry; fresh original captures",
+    "Exact-source hosted gates then guarded stable publication and final cleanup"
+  ],
+  "limits": [
+    "Current native failure is not accepted or relabelled as a pass",
+    "Existing stable7 runtime36 artifacts preserved; all6 unpublished4b0 candidates and unused source archive retired"
+  ]
+}

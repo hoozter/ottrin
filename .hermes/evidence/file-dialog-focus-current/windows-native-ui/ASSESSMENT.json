@@ -1,0 +1,23 @@
+{
+  "status": "failed installed native UI gate; do not publish cohort",
+  "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
+  "artifact_sha256": "dd2ad07532bbb26bc01a5eca94ebf71986f1753199c3400920a7e063455518e5",
+  "completed_cases": 2,
+  "error": "Missing unique New name count=0",
+  "selection": {
+    "states": [
+      "On"
+    ],
+    "elapsed_ms": 405.8064,
+    "theme": "Dark"
+  },
+  "directly_reviewed_originals": {
+    "missing-control.png": "9a2bc328dd01992f180c93a4cf84aeef643f5c2d4e72d7187d5a23fd147b237e",
+    "Dark-File.png": "638090a24e309342d964aa650688e0e948bc8aa010f407e759c41e18692dec5f",
+    "Dark-Folder.png": "92490507b39889f2225d95cef5317439dc7f82f3ef4c7a41e4eeb54eb8a5de4b"
+  },
+  "review": "Actual File/Folder input captures correctly centred; failure original shows selected preserve.txt with no Rename dialog. Selection is native Toggle On after405.8ms. No Light/navigation/uninstall acceptance inferred.",
+  "source_regression": ".hermes/evidence/file-row-focus-current/focused-row-negative.log",
+  "correction_evidence": ".hermes/evidence/file-row-focus-current/SOURCE_SCOPE.json",
+  "cleanup": "OWNER.json proves domain/2volumes/private fixture removed; transport/controller retired, raw result/actor/driver/captures retained"
+}

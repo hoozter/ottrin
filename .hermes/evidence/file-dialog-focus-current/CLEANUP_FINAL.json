@@ -1,0 +1,26 @@
+{
+  "status": "superseded unpublished; all owned runtime/transport/staging cleaned",
+  "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
+  "linux_sessions": {
+    "count": 2,
+    "profiles_removed": true,
+    "receipt": "LINUX_NATIVE_ACCEPTANCE.json"
+  },
+  "windows_fixture": {
+    "count": 1,
+    "domain_removed": true,
+    "owned_volumes_removed": 2,
+    "fixture_removed": true,
+    "receipt": "windows-native-ui/OWNER.json"
+  },
+  "stages_and_source": "SUPERSEDED_COHORT.json",
+  "consumed_extraction": "EXTRACTION_OWNER.json",
+  "compiler_cleanup": "INCREMENTAL_CLEANUP_RESULT.json; subsequent focused-row checks belong to file-row-focus-current baseline/cleanup owner",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-dialog-focus-current",
+      "purpose": "Compact producers, original source/native evidence and immutable failure records; no pending runtime consumer"
+    }
+  ],
+  "protected": "Stable7 package hashes reverified; user data and protected VM bases preserved"
+}

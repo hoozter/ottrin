@@ -8713,9 +8713,15 @@ impl OttrinApp {
 
         // Text widgets and the Inspector own their input; file actions must
         // not also operate on the selection underneath them.
+        // egui's wants_keyboard_input includes focused buttons. A native
+        // accessibility action can focus a file row, which still owns file
+        // shortcuts; only an actual TextEdit should claim them for text.
+        let text_input_focused = ctx
+            .memory(|memory| memory.focused())
+            .is_some_and(|id| egui::TextEdit::load_state(ctx, id).is_some());
         let file_shortcuts_allowed = !(self.command_frame.visible
             || self.preview.visible
-            || ctx.wants_keyboard_input()
+            || text_input_focused
             || self.sidebar == SidebarSection::Search && self.search_ui.input_focused);
         // winit emits clipboard events, not C/X/V key presses.
         if file_shortcuts_allowed {
@@ -28150,12 +28156,76 @@ mod tests {
 
     #[test]
     fn file_shortcuts_respect_input_ownership() {
-        for owner in ["files", "search", "text", "inspector", "command", "address"] {
+        for owner in [
+            "files",
+            "file-row",
+            "search",
+            "text",
+            "inspector",
+            "command",
+            "address",
+        ] {
             for key in [Key::A, Key::F2, Key::Delete] {
                 let (_root, mut app, source) = clipboard_keyboard_fixture();
                 app.state.active_tab_mut().view_mode = ViewMode::List;
                 let ctx = Context::default();
                 match owner {
+                    "file-row" => {
+                        ctx.enable_accesskit();
+                        let entry = app
+                            .active_selected_entry_for(app.state.active_tab().id)
+                            .unwrap();
+                        let mut row_id = None;
+                        let _ = ctx.run(Default::default(), |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                row_id = Some(
+                                    app.render_file_row(
+                                        ui,
+                                        &entry,
+                                        true,
+                                        true,
+                                        false,
+                                        0,
+                                        400.0,
+                                        &app.colors,
+                                    )
+                                    .id,
+                                );
+                            });
+                        });
+                        let row_id = row_id.unwrap();
+                        let _ = ctx.run(
+                            egui::RawInput {
+                                events: vec![egui::Event::AccessKitActionRequest(
+                                    egui::accesskit::ActionRequest {
+                                        action: egui::accesskit::Action::Focus,
+                                        target: row_id.value().into(),
+                                        data: None,
+                                    },
+                                )],
+                                ..Default::default()
+                            },
+                            |ctx| {
+                                egui::CentralPanel::default().show(ctx, |ui| {
+                                    app.render_file_row(
+                                        ui,
+                                        &entry,
+                                        true,
+                                        true,
+                                        false,
+                                        0,
+                                        400.0,
+                                        &app.colors,
+                                    );
+                                });
+                            },
+                        );
+                        assert!(ctx.memory(|memory| memory.has_focus(row_id)));
+                        assert!(
+                            ctx.wants_keyboard_input(),
+                            "egui also reports button focus as keyboard input"
+                        );
+                    }
                     "search" => {
                         app.sidebar = SidebarSection::Search;
                         app.search_ui.input_focused = true;
@@ -28206,7 +28276,11 @@ mod tests {
                     Key::Delete => app.pending_delete.is_some(),
                     _ => unreachable!(),
                 };
-                assert_eq!(invoked, owner == "files", "{key:?} belongs to {owner}");
+                assert_eq!(
+                    invoked,
+                    matches!(owner, "files" | "file-row"),
+                    "{key:?} belongs to {owner}"
+                );
                 assert!(
                     source.exists(),
                     "keyboard handling must not bypass confirmation"

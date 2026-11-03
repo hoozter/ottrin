@@ -1,0 +1,51 @@
+{
+  "archive_sha256": "484e4a8b1b2afe8e30443ae485fcf5ca95ef628aac8a5d02bd82b7ffc244b688",
+  "members": [
+    {
+      "member": "cleanup-index-remove-process.json",
+      "bytes": 171,
+      "sha256": "282234574d3ded7d8815f9cc198387a2b9ac17befaf46d81a8e468e43434025c"
+    },
+    {
+      "member": "Dark-File.png",
+      "bytes": 159585,
+      "sha256": "638090a24e309342d964aa650688e0e948bc8aa010f407e759c41e18692dec5f"
+    },
+    {
+      "member": "Dark-Folder.png",
+      "bytes": 159960,
+      "sha256": "92490507b39889f2225d95cef5317439dc7f82f3ef4c7a41e4eeb54eb8a5de4b"
+    },
+    {
+      "member": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "a38c207a964e0d4e74c5ab73564a29b90e6fb9734df2ef269f81dfb28867e10d"
+    },
+    {
+      "member": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "9893a0aa7548efc38a3f06ab2f41926a2ff1d2add7944b45484071db93251660"
+    },
+    {
+      "member": "install-process.json",
+      "bytes": 90,
+      "sha256": "7004e9a7bdf5a844d63ce573ba63283073401fc26edb3679ed7e12a96782a5c0"
+    },
+    {
+      "member": "missing-control.png",
+      "bytes": 36216,
+      "sha256": "9a2bc328dd01992f180c93a4cf84aeef643f5c2d4e72d7187d5a23fd147b237e"
+    },
+    {
+      "member": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "89ded329c1cff266001072d29377634a7da5eddf06576c13cb8812f706db18be"
+    },
+    {
+      "member": "RESULT.json",
+      "bytes": 4517,
+      "sha256": "479c8ddceb45f48d5dfe03d1b232d9db0ef259e4d5d4f45c5742dba19732c83a"
+    }
+  ],
+  "all_members_extracted_and_byte_verified": true
+}

@@ -1,0 +1,15 @@
+{
+  "removed": [
+    {
+      "path": "RESULTS.zip",
+      "bytes": 188369,
+      "sha256": "484e4a8b1b2afe8e30443ae485fcf5ca95ef628aac8a5d02bd82b7ffc244b688"
+    },
+    {
+      "path": "controller.ps1",
+      "bytes": 4866,
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+    }
+  ],
+  "purpose": "Consumed transport members byte-verified; duplicate generated controller retired after terminal driver and VM cleanup; frozen actor/driver/raw JSON/original captures retained"
+}

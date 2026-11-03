@@ -1,0 +1,41 @@
+{
+  "status": "interim compiler-root comparison after successful builds and guarded15-session cleanup",
+  "baseline": {
+    "target/debug/deps": 41448435712,
+    "target/debug/incremental": 22875697152,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33310941184,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39531929600,
+    "target/release/deps": 4299362304,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769577472
+  },
+  "current": {
+    "target/debug/deps": 41440816685,
+    "target/debug/incremental": 22658108384,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292030833,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438092289,
+    "target/release/deps": 4290350725,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764505027
+  },
+  "delta_bytes": {
+    "target/debug/deps": -7619027,
+    "target/debug/incremental": -217588768,
+    "target/x86_64-pc-windows-gnu/debug/deps": -18910351,
+    "target/x86_64-pc-windows-gnu/debug/incremental": -93837311,
+    "target/release/deps": -9011579,
+    "target/x86_64-pc-windows-gnu/release/deps": -5072445
+  },
+  "retained": "Current binaries/test replacement, dependency libraries and newest compiler sessions serve current source; compiler caches shared and retained",
+  "pending": "Windows native fixture, MSIX assembly then stable package publication/retirement; final staging/evidence accounting separate",
+  "source_before": "7c88524a",
+  "purpose": "Distinguish real text ownership from native focused file-row button after exact4b0 installed failure",
+  "parent_baseline": ".hermes/evidence/file-dialog-focus-current/BASELINE.json",
+  "cleanup_owner": "file-row-focus-current; current6 unpublished packages superseded and must retire before replacement builds; guarded compiler cleanup after all source checks",
+  "sizes": {
+    "target/debug/deps": 41440816685,
+    "target/debug/incremental": 22658108384,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292030833,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438092289,
+    "target/release/deps": 4290350725,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764505027
+  }
+}

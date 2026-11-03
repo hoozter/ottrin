@@ -2,8 +2,9 @@
   "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
   "purpose": "Pending native MSIX assembly using real Git and exact current stage",
   "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-dialog-focus-current/source.zip",
-  "status": "prepared",
+  "status": "unused archive retired; native assembly cancelled after failed installed UI gate",
   "sha256": "ef3886ea53a10d65fe02929345a6110a9007b476b45731f09b68034c1392bcc9",
   "archive_bytes": 188276761,
-  "temporary_clone_removed": true
+  "temporary_clone_removed": true,
+  "archive_removed": true
 }

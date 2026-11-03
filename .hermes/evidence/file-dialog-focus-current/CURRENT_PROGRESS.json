@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-03T16:41:06.931612+00:00",
+  "updated_utc": "2026-11-03T16:50:21.825536+00:00",
   "previous_goal_turn_classification": "no goal progress: informational repository-update question only; current turn revalidated live handles and resumed concrete delivery work",
   "source_revision": "4b0f64a43da4c64b6740b43e3c18ec73e4d4d0f8",
   "completed": [
@@ -12,43 +12,18 @@
     "Current service requirement source/state evidence and exact remaining native gaps documented",
     "Current9-module picker ownership/historical-source equality verified"
   ],
-  "live_work": {
-    "windows_native": {
-      "exec_session": 37577,
-      "domain": "ottrin-nsis-client",
-      "uuid": "7a2b866a-9adf-4a4a-ba9f-d39a435e964a",
-      "observed": "exec handle live; libvirt running; actual owned user desktop signalled",
-      "owner": "windows-native-ui/OWNER.json"
-    },
-    "hosted_ci": {
-      "run": 41672693221,
-      "observed": "3jobs successful; Windows verify Cargo test in_progress"
-    }
-  },
+  "live_work": {},
   "retained_task_storage": [
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-      "purpose": "4verified candidate formats pending final hosted gates and publication"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "ZIP/NSIS payload consumed by live native fixture; then actual MSIX10 assembly and final publication"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-dialog-focus-current/source.zip",
-      "purpose": "Exact4b0 realGit input for pending native MSIX10 assembly; consumer retires after assessment"
-    },
-    {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-dialog-focus-current",
-      "purpose": "Compact acceptance receipts, original native evidence and registered producer files; keep for delivery audit"
+      "purpose": "Compact producers, original source/native evidence and immutable failure records; no pending runtime consumer"
     }
   ],
-  "stable_delivery": "runtime36 remains unchanged at dist/packages and dist/windows-candidate",
+  "stable_delivery": "runtime36 remains unchanged; all4b0 candidates retired",
   "next": [
-    "Inspect same Windows native handle/results and original captures",
-    "Run native MSIX10 assembly after fixture teardown",
-    "Exact4b0 hosted all4 gates then guarded stable publication",
-    "Final teardown/storage accounting, docs and checkpoint; continue full roadmap audit"
+    "Continue file-row-focus-current replacement cohort"
   ],
-  "goal_status": "active; completion unproven"
+  "goal_status": "active; completion unproven",
+  "status": "superseded after actual native Windows failure; diagnosis and source correction verified in replacement root",
+  "replacement_evidence": ".hermes/evidence/file-row-focus-current"
 }

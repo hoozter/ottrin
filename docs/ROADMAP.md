@@ -139,6 +139,22 @@ a fresh 39-control UI sweep. Original Windows picker resource values are directl
 inspected in `WINDOWS_PICKER_MEASUREMENT_AUDIT.json`.
 Current deliverables remain unchanged pending the final navigation/input/focus delivery.
 
+The installed Windows `4b0f64a4` check still fails to open Rename after native
+selection. Its file row is selected; the isolated fixture and both volumes are
+removed. A second focused regression establishes that egui's
+`wants_keyboard_input()` includes a focused file-row button and blocks its file
+shortcuts. The new correction distinguishes actual TextEdit ownership, retaining
+active text, Inspector, command, address, search, menu and picker barriers. An
+actual shared production row receives a native AccessKit Focus action in the
+regression; Ctrl+A/F2/Delete then reach the file selection, with deletion still
+requiring confirmation. All471 UI tests, strict native/Windows UI/app lint and
+formatting pass. Fresh native packages remain required; source checks are not
+Windows delivery acceptance. `file-row-focus-current/` owns this replacement.
+All six unpublished4b0 packages and its unused real-Git MSIX input archive are
+retired after terminal consumers (539491114 logical bytes); the stable seven
+runtime36 artifacts are rehashed unchanged. Original4b0 Linux acceptance remains
+historical; its28 passes do not override the failed installed Windows gate.
+
 Continue in this order:
 
 1. Complete the concentrated requirement-by-requirement Linux/Windows audit.
