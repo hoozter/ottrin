@@ -1,0 +1,28 @@
+{
+  "status": "reviewed",
+  "captures": {
+    "visibility-default.png": {
+      "sha256": "ef7f957f5b821ad1c8f4b70926e85f28c1d20837a52b4a5877bc6291b1b50c20",
+      "visible_entries": [
+        "V.txt"
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "7dfe6e32e5809a7e99348a1908bbb66b6466600a6873862190eeb87b8429cf2b",
+      "visible_entries": [
+        "HD",
+        "SD",
+        "H.txt",
+        "S.txt",
+        "V.txt"
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "ef7f957f5b821ad1c8f4b70926e85f28c1d20837a52b4a5877bc6291b1b50c20",
+      "visible_entries": [
+        "V.txt"
+      ]
+    }
+  },
+  "observations": "Direct original native screenshots show ordinary file alone by default/restoration and all five actual Hidden/System entries on show-all; no missing icons or displaced labels in this view."
+}

@@ -2,11 +2,8 @@
   "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
   "purpose": "Fresh complete Windows portable/NSIS cohort from verified accessibility source; no borrowed daemon/runtime mixture",
-  "pending_consumers": [
-    "Host payload/subsystem/closure identity checks",
-    "Native ordinary-user current daemon/GUI/NSIS update/refusal/removal checks",
-    "Native MSIX assembly and deployment/update/login/removal",
-    "Accepted current cohort promotion and owned cleanup"
-  ],
-  "held_MSI": "Existing exact diagnostic MSI remains held; no contract waiver or new failed MSI offered as current"
+  "pending_consumers": [],
+  "held_MSI": "Existing exact diagnostic MSI remains held; no contract waiver or new failed MSI offered as current",
+  "cleanup_complete": true,
+  "delivery_status": "Accepted whole Windows preview promoted; staging and previous alias removed"
 }

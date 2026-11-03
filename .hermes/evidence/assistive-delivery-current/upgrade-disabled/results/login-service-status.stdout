@@ -1,0 +1,3 @@
+source=Windows Startup apps
+enabled=false
+detail=Disabled at login

@@ -1,0 +1,37 @@
+{
+  "status": "pass within recorded local Windows preview scopes; required MSI release held separately",
+  "source_commit": "656768852a930e4e69dcf37e901d5bf00c6b6175",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "e11cb37ad662d79c991d86c6a623e1e8aeaebf9db49283d600e3d529fc007863",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "c7cb47405884633a6ce84fbb1ea310354518f248ae03cb2f99b9ad1232551f2b",
+    "Ottrin-0.1.0-windows-x64-development.msix": "8efdaa87c2b32cfc8dcd85caf041b1f54eed118db86be1c42ab5139b0fc42461"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/windows-picker-delivery-current",
+  "host_content": "HOST_PAYLOAD.json",
+  "ordinary_nsis_and_portable": ".hermes/evidence/windows-picker-delivery-current/nsis-native-hidden-console/ACCEPTANCE.json",
+  "rendered_review": ".hermes/evidence/windows-picker-delivery-current/nsis-native-hidden-console/VISUAL_REVIEW.json",
+  "native_msix": {
+    "upgrade-enabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-enabled/ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/windows-picker-delivery-current/upgrade-disabled/ACCEPTANCE.json"
+  },
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "hosted_source": {
+    "run": 41508619836,
+    "tested_source_revision": "bf3abfd32fc7654108e3f723f6a95c2f5866c5af",
+    "product_inputs_identical": true
+  },
+  "public_windows_files_unchanged": true,
+  "limits": [
+    "Local preview delivery; no official GitHub Release or Store submission",
+    "Native software Windows desktop at default DPI; physical GPU, further scaling and final owner acceptance remain separate",
+    "Remaining software/platform/assistive acceptance is audited independently; this receipt does not complete the roadmap"
+  ],
+  "cleanup": "Superseded candidate files retired after all named consumers complete; sole failing MSI retained for its explicit native boundary; see evidence DELIVERY.json and CLEANUP.json"
+}

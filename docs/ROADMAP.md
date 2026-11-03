@@ -51,24 +51,28 @@ promotion. One superseded matching release GUI/exact metadata is retired;
 no obsolete incremental sessions were identified. Evidence is
 `.hermes/evidence/assistive-delivery-current/`.
 
-The current usable local Windows preview remains source65676885 at
-`dist/windows-candidate`, with ZIP/NSIS/development MSIX0.1.0.4 defined by
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Public Windows/Store files are unchanged.
-The new complete90ba8639 ZIP/NSIS cohort is staged at
-`.hermes/packaging-tmp/.windows-picker-stage`; all58 payload files agree. Actual
-complete-cohort native WGPU/OpenGL UIAutomation, modal focus/Close, Inspector names,
-read-only observations, picker actions and source/preferences preservation pass.
-The rebuilt daemon indexes10101 entries and measures0.16–0.21percent of one core
-and about13MiB working set in two30-second samples with the GUI open. Both owned
-UIA guests/four volumes and the temporary archive alias are removed. Native NSIS
-fresh installation/removal,656→current running-index upgrade, saved Miller view,
-exact database identity/task security/preferences, all three running/startup
-intent combinations, real locked-cache refusal and supported retry now pass;
-its guest/two volumes are removed. Native MSIX0.1.0.5 assembly and actual4→5
-update, enabled real-login startup and removal pass with saved preferences/index
-identity preserved; the enabled guest/two volumes are removed. The disabled
-real-login case is running before whole Windows-cohort promotion. Source-only/native-GUI
-acceptance is not labelled a published Windows package.
+The current usable local Windows preview is now source90ba8639 at
+`dist/windows-candidate`. ZIP, NSIS and development MSIX0.1.0.5 are defined by
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`; all58 payload files agree. Public
+Windows/Store files are unchanged. Complete-cohort native WGPU/OpenGL
+UIAutomation, modal focus/Close, Inspector names, read-only observations,
+picker actions and source/preferences preservation pass. The rebuilt daemon
+indexes10101 entries and measures0.16–0.21percent of one core and about13MiB
+working set in two30-second samples with the GUI open.
+
+Native NSIS fresh installation/removal,656→current running-index upgrade, saved
+Miller view, exact database identity/task security/preferences, all three running/
+startup intent combinations, real locked-cache refusal and supported retry pass.
+Native MSIX4→5 updates preserve preferences/index file identity; real reboot and
+ordinary-user login start the daemon when enabled and leave it absent throughout
+180seconds when disabled, before any Ottrin CLI. Normal package removal leaves
+no index tasks/processes and preserves user preferences. Actual native folder
+visibility and Ctrl+L, Hidden/System controls, menus and Inspector Space/Escape
+also pass. All six Windows guests/twelve owned volumes and private consoles are
+removed. Superseded preview files (292806539 logical bytes), the prior-MSIX
+hardlink alias, source-transfer archive and staging are retired after consumers.
+The exact failed older MSI remains separately retained. Evidence and scope:
+`.hermes/evidence/assistive-delivery-current/DELIVERY.json`.
 
 The native ordinary-user MSI rollback/retry boundary remains held on both
 26300/.9444 and26100/.9711. Its sole exact8ede diagnostic input remains under
@@ -79,22 +83,26 @@ waits remain below and must not stall dependency-ready software work.
 
 Continue in this order:
 
-1. Finish the native MSIX0.1.0.5 disabled real-login startup/removal case and
-   rendered visibility review, then promote the whole
-   accepted Windows cohort and remove its staging/media/obsolete outputs. Preserve
-   current usable previews until those gates pass. Audit all remaining software,
-   platform/theme/resource and supported integration requirements against exact
-   source/package/native evidence. Repair missing, weak or contradictory scopes;
-   do not repeat fulfilled tests without changed inputs or a reproduced defect.
-   Park only genuine owner/device/external acceptance.
-2. Keep the native MSI rollback boundary on the explicit waiting list while
-   completing that audit. MSI remains required; no failed artifact is labelled
-   current/accepted and no ordinary-user contract is silently replaced. Retained
-   diagnostic authority is `windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json`.
+1. Finish the remaining exact-package software acceptance. Start with installed
+   Windows Office main/Inspector rendering and fallback on the current preview,
+   including native WGPU: the older `office-package-current/ACCEPTANCE.json`
+   explicitly accepts OpenGL and leaves that installed/native-renderer scope open.
+   Use owned clones/private profiles and the existing representative fixtures;
+   do not mutate retained base environments or broaden claims to arbitrary Office.
+   Recheck current temporal PDF stability and explicit edit/save preservation where
+   the older preview-safety receipts do not establish the current GUI behavior.
+2. Complete the concentrated current Linux/Windows daily-driver workflows and
+   remaining supported integration/resource gates against the stable packages.
+   Bind each requirement to direct current evidence or an explicit unchanged
+   implementation/payload comparison; repair missing or contradictory scopes.
+   Do not repeat fulfilled fault matrices without changed inputs or a reproduced
+   defect. Physical devices, owner identities and final owner review stay parked.
+3. Finish the release-candidate requirement audit and documentation. Keep native
+   MSI registration rollback on the explicit waiting list; no failed artifact is
+   labelled current/accepted and no installation contract is silently replaced.
    The shared themed picker, Linux FileChooser portal/FileManager1 and reversible
    Windows folder actions retain their implementation and recorded native scopes;
-   exact current chooser and package evidence above does not certify unsupported
-   caller integrations, physical graphics or final owner acceptance.
+   accept any remaining software caller/workflow gaps independently of owner waits.
 
 The actual8ede1562 MSI is now tested on the independent Microsoft26300 client.
 Fresh ordinary-user installation and all58 installed-file hashes pass. A real
@@ -1448,7 +1456,7 @@ and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
 The stable Linux cohort uses clean `90ba8639`; the delivered local Windows
-preview uses clean `65676885` for ZIP/NSIS/development MSIX0.1.0.4. The sole
+preview uses clean `90ba8639` for ZIP/NSIS/development MSIX0.1.0.5. The sole
 `8ede1562` MSI is a held diagnostic input, not a current usable package.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
@@ -1479,7 +1487,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | Four90ba8639 formats delivered; all four exact-source CI jobs pass. Current native accessibility, dark/light preview/menu/Properties/icon/update-view, Fedora/Ubuntu lifecycle, fresh10k metadata/content resources and actual Firefox/Flatpak Falkon Open/Save pass. | Audit remaining broader software/platform requirements and parked owner/device acceptance. No personal daemon restart or new personal-workload claim. |
-| Windows | Current65676885 ZIP/NSIS/development MSIX0.1.0.4 remains usable. New90ba8639 complete portable/NSIS content, native WGPU/OpenGL/10k idle and NSIS fresh/upgrade/refusal/retry pass; MSIX0.1.0.5 native assembly passes. | Finish actual4→5 enabled/disabled real-login update/removal and promote accepted cohort. Continue remaining software scope audit; keep the native MSI rollback boundary held. |
+| Windows | Current90ba8639 ZIP/NSIS/development MSIX0.1.0.5 delivered. Complete payload, native WGPU/OpenGL/10k idle, NSIS fresh/upgrade/refusal/retry and actual MSIX4→5 enabled/disabled real-login/removal pass. All owned fixture VMs/staging and superseded preview files removed. | Finish current installed Office/native-renderer and remaining daily-driver software acceptance; keep the native MSI rollback boundary held. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
@@ -3895,11 +3903,10 @@ Start this phase after outcomes 1–3 are complete. Complete the independently a
 - Direct Windows ZIP/EXE/MSI downloads remain unsigned by owner decision. Keep
   checksums and explicit unsigned-publisher/SmartScreen disclosures; buying an
   Authenticode certificate is not a release gate.
-- The local development MSIX package is implemented. Current0.1.0.4 has native
-  deployment, update, background startup/reboot and removal acceptance at its
-  recorded65676885 scope. Newer source still requires its own refreshed cohort
-  gates. Microsoft Store identity, listing, certification and submission remain
-  owner-dependent release work. Store signing applies to accepted Store packages;
+- The local development MSIX package is implemented. Current0.1.0.5 has native
+  assembly, actual4→5 update, enabled/disabled real-login startup and removal
+  acceptance at its recorded90ba8639 scope. Microsoft Store identity, listing,
+  certification and submission remain owner-dependent release work. Store signing applies to accepted Store packages;
   it does not sign the separate direct EXE/MSI downloads.
 - Store submission/account work waits for readiness and the owner; independently
   executable implementation and unsigned direct-download acceptance continue.

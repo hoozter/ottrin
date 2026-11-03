@@ -1,0 +1,190 @@
+{
+  "ACTOR.json": {
+    "bytes": 2549,
+    "sha256": "6ab9fcd4f02318ead336821f6915679db7dc111991c74d5323c655e48ff21c78"
+  },
+  "BEFORE_UPDATE.json": {
+    "bytes": 7888,
+    "sha256": "57e94c1cacea46f2fbae2924e693bb2410dfe24f0114a97558ef87e9a77cfb5b"
+  },
+  "chosen-disable.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "chosen-disable.stdout": {
+    "bytes": 81,
+    "sha256": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd"
+  },
+  "chosen-disabled-service-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "chosen-disabled-service-status.stdout": {
+    "bytes": 67,
+    "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5"
+  },
+  "CRASH_EVENTS.json": {
+    "bytes": 111,
+    "sha256": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782"
+  },
+  "DEPLOYMENT.json": {
+    "bytes": 678,
+    "sha256": "95f93bc58d8f77a3d8a887e92af52cec5d5a3c941eba04b2baca6830897b257f"
+  },
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "626dca7980d2b6db4ed1e69fd6caf80db7734431d2dc26fe044fc15772bf28f8"
+  },
+  "DESKTOP_WAITING.json": {
+    "bytes": 303,
+    "sha256": "ba18781fe5918b81877901c66bf1a9b9ca017a0da33b4030b90638b5dbdcdbef"
+  },
+  "disabled-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "disabled-status.stdout": {
+    "bytes": 67,
+    "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5"
+  },
+  "index-status.json": {
+    "bytes": 616,
+    "sha256": "360c93c3695920b3df2124dc58252be748024499392b23ebe071abb3497a1813"
+  },
+  "index-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "login-service-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "login-service-status.stdout": {
+    "bytes": 67,
+    "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5"
+  },
+  "LOGIN.json": {
+    "bytes": 1046,
+    "sha256": "b6c0688ec975626f80c0fdea577ab07251eeff1583abd836bafebe0b98951151"
+  },
+  "main.png": {
+    "bytes": 58641,
+    "sha256": "7bf40f10e8d0779b1898c486c12ea25156207082c826d400714163c1d8d2a944"
+  },
+  "reenable.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "reenable.stdout": {
+    "bytes": 93,
+    "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c"
+  },
+  "reenabled-index-status.json": {
+    "bytes": 683,
+    "sha256": "29b6e5e2fc056385807601b5ef5a9f4a14107af535949eff688e430ca8efdaab"
+  },
+  "reenabled-index-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "RESULT.json": {
+    "bytes": 18599,
+    "sha256": "01827275c0030d8013d3a3ec140d5884a323d85f6c1caa8b872bda248d77b8a7"
+  },
+  "service-install.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "service-install.stdout": {
+    "bytes": 93,
+    "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c"
+  },
+  "service-remove.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "service-remove.stdout": {
+    "bytes": 81,
+    "sha256": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd"
+  },
+  "service-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "service-status.stdout": {
+    "bytes": 65,
+    "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811"
+  },
+  "UPDATE.json": {
+    "bytes": 8371,
+    "sha256": "f236225c79786c7a8d6ac8156dd208611e224346910301a3023b9bddc9b4c7bc"
+  },
+  "updated-after-gui-service-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "updated-after-gui-service-status.stdout": {
+    "bytes": 67,
+    "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5"
+  },
+  "updated-fixture-selected.png": {
+    "bytes": 31038,
+    "sha256": "75062fd307ddc6fa726cd927231fb8fe9ddffeb37b0536b6959b60341905caa5"
+  },
+  "updated-inspector-before-normal-space.png": {
+    "bytes": 18354,
+    "sha256": "c992db364e5dac83d7aa15a05689ab22ec6b2f3bd69c973e5fcd16bd03dd24bb"
+  },
+  "updated-inspector-menu.png": {
+    "bytes": 26329,
+    "sha256": "97438e27f64396c047e436283f5a7bf06b034ba68787c5b2f0714ad76315e2c6"
+  },
+  "updated-main-menu-after-space.png": {
+    "bytes": 46479,
+    "sha256": "299b96df01de447ed705b037e9b62ed2abc3d07bb0e82b0f89d77ecc68e571f0"
+  },
+  "updated-main-menu-before-space.png": {
+    "bytes": 46479,
+    "sha256": "299b96df01de447ed705b037e9b62ed2abc3d07bb0e82b0f89d77ecc68e571f0"
+  },
+  "updated-main.png": {
+    "bytes": 27959,
+    "sha256": "3e132b627638f26caf12435132944e8cecfdf99f3eb50eaf86b0c0031801c8a4"
+  },
+  "updated-service-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "updated-service-status.stdout": {
+    "bytes": 67,
+    "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5"
+  },
+  "updated-session-index-status.json": {
+    "bytes": 619,
+    "sha256": "9f1ac584ccd9bfb2e1e21058e8d36dcf64da95d394eb802f3c2a923e30005b51"
+  },
+  "updated-session-index-status.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "UPDATED.json": {
+    "bytes": 4606,
+    "sha256": "11f1139fc1582d54f235ee537439b2cee6a775977bd4bf3d09577fb199087ad9"
+  },
+  "visibility-address-input.png": {
+    "bytes": 31631,
+    "sha256": "3b71f9a44b404282d7975c349010c79e1cafd211d2ea688bfcb69a9a5be45689"
+  },
+  "visibility-default.png": {
+    "bytes": 27930,
+    "sha256": "56c9e91680c72a5739c16634de345c499ceae4ab3ca562934107b4f84e0579d2"
+  },
+  "visibility-restored.png": {
+    "bytes": 27930,
+    "sha256": "56c9e91680c72a5739c16634de345c499ceae4ab3ca562934107b4f84e0579d2"
+  },
+  "visibility-show-all.png": {
+    "bytes": 30444,
+    "sha256": "2ce660587aa5560eb486bb6ac0bff84080b4fc19c9d817586517eebd4d008f26"
+  }
+}

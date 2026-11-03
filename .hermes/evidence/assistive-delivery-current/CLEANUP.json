@@ -1,0 +1,192 @@
+{
+  "status": "Completed current delivery resources cleaned; current deliverables/evidence/shared caches retained",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "windows_owned_cases": [
+    {
+      "case": "windows/cohort-native",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-uia-client.qcow2",
+          "ottrin-uia-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows/cohort-opengl",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-uia-client.qcow2",
+          "ottrin-uia-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "nsis-native",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "assembly",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "upgrade-enabled",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "upgrade-disabled",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "additional_removed_completed_files": [
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-enabled/privacy-accepted-0.png",
+      "bytes": 1082287,
+      "sha256": "40918c5b133d3f16bc86e26ae927e5dc22dad9ff685c65a40e8f9837169aa211",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-enabled/desktop-ready.png",
+      "bytes": 1694793,
+      "sha256": "71a40c3c71806a8cf0ee84afa309a4b73d1c3ec7c4eb0014b35ca1cb733265f2",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-enabled/boot-after-update.png",
+      "bytes": 22462,
+      "sha256": "ee2d33ae9703721502176f06c21eab4bc555e7b424cbe105d116949b1cfd0c3f",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-enabled/after-sign-in.png",
+      "bytes": 1695300,
+      "sha256": "60ede84d117eb2d0878ae9748f9ae2155360489eb9e4e66b7adc45e5429a3d04",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-disabled/privacy-accepted-0.png",
+      "bytes": 479873,
+      "sha256": "2a0d5df0af5bbc42a60595ac31d774c9e18782b72175b9fabd5b12ad81c2a972",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-disabled/current.png",
+      "bytes": 481698,
+      "sha256": "75f11716a21df10f1ba9f4f858a8c97af78ac5e5f6c22d355321ccc15bac2c88",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-disabled/desktop-ready.png",
+      "bytes": 963796,
+      "sha256": "0e506018ae2178e104f6dc9316ca3453991b995a20b699daa2458c237e1ddcf0",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/upgrade-disabled/after-sign-in.png",
+      "bytes": 964273,
+      "sha256": "702f531f3bca2d5a61bf8978b85fa7c90f13e45e6e171e4131451bd7aa03fe19",
+      "purpose": "Completed private boot/readiness capture; final product screenshots and exact native sign-in review frame retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/__pycache__/promote-windows.cpython-312.pyc",
+      "bytes": 17871,
+      "sha256": "356e334e515f495a30c68597e8c85d885f45634cd93b49f258547aefbdf89220",
+      "purpose": "Task-owned disposable Python bytecode"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/__pycache__/native-actions.cpython-312.pyc",
+      "bytes": 13527,
+      "sha256": "7aa81111bf729af6ab3daaac5cdb9fb30a595baa679a6ae991aa4d965869ec53",
+      "purpose": "Task-owned disposable Python bytecode"
+    }
+  ],
+  "staging_paths_verified_absent": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage"
+  ],
+  "compiler_storage_allocated_bytes": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    "target/release/deps": 4299329536,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769548800,
+    ".hermes/evidence/assistive-viewports-current": 8179712
+  },
+  "delta_from_prebuild_bytes": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 0,
+    "target/release/deps": 196874240,
+    "target/x86_64-pc-windows-gnu/release/deps": 0,
+    ".hermes/evidence/assistive-viewports-current": 0
+  },
+  "cache_scope": "No debug trees rebuilt or expanded; no obsolete incremental sessions identified in prior exact-root scan. Current release binaries/dependencies and useful caches retained. Superseded native release GUI and exact metadata already retired in RELEASE_ELF_CLEANUP.json. No blanket cargo clean.",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current accepted four-format Linux deliverables; no pending cleanup"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current accepted Windows preview packages/payload for ordinary use and next named exact-package Office/software acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-delivery-current",
+      "purpose": "Compact committed source/test/package/native receipts and reviewed screenshots; no live fixture or pending teardown"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/release/deps",
+      "purpose": "Current compiled Linux release GUI/dependencies and useful shared build cache; net196874240 allocated bytes above prebuild baseline after retiring superseded matching GUI. Retained for current binaries and subsequent normal builds, not disposable QA staging."
+    }
+  ],
+  "separate_held_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json",
+  "protected_storage": "Retained Windows bases/environments preserved. Two privileged viewer cores remain on the owner waiting list; no permissions changed."
+}

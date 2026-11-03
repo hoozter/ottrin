@@ -1,0 +1,28 @@
+{
+  "status": "reviewed",
+  "captures": {
+    "visibility-default.png": {
+      "sha256": "56c9e91680c72a5739c16634de345c499ceae4ab3ca562934107b4f84e0579d2",
+      "visible_entries": [
+        "V.txt"
+      ]
+    },
+    "visibility-show-all.png": {
+      "sha256": "2ce660587aa5560eb486bb6ac0bff84080b4fc19c9d817586517eebd4d008f26",
+      "visible_entries": [
+        "HD",
+        "SD",
+        "H.txt",
+        "S.txt",
+        "V.txt"
+      ]
+    },
+    "visibility-restored.png": {
+      "sha256": "56c9e91680c72a5739c16634de345c499ceae4ab3ca562934107b4f84e0579d2",
+      "visible_entries": [
+        "V.txt"
+      ]
+    }
+  },
+  "observations": "Direct original native screenshots show ordinary file alone by default/restoration and all five actual Hidden/System entries on show-all; icons, labels and common chrome render consistently."
+}
