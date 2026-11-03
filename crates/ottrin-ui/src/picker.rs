@@ -893,7 +893,8 @@ impl PickerDialog {
                                     .id(editor_id)
                                     .char_limit(32768)
                                     .desired_width(ui.available_width() * 0.62)
-                                    .themed(&colors),
+                                    .themed(&colors)
+                                    .accessible_name("Location"),
                             );
                             if response.changed() {
                                 self.location = location.into();
@@ -948,12 +949,18 @@ impl PickerDialog {
                                     });
                                 });
                         }
+                        let search_label = if self.indexed {
+                            "Search indexed folders"
+                        } else {
+                            "Filter this folder"
+                        };
                         let search = ui.add(
                             egui::TextEdit::singleline(&mut self.query)
-                                .hint_text(if self.indexed { "Search indexed folders" } else { "Filter this folder" })
+                                .hint_text(search_label)
                                 .char_limit(1024)
                                 .desired_width(ui.available_width().max(80.0))
-                                .themed(&colors),
+                                .themed(&colors)
+                                .accessible_name(search_label),
                         );
                         search.clone().on_hover_text(if self.indexed {
                             "Uses Ottrin search syntax, like the main Search panel. Searches configured indexed folders without starting the index service."
@@ -1299,7 +1306,8 @@ impl PickerDialog {
                         egui::TextEdit::singleline(&mut filename)
                             .char_limit(4096)
                             .desired_width(ui.available_width())
-                            .themed(&colors),
+                            .themed(&colors)
+                            .accessible_name("File name"),
                     );
                     if response.changed() {
                         self.filename = filename.into();
@@ -1697,6 +1705,71 @@ mod tests {
         app.caller_cancelled.store(true, Ordering::Release);
         frame(&mut app, &ctx, Vec2::new(940.0, 640.0), 1.0, vec![]);
         assert_eq!(app.outcome.lock().unwrap().as_ref(), Some(&accepted));
+    }
+
+    #[test]
+    fn rendered_picker_names_editable_fields_without_replacing_their_values() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("alpha.txt"), "original").unwrap();
+        for dark in [false, true] {
+            for mode in [PickerMode::Open, PickerMode::Save, PickerMode::Folder] {
+                for indexed in [false, true] {
+                    let ctx = Context::default();
+                    ctx.enable_accesskit();
+                    let mut app = host(
+                        &ctx,
+                        PickerRequest {
+                            mode,
+                            initial_directory: Some(root.path().into()),
+                            filename: "suggested.txt".into(),
+                            ..Default::default()
+                        },
+                        dark,
+                        1.0,
+                    );
+                    app.dialog.indexed = indexed;
+                    app.dialog.query = "alpha".into();
+                    app.dialog.editing_location = true;
+                    let output = frame(&mut app, &ctx, Vec2::new(940.0, 640.0), 0.0, vec![]);
+                    let tree = output.platform_output.accesskit_update.unwrap();
+                    let fields: Vec<_> = tree
+                        .nodes
+                        .iter()
+                        .filter(|(_, node)| node.role() == egui::accesskit::Role::TextInput)
+                        .map(|(_, node)| {
+                            (
+                                node.label().unwrap_or_default(),
+                                node.value().unwrap_or_default(),
+                            )
+                        })
+                        .collect();
+                    let search = if indexed {
+                        "Search indexed folders"
+                    } else {
+                        "Filter this folder"
+                    };
+                    assert!(fields.contains(&(search, "alpha")), "{fields:?}");
+                    assert!(
+                        fields.contains(&("Location", root.path().to_str().unwrap())),
+                        "{fields:?}"
+                    );
+                    if mode != PickerMode::Folder {
+                        assert!(
+                            fields.iter().any(|(name, _)| *name == "File name"),
+                            "{fields:?}"
+                        );
+                    }
+                    assert!(
+                        fields.iter().all(|(name, _)| !name.is_empty()),
+                        "{fields:?}"
+                    );
+                }
+            }
+        }
+        assert_eq!(
+            std::fs::read(root.path().join("alpha.txt")).unwrap(),
+            b"original"
+        );
     }
 
     #[test]

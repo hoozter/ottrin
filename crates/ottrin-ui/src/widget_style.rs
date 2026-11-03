@@ -144,6 +144,7 @@ pub(crate) trait ThemeTextEditExt<'a> {
 pub(crate) struct ThemeTextEdit<'a> {
     edit: egui::TextEdit<'a>,
     colors: Colors,
+    accessible_name: Option<String>,
 }
 
 impl<'a> ThemeTextEditExt<'a> for egui::TextEdit<'a> {
@@ -151,14 +152,24 @@ impl<'a> ThemeTextEditExt<'a> for egui::TextEdit<'a> {
         ThemeTextEdit {
             edit: self,
             colors: *colors,
+            accessible_name: None,
         }
     }
 }
 
 impl ThemeTextEdit<'_> {
+    pub(crate) fn accessible_name(mut self, name: impl Into<String>) -> Self {
+        self.accessible_name = Some(name.into());
+        self
+    }
+
     pub(crate) fn show(self, ui: &mut Ui) -> egui::text_edit::TextEditOutput {
         let background = ui.painter().add(egui::epaint::Shape::Noop);
         let output = self.edit.frame(false).show(ui);
+        if let Some(name) = self.accessible_name {
+            ui.ctx()
+                .accesskit_node_builder(output.response.id, |node| node.set_label(name));
+        }
         let stroke = if output.response.has_focus() && ui.is_enabled() {
             Stroke::new(1.0, self.colors.accent)
         } else {

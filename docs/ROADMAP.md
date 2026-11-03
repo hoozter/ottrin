@@ -6,6 +6,14 @@ Updated 2026-11-03. This is the single active queue. Historical receipts below
 retain their original source/artifact scope; passing checks are not completion
 of the full roadmap. Packaged documentation is a build-time snapshot.
 
+The confirmed picker accessible-name defect is now source-fixed: folder filter,
+indexed search, filename and Location editors expose names without replacing
+their text values or edit roles. The rendered Dark/Light Open/Save/folder matrix,
+all27 picker tests,465 full UI tests (one existing ignored), strict Linux/Windows
+Clippy and formatting pass. Current stable packages below still use7d and have
+not received this fix; fresh package/native acceptance is the next gate. Evidence:
+`.hermes/evidence/picker-accessibility-current/SOURCE_CHECKS.json`.
+
 Linux AppImage, portable archive, DEB and RPM at `dist/packages/`, and Windows
 ZIP/NSIS/development MSIX0.1.0.7 at `dist/windows-candidate/`, now use clean runtime
 source `7d10a8b6eba74e642fcf5028af737a98bb5c0958`. Exact-source CI41605875200 passes
@@ -99,7 +107,7 @@ those failures remain recorded and are not product acceptance.
 
 Continue in this order:
 
-1. Fix the confirmed unnamed picker search/filename fields and verify the native
+1. Deliver the source-fixed picker field names and verify the native
    packaged accessibility result. Continue the concentrated requirement-by-requirement
    Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains54 full multiline

@@ -1,0 +1,66 @@
+{
+  "status": "pass source UI tests/native and Windows strict lint/format; native GUI and packaging separate",
+  "scope": "Source picker accessibility correction only; stable packages remain7d",
+  "checks": [
+    {
+      "name": "full-ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "tested_source_files": {
+    "crates/ottrin-ui/src/picker.rs": "b1d95726a0030bc66c2da2b1a8e404c12cc8f235b036dcc738cd8560b6261c42",
+    "crates/ottrin-ui/src/widget_style.rs": "79333f3980c49eba1b79a5fae899ae5fc322990d0a927344a23703711481adb1"
+  }
+}

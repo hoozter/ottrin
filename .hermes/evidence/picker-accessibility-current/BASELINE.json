@@ -1,0 +1,14 @@
+{
+  "source": "5f9acb5606ff33bc4d7220295f64bdaffd57dfc0",
+  "compiler_allocated_bytes": {
+    "target/debug/deps": 41448239104,
+    "target/debug/incremental": 22742679552,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39227678720,
+    "target/release/deps": 4299317248,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769556992
+  },
+  "free_bytes": 24028405760,
+  "cleanup_owner": "This audit; shared compiler caches and stable deliverables retained; own test profiles/processes and staging removed after consumers",
+  "scope": "Native-confirmed unnamed picker fields, shared source fix, rendered and packaged accessibility verification"
+}
