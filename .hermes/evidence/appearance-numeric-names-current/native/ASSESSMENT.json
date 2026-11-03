@@ -1,0 +1,29 @@
+{
+  "status": "partial native evidence; full matrix failed at later foreground-focus request",
+  "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+  "completed_native_cases": 1,
+  "evidence": "Named Window corners accepted typed24 and editor full native region matched36 physical pixels at144DPI; complete frame fit1920x1440 work area",
+  "direct_capture_review": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current/native/results/Native-editor-live-24.png",
+    "sha256": "c4e00475636c4e222aafc5f2a75f46ab0db5d1504557d91b4a4e172b2ef61b8e",
+    "observed": "24px value visible; actual editor and preview rounded corners agree; unrelated hover tooltip present and retained as captured"
+  },
+  "failure": "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+  "not_proven": [
+    "parent shape propagation",
+    "restore/Cancel on Windows",
+    "all-six-window matrix",
+    "supported uninstall preservation"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next": "Fresh native-visible actor observes background owner regions without foregrounding them and separately captures every complete window after closing owned foreground dialogs; strict shape/DPI/work-area gates retained"
+}

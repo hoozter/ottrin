@@ -1,0 +1,47 @@
+{
+  "status": "pass scoped obsolete incremental cleanup; newest states/current binaries and shared dependencies retained",
+  "baseline": {
+    "target/debug/deps": 41440996080,
+    "target/debug/incremental": 22659502484,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292041429,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39439022407,
+    "target/release/deps": 4290361250,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764572511
+  },
+  "current": {
+    "target/debug/deps": 41441028723,
+    "target/debug/incremental": 22658806852,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292041736,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438874790,
+    "target/release/deps": 4290362413,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764574013
+  },
+  "delta": {
+    "target/debug/deps": 32643,
+    "target/debug/incremental": -695632,
+    "target/x86_64-pc-windows-gnu/debug/deps": 307,
+    "target/x86_64-pc-windows-gnu/debug/incremental": -147617,
+    "target/release/deps": 1163,
+    "target/x86_64-pc-windows-gnu/release/deps": 1502
+  },
+  "canonical_result": {
+    "finished": "2026-11-03T22:38:17.281242+00:00",
+    "removed_sessions": 15,
+    "before": {
+      "total": 502609965056,
+      "used": 476322975744,
+      "available": 21152280576,
+      "free": 26286989312
+    },
+    "after": {
+      "total": 502609965056,
+      "used": 475857670144,
+      "available": 21617586176,
+      "free": 26752294912
+    },
+    "filesystem_free_delta": 465305600
+  },
+  "final_obsolete_sessions": 0,
+  "initial_refusal": "Ephemeral unreadable process1311528 exited; no new process exception added. Existing two unchanged system identities revalidated.",
+  "scope": "Exact native/Windows debug incremental roots only; matching original build/test configurations reused, output names replaced in place; no extra target tree or blanket clean. Native Windows GUI fixture and package staging remain active and are excluded."
+}

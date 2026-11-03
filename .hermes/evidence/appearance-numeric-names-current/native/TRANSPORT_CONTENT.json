@@ -1,0 +1,65 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 162,
+      "sha256": "1982e683fb24741ef32ebe011bc93abb81e0fff8605aacbd62ba5d88daf6be15",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "70d16ace55f79b253149ce658871ea286148194a074b97a65a54d6271177ca7a",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 257,
+      "sha256": "81c5fe434dc2b017d0e14d80451cd9c71d7158907d4020522468da039c3da4c0",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 97,
+      "sha256": "9725f7740a60cd2f7e8caae3f97c92abdde25b239eadae1599d5dbb6d5ed26b0",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-live-24.png",
+      "bytes": 192529,
+      "sha256": "c4e00475636c4e222aafc5f2a75f46ab0db5d1504557d91b4a4e172b2ef61b8e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "908e97207b3f9f19cd4f1fabb77372f77ed5da82e929e6f83f225d0546e16226",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 4317,
+      "sha256": "776ce423e1d40692b37f50f9955ae822adfa13caff44998f164403b2673bc307",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 248570,
+      "sha256": "698332de0107732b733b082aa37eec1a446950a8dbde8f3dcabda865f2869f90",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 148956,
+      "sha256": "c277b9eb7f9a5be967cb5408600bc4a209028bc119ee34be394d8b9e0b998439",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "d723dca5d0f6b088354f2d3399002d74d09c1e8d714ee454f561b281295fdc52",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

@@ -100,7 +100,13 @@ Continue in this order:
    confirms the same payload in MSIX12. Owned Linux desktops/profiles, package
    extraction and the MSIX assembly VM/source archive are removed.
    Installed Windows144DPI/Native/OpenGL checks and exact-source hosted CI are
-   still running. Promotion and final compiler/staging cleanup remain pending;
+   still running. The first native actor verified one real typed24 editor region,
+   then failed when foregrounding its covered owner. Its exact partial result and
+   teardown are retained; the corrected actor observes background owner regions
+   and separately captures every full window when reachable. Fifteen obsolete
+   native/Windows incremental sessions were removed while preserving newest
+   per-configuration states; final inspection reports zero obsolete sessions.
+   Promotion and final native/staging cleanup remain pending;
    all seven stable packages remain the 0aac cohort above.
    Evidence: `windows-dpi-current/` retains exact failed setup/lookup scopes and
    all completed clone teardown; `appearance-numeric-names-current/` owns the
