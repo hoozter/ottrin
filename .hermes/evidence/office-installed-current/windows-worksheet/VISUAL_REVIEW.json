@@ -1,0 +1,15 @@
+{
+  "status": "reviewed",
+  "captures": {
+    "native-main-worksheet-rendered.png": "4c73bb75b126bb1119e35d275302df473b285a1efd8a57036e9a8ad6ae33e10f",
+    "native-inspector-worksheet-rendered.png": "0e2bdfa9326d82f9931144e511f67453e0854d41d050bef5ab3a6f7e0096d8e8",
+    "opengl-main-worksheet-rendered.png": "bb083a924e630b4330ac74a2d4623dcc75df89e4016c15df1f2694d02cc4d926",
+    "opengl-inspector-worksheet-rendered.png": "3ff4d91982e7d2d9ac90f3c165d8470fcebd2a8a3ec62e27c0863530d2cb38ff"
+  },
+  "observations": [
+    "Both main-window previews show the actual landscape worksheet, blue heading, table and green chart.",
+    "Both Inspector captures show the calculated $4,000.00 total, currency formats, blue merged heading and green bar chart, with page1of1 controls.",
+    "Shared titlebar and visible Close match the main application."
+  ],
+  "limits": "Representative authored worksheet only; software VM/default DPI. Native preference and OpenGL override requested; both API module families load, so module presence alone does not establish exclusive backend usage."
+}

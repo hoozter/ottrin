@@ -1,0 +1,41 @@
+{
+    "scope":  "Exact current installed NSIS Office ordinary-user native WGPU/OpenGL main/Inspector rendering and failure fallback",
+    "phase":  "native main DOCX render",
+    "desktop_ready":  true,
+    "cases":  {
+                  "native":  {
+
+                             }
+              },
+    "provider":  {
+                     "mergedlo_sha256":  "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+                     "version":  "26.8.1.1",
+                     "vcl_windows_sha256":  "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+                 },
+    "payload_files":  58,
+    "service_cleanup_exit":  0,
+    "stack":  "at Focus-Owned, \u003cNo file\u003e: line 33\r\nat Wait-Colored, \u003cNo file\u003e: line 43\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 69\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "package":  {
+                    "source_revision":  "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc"
+                                  }
+                              ],
+                    "fixtures":  {
+                                     "01-office.docx":  "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471",
+                                     "02-office.xlsx":  "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+                                     "03-office.pptx":  "421f4977f3837fb626b5b64ad1300c9496013762614f8e1b9be03cbc6cc45dfe"
+                                 }
+                },
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSI1e6003c2df7b",
+                     "sid":  "S-1-5-21-3183210791-1673105385-3262580894-1056",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "error":  "Owned Ottrin window does not have keyboard focus",
+    "cleanup_error":  "Owned installed process remains",
+    "status":  "failed owned service/process cleanup"
+}

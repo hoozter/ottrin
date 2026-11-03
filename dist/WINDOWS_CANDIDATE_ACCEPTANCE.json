@@ -39,5 +39,7 @@
     "Populated index CPU observations are with main GUI open; not personal or pure unattended workload acceptance",
     "Full remaining roadmap audit remains required"
   ],
-  "cleanup": "All native fixture VMs/media/consoles removed; previous MSIX alias and superseded preview retired only after consumers; stable candidate retains current packages/payload and compact evidence."
+  "cleanup": "All native fixture VMs/media/consoles removed; previous MSIX alias and superseded preview retired only after consumers; stable candidate retains current packages/payload and compact evidence.",
+  "current_installed_office_receipt": ".hermes/evidence/office-installed-current/WINDOWS_OFFICE_ACCEPTANCE.json",
+  "open_preview_typography_issue_receipt": ".hermes/evidence/office-installed-current/WINDOWS_OFFICE_ACCEPTANCE.json"
 }

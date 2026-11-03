@@ -1,0 +1,44 @@
+{
+  "status": "Temporal PDF and read-only portions pass; explicit edit not yet accepted",
+  "frames": 100,
+  "settled_bounds": [
+    532,
+    176,
+    738,
+    378
+  ],
+  "readonly": "pass",
+  "observer_failure": "AT-SPI UnknownObject during tree enumeration after the Inspector changed; narrow stale-object handling added. Repeat only explicit edit on linux-edit.",
+  "cleanup": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-hv5kbf38",
+    "owned_processes_reaped": [
+      {
+        "pid": 723723,
+        "exit": 0
+      },
+      {
+        "pid": 723727,
+        "exit": 0
+      },
+      {
+        "pid": 723728,
+        "exit": 15
+      },
+      {
+        "pid": 723801,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        723808,
+        723872
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "error": "org.freedesktop.DBus.Error.UnknownObject: Unknown object '/org/a11y/atspi/accessible/0/10015536101379788813'",
+    "profile_removed": true
+  }
+}

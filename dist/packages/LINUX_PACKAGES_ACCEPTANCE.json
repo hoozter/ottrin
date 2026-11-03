@@ -67,5 +67,6 @@
     "windows_state_at_linux_promotion": "completed"
   },
   "scope": "Local four-format Linux delivery. Physical graphics/devices, external production picker use and final owner acceptance remain separate. Windows internal candidate and failed MSI rollback gate unchanged.",
-  "cleanup": "Owned GUI profiles/processes/displays/buses/mounts and both native VM domains/volumes/credentials removed; staging/extraction retired after promotion. Current compiler caches and compact receipts retained."
+  "cleanup": "Owned GUI profiles/processes/displays/buses/mounts and both native VM domains/volumes/credentials removed; staging/extraction retired after promotion. Current compiler caches and compact receipts retained.",
+  "current_temporal_preview_and_explicit_save_receipt": ".hermes/evidence/office-installed-current/LINUX_PREVIEW_ACCEPTANCE.json"
 }

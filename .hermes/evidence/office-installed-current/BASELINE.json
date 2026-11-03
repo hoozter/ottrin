@@ -1,0 +1,16 @@
+{
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "packages": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc",
+    "Ottrin-0.1.0-windows-x64-development.msix": "18b37c9880dd6f211215ca1806ea7d1b2b58cb6a9f791c0a134fecf8979e6944"
+  },
+  "allocated_bytes": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920
+  },
+  "new_builds_required": false,
+  "cleanup_owner": "Current roadmap goal; common producer registers VM/media/private-display teardown before allocation; compact native results retained"
+}

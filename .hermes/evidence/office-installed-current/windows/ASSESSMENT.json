@@ -1,0 +1,16 @@
+{
+  "status": "Rejected producer prelaunch display assumption; no native product outcome",
+  "error": "AssertionError()",
+  "cause": "Retained Office provider base uses VNC; clone-only SPICE display setup was missing",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next": "Corrected clone-only graphics setup; fresh windows-renderers case. Retained base/domain/snapshots unchanged."
+}

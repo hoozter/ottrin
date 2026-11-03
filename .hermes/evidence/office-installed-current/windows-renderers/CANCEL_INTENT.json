@@ -1,0 +1,7 @@
+{
+  "reason": "Fixture loop shadowed the VM name; native product actor remains waiting for ready and no product assertion is accepted",
+  "actual_owned_domain": "03-office.pptx",
+  "uuid": "3f2dd96c-cb79-4219-9c87-c0c05a6dd711",
+  "producer_pid": 723022,
+  "scope": "Stop only this verified owned producer; its registered teardown removes its exact clone/media/console. Fix name at source before new attempt."
+}

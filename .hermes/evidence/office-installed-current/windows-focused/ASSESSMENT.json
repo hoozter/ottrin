@@ -1,0 +1,15 @@
+{
+  "status": "Rejected foreground/teardown observation; no completed render acceptance",
+  "result_status": "failed owned service/process cleanup",
+  "scope": "Current install and provider identity were checked; native foreground ownership failed before acceptance. Mutable owned-process collection and actual exit observation corrected in the subsequent successful cases. Earlier focus cause is not asserted as a production fix.",
+  "owned_overlay_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

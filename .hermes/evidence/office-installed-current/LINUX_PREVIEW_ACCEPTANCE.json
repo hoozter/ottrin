@@ -1,0 +1,36 @@
+{
+  "status": "pass within exact current Linux Dark100 temporal PDF/read-only/explicit Save scope",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "mapped_gui_sha256": "dbe4fef1047958e9cd1e64f7522d881df4dca7f1be3dd8a610be854a1b9fee1c",
+  "pdf": {
+    "frames": 100,
+    "observation_seconds": 17.14077835698845,
+    "settled_frames": 70,
+    "unique_settled_bounds": [
+      [
+        532,
+        176,
+        738,
+        378
+      ]
+    ],
+    "readonly_navigation_and_space": "pass",
+    "evidence": "linux-preview/RESULT.json",
+    "observer_limit": "First combined actor stopped only after these completed assertions, on a stale AT-SPI node during subsequent edit setup. Original failure retained; explicit Edit/Save accepted separately."
+  },
+  "explicit_edit": {
+    "draft_did_not_write": true,
+    "saved_exact_expected_bytes": true,
+    "clean_editor_closed": true
+  },
+  "normal_main_exit": 0,
+  "reviewed_captures": {
+    "linux-preview/pdf-frame-0.png": "e4021a05e4d4136494ee2e88d7e17170c5b35ef42274141913086daa63998eb5",
+    "linux-preview/pdf-frame-99.png": "e4021a05e4d4136494ee2e88d7e17170c5b35ef42274141913086daa63998eb5",
+    "linux-edit/draft-before-save.png": "1d81d7d92698576165e748a3c2384382a031e8783722074ba062d5c24d125c55",
+    "linux-edit/explicit-saved.png": "2b08fc7d782b4f57c51ef67e7ec68dafc99033ec1b31a96cab95a764d3517d63"
+  },
+  "cleanup_profiles_removed": true,
+  "limits": "Actual current packaged Linux native X11/software at Dark100. Temporal captures verify visible PDF bounds after text-to-PDF transition; no physical GPU, every PDF or native Windows claim. Editing asserts exact private text bytes and no write before Save. Other source files remain unchanged in the explicit-edit case."
+}

@@ -1,0 +1,12 @@
+{
+  "status": "Native ordinary desktop observed, choices reviewed and ownership-checked ready signal sent",
+  "domain_uuid": "5daca770-86fb-4e2d-880b-0e8267710c33",
+  "method": "Known Location/inking/personalized-offers pages, each No visibly selected before native Accept. Actual desktop then observed. Clone-only USB tablet makes native pointer coordinates correct.",
+  "captures": {
+    "location-no-selected.png": "589d8e0ebcdb7cf59d94d71dff28aab92368edbda0386595c4509f8d1c7e4d43",
+    "inking-no-selected.png": "b5eb887577d24ccc342d54f058cb9daa719a906b3d9237eeda9b0d754081dc79",
+    "offers-no-selected.png": "6c06d43df694cf882cb51f140b6385904980e6c9dc07e26baef885d12eee56f8",
+    "desktop-ready.png": "b51c94deb735d7904d6cf46e88d0e2401607df9c7ad33a5168f796d9b2961b10"
+  },
+  "scope": "Normal first-login UI on exact fresh disposable account; no security policy or OOBE bypass."
+}

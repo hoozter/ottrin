@@ -1,0 +1,110 @@
+{
+  "status": "pass within current installed Office conversion/fallback scope; shared fallback typography correction remains required",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "current_packages": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc",
+    "Ottrin-0.1.0-windows-x64-development.msix": "18b37c9880dd6f211215ca1806ea7d1b2b58cb6a9f791c0a134fecf8979e6944"
+  },
+  "native_cases": {
+    "windows-observed": {
+      "native_result_sha256": "58aca8a2e7089207fe1ecafd43533dc2be8a078376204b380ba19b98f49fd527",
+      "inputs": {
+        "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+        "files": [
+          {
+            "name": "current-setup.exe",
+            "sha256": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc"
+          }
+        ],
+        "fixtures": {
+          "01-office.docx": "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471",
+          "02-office.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+          "03-office.pptx": "421f4977f3837fb626b5b64ad1300c9496013762614f8e1b9be03cbc6cc45dfe"
+        }
+      },
+      "provider": {
+        "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+        "version": "26.8.1.1",
+        "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+      },
+      "native_identity": {
+        "profile": "C:\\Users\\OTMSI3194ca7d92de",
+        "sid": "S-1-5-21-3183210791-1673105385-3262580894-1056",
+        "administrator": false,
+        "session": 1
+      },
+      "review": "VISUAL_REVIEW.json",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    "windows-worksheet": {
+      "native_result_sha256": "66f672670a0b43be5bcbc5d85a7a1b54594bfa815c50977ce9c42988241dd204",
+      "inputs": {
+        "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+        "files": [
+          {
+            "name": "current-setup.exe",
+            "sha256": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc"
+          }
+        ],
+        "fixtures": {
+          "01-office.docx": "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471",
+          "02-office.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+          "03-office.pptx": "421f4977f3837fb626b5b64ad1300c9496013762614f8e1b9be03cbc6cc45dfe"
+        },
+        "ui_case": "worksheet"
+      },
+      "provider": {
+        "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+        "version": "26.8.1.1",
+        "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+      },
+      "native_identity": {
+        "profile": "C:\\Users\\OTMSI0d8fa5eb9a20",
+        "sid": "S-1-5-21-3183210791-1673105385-3262580894-1056",
+        "administrator": false,
+        "session": 1
+      },
+      "review": "VISUAL_REVIEW.json",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  },
+  "accepted": [
+    "Exact ordinary-user current NSIS installation,58 matching payload files and normal uninstall preserving preferences",
+    "Representative DOCX main/Inspector, XLSX main/Inspector and PPTX Inspector rendered through actual installed LibreOffice conversion children",
+    "Saved Native preference and explicit OpenGL override, software VM/default DPI; captured module hashes retain actual provenance",
+    "Helper-withheld XLSX fallback and visible explanation in main/Inspector",
+    "Unchanged authored source bytes, no remaining Office temp staging or installed processes, owned clones/media/consoles removed"
+  ],
+  "reviewed_native_captures": 14,
+  "open_visual_issue": {
+    "path": "crates/ottrin-ui/src/preview_render.rs",
+    "function": "render_spreadsheet_row",
+    "evidence": "windows-observed/results/native-main-fallback.png",
+    "finding": "Ui::put forces centered-and-justified layout; wrapped native worksheet cells visibly stretch letters in a narrow Miller preview. Correct shared cell layout before claiming full preview/UI acceptance."
+  },
+  "limits": [
+    "No arbitrary Office fidelity, every format or full roadmap acceptance",
+    "Native preference maps to WGPU in exact application source, while explicit override selects OpenGL; both DLL families load, so module presence alone is not exclusive API/device proof",
+    "Physical GPUs, extended DPI and final owner acceptance remain separate",
+    "The known narrow fallback-cell typography defect is not waived by successful conversion/data-preservation checks"
+  ]
+}

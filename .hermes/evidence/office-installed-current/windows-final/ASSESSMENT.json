@@ -1,0 +1,20 @@
+{
+  "status": "Current installation/provider identity pass; rendering not accepted",
+  "verified": [
+    "Exact ordinary-user current NSIS installed all58 matching payload files",
+    "Installed LibreOffice26.8.1.1 mergedlo and native VCL bytes match prior accepted provider"
+  ],
+  "unaccepted": "Main render actor stopped at foreground ownership before a capture. Simple SetForegroundWindow did not acquire it; use existing PickerNative native-click focus routine. Service-remove returned0 but immediate process-exit assertion raced shutdown; wait for actual exit before acceptance.",
+  "native_result_preserved": true,
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next": "Changed native focus and real shutdown observation in windows-focused; no accepted product behavior repeated."
+}

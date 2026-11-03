@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-iafvsys8",
+  "owned_processes_reaped": [
+    {
+      "pid": 729601,
+      "exit": 0
+    },
+    {
+      "pid": 729604,
+      "exit": 0
+    },
+    {
+      "pid": 729605,
+      "exit": 15
+    },
+    {
+      "pid": 729655,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

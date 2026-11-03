@@ -1,0 +1,110 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "c4dc7a7796eecfb45fa181c42ea95f500c8e490a45b5f8ee461dd368aada383e"
+  },
+  "install-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "native-inspector-fallback.png": {
+    "bytes": 47083,
+    "sha256": "476f015ac56b97efc638a371899f217a11c9047ef06c50c8886dfdd0b714bbff"
+  },
+  "native-inspector-rendered.png": {
+    "bytes": 48013,
+    "sha256": "1ccd84b8995ac323f3731fb97e25ffcefbc86e1663b4d59dd966c124d85746b3"
+  },
+  "native-inspector.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-inspector.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-main-fallback.png": {
+    "bytes": 94679,
+    "sha256": "24350fc67a2065fd920ee1b07e64a3577a6be0e098472a95d39f11d76b62bb7e"
+  },
+  "native-main-rendered.png": {
+    "bytes": 77797,
+    "sha256": "2d987e2ad1e6e314f1d88526ffbe47a0c2cd8fec67b8ea3b810b692c0fc7843e"
+  },
+  "native-main.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-main.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-slides-rendered.png": {
+    "bytes": 37192,
+    "sha256": "58a032f86c6d5cb069c3d0bdc1d0ab1dc2fe33fd9c3e77be06e31dff94805171"
+  },
+  "native-slides.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-slides.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-inspector-fallback.png": {
+    "bytes": 47000,
+    "sha256": "70f184297ee31df0b6a022b355801f61bf2f3e1c1dbe247650cc0ab76a4b4498"
+  },
+  "opengl-inspector-rendered.png": {
+    "bytes": 47908,
+    "sha256": "3b6c7f6e306baf2f7fe436c55b5cd355439dcc167eb13a256b48bee69d2b348e"
+  },
+  "opengl-inspector.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-inspector.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-main-fallback.png": {
+    "bytes": 95011,
+    "sha256": "a06e6da11567eae65fbd107e364acb3261cc6d1ea4c0dc926fe97662e63ffe3b"
+  },
+  "opengl-main-rendered.png": {
+    "bytes": 78148,
+    "sha256": "19da7ffdb5e23ea635fd8d0cf918109a1e2ed320296c2d9a681ce35fc62999ac"
+  },
+  "opengl-main.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-main.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-slides-rendered.png": {
+    "bytes": 37267,
+    "sha256": "43496eaf69f37fc642b2c7645285e706f884d67a675de0ee560f805be285f9a7"
+  },
+  "opengl-slides.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-slides.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "OWNER.json": {
+    "bytes": 1068,
+    "sha256": "22be64e3940bc203af17f5c6fc6db063ca305b2208b54a783175bc8197fb448c"
+  },
+  "RESULT.json": {
+    "bytes": 33344,
+    "sha256": "58aca8a2e7089207fe1ecafd43533dc2be8a078376204b380ba19b98f49fd527"
+  },
+  "uninstall-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  }
+}

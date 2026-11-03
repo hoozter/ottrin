@@ -1,0 +1,52 @@
+{
+  "status": "Three terminal Windows control attempts and two Linux profiles cleaned; active windows-focused case excluded",
+  "removed_completed_setup_frames": [
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-location-selected.png",
+      "bytes": 180406,
+      "sha256": "ec553b5ab7d3c77631068c42bbe757120c4c56faba397719aa9e361567493b8f"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-next.png",
+      "bytes": 176885,
+      "sha256": "e58e6b494a3884abb644540d64cecb5be7f2fa943ebb8d4d0708f5691778c1b1"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-location-selected-tablet.png",
+      "bytes": 178460,
+      "sha256": "33357c0aff322bf3a5f18afe8ad3c4f4e208ebb55935dc9ba1c04233fbf63dc6"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-accepted-0.png",
+      "bytes": 178246,
+      "sha256": "cd940c42d29ac5ffbc2dc535ec19f0fd3d1dd0005a5ef4a49277688058d36b6d"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-next2.png",
+      "bytes": 185503,
+      "sha256": "c39f8eecb080e265efe7af9cfd83ecdda2dbab01e616c5c2b9f6c5ea40e60921"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-key-focus.png",
+      "bytes": 178795,
+      "sha256": "1b41d700cd292343133c307d4c9bf29ff85b80838f9bb8548ba0d4d95909831b"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/current.png",
+      "bytes": 180213,
+      "sha256": "d1ca4badaf4df5d974c5727c3bc6257cc1958307b8d839d53e1f6ff14c62fe2f"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-accepted-1.png",
+      "bytes": 180213,
+      "sha256": "d1ca4badaf4df5d974c5727c3bc6257cc1958307b8d839d53e1f6ff14c62fe2f"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-final/privacy-no-selected.png",
+      "bytes": 175860,
+      "sha256": "9487e628b78c3e86c0797bb09f6ad75e025d592d7160c25b9eb8f5c635e7a142"
+    }
+  ],
+  "live_case": "/home/campbell/Projects/Ottrin/.hermes/evidence/office-installed-current/windows-focused",
+  "source_packages_unchanged": true
+}

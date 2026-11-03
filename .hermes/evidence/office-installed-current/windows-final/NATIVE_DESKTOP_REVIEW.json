@@ -1,0 +1,12 @@
+{
+  "status": "Normal owned desktop visually observed and ownership-checked readiness sent",
+  "domain_uuid": "4eed2376-fe37-4213-96e9-da706514f09e",
+  "choices": "Location, optional inking/typing and personalized offers each visibly No before native Accept; no OOBE or security policy bypass",
+  "method": "Native keyboard focus/selection after inherited relative mouse prevented coordinate choice. Original pointer observer failure retained; keyboard choices and desktop reviewed directly.",
+  "captures": {
+    "privacy-accept-focused.png": "81f4415b0258a1602c0f0e1b63ae9c64047ebf181cbea7b154f59c1787bc58b5",
+    "privacy-inking-no.png": "91b48f0291e6f094b87dca96602a504e3e032300cdbdd771a77c9a276e2c642c",
+    "privacy-offers-no.png": "b3662edc9e804b3dc5425779927e69e33352b8367e410fab7432ec02f9a22a01",
+    "desktop-ready.png": "765adbd98a713bbf87b069a24662c72dc79727906ce26e5488d7424fd89747c7"
+  }
+}

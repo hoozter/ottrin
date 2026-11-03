@@ -4,12 +4,14 @@ from contextlib import ExitStack
 import argparse, base64, re, hashlib, importlib.util, json, os, shutil, signal, subprocess, sys, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');args=parser.parse_args()
+assert not args.office_worksheet or args.office_installed,'Worksheet surface requires the installed Office fixture'
+assert not args.office_installed or (args.application_nsis_stage and args.output and not args.use_stock_base and not args.use_updated_base),'Installed Office uses its exact declared retained-provider clone'
 application_case=bool(args.application_msi or args.application_nsis_stage or args.application_uia_stage)
 assert not args.native_transport_probe or (args.use_stock_base and args.output and not any([application_case,args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'Transport probe requires an isolated stock case'
 assert sum(map(bool,[args.application_msi,args.application_nsis_stage,args.application_uia_stage]))<=1
 assert not args.application_uia_stage or (args.use_stock_base and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), "UIAutomation requires its own stock ordinary-user case"
-assert not args.application_nsis_stage or (args.use_stock_base and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'NSIS requires its own stock ordinary-user case'
+assert not args.application_nsis_stage or ((args.use_stock_base or args.office_installed) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'NSIS requires its own stock ordinary-user case'
 assert not args.application_msi or ((args.use_stock_base or args.use_updated_base) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])),'Application MSI requires a fresh declared stock or prepared updated ordinary-user case'
 assert not args.native_elevated or args.native_msi_builder,'Elevated diagnostic requires the native file-only builder; never an application deployment mode'
 assert not args.test_filter or args.native_test
@@ -22,7 +24,7 @@ assert not(args.use_updated_base and args.use_stock_base)
 assert not((args.use_updated_base or args.use_stock_base) and args.update_manifest)
 assert sum(map(bool,[args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test]))<=1
 interactive_case=bool(args.msix_runtime or not(args.update_manifest or args.msix_parse_only or args.msix_stage or args.native_test or args.native_transport_probe))
-assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base or args.use_stock_base or args.native_test),'New comparison needs an explicit new evidence root'
+assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base or args.use_stock_base or args.office_installed or args.native_test),'New comparison needs an explicit new evidence root'
 r=Path.cwd();e=args.output.resolve() if args.output else Path(__file__).resolve().parent
 assert not args.output or not (e/'OWNER.json').exists(),'Do not replace an existing owned run'
 e.mkdir(parents=True,exist_ok=True)
@@ -31,7 +33,7 @@ name='ottrin-uia-client' if args.application_uia_stage else 'ottrin-transport-pr
 def virsh(*args):return subprocess.check_output(['virsh','-c','qemu:///system',*args],text=True).strip()
 def save(n,data):(e/n).write_text(json.dumps(data,indent=2)+'\n')
 assert name not in virsh('list','--all','--name').splitlines()
-if not args.use_stock_base:
+if not args.use_stock_base and not args.office_installed:
  assert virsh('domstate','win11ltsc')=='shut off'
  assert virsh('domuuid','win11ltsc')=='4e160378-2610-4072-b528-048e4c9f509e'
  assert not virsh('snapshot-list','win11ltsc','--name')
@@ -52,7 +54,13 @@ if args.application_uia_stage:scope='Exact current Windows release GUI with expl
 if args.application_nsis_stage:scope='Exact current portable chooser and ordinary-user NSIS fresh install, accepted-baseline running-index upgrade, intent preservation, real cache-lock refusal and supported uninstall retry; no production elevation.'
 if args.application_msi:scope='Exact held diagnostic Ottrin MSI ordinary-user install, real cleanup refusal, data/task preservation and supported retry on the declared prepared Windows client; no synthetic application fault or production elevation.'
 if args.native_elevated:scope='Diagnostic elevated owned QA account, same native file-only MSI authoring. No ordinary-user acceptance, Ottrin executable, security-policy change or original profile mutation.'
+if args.office_installed:scope='Current NSIS installed Office main/Inspector render and fallback on ordinary native WGPU/OpenGL; private clone of retained verified-provider QA base, not a clean stock installation'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
+if args.office_installed:
+ assert virsh('domstate','ottrin-copy-cleanup-qa')=='shut off' and virsh('domuuid','ottrin-copy-cleanup-qa')=='9b2e795f-fb04-4adb-95a7-8832f8894c67'
+ backing='/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2'
+ base_template=E.fromstring(virsh('dumpxml','ottrin-copy-cleanup-qa'));assert {x.get('file') for x in base_template.findall('./devices/disk/source')}=={backing}
+ save('PROVIDER_BASE.json',{'domain':'ottrin-copy-cleanup-qa','uuid':virsh('domuuid','ottrin-copy-cleanup-qa'),'disk':backing,'xml_sha256':hashlib.sha256(E.tostring(base_template)).hexdigest(),'scope':'Retained provider base is shut off and only read through an owned COW overlay; source domain and snapshots never changed'})
 if args.use_updated_base:
  prepared_base=json.loads((r/'.hermes/evidence/windows-msi-updated-client-current/UPDATED_BASE.json').read_text());assert prepared_base['status']=='ready for named pending native consumers';backing=prepared_base['path'];assert backing=='/var/lib/libvirt/images/ottrin-msi-updated-client.qcow2'
  base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default',prepared_base['volume']));assert base_xml.findtext('./backingStore/path')==prepared_base['backing_original'];assert virsh('vol-path','--pool','default',prepared_base['volume'])==backing
@@ -65,7 +73,7 @@ if args.use_stock_base:
  backing=prepared_base['disk'];assert backing=='/var/lib/libvirt/images/ottrin-stock-client.qcow2' and prepared_base['backing_image'] is None
  base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default','ottrin-stock-client.qcow2'));assert not base_xml.findtext('./backingStore/path')
  for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
-state={'domain':name,'uuid':uid,'base_domain':None if args.use_stock_base else 'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.native_test or args.msix_runtime or args.native_msi_builder or application_case or args.native_transport_probe else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+state={'domain':name,'uuid':uid,'base_domain':'ottrin-copy-cleanup-qa' if args.office_installed else None if args.use_stock_base else 'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.native_test or args.msix_runtime or args.native_msi_builder or application_case or args.native_transport_probe else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 save('OWNER.json',state)
 def backing_chain(path):
  chain=[]
@@ -92,7 +100,7 @@ def cleanup():
     files=set(backing_chain(disk.get('file')));assert not files.intersection(owned_paths)
     chains.append({'retained_domain':other,'files':sorted(files)})
   for v in state['volumes']:
-   files=set(backing_chain('/var/lib/libvirt/images/'+v));assert files.issubset(owned_paths|{state['base_disk']})
+   files=set(backing_chain('/var/lib/libvirt/images/'+v));assert files.issubset(owned_paths|set(backing_chain(state['base_disk'])))
    chains.append({'owned_volume':v,'files':sorted(files)})
   state['checked_backing_chains']=chains
   removed=[]
@@ -103,7 +111,7 @@ def cleanup():
    virsh('vol-delete','--pool','default',v)
    removed.append(v)
   if fixture.exists():shutil.rmtree(fixture)
-  state['cleanup']={'domain_removed':True,'owned_volumes_removed':removed,'fixture_removed':True,'base_still_off':all(backing not in virsh('dumpxml',d) for d in virsh('list','--all','--name').splitlines()) if args.use_stock_base else virsh('domstate','win11ltsc')=='shut off','retained_pending_volume':state.get('retained_pending_volume')}
+  state['cleanup']={'domain_removed':True,'owned_volumes_removed':removed,'fixture_removed':True,'base_still_off':all(backing not in virsh('dumpxml',d) for d in virsh('list','--all','--name').splitlines()) if args.use_stock_base else virsh('domstate',state['base_domain'])=='shut off','retained_pending_volume':state.get('retained_pending_volume')}
  except BaseException as error:state['cleanup_error']=repr(error);raise
  finally:save('OWNER.json',state)
 def finish(kind,error,trace):
@@ -168,7 +176,7 @@ with ExitStack() as stack:
   if args.msix_upgrade_from:iso_inputs.append(fixture/'Previous.msix')
  else:
   source=r/'.hermes/evidence/msi-hosted-control-current/source'
-  actor=(r/'.hermes/evidence/windows-assistive-current/actor.ps1').read_text() if args.application_uia_stage else (r/'.hermes/evidence/assistive-delivery-current/nsis-actor.ps1').read_text() if args.application_nsis_stage else (r/'.hermes/evidence/windows-msi-client-current/application-actor.ps1').read_text() if args.application_msi else (args.native_msi_builder.parent/'actor-input.ps1').read_text() if args.native_msi_builder and args.native_msi_builder.parent.name=='windows-msi-deferred-control-current' else (source/'msi-rollback-control-actor.ps1').read_text()
+  actor=(e.parent/'actor.ps1').read_text() if args.office_installed else (r/'.hermes/evidence/windows-assistive-current/actor.ps1').read_text() if args.application_uia_stage else (r/'.hermes/evidence/assistive-delivery-current/nsis-actor.ps1').read_text() if args.application_nsis_stage else (r/'.hermes/evidence/windows-msi-client-current/application-actor.ps1').read_text() if args.application_msi else (args.native_msi_builder.parent/'actor-input.ps1').read_text() if args.native_msi_builder and args.native_msi_builder.parent.name=='windows-msi-deferred-control-current' else (source/'msi-rollback-control-actor.ps1').read_text()
   if not application_case:
    actor=actor.replace(" foreach($kind in @('install','uninstall')) {", " $result.phase='waiting for owned ordinary desktop';Save;$deadline=[DateTime]::UtcNow.AddMinutes(8);$readyPath=Join-Path $out 'DESKTOP_READY.json';while(-not(Test-Path $readyPath)){if([DateTime]::UtcNow-ge$deadline){throw 'Owned first-login desktop was not made ready'};Start-Sleep -Milliseconds 250};$ready=Get-Content $readyPath -Raw|ConvertFrom-Json;Require ($ready.sid-eq$ExpectedSid) 'Desktop readiness belongs to another fixture';$result.desktop_ready=$true;$result.phase='executing native MSI rollback control';Save\n foreach($kind in @('install','uninstall')) {")
    actor=actor.replace(" $profilePath=[Environment]", " $session=(Get-Process -Id $PID).SessionId;Require ($session-gt0) 'Real ordinary interactive session required';$result.session_id=$session\n $profilePath=[Environment]")
@@ -228,7 +236,20 @@ with ExitStack() as stack:
    identity={'sha256':digest,'source_revision':receipt['source_revision'],'payload_files':len(payload),'scope':'Exact retained failing MSI diagnostic input, not rebuilt, patched or artificially faulted'};(fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity)
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('application.msi','application-input.json','payload.json','config-template.json')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n $packageInput=Get-Content (Join-Path $root 'application-input.json') -Raw|ConvertFrom-Json;if((Get-FileHash (Join-Path $root 'application.msi')).Hash.ToLowerInvariant()-ne$packageInput.sha256){throw 'Actual MSI input mismatch'}\n"+script[end:]
-  if args.application_nsis_stage:
+  if args.office_installed:
+   accepted=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());stage=args.application_nsis_stage.resolve();assert stage==r/'dist/windows-candidate' and not args.application_nsis_stage.is_symlink()
+   setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';assert hashlib.sha256(setup.read_bytes()).hexdigest()==accepted['artifacts'][setup.name];os.link(setup,fixture/'current-setup.exe')
+   payload=json.loads((r/'.hermes/evidence/assistive-delivery-current/PAYLOAD.json').read_text());assert len(payload)==58
+   (fixture/'payload.json').write_text(json.dumps(payload));identity={'source_revision':accepted['source_commit'],'files':[{'name':'current-setup.exe','sha256':accepted['artifacts'][setup.name]}],'fixtures':{},'ui_case':'worksheet' if args.office_worksheet else 'document'}
+   application_files=['current-setup.exe','payload.json','application-input.json','native-controls.ps1','config-template.json']
+   for fixture_name,fixture_source in [('01-office.docx','office-fidelity.docx'),('02-office.xlsx','office-fidelity.xlsx'),('03-office.pptx','office-fidelity.pptx')]:
+    path=r/'crates/ottrin-preview/tests/fixtures'/fixture_source;shutil.copy2(path,fixture/fixture_name);application_files.append(fixture_name);identity['fixtures'][fixture_name]=hashlib.sha256(path.read_bytes()).hexdigest()
+   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity)
+   config=json.loads((r/'.hermes/evidence/linux-cli-options-package-current/after100/TEARDOWN.json').read_text())['persisted_config'];(fixture/'config-template.json').write_text(json.dumps(config))
+   shutil.copy2(r/'.hermes/evidence/desktop-package-current/windows/gui/NATIVE_CONTROLS_INPUT.ps1',fixture/'native-controls.ps1')
+   start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
+   script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
+  if args.application_nsis_stage and not args.office_installed:
    package_evidence=r/'.hermes/evidence/assistive-delivery-current';receipt=json.loads((package_evidence/'HOST_PAYLOAD.json').read_text());stage=args.application_nsis_stage.resolve();assert stage==r/'.hermes/packaging-tmp/.windows-picker-stage' and not args.application_nsis_stage.is_symlink()
    old=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());previous=r/'dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe'
    files=[('portable.zip',stage/'Ottrin-0.1.0-windows-x64-portable.zip',receipt['artifacts']['Ottrin-0.1.0-windows-x64-portable.zip']),('current-setup.exe',stage/'Ottrin-0.1.0-windows-x64-setup.exe',receipt['artifacts']['Ottrin-0.1.0-windows-x64-setup.exe']),('previous-setup.exe',previous,old['artifacts'][previous.name])]
@@ -271,6 +292,7 @@ with ExitStack() as stack:
  # UDF carries the real >4GiB file size; the ISO9660 fallback is limited.
  # The Windows reader must recheck every update hash before WUSA executes it.
  large_file_flags=['-allow-limited-size'] if args.update_manifest else []
+ assert name==state['domain'],'VM allocation name changed during fixture preparation'
  subprocess.run(['genisoimage','-quiet','-udf',*large_file_flags,'-iso-level','3','-J','-joliet-long','-r','-V','OTMSICONTROL','-o',str(fixture/'inputs.iso'),*map(str,iso_inputs)],check=True)
  virsh('vol-create-as','default',iso_volume,str((fixture/'inputs.iso').stat().st_size),'--format','raw');state['volumes'].append(iso_volume);save('OWNER.json',state)
  virsh('vol-upload','--pool','default',iso_volume,str(fixture/'inputs.iso'))
@@ -278,7 +300,7 @@ with ExitStack() as stack:
  assert subprocess.run(['fuser',str(host_iso)],capture_output=True).returncode==1
  state['uploaded_host_iso_removed_bytes']=host_iso.stat().st_size;host_iso.unlink();save('OWNER.json',state)
  virsh('vol-create-as','default',volume,'64G','--format','qcow2','--backing-vol',state['base_disk'],'--backing-vol-format','qcow2');state['volumes'].append(volume);save('OWNER.json',state)
- root=E.parse(stock/'DOMAIN_TEMPLATE.xml').getroot() if args.use_stock_base else E.fromstring(virsh('dumpxml','win11ltsc'));root.find('name').text=name;root.find('uuid').text=uid
+ root=E.fromstring(E.tostring(base_template)) if args.office_installed else E.parse(stock/'DOMAIN_TEMPLATE.xml').getroot() if args.use_stock_base else E.fromstring(virsh('dumpxml','win11ltsc'));root.find('name').text=name;root.find('uuid').text=uid
  for tag in ['memory','currentMemory']:
   node=root.find(tag)
   if node is not None:node.text='4194304';node.set('unit','KiB')
@@ -292,12 +314,17 @@ with ExitStack() as stack:
  for tag in ['filesystem','hostdev','redirdev']:
   for device in root.findall('./devices/'+tag):root.find('devices').remove(device)
  state.update(host_filesystems=0,host_devices=0,usb_redirection=0);save('OWNER.json',state)
+ if args.office_installed and not root.findall("./devices/input[@type='tablet']"):
+  E.SubElement(root.find('devices'),'input',{'type':'tablet','bus':'usb'})
  if interactive_case:
-  graphics=root.find('./devices/graphics');assert graphics.get('type')=='spice'
+  graphics=root.find('./devices/graphics')
+  if args.office_installed and graphics.get('type')=='vnc':
+   graphics.clear();graphics.set('type','spice');graphics.set('autoport','yes');E.SubElement(graphics,'listen',{'type':'address','address':'127.0.0.1'});E.SubElement(graphics,'image',{'compression':'off'})
+  assert graphics.get('type')=='spice'
   for node in list(graphics.findall('gl')):graphics.remove(node)
   acceleration=root.find('./devices/video/model/acceleration')
   if acceleration is not None:acceleration.set('accel3d','no')
-  state['graphics_scope']='Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance'
+  state['graphics_scope']='Owned software-only SPICE desktop; Office exercises declared native WGPU and bundled OpenGL; no physical adapter acceptance' if args.office_installed else 'Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance'
   save('OWNER.json',state)
  cd=E.SubElement(root.find('devices'),'disk',{'type':'file','device':'cdrom'});E.SubElement(cd,'driver',{'name':'qemu','type':'raw'});E.SubElement(cd,'source',{'file':'/var/lib/libvirt/images/'+iso_volume});used={x.get('dev') for x in root.findall('./devices/disk/target')};cd_dev=next(value for value in ['sda','sdb','sdc','sdd'] if value not in used);E.SubElement(cd,'target',{'dev':cd_dev,'bus':'sata'});E.SubElement(cd,'readonly')
  xml=fixture/'domain.xml';E.ElementTree(root).write(xml,encoding='unicode');virsh('define',str(xml));virsh('start',name);state['status']='booting';save('OWNER.json',state)
@@ -455,6 +482,8 @@ with ExitStack() as stack:
   observer=subprocess.Popen([sys.executable,str(r/'.hermes/evidence/windows-startup-lifetime-current/privacy-control.py'),str(e),'finish-application'],stdout=observer_log,stderr=subprocess.STDOUT,start_new_session=True)
   stack.callback(desktop.workspace.stop_tests,observer)
   state['desktop_observer_pid']=observer.pid;save('OWNER.json',state)
+ if args.office_installed:
+  state['desktop_readiness']='Private software console with clone-only absolute USB tablet; known-page observer selects No and sends ownership-checked readiness only after normal desktop. Native visual recovery remains required on an unrecognized page.';save('OWNER.json',state)
  time.sleep(8);deadline=time.monotonic()+1200
  while True:
   try:

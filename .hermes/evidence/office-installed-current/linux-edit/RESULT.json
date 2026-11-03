@@ -1,0 +1,44 @@
+{
+  "status": "pass within current explicit Edit/Save scope",
+  "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+  "artifact_sha256": "1461fd60c92e8bb3bcf59f049cc2f450a449ed6bef42430f6b4a2302beda68d4",
+  "scope": "Current packaged Linux Dark100 native X11/software; temporal PDF transition, read-only navigation and explicit text Save; not physical or every-file acceptance",
+  "mapped_gui_sha256": "dbe4fef1047958e9cd1e64f7522d881df4dca7f1be3dd8a610be854a1b9fee1c",
+  "explicit_edit": {
+    "draft_did_not_write": true,
+    "saved_exact_expected_bytes": true,
+    "clean_editor_closed": true
+  },
+  "normal_main_exit": 0,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-qm9g3_qu",
+    "owned_processes_reaped": [
+      {
+        "pid": 725738,
+        "exit": 0
+      },
+      {
+        "pid": 725745,
+        "exit": 0
+      },
+      {
+        "pid": 725746,
+        "exit": 15
+      },
+      {
+        "pid": 725875,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        725880,
+        725948
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

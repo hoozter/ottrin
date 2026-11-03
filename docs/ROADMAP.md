@@ -21,7 +21,14 @@ VCF/text navigation, Space-to-close, menus, Properties, icon pixel identity,
 previous-build→new-build→reopen Miller preference preservation, directory links,
 picker single/range/concurrent cancellation and source/config preservation pass.
 Rendered review verifies shared titlebar color, actual/preview button corners and
-main/Settings/editor/Inspector window corners. It does not repeat the exhaustive
+main/Settings/editor/Inspector window corners. Current Dark100 AppImage acceptance
+adds100 temporal text-to-PDF frames with stable settled page bounds, read-only
+VCF/PDF arrows and Space-to-close, plus explicit text editing: drafts preserve
+source until Save, which publishes exact expected bytes and closes normally.
+The first combined observer stopped on a stale AT-SPI node after its PDF/read-only
+assertions; those results remain scoped, and a separate edit-only actor passes.
+Both private desktops/profiles are removed. Receipt:
+`office-installed-current/LINUX_PREVIEW_ACCEPTANCE.json`. It does not repeat the exhaustive
 39-control sweep or certify physical renderers/screen-reader usability.
 
 Actual installed Firefox and Flatpak Falkon Open/Save pass with correct caller
@@ -74,6 +81,24 @@ hardlink alias, source-transfer archive and staging are retired after consumers.
 The exact failed older MSI remains separately retained. Evidence and scope:
 `.hermes/evidence/assistive-delivery-current/DELIVERY.json`.
 
+Current installed Office acceptance now binds the same90ba8639 NSIS package to
+LibreOffice26.8.1.1 in an ordinary account on disposable clones of the retained
+provider base. DOCX main/Inspector, XLSX main/Inspector and PPTX Inspector render
+through actual conversion children; withheld-helper XLSX fallback and its visible
+explanation pass. Native preference and explicit OpenGL are exercised,14 captures
+are reviewed, authored files remain unchanged, and normal uninstall preserves
+preferences and removes processes/temp output. Both API DLL families load; their
+presence alone is not exclusive backend/device proof. The software VM result does
+not certify physical adapters or arbitrary Office fidelity. All test clones/media
+and private consoles are removed. Exact receipt:
+`office-installed-current/WINDOWS_OFFICE_ACCEPTANCE.json`.
+
+Rendered review finds a real shared fallback defect: a narrow Miller worksheet
+stretches letters and words. `render_spreadsheet_row` uses `Ui::put`, whose implicit
+centered-and-justified layout reaches the wrapped cell Label. Conversion and data
+checks pass, but this typography issue remains required work; do not mark full
+preview/UI acceptance complete.
+
 The native ordinary-user MSI rollback/retry boundary remains held on both
 26300/.9444 and26100/.9711. Its sole exact8ede diagnostic input remains under
 `windows-msi-package-control-current/input/`; no format or contract is waived.
@@ -83,14 +108,17 @@ waits remain below and must not stall dependency-ready software work.
 
 Continue in this order:
 
-1. Finish the remaining exact-package software acceptance. Start with installed
-   Windows Office main/Inspector rendering and fallback on the current preview,
-   including native WGPU: the older `office-package-current/ACCEPTANCE.json`
-   explicitly accepts OpenGL and leaves that installed/native-renderer scope open.
-   Use owned clones/private profiles and the existing representative fixtures;
-   do not mutate retained base environments or broaden claims to arbitrary Office.
-   Recheck current temporal PDF stability and explicit edit/save preservation where
-   the older preview-safety receipts do not establish the current GUI behavior.
+1. Correct the shared native worksheet cell layout in
+   `crates/ottrin-ui/src/preview_render.rs`: wrapped body text must retain normal
+   glyph/word spacing and a consistent leading alignment in narrow Miller previews
+   and Inspector. Add a rendered regression that fails on the observed forced
+   justification, then verify the actual corrected fallback on both platforms and
+   publish the affected GUI packages. Preserve the current usable deliverables
+   until correction checks pass. Completed installed Office conversion/fallback
+   and Linux temporal PDF/explicit Save scopes above remain exact90ba8639 evidence;
+   do not repeat unrelated fulfilled lifecycle/fault matrices without changed
+   inputs or a reproduced defect. Native Windows temporal PDF and explicit Save,
+   plus remaining broader workflow/media scopes, still need their current audit.
 2. Complete the concentrated current Linux/Windows daily-driver workflows and
    remaining supported integration/resource gates against the stable packages.
    Bind each requirement to direct current evidence or an explicit unchanged
@@ -1487,7 +1515,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | Four90ba8639 formats delivered; all four exact-source CI jobs pass. Current native accessibility, dark/light preview/menu/Properties/icon/update-view, Fedora/Ubuntu lifecycle, fresh10k metadata/content resources and actual Firefox/Flatpak Falkon Open/Save pass. | Audit remaining broader software/platform requirements and parked owner/device acceptance. No personal daemon restart or new personal-workload claim. |
-| Windows | Current90ba8639 ZIP/NSIS/development MSIX0.1.0.5 delivered. Complete payload, native WGPU/OpenGL/10k idle, NSIS fresh/upgrade/refusal/retry and actual MSIX4→5 enabled/disabled real-login/removal pass. All owned fixture VMs/staging and superseded preview files removed. | Finish current installed Office/native-renderer and remaining daily-driver software acceptance; keep the native MSI rollback boundary held. |
+| Windows | Current90ba8639 ZIP/NSIS/development MSIX0.1.0.5 delivered. Complete payload, native WGPU/OpenGL/10k idle, NSIS fresh/upgrade/refusal/retry and actual MSIX4→5 enabled/disabled real-login/removal pass. All owned fixture VMs/staging and superseded preview files removed. | Correct shared narrow worksheet typography and finish remaining daily-driver/software acceptance; current installed Office conversion/fallback scopes pass, with physical renderer acceptance separate. Keep native MSI rollback held. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 

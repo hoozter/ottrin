@@ -1,0 +1,7 @@
+{
+  "status": "Owned absolute virtual USB tablet attached normally to this clone only",
+  "domain_uuid": "4eed2376-fe37-4213-96e9-da706514f09e",
+  "reason": "Retained VNC base uses relative mouse; the private SPICE viewer needs absolute tablet coordinates for native first-login choices. No security policy or ready signal bypass.",
+  "result": "Device attached successfully",
+  "retained_base_xml_unchanged": true
+}

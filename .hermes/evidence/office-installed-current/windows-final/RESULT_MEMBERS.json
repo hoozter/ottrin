@@ -1,0 +1,30 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "c801e385c713282fc828a982d7abf06e993502c9698aa4bf66dc3e2cd7139ad0"
+  },
+  "install-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "native-main.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-main.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "OWNER.json": {
+    "bytes": 1068,
+    "sha256": "ca6610c0481c94078aecae84b32e3e035c9a5103dbad3e4a9fe755fcc3baa733"
+  },
+  "RESULT.json": {
+    "bytes": 2256,
+    "sha256": "c684a873d38113d301288a20f3d8f48b7b134823b2921459f0c83ea96867c9c6"
+  },
+  "service-cleanup-process.json": {
+    "bytes": 220,
+    "sha256": "104315be1a285257a2a965f828c11790079fb1d20e150f5a34e0458cfa719c7a"
+  }
+}

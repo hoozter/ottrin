@@ -1,0 +1,7 @@
+{
+  "status": "Normal native desktop and taskbar directly observed, ready signal ownership checked",
+  "domain_uuid": "12dcfbc8-5678-4398-850d-d876528ff5ce",
+  "desktop_sha256": "ffd1cdb1a5a0d1b8b7b0c5b565aa75af4505fc4253ea421e7585b35c5c1eba2b",
+  "observer_limit": "Known page observer reached desktop but its exact-whitespace OCR readiness condition failed. Original observer error retained; no repeated setup input or reboot. Actual desktop reviewed and native ownership-checked ready sent.",
+  "scope": "Private owned normal desktop, no OOBE/security-policy bypass."
+}

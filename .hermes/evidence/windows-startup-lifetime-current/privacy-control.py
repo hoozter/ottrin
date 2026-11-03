@@ -11,7 +11,7 @@ elif action=='scroll':
  geometry=subprocess.check_output(['xdotool','getwindowgeometry','--shell',window],env=env,text=True,timeout=10);bounds=dict(line.split('=',1) for line in geometry.splitlines() if '=' in line);assert 0<=x<int(bounds['WIDTH']) and 0<=y<int(bounds['HEIGHT'])
  subprocess.run(['xdotool','windowactivate','--sync',window,'mousemove','--window',window,str(x),str(y),'click','--repeat',str(abs(count)),'--delay','100','5' if count>0 else '4'],env=env,check=True,timeout=10);time.sleep(.4)
 elif action=='key':
- key=sys.argv[3];assert key in ['Escape','Return'];subprocess.run(['xdotool','windowactivate','--sync',window,'key','--clearmodifiers',key],env=env,check=True,timeout=10);time.sleep(.4)
+ key=sys.argv[3];assert key in ['Escape','Return','Tab','space','Down','Up'];subprocess.run(['xdotool','windowactivate','--sync',window,'key','--clearmodifiers',key],env=env,check=True,timeout=10);time.sleep(.4)
 elif action=='shot':
  name=sys.argv[3];assert Path(name).name==name and name.endswith('.png');subprocess.run(['import','-window',window,str(r/name)],env=env,check=True,timeout=10)
 elif action in ['finish-msix','finish-application']:
@@ -35,7 +35,7 @@ elif action in ['finish-msix','finish-application']:
    heading=matched[0];y=allowed[heading];seen.add(heading)
    steps.append({'heading':heading,'observed_sha256':hashlib.sha256((r/filename).read_bytes()).hexdigest(),'selection':'No','input':[[900,y],[1080,737]]})
    own('click',900,y);own('click',1080,737);deadline=time.monotonic()+45
-  assert time.monotonic()<deadline,'Known privacy page transition or normal desktop did not appear; no repeated input'
+  assert time.monotonic()<deadline,'Native desktop/transition OCR was not conclusive; review the private console; no repeated input'
   time.sleep(.5)
  own('key','Escape');own('shot','desktop-ready.png');own('ready-msi' if action=='finish-application' else 'ready')
  (r/'PRIVACY_STEPS.json').write_text(json.dumps({'status':'pass','scope':'Known first-login pages observed by OCR and completed with native input on owned private console; optional collection declined; no policy bypass','domain_uuid':owner['uuid'],'steps':steps,'desktop_observed':True},indent=2)+'\n')

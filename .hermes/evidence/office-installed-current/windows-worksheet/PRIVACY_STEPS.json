@@ -1,0 +1,53 @@
+{
+  "status": "pass",
+  "scope": "Known first-login pages observed by OCR and completed with native input on owned private console; optional collection declined; no policy bypass",
+  "domain_uuid": "b02c26a3-1c4a-4327-b50b-23cac9afbb34",
+  "steps": [
+    {
+      "heading": "use your location",
+      "observed_sha256": "bd456833baa0004500af4ce671f3708f08a6f6da2e2fbed16546b28448bf4d75",
+      "selection": "No",
+      "input": [
+        [
+          900,
+          550
+        ],
+        [
+          1080,
+          737
+        ]
+      ]
+    },
+    {
+      "heading": "improve inking",
+      "observed_sha256": "1283fdf22c8d05fc90723552c96a92c8f013c2105838b1ac7833a3d4eb6bbb0e",
+      "selection": "No",
+      "input": [
+        [
+          900,
+          550
+        ],
+        [
+          1080,
+          737
+        ]
+      ]
+    },
+    {
+      "heading": "personalized offers",
+      "observed_sha256": "4624b2fb1fc5e9c1a9ffb52625398c92a1393554b37a46838d7c6bbe783bbc93",
+      "selection": "No",
+      "input": [
+        [
+          900,
+          610
+        ],
+        [
+          1080,
+          737
+        ]
+      ]
+    }
+  ],
+  "desktop_observed": true
+}

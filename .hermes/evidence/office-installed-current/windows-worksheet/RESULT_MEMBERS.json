@@ -1,0 +1,70 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "3ddfb279e0a6726a74326863387bc9975c26913079ec5e47d6b7a1a203a9b4ce"
+  },
+  "install-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  },
+  "native-inspector-worksheet-rendered.png": {
+    "bytes": 52625,
+    "sha256": "0e2bdfa9326d82f9931144e511f67453e0854d41d050bef5ab3a6f7e0096d8e8"
+  },
+  "native-inspector-worksheet.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-inspector-worksheet.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-main-worksheet-rendered.png": {
+    "bytes": 77350,
+    "sha256": "4c73bb75b126bb1119e35d275302df473b285a1efd8a57036e9a8ad6ae33e10f"
+  },
+  "native-main-worksheet.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-main-worksheet.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-inspector-worksheet-rendered.png": {
+    "bytes": 52534,
+    "sha256": "3ff4d91982e7d2d9ac90f3c165d8470fcebd2a8a3ec62e27c0863530d2cb38ff"
+  },
+  "opengl-inspector-worksheet.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-inspector-worksheet.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-main-worksheet-rendered.png": {
+    "bytes": 77788,
+    "sha256": "bb083a924e630b4330ac74a2d4623dcc75df89e4016c15df1f2694d02cc4d926"
+  },
+  "opengl-main-worksheet.stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "opengl-main-worksheet.stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "OWNER.json": {
+    "bytes": 1068,
+    "sha256": "ea80a2d44f502db9a8def94bcd4b87c21b9131bc89e5b0a6f5ced1e90318e593"
+  },
+  "RESULT.json": {
+    "bytes": 21712,
+    "sha256": "66f672670a0b43be5bcbc5d85a7a1b54594bfa815c50977ce9c42988241dd204"
+  },
+  "uninstall-process.json": {
+    "bytes": 60,
+    "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a"
+  }
+}

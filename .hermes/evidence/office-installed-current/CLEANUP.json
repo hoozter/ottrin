@@ -1,0 +1,221 @@
+{
+  "status": "All owned native attempts/desktops cleaned; current deliverables and shared caches preserved",
+  "native_attempts": [
+    {
+      "case": "windows",
+      "uuid": "c415c26d-ac19-4fd7-9c62-61becf02a6fb",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-renderers",
+      "uuid": "3f2dd96c-cb79-4219-9c87-c0c05a6dd711",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-final",
+      "uuid": "4eed2376-fe37-4213-96e9-da706514f09e",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-focused",
+      "uuid": "5daca770-86fb-4e2d-880b-0e8267710c33",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-observed",
+      "uuid": "12dcfbc8-5678-4398-850d-d876528ff5ce",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-worksheet",
+      "uuid": "b02c26a3-1c4a-4327-b50b-23cac9afbb34",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "linux_profiles_removed": true,
+  "removed_completed_setup_frames": [
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-focused/offers-page.png",
+      "bytes": 181150,
+      "sha256": "725dc1bcc46a1a317defd22d4da8d9b9d3e173b65e8363528a6ee86ec0dc0a4e",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-focused/inking-page.png",
+      "bytes": 173569,
+      "sha256": "7a3e2c72029f79c4146c95b8774f7c5402cd5fe17daf6be0ba861fb8c29d4d98",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-focused/current.png",
+      "bytes": 520179,
+      "sha256": "e02588b7659d3a9a48d39902d1bde16f2a129b4e5e45914a39027e435ad2c9cb",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-focused/privacy-returned.png",
+      "bytes": 175955,
+      "sha256": "09070fcecc4bd9bf36c54cbf0238ad4f25f892b492f6fc7fd0be22543f3024a4",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-focused/privacy-back.png",
+      "bytes": 188669,
+      "sha256": "79d9a9d198bb88d1a6cda0693291408a4e62f5f1b4aa3f701228abe7879af41c",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-focused/location-no.png",
+      "bytes": 188687,
+      "sha256": "4fbd288f01f790a1214f0033546c561807981ccefe2456a9ed20c25f11ed8cd8",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-observed/privacy-accepted-2.png",
+      "bytes": 183412,
+      "sha256": "9dcd415926200e7a59aaecbe13333ae2d6d4ed5c561f01ccbbdb569f1f20c6aa",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-observed/privacy-accepted-0.png",
+      "bytes": 178350,
+      "sha256": "d97ed88340dacbd46dfae97c345b258b4341df555093c0af5b7bf40c1d25407c",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-observed/focus-ready.png",
+      "bytes": 649122,
+      "sha256": "200d6ff91030dd793952eaf42100c3742d27a33c68358d4a32e780f3af575a1e",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-observed/current.png",
+      "bytes": 1188722,
+      "sha256": "b10242961ef371243fd0bab55e00e6ad5173a63a4907215255325a1ddb5dd83e",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-observed/privacy-accepted-3.png",
+      "bytes": 1188859,
+      "sha256": "1219adecb09be34965e4c18ad6790264bac900cffcbc370867418ef47aa70c96",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-observed/privacy-accepted-1.png",
+      "bytes": 175359,
+      "sha256": "4c2636f6ebbc463aaea61b9210b7a324fabd5d90c4665cb930ed043c75379675",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-worksheet/privacy-accepted-2.png",
+      "bytes": 205686,
+      "sha256": "4624b2fb1fc5e9c1a9ffb52625398c92a1393554b37a46838d7c6bbe783bbc93",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-worksheet/privacy-accepted-0.png",
+      "bytes": 200691,
+      "sha256": "bd456833baa0004500af4ce671f3708f08a6f6da2e2fbed16546b28448bf4d75",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-worksheet/privacy-accepted-3.png",
+      "bytes": 1740594,
+      "sha256": "e9e01905b86ecfb29430de34e384db405aee9baf76a500d2406fb9b349d3482b",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-worksheet/privacy-accepted-1.png",
+      "bytes": 198011,
+      "sha256": "1283fdf22c8d05fc90723552c96a92c8f013c2105838b1ac7833a3d4eb6bbb0e",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    },
+    {
+      "path": ".hermes/evidence/office-installed-current/windows-worksheet/desktop-ready.png",
+      "bytes": 2512976,
+      "sha256": "664311ffec671632b079a35dd607a87bf5be23edf9e3095162a59da047772af2",
+      "kind": "Completed private setup/observation frame; final product screenshots and review-bound desktop captures retained"
+    }
+  ],
+  "compiler_debug_allocated_bytes_before": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920
+  },
+  "compiler_debug_allocated_bytes_after": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920
+  },
+  "rust_builds_or_test_executables_created": false,
+  "retained_provider_base_xml_sha256": "93f7e706f8aad2ac08582df777b18248f9c51d5e8b97ba27094ba9832d9463fe",
+  "retained_provider_base_unchanged": true,
+  "current_windows_package_hashes_unchanged": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "cadcb821ebc55ab8749869da41fa665d00de5b474364902d56b76fc32c6a8945",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc",
+    "Ottrin-0.1.0-windows-x64-development.msix": "18b37c9880dd6f211215ca1806ea7d1b2b58cb6a9f791c0a134fecf8979e6944"
+  },
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/office-installed-current",
+      "purpose": "Compact native results, reviewed product screenshots and reusable QA producer/assessor; no active fixture, disposable media or pending teardown."
+    }
+  ],
+  "preserved": "Current dist/packages and dist/windows-candidate remain usable and unchanged; protected Windows bases/retained environments and prior privileged diagnostic-core waits are untouched."
+}

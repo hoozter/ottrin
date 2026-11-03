@@ -1,0 +1,327 @@
+{
+  "scope": "Exact current installed NSIS Office ordinary-user native WGPU/OpenGL main/Inspector rendering and failure fallback",
+  "phase": "normal supported uninstall",
+  "desktop_ready": true,
+  "cases": {
+    "native": {
+      "main": {
+        "modules": [
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll",
+            "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+            "name": "opengl32.dll"
+          },
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll",
+            "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+            "name": "libgallium_wgl.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+            "sha256": "bacc237311e24faf7b6a373a724b706c205753ee4fded6e592aac051b9f0adc1",
+            "name": "d3d12.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+            "sha256": "0843f2473d0e45f7c921bd45b758360c5a6fd6de7d7ab98fb11f9a1f6c724aa9",
+            "name": "dxgi.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+            "sha256": "8d3d5d6b246b7febdb3fcc0cdb97f969554dc193b0d47e94853f19cfddac76ed",
+            "name": "D3D12Core.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d10warp.dll",
+            "sha256": "432f391b8b0596902ed0573db1861c4f88fe209618db1c6a29bb668f2eca38c1",
+            "name": "d3d10warp.dll"
+          }
+        ],
+        "title": "Ottrin",
+        "cyan": 144,
+        "conversions": [
+          {
+            "parent": 4640,
+            "pid": 4496,
+            "arguments": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4640-1793681920515426500\\.ottrin-4640-1793681920516274600\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/Users/OTMSI3~1/AppData/Local/Temp/ottrin-office-preview-4640-1793681920515426500/.ottrin-4640-1793681920516274600 C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4640-1793681920515426500\\.ottrin-4640-1793681920516274600\\input\\01-office.docx C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4640-1793681920515426500",
+            "executable": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4640-1793681920515426500\\.ottrin-4640-1793681920516274600\\office-render.exe"
+          }
+        ],
+        "orange": 144
+      },
+      "main_fallback": {
+        "injection": "Owned installed helper withheld after successful provider rendering; XLSX native fallback and explanation require rendered review"
+      },
+      "inspector_fallback": {
+        "injection": "Owned installed helper withheld after detection; native worksheet and visible explanation require review",
+        "title": "Ottrin Quick Inspector \u2014 02-office.xlsx"
+      },
+      "inspector": {
+        "modules": [
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll",
+            "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+            "name": "opengl32.dll"
+          },
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll",
+            "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+            "name": "libgallium_wgl.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+            "sha256": "bacc237311e24faf7b6a373a724b706c205753ee4fded6e592aac051b9f0adc1",
+            "name": "d3d12.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+            "sha256": "0843f2473d0e45f7c921bd45b758360c5a6fd6de7d7ab98fb11f9a1f6c724aa9",
+            "name": "dxgi.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+            "sha256": "8d3d5d6b246b7febdb3fcc0cdb97f969554dc193b0d47e94853f19cfddac76ed",
+            "name": "D3D12Core.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d10warp.dll",
+            "sha256": "432f391b8b0596902ed0573db1861c4f88fe209618db1c6a29bb668f2eca38c1",
+            "name": "d3d10warp.dll"
+          }
+        ],
+        "title": "Ottrin Quick Inspector \u2014 01-office.docx",
+        "cyan": 3025,
+        "conversions": [
+          {
+            "parent": 7768,
+            "pid": 8200,
+            "arguments": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-7768-1793681943806306200\\.ottrin-7768-1793681943807164600\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/Users/OTMSI3~1/AppData/Local/Temp/ottrin-office-preview-7768-1793681943806306200/.ottrin-7768-1793681943807164600 C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-7768-1793681943806306200\\.ottrin-7768-1793681943807164600\\input\\01-office.docx C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-7768-1793681943806306200",
+            "executable": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-7768-1793681943806306200\\.ottrin-7768-1793681943807164600\\office-render.exe"
+          }
+        ],
+        "orange": 3025
+      },
+      "presentation": {
+        "modules": [
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll",
+            "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+            "name": "opengl32.dll"
+          },
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll",
+            "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+            "name": "libgallium_wgl.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+            "sha256": "bacc237311e24faf7b6a373a724b706c205753ee4fded6e592aac051b9f0adc1",
+            "name": "d3d12.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+            "sha256": "0843f2473d0e45f7c921bd45b758360c5a6fd6de7d7ab98fb11f9a1f6c724aa9",
+            "name": "dxgi.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+            "sha256": "8d3d5d6b246b7febdb3fcc0cdb97f969554dc193b0d47e94853f19cfddac76ed",
+            "name": "D3D12Core.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d10warp.dll",
+            "sha256": "432f391b8b0596902ed0573db1861c4f88fe209618db1c6a29bb668f2eca38c1",
+            "name": "d3d10warp.dll"
+          }
+        ],
+        "title": "Ottrin Quick Inspector \u2014 03-office.pptx",
+        "cyan": 3364,
+        "conversions": [
+          {
+            "parent": 6184,
+            "pid": 3172,
+            "arguments": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-6184-1793681969590290700\\.ottrin-6184-1793681969591306900\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/Users/OTMSI3~1/AppData/Local/Temp/ottrin-office-preview-6184-1793681969590290700/.ottrin-6184-1793681969591306900 C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-6184-1793681969590290700\\.ottrin-6184-1793681969591306900\\input\\03-office.pptx C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-6184-1793681969590290700",
+            "executable": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-6184-1793681969590290700\\.ottrin-6184-1793681969591306900\\office-render.exe"
+          }
+        ],
+        "orange": 3364
+      }
+    },
+    "opengl": {
+      "main": {
+        "modules": [
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll",
+            "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+            "name": "opengl32.dll"
+          },
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll",
+            "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+            "name": "libgallium_wgl.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+            "sha256": "bacc237311e24faf7b6a373a724b706c205753ee4fded6e592aac051b9f0adc1",
+            "name": "d3d12.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+            "sha256": "0843f2473d0e45f7c921bd45b758360c5a6fd6de7d7ab98fb11f9a1f6c724aa9",
+            "name": "dxgi.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+            "sha256": "8d3d5d6b246b7febdb3fcc0cdb97f969554dc193b0d47e94853f19cfddac76ed",
+            "name": "D3D12Core.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d10warp.dll",
+            "sha256": "432f391b8b0596902ed0573db1861c4f88fe209618db1c6a29bb668f2eca38c1",
+            "name": "d3d10warp.dll"
+          }
+        ],
+        "title": "Ottrin",
+        "cyan": 144,
+        "conversions": [
+          {
+            "parent": 5608,
+            "pid": 6988,
+            "arguments": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5608-1793681994155960400\\.ottrin-5608-1793681994158428700\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/Users/OTMSI3~1/AppData/Local/Temp/ottrin-office-preview-5608-1793681994155960400/.ottrin-5608-1793681994158428700 C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5608-1793681994155960400\\.ottrin-5608-1793681994158428700\\input\\01-office.docx C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5608-1793681994155960400",
+            "executable": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5608-1793681994155960400\\.ottrin-5608-1793681994158428700\\office-render.exe"
+          }
+        ],
+        "orange": 144
+      },
+      "main_fallback": {
+        "injection": "Owned installed helper withheld after successful provider rendering; XLSX native fallback and explanation require rendered review"
+      },
+      "inspector_fallback": {
+        "injection": "Owned installed helper withheld after detection; native worksheet and visible explanation require review",
+        "title": "Ottrin Quick Inspector \u2014 02-office.xlsx"
+      },
+      "inspector": {
+        "modules": [
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll",
+            "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+            "name": "opengl32.dll"
+          },
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll",
+            "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+            "name": "libgallium_wgl.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+            "sha256": "bacc237311e24faf7b6a373a724b706c205753ee4fded6e592aac051b9f0adc1",
+            "name": "d3d12.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+            "sha256": "0843f2473d0e45f7c921bd45b758360c5a6fd6de7d7ab98fb11f9a1f6c724aa9",
+            "name": "dxgi.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+            "sha256": "8d3d5d6b246b7febdb3fcc0cdb97f969554dc193b0d47e94853f19cfddac76ed",
+            "name": "D3D12Core.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d10warp.dll",
+            "sha256": "432f391b8b0596902ed0573db1861c4f88fe209618db1c6a29bb668f2eca38c1",
+            "name": "d3d10warp.dll"
+          }
+        ],
+        "title": "Ottrin Quick Inspector \u2014 01-office.docx",
+        "cyan": 3025,
+        "conversions": [
+          {
+            "parent": 4432,
+            "pid": 8448,
+            "arguments": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4432-1793682004891293200\\.ottrin-4432-1793682004892061500\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/Users/OTMSI3~1/AppData/Local/Temp/ottrin-office-preview-4432-1793682004891293200/.ottrin-4432-1793682004892061500 C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4432-1793682004891293200\\.ottrin-4432-1793682004892061500\\input\\01-office.docx C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4432-1793682004891293200",
+            "executable": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-4432-1793682004891293200\\.ottrin-4432-1793682004892061500\\office-render.exe"
+          }
+        ],
+        "orange": 3025
+      },
+      "presentation": {
+        "modules": [
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\opengl32.dll",
+            "sha256": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+            "name": "opengl32.dll"
+          },
+          {
+            "path": "C:\\Users\\OTMSI3194ca7d92de\\AppData\\Local\\Programs\\Ottrin\\bin\\libgallium_wgl.dll",
+            "sha256": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+            "name": "libgallium_wgl.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+            "sha256": "bacc237311e24faf7b6a373a724b706c205753ee4fded6e592aac051b9f0adc1",
+            "name": "d3d12.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+            "sha256": "0843f2473d0e45f7c921bd45b758360c5a6fd6de7d7ab98fb11f9a1f6c724aa9",
+            "name": "dxgi.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+            "sha256": "8d3d5d6b246b7febdb3fcc0cdb97f969554dc193b0d47e94853f19cfddac76ed",
+            "name": "D3D12Core.dll"
+          },
+          {
+            "path": "C:\\WINDOWS\\SYSTEM32\\d3d10warp.dll",
+            "sha256": "432f391b8b0596902ed0573db1861c4f88fe209618db1c6a29bb668f2eca38c1",
+            "name": "d3d10warp.dll"
+          }
+        ],
+        "title": "Ottrin Quick Inspector \u2014 03-office.pptx",
+        "cyan": 3364,
+        "conversions": [
+          {
+            "parent": 5448,
+            "pid": 7504,
+            "arguments": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5448-1793682018330981600\\.ottrin-5448-1793682018332374300\\office-render.exe \"\\\\?\\C:\\Program Files\\LibreOffice\\program\" -env:UserInstallation=file:///C:/Users/OTMSI3~1/AppData/Local/Temp/ottrin-office-preview-5448-1793682018330981600/.ottrin-5448-1793682018332374300 C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5448-1793682018330981600\\.ottrin-5448-1793682018332374300\\input\\03-office.pptx C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5448-1793682018330981600",
+            "executable": "C:\\Users\\OTMSI3~1\\AppData\\Local\\Temp\\ottrin-office-preview-5448-1793682018330981600\\.ottrin-5448-1793682018332374300\\office-render.exe"
+          }
+        ],
+        "orange": 3364
+      }
+    }
+  },
+  "provider": {
+    "mergedlo_sha256": "017D0C21B6E45E54C0194B58017853D8C653059CC643643C3EB831A4D309331F",
+    "version": "26.8.1.1",
+    "vcl_windows_sha256": "BBA69CA1047FB46866F8982E90C995B559E2C95FA36258CE8ABFE339BFD53715"
+  },
+  "payload_files": 58,
+  "owned_processes_removed": true,
+  "uninstall": "pass",
+  "office_temp_removed": true,
+  "package": {
+    "source_revision": "90ba8639f2e5d6dad7e24ebd5b95382e108e1300",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "8906b7f7dc8ff297748faa9207fcd2d35fffd3159fe5f7cd0330e17d47ef2bfc"
+      }
+    ],
+    "fixtures": {
+      "01-office.docx": "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471",
+      "02-office.xlsx": "c20213e5a26d4f619a922339fa0801ef6715544d22a276de928417c3d7a75978",
+      "03-office.pptx": "421f4977f3837fb626b5b64ad1300c9496013762614f8e1b9be03cbc6cc45dfe"
+    }
+  },
+  "source_preserved": true,
+  "preferences_preserved_by_removal": true,
+  "identity": {
+    "profile": "C:\\Users\\OTMSI3194ca7d92de",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1056",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "pass within installed Office render/fallback scope; direct capture review remains required"
+}
