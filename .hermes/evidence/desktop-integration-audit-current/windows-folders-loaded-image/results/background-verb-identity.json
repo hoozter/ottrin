@@ -1,0 +1,9 @@
+{
+    "exited":  false,
+    "native_image":  "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+    "pid":  2772,
+    "case":  "background-verb",
+    "loaded_image":  "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+    "command":  "\"C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal\\.\"",
+    "expected":  "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe"
+}

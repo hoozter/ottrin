@@ -1,0 +1,99 @@
+{
+  "status": "pass exact installed Windows folder integration functional scope",
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "nsis_sha256": "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd",
+  "payload_files": 58,
+  "actor_sha256": "2b113788d7e8c3044cc283198eb6647d1498721a48af9949b0c794f2cc23943d",
+  "original_case": "windows-folders-loaded-image",
+  "five_native_dispatches": [
+    {
+      "verb": "Ottrin.Open",
+      "command_line": "\"C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal\\.\"",
+      "case": "directory-verb",
+      "exit": 0,
+      "merged_class": "Directory",
+      "executable": "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+      "native_location": "\\\\?\\C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal",
+      "requested": "C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal"
+    },
+    {
+      "verb": "Ottrin.Open",
+      "command_line": "\"C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal\\.\"",
+      "case": "background-verb",
+      "exit": 0,
+      "merged_class": "Directory\\Background",
+      "executable": "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+      "native_location": "\\\\?\\C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal",
+      "requested": "C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal"
+    },
+    {
+      "verb": "Ottrin.Open",
+      "command_line": "\"C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\\\.\"",
+      "case": "drive-verb",
+      "exit": 0,
+      "merged_class": "Drive",
+      "executable": "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+      "native_location": "\\\\?\\C:\\",
+      "requested": "C:\\"
+    },
+    {
+      "verb": null,
+      "command_line": "\"C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal\\.\"",
+      "case": "default-directory",
+      "exit": 0,
+      "merged_class": null,
+      "executable": "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+      "native_location": "\\\\?\\C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal",
+      "requested": "C:\\Users\\OTMSI6b4d18296e1e\\Documents\\Ottrin folders %1 100% literal"
+    },
+    {
+      "verb": null,
+      "command_line": "\"C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\\\.\"",
+      "case": "default-drive",
+      "exit": 0,
+      "merged_class": null,
+      "executable": "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+      "native_location": "\\\\?\\C:\\",
+      "requested": "C:\\"
+    }
+  ],
+  "gui_enable_and_restore": true,
+  "repair_preserves_default": true,
+  "uninstall_restores_owned_defaults": true,
+  "later_user_choice_preserved": true,
+  "unrelated_registry_data_preserved": true,
+  "source_and_preferences_preserved": true,
+  "native_default_status_truthful_after_later_choice": true,
+  "directly_reviewed_originals": {
+    "default-drive-location.png": "68f9d2ef33e5e19e1c44dfcfd3d4679a15c0894f40c03471505362b8aee3e3f6",
+    "settings-before-services.png": "bb455d9fb7d79dc2a6df434901f3d953171f694a110d967d297be531eb58bc4c",
+    "drive-verb-location.png": "ee64acce2b87922a257967110a9e659cec85690d68c7e1543b7eecc267463497",
+    "services-default-off.png": "fcfdb93c7a4fd71a5c39e06a58b5e2099c676203ac7294b880b75f9f4d9e0d33",
+    "services-default-on.png": "9f0fcb31d2b707bfe0021633043af28b6dc276e0ac00c0e58361626f57ef1253",
+    "background-verb-location.png": "db9d6693c5ca78729f98fab70fa9c239bf75bedd920b5a22cf02ab845ae042ac",
+    "directory-verb-location.png": "db9d6693c5ca78729f98fab70fa9c239bf75bedd920b5a22cf02ab845ae042ac",
+    "default-directory-location.png": "e2b16dc99562c3cbd38c23a33778be04d441640b778f9d77db384a89c8ef2273"
+  },
+  "visual_review": [
+    "All five dispatched windows show expected canonical Location and actual folder contents, including literal percent/space path and drive root",
+    "Settings navigation and Services grouping use shared chrome and aligned rows",
+    "services-default-on screenshot was captured before the asynchronous UI status refreshed and still shows the off action; it does not prove the on-state styling. Later successful native lookup/activation of Restore previous folder defaults proves eventual action availability."
+  ],
+  "limits": [
+    "Owned ordinary-user Windows software/default-DPI fixture only; no universal picker replacement or virtual-folder handling claim",
+    "Services navigation used observed pointer coordinates because runtime36 lacks named native navigation; new source correction is separate and not yet packaged",
+    "PowerShell default stdout decoding damaged the Unicode dash in CLI status detail; booleans/native launch/Location unaffected. Producer now requests UTF8 for future runs; original raw bytes retained.",
+    "Initial alias, missing-name, native-null and unrecorded immediate-image assumptions remain failed/inconclusive attempts; not relabelled as passed"
+  ],
+  "cleanup": {
+    "domain_uuid": "6cb107fd-05f9-4472-9baf-a25aeef1823c",
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-nsis-client-fixture.iso",
+      "ottrin-nsis-client.qcow2"
+    ],
+    "profile_removed": "/var/tmp/.ottrin-picker-qa-w0pny9ug",
+    "fixture_removed": true,
+    "remaining_owned_installed_processes": 0
+  }
+}

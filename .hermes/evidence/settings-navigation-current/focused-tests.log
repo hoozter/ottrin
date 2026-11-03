@@ -1,0 +1,30 @@
+   Compiling x11-dl v2.21.0
+   Compiling glib-sys v0.20.10
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling gobject-sys v0.20.10
+   Compiling gio-sys v0.20.10
+   Compiling fontique v0.11.1
+   Compiling parley v0.11.1
+   Compiling glib v0.20.12
+   Compiling winit v0.30.12
+   Compiling glutin_glx_sys v0.6.1
+   Compiling glutin v0.32.3
+   Compiling rwml v0.1.4
+   Compiling accesskit_winit v0.29.2
+   Compiling glutin-winit v0.5.0
+   Compiling egui-wgpu v0.33.3
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling eframe v0.33.3 (/home/campbell/Projects/Ottrin/vendor/eframe)
+   Compiling gio v0.20.12
+   Compiling ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 1m 17s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 2 tests
+test appearance_editor::tests::settings_navigation_rows_keep_icon_and_text_centred_inside_their_surface ... ok
+test appearance_editor::tests::settings_navigation_exposes_named_choices_and_accepts_native_activation ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 469 filtered out; finished in 0.02s
+

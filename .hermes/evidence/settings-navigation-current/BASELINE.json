@@ -1,0 +1,17 @@
+{
+  "source_before": "0fe8700c5edff1c72781c3b35b591b4744fd3aab",
+  "sizes": {
+    "target/debug/deps": 41448361984,
+    "target/debug/incremental": 22743330816,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33310941184,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39531646976,
+    "target/release/deps": 4299345920,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769569280
+  },
+  "purpose": "Expose Settings navigation names, selected state and native activation; verify and package coherent UI correction",
+  "cleanup_owner": "settings-navigation-current producers; shared target caches retained, guarded obsolete output cleanup before handoff",
+  "staging_roots": [
+    ".hermes/packaging-tmp/.linux-native-desktop-stage",
+    ".hermes/packaging-tmp/.windows-picker-stage"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+    "exited":  false,
+    "native_image":  "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+    "pid":  7292,
+    "case":  "default-drive",
+    "loaded_image":  "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+    "command":  "\"C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe\" -- \"C:\\\\.\"",
+    "expected":  "C:\\Users\\OTMSI6b4d18296e1e\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe"
+}

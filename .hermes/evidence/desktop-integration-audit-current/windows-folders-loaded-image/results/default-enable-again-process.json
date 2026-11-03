@@ -1,0 +1,6 @@
+{
+    "stdout":  "Ottrin is selected for filesystem folder and drive links that use the Windows default verb. Programs explicitly requesting Explorer or another verb keep that behavior.\n",
+    "stderr":  "",
+    "seconds":  0.0804965,
+    "exit":  0
+}

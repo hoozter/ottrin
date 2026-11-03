@@ -35,12 +35,13 @@
     },
     {
       "id": 10,
-      "classification": "current AppImage scope passed; current NSIS default/restore/uninstall still running",
+      "classification": "current Linux/Windows functional integration scope passed; native navigation accessibility separate",
       "evidence": [
         "LINUX_FILEMANAGER_ACCEPTANCE.json:all methods, native bytes, child cleanup, restart and real Dolphin preservation",
-        "windows-folders-json-helper:three actual merged-menu verbs and normal Close passed, then unnamed Settings row halted GUI default scope"
+        "windows-folders-json-helper:three actual merged-menu verbs and normal Close passed, then unnamed Settings row halted GUI default scope",
+        "WINDOWS_FOLDER_ACCEPTANCE.json:five exact installed native dispatches, GUI enable/restore, repair and supported uninstall preserves later choice/data"
       ],
-      "remaining": "Next fresh native actor must verify default dispatch, repair, GUI restoration and uninstall. Four prior cases terminal/cleaned. Loaded-image readiness/identity diagnostics corrected in producer; null argument normalization itself has not yet reached default dispatch. Settings navigation source accessibility correction also pending."
+      "remaining": "New Settings navigation accessibility source correction still requires native packaged verification. Current folder/default functional acceptance is complete at explicit runtime36/source/artifact scope; do not repeat unchanged matrix automatically."
     },
     {
       "id": 11,
@@ -66,7 +67,7 @@
     {
       "id": 48,
       "classification": "incomplete",
-      "remaining": "All outcome4 clauses above must be proven; current Windows fixture default/restore/uninstall scope and Settings accessibility remain incomplete."
+      "remaining": "Outcome4 complete clause audit remains; current folder/default functional gap closed. New navigation source delivery and independent remaining picker/source/geometry clauses remain."
     }
   ]
 }

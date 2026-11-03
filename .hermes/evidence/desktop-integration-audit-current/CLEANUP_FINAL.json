@@ -1,5 +1,5 @@
 {
-  "status": "all four owned Windows cases and private Linux session terminal and removed",
+  "status": "all five owned Windows cases and private Linux session terminal and removed",
   "cases": [
     {
       "case": "windows-folders",
@@ -47,6 +47,18 @@
         "ottrin-nsis-client.qcow2"
       ],
       "profile_removed": "/var/tmp/.ottrin-picker-qa-ogivpsrb",
+      "fixture_removed": true
+    },
+    {
+      "case": "windows-folders-loaded-image",
+      "uuid": "6cb107fd-05f9-4472-9baf-a25aeef1823c",
+      "terminal_status": "control finished; inspect exact result, not assumed pass",
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-nsis-client-fixture.iso",
+        "ottrin-nsis-client.qcow2"
+      ],
+      "profile_removed": "/var/tmp/.ottrin-picker-qa-w0pny9ug",
       "fixture_removed": true
     }
   ],

@@ -82,19 +82,31 @@ are directly reviewed; this is private X11 with synthetic startup-property hando
 not physical Wayland activation acceptance. Evidence:
 `desktop-integration-audit-current/LINUX_FILEMANAGER_ACCEPTANCE.json`.
 
-The current installed Windows NSIS passes all three merged folder menu dispatches
-and normal GUI Close, but the first GUI Services check found that the custom
-painted Settings navigation exposes no named native accessibility control. Correct
-that source responsibility in the next UI delivery, including selected state and
-native activation; current packages must not be described as fixed. Complete the
-current-package default-folder/restore/uninstall fixture separately. Initial
-PowerShell alias and unnamed-row assumptions remain recorded as failed attempts.
-Later native default-dispatch checks remain unaccepted: optional null strings
-needed normalization in the PowerShell/C# fixture, and its next run failed an
-immediate loaded-image assertion without recording the actual returned image.
-The producer now records PID/image/command and waits for an initially unavailable
-image; the next fresh native run is still required. All four Windows attempts
-and their overlays/profiles are terminal and removed. See `CLEANUP_FINAL.json`.
+The exact installed runtime36 Windows NSIS now passes all five native merged-menu
+and default-folder/drive dispatches, GUI enable/restore, repair preserving the
+chosen default, and supported uninstall restoration. Later user choice, unrelated
+registry data, original source and preferences survive. All eight original captures
+are directly reviewed. One early post-enable capture still shows pre-refresh UI;
+eventual native Restore action and actual dispatch/restore results establish the
+functional outcome. This is an ordinary-user software/default-DPI fixture, not
+virtual-folder or universal picker replacement acceptance. See
+`desktop-integration-audit-current/WINDOWS_FOLDER_ACCEPTANCE.json`.
+Initial PowerShell alias, unnamed-row, nullable-string and incomplete loaded-image
+assumptions retain failed/inconclusive results. The corrected final fixture passes;
+all five Windows overlays/profiles are removed. Future captures now wait for the
+native Restore action and decode child stdout as UTF8. No rerun is claimed for
+those transport/capture producer refinements.
+
+A new source correction exposes Settings navigation names/selected state/native
+activation through the shared row. Create File/Folder and Rename now share a
+38-point input height with vertically centred text. The actual composed Settings
+test activates Services using the native accessibility event, and real dialog
+keyboard tests verify field bounds/painted text centring in Dark/Light at normal
+and1.35 text. All470 UI tests pass, with one existing ignored, plus strict native
+and Windows UI/app lint and formatting. These fixes are source-tested and await
+new package/native acceptance; the stable seven packages above remain runtime36.
+Evidence: `settings-navigation-current/SOURCE_SCOPE.json` and `SOURCE_CHECKS.json`.
+
 All 39 original appearance controls have native edit/reset/save/restart evidence.
 Current color ordering/getters/setters, saved draft and preview-color resolution
 are byte-identical to that accepted source; the original palette file is unchanged
@@ -103,7 +115,7 @@ are identical, with a separate addition pinning egui to the resolved Light/Dark 
 `APPEARANCE_MAPPING_PROJECTION.json` retains exact comparison hashes; this is not
 a fresh 39-control UI sweep. Original Windows picker resource values are directly
 inspected in `WINDOWS_PICKER_MEASUREMENT_AUDIT.json`.
-No product source or current deliverable has changed in this audit checkpoint.
+Current deliverables remain unchanged pending the new navigation/input delivery.
 
 Continue in this order:
 
@@ -115,8 +127,9 @@ Continue in this order:
    release-gate clauses only. Inspect every clause's direct evidence and unchanged
    responsibility, including all 39 appearance mappings, Services state/actions,
    numeric/color-picker controls, remaining media and storage/cross-volume workflows.
-   Keep the observed rename/creation field-height difference for the visual consistency
-   audit; do not infer whole-interface acceptance from field-name tests.
+   Finish native/package delivery of the source-tested Settings navigation and
+   creation/rename geometry correction; do not infer whole-interface acceptance
+   from field-name tests.
 2. Close independently executable picker, Linux FileChooser/FileManager1 and
    reversible Windows folder-integration software/caller gaps. Retain supported
    caller/platform boundaries; Windows cooperating-picker checks do not establish

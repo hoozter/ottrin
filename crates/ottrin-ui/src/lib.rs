@@ -159,7 +159,7 @@ use thumbnail_cache::{
 use window_chrome::{WmBtn, render_custom_titlebar, wm_btn};
 
 const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
-const CREATION_MODAL_INPUT_HEIGHT: f32 = 38.0;
+const FILE_NAME_INPUT_HEIGHT: f32 = 38.0;
 const CREATION_MODAL_ACTION_SIZE: Vec2 = Vec2::new(84.0, 32.0);
 
 pub fn administrator_surface_label(label: &str, administrator: bool) -> String {
@@ -180,10 +180,6 @@ fn administrator_session() -> bool {
     {
         false
     }
-}
-
-fn creation_modal_input_height() -> f32 {
-    CREATION_MODAL_INPUT_HEIGHT
 }
 
 fn creation_modal_action_size() -> Vec2 {
@@ -20227,11 +20223,12 @@ impl OttrinApp {
                         );
                         ui.add_space(6.0);
                         let response = ui.add_sized(
-                            Vec2::new(ui.available_width(), creation_modal_input_height()),
+                            Vec2::new(ui.available_width(), FILE_NAME_INPUT_HEIGHT),
                             egui::TextEdit::singleline(&mut pending.name_input)
                                 .id(egui::Id::new("creation_name_input"))
                                 .desired_width(ui.available_width())
                                 .font(FontId::proportional(13.0 * c.font_scale))
+                                .vertical_align(egui::Align::Center)
                                 .text_color(c.text)
                                 .themed(&c)
                                 .accessible_name(match pending.kind {
@@ -20374,11 +20371,13 @@ impl OttrinApp {
                         });
                         ui.add_space(12.0);
                         let input_id = egui::Id::new("rename_name_input");
-                        let response = ui.add(
+                        let response = ui.add_sized(
+                            Vec2::new(ui.available_width(), FILE_NAME_INPUT_HEIGHT),
                             egui::TextEdit::singleline(&mut pending.name_input)
                                 .id(input_id)
                                 .desired_width(ui.available_width())
                                 .font(FontId::proportional(13.0 * c.font_scale))
+                                .vertical_align(egui::Align::Center)
                                 .text_color(c.text)
                                 .themed(&c)
                                 .accessible_name("New name"),
@@ -24188,6 +24187,9 @@ fn settings_navigation_row(
         Vec2::new(ui.available_width(), 30.0 * c.font_scale),
         Sense::click(),
     );
+    response.widget_info(|| {
+        WidgetInfo::selected(WidgetType::RadioButton, ui.is_enabled(), active, label)
+    });
     let fill = if active {
         c.selected_bg
     } else if response.hovered() {
@@ -32954,82 +32956,123 @@ mod tests {
             .collect()
     }
 
+    fn assert_rendered_file_name_geometry(output: &egui::FullOutput, name: &str, value: &str) {
+        let bounds = output
+            .platform_output
+            .accesskit_update
+            .as_ref()
+            .unwrap()
+            .nodes
+            .iter()
+            .find(|(_, node)| node.label() == Some(name))
+            .unwrap()
+            .1
+            .bounds()
+            .unwrap();
+        let rect = Rect::from_min_max(
+            egui::pos2(bounds.x0 as f32, bounds.y0 as f32),
+            egui::pos2(bounds.x1 as f32, bounds.y1 as f32),
+        );
+        assert!((rect.height() - 38.0).abs() < 1.0, "{name}: {rect:?}");
+        if !value.is_empty() {
+            let text = output.shapes.iter().find_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Text(text)
+                    if text.galley.job.text == value && rect.contains(text.pos) =>
+                {
+                    Some(Rect::from_min_size(text.pos, text.galley.size()))
+                }
+                _ => None,
+            });
+            let text = text.expect("The actual editable value is painted inside its field");
+            assert!(
+                (text.center().y - rect.center().y).abs() < 1.0,
+                "{name}: {text:?} in {rect:?}"
+            );
+        }
+    }
+
     #[test]
     fn rendered_creation_and_rename_fields_keep_names_values_and_keyboard_editing() {
         for dark in [false, true] {
-            for kind in [CreationKind::File, CreationKind::Folder] {
-                let (root, mut app, source) = clipboard_keyboard_fixture();
-                let ctx = Context::default();
-                ctx.enable_accesskit();
-                ctx.set_visuals(if dark {
-                    egui::Visuals::dark()
-                } else {
-                    egui::Visuals::light()
-                });
-                let tab = app.state.active_tab().id;
-                app.open_creation_dialog(kind, tab, root.path().into());
-                let label = match kind {
-                    CreationKind::File => "File name",
-                    CreationKind::Folder => "Folder name",
-                };
-                for step in 0..3 {
-                    let output = ctx.run(
-                        egui::RawInput {
-                            screen_rect: Some(Rect::from_min_size(
-                                egui::Pos2::ZERO,
-                                Vec2::new(900.0, 700.0),
-                            )),
-                            events: if step == 2 {
-                                vec![egui::Event::Text("新 name.txt".into())]
-                            } else {
-                                vec![]
+            for font_scale in [1.0, 1.35] {
+                for kind in [CreationKind::File, CreationKind::Folder] {
+                    let (root, mut app, source) = clipboard_keyboard_fixture();
+                    app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                    app.colors.font_scale = font_scale;
+                    let ctx = Context::default();
+                    ctx.enable_accesskit();
+                    ctx.set_visuals(if dark {
+                        egui::Visuals::dark()
+                    } else {
+                        egui::Visuals::light()
+                    });
+                    let tab = app.state.active_tab().id;
+                    app.open_creation_dialog(kind, tab, root.path().into());
+                    let label = match kind {
+                        CreationKind::File => "File name",
+                        CreationKind::Folder => "Folder name",
+                    };
+                    for step in 0..3 {
+                        let output = ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    Vec2::new(900.0, 700.0),
+                                )),
+                                events: if step == 2 {
+                                    vec![egui::Event::Text("新 name.txt".into())]
+                                } else {
+                                    vec![]
+                                },
+                                ..Default::default()
                             },
-                            ..Default::default()
-                        },
-                        |ctx| app.render_creation_modal(ctx),
-                    );
-                    if step != 0 {
-                        let expected = if step == 2 { "新 name.txt" } else { "" };
-                        assert_eq!(
-                            rendered_text_fields(&output),
-                            vec![(label.into(), expected.into())]
+                            |ctx| app.render_creation_modal(ctx),
                         );
-                        assert_eq!(app.pending_creation.as_ref().unwrap().name_input, expected);
+                        if step != 0 {
+                            let expected = if step == 2 { "新 name.txt" } else { "" };
+                            assert_rendered_file_name_geometry(&output, label, expected);
+                            assert_eq!(
+                                rendered_text_fields(&output),
+                                vec![(label.into(), expected.into())]
+                            );
+                            assert_eq!(app.pending_creation.as_ref().unwrap().name_input, expected);
+                        }
                     }
-                }
-                assert!(!root.path().join("新 name.txt").exists());
-                app.pending_creation = None;
-                app.begin_rename_path(tab, source.clone());
-                for step in 0..3 {
-                    let output = ctx.run(
-                        egui::RawInput {
-                            screen_rect: Some(Rect::from_min_size(
-                                egui::Pos2::ZERO,
-                                Vec2::new(900.0, 700.0),
-                            )),
-                            events: if step == 2 {
-                                vec![egui::Event::Text("-draft".into())]
-                            } else {
-                                vec![]
+                    assert!(!root.path().join("新 name.txt").exists());
+                    app.pending_creation = None;
+                    app.begin_rename_path(tab, source.clone());
+                    for step in 0..3 {
+                        let output = ctx.run(
+                            egui::RawInput {
+                                screen_rect: Some(Rect::from_min_size(
+                                    egui::Pos2::ZERO,
+                                    Vec2::new(900.0, 700.0),
+                                )),
+                                events: if step == 2 {
+                                    vec![egui::Event::Text("-draft".into())]
+                                } else {
+                                    vec![]
+                                },
+                                ..Default::default()
                             },
-                            ..Default::default()
-                        },
-                        |ctx| app.render_rename_modal(ctx),
-                    );
-                    if step != 0 {
-                        let expected = if step == 2 {
-                            "source.txt-draft"
-                        } else {
-                            "source.txt"
-                        };
-                        assert_eq!(
-                            rendered_text_fields(&output),
-                            vec![("New name".into(), expected.into())]
+                            |ctx| app.render_rename_modal(ctx),
                         );
+                        if step != 0 {
+                            let expected = if step == 2 {
+                                "source.txt-draft"
+                            } else {
+                                "source.txt"
+                            };
+                            assert_rendered_file_name_geometry(&output, "New name", expected);
+                            assert_eq!(
+                                rendered_text_fields(&output),
+                                vec![("New name".into(), expected.into())]
+                            );
+                        }
                     }
+                    assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+                    assert!(!root.path().join("source.txt-draft").exists());
                 }
-                assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
-                assert!(!root.path().join("source.txt-draft").exists());
             }
         }
     }
@@ -33128,7 +33171,6 @@ mod tests {
 
     #[test]
     fn creation_modal_controls_keep_a_comfortable_shared_hit_area() {
-        assert_eq!(creation_modal_input_height(), 38.0);
         assert_eq!(creation_modal_action_size(), Vec2::new(84.0, 32.0));
     }
 

@@ -46,5 +46,17 @@
     "bytes": 34315,
     "sha256": "36a21fc15329caa4a4966b144b901bb2fed191ab5cd3652eeaa69443879336f9",
     "basis": "Terminal incomplete case; extracted raw transport members verified and frozen actor/driver retained"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-loaded-image/RESULTS.zip",
+    "bytes": 453359,
+    "sha256": "1dbaf7beae00d1e2b15c94273eac3337065e3dc3d6aba4ab34ce299f97234850",
+    "basis": "Terminal passed case; extracted raw members verified; frozen producer/actor retained"
+  },
+  {
+    "path": ".hermes/evidence/desktop-integration-audit-current/windows-folders-loaded-image/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal passed case; extracted raw members verified; frozen producer/actor retained"
   }
 ]

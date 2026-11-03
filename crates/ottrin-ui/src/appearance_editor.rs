@@ -1191,6 +1191,82 @@ mod tests {
     }
 
     #[test]
+    fn settings_navigation_exposes_named_choices_and_accepts_native_activation() {
+        use egui::accesskit::{Action, ActionRequest, Role, Toggled};
+
+        for dark in [false, true] {
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            let mut app = OttrinApp::default();
+            app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+            app.show_settings = true;
+            app.settings_tab = SettingsTab::General;
+            let mut render = |events| {
+                ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(920.0, 640.0),
+                        )),
+                        events,
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        app.render_settings_modal_embedded(ctx);
+                    },
+                )
+            };
+            let output = render(vec![]);
+            let nodes = &output.platform_output.accesskit_update.unwrap().nodes;
+            let mut services = None;
+            for label in [
+                "General",
+                "Appearance",
+                "Files",
+                "Services",
+                "Search",
+                "Cache",
+            ] {
+                let choices: Vec<_> = nodes
+                    .iter()
+                    .filter(|(_, node)| {
+                        node.role() == Role::RadioButton && node.label() == Some(label)
+                    })
+                    .collect();
+                assert_eq!(choices.len(), 1, "One native navigation choice for {label}");
+                let (id, node) = choices[0];
+                assert!(node.supports_action(Action::Click), "{label}");
+                assert_eq!(
+                    node.toggled(),
+                    Some(if label == "General" {
+                        Toggled::True
+                    } else {
+                        Toggled::False
+                    })
+                );
+                if label == "Services" {
+                    services = Some(*id);
+                }
+            }
+            let _ = render(vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: services.unwrap(),
+                data: None,
+            })]);
+            // The same event and response used by native adapters must switch the
+            // actual Settings page, not merely a detached preview widget.
+            let output = render(vec![]);
+            let nodes = output.platform_output.accesskit_update.unwrap().nodes;
+            assert!(nodes.iter().any(|(_, node)| {
+                node.role() == Role::RadioButton
+                    && node.label() == Some("Services")
+                    && node.toggled() == Some(Toggled::True)
+            }));
+            assert_eq!(app.settings_tab, SettingsTab::Services);
+        }
+    }
+
+    #[test]
     fn settings_navigation_rows_keep_icon_and_text_centred_inside_their_surface() {
         for scale in [1.0, 1.35] {
             let ctx = Context::default();

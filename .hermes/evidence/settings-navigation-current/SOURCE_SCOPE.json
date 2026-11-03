@@ -1,0 +1,27 @@
+{
+  "status": "pass source only; packages remain runtime36",
+  "files": {
+    "crates/ottrin-ui/src/lib.rs": "faa88746f011523ac3469e9fcf8e79461bc586c95053a247e035870648f3df4a",
+    "crates/ottrin-ui/src/appearance_editor.rs": "795a9b2957450dbf9044e9a4d9193a7c8c02aec9e593462fe445eee671d1b669"
+  },
+  "shipping_changes": [
+    "Existing Settings navigation row publishes RadioButton name/selected state and native click activation using ordinary egui widget metadata; painter geometry unchanged",
+    "Create File/Folder and Rename use one38-point input height and vertically centred text; obsolete creation-only height wrapper removed"
+  ],
+  "verification": [
+    "Actual composed Settings native action switches General to Services and reports selected state in Dark/Light",
+    "Existing actual dialog typing/cancellation/source-preservation test now checks painted value centring and native bounds at1.0/1.35 text in Dark/Light",
+    "470 full UI tests pass,1 existing ignored; strict native/Windows all-target UI/app lint and format pass"
+  ],
+  "limits": [
+    "No current-package native claim for new navigation or input geometry until rebuilt",
+    "Preliminary focused2-test run used inherited package-config environment; final full source checks reuse established single-job GStreamer pkg-config environment. Compiler flags/features unchanged.",
+    "No daemon, folder-registration, file operation, preview renderer, index readiness or persistence code changed"
+  ],
+  "pending_consumers": [
+    "Commit exact clean source and run hosted gate",
+    "Build four-format Linux and Windows ZIP/NSIS/MSIX candidate",
+    "Native verify navigation role/activation and actual name-field geometry; promote stable deliverables only after acceptance",
+    "Guarded compiler/staging cleanup"
+  ]
+}
