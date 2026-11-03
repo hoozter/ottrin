@@ -409,11 +409,18 @@ with ExitStack() as stack:
   code="[Console]::OutputEncoding=$OutputEncoding=[Text.UTF8Encoding]::new($false);"+code
   encoded=base64.b64encode(code.encode('utf-16le')).decode();pid=g.qga('guest-exec',{'path':r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe','arg':['-NoProfile','-NonInteractive','-EncodedCommand',encoded],'capture-output':True})['pid'];end=time.monotonic()+timeout
   state['guest_pid']=pid;save('OWNER.json',state)
-  while time.monotonic()<end:
-   result=g.qga('guest-exec-status',{'pid':pid})
+  while True:
+   try:result=g.qga('guest-exec-status',{'pid':pid})
+   except RuntimeError as error:
+    message=str(error)
+    if not any(part in message.lower() for part in ['guest agent is not responding','guest agent not available','guest agent is not connected','timed out','timeout']):raise
+    assert virsh('domuuid',name)==uid,'Owned guest identity changed during observation'
+    assert virsh('domstate',name)=='running','Owned guest stopped during observation'
+    state['guest_observation_interruption']={'pid':pid,'error':message,'process_restarted':False};save('OWNER.json',state);time.sleep(1);continue
    if result.get('exited'):return result
+   if time.monotonic()>=end:
+    state['guest_observation_window_elapsed']={'pid':pid,'seconds':timeout,'process_restarted':False};save('OWNER.json',state);end=time.monotonic()+timeout
    time.sleep(5 if timeout>180 else 1)
-  raise TimeoutError('Owned guest control timed out; overlay teardown follows')
  def reboot_owned_guest():
   # Servicing can restart the agent. Wait for observation before issuing a
   # delayed ordinary Windows reboot, then prove a changed boot identity.
@@ -564,8 +571,28 @@ with ExitStack() as stack:
   assert time.monotonic()<deadline,'Interactive actor did not finish'
   time.sleep(3)
  save('GUEST_RESULT.json',actor_result)
- result=ps("$ErrorActionPreference='Stop';$owner=Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw|ConvertFrom-Json;Copy-Item ($owner.root+'\\results\\*') 'C:\\OttrinMsiCleanClientResults' -Recurse;Compress-Archive 'C:\\OttrinMsiCleanClientResults\\*' 'C:\\OttrinMsiCleanClientResults.zip';[Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\\OttrinMsiCleanClientResults.zip'))",30)
+ result=ps("$ErrorActionPreference='Stop';$owner=Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw|ConvertFrom-Json;Copy-Item ($owner.root+'\\results\\*') 'C:\\OttrinMsiCleanClientResults' -Recurse;Compress-Archive 'C:\\OttrinMsiCleanClientResults\\*' 'C:\\OttrinMsiCleanClientResults.zip';$p=Get-Item 'C:\\OttrinMsiCleanClientResults.zip';@{bytes=$p.Length;sha256=(Get-FileHash $p.FullName).Hash.ToLowerInvariant()}|ConvertTo-Json -Compress",30)
  assert result['exitcode']==0
- (e/'RESULTS.zip').write_bytes(base64.b64decode(base64.b64decode(result['out-data']).decode().strip()))
+ archive=json.loads(base64.b64decode(result['out-data']).decode('utf-8-sig'));assert archive['bytes']>0
+ handle=g.qga('guest-file-open',{'path':r'C:\OttrinMsiCleanClientResults.zip','mode':'rb'})
+ try:
+  with (e/'RESULTS.zip').open('xb') as output:
+   while output.tell()<archive['bytes']:
+    offset=output.tell()
+    while True:
+     try:
+      # An uncertain read may advance the guest handle. Seek to the same
+      # absolute offset before retrying, so no byte can be skipped or doubled.
+      g.qga('guest-file-seek',{'handle':handle,'offset':offset,'whence':0})
+      block=g.qga('guest-file-read',{'handle':handle,'count':min(65536,archive['bytes']-offset)})
+      break
+     except RuntimeError as error:
+      if not any(part in str(error).lower() for part in ['guest agent is not responding','guest agent not available','guest agent is not connected','timed out','timeout']):raise
+      assert virsh('domuuid',name)==uid and virsh('domstate',name)=='running';time.sleep(1)
+    data=base64.b64decode(block.get('buf-b64',''));assert data and len(data)==block['count'];output.write(data)
+ finally:g.qga('guest-file-close',{'handle':handle})
+ assert (e/'RESULTS.zip').stat().st_size==archive['bytes']
+ with (e/'RESULTS.zip').open('rb') as stream:assert hashlib.file_digest(stream,'sha256').hexdigest()==archive['sha256']
+ save('ARCHIVE_TRANSFER.json',{'status':'pass chunked verified owned result archive','bytes':archive['bytes'],'sha256':archive['sha256'],'chunk_bytes':65536,'uncertain_read_recovery':'Seek to exact original offset before retry; no process restart'})
  state['status']='control finished; inspect exact result, not assumed pass';save('OWNER.json',state)
 print('Clean client control and owned overlay teardown finished.',flush=True)

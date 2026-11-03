@@ -1,0 +1,13 @@
+    Checking egui v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui)
+    Checking ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+    Checking egui_glow v0.33.3
+    Checking egui-wgpu v0.33.3
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+    Checking eframe v0.33.3 (/home/campbell/Projects/Ottrin/vendor/eframe)
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Checking ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Checking egui_extras v0.33.3
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 30.12s

@@ -1,0 +1,91 @@
+{
+  "status": "complete owned packaging/native cleanup for superseded unpublished84ea candidate; production source correction continues under new owner",
+  "owned_vms": [
+    {
+      "case": "native",
+      "uuid": "ae3ad366-829e-4567-894e-f255431f9283",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-visible",
+      "uuid": "469ecf6c-2b99-409f-975b-6bb978df0577",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-focused",
+      "uuid": "3822e141-df3d-413e-8410-29b80583e987",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-export",
+      "uuid": "fb9406a5-0908-463e-b27a-4999ffac3246",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "assembly",
+      "uuid": "c9dd9c04-163d-40fd-8a60-aaba6827beff",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "removed_profiles": 6,
+  "removed_stages_and_payload": "SUPERSEDED_CANDIDATES_RETIRED.json",
+  "stable_deliverables_preserved_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "superseded_generated_producers_removed": true,
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current",
+      "purpose": "Compact source, content, negative/native/transport receipts and frozen diagnostic producers/captures; no package or private bootstrap remains"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-display-driver",
+      "purpose": "Reusable signed display-driver input for ongoing isolated Windows DPI checks"
+    }
+  ],
+  "compiler_owner": ".hermes/evidence/appearance-numeric-values-current/; new graph/source validation running in shared target roots",
+  "pending_disposable_consumers": []
+}

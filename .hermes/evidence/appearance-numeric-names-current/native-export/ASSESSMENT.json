@@ -1,0 +1,35 @@
+{
+  "status": "native typed-value metadata mismatch reproduced; matrix not accepted",
+  "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+  "native_numeric_failure": {
+    "expected": 24,
+    "focused_type": "ControlType.Window",
+    "actual": 2,
+    "action": "typed commit",
+    "focused_name": "Ottrin Theme Editor"
+  },
+  "observed_native_cases": 0,
+  "original_capture_review": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-names-current/native-export/results/numeric-mismatch.png",
+    "sha256": "2addee6e2e936229008b016ea21d6605b717e6a90c175c35139e47240f2afd5f",
+    "observed": "Visible Window corners and actual preview show24; native RangeValue reports2. This is stale numeric accessibility metadata, not evidence the visible setting stayed2."
+  },
+  "transport": {
+    "status": "pass chunked verified owned result archive",
+    "bytes": 519783,
+    "sha256": "1c728208196734d14fab89f800f69a1cebedb23cf00cc1e7c71316c3260e6404",
+    "chunk_bytes": 65536,
+    "uncertain_read_recovery": "Seek to exact original offset before retry; no process restart"
+  },
+  "source_regression": "numeric-value-negative.log independently reproduces actual committed model2/native metadata0 in the same rendered input frame",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

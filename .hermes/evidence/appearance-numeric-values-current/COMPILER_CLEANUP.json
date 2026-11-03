@@ -1,0 +1,55 @@
+{
+  "status": "pass completed source-validation cleanup; current dependency caches retained for upcoming package builds",
+  "baseline": {
+    "target/debug/deps": 41441028723,
+    "target/debug/incremental": 22658806852,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292041736,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438874790,
+    "target/release/deps": 4290362413,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764574013
+  },
+  "current": {
+    "target/debug/deps": 41674554097,
+    "target/debug/incremental": 23497764042,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33298645234,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39676099440,
+    "target/release/deps": 4290362413,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764574013
+  },
+  "delta": {
+    "target/debug/deps": 233525374,
+    "target/debug/incremental": 838957190,
+    "target/x86_64-pc-windows-gnu/debug/deps": 6603498,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 237224650,
+    "target/release/deps": 0,
+    "target/x86_64-pc-windows-gnu/release/deps": 0
+  },
+  "obsolete_incremental_sessions_removed": 16,
+  "all_reviewed_candidates_absent": true,
+  "all_recorded_newest_sessions_retained": true,
+  "final_obsolete_incremental_candidates": 0,
+  "obsolete_test_executable_dep_info_and_fingerprint_removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-11a85ca5198af5b6",
+      "kind": "build-cache",
+      "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-11a85ca5198af5b6.d",
+      "kind": "build-cache",
+      "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-11a85ca5198af5b6",
+      "kind": "build-cache",
+      "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+    }
+  ],
+  "replacement_test_executable": "target/debug/deps/ottrin_ui-c354643af000a7cc",
+  "replacement_validation": "476 passed,0failed,1existing ignored; exact compiler/profile/features/flags/config settings match recorded original",
+  "initial_refusal": "Ephemeral unreadable PID1351061 exited; no new process exception added. First pass removed12sessions, retry completed remaining4. Existing two system process identities freshly revalidated.",
+  "scope": "No extra target tree/configuration or blanket clean; native/Windows debug/release dependencies remain useful shared caches for pending new-source packaging/native comparisons"
+}

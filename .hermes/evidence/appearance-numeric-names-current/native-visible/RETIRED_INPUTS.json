@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/RESULTS.zip",
+          "bytes": 699821,
+          "sha256": "2ff2766f00e243bdb2790f7faa1e8b015133113abebaa850e7c25bde8785aa4c"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "89b500622be584b35439394f7ab3591321753bb694f13e93361f1a06067e5b8f"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/CONTROLLER_PROCESS.json",
+          "bytes": 1940,
+          "sha256": "419d61d45c1907ba21222dd589ca58e09923ef7b0749cb16374845ad000fb762"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "dbbf45fd28b237946fac7f573b2d57a1cb7a1b70eac1b1256c57909032e17848"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/readiness.log",
+          "bytes": 1117,
+          "sha256": "29709f4e939dda4acd0a3843b94b23572003c748bcede7c20bfa86c9a2ce5ada"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/desktop-ready.png",
+          "bytes": 2956524,
+          "sha256": "4fd87802bc168777030dd002c19c75db66d3395726bd1a5ae67fe78fa73fa870"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "6392b0c3170aad5c8cda2773daccb15d6bf4af71132ac6179dc92f98463d7563"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-visible/privacy-accepted-0.png",
+          "bytes": 3834871,
+          "sha256": "a2b924cd3ea9cae011f7ffe60727e5db13cfb3e37d350d75d239fabfaab871a1"
+        }
+      ],
+      "bytes": 7500559
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

@@ -1,0 +1,70 @@
+{
+  "settings_host": {
+    "title": "Settings",
+    "pid": 7092,
+    "type": "ControlType.Window"
+  },
+  "numeric_failure": {
+    "expected": 24,
+    "focused_type": "ControlType.Window",
+    "actual": 2,
+    "action": "typed commit",
+    "focused_name": "Ottrin Theme Editor"
+  },
+  "scope": "Exact current installer at actual Windows144DPI; named visible numeric editing/restore/Cancel, all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures; Native/OpenGL",
+  "phase": "Native live editor radius",
+  "cases": [],
+  "numeric_actions": [],
+  "stack": "at AwaitCorners, <No file>: line 127\r\nat SetCorners, <No file>: line 121\r\nat <ScriptBlock>, <No file>: line 155\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "b178b61d7cf185ebcd2fcd5b4176d744be048051588a28de226c099118ec5e8f"
+      }
+    ],
+    "actor_sha256": "63c2750115da023c02392fd878f0e606a693c7289eaa0507935c7000f250dc95",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "dpi_setup": {
+    "selected_label": "150%",
+    "method": "Native Scale ComboBox Expand, visible150percent ListItem Select",
+    "actual_settings_dpi": 144
+  },
+  "display_modes": [
+    "640x480x32",
+    "1024x768x32",
+    "800x600x32",
+    "2048x1152x32",
+    "1920x1080x32",
+    "1920x1200x32",
+    "1600x1200x32",
+    "1680x1050x32",
+    "1440x900x32",
+    "1280x1024x32",
+    "1280x960x32",
+    "1280x768x32",
+    "1360x768x32",
+    "1400x1050x32",
+    "1792x1344x32",
+    "1856x1392x32",
+    "1920x1440x32",
+    "1280x720x32",
+    "5120x2160x32",
+    "4096x2160x32",
+    "3840x2160x32",
+    "2560x1080x32",
+    "2560x1600x32"
+  ],
+  "error": "Named native value mismatch after typed commit: expected=24 actual=2",
+  "status": "failed native DPI/layout audit",
+  "remaining_owned_installed_processes": 0,
+  "cleanup_index_remove": {
+    "stdout": "Session indexing stopped; no background Ottrin index task was installed.\n",
+    "stderr": "",
+    "seconds": 3.8071721,
+    "exit": 0
+  },
+  "display_mode": "1920x1440"
+}

@@ -1,5 +1,5 @@
 {
-  "status": "source naming/role/value/action checks pass; packaged/native DPI and delivery pending",
+  "status": "superseded before delivery: underlying egui committed numeric metadata defect independently reproduced",
   "previous_runtime": "0aac86f98a6411b690ede891f48438d02a9701ea",
   "shipping_files": {
     "crates/ottrin-ui/src/appearance_editor.rs": "c4942cdc4f3691b3f3d56bb19048645c04dc1d6a4824a402823293cf9280a841"
@@ -15,11 +15,7 @@
   },
   "actual_actions": "Rendered native SetValue changes the real theme radius and colors; named restore Click restores the editor opening value in Light/Dark. This is not yet native installed OS acceptance.",
   "scope": "SOURCE_CHECKS.json and logs; current stable packages remain0aac until exact candidate content/native/hosted gates and promotion",
-  "pending": [
-    "Installed Windows144DPI named numeric typing/restore/Cancel and all-six-window full visible native captures",
-    "Exact-source hosted gates",
-    "Stable promotion and owned native/staging/compiler cleanup"
-  ],
+  "pending": [],
   "delivery_progress": {
     "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
     "linux_content": "PACKAGE_CONTENT_ACCEPTANCE.json",
@@ -30,5 +26,6 @@
       "LINUX_INDEX_ELF_COMPARISON.json",
       "WINDOWS_INDEX_PE_COMPARISON.json"
     ]
-  }
+  },
+  "next_owner": ".hermes/evidence/appearance-numeric-values-current/"
 }

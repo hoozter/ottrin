@@ -1,0 +1,50 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-11a85ca5198af5b6",
+      "kind": "build-cache",
+      "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-11a85ca5198af5b6.d",
+      "kind": "build-cache",
+      "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-11a85ca5198af5b6",
+      "kind": "build-cache",
+      "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Existing non-dumpable systemd PAM session helper predates this task; observed exact comm/argv0/UID and start identity. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this system process and its authority. Scoped removal covers only rustc-obsolete debug incremental sessions with exclusive session locks and newest per-configuration state retained; no current binaries or data. Identity exception applies only to this exact recorded process."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Existing non-dumpable KDE polkit authentication agent predates this task; observed exact comm/argv0/UID and start identity. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this system process and its authority. Scoped removal covers only rustc-obsolete debug incremental sessions with exclusive session locks and newest per-configuration state retained; no current binaries or data. Identity exception applies only to this exact recorded process."
+    }
+  ],
+  "matching_settings": {
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "declared_features": "[]",
+    "target": 11039074169040111439,
+    "profile": 4539089746505721204,
+    "path": 6664036055190131545,
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 0
+  },
+  "replacement_sha256": "1f1d0cb7c5c79678d2a8891e6f3d5fcdadf03ece6a4984a64b7cb39c00f9226a"
+}

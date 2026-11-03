@@ -1,0 +1,24 @@
+{
+  "status": "partial native evidence; matrix failed at later repeated keyboard input",
+  "completed_native_cases": 6,
+  "observed": "Actual144DPI full native region equality and complete work-area containment for editor/Settings/main at typed24 and0; existing owner windows reported enabled, so earlier focus failure does not prove modal disabling",
+  "failure": "Named native value did not match typed value",
+  "missing_diagnostic": "Old actor did not record mismatched actual value or wait for native keyboard-focus acknowledgement before injecting keys",
+  "not_accepted": [
+    "full34case matrix",
+    "Windows named Restore/Cancel",
+    "other window types",
+    "supported uninstall/source/preferences preservation"
+  ],
+  "next": "Fresh actor requires native HasKeyboardFocus before typing; bounded5second exact-value commit observation and explicit failure value/focus/capture diagnostics; no input resends or value substitution",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

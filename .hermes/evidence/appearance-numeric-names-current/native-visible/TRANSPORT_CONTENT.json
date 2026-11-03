@@ -1,0 +1,71 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 171,
+      "sha256": "e9362c974ae5f5a377b1353f8851837c2a89cb38ae2fc596da700550f7d70e19",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "8b2b4fc43dc2be061f0a5c766fb34293718d8247b4edb38db5e9505f7f36d296",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 257,
+      "sha256": "65831c969456059c1cc47cfeb74c0e2ca066567eed5beff3e3d61315a98aac57",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 90,
+      "sha256": "893ffac00fc3534747ca3c1c1f2286c8abe81f3e9ca2e9e77fddb3b85496bcc5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-live-0.png",
+      "bytes": 183214,
+      "sha256": "a678134834ae84394d8124a63ca42be29bcfab3712912ef82680593a683fc48f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-live-24.png",
+      "bytes": 192529,
+      "sha256": "c4e00475636c4e222aafc5f2a75f46ab0db5d1504557d91b4a4e172b2ef61b8e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "8ae0149d3e8dc976e8bd53b32bc9b118520fd12f97cb31a02fe1de80fba8b5f5",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 9735,
+      "sha256": "006b247ba58a2b330fab161338846ca164636912e2a57034aa39f59b4c1614c1",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 249226,
+      "sha256": "cfc1e654478c0fe39948fbe91e26c8d102ae8f5def086395dac3c5f9c95a7063",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 148213,
+      "sha256": "24a4d679e8cf1c99a3ed7e0fe8c848653158865334f398c6454a28ab6dd1def9",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "88ce7d6aa8009dcf781acba5457f748f924b35334f5cce9a5436262b2ed56271",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

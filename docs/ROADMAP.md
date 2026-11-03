@@ -2,7 +2,7 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-03. This is the single active queue. Historical sections and
+Updated 2026-11-04. This is the single active queue. Historical sections and
 receipts retain their original source/artifact scope. They are not additional
 active queues or claims that old pending work remains unfinished today.
 Packaged manuals are build-time snapshots; `SOURCE_REVISION.txt` identifies the
@@ -84,47 +84,32 @@ Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
 
-1. Deliver the current appearance numeric naming correction, then continue Windows
-   appearance/performance acceptance. Actual 144 DPI setup now works with a signed
-   VirtIO display driver installed only in disposable clones. The old native
-   spatial lookup failed amid scrolling; its captured tree confirmed unnamed
-   numeric controls. Shared production number_row now gives each number its
-   visible title and each restore button its property-specific name, preserving
-   native role/value/actions. The original rendered regression fails; all 26
-   appearance tests, 475 UI tests (one existing ignored), strict native/Windows lint
-   and formatting pass. All four Linux formats plus Windows ZIP/NSIS and
-   development MSIX revision 12 are built from clean source `84ea8742`.
-   Linux package contents and six native typed-value/restore/Cancel checks pass
-   in Dark100/Light150; all four original captures were reviewed. Windows ZIP
-   and NSIS have identical 58-file payloads; native MakeAppx assembly/unpack
-   confirms the same payload in MSIX12. Owned Linux desktops/profiles, package
-   extraction and the MSIX assembly VM/source archive are removed.
-   Installed Windows144DPI/Native/OpenGL checks and exact-source hosted CI are
-   still running. The first native actor verified one real typed24 editor region,
-   then failed when foregrounding its covered owner. Its exact partial result and
-   teardown are retained; the corrected actor observes background owner regions
-   and separately captures every full window when reachable. Fifteen obsolete
-   native/Windows incremental sessions were removed while preserving newest
-   per-configuration states; final inspection reports zero obsolete sessions.
-   Promotion and final native/staging cleanup remain pending;
-   all seven stable packages remain the 0aac cohort above.
-   Evidence: `windows-dpi-current/` retains exact failed setup/lookup scopes and
-   all completed clone teardown; `appearance-numeric-names-current/` owns the
-   correction, future candidate builds and acceptance. No numeric/OS/DPI failure
-   is being relabelled as a successful installed radius test.
-   Continue the remaining Windows appearance/performance acceptance. Shared native
-   window-corner clipping and visible-edge/titlebar resize are now delivered in the
-   exact 0aac cohort above. Do not repeat fulfilled saved-radius/native-region,
-   pointer or live 0/24/Cancel matrices without changed inputs or a reproduced defect.
-   Verify real nondefault Windows DPI and full-window visibility/layout on a
-   sufficiently sized software desktop. UIAutomation focus plus typed numeric
-   input is not a complete visible-control/accessibility audit.
-   Investigate the strict GUI idle failure, including unconditional frame refresh,
-   without masking the failed threshold or confusing GUI CPU with index CPU.
-   The watcher polling correction remains closed at its deterministic-test scope:
-   b18 CI 41693567945 and current0aac CI 41708636305 all four jobs succeed, original
-   polling deadline and strict error/hit assertions retained. Evidence/prose-only
-   pushes skip redundant full CI; production-source changes keep all gates.
+1. Deliver the corrected native numeric metadata, then continue Windows
+   appearance/performance acceptance. The unpublished `84ea8742` seven-format
+   candidate passed content checks, six Linux control cases and all four hosted
+   jobs. Installed Windows eventually completed34 native region/DPI observations
+   and supported uninstall, but a further run exposed visible/model24 versus native
+   RangeValue2. The actual rendered core regression independently fails committed2
+   versus native0. The pinned egui0.33.3 DragValue published its pre-edit local value;
+   its authoritative source now reads the final getter before numeric/step-action
+   metadata. The focused Light/Dark150% separate-character regression passes.
+   No dependency versions changed; all103 upstream source/manifest/README files were
+   compared with the lock-hash-verified crate archive, with only that widget changed.
+   All476 UI tests pass (one existing ignored), along with strict native/Windows
+   UI/app all-target lint and formatting. Replacement packaging,
+   native captures and new exact-source CI remain pending under
+   `.hermes/evidence/appearance-numeric-values-current/`.
+   The original `84ea` candidate is superseded before delivery: all seven packages,
+   its58-file payload, five owned VMs/ten volumes/six profiles, private transports,
+   source archive and content extraction are removed. Stable packages remain0aac.
+   Evidence: `.hermes/evidence/appearance-numeric-names-current/` retains exact
+   negative/partial/functional scopes and cleanup; no failed metadata or missing
+   original captures are counted as accepted native UI delivery.
+   Continue the unresolved strict GUI idle CPU investigation, including unconditional
+   frame refresh, with a controlled same-driver comparison. Keep GUI and daemon CPU
+   separate. Broader appearance/control/platform and service-prompt/action acceptance
+   remain open; earlier pointer/native geometry/picker/media scopes keep original hashes.
+   Evidence/prose-only pushes skip redundant CI; shipping-source changes retain gates.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them

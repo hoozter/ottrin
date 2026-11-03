@@ -1,7 +1,7 @@
 """Retire consumed private transport/bootstrap after safe export and exact teardown."""
 from pathlib import Path
 import argparse,hashlib,json,subprocess
-parser=argparse.ArgumentParser();parser.add_argument('case',choices=['native','native-visible']);args=parser.parse_args();r=Path.cwd();e=Path(__file__).resolve().parent;f=e/args.case
+parser=argparse.ArgumentParser();parser.add_argument('case',choices=['native','native-visible','native-focused','native-export']);args=parser.parse_args();r=Path.cwd();e=Path(__file__).resolve().parent;f=e/args.case
 read=lambda p:json.loads(p.read_text())
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 o=read(f/'OWNER.json');assert o['cleanup']['domain_removed'] and o['cleanup']['fixture_removed'] and len(o['cleanup']['owned_volumes_removed'])==2

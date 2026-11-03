@@ -49,9 +49,11 @@ codegen-units = 1
 lto = "thin"
 panic = "abort"
 
-# Keep Windows Shift+Delete distinguishable from Ctrl+X without changing text Cut.
+# Local native input, window and accessibility corrections. Each pinned crate
+# documents its isolated changes in OTTRIN_PATCH.md.
 [patch.crates-io]
 eframe = { path = "vendor/eframe" }
 egui-winit = { path = "vendor/egui-winit" }
+egui = { path = "vendor/egui" }
 # Backport the upstream disabled-control guard for the pinned AT-SPI backend.
 accesskit_atspi_common = { path = "vendor/accesskit-atspi-common" }

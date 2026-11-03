@@ -11,11 +11,20 @@ s=s[:a]+r'''
    [DpiDesktop]::WheelAt([int]($bounds.Left+20),[int]($window[1]+$window[3]/2),-480);Pump
   }
   Require $visible 'Named Window corners control is not visible inside the property viewport'
-  $numeric=Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner);$numeric.SetFocus();[Windows.Forms.SendKeys]::SendWait('^a');[Windows.Forms.SendKeys]::SendWait([string]$value);[Windows.Forms.SendKeys]::SendWait('{ENTER}');Start-Sleep -Milliseconds 700;Pump
-  $actual=(Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner)).GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;Require ($actual-eq$value) 'Named native value did not match typed value'
+  $numeric=Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner);$before=$numeric.GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;$numeric.SetFocus();$deadline=[DateTime]::UtcNow.AddSeconds(5)
+  do{$numeric=Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner);if($numeric.Current.HasKeyboardFocus){break};Pump}while([DateTime]::UtcNow-lt$deadline)
+  $focused=$numeric.Current.HasKeyboardFocus;Require $focused 'Named numeric control did not acknowledge keyboard focus before typing'
+  [Windows.Forms.SendKeys]::SendWait('^a');[Windows.Forms.SendKeys]::SendWait([string]$value);[Windows.Forms.SendKeys]::SendWait('{ENTER}');AwaitCorners $editor $value 'typed commit'
+  $report.numeric_actions+=@{action='typed commit';before=$before;expected=$value;keyboard_focus_acknowledged=$focused};Save
+ }
+ function AwaitCorners($editor,$value,$action){
+  $deadline=[DateTime]::UtcNow.AddSeconds(5)
+  do{$actual=(Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner)).GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;if($actual-eq$value){return};Pump}while([DateTime]::UtcNow-lt$deadline)
+  $focus=[Windows.Automation.AutomationElement]::FocusedElement;$report.numeric_failure=@{action=$action;expected=$value;actual=$actual;focused_name=$focus.Current.Name;focused_type=$focus.Current.ControlType.ProgrammaticName};[PickerNative]::Shot($editor,(Join-Path $out 'numeric-mismatch.png'));Save;throw ('Named native value mismatch after '+$action+': expected='+$value+' actual='+$actual)
+
  }
 ''' +s[b:]
-marker="  SetCorners $editor 24;CaptureLive $editor 'editor-before-cancel' 24;";assert marker in s;s=s.replace(marker,"  SetCorners $editor 24;Invoke $editor 'Restore Window corners';Start-Sleep -Milliseconds 700;$restored=(Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner)).GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;Require ($restored-eq0) 'Named restore did not restore opening value';CaptureLive $editor 'editor-after-restore' 0;CaptureLive $settings 'settings-after-restore' 0;CaptureLive $w 'main-after-restore' 0\n"+marker,1)
+marker="  SetCorners $editor 24;CaptureLive $editor 'editor-before-cancel' 24;";assert marker in s;s=s.replace(marker,"  SetCorners $editor 24;Invoke $editor 'Restore Window corners';Start-Sleep -Milliseconds 700;AwaitCorners $editor 0 'named restore';CaptureLive $editor 'editor-after-restore' 0;CaptureLive $settings 'settings-after-restore' 0;CaptureLive $w 'main-after-restore' 0\n"+marker,1)
 s=s.replace('Exact published installer at actual Windows144DPI; complete work-area visibility, visible numeric editing/Cancel and all six native window types; Native/OpenGL','Exact current installer at actual Windows144DPI; named visible numeric editing/restore/Cancel, all six native window types and complete work-area capture containment; Native/OpenGL')
 # An editor owns foreground input; observe its existing owners without trying
 # to click through it. Capture each complete owner separately once reachable.
@@ -41,4 +50,5 @@ old="$w=Await $p.Id 'Ottrin';$row=Node";assert old in s
 s=s.replace(old,"$w=Await $p.Id 'Ottrin';CaptureLive $w 'main-saved-startup' 24;Invoke $w 'Menu';Invoke $w ('Settings'+[char]0x2026);$settings=Await $p.Id 'Ottrin Settings';CaptureLive $settings 'settings-saved-startup' 24;Invoke $settings 'Close window';$row=Node",1)
 s=s.replace('all six native window types and complete work-area capture containment','all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures')
 
+s=s.replace(";cases=@()};$final=",";cases=@();numeric_actions=@()};$final=")
 (e/'native-actor.ps1').write_text(s)

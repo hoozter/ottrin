@@ -1,0 +1,28 @@
+{
+  "status": "source correction and rendered regression pass; replacement packages/native captures/exact-source CI not yet delivered",
+  "shipping_files": {
+    "Cargo.toml": "931570be6347b0adb454f28dc72104d5b623735e2d98bfa00bf14216a50a1f50",
+    "Cargo.lock": "ca3f20c447705e05a74ce2950a74347b1589743ba2c5b39729bac87abc026043",
+    "vendor/egui/src/widgets/drag_value.rs": "dd73a5cde2dd965f227fcf6a3ca9a4d18b3f398a9c8fe92902e93cb8db3d045d",
+    "crates/ottrin-ui/src/appearance_editor.rs": "0e84a18d17265eff3d2a4685728aeee5bce451c1790874fc32714d461b813b2e"
+  },
+  "behavior": "Pinned egui DragValue publishes final committed getter value and range-step actions, replacing pre-edit value metadata. Existing name labels and actual editing behavior remain. No caller override or duplicate state.",
+  "negative": "Original widget fails actual committed2/native0 rendered input frame, matching installed visible24/native2 diagnostic.",
+  "source_checks": {
+    "full_ui_passed": 476,
+    "existing_ignored": 1,
+    "appearance_tests": 27,
+    "strict_native_and_windows_ui_app_all_targets_lint": true,
+    "format": true
+  },
+  "upstream_provenance": "EGUI_VENDOR_INPUT.json: pinned crate SHA verified against original lock and cached archive;103 upstream source/manifest/README files compared; only DragValue final getter changed; no dependency versions upgraded",
+  "previous_stable_runtime": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "superseded_unpublished_runtime": "84ea87420d2947a05105f287310b191107e8338e",
+  "pending": [
+    "Commit/push this verified source checkpoint",
+    "Build seven replacement formats using shared caches/stable staging paths; MSIX13",
+    "Run exact-package Linux values/Restore/Cancel and Windows34case/22capture matrix",
+    "Exact-source hosted gates",
+    "Stable publication and owned build/native/cache cleanup"
+  ]
+}

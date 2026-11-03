@@ -1083,6 +1083,100 @@ mod tests {
     use super::*;
 
     #[test]
+    fn appearance_numeric_metadata_matches_each_typed_commit() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+
+        fn render(
+            app: &mut OttrinApp,
+            ctx: &Context,
+            events: Vec<egui::Event>,
+        ) -> egui::FullOutput {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1180.0, 1600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_theme_editor_embedded(ctx);
+                },
+            )
+        }
+        fn numeric(output: egui::FullOutput) -> (egui::accesskit::NodeId, f64, bool, bool) {
+            let nodes = output.platform_output.accesskit_update.unwrap().nodes;
+            let fields: Vec<_> = nodes
+                .into_iter()
+                .filter(|(_, n)| {
+                    n.role() == Role::SpinButton && n.label() == Some("Window corners")
+                })
+                .collect();
+            assert_eq!(fields.len(), 1);
+            (
+                fields[0].0,
+                fields[0].1.numeric_value().unwrap(),
+                fields[0].1.supports_action(Action::Increment),
+                fields[0].1.supports_action(Action::Decrement),
+            )
+        }
+
+        for mode in [ThemeMode::Light, ThemeMode::Dark] {
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            ctx.set_pixels_per_point(1.5);
+            let mut app = OttrinApp::default();
+            app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+            app.switch_theme_editor_variant(mode, &ctx);
+            app.theme_editor.selected_region = ThemePreviewRegion::Defaults;
+            app.theme_editor.custom.app_radius = 0.0;
+            app.theme_editor.initial_custom.app_radius = 0.0;
+            app.apply_theme_editor_live_preview(&ctx);
+            let (id, value, increment, decrement) = numeric(render(&mut app, &ctx, vec![]));
+            assert_eq!(value, 0.0);
+            assert!(increment);
+            assert!(!decrement);
+            let _ = render(
+                &mut app,
+                &ctx,
+                vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                    action: Action::Focus,
+                    target: id,
+                    data: None,
+                })],
+            );
+            for (text, expected) in [("2", 2.0), ("4", 24.0)] {
+                let output = render(&mut app, &ctx, vec![egui::Event::Text(text.into())]);
+                assert_eq!(
+                    app.theme_editor.custom.app_radius, expected,
+                    "Actual typed model value"
+                );
+                assert_eq!(
+                    app.colors.app_radius, expected as u8,
+                    "Actual live theme value"
+                );
+                let (_, native_value, increment, decrement) = numeric(output);
+                assert_eq!(
+                    native_value,
+                    f64::from(expected),
+                    "Native numeric value must describe the committed input frame"
+                );
+                assert_eq!(
+                    increment,
+                    expected < 24.0,
+                    "Increment must match the committed range boundary"
+                );
+                assert_eq!(
+                    decrement,
+                    expected > 0.0,
+                    "Decrement must match the committed range boundary"
+                );
+            }
+        }
+    }
+
+    #[test]
     fn appearance_numeric_controls_expose_their_visible_names() {
         use egui::accesskit::Role;
 

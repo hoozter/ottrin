@@ -1,0 +1,23 @@
+    Checking x11-dl v2.21.0
+    Checking egui v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui)
+    Checking winit v0.30.12
+    Checking yeslogic-fontconfig-sys v6.0.1
+    Checking fontique v0.11.1
+    Checking glutin_glx_sys v0.6.1
+    Checking ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+    Checking parley v0.11.1
+    Checking glutin v0.32.3
+    Checking accesskit_winit v0.29.2
+    Checking egui_glow v0.33.3
+    Checking egui-wgpu v0.33.3
+    Checking egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+    Checking rwml v0.1.4
+    Checking glutin-winit v0.5.0
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Checking eframe v0.33.3 (/home/campbell/Projects/Ottrin/vendor/eframe)
+    Checking ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking egui_extras v0.33.3
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 35.20s

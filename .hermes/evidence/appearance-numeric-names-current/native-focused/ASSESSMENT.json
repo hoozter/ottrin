@@ -1,0 +1,69 @@
+{
+  "status": "all34native functional checks pass; screenshot delivery/review not accepted",
+  "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+  "completed_native_cases": 34,
+  "native_numeric_actions": [
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    },
+    {
+      "expected": 0,
+      "keyboard_focus_acknowledged": true,
+      "before": 24,
+      "action": "typed commit"
+    },
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    },
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    },
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    },
+    {
+      "expected": 0,
+      "keyboard_focus_acknowledged": true,
+      "before": 24,
+      "action": "typed commit"
+    },
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    },
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    }
+  ],
+  "source_and_preferences_preserved": true,
+  "supported_uninstall_completed": true,
+  "missing": "Original captures lost when the old producer raised on transient guest-exec-status failure during its bulk-base64 archive return, then its registered teardown removed the overlay",
+  "next": "Producer now observes same exact guest process through known transient channel interruptions and downloads a size/hash-verified archive using offset-addressed64KiB chunks; fresh native-export case is necessary for original capture delivery/review",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

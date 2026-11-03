@@ -1,0 +1,13 @@
+{
+  "source_head": "deb99c0ecc1292d426029a3d808c8944e10c1529",
+  "shipping_file_sha256": "c4942cdc4f3691b3f3d56bb19048645c04dc1d6a4824a402823293cf9280a841",
+  "compiler_roots": {
+    "target/debug/deps": 41441028723,
+    "target/debug/incremental": 22658806852,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292041736,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438874790,
+    "target/release/deps": 4290362413,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764574013
+  },
+  "purpose": "Reproduce visible numeric24 versus native RangeValue2 in the actual committed input frame; fix authoritative widget metadata if confirmed; cleanup owner appearance-numeric-names-current"
+}

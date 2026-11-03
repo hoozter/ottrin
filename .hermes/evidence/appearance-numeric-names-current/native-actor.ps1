@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$Root,[Parameter(Mandatory=$true)][string]$ExpectedSid)
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
-$out=Join-Path $Root 'results';$report=@{status='running';scope='Exact current installer at actual Windows144DPI; named visible numeric editing/restore/Cancel, all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures; Native/OpenGL';cases=@()};$final='failed native DPI/layout audit';$owned=[Collections.Generic.List[Diagnostics.Process]]::new();$install=$null
+$out=Join-Path $Root 'results';$report=@{status='running';scope='Exact current installer at actual Windows144DPI; named visible numeric editing/restore/Cancel, all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures; Native/OpenGL';cases=@();numeric_actions=@()};$final='failed native DPI/layout audit';$owned=[Collections.Generic.List[Diagnostics.Process]]::new();$install=$null
 function Require($value,$message){if(-not$value){throw $message}}
 function Save{$p=Join-Path $out 'RESULT.json';$tmp=$p+'.next';[IO.File]::WriteAllText($tmp,($report|ConvertTo-Json -Depth 30),[Text.UTF8Encoding]::new($false));if(Test-Path $p){[IO.File]::Replace($tmp,$p,[NullString]::Value)}else{[IO.File]::Move($tmp,$p)}}
 function Phase($value){$report.phase=$value;Save}
@@ -115,8 +115,17 @@ public static class DpiDesktop {
    [DpiDesktop]::WheelAt([int]($bounds.Left+20),[int]($window[1]+$window[3]/2),-480);Pump
   }
   Require $visible 'Named Window corners control is not visible inside the property viewport'
-  $numeric=Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner);$numeric.SetFocus();[Windows.Forms.SendKeys]::SendWait('^a');[Windows.Forms.SendKeys]::SendWait([string]$value);[Windows.Forms.SendKeys]::SendWait('{ENTER}');Start-Sleep -Milliseconds 700;Pump
-  $actual=(Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner)).GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;Require ($actual-eq$value) 'Named native value did not match typed value'
+  $numeric=Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner);$before=$numeric.GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;$numeric.SetFocus();$deadline=[DateTime]::UtcNow.AddSeconds(5)
+  do{$numeric=Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner);if($numeric.Current.HasKeyboardFocus){break};Pump}while([DateTime]::UtcNow-lt$deadline)
+  $focused=$numeric.Current.HasKeyboardFocus;Require $focused 'Named numeric control did not acknowledge keyboard focus before typing'
+  [Windows.Forms.SendKeys]::SendWait('^a');[Windows.Forms.SendKeys]::SendWait([string]$value);[Windows.Forms.SendKeys]::SendWait('{ENTER}');AwaitCorners $editor $value 'typed commit'
+  $report.numeric_actions+=@{action='typed commit';before=$before;expected=$value;keyboard_focus_acknowledged=$focused};Save
+ }
+ function AwaitCorners($editor,$value,$action){
+  $deadline=[DateTime]::UtcNow.AddSeconds(5)
+  do{$actual=(Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner)).GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;if($actual-eq$value){return};Pump}while([DateTime]::UtcNow-lt$deadline)
+  $focus=[Windows.Automation.AutomationElement]::FocusedElement;$report.numeric_failure=@{action=$action;expected=$value;actual=$actual;focused_name=$focus.Current.Name;focused_type=$focus.Current.ControlType.ProgrammaticName};[PickerNative]::Shot($editor,(Join-Path $out 'numeric-mismatch.png'));Save;throw ('Named native value mismatch after '+$action+': expected='+$value+' actual='+$actual)
+
  }
  Phase 'prepare native large display';$report.display_modes=[DpiDesktop]::Modes();Save;$report.display_mode=[DpiDesktop]::LargeMode();Save
 
@@ -144,7 +153,7 @@ public static class DpiDesktop {
   (Node $settings 'Appearance' ([Windows.Automation.ControlType]::RadioButton)).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select();Pump
   $buttons=@();for($i=0;$i-lt12;$i++){$buttons=@(Nodes $settings 'Edit Radius audit'|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::Button});if($buttons.Count-eq1){break};[PickerNative]::Wheel($settings,-480);Pump};Require ($buttons.Count-eq1) 'Saved theme edit not visible';$buttons[0].GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke();$editor=Await $p.Id 'Ottrin Theme Editor';[RadiusProbe]::Resize($editor,1770,1140);Pump
   foreach($radius in @(24,0)){SetCorners $editor $radius;CaptureLive $editor 'editor-live' $radius;ObserveOwner $settings 'settings-live' $radius;ObserveOwner $w 'main-live' $radius}
-  SetCorners $editor 24;Invoke $editor 'Restore Window corners';Start-Sleep -Milliseconds 700;$restored=(Node $editor 'Window corners' ([Windows.Automation.ControlType]::Spinner)).GetCurrentPattern([Windows.Automation.RangeValuePattern]::Pattern).Current.Value;Require ($restored-eq0) 'Named restore did not restore opening value';CaptureLive $editor 'editor-after-restore' 0;ObserveOwner $settings 'settings-after-restore' 0;ObserveOwner $w 'main-after-restore' 0
+  SetCorners $editor 24;Invoke $editor 'Restore Window corners';Start-Sleep -Milliseconds 700;AwaitCorners $editor 0 'named restore';CaptureLive $editor 'editor-after-restore' 0;ObserveOwner $settings 'settings-after-restore' 0;ObserveOwner $w 'main-after-restore' 0
   SetCorners $editor 24;CaptureLive $editor 'editor-before-cancel' 24;Invoke $editor 'Cancel';Start-Sleep -Milliseconds 700;CaptureLive $settings 'settings-after-cancel' 0
   Invoke $settings 'Close window';CaptureLive $w 'main-after-cancel' 0;Invoke $w 'Close window';Require ($p.WaitForExit(15000)-and$p.ExitCode-eq0) 'Normal close failed';$savedConfig=Get-Content $pref -Raw|ConvertFrom-Json;Require ($savedConfig.custom_themes[0].dark.app_radius-eq0) 'Cancel persisted unsaved radius';Require ((Get-FileHash $source).Hash-eq$sourceHash) 'Source changed';Save
  }

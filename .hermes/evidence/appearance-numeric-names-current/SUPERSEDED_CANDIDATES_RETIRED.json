@@ -1,0 +1,21 @@
+{
+  "status": "all7unpublished candidate formats and58-file payload retired; stable0aac deliverables preserved",
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "files": 9,
+      "bytes": 114570684,
+      "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+      "reason": "Unpublished84ea candidate superseded by independently reproduced upstream numeric metadata defect; all native/content/assembly consumers terminal and no open files/hard links"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "files": 65,
+      "bytes": 293685576,
+      "source_revision": "84ea87420d2947a05105f287310b191107e8338e",
+      "reason": "Unpublished84ea candidate superseded by independently reproduced upstream numeric metadata defect; all native/content/assembly consumers terminal and no open files/hard links"
+    }
+  ],
+  "bytes": 408256260,
+  "retained": "Current stable packages/user data/shared caches and compact exact failed/partial source evidence"
+}

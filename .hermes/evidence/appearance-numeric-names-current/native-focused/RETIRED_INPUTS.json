@@ -1,0 +1,50 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "f0c66219c5836e4c50391bb79df1aa81133c52befa6b9c31f18dbab9bedb3cb2"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/CONTROLLER_PROCESS.json",
+          "bytes": 1940,
+          "sha256": "419d61d45c1907ba21222dd589ca58e09923ef7b0749cb16374845ad000fb762"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "178509ed8373d5a931a5a1fd7e3d75a256aed6475a51c7d10616c9676b509980"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/readiness.log",
+          "bytes": 1117,
+          "sha256": "cd67626454f1c8a47ebca0202442e32a3d012984b4148b9608ac325ba30b0299"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/desktop-ready.png",
+          "bytes": 2105743,
+          "sha256": "083c97e66f9f3d42a2e820ec14312e8ca1e9a5ad9fb963d41ad957342bda19e0"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "fc7e1fec6c0cf04eac65c756f36b697c019f6836a99ddf45202e60caa467fd7f"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-names-current/native-focused/privacy-accepted-0.png",
+          "bytes": 4997004,
+          "sha256": "d4f7b783ce9be1fd928cb91da65160ebcab84b69dd006ad278e6b077aa7559db"
+        }
+      ],
+      "bytes": 7112090
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

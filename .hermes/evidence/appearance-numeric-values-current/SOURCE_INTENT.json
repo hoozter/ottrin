@@ -1,0 +1,14 @@
+{
+  "status": "source final-getter correction passes focused regression; full source checks and new packaging pending",
+  "supersedes_unpublished_source": "84ea87420d2947a05105f287310b191107e8338e",
+  "stable_delivered_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "reason": "Visible/model24 could expose native RangeValue2; original core regression fails committed2/native0. Patch final getter at pinned egui source, not a caller override.",
+  "production_files": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "vendor/egui/src/widgets/drag_value.rs"
+  ],
+  "source_test": "appearance_numeric_metadata_matches_each_typed_commit; Light/Dark150, separate character frames, model/theme/native value and increment/decrement boundaries",
+  "new_dependency_versions": false,
+  "cleanup_owner": "appearance-numeric-values-current; same compiler roots/settings and stable staging paths, no extra target tree; retire obsolete graph outputs only after verified replacements and consumer/lock checks"
+}
