@@ -1,0 +1,10 @@
+{
+  "status": "failed fixture pattern assumption; partial native evidence only",
+  "passed": [
+    "Exact58 installed payload files",
+    "Dark File and Folder named fields typed/cancelled with recorded native heights"
+  ],
+  "failure": "File row is a Button with toggled selection state; InvokePattern is unsupported. Fixture assumed all Button roles use Invoke. Linked AccessKit Windows0.29.2 source maps toggled buttons to TogglePattern.",
+  "next": "Enumerate supported patterns and use native Toggle only if the file row is not already selected; then assert On before F2. Settings radio choices use their distinct SelectionItem.Select interface.",
+  "cleanup": "Terminal canonical teardown removed domain,2 volumes and private profile; guest remaining installed processes0"
+}

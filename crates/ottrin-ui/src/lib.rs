@@ -20174,6 +20174,7 @@ impl OttrinApp {
         let mut submit = false;
         let mut cancel = false;
         let just_opened = pending.request_focus;
+        let input_id = egui::Id::new("creation_name_input");
         let validation = build_creation_command(pending.kind, &pending.parent, &pending.name_input);
         pending.error = validation.as_ref().err().cloned();
 
@@ -20225,7 +20226,7 @@ impl OttrinApp {
                         let response = ui.add_sized(
                             Vec2::new(ui.available_width(), FILE_NAME_INPUT_HEIGHT),
                             egui::TextEdit::singleline(&mut pending.name_input)
-                                .id(egui::Id::new("creation_name_input"))
+                                .id(input_id)
                                 .desired_width(ui.available_width())
                                 .font(FontId::proportional(13.0 * c.font_scale))
                                 .vertical_align(egui::Align::Center)
@@ -20308,6 +20309,9 @@ impl OttrinApp {
         } else {
             self.pending_creation = Some(pending);
         }
+        if self.pending_creation.is_none() {
+            ctx.memory_mut(|memory| memory.surrender_focus(input_id));
+        }
     }
 
     fn render_rename_modal(&mut self, ctx: &Context) {
@@ -20331,6 +20335,7 @@ impl OttrinApp {
         let mut submit = false;
         let mut cancel = false;
         let mut error: Option<String> = None;
+        let input_id = egui::Id::new("rename_name_input");
         egui::Area::new(egui::Id::new("rename_modal"))
             .order(egui::Order::Tooltip)
             .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
@@ -20370,7 +20375,6 @@ impl OttrinApp {
                             });
                         });
                         ui.add_space(12.0);
-                        let input_id = egui::Id::new("rename_name_input");
                         let response = ui.add_sized(
                             Vec2::new(ui.available_width(), FILE_NAME_INPUT_HEIGHT),
                             egui::TextEdit::singleline(&mut pending.name_input)
@@ -20449,6 +20453,9 @@ impl OttrinApp {
             self.run_file_op(cmd, Some(pending.tab_id));
         } else {
             self.pending_rename = Some(pending);
+        }
+        if self.pending_rename.is_none() {
+            ctx.memory_mut(|memory| memory.surrender_focus(input_id));
         }
     }
 
@@ -32988,6 +32995,80 @@ mod tests {
                 (text.center().y - rect.center().y).abs() < 1.0,
                 "{name}: {text:?} in {rect:?}"
             );
+        }
+    }
+
+    #[test]
+    fn native_cancel_releases_file_name_input_before_file_shortcuts() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+
+        for creation in [Some(CreationKind::File), Some(CreationKind::Folder), None] {
+            let (root, mut app, source) = clipboard_keyboard_fixture();
+            app.state.active_tab_mut().view_mode = ViewMode::List;
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            let tab = app.state.active_tab().id;
+            if let Some(kind) = creation {
+                app.open_creation_dialog(kind, tab, root.path().into());
+            } else {
+                app.begin_rename_path(tab, source.clone());
+            }
+            let mut render = |events| {
+                ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(900.0, 700.0),
+                        )),
+                        events,
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        app.render_creation_modal(ctx);
+                        app.render_rename_modal(ctx);
+                    },
+                )
+            };
+            let _ = render(vec![]);
+            let output = render(vec![]);
+            assert!(ctx.wants_keyboard_input());
+            let cancel = output
+                .platform_output
+                .accesskit_update
+                .unwrap()
+                .nodes
+                .into_iter()
+                .find(|(_, node)| node.role() == Role::Button && node.label() == Some("Cancel"))
+                .unwrap()
+                .0;
+            let _ = render(vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: cancel,
+                data: None,
+            })]);
+            assert!(app.pending_creation.is_none() && app.pending_rename.is_none());
+            assert!(
+                !ctx.wants_keyboard_input(),
+                "A closed dialog must release its text input"
+            );
+            let _ = ctx.run(
+                egui::RawInput {
+                    events: vec![egui::Event::Key {
+                        key: Key::F2,
+                        physical_key: None,
+                        pressed: true,
+                        repeat: false,
+                        modifiers: egui::Modifiers::NONE,
+                    }],
+                    ..Default::default()
+                },
+                |ctx| app.handle_keyboard(ctx),
+            );
+            assert!(
+                app.pending_rename.is_some(),
+                "F2 must return to the selected file"
+            );
+            assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
         }
     }
 

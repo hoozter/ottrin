@@ -1,0 +1,69 @@
+{
+  "result": {
+    "finished": "2026-11-03T15:12:39.902796+00:00",
+    "removed_sessions": 22,
+    "before": {
+      "total": 502609965056,
+      "used": 475262492672,
+      "available": 22212763648,
+      "free": 27347472384
+    },
+    "after": {
+      "total": 502609965056,
+      "used": 474550730752,
+      "available": 22924525568,
+      "free": 28059234304
+    },
+    "filesystem_free_delta": 711761920
+  },
+  "retired_paths": [
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/eframe-1enwdhiyuzo57/s-hnti7u0e2p-0gdsgmk-ehaquhdramxqn1kkocduysh40",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/eframe-29ol27cg9epuy/s-hnt7akr3o6-09xokp3-43bobtf71o5ny3xe2kxozs2s2",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/egui_winit-03i6ocm1ecd30/s-hnti7tjcig-0iu1v2b-1j5bhs2nk4yjl70njr46xo4wd",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/egui_winit-0sddlx7mr1992/s-hnt7adhs9s-09lvz3f-58gmq8tx7fqzli98mqqkjlo78",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1nom567jhjlgb/s-hntf4uykpn-08v7elh-d4sv3f5qfg8xov14vy8w6nxw3",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1yizdbrjrbs3w/s-hntf4vifym-1ytlfpi-d31my1xpipzg7gloe569vcb93",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-0zmqgz4t9yb0h/s-hntf4uudyx-10hxjfe-91pmjmvophzrawjecu5lqd0hi",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-1pbn7oq0mhwcn/s-hntf4vxyrf-193su8c-5tcl39xc3jhit9kv8yqojwoog",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_platform-396mv9z36d71w/s-hnti89r7jt-0asngwr-egico4hjh8fmnygqt2s57berc",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_preview-1d0rjqwpfc8aq/s-hnti86y5ex-1v2wk4o-a28ytjvkc74k2i1vx4jyoqqwe",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_preview-3kivnamglwort/s-hnt7al0j5w-125tv5h-diui3hols9jsmm77p0zc20f32",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-1lst89su9eh34/s-hntf4s7pwe-0oeomg2-e3s51davnrp4pk49uua8jkpsv",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-2k2c9h8rq3wai/s-hntf4w5b4r-0xiagph-a53ogtkxbd1okajwi9kcgzg63",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-3efy7e7mbtzof/s-hnti8dt5bz-1m1y94p-3e0ei2uaalv5qlmo9fk2vrjy8",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/persisted_search_cli-3k5jo5tteyw6m/s-hntf4w25h5-1paqh0q-5rwzxy191ujq6ostcyajskibc",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-0y9i2vi3nlard/s-hntf57q4jt-1s7k2kd-54a51mg0ph6yiqh4p8dapva7t",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-1ds5a2ii0mfpp/s-hntf537ndm-1ibomh6-2o9hrbt23k7if75yh44oeodad",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-0480fu8e5cksy/s-hntf580txp-05d02s9-dxu5hrfsgxumbwbiglz0pfxux",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-3pbnm4lbjb99f/s-hntf53k7hr-147lwn2-4jsrobywfaua0rvrsmu0kbsog",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0ltpehfm7ccp6/s-hntf53q90d-04bfmpz-7qftxghlyd2t4g3fi6ha9hbwx",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3h71da4zp2v4o/s-hntf50hipm-0y11t5x-09uiro8pdfc3aqjyirzhe42y4",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/persisted_search_cli-1e6x1so6ote9a/s-hntf536dq7-0270y5a-043c06gt3s9m4ku4bqk69skvi"
+  ],
+  "retained_newest_paths": [
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/eframe-1enwdhiyuzo57/s-hntid56793-11u0hti-ehaquhdramxqn1kkocduysh40",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/eframe-29ol27cg9epuy/s-hntidpqso1-0du3h27-43bobtf71o5ny3xe2kxozs2s2",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/egui_winit-03i6ocm1ecd30/s-hntic5n699-14ivgon-1j5bhs2nk4yjl70njr46xo4wd",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/egui_winit-0sddlx7mr1992/s-hntidodmi7-13xuws7-58gmq8tx7fqzli98mqqkjlo78",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1nom567jhjlgb/s-hntidtkset-11ca1w8-b6ur8utjfp7fwix6kdviligti",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_app-1yizdbrjrbs3w/s-hntidu776r-0155fgt-axoy95cehlcz3ujahr7wxstsc",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-0zmqgz4t9yb0h/s-hntiduyjvv-1ydpavu-dxunanhje7tsmys9gtmu2jq6w",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_indexd-1pbn7oq0mhwcn/s-hntiduqgfs-1ksznge-e2brapaiskhekr0c6w5tb25f1",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_platform-396mv9z36d71w/s-hntid6q35u-05t2znj-egico4hjh8fmnygqt2s57berc",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_preview-1d0rjqwpfc8aq/s-hntid5sbqm-0stq23o-a28ytjvkc74k2i1vx4jyoqqwe",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_preview-3kivnamglwort/s-hntidpxe3s-1xo7id3-diui3hols9jsmm77p0zc20f32",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-1lst89su9eh34/s-hntidr4yyy-0bzob6b-69t1xszx21a9j1bwa7dcc656k",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-2k2c9h8rq3wai/s-hntidv4v3w-1cyx76a-bwyuyvi43qvdzxvgckhpxubym",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/ottrin_ui-3efy7e7mbtzof/s-hntid7jy47-0i0krik-80gn75zet680g7z8w7d2hbgg1",
+    "/home/campbell/Projects/Ottrin/target/debug/incremental/persisted_search_cli-3k5jo5tteyw6m/s-hntiduwerc-0bvryw2-5rwzxy191ujq6ostcyajskibc",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-0y9i2vi3nlard/s-hntie9ec9i-01t48x9-788afx0w39v7xgaiobieu14fz",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_app-1ds5a2ii0mfpp/s-hntie8zvnv-0mp6s8r-ek6plb1u9aow18gejd0ruxwe8",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-0480fu8e5cksy/s-hntie9pupm-11yfpoo-0gz153g9v6ucb5ndj7ts8cjv9",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_indexd-3pbnm4lbjb99f/s-hntie4qvhh-0j5mghq-707ecygu7d43h3l1okuclc57i",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0ltpehfm7ccp6/s-hntie4wtmx-19fj26e-65zscfosllkpy17l0xyrh7lt3",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3h71da4zp2v4o/s-hntidzrdzq-1mwl2l1-2zfnxczlbs29aitqykf5t89n9",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/persisted_search_cli-1e6x1so6ote9a/s-hntie8yoph-1p2b0b4-043c06gt3s9m4ku4bqk69skvi"
+  ],
+  "process_review": "PROCESS_INSPECTION.json and INCREMENTAL_REVIEW.json retain exact2 nondumpable system-service identities; no compiler running, no active consumers; refusals preserved",
+  "limit": "Space delta is not a guaranteed physical-reclaim benchmark; other owned work may allocate concurrently"
+}

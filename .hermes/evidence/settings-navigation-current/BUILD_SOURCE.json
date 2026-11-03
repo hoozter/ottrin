@@ -1,0 +1,9 @@
+{
+  "source_revision": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Deliver native Settings navigation and coherent centred filename inputs; retain runtime36 stable packages until exact native/content acceptance",
+  "pending_consumers": [],
+  "cleanup_owner": "settings-navigation-current producer; remove owned staging after consumers or failed build",
+  "cleanup_complete": true,
+  "delivery_status": "Superseded before publication: native Cancel retained text focus; exact failed regression and new correction recorded"
+}

@@ -1,0 +1,43 @@
+{
+  "status": "failed native creation workflow",
+  "source_revision": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "artifact_sha256": "9ddc28ddb6cd6b5b170975996d304fd357785aecfdd340d5575d02c1591b5f55",
+  "theme": "Dark",
+  "scope": "Private X11/software Dark100 or Light150 exact staged AppImage native creation/rename/location/search names and values, cancellation, existing-name refusal and byte preservation; no whole-roadmap or complete accessibility claim",
+  "worker_sha256": "ed8361cc13eed50420966f4740282bc70d3f5bb7a7662540be5e693bf5de2f86",
+  "error": "AssertionError('Native creation workflow failed; inspect preserved log')",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-2b542fa9",
+    "owned_processes_reaped": [
+      {
+        "pid": 1042641,
+        "exit": 0
+      },
+      {
+        "pid": 1042646,
+        "exit": 0
+      },
+      {
+        "pid": 1042647,
+        "exit": 15
+      },
+      {
+        "pid": 1042806,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1042812,
+        1042891
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "65 34 0:64 / /var/tmp/.ottrin-picker-qa-2b542fa9/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "error": "Native creation workflow failed; inspect preserved log",
+    "profile_removed": true
+  }
+}

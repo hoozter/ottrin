@@ -1,0 +1,411 @@
+{
+  "status": "pass exact new AppImage native navigation and filename geometry scope",
+  "source_revision": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "artifact_sha256": "9ddc28ddb6cd6b5b170975996d304fd357785aecfdd340d5575d02c1591b5f55",
+  "cases": [
+    {
+      "case": "linux-native-dark-scoped",
+      "theme": "Dark",
+      "desktop_scale": 1.0,
+      "view": "List",
+      "native_navigation_choices": [
+        {
+          "name": "Services",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Services"
+          ]
+        },
+        {
+          "name": "Appearance",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Appearance"
+          ]
+        },
+        {
+          "name": "Files",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Files"
+          ]
+        },
+        {
+          "name": "Search",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Search"
+          ]
+        },
+        {
+          "name": "Cache",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Cache"
+          ]
+        },
+        {
+          "name": "General",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "General"
+          ]
+        }
+      ],
+      "field_geometry": [
+        {
+          "field": "File name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "Folder name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "File name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "File name",
+          "x": 760,
+          "y": 700,
+          "width": 400,
+          "height": 38
+        },
+        {
+          "field": "New name",
+          "x": 730,
+          "y": 702,
+          "width": 460,
+          "height": 38
+        }
+      ],
+      "functional_cases": [
+        {
+          "case": "new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "created.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "new-folder",
+          "field": {
+            "role": "entry",
+            "accessible_name": "Folder name",
+            "initial_value": "",
+            "typed_value": "CreatedFolder"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "cancel-new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "cancelled.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "existing-file-refused",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "preserve.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-rename-edit-cancel",
+          "field": {
+            "role": "entry",
+            "accessible_name": "New name",
+            "typed_value": "cancelled-rename.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-location",
+          "value": "/var/tmp/.ottrin-picker-qa-k8sflow6/home/Documents",
+          "status": "pass"
+        },
+        {
+          "case": "named-search",
+          "value": "",
+          "status": "pass"
+        }
+      ],
+      "directly_reviewed_originals": {
+        "rename.png": "f0b1d807d36497a242a9be35fb017cb3648db8d2e19cc3e0bed892d5fa942bee",
+        "new-file.png": "960b1caffcf0f9c00f21048791f5db88ecbb0f601ef60795baf732b05abcaee1",
+        "existing-entry-refusal.png": "3d24c9a2756674d95f8bbdad24e3afc20ec32a6f35db35f2e7952c3cbfd1c3b0",
+        "settings-services.png": "fbe9a1f32164bce4b6b44cb19b03d6faed3e694c84e4a7ee6984fcffb31179cf",
+        "new-folder.png": "063272d8265c600e8d4a3e692b14b5d6df404bc0993ee4ed1723337de99b3c75"
+      },
+      "normal_close_exit": 0,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-k8sflow6",
+        "owned_processes_reaped": [
+          {
+            "pid": 1046145,
+            "exit": 0
+          },
+          {
+            "pid": 1046150,
+            "exit": 0
+          },
+          {
+            "pid": 1046152,
+            "exit": 15
+          },
+          {
+            "pid": 1046302,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1046335,
+            1046468
+          ],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [
+          "65 34 0:65 / /var/tmp/.ottrin-picker-qa-k8sflow6/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+        ],
+        "profile_removed": true
+      }
+    },
+    {
+      "case": "linux-native-light-scoped",
+      "theme": "Light",
+      "desktop_scale": 1.5,
+      "view": "List",
+      "native_navigation_choices": [
+        {
+          "name": "Services",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Services"
+          ]
+        },
+        {
+          "name": "Appearance",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Appearance"
+          ]
+        },
+        {
+          "name": "Files",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Files"
+          ]
+        },
+        {
+          "name": "Search",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Search"
+          ]
+        },
+        {
+          "name": "Cache",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "Cache"
+          ]
+        },
+        {
+          "name": "General",
+          "role": "radio button",
+          "native_action": true,
+          "only_checked_choice": [
+            "General"
+          ]
+        }
+      ],
+      "field_geometry": [
+        {
+          "field": "File name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "Folder name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "File name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "File name",
+          "x": 660,
+          "y": 690,
+          "width": 600,
+          "height": 57
+        },
+        {
+          "field": "New name",
+          "x": 615,
+          "y": 693,
+          "width": 690,
+          "height": 57
+        }
+      ],
+      "functional_cases": [
+        {
+          "case": "new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "created.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "new-folder",
+          "field": {
+            "role": "entry",
+            "accessible_name": "Folder name",
+            "initial_value": "",
+            "typed_value": "CreatedFolder"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "cancel-new-file",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "cancelled.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "existing-file-refused",
+          "field": {
+            "role": "entry",
+            "accessible_name": "File name",
+            "initial_value": "",
+            "typed_value": "preserve.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-rename-edit-cancel",
+          "field": {
+            "role": "entry",
+            "accessible_name": "New name",
+            "typed_value": "cancelled-rename.txt"
+          },
+          "status": "pass"
+        },
+        {
+          "case": "named-location",
+          "value": "/var/tmp/.ottrin-picker-qa-9rxqajco/home/Documents",
+          "status": "pass"
+        },
+        {
+          "case": "named-search",
+          "value": "",
+          "status": "pass"
+        }
+      ],
+      "directly_reviewed_originals": {
+        "rename.png": "b18c854f25bce50598ebffa5f70df1d9a704f4f41b5761d8243f5eb1a02f2e89",
+        "new-file.png": "a35a21b8994cff8e3acf5b1ed1c37d75e4f9cfc6fccc92e08f441c5fe306a655",
+        "existing-entry-refusal.png": "a47897ab8e5bcdea49a02ae70a46cadcff43a2c58543da0fbff1c8cab309b6eb",
+        "settings-services.png": "9caf443f804334d1548ccd8bb77563c9701bc79e439c6fc65c5dbf6798a6b24c",
+        "new-folder.png": "026f0eb185342b101768a1fa33d667694c8b2a2659580710dabb05e22fdc7887"
+      },
+      "normal_close_exit": 0,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-9rxqajco",
+        "owned_processes_reaped": [
+          {
+            "pid": 1046144,
+            "exit": 0
+          },
+          {
+            "pid": 1046151,
+            "exit": 0
+          },
+          {
+            "pid": 1046153,
+            "exit": 15
+          },
+          {
+            "pid": 1046301,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1046346,
+            1046469
+          ],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [
+          "143 34 0:64 / /var/tmp/.ottrin-picker-qa-9rxqajco/runtime/doc rw,nosuid,nodev,relatime shared:686 - fuse.portal portal rw,user_id=1000,group_id=1000"
+        ],
+        "profile_removed": true
+      }
+    }
+  ],
+  "case_count": 26,
+  "directly_reviewed_originals": 10,
+  "review": "All six names/checked states/native actions verified in both modes. Native field heights38/57 pixels agree with100/150 percent scale, actual filenames vertically centred, creation/refusal/rename/cancel content and source bytes checked, shared Settings chrome and aligned navigation inspected. Normal Settings/main Close verified.",
+  "additional_historical_attempts": [
+    "linux-native-dark failed exact accessible-frame-title assumption after earlier checks; no full acceptance claim",
+    "linux-native-dark-hierarchy passes in Miller; viewport native frame has empty accessible name and closes through actual navigation ancestry",
+    "linux-native-light passes at150 percent in List; initial template inherited a retired index root. Final two cases explicitly scope index roots to owned Documents and keep content indexing off. Earlier unrelated Services status is not treated as a product failure."
+  ],
+  "limits": [
+    "Private X11/software AT-SPI scope; no physical GPU, Wayland or human assistive usability acceptance",
+    "Only new navigation and filename geometry scope, not full interface/39-theme-setting replay",
+    "Miller ancestor screenshots expose unrelated world-readable tmp names; retain those originals locally only, with hashes as needed; final List captures show only owned fixture data",
+    "System administrator helper/sandbox setup not invoked; observed host helper availability is not fresh privileged setup acceptance"
+  ]
+}

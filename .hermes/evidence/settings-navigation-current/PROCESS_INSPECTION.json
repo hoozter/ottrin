@@ -1,0 +1,22 @@
+[
+  {
+    "pid": 1224,
+    "comm": "(sd-pam)",
+    "argv0": "(sd-pam)",
+    "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+    "start_ticks": "588",
+    "exe": "PermissionError",
+    "cwd": "PermissionError",
+    "uid": "Uid:\t1000\t1000\t1000\t1000"
+  },
+  {
+    "pid": 3022,
+    "comm": "polkit-kde-auth",
+    "argv0": "/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1",
+    "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+    "start_ticks": "2792",
+    "exe": "PermissionError",
+    "cwd": "PermissionError",
+    "uid": "Uid:\t1000\t1000\t1000\t1000"
+  }
+]

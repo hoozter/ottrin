@@ -1,0 +1,11 @@
+{
+  "source_revision": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/source.zip",
+  "status": "superseded before native assembly; source archive retired",
+  "sha256": "4bfe549c8f905f5a6bc0cd4b3f384e5ac837bcf83e3593dd64a159fe6892eba1",
+  "archive_bytes": 184544616,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "superseded-cohort-retirement"
+}

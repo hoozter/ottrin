@@ -1,0 +1,9 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 8.31s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 1 test
+test tests::native_cancel_releases_file_name_input_before_file_shortcuts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 471 filtered out; finished in 0.04s
+

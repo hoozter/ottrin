@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 12.22s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 1 test
+test tests::native_cancel_releases_file_name_input_before_file_shortcuts ... FAILED
+
+failures:
+
+---- tests::native_cancel_releases_file_name_input_before_file_shortcuts stdout ----
+
+thread 'tests::native_cancel_releases_file_name_input_before_file_shortcuts' (1060930) panicked at crates/ottrin-ui/src/lib.rs:33063:13:
+F2 must return to the selected file
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::native_cancel_releases_file_name_input_before_file_shortcuts
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 471 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

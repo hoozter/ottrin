@@ -107,6 +107,17 @@ and Windows UI/app lint and formatting. These fixes are source-tested and await
 new package/native acceptance; the stable seven packages above remain runtime36.
 Evidence: `settings-navigation-current/SOURCE_SCOPE.json` and `SOURCE_CHECKS.json`.
 
+The `9c914bd6` staged candidates were superseded before publication. Windows native Cancel
+left the closed filename editor owning keyboard input, so a subsequently selected
+file could not receive F2. A focused rendered regression reproduces that ownership
+leak. Create and Rename now release their own input ID only when they close;
+validation keeps its input. The corrected List fixture checks native Cancel then
+F2 for File, Folder and Rename, with original bytes preserved. All 471 UI tests
+pass, with one existing ignored, plus strict Linux/Windows UI/app lint and formatting.
+Final source/package/native delivery is now owned by `file-dialog-focus-current/`.
+All six unpublished `9c914bd6` packages, the unused MSIX source archive, three Windows environments
+and five Linux sessions are retired. The accepted stable seven packages remain runtime36.
+
 All 39 original appearance controls have native edit/reset/save/restart evidence.
 Current color ordering/getters/setters, saved draft and preview-color resolution
 are byte-identical to that accepted source; the original palette file is unchanged
@@ -115,7 +126,7 @@ are identical, with a separate addition pinning egui to the resolved Light/Dark 
 `APPEARANCE_MAPPING_PROJECTION.json` retains exact comparison hashes; this is not
 a fresh 39-control UI sweep. Original Windows picker resource values are directly
 inspected in `WINDOWS_PICKER_MEASUREMENT_AUDIT.json`.
-Current deliverables remain unchanged pending the new navigation/input delivery.
+Current deliverables remain unchanged pending the final navigation/input/focus delivery.
 
 Continue in this order:
 

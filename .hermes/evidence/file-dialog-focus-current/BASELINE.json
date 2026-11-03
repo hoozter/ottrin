@@ -1,0 +1,15 @@
+{
+  "source_before": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "sizes": {
+    "target/debug/deps": 41448435712,
+    "target/debug/incremental": 22875697152,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33310941184,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39531929600,
+    "target/release/deps": 4299362304,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769577472
+  },
+  "parent_before_ui_work": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/BASELINE.json",
+  "purpose": "Close proven native Cancel keyboard-focus leak and finish delivery of navigation/geometry fixes",
+  "note": "Focused negative/positive regression already used same compiler configuration; original parent baseline covers all preceding work",
+  "cleanup_owner": "file-dialog-focus-current producers; shared caches retained, obsolete exact-session cleanup and owned stage retirement before handoff"
+}

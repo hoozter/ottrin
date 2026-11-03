@@ -1,0 +1,38 @@
+[
+  {
+    "path": ".hermes/evidence/settings-navigation-current/windows-native-ui/RESULTS.zip",
+    "bytes": 159564,
+    "sha256": "a93887eb1ef63b7c2abea26f2358fc2bd69f885cecbda7b0fe7ca1c3786956b9",
+    "basis": "Terminal failed case; raw extracted members verified, frozen actor/driver retained"
+  },
+  {
+    "path": ".hermes/evidence/settings-navigation-current/windows-native-ui/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal failed case; raw extracted members verified, frozen actor/driver retained"
+  },
+  {
+    "path": ".hermes/evidence/settings-navigation-current/windows-native-ui-toggle/RESULTS.zip",
+    "bytes": 159245,
+    "sha256": "33fc970102e0d3a30ae44cf3317ebed356dc6bf150a07bcde82ecf674331a55c",
+    "basis": "Terminal incomplete case; exact extracted raw members verified, frozen actor/driver retained"
+  },
+  {
+    "path": ".hermes/evidence/settings-navigation-current/windows-native-ui-toggle/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal incomplete case; exact extracted raw members verified, frozen actor/driver retained"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/windows-native-ui-selection-observed/RESULTS.zip",
+    "bytes": 188122,
+    "sha256": "2ceee6e4713903c399f75fe449f85e4a1f699c97ac6cc7f2d70a6361f3ac1105",
+    "basis": "Terminal failed case; exact raw members verified; frozen driver/actor retained"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/windows-native-ui-selection-observed/controller.ps1",
+    "bytes": 4866,
+    "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+    "basis": "Terminal failed case; exact raw members verified; frozen driver/actor retained"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "status": "failed fixture close lookup; not full native acceptance",
+  "artifact_sha256": "9ddc28ddb6cd6b5b170975996d304fd357785aecfdd340d5575d02c1591b5f55",
+  "failure": "Assumed Settings accessible frame exact name Ottrin Settings and role frame/dialog; lookup timed out after all six native navigation actions/checked-state assertions",
+  "next": "Use observed native ancestry of actual General navigation node to identify unique Settings Close window; record ancestor names/roles. Do not assume accessibility root name equals OS window title.",
+  "partial": "Worker reached frame lookup, so earlier field-height and six-choice action/checked assertions completed; no final full-workflow receipt claimed",
+  "cleanup": "CONTROL.json retains failed status and registered OwnedDesktop teardown; profile removed"
+}

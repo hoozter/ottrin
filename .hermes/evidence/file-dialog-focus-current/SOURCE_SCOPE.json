@@ -1,0 +1,22 @@
+{
+  "status": "pass source only; final native/package delivery pending",
+  "source_before": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "files": {
+    "crates/ottrin-ui/src/lib.rs": "dddc9a60481a1a348c7fd9feba58d58d7af248613cb1651b70d30db72b981968"
+  },
+  "change": "Creation and Rename keep one input ID for painting/focus and release that exact ID only when the dialog actually closes. Validation retains focus. Existing navigation roles and centred shared input geometry remain unchanged.",
+  "regression": "Actual composed native Cancel for File/Folder/Rename, then no text ownership and F2 opens Rename for selected real fixture file; original bytes preserved",
+  "negative_evidence": ".hermes/evidence/settings-navigation-current/native-cancel-focus-regression.log",
+  "positive_evidence": ".hermes/evidence/settings-navigation-current/native-cancel-focus-list-fixture.log",
+  "checks": "471 UI tests pass,1existing ignored; strict native and Windows UI/app all-target lint and formatting pass",
+  "pending_consumers": [
+    "Commit clean final source and run hosted gates",
+    "Build and verify all7 package formats",
+    "Native Cancel-to-F2, navigation and filename geometry on Linux/Windows",
+    "Guarded stable publication and final owned cleanup"
+  ],
+  "limits": [
+    "Earlier9c Linux geometry/native scopes retain exact old source/artifact hashes; new candidate must prove actual focus fix",
+    "No daemon/installer/portal/folder registration or file-operation backend changes"
+  ]
+}

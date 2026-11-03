@@ -1,0 +1,66 @@
+{
+  "status": "all9c native resources and unpublished candidates retired; stable seven runtime36 deliverables retained",
+  "windows_cases": [
+    {
+      "case": "windows-native-ui",
+      "uuid": "e60b98c6-cdbd-4a5c-bf56-0d044569f939",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-native-ui-toggle",
+      "uuid": "b7016801-cd33-4b72-b77b-e8891addeb36",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "windows-native-ui-selection-observed",
+      "uuid": "fb143eb6-7afd-4a93-b2f0-d6e2d5f46eac",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "removed_profiles": [
+    "/var/tmp/.ottrin-picker-qa-27jsm9w1",
+    "/var/tmp/.ottrin-picker-qa-b7fr3pvw",
+    "/var/tmp/.ottrin-picker-qa-dwm8q0g7",
+    "/var/tmp/.ottrin-picker-qa-2b542fa9",
+    "/var/tmp/.ottrin-picker-qa-y5s4q8d8",
+    "/var/tmp/.ottrin-picker-qa-e3h_4j46",
+    "/var/tmp/.ottrin-picker-qa-k8sflow6",
+    "/var/tmp/.ottrin-picker-qa-9rxqajco"
+  ],
+  "compiler_cleanup": "INCREMENTAL_CLEANUP_RESULT.json:22 obsolete sessions removed through guarded helper; final caches and binaries retained. Later focused regression compiler output is owned by next cohort, whose baseline links this baseline.",
+  "superseded_packages": "SUPERSEDED_COHORT.json:6 unpublished packages and native-MSIX source preparation retired after exact hash/link/consumer checks",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current",
+      "purpose": "Compact exact9c source/package/failed-native evidence and frozen producers; used by new focus correction and final roadmap audit"
+    }
+  ],
+  "not_claimed": "No9c UI cohort was published. Linux native geometry/navigation scopes remain accepted at recorded hashes; Windows full UI scope failed. No MSIX10 assembly occurred."
+}

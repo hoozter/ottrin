@@ -1,0 +1,72 @@
+{
+    "cleanup_index_remove":  {
+                                 "stdout":  "Session indexing stopped; no background Ottrin index task was installed.\n",
+                                 "stderr":  "",
+                                 "seconds":  4.1700528,
+                                 "exit":  0
+                             },
+    "remaining_owned_installed_processes":  0,
+    "package":  {
+                    "source_revision":  "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "373ee2c7b32e8333eb439e86451477acc13cb3baaf9a07591d65a13e655f3dec"
+                                  }
+                              ],
+                    "actor_sha256":  "ebf22b8ae45e1501be57a1986cfb727ff406c870c7de2278cf6d2e15c4f4cfc7",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "phase":  "Dark main fields",
+    "scope":  "Exact installed Windows Settings native navigation role/action/selected state and coherent Create/Rename field geometry; source and preference preservation",
+    "stack":  "at Invoke, \u003cNo file\u003e: line 24\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 43\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "cases":  [
+                  {
+                      "initial":  {
+                                      "value":  "",
+                                      "name":  "File name",
+                                      "read_only":  false,
+                                      "width":  400,
+                                      "role":  "Edit",
+                                      "height":  38
+                                  },
+                      "case":  "creation-File",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "value":  "draft-file",
+                                    "name":  "File name",
+                                    "read_only":  false,
+                                    "width":  400,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "theme":  "Dark"
+                  },
+                  {
+                      "initial":  {
+                                      "value":  "",
+                                      "name":  "Folder name",
+                                      "read_only":  false,
+                                      "width":  400,
+                                      "role":  "Edit",
+                                      "height":  38
+                                  },
+                      "case":  "creation-Folder",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "value":  "draft-folder",
+                                    "name":  "Folder name",
+                                    "read_only":  false,
+                                    "width":  400,
+                                    "role":  "Edit",
+                                    "height":  38
+                                },
+                      "theme":  "Dark"
+                  }
+              ],
+    "status":  "failed native main field audit",
+    "error":  "Exception calling \"GetCurrentPattern\" with \"1\" argument(s): \"Unsupported Pattern.\"",
+    "named_fields":  [
+
+                     ]
+}

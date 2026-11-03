@@ -1,0 +1,7 @@
+{
+  "status": "inconclusive immediate selection assertion; full native scope not accepted",
+  "failure": "Observed supported native TogglePattern, then checked ToggleState after only one50ms pump; did not wait for asynchronous UI response",
+  "next": "Single native action followed by bounded fresh state observation; record elapsed time and states before F2",
+  "limits": "Does not establish a product selection defect or successful full navigation; two Dark creation checks passed before failure",
+  "cleanup": "Canonical terminal teardown removes domain/2volumes/profile; guest installed processes0"
+}

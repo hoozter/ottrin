@@ -1,0 +1,7 @@
+{
+  "source_revision": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "gui_binary_sha256": "b22d2207741d3f319e6dbe45e0f7e148794c884ce1a91eb10303163851f6fc15",
+  "daemon_exactly_matches_previous_delivered_binary": true,
+  "scope": "Full Linux payload comparison confirms unchanged daemon/helpers/libraries. No new personal service restart or fresh CPU benchmark claimed."
+}

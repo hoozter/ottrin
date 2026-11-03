@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/linux-fields.py", line 13, in <module>
+    p=d.spawn(['/usr/bin/python3',str(out/'WORKER_SOURCE.py'),str(image),str(out)],'worker.log');assert p.wait(timeout=120)==0,'Native creation workflow failed; inspect preserved log';report['status']='functional checks pass; native captures require review'
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Native creation workflow failed; inspect preserved log

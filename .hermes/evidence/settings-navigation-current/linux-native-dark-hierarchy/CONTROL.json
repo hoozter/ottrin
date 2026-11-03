@@ -1,0 +1,39 @@
+{
+  "status": "functional checks pass; native captures require review",
+  "source_revision": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "artifact_sha256": "9ddc28ddb6cd6b5b170975996d304fd357785aecfdd340d5575d02c1591b5f55",
+  "theme": "Dark",
+  "scope": "Private X11/software Dark100 or Light150 exact staged AppImage native creation/rename/location/search names and values, cancellation, existing-name refusal and byte preservation; no whole-roadmap or complete accessibility claim",
+  "worker_sha256": "ac5e314fc555189345374bceae373bfd2ff35ba0d6720443003a7589769b6b1e",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-y5s4q8d8",
+    "owned_processes_reaped": [
+      {
+        "pid": 1043594,
+        "exit": 0
+      },
+      {
+        "pid": 1043597,
+        "exit": 0
+      },
+      {
+        "pid": 1043598,
+        "exit": 15
+      },
+      {
+        "pid": 1043714,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1043721,
+        1043787
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

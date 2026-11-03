@@ -1,0 +1,9 @@
+{
+  "status": "native workflow exposed reproducible product focus leak; not accepted full UI scope",
+  "native_evidence": "Exact9c NSIS accepted file row selection, observed On after bounded provider query, then F2 left no New name field; original missing-control screenshot shows selected preserve.txt and no dialog",
+  "source_regression": "native-cancel-focus-regression.log fails actual closed-dialog keyboard ownership assertion before F2",
+  "correction": "Release each dialog own input ID only when its pending dialog becomes None; active validation/error input stays owned",
+  "intermediate_fixture_issue": "First corrected source passed focus assertion but F2 fixture was configured as Miller without populated Miller columns. Setting the actual fixture List view makes all3 Create File/Folder/Rename cancel-to-F2 cases pass. Negative focus failure occurred before that view-dependent assertion.",
+  "positive_regression": "native-cancel-focus-list-fixture.log:1 test passed, all3 actual native Cancel dialog cases; full471-test source check in file-dialog-focus-current passes",
+  "cleanup": "Domain,2volumes and private profile removed; guest owned installed processes0; unpublished candidate superseded, stable runtime36 intact"
+}

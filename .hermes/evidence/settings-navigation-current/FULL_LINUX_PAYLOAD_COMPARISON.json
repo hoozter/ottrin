@@ -1,0 +1,73 @@
+{
+  "status": "pass full AppImage file/symlink/mode comparison",
+  "previous_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "candidate_source": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "previous_artifact_sha256": "5d4fdcb88ad5d633bf8d50e74898e1980925d593404c4151bb6d566cbaa6d97f",
+  "candidate_artifact_sha256": "9ddc28ddb6cd6b5b170975996d304fd357785aecfdd340d5575d02c1591b5f55",
+  "entries": 113,
+  "changed": {
+    "usr/bin/ottrin": {
+      "previous": {
+        "sha256": "5eddf4b95eb15c0ff8571aac216a2d27f639122eae89f89f034afd2249c94eae",
+        "mode": 493
+      },
+      "candidate": {
+        "sha256": "b22d2207741d3f319e6dbe45e0f7e148794c884ce1a91eb10303163851f6fc15",
+        "mode": 493
+      }
+    },
+    "usr/share/doc/ottrin/SOURCE_REVISION.txt": {
+      "previous": {
+        "sha256": "9ff0fac733104b262f8df00c44ca94aa98bfee181cad408d16e71064e6146197",
+        "mode": 436
+      },
+      "candidate": {
+        "sha256": "f38077e6c03b8041c0d9781bc00b11cf4e529b4ddb83bbf3e7599a3e228bbf1c",
+        "mode": 436
+      }
+    },
+    "usr/share/doc/ottrin/README.md": {
+      "previous": {
+        "sha256": "bc682dfb552c9efd00a15b9b0928d7f8b895e3d86645efd49a08394b7de543fc",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "8a410745b2839079e8c49a0514ea6805de929a64c48c7e2848df66d853b7496b",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/USER_GUIDE.md": {
+      "previous": {
+        "sha256": "0016ba3a1602428491495cc200cba2ecb9933e68f9f2b15b2cdc0c29f581c9fc",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "a5cafd46628f18cbbb46c11a93594191f7f6efb161ee8eed9c90d5e75ad72960",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/RELEASE_NOTES.md": {
+      "previous": {
+        "sha256": "febc8bf3a09a5184a50940072bb2e2ceeb9328fa865b80177ab0d40a21b22b87",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "a9cf3ab846fde0b9087bdd8b59477cb13b6a654866c64f27b85f7b6fdcb9f884",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/ROADMAP.md": {
+      "previous": {
+        "sha256": "f7fb320022ab1edc2f0ecd74f6559be0ffbcf402059c27cf7640d7ab004db781",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "9d7a33c9e1ca8776c043ef6242c2f07b5da77796ec6aa95aaa7d18a8a99b47cc",
+        "mode": 420
+      }
+    }
+  },
+  "unchanged_entries": 107,
+  "scope": "Every runtime library, helper, font, asset, launcher, policy and other documentation input unchanged. GUI change independently checked in native captures; roadmap/provenance differences expected. Prior UI scopes remain historical, not freshly rerun.",
+  "temporary_extractions_removed": true
+}

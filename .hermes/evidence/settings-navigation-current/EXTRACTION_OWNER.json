@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+  "pending_consumers": [],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks",
+  "cleanup_complete": true,
+  "removed_allocated_bytes": 76922880,
+  "scope": "Completed content/payload comparison and all native actual-AppImage checks; obsolete extraction removed, exact packages retained in declared staging awaiting native Windows/hosted gates"
+}
