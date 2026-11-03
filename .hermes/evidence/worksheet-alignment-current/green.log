@@ -1,0 +1,18 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 7.75s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 10 tests
+test preview_render::tests::spreadsheet_columns_have_a_readable_floor_but_can_use_an_explicit_overview ... ok
+test preview_render::tests::sizing_spreadsheet_trims_only_trailing_empty_extents ... ok
+test preview_render::tests::spreadsheet_grid_does_not_report_a_visible_blank_column_as_omitted ... ok
+test preview_render::tests::spreadsheet_grid_keeps_hostile_values_in_one_typed_cell ... ok
+test preview_render::tests::spreadsheet_selection_uses_stable_ids_for_duplicate_sheet_names ... ok
+test preview_render::tests::spreadsheet_visuals_are_sheet_light_even_in_the_dark_application_theme ... ok
+test preview_render::tests::spreadsheet_wrapped_cells_keep_natural_spacing_and_leading_alignment ... ok
+test preview_render::tests::preview_consistency_spreadsheet_paint_stays_inside_frame ... ok
+test preview_render::tests::sizing_spreadsheet_actual_cells_fit_and_wrapped_rows_align ... ok
+test preview_render::tests::spreadsheet_footer_and_omission_notes_fit_narrow_viewports ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 453 filtered out; finished in 0.01s
+

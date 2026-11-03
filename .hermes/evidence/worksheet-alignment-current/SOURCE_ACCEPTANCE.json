@@ -1,0 +1,20 @@
+{
+  "status": "pass source regression and focused UI verification; packaging/native visual acceptance pending",
+  "source_before": "dec21da81d2ded8703b2f193f652fa3171a63ddf",
+  "runtime_file": "crates/ottrin-ui/src/preview_render.rs",
+  "runtime_file_sha256": "2a03d4f7063acc05c44ae47ad89e7f4ee21335db48cdd6fa9c35bc1502c3d75e",
+  "red": "Actual rendered wrapped cell glyph offsets failed before fix: 13 != 8",
+  "green": {
+    "green.log": "10 passed; 0 failed",
+    "ui-tests.log": "462 passed; 0 failed; 1 ignored",
+    "clippy.log": "Finished `dev`",
+    "windows-check.log": "Finished `dev`"
+  },
+  "fmt": "pass",
+  "scope": "Shared native spreadsheet renderer; normal wrapped body glyph spacing and consistent leading inset, existing clipping/row sizing; body text remains selectable; no changed package delivered yet",
+  "remaining": [
+    "Actual corrected Linux/Windows fallback rendering",
+    "Build/verify/promote affected Linux and Windows package cohorts",
+    "Hosted CI for committed source"
+  ]
+}

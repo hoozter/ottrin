@@ -106,6 +106,15 @@ The prepared22.65GiB updated comparison base is retired; do not repeat the fulfi
 comparison without changed inputs. Owner signing/Store/device/final acceptance
 waits remain below and must not stall dependency-ready software work.
 
+Shared worksheet correction is now source-fixed: the actual rendered regression
+failed on forced glyph justification (`13 != 8`), then all10 spreadsheet checks
+and the full UI library suite (462 passed,1 existing ignored) pass. Host strict
+Clippy, formatting and Windows all-targets UI cross-check pass. Body text now
+wraps with natural spacing and a consistent leading inset; headers remain
+centered. Evidence: `.hermes/evidence/worksheet-alignment-current/`. This is not
+yet a package-delivery or native corrected-rendering claim; stable packages
+remain90ba8639 until those gates pass.
+
 Continue in this order:
 
 1. Correct the shared native worksheet cell layout in

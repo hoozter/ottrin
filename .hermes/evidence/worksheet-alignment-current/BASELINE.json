@@ -1,0 +1,13 @@
+{
+  "source_before": "dec21da81d2ded8703b2f193f652fa3171a63ddf",
+  "allocated_bytes": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    "target/release/deps": 4299329536,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769548800
+  },
+  "purpose": "Shared native worksheet cell glyph spacing/leading alignment source correction; standard compiler flags and existing caches only",
+  "cleanup_owner": "Current roadmap goal; retire superseded matching test/incremental outputs after consumers, preserve current deliverables and useful shared cache"
+}

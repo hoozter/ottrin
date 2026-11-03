@@ -1,0 +1,45 @@
+{
+  "status": "source checks complete; no owned test process/profile left",
+  "allocated_bytes_after": {
+    "target/debug/deps": 41448189952,
+    "target/debug/incremental": 22745735168,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39226535936,
+    "target/release/deps": 4299329536,
+    "target/x86_64-pc-windows-gnu/release/deps": 3769548800
+  },
+  "delta_bytes": {
+    "target/debug/deps": 925290496,
+    "target/debug/incremental": 489562112,
+    "target/x86_64-pc-windows-gnu/debug/deps": 37359616,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 220758016,
+    "target/release/deps": 0,
+    "target/x86_64-pc-windows-gnu/release/deps": 0
+  },
+  "incremental_cleanup": {
+    "finished": "2026-11-03T05:25:14.135354+00:00",
+    "removed_sessions": 2,
+    "before": {
+      "total": 502609965056,
+      "used": 473081094144,
+      "available": 24394162176,
+      "free": 29528870912
+    },
+    "after": {
+      "total": 502609965056,
+      "used": 472929615872,
+      "available": 24545640448,
+      "free": 29680349184
+    },
+    "filesystem_free_delta": 151478272
+  },
+  "current_test": "target/debug/deps/ottrin_ui-11a85ca5198af5b6",
+  "test_binary_policy": "Same compiler settings replaced the previous test binary in place; current passing executable, dependency libraries/fingerprints and useful finalized caches retained",
+  "remaining_task_storage": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current",
+    "purpose": "Compact regression/check/cleanup receipts and forthcoming package/native acceptance",
+    "pending_consumers": "Current roadmap package refresh"
+  },
+  "stable_deliverables": "unchanged90ba8639",
+  "untracked_AGENTS": "preserved"
+}

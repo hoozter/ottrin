@@ -1391,11 +1391,23 @@ fn render_spreadsheet_row(
             Stroke::new(0.5, visual.border),
             egui::StrokeKind::Inside,
         );
-        ui.put(
-            rect.shrink2(padding),
-            egui::Label::new(RichText::new(*text).font(font.clone()).color(visual.text))
-                .wrap()
-                .selectable(matches!(kind, SpreadsheetCellKind::Body)),
+        let alignment = if matches!(kind, SpreadsheetCellKind::Body) {
+            Align::Min
+        } else {
+            Align::Center
+        };
+        // Ui::put justifies wrapped labels, stretching their glyphs to the cell width.
+        ui.scope_builder(
+            egui::UiBuilder::new()
+                .max_rect(rect.shrink2(padding))
+                .layout(egui::Layout::top_down(alignment)),
+            |ui| {
+                ui.add(
+                    egui::Label::new(RichText::new(*text).font(font.clone()).color(visual.text))
+                        .wrap()
+                        .selectable(matches!(kind, SpreadsheetCellKind::Body)),
+                );
+            },
         );
         left += width;
     }
@@ -2244,6 +2256,81 @@ mod tests {
         assert_eq!(grid.sheets[0].rows.len(), 4);
         assert_eq!(grid.sheets[0].rows[3].cells[4], "last");
         assert!(grid.sheets[0].rows[1].cells.iter().all(String::is_empty));
+    }
+
+    #[test]
+    fn spreadsheet_wrapped_cells_keep_natural_spacing_and_leading_alignment() {
+        let context = egui::Context::default();
+        let sentence = "Currency totals and calculated formulas";
+        let output = context.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(240.0, 200.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    render_spreadsheet_row(
+                        ui,
+                        &[
+                            ("7", SpreadsheetCellKind::Header),
+                            (sentence, SpreadsheetCellKind::Body),
+                        ],
+                        &[42.0, 110.0],
+                        false,
+                        1.0,
+                    );
+                });
+            },
+        );
+        let text = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text == sentence => Some(text),
+                _ => None,
+            })
+            .expect("the actual cell text must be painted");
+        let natural = context.fonts_mut(|fonts| {
+            fonts.layout(
+                sentence.into(),
+                FontId::proportional(14.0),
+                Color32::BLACK,
+                110.0 - 16.0,
+            )
+        });
+        assert!(natural.rows.len() > 1, "exercise wrapped cell content");
+        assert_eq!(text.galley.rows.len(), natural.rows.len());
+        let body = output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::Shape::Rect(rect) if rect.stroke.width == 0.5 => Some(rect.rect),
+                _ => None,
+            })
+            .nth(1)
+            .expect("the body cell must be painted");
+        for (painted, expected) in text.galley.rows.iter().zip(&natural.rows) {
+            assert_eq!(painted.glyphs.len(), expected.glyphs.len());
+            let first = painted.glyphs.first().expect("nonempty wrapped row");
+            let natural_first = expected.glyphs.first().unwrap();
+            for (actual, expected) in painted.glyphs.iter().zip(&expected.glyphs) {
+                assert_eq!(actual.chr, expected.chr);
+                let actual_offset = actual.pos.x - first.pos.x;
+                let natural_offset = expected.pos.x - natural_first.pos.x;
+                assert!(
+                    (actual_offset - natural_offset).abs() < 0.01,
+                    "wrapped cells must not stretch glyph or word spacing: {actual_offset} != {natural_offset}"
+                );
+            }
+            let left = text.pos.x + painted.pos.x + first.pos.x;
+            assert!(
+                (left - body.left() - 8.0).abs() < 1.0,
+                "each wrapped line must start at the cell's leading inset"
+            );
+        }
     }
 
     #[test]

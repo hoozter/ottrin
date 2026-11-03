@@ -1,0 +1,20 @@
+   Compiling eframe v0.33.3 (/home/campbell/Projects/Ottrin/vendor/eframe)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 49.72s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-11a85ca5198af5b6)
+
+running 1 test
+
+thread 'preview_render::tests::spreadsheet_wrapped_cells_keep_natural_spacing_and_leading_alignment' (740035) panicked at crates/ottrin-ui/src/preview_render.rs:2311:17:
+wrapped cells must not stretch glyph or word spacing: 13 != 8
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test preview_render::tests::spreadsheet_wrapped_cells_keep_natural_spacing_and_leading_alignment ... FAILED
+
+failures:
+
+failures:
+    preview_render::tests::spreadsheet_wrapped_cells_keep_natural_spacing_and_leading_alignment
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 462 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

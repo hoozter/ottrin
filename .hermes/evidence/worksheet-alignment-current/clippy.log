@@ -1,0 +1,29 @@
+    Checking wayland-client v0.31.12
+    Checking wayland-protocols v0.32.10
+    Checking zbus_xml v5.1.0
+    Checking wayland-cursor v0.31.12
+    Checking zbus-lockstep v0.5.2
+    Checking wayland-protocols-wlr v0.3.10
+    Checking atspi-common v0.9.0
+    Checking calloop-wayland-source v0.3.0
+    Checking smithay-client-toolkit v0.19.2
+    Checking atspi-proxies v0.9.0
+    Checking wayland-protocols-plasma v0.3.10
+    Checking winit v0.30.12
+    Checking atspi-connection v0.9.0
+    Checking calloop-wayland-source v0.4.1
+    Checking accesskit_atspi_common v0.14.2 (/home/campbell/Projects/Ottrin/vendor/accesskit-atspi-common)
+    Checking atspi v0.25.0
+    Checking wayland-protocols-misc v0.3.10
+    Checking wayland-protocols-experimental v20250721.0.1
+    Checking smithay-client-toolkit v0.20.0
+    Checking accesskit_unix v0.17.2
+    Checking accesskit_winit v0.29.2
+    Checking smithay-clipboard v0.7.3
+    Checking egui-wgpu v0.33.3
+    Checking egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+    Checking glutin-winit v0.5.0
+    Checking eframe v0.33.3 (/home/campbell/Projects/Ottrin/vendor/eframe)
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 33.98s
