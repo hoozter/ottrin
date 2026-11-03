@@ -1,0 +1,35 @@
+{
+  "sources_before": {
+    "b.pdf": "3E272F7250E6BC35AEBDEE16B4CDD107B6CDEE6137A360F249CCDAE08F5A04EE",
+    "a.vcf": "B7750E468FB80AC8D7E5CDDED278AC2D7576D272089B2D5F9656B48284C08108",
+    "c.txt": "BC568E8A8CDBF24640ED62B4D5980795A289E282F0F9091B65782922BD5E5156"
+  },
+  "scope": "Current installed NSIS temporal PDF, read-only VCF sibling navigation/Space, explicit Edit/Save; ordinary stock-client software VM",
+  "phase": "main VCF to PDF transition",
+  "desktop_ready": true,
+  "cases": {},
+  "payload_files": 58,
+  "service_cleanup_exit": 0,
+  "stack": "at Wait-Name, <No file>: line 61\r\nat <ScriptBlock>, <No file>: line 85\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "174d3c46ba4ef74b0db14d39e90765c256018305c2183d17eae6c9165d452ce2"
+      }
+    ],
+    "actor_sha256": "acc49a517bebcf9f35e28c837d80347842f073140f4e1580a33943f664758ddb",
+    "scope": "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+  },
+  "identity": {
+    "profile": "C:\\Users\\OTMSI843656673b03",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "test_kind": "native-windows-preview-safety",
+  "error": "Expected one native control: Edit text; found=0",
+  "status": "failed native preview safety",
+  "owned_processes_removed": true
+}

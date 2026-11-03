@@ -1,0 +1,15 @@
+{
+  "status": "rejected QA readiness assumption; no PDF/edit acceptance",
+  "reason": "Expected one native control: Edit text; found=0",
+  "correction": "Main sidebar exposes Expand preview; Edit text is an Inspector action only. No product code changed.",
+  "owned_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

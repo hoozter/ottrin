@@ -53,18 +53,32 @@ configuration and current useful compiler caches. Stable deliverables/payload an
 compact evidence remain. Personal profiles, the personal index service, retained
 Windows bases and the held MSI diagnostic are preserved.
 
+Current installed Windows preview-safety acceptance now passes on a fresh
+ordinary stock-client desktop using this exact NSIS. A real VCF→PDF transition
+has identical measured bounds in all70 settled samples from100 observations;
+four original frames show stable width fit and reserved scrollbar space. Inspector
+Down/Up navigates VCF/PDF and Space closes without source changes. Explicit Edit
+keeps the source unchanged until Ctrl+S, which publishes exact intended bytes;
+Escape closes afterward. All58 installed hashes, normal close, uninstall and
+preference preservation pass. Seven original captures are reviewed. This is Dark/
+default-DPI/explicit OpenGL software-VM acceptance, not every focus variation,
+PDF, theme or physical adapter. First attempt rejected an Inspector-only readiness
+control on the main sidebar; no product defect was hidden. Both domains/four
+volumes, private desktops and transport duplicates are removed. Evidence:
+`.hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json`.
+
 Continue in this order:
 
-1. Finish native Windows temporal PDF transition and explicit Edit/Save acceptance,
-   including read-only VCF/text navigation and Space ownership, against the current
-   packaged GUI. Use an owned fresh Windows case; the stock Microsoft client base
-   remains a named pending consumer for this preview-safety audit.
-2. Complete the concentrated Linux/Windows daily-driver, media, supported picker/
-   folder-integration and resource requirement audit. For each requirement inspect
-   direct current evidence or a demonstrated unchanged implementation/payload;
-   repair missing/contradictory software scopes. Do not repeat fulfilled fault
-   matrices without changed inputs or a reproduced defect.
-3. Finish the release-candidate requirement matrix/documentation. The shared themed
+1. Complete the concentrated Linux/Windows daily-driver, media, supported picker/
+   folder-integration and resource requirement audit. The initial inventory retains
+   all54 explicit bullet requirements and their full multiline clauses in
+   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`; prose milestones and
+   user-specific UI requirements also need decomposition. For each requirement
+   inspect direct current evidence or a demonstrated unchanged implementation/
+   payload; repair missing/contradictory software scopes. Include clicked-body
+   text-selection/focus variations in the remaining GUI workflow audit. Do not
+   repeat fulfilled fault matrices without changed inputs or a reproduced defect.
+2. Finish the release-candidate requirement matrix/documentation. The shared themed
    picker, Linux FileChooser portal/FileManager1 and reversible Windows folder
    integration retain their implemented/recorded scopes; close any remaining
    software caller gaps independently. Keep MSI registration rollback, owner
@@ -1422,9 +1436,9 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux cohort uses clean `90ba8639`; the delivered local Windows
-preview uses clean `90ba8639` for ZIP/NSIS/development MSIX0.1.0.5. The sole
-`8ede1562` MSI is a held diagnostic input, not a current usable package.
+The stable Linux cohort and delivered Windows ZIP/NSIS/development MSIX0.1.0.6
+use clean `4a1682bdee98b16b63a7723785091399e99b505f`. The sole `8ede1562` MSI
+is a held diagnostic input, not a current usable package.
 The delivery checkpoint at the top and authoritative receipts define exact package
 hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
 retired. Shared chooser, lossless native paths, nonblocking index availability, FileManager1
@@ -1454,7 +1468,7 @@ fresh-distro lifecycle or full-application resource acceptance.
 | Area | Current evidence | Remaining outcome |
 | --- | --- | --- |
 | Linux | Four4a1682bd formats delivered; all four exact-source CI jobs pass. Current worksheet geometry/typography verified Dark100/Light150; all other shipping source and non-GUI payload inputs unchanged from90. Earlier native/browser/lifecycle/resource scopes keep original hashes. | Finish the requirement audit and parked owner/device review; no new personal-workload claim. |
-| Windows | Current4a1682bd ZIP/NSIS/MSIX0.1.0.6 delivered. Native installed worksheet,58-file content, actual5→6 enabled/disabled real-login/removal and current GUI/menu/visibility scopes pass. Other shipping source/helper content unchanged, apart from daemon PE metadata. | Finish native temporal PDF/explicit Save and remaining software audit; preserve held MSI rollback and owner/hardware waits. |
+| Windows | Current4a1682bd ZIP/NSIS/MSIX0.1.0.6 delivered. Native installed worksheet,58-file content, actual5→6 enabled/disabled real-login/removal and current GUI/menu/visibility scopes pass. Other shipping source/helper content unchanged, apart from daemon PE metadata. | Current native temporal PDF/read-only navigation/exact Save pass; finish remaining software audit and preserve held MSI rollback and owner/hardware waits. |
 | Ottrin picker and folder integration | Shared chooser and seven internal callers; actual installed Firefox and Flatpak Falkon Open/Save with exact delivered AppImage and real backend attribution; native FileManager1/GIO and reversible Windows folder defaults pass recorded scopes. | Chooser popup ownership is delivered; finish remaining software/workflow gates. Existing private-session browser acceptance does not imply physical desktop or every caller is accepted. |
 | Release | Current source CI and scoped local packages are verified;signing infrastructure exists. | Approved Linux identity/key,Store identity/submission when ready,exact final-candidate gates and final owner acceptance. No paid Windows certificate requirement. |
 
@@ -3870,9 +3884,9 @@ Start this phase after outcomes 1–3 are complete. Complete the independently a
 - Direct Windows ZIP/EXE/MSI downloads remain unsigned by owner decision. Keep
   checksums and explicit unsigned-publisher/SmartScreen disclosures; buying an
   Authenticode certificate is not a release gate.
-- The local development MSIX package is implemented. Current0.1.0.5 has native
-  assembly, actual4→5 update, enabled/disabled real-login startup and removal
-  acceptance at its recorded90ba8639 scope. Microsoft Store identity, listing,
+- The local development MSIX package is implemented. Current0.1.0.6 has native
+  assembly, actual5→6 update, enabled/disabled real-login startup and removal
+  acceptance at its recorded4a1682bd scope. Microsoft Store identity, listing,
   certification and submission remain owner-dependent release work. Store signing applies to accepted Store packages;
   it does not sign the separate direct EXE/MSI downloads.
 - Store submission/account work waits for readiness and the owner; independently

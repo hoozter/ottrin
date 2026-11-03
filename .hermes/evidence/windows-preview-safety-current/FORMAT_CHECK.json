@@ -1,0 +1,7 @@
+{
+  "command": "cargo fmt --all --check",
+  "exit": 0,
+  "source_commit": "1eab8ccb1b5ab6bab51d31a00b22740a3bd2114e",
+  "shipping_diff": "",
+  "scope": "Current working source formatting; no build or runtime acceptance"
+}

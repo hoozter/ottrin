@@ -15,9 +15,7 @@
     "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
   ],
   "next": [
-    "Native current Windows temporal PDF and explicit Edit/Save with VCF/text navigation/Space; owned stock-client case",
-    "Finish concentrated current requirement-by-requirement software/media/picker/folder/resource audit",
-    "Release requirement matrix and documentation; keep only genuine owner/external waits"
+    "Windows preview-safety checkpoint completed; follow next_checkpoint for remaining requirement audit"
   ],
   "producer_notes": [
     "Use the single .hermes/evidence/assistive-delivery-current/windows/cohort-client.py VM owner/cleanup producer",
@@ -27,5 +25,6 @@
     "Current4a staged-input paths are retired; use dist/windows-candidate for the next packaged case",
     "No live local test/VM/tool handle remains; no pending CI; no goal completion claim"
   ],
-  "waiting": "Existing owner/external list and held exact8ede MSI remain; not a blocker for software work"
+  "waiting": "Existing owner/external list and held exact8ede MSI remain; not a blocker for software work",
+  "next_checkpoint": ".hermes/evidence/windows-preview-safety-current/CONTINUATION.json"
 }

@@ -1,0 +1,430 @@
+{
+  "purpose": "Explicit roadmap requirement inventory; full multiline clauses retained; incomplete rows are not acceptance",
+  "source_document": "docs/ROADMAP.md",
+  "source_document_sha256": "8d8e49bd4371da438b979da3b00015a3c9205aff0c045755198cad20f3038929",
+  "scope": "54 explicit bullet requirements from remaining work through release gate, including conditional boundaries; prose milestones and user-specific UI requirements require additional decomposition",
+  "requirements": [
+    {
+      "id": 1,
+      "section": "1. Finish previews and editing",
+      "requirement": "Native Windows 11 build 26100 fixtures passed on 2026-10-10 as the ordinary desktop user: startup inside the Job Object, output capture/budget, diagnostic cleanup, timeout after parent exit, cancellation of the process tree, per-process and aggregate memory limits, active-process limits and inherited-handle restriction. The run exposed a dangling Job Object attribute buffer causing CreateProcessW error 6; the attribute list now borrows caller-owned value buffers through destruction. Commands are in [DEVELOPMENT.md](DEVELOPMENT.md#windows-office-process-boundary), with RED/GREEN evidence in `.hermes/evidence/windows-20261010/`. A supported LibreOffice 26.8.1 installation is now present in the disposable guest. Ordinary-user production discovery, DOCX conversion through the Job Object, PDFium rendering/text content, provider labeling, private-profile cleanup, source preservation and pre-cancellation pass. Windows discovery was repaired after a native `NotInstalled` regression. Historical pre-AppContainer CLI fixtures passed all nine advertised formats. The pre-owner-thread contained Kit sweep passed only DOC/DOCX/ODT and timed out on six spreadsheet/presentation formats; the subsequent nine-format repair is recorded above. In-flight cancellation passes after LibreOffice acquires its real profile lock. The converter now follows the original Windows input basename after a native filename regression. A longer private-directory layout reproduced a provider crash; shortening the authoritative disposable-profile name fixes it, with all three native acceptance fixtures passing in the original failing layouts. A native fake-credential regression now verifies a private Unicode environment, with all eight process-boundary tests and three installed-provider fixtures passing. Those early checks did not establish representative fidelity, constrained-token/filesystem isolation, network denial or UI fallback presentation; the current gate state and newer receipts are recorded above.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 2,
+      "section": "1. Finish previews and editing",
+      "requirement": "The approved Linux editable-text publication contract is source-complete for plain text, text-equivalent/code and Markdown files. Saving retains both the independent draft and the actual displaced inode in a private source-local recovery directory. Final-window content, replacement and permission races are detected after exchange; a recovery conflict keeps the buffer and exact recovery location visible and disables further saves until explicit reload. Restoration only fills a vacant name without replacement; an occupied or failed recovery leaves all retained versions intact. Both affected directories are synced, and uncertainty stays visible. Prior inodes are never automatically pruned, including after clean saves, because late descriptor writers cannot be ruled out. Exchange-induced ctime changes, later external edits, same-user tampering and crash/power-loss limits are stated in the user guide; this is a retention guarantee, not generation-conditional overwrite or writer exclusion. Focused tests cover final-window mutation, inode identity, permissions, late descriptor writes, restoration refusal/failure, durability failure, retention and editor recovery. Workspace and source-built Linux acceptance evidence is recorded in `.hermes/text-publication-20260923/`. The exact AppImage from `cabfc8e4f0a6e4046581e73224eef5b2f9aac944` has packaged-editor byte identity, documentation and isolated headless-entrypoint evidence there; final-window race injection is test-only and has no packaged control, so packaged interactive recovery acceptance remains pending. Native crash/power-loss and physical/Wayland package acceptance remain unclaimed. Windows native text publication and source-built desktop acceptance are recorded below; macOS stays read-only. Additional document formats are not authorized.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 3,
+      "section": "1. Finish previews and editing",
+      "requirement": "Windows text-save candidate: seventeen native ordinary-user fixtures pass on Windows 11 build 26100, including exact bytes/security preservation for inherited, protected and explicit DACLs, retained originals/drafts, sharing refusal and collision/failure recovery. Unicode names, ancestor-rename refusal, eight process-exit boundaries, and writable-mapping refusal/retry have native evidence; object IDs and all present SACLs are refused before staging. Actual audit-only, mixed audit/resource and scoped-policy fixtures confirm refusal without metadata loss; extended attributes are refused before staging both at admission and after session opening; partial-SACL publication was removed after it dropped an audit rule. Candidate ACL preparation now preserves the automatic-inheritance state through the filesystem security API; exact descriptor validation remains mandatory. Public editing is now enabled for admitted local NTFS files: all 22 native text checks pass, and the source-built desktop Inspector verifies exact saving, retained original/draft, external-change refusal and confirmed reload. Focused exact portable-package Markdown save/conflict/reload acceptance now passes with exact saved bytes, retained Unicode original/draft, external-change refusal, Keep editing, Copy my edits and confirmed reload. [WINDOWS_TEXT_EDITING.md](WINDOWS_TEXT_EDITING.md) records the current archive/hash, limited interactive token, diagnostic OpenGL scope and remaining platform limits.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 4,
+      "section": "2. Complete file operations and desktop workflows",
+      "requirement": "**Linux admission repair and acceptance:** Clipboard and queued commands use one fallible admission path with per-path Linux unique mount IDs in addition to discovered-volume checks, correct source/destination symlink semantics and retained unavailable-volume tombstones. Ordinary-user worker/regression tests and a real private-namespace mount replacement pass; Linux and Windows strict Clippy pass. This requires Linux 6.8+. The preceding clean `771eae8` AppImage passes rapid Ctrl+L path entry and two-file Ctrl+A selection, Copy, conflict renaming, reverse batch Copy, Move, Cancel, overwrite retention and overwrite Undo on two distinct local tmpfs filesystems outside Home. Exact byte checks, normal exit and fixture/process cleanup pass. Main command shortcuts use key-event modifiers; address fields receive focus before rendering. Both released-chord/same-frame typing regressions and all 343 regular UI tests pass. Receipt: `dist/packages/LOCAL_PATH_ADMISSION_ACCEPTANCE.json`. Physical removable acceptance remains open. Batch Copy source now retains per-file receipts in Activity, removes the spurious cleanup warning on successful publication and supports reverse-order Undo with retained progress on failure. All 329 platform and 343 regular UI tests pass, including displaced-byte restoration, replacement refusal and retry of only remaining entries. Exact rebuilt-AppImage GUI checks pass two-file cross-filesystem Copy and Undo with source bytes retained, the new action label and no spurious cleanup warning. The full rapid-path/Copy/Move/Cancel/Overwrite/Undo sequence also passes, with normal exit and owned fixture/process cleanup. Receipt: `dist/packages/BATCH_COPY_ACCEPTANCE.json`. Safe expiry/reclamation of session Copy transaction stages remains daily-driver work. The current `4c0961b` source and AppImage use shared nonblocking inotify identity guards and unique mount IDs for Copy/create receipt directories, with short-lived, verified directory-relative handles for the inverse. It refuses replaced parents/stages and redirected destination aliases, including published hard links preserving file inode identity. Long-lived directory handles were rejected because they prevent ordinary unmount. Dedicated private mount acceptance covers ordinary unmount with live receipts, tmpfs replacement, and same-inode bind remount. History eviction/Clear and safe recursive reclamation remain unfinished. All 335 regular platform tests, 343 regular UI tests, strict Linux/Windows cross-target Clippy and the private mount fixture pass. The rebuilt exact AppImage passes rapid path entry, Copy/conflict rename/batch Undo/Move/Cancel/Overwrite/Undo with exact bytes and normal exit; successful Undo messages use normal muted text. Owned apps, daemon, bus, display and fixtures are removed. Receipt: `dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json`. Physical removable-device acceptance and native Windows remain open. Evidence and scope: [STORAGE_LOCATIONS_STATUS.md](STORAGE_LOCATIONS_STATUS.md#current-linux-clipboard-path-admission-gap).",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 5,
+      "section": "2. Complete file operations and desktop workflows",
+      "requirement": "Miller startup selection now requests the same one-shot row/column reveal as explicit navigation, showing the selected file and its adjacent preview rather than leaving the preview off-screen. A rendered deep-path regression reproduces the missing reveal before the fix and passes afterward; actual ArrowUp selection preserves the settled horizontal offset. Existing Miller/pointer navigation tests and strict UI Clippy pass. The private reveal state has one shared implementation for startup and navigation. Native Windows portable acceptance now passes at 1100 \u00d7 690 and 800 \u00d7 600: selected file/full adjacent preview visible, ArrowUp changes selection without shifting columns, clean exits. Exact portable source `5a6b001895eec2a3c8a426b7cd0ae1acbdf9a2ad`, SHA-256 `f27508c5d85b812a7512585eedf0c0c5c676bb10b619ad869e2da79907861e4d`; receipt `.hermes/evidence/windows-20261011/WINDOWS_MILLER_STARTUP_ACCEPTANCE.json`. Linux AppImage acceptance also passes at both sizes using private Xvfb/DBus and the exact clean-revision `73b913d` package; receipt `dist/packages/MILLER_STARTUP_ACCEPTANCE.json`. Portable/DEB/RPM also contain the fix and pass the same extracted-package layout checks; exact current identities are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. The current NSIS and MSI installers also contain this fix. Full platform acceptance remains separate. Historical reproduction: `.hermes/evidence/windows-20261011/text-package-start.png`.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 6,
+      "section": "2. Complete file operations and desktop workflows",
+      "requirement": "Complete native Windows Move acceptance against the same product contract. Ordinary-user fixtures on Windows 11 build 26100 cover ten same-volume cases and cross-volume file/directory/symlink Move on two NTFS volumes; Skip/Rename/Overwrite with exact displaced retention; raw nested links and empty directories; creation/modification times and hidden/archive/read-only metadata; changed-source/published-entry refusal; adverse sharing and destination ACL refusal/retry; and process exits during staging, publication, source claim and displaced retention. Read-only-source publication recovery survives repeated exits without clearing original source attributes. Read-only destination files survive Skip/Rename; Overwrite safely refuses until destination protection is removed, then ordinary retry retains the exact displaced file. Source cleanup rechecks named streams added after interruption. Journal namespaces are explicitly flushed, with native durability-failure/refusal/retry evidence. Explicit recovery shares the ordinary recovery gate; native checks cover closed-gate refusal, idempotent completed recovery, retained originals/later edits and malformed or misnamed journals. A separate native lock-owning process blocks both explicit recovery and ordinary retry without changing journal or file bytes; killing it releases ownership, after which recovery completes with exact displaced retention and remains idempotent. Strict Windows platform Clippy passes. These fixtures are not power-loss or exact-package acceptance. Directory process-exit acceptance now covers initial journal publication, candidate unlock/publication, before source cleanup, source unlock and source claim. The initial central/local journal gap is repaired only for an empty, identity-bound initial transaction; staged-data and later missing-journal cases remain refused. Native FAT32 boundary checks now prove safe refusal in both directions for Rename/Overwrite with both files unchanged; this does not claim FAT32 Move support or physical removable-device acceptance. Extended attributes are now refused at admission and cleanup, with native exact-retention checks for files, directory roots and nested entries, including attributes added after interrupted publication. Completed non-Overwrite Moves now retain a durable central completion receipt through ordered, flushed teardown; native tests cover deletion failures, process exits and preservation of mismatched or replaced recovery data. Top-level file and directory symlinks now refuse link-owned named streams at admission and cleanup; native checks distinguish those streams from target data and preserve streams added after interrupted publication. The bounded independent review confirms this stream-refusal repair. Source-built Windows GUI acceptance now covers Cut/Paste Overwrite and idempotent same-volume recovery with exact displaced-byte retention. It exposed a storage-root path mismatch, repaired at discovery. Cross-volume recovery now exposes the normal action; recovery revalidates the journal, identities and content before mutation. A fresh network-isolated Windows guest on October 11 passes all 21 current cross-volume native fixtures (15.69s), the FAT32 refusal fixture in both directions (0.05s), and 102 default platform tests (6.60s; 23 ignored), as the limited interactive user; strict Windows all-target platform Clippy passes. Evidence: `.hermes/evidence/windows-20261011/MOVE_ACCEPTANCE.json`. Separate ordinary-user Overwrite fixtures now survive hard guest power cuts at BeforeSourceCleanup for a regular file and SourceClaimed for a directory tree. Both verify published/displaced content and identity, recovery and its idempotent repeat (0.10s and 0.09s). The directory check verifies the claimed source identity, nested payload, empty folder and drained claim. Windows needed one normal restart from Automatic Repair after repeated cuts; fixture state survived. Evidence is `POWER_CUT_ACCEPTANCE.json` and `SOURCE_CLAIM_POWER_CUT_ACCEPTANCE.json` beside that receipt. The temporary Windows acceptance gate and override variables are removed; public Move and retained recovery use the authoritative verified transaction path. A fresh no-override run passes 21 cross-volume cases, FAT32 refusal and 99 default platform tests. The final public-command fixture also passes single-file and batch Move across NTFS volumes (0.69s), with explicit dispositions and no unsupported undo receipt. Strict Windows platform/UI all-target Clippy passes; `PUBLIC_MOVE_ACCEPTANCE.json` records the exact binaries and scope. The clean `9335cff` Windows portable candidate built successfully (SHA-256 `9f3669693a75564542712c7a94381c35104e2d123138554756dd4077d08357b6`); all 49 archive files match its stage. Ordinary-user packaged launch passes with explicit OpenGL, but Cut/Paste to a typed `Q:` destination exposed a lexical mismatch against the discovered verbatim drive root. Both files remain unchanged; this candidate is not accepted for that workflow. The shared storage-root comparison now recognizes ordinary/verbatim drive and UNC prefixes without resolving links or changing the operation path. Its ordinary-user native Windows regression passes valid aliases and missing/replaced/unrelated-volume refusals; strict Windows UI all-target Clippy passes. Evidence: `STORAGE_PREFIX_ACCEPTANCE.json`. The rebuilt clean `56f0d4e` package (SHA-256 `528dc46064877ead4e433ecd955d345802f200229e940acd0001196b5ca9f099`) passes limited-user Cut/Paste/Replace across C:/Q: with source removal, exact published/displaced bytes, retained file identity, paired journals and bundled graphics module paths verified. A VHDX attachment-filter limitation caused the earlier ACL failure; correcting the owned backing-image permissions resolved it without a production ACL change. Fresh native verification passes 22 cross-volume cases including a Modify-only destination and 99 default tests. Evidence: `PREFIX_PACKAGE_ACCEPTANCE.json` and `MODIFY_DESTINATION_ACCEPTANCE.json`. Broader GUI acceptance remains pending. Other power-cut boundaries and physical-device acceptance also remain pending. Non-symbolic reparse points remain rejected. Native commands, detailed evidence and limits are in [DEVELOPMENT.md](DEVELOPMENT.md#windows-move).\n\n\nWindows index-task status source now reads the task's `Settings/Enabled` value instead of a trigger's earlier `Enabled` flag, which could incorrectly label a disabled task ready. Differing trigger/task flags and malformed settings have rendered-status regressions. Source verification passes 215 search tests (two ignored), strict Linux/Windows search all-target Clippy, formatting and diff checks. The first full run's 500k benchmark hit 270 ms under concurrent compilation; an isolated repeat passed at 121 ms and the full suite passed without compilation. The subsequent task-update repair below includes this status fix in the refreshed portable/NSIS payload; native portable CLI/status acceptance passes. Updated installer lifecycle and MSI refresh pass the subsequent checkpoint below; cross-version upgrade and full rollback remain open. Evidence: `.hermes/evidence/windows-refresh-20261012/TASK_STATUS_SOURCE_VERIFICATION.json`.\n\nThe shared Windows background setup now registers the replacement task atomically with its existing enabled state and permissions, verifies task ownership/logon type, and passes the executable path as process data. It replaces the hourly `schtasks /MO` path with a Task Scheduler time trigger and validates the documented 1\u2013744-hour repetition range. The exact embedded script passes native medium-integrity interactive checks for new/enabled tasks, disabled updates at 1/6/24/168/744 hours, unchanged security descriptors, paths with spaces/apostrophes, and mutation-free refusal of 0/745 hours. The initial verifier incorrectly compared an account name returned by Windows with a SID; normalized SID checks pass. All 213 current search tests (two ignored), strict Linux/Windows search all-target Clippy, formatting and diff checks pass. Native script evidence: `.hermes/evidence/windows-task-update-20261012/NATIVE_SCRIPT_ACCEPTANCE.json`. The additional native ownership control refuses a readable other-user task without changing its definition or permissions. Exact portable CLI acceptance now passes setup, disabled update to 24 hours, preserved permissions, correct enabled/disabled status with an enabled trigger, and invalid-interval refusal. The subsequent installer checkpoint below accepts the current same-version lifecycle; cross-version upgrade and full rollback remain open.\n\n\n\nThe preceding task-CLI checkpoint refreshed Windows portable and NSIS payloads from clean revision `c4cfcc453784d5570d76672775ee896a31979c0d`, including both index-task fixes. Portable SHA-256: `23f11855b1975d0718714694270604ea1be8c520c9ab7c555155f6b54a12cf27`; NSIS: `da50b91901cff2fd69d13b5a812d10b4ef8045cad8a3e5de8f87fbd6a6b93abf`. All 50 portable and extracted NSIS files match the stage. Native exact portable CLI tests pass under the limited medium-integrity interactive desktop account; this account has filtered administrator membership, so fresh non-administrator acceptance is not claimed for this turn. MSI remains the preceding `f18ee49` artifact; updated NSIS install/reinstall/uninstall and MSI rebuild remain next. Receipt: `dist/WINDOWS_INDEX_TASK_ACCEPTANCE.json`. Owned guest tasks, package extraction, binaries, profile and uploads were removed, existing installation checksum preserved, and the owned VM shut down.\n\n\nThe current Windows portable, MSI and NSIS candidates now share clean revision `4a9715f4805895d3196198358c8af4fc17fbcc77`, including the refined menus and Inspector page-navigation layout. Portable SHA-256: `adcf88ea372c44cc85108d3e8ae070b55a8caedae8751496da75e10cd39f9138`; MSI: `d422841b8e562ed89be4ae5054692457cd47de9acaccbcfc0333396fdf7cf181`; NSIS: `b45f279e6325308bad6251c57094aaadebed1906ef5a670c387e8728411735d1`. All 50 portable/NSIS files match staging; the native WiX MSI cabinet matches those files plus the authoritative transaction script. The exact portable passes native medium-integrity interactive Dark/Light checks at 100% scaling: complete menu icons, compact action-menu padding, separate choice checkmarks, two-page PDF Next/Previous and disabled boundaries, Inspector minimum size, unchanged source and clean exits. Current installer lifecycle and Windows 150% scaling were not rerun. Receipt: `dist/WINDOWS_UI_ACCEPTANCE.json`. QA task, processes, profiles, compiler and extracted fixtures were removed; the pre-existing installation checksum is unchanged and the owned guest is shut off. Earlier installer receipts below remain historical.\n\nThe preceding portable and MSI used clean revision `8752e92ccda3c29a6648dbc4e3e37d11a8ba5a7a`; NSIS retained its accepted `c4cfcc4` payload with the identical application binary. Portable SHA-256: `dc1a5f387432f03f2b5f58cb762cd8e7e0eecb379fb4433913b8571babb24cac`; MSI: `01348323827bc3979e3ec717b49670835f57a13742e3b9f2a8eea09bc1a7cb18`; NSIS: `da50b91901cff2fd69d13b5a812d10b4ef8045cad8a3e5de8f87fbd6a6b93abf`. Both exact installers pass fresh non-administrator, medium-integrity interactive install, same-version reinstall/repair, payload hashes (50 NSIS / 51 MSI), disabled-index state and permission preservation, configured six-hour refresh, desktop entries, uninstall and preference preservation. The actual MSI Start menu shortcut opens the installed app and exits cleanly with bundled OpenGL. MSI checks use the real disposable account profile: its service action did not consume the earlier private APPDATA fixture. The initial invalid partial-config NSIS fixture and the MSI configuration-path correction are retained separately from passing acceptance. All owned account/profile, credentials, tasks, compiler/extractions and uploads were removed, existing guest installation checksum preserved, and VM shut off. Exact evidence: `dist/CURRENT_INSTALLERS_ACCEPTANCE.json`. Cross-version upgrade, late-failure MSI product rollback, interactive installer UI and broad daily-driver/graphics acceptance remain open.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 7,
+      "section": "3. Finish packaging source",
+      "requirement": "Finish native Windows acceptance of the MSI and installer/uninstaller cleanup integration.\n\n\nThe preceding full Windows installer checkpoint used all three artifacts from clean revision `f18ee49ae21669e55f8bb6bd21b9a0886609b15f`: portable SHA-256 `258fb0140cad49d18f0e539a2225afb2e6ed4e7080781e00e64a6063f96addf7`, MSI `61681db3968c3bf319b5c2749f8ec1b2cd3507c9793d4565deb2a967df960d7d`, NSIS `7475fdfc58a30278c1be4abd24f092064ab049faa179e3c7e5fc27a37f862169`. Native WiX compiled the exact MSI. A fresh standard account with a medium-integrity interactive token passes MSI install, all 51 files, x64 summary, index registration, shortcut/icon checks, installed-shortcut window launch/clean exit, and uninstall with product state 5 \u2192 -1 and preferences preserved. The current NSIS passes install, all 50 files, registration/shortcut/index checks, same-version reinstall and uninstall with preferences preserved. The first MSI verifier had an incorrect helper-script manifest path; explicit re-verification after correcting the fixture passed, and the original successful native install log and failed fixture are retained. Owned account/profile/credential/tasks/runtime/uploads were removed; the previous guest installation is unchanged. Exact scope and remaining cross-version, rollback, populated-data and interactive UI gates are in `dist/CURRENT_INSTALLERS_ACCEPTANCE.json` and `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`.\n\n\nThe preceding portable and NSIS packages contain the Miller resize repair and were packaged from clean tracked revision `2b3acb25159ec66c988722901f018322435bbb05`. Portable SHA-256: `633c9cbe386536041d3d53f895a17a9833249cfff610b9556d1a2aa8cd961416`; NSIS SHA-256: `bc071d129beb96de792bbb36a99e4376514719876647c9502bcdcd8ee4848aa2`. All 50 portable and extracted NSIS payload files match the current stage. The portable passes medium-integrity interactive launch, actual 1100 \u00d7 690 to 800 \u00d7 600 resize with selected file and adjacent text preview visible, and clean exit with empty stderr. QA task/profile/uploads were removed; the previous guest installation was preserved and the guest shut down. `dist/packages/MILLER_RESIZE_ACCEPTANCE.json` and `dist/WINDOWS_PACKAGES_ACCEPTANCE.json` record exact scope. At that checkpoint native lifecycle acceptance had not been rerun for its NSIS, and the MSI was still the older `f9b2062` artifact. Historical installer checks below apply only to their recorded hashes.\n\nThe earlier clean `0d1ea18` NSIS candidate was built at `dist/Ottrin-0.1.0-windows-x64-setup.exe` (SHA-256 `faa29a8506060ab2d7541f2764ea57d909bde5f70e03c9e73ef85120f4715970`). Silent install and same-version reinstall pass under a fresh non-administrator Windows user: all 49 payload files match, the limited-user periodic index task targets the installed executable, and saved preferences are unchanged. Silent uninstall removes application files, task, shortcuts and registry entries while preserving those preferences. `NSIS_ACCEPTANCE.json` records the exact scope. At that checkpoint, portable and MSI were rebuilt from clean revision `b7f0de608aec454ebcdcb72874a51e755df8fbf3`: portable SHA-256 `a31f2f19e01ef757f95f8d5a0195b9a9734636990eeaa5ce184d7e05ba4979c1`, MSI SHA-256 `82433937a222aaba423a98f228a2eb44c69835487bcb8b6557a634a57efca52e`. The exact MSI passes silent install/uninstall with all 49 installed files matching, index-task registration/removal, product registration/removal and saved preferences retained. `MSI_FINAL_ACCEPTANCE.json` records its medium-integrity interactive token and owned installation/profile scope. True version upgrade/rollback, populated-data cleanup, interactive installer and full installed-app workflows remain open.\n\nNative MSI QA on 2026-10-12 exposed destructive early upgrade removal and an omitted architecture flag. The builders now explicitly select x64, and major upgrades retain the old product until the replacement install script executes. A clean native candidate cycle passes install, an injected immediate upgrade failure with all 49 prior files/product/index-task/preferences preserved, successful 0.1.0-to-0.1.1 upgrade, and uninstall with payload/task removal and preferences retained. `MSI_LIFECYCLE_ACCEPTANCE.json` records the candidate hashes, medium-integrity interactive token and scope. These candidates use the clean `4c4057b` portable payload with revised installer source; they are not the published MSI. The upgrade fixture changes the MSI version, not runtime behavior. The clean stable MSI is separately accepted for silent install/uninstall as recorded above; a fresh non-administrator interactive session, later custom-action failure rollback, populated-data cleanup and Installed Apps workflows remain open. Earlier destructive tests left owned orphan component references; those were recorded and removed before the clean repeat.\n\nA later native failure test on 2026-10-12, after `InstallExecute` and before old-product removal, **fails**: Windows Installer leaves the failed product registered and reports access-denied rollback errors, while background setup re-enables a previously disabled index task. A separate file-only MSI with no Ottrin executable or index custom action reproduces the registration failure (1603, payload rolled back, product state still installed); its explicit cleanup uninstall succeeds. `MSI_LATE_FAILURE.json`, `MSI_REGISTRATION_PROBE.json` and compressed native logs retain the evidence. [WiX issue 8574](https://github.com/wixtoolset/issues/issues/8574) reports similar symptoms; the exact authoring/engine cause is not established here. This is a confirmed open release gate, not covered by the earlier passing pre-execution failure test. Installer-owned index rollback is now implemented: a UTF-8 snapshot records the prior definition and permissions before setup, rollback restores it without running registration triggers, and commit removes the snapshot. A native medium-integrity test with a failure after `InstallExecute` restores the complete disabled task XML and permission entries, preserves the 49 prior payload files/preferences and removes the snapshot. New-task rollback, commit cleanup and stale-snapshot retention also pass focused native tests. `MSI_TASK_ROLLBACK.json` and `MSI_TASK_TRANSACTION_UNIT.json` record this source/candidate evidence; it does not resolve the failed-product registration error or complete populated-data rollback, fresh non-administrator or exact published-MSI acceptance.\n\nA new file-only control rules out filtered-administrator membership as the explanation for the registration rollback failure. Native WiX 5.0.2, Windows build 26100 and `msi.dll` 5.0.26100.9168 reproduce it in a fresh standard account with a medium-integrity interactive token and no administrator membership: injected failure after `InstallExecute` returns 1603, the file rolls back, but product state remains 5. The rollback contains 149 access-denied registry notes, excluding ordinary missing-key diagnostics. Explicit uninstall returns 0 and product state becomes -1. The probe has no Ottrin executable or index custom actions; this does not establish the compiler, engine or authoring cause. The [open upstream report](https://github.com/wixtoolset/issues/issues/8574) describes similar registration failures; similarity is not root-cause proof. `dist/MSI_STANDARD_USER_ROLLBACK_COMPARISON.json` and compact logs under `.hermes/evidence/msi-rollback-20261012/` retain the evidence. Owned account/profile/task/credential/compiler/uploads were removed and the prior guest installation is unchanged. Full MSI rollback remains an open gate; other roadmap work can continue.\n\n\nThe task-transaction portable/MSI checkpoint was built from clean tracked revision `c3bba32532b0a5a3a0c96c52e047b88eec1f3a58`: portable SHA-256 `2864bd4522e67f0b6758789f8705b0471818e3aa4fbc7201a389ed111f35e7cb`, MSI SHA-256 `c53089f1dfd85cebba653e56e318686af110e976bb46b5465eb9dec4e8e33b52`. The MSI adds one installer-owned task-transaction script (50 installed files; portable remains 49). Exact silent install/uninstall passes with complete payload hashes, index task/product registration and removal, preferences retained and no transaction snapshots left. `MSI_TASK_FINAL_ACCEPTANCE.json` binds this medium-integrity interactive acceptance to the exact artifact. A separate native helper test also confirms restoring an enabled registration trigger does not execute it. Full MSI registration/data rollback and fresh non-administrator interactive/Installed Apps acceptance remain open.\n\nThe NSIS lifecycle checkpoint used Windows portable and NSIS packages from clean revision `e09d88c8ecf11460338034945ce0b5ee890ed432`. Portable SHA-256: `327a5d8868949fd50dd62139ad290ec457b5e9b63d0646f6b8b6a7bd9d38711f`; NSIS SHA-256: `3389e0128cae0e93c36b76be397481abdd3907ab8df4113941ceac1c56eaf699`. The published archive matches all 49 staged files; its app binary matches the earlier accepted startup-preview binary. Exact NSIS silent install, same-version reinstall and uninstall pass under a fresh standard account with a medium-integrity batch token: full payload hashes, index action/principal, Installed Apps name/version/icon, Start menu shortcut targets, removal of files/task/registration/shortcuts, and unchanged preferences. The owned account, profile, temporary batch-logon right, tasks and fixtures are removed; the existing guest installation is preserved. Receipt: `.hermes/evidence/windows-20261011/CURRENT_NSIS_ACCEPTANCE.json`, also included in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. Cross-version upgrade, failure/rollback, populated-data cleanup, interactive installer and full installed-app workflow acceptance remain open.\n\nThe historical portable and MSI checkpoint was built from clean revision `fc313932a4993cb3122594257928d676daf3e931`: portable SHA-256 `afda48f12327fb1df2bc9337e97eaa8fc1577c7b2455b767198ac2674b2b66ae`, MSI SHA-256 `f88a875c2b03d5d9b9445d655de023f56c9d9a53b0f4520500b4ef13bc5b3520`. The exact MSI passes silent install/uninstall under a fresh standard account with a medium-integrity **interactive** token: all 50 file hashes, index-task registration/removal, product state 5 \u2192 -1, preferences preserved, and no transaction snapshots. Its first batch-token attempt failed before package actions with installer-server access denied; that context failure is retained separately and no permissions were changed. Temporary account/profile, tasks, credential, runtime and fixtures were removed; existing guest installation preserved. Receipt: `.hermes/evidence/windows-20261011/MSI_CURRENT_ACCEPTANCE.json`, also in `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. MSI authoring currently lacks Start menu app/uninstall entries; add and accept those next. Full rollback/product restoration and the broader release gates remain open.",
+      "classification": "failed external native MSI boundary; release held",
+      "evidence": [
+        ".hermes/evidence/windows-msi-package-control-current/verified-teardown/ASSESSMENT.json",
+        ".hermes/evidence/windows-msi-security-context-current/COMPARISON.json"
+      ],
+      "assessment": "Exact Ottrin MSI and independent file-only native ordinary-token controls fail; elevated control diagnoses context only, no production workaround or requirement waiver."
+    },
+    {
+      "id": 8,
+      "section": "4. Required Ottrin picker and folder integration \u2014 active",
+      "requirement": "Build a reusable Ottrin Open/Save/folder picker using the authoritative theme and shared UI components. Use familiar places/bookmarks, breadcrumbs/editable path, search, file views, optional preview and a clear filename/type/action footer. Support caller-specified locations, filters, multiple selection, cancellation, overwrite confirmation and parent-window behavior. Preserve useful picker preferences without overriding the caller's request. Verify theme changes on the actual picker, including fonts, colors, borders and corner geometry.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 9,
+      "section": "4. Required Ottrin picker and folder integration \u2014 active",
+      "requirement": "Use the picker within Ottrin on Linux and Windows. On Linux, provide a desktop-portal FileChooser backend for compatible applications, with an explicit enable/disable control that preserves other portal providers and restores the prior chooser selection. Windows external integration is limited to cooperating applications; do not claim or offer a universal replacement for other programs' native dialogs.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 10,
+      "section": "4. Required Ottrin picker and folder integration \u2014 active",
+      "requirement": "Offer optional folder/file-reveal integration: Linux directory handling and the standard FileManager1 interface; Windows Open in Ottrin integration and a clearly scoped, reversible folder-opening preference where supported. Display coverage honestly, preserve previous associations and restore owned changes on disable/uninstall.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 11,
+      "section": "4. Required Ottrin picker and folder integration \u2014 active",
+      "requirement": "Keep picker launch independent of index readiness. Browse directories directly; use the existing index asynchronously for search when available. Do not add indexing responsibilities or an always-running full GUI to the picker. Start the picker on demand; consider bounded warm retention only if measured cold startup justifies it.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 12,
+      "section": "4. Required Ottrin picker and folder integration \u2014 active",
+      "requirement": "Accept cold/repeated launch latency, idle CPU, retained memory, cancellation/cleanup, concurrent requests, operation with indexing stopped, theme persistence, and enable/disable restoration on both supported platforms. Record measured results rather than promising unverified speed or universal application coverage.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 13,
+      "section": "Triggered work, not background work",
+      "requirement": "**MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.",
+      "classification": "conditional future work; trigger not established",
+      "evidence": [
+        "docs/ROADMAP.md#triggered-work-not-background-work"
+      ],
+      "assessment": "Preserve the explicit trigger and scope boundary. This is not authorization to start a pack, infrastructure, live remote folders, advanced tools or fanotify."
+    },
+    {
+      "id": 14,
+      "section": "Triggered work, not background work",
+      "requirement": "**Portable LibreOffice fidelity pack:** start only after installed-provider acceptance shows a concrete need and provenance, update ownership, licence and removal responsibilities are acceptable.",
+      "classification": "conditional future work; trigger not established",
+      "evidence": [
+        "docs/ROADMAP.md#triggered-work-not-background-work"
+      ],
+      "assessment": "Preserve the explicit trigger and scope boundary. This is not authorization to start a pack, infrastructure, live remote folders, advanced tools or fanotify."
+    },
+    {
+      "id": 15,
+      "section": "Triggered work, not background work",
+      "requirement": "**Generic pack manager:** build it only after one pack candidate has passed its product decision. Do not build package infrastructure for hypothetical providers.",
+      "classification": "conditional future work; trigger not established",
+      "evidence": [
+        "docs/ROADMAP.md#triggered-work-not-background-work"
+      ],
+      "assessment": "Preserve the explicit trigger and scope boundary. This is not authorization to start a pack, infrastructure, live remote folders, advanced tools or fanotify."
+    },
+    {
+      "id": 16,
+      "section": "Triggered work, not background work",
+      "requirement": "**Renderer, codec or icon replacement research:** start only for a reproduced product gap that the current accepted path cannot solve.",
+      "classification": "conditional future work; trigger not established",
+      "evidence": [
+        "docs/ROADMAP.md#triggered-work-not-background-work"
+      ],
+      "assessment": "Preserve the explicit trigger and scope boundary. This is not authorization to start a pack, infrastructure, live remote folders, advanced tools or fanotify."
+    },
+    {
+      "id": 17,
+      "section": "Triggered work, not background work",
+      "requirement": "**Live remote folders and cloud locations:** do not implement these before the current roadmap and release acceptance are complete. The deferred architecture in [`REMOTE_ACCESS_AND_CLOUD_LOCATIONS_DESIGN.md`](REMOTE_ACCESS_AND_CLOUD_LOCATIONS_DESIGN.md) keeps live Ottrin-to-Ottrin access, provider-backed cloud locations, and cloud synchronization as three explicit product boundaries.",
+      "classification": "conditional future work; trigger not established",
+      "evidence": [
+        "docs/ROADMAP.md#triggered-work-not-background-work"
+      ],
+      "assessment": "Preserve the explicit trigger and scope boundary. This is not authorization to start a pack, infrastructure, live remote folders, advanced tools or fanotify."
+    },
+    {
+      "id": 18,
+      "section": "Triggered work, not background work",
+      "requirement": "**Advanced image tools:** the repository does not define this outcome. Do not invent features from the label; start only after David chooses a concrete tool and acceptance behavior.",
+      "classification": "conditional future work; trigger not established",
+      "evidence": [
+        "docs/ROADMAP.md#triggered-work-not-background-work"
+      ],
+      "assessment": "Preserve the explicit trigger and scope boundary. This is not authorization to start a pack, infrastructure, live remote folders, advanced tools or fanotify."
+    },
+    {
+      "id": 19,
+      "section": "Triggered work, not background work",
+      "requirement": "**Fanotify helper/service:** the current Linux indexer uses its accepted watcher design and no active document defines a fanotify requirement. Reopen this only for a reproduced coverage gap and an accepted replacement or supplemental design.",
+      "classification": "conditional future work; trigger not established",
+      "evidence": [
+        "docs/ROADMAP.md#triggered-work-not-background-work"
+      ],
+      "assessment": "Preserve the explicit trigger and scope boundary. This is not authorization to start a pack, infrastructure, live remote folders, advanced tools or fanotify."
+    },
+    {
+      "id": 20,
+      "section": "Linux",
+      "requirement": "Bounded packaged QA on 2026-10-03 verified the then-current AppImage in isolated Xvfb: startup, folder navigation, editable-text Inspector save/reopen, external-change refusal with retained draft, and confirmed reload. Embedded tracked-source provenance matched the checkout before this QA note. This does not close final Linux acceptance: automated Copy/Paste did not produce an accepted conflict flow; clean desktop, real removable storage and installed LibreOffice remain unverified or unavailable. Evidence and the first next acceptance are in `.hermes/evidence/t_fb84c0b6/QA_RECEIPT.md`; Windows remains a separate native gate.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 21,
+      "section": "Linux",
+      "requirement": "Launch the AppImage, portable tarball and native packages on a clean supported desktop.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 22,
+      "section": "Linux",
+      "requirement": "Run one daily-driver workflow covering navigation, New File/New Folder, file operations, cross-volume Copy, Tandem View, multi-select, search, Quick Inspector, context menus and status messages.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 23,
+      "section": "Linux",
+      "requirement": "Attach, browse, index by explicit choice, detach and reconnect real mounted/removable volumes. Check compact/expanded Locations pointer, keyboard, tooltip, ordering, selection and unavailable states.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 24,
+      "section": "Linux",
+      "requirement": "Exercise installed LibreOffice with representative DOCX, XLSX and PPTX files. Confirm conversion, cancellation, cleanup, provider labels, page navigation and native fallback. Add fixtures only for defects found or features Ottrin claims to support.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 25,
+      "section": "Linux",
+      "requirement": "Native helper smoke verified on Linux: generated silent video, RGBA frames, pause/resume acknowledgement, Stop, end-of-stream, retained-descriptor pathname replacement, malformed input and isolated missing-plugin fallback (`scripts/linux-media-playback-smoke.py`). Source-built Inspector presentation has also been exercised in isolated Xvfb with generated video: decoded frames, Pause/resume, end-of-stream, missing-helper and missing-plugin fallback. Duplicate external-open actions and enabled controls for terminal sessions were corrected. Audible playback, representative user media and clean-package fallback remain pending; no codecs were added.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 26,
+      "section": "Linux",
+      "requirement": "Isolated packaged QA on 2026-10-10 verified New File/New Folder, rename, multiselect Copy, Trash, permanent delete, same-filesystem Cut/Paste, Tandem Copy/Move, tab reordering and scoped search with disposable files. List/Grid rubber-band selection from blank space below entries was repaired and verified in the AppImage from `76b50087e0f26a6312976a9def902e0d68409bd3`. Evidence is in `.hermes/evidence/roadmap-20261010/`; these checks do not close physical desktop, removable-volume or full workflow acceptance.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 27,
+      "section": "Linux",
+      "requirement": "Check packaged privileged-helper and polkit allow, cancel, missing-helper and policy-error paths.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 28,
+      "section": "Linux",
+      "requirement": "Recheck native assistive integration once. If the upstream Unix AT-SPI lifecycle remains unusable, record the observed limitation rather than starting replacement infrastructure during QA.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 29,
+      "section": "Windows",
+      "requirement": "Launch the portable zip and installed application on real Windows hardware or a representative real Windows VM.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 30,
+      "section": "Windows",
+      "requirement": "Check install, Installed Apps registration, shortcuts, launch, upgrade and uninstall cleanup without deleting user files.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 31,
+      "section": "Windows",
+      "requirement": "Run the Windows daily-driver workflow: navigation, New File/New Folder, file operations, Recycle Bin, Tandem View, search lifecycle, Quick Inspector, UAC/helper behavior and background integration.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 32,
+      "section": "Windows",
+      "requirement": "Attach and remove secondary fixed, removable and optical storage; connect and disconnect a mapped-network drive; check unavailable states and explicit indexing.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 33,
+      "section": "Windows",
+      "requirement": "Exercise Office previews through the accepted Windows provider boundary and confirm native/extracted fallback.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 34,
+      "section": "Windows",
+      "requirement": "Exercise Media Foundation with representative ordinary, malformed and unsupported media, cancellation, source replacement and the exact package contents. A native ordinary-user fixture now verifies a generated H.264 thumbnail by decoded pixel values, pre-cancellation, malformed-input refusal and admitted-source pathname replacement. Representative format coverage, in-flight cancellation, UI and exact-package checks remain separate.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 35,
+      "section": "Windows",
+      "requirement": "Exercise native WGPU and bundled Mesa OpenGL on adapters that need each path. Confirm Automatic selection, saved preference, diagnostic override, startup log and loaded-DLL provenance.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 36,
+      "section": "Windows",
+      "requirement": "Exercise same-volume and cross-volume Move with Skip/Rename/Overwrite/Cancel handling, interrupted work, edited-output Undo refusal, removable drives, and explicit partial/recovery outcomes.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 37,
+      "section": "Signing and Windows distribution",
+      "requirement": "Linux portable/AppImage release signing uses a project-owned OpenPGP key and\n  detached signatures; no paid certificate is needed. Provision the protected key,\n  publish its public key/fingerprint and verify exact downloaded artifacts.",
+      "classification": "owner-dependent; parked",
+      "evidence": [
+        "docs/ROADMAP.md#ownerexternal-waiting-list"
+      ],
+      "assessment": "Owner signing identity/provisioning, Store account/submission or final review respectively; independent software work continues."
+    },
+    {
+      "id": 38,
+      "section": "Signing and Windows distribution",
+      "requirement": "Direct Windows ZIP/EXE/MSI downloads remain unsigned by owner decision. Keep\n  checksums and explicit unsigned-publisher/SmartScreen disclosures; buying an\n  Authenticode certificate is not a release gate.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 39,
+      "section": "Signing and Windows distribution",
+      "requirement": "The local development MSIX package is implemented. Current0.1.0.6 has native\n  assembly, actual5\u21926 update, enabled/disabled real-login startup and removal\n  acceptance at its recorded4a1682bd scope. Microsoft Store identity, listing,\n  certification and submission remain owner-dependent release work. Store signing applies to accepted Store packages;\n  it does not sign the separate direct EXE/MSI downloads.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 40,
+      "section": "Signing and Windows distribution",
+      "requirement": "Store submission/account work waits for readiness and the owner; independently\n  executable implementation and unsigned direct-download acceptance continue.",
+      "classification": "owner-dependent; parked",
+      "evidence": [
+        "docs/ROADMAP.md#ownerexternal-waiting-list"
+      ],
+      "assessment": "Owner signing identity/provisioning, Store account/submission or final review respectively; independent software work continues."
+    },
+    {
+      "id": 41,
+      "section": "Release candidate gate",
+      "requirement": "`cargo fmt --all --check`, `cargo check --workspace --all-targets`, `cargo test --workspace` and strict workspace Clippy pass.",
+      "classification": "verified exact runtime source",
+      "evidence": [
+        ".hermes/evidence/worksheet-alignment-current/corrected/HOSTED_FINAL.json",
+        ".github/workflows/ci.yml",
+        ".hermes/evidence/windows-preview-safety-current/FORMAT_CHECK.json"
+      ],
+      "assessment": "Inspected all four completed hosted jobs and the actual workspace check/test/strict Clippy pipeline; shipping source is4a. Subsequent QA/docs changes are not a new runtime build."
+    },
+    {
+      "id": 42,
+      "section": "Release candidate gate",
+      "requirement": "Linux and Windows CI pass for the release commit.",
+      "classification": "verified exact runtime source",
+      "evidence": [
+        ".hermes/evidence/worksheet-alignment-current/corrected/HOSTED_FINAL.json",
+        ".github/workflows/ci.yml"
+      ],
+      "assessment": "Inspected all four completed hosted jobs and the actual workspace check/test/strict Clippy pipeline; shipping source is4a. Subsequent QA/docs changes are not a new runtime build."
+    },
+    {
+      "id": 43,
+      "section": "Release candidate gate",
+      "requirement": "Rebuilt artifact checksums verify and archive inspection finds the expected app, indexer, helper, policies, assets and documentation.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 44,
+      "section": "Release candidate gate",
+      "requirement": "Linux AppImage and portable tarball launch and pass the Linux workflow.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 45,
+      "section": "Release candidate gate",
+      "requirement": "Windows portable and installer launch and pass the Windows workflow.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 46,
+      "section": "Release candidate gate",
+      "requirement": "The Windows packages contain the pinned Mesa 26.1.3/DXC payload and notices; Automatic, native and OpenGL paths report the correct loaded DLLs.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 47,
+      "section": "Release candidate gate",
+      "requirement": "New File/New Folder, Locations, cross-volume Copy and Move, and privileged-helper behavior pass on their target platforms.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 48,
+      "section": "Release candidate gate",
+      "requirement": "The themed Ottrin picker, supported external integrations, resource/startup checks and reversible preference controls pass outcome 4 acceptance on Linux and Windows.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 49,
+      "section": "Release candidate gate",
+      "requirement": "Same-volume and cross-volume Move preserve source data on uncertainty and report complete, partial, blocked, and recovery-required outcomes truthfully.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 50,
+      "section": "Release candidate gate",
+      "requirement": "Known limitations match observed behavior.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 51,
+      "section": "Release candidate gate",
+      "requirement": "`README.md`, `USER_GUIDE.md`, `ROADMAP.md` and `RELEASE_NOTES.md` agree with the exact artifacts.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 52,
+      "section": "Release candidate gate",
+      "requirement": "Version, artifact names, checksums and generated release notes agree.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 53,
+      "section": "Release candidate gate",
+      "requirement": "Linux signatures and all artifact checksums verify after download; unsigned Windows direct downloads are labeled explicitly.",
+      "classification": "unverified in concentrated final audit",
+      "evidence": []
+    },
+    {
+      "id": 54,
+      "section": "Release candidate gate",
+      "requirement": "David reviews the release notes and any remaining known limitations. No blocker is waived without a written decision.",
+      "classification": "owner-dependent; parked",
+      "evidence": [
+        "docs/ROADMAP.md#ownerexternal-waiting-list"
+      ],
+      "assessment": "Owner signing identity/provisioning, Store account/submission or final review respectively; independent software work continues."
+    }
+  ],
+  "native_preview_checkpoint": ".hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json"
+}

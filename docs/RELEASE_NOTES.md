@@ -1,6 +1,28 @@
 # Ottrin 0.1.0 Release Notes
 
-Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first file manager.
+Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Final daily-driver and public-release acceptance remains outstanding.
+
+## Current local candidate
+
+The local Linux AppImage, portable archive, DEB and RPM and Windows portable ZIP,
+NSIS installer and development MSIX0.1.0.6 use runtime source
+`4a1682bdee98b16b63a7723785091399e99b505f`. The stable delivery paths are
+`dist/packages/` and `dist/windows-candidate/`; the acceptance receipts there
+record exact artifact hashes and tested scopes. All four Linux/Windows CI jobs
+pass for this source. The worksheet preview correction has actual Linux and
+installed Windows render acceptance: normal character spacing, leading body
+alignment, centered headers and complete wrapped rows.
+
+The current development MSIX passes an actual5→6 update, ordinary GUI operation,
+real reboot/login with startup enabled and disabled, and removal while preserving
+preferences and native index identity. Earlier broad workflow, provider, resource
+and installer-fault receipts keep their original hashes; the roadmap records the
+source/payload identity basis for unchanged responsibilities. The required MSI
+remains held for its ordinary-user registration rollback failure. No public
+release, Store submission or owner acceptance is implied by local delivery.
+
+Packaged documentation is a build-time snapshot. This repository copy and the
+roadmap track acceptance completed after assembly.
 
 ## Highlights
 

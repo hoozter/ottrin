@@ -1,0 +1,1057 @@
+{
+    "scope":  "Current installed NSIS temporal PDF, read-only VCF sibling navigation/Space, explicit Edit/Save; ordinary stock-client software VM",
+    "phase":  "normal supported uninstall",
+    "desktop_ready":  true,
+    "cases":  {
+
+              },
+    "payload_files":  58,
+    "explicit_edit":  {
+                          "after_sha256":  "B70AB3A2696270A35DA52AE47FE3CA6D648960E79D644B683370A0C4D2FDBD06",
+                          "save_exact_bytes":  true,
+                          "draft_preserved_source":  true,
+                          "before_sha256":  "B7750E468FB80AC8D7E5CDDED278AC2D7576D272089B2D5F9656B48284C08108"
+                      },
+    "uninstall":  "pass",
+    "pdf_frames":  [
+                       {
+                           "elapsed_ms":  127229,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  0
+                       },
+                       {
+                           "elapsed_ms":  127584,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  1
+                       },
+                       {
+                           "elapsed_ms":  127743,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  2
+                       },
+                       {
+                           "elapsed_ms":  127919,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  3
+                       },
+                       {
+                           "elapsed_ms":  128078,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  4
+                       },
+                       {
+                           "elapsed_ms":  128270,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  5
+                       },
+                       {
+                           "elapsed_ms":  128429,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  6
+                       },
+                       {
+                           "elapsed_ms":  128588,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  7
+                       },
+                       {
+                           "elapsed_ms":  128763,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  8
+                       },
+                       {
+                           "elapsed_ms":  128923,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  9
+                       },
+                       {
+                           "elapsed_ms":  129082,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  10
+                       },
+                       {
+                           "elapsed_ms":  129305,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  11
+                       },
+                       {
+                           "elapsed_ms":  129448,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  12
+                       },
+                       {
+                           "elapsed_ms":  129592,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  13
+                       },
+                       {
+                           "elapsed_ms":  129751,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  14
+                       },
+                       {
+                           "elapsed_ms":  129911,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  15
+                       },
+                       {
+                           "elapsed_ms":  130070,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  16
+                       },
+                       {
+                           "elapsed_ms":  130246,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  17
+                       },
+                       {
+                           "elapsed_ms":  130425,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  18
+                       },
+                       {
+                           "elapsed_ms":  130597,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  19
+                       },
+                       {
+                           "elapsed_ms":  130788,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  20
+                       },
+                       {
+                           "elapsed_ms":  131070,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  21
+                       },
+                       {
+                           "elapsed_ms":  131234,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  22
+                       },
+                       {
+                           "elapsed_ms":  131442,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  23
+                       },
+                       {
+                           "elapsed_ms":  131601,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  24
+                       },
+                       {
+                           "elapsed_ms":  131762,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  25
+                       },
+                       {
+                           "elapsed_ms":  131936,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  26
+                       },
+                       {
+                           "elapsed_ms":  132127,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  27
+                       },
+                       {
+                           "elapsed_ms":  132303,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  28
+                       },
+                       {
+                           "elapsed_ms":  132478,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  29
+                       },
+                       {
+                           "elapsed_ms":  132638,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  30
+                       },
+                       {
+                           "elapsed_ms":  132812,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  31
+                       },
+                       {
+                           "elapsed_ms":  133004,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  32
+                       },
+                       {
+                           "elapsed_ms":  133148,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  33
+                       },
+                       {
+                           "elapsed_ms":  133292,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  34
+                       },
+                       {
+                           "elapsed_ms":  133467,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  35
+                       },
+                       {
+                           "elapsed_ms":  133626,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  36
+                       },
+                       {
+                           "elapsed_ms":  133786,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  37
+                       },
+                       {
+                           "elapsed_ms":  133945,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  38
+                       },
+                       {
+                           "elapsed_ms":  134104,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  39
+                       },
+                       {
+                           "elapsed_ms":  134248,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  40
+                       },
+                       {
+                           "elapsed_ms":  134409,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  41
+                       },
+                       {
+                           "elapsed_ms":  134567,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  42
+                       },
+                       {
+                           "elapsed_ms":  134710,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  43
+                       },
+                       {
+                           "elapsed_ms":  134870,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  44
+                       },
+                       {
+                           "elapsed_ms":  135125,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  45
+                       },
+                       {
+                           "elapsed_ms":  135315,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  46
+                       },
+                       {
+                           "elapsed_ms":  135466,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  47
+                       },
+                       {
+                           "elapsed_ms":  135650,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  48
+                       },
+                       {
+                           "elapsed_ms":  135794,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  49
+                       },
+                       {
+                           "elapsed_ms":  136001,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  50
+                       },
+                       {
+                           "elapsed_ms":  137467,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  51
+                       },
+                       {
+                           "elapsed_ms":  137643,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  52
+                       },
+                       {
+                           "elapsed_ms":  138089,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  53
+                       },
+                       {
+                           "elapsed_ms":  138281,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  54
+                       },
+                       {
+                           "elapsed_ms":  138474,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  55
+                       },
+                       {
+                           "elapsed_ms":  138632,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  56
+                       },
+                       {
+                           "elapsed_ms":  139564,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  57
+                       },
+                       {
+                           "elapsed_ms":  139795,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  58
+                       },
+                       {
+                           "elapsed_ms":  139955,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  59
+                       },
+                       {
+                           "elapsed_ms":  140098,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  60
+                       },
+                       {
+                           "elapsed_ms":  140274,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  61
+                       },
+                       {
+                           "elapsed_ms":  140450,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  62
+                       },
+                       {
+                           "elapsed_ms":  140625,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  63
+                       },
+                       {
+                           "elapsed_ms":  140785,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  64
+                       },
+                       {
+                           "elapsed_ms":  140946,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  65
+                       },
+                       {
+                           "elapsed_ms":  141090,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  66
+                       },
+                       {
+                           "elapsed_ms":  141234,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  67
+                       },
+                       {
+                           "elapsed_ms":  141410,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  68
+                       },
+                       {
+                           "elapsed_ms":  141569,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  69
+                       },
+                       {
+                           "elapsed_ms":  141713,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  70
+                       },
+                       {
+                           "elapsed_ms":  141873,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  71
+                       },
+                       {
+                           "elapsed_ms":  142018,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  72
+                       },
+                       {
+                           "elapsed_ms":  142177,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  73
+                       },
+                       {
+                           "elapsed_ms":  142321,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  74
+                       },
+                       {
+                           "elapsed_ms":  142465,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  75
+                       },
+                       {
+                           "elapsed_ms":  142609,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  76
+                       },
+                       {
+                           "elapsed_ms":  142784,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  77
+                       },
+                       {
+                           "elapsed_ms":  142928,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  78
+                       },
+                       {
+                           "elapsed_ms":  143071,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  79
+                       },
+                       {
+                           "elapsed_ms":  143230,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  80
+                       },
+                       {
+                           "elapsed_ms":  143374,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  81
+                       },
+                       {
+                           "elapsed_ms":  143522,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  82
+                       },
+                       {
+                           "elapsed_ms":  143739,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  83
+                       },
+                       {
+                           "elapsed_ms":  143899,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  84
+                       },
+                       {
+                           "elapsed_ms":  144058,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  85
+                       },
+                       {
+                           "elapsed_ms":  144234,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  86
+                       },
+                       {
+                           "elapsed_ms":  144493,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  87
+                       },
+                       {
+                           "elapsed_ms":  144649,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  88
+                       },
+                       {
+                           "elapsed_ms":  144809,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  89
+                       },
+                       {
+                           "elapsed_ms":  144952,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  90
+                       },
+                       {
+                           "elapsed_ms":  145128,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  91
+                       },
+                       {
+                           "elapsed_ms":  145319,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  92
+                       },
+                       {
+                           "elapsed_ms":  145479,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  93
+                       },
+                       {
+                           "elapsed_ms":  145640,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  94
+                       },
+                       {
+                           "elapsed_ms":  145829,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  95
+                       },
+                       {
+                           "elapsed_ms":  146004,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  96
+                       },
+                       {
+                           "elapsed_ms":  146196,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  97
+                       },
+                       {
+                           "elapsed_ms":  146371,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  98
+                       },
+                       {
+                           "elapsed_ms":  146530,
+                           "bounds":  [
+                                          732,
+                                          176,
+                                          938,
+                                          490
+                                      ],
+                           "frame":  99
+                       }
+                   ],
+    "package":  {
+                    "source_revision":  "4a1682bdee98b16b63a7723785091399e99b505f",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "174d3c46ba4ef74b0db14d39e90765c256018305c2183d17eae6c9165d452ce2"
+                                  }
+                              ],
+                    "actor_sha256":  "2e4da2b3de6d77ab13715ea7b8b44c03f7f671abff67f1e16a37d898f261ad5d",
+                    "scope":  "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+                },
+    "preferences_preserved_by_removal":  true,
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSI86b1f78abff9",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "test_kind":  "native-windows-preview-safety",
+    "sources_before":  {
+                           "b.pdf":  "3E272F7250E6BC35AEBDEE16B4CDD107B6CDEE6137A360F249CCDAE08F5A04EE",
+                           "a.vcf":  "B7750E468FB80AC8D7E5CDDED278AC2D7576D272089B2D5F9656B48284C08108",
+                           "c.txt":  "BC568E8A8CDBF24640ED62B4D5980795A289E282F0F9091B65782922BD5E5156"
+                       },
+    "read_only_navigation":  {
+                                 "space_closed":  true,
+                                 "source_unchanged":  true,
+                                 "next":  "b.pdf",
+                                 "previous":  "a.vcf"
+                             },
+    "unrelated_sources_preserved":  true,
+    "status":  "pass within native Windows preview safety scope; direct captures require review",
+    "pdf_stable":  {
+                       "scope":  "Real screen bright-page geometry; frames0/10/30/99 retained for direct review",
+                       "samples":  70,
+                       "bounds":  "732,176,938,490",
+                       "interval_ms":  70
+                   },
+    "owned_processes_removed":  true
+}

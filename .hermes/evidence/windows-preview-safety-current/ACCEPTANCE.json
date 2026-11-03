@@ -1,0 +1,54 @@
+{
+  "status": "pass within exact installed Windows preview safety scope",
+  "source_revision": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "nsis_sha256": "174d3c46ba4ef74b0db14d39e90765c256018305c2183d17eae6c9165d452ce2",
+  "gui_sha256": "5052cca724102b9a04ad957a584c26d4cef8820734b81b349146aaca12c23369",
+  "evidence": "stock-corrected",
+  "native_identity": {
+    "profile": "C:\\Users\\OTMSI86b1f78abff9",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "payload_files": 58,
+  "pdf": {
+    "scope": "Real screen bright-page geometry; frames0/10/30/99 retained for direct review",
+    "samples": 70,
+    "bounds": "732,176,938,490",
+    "observed_duration_ms": 19301,
+    "distinct_bounds_all_samples": 1,
+    "configured_minimum_delay_ms": 70
+  },
+  "read_only_navigation": {
+    "space_closed": true,
+    "source_unchanged": true,
+    "next": "b.pdf",
+    "previous": "a.vcf"
+  },
+  "explicit_edit": {
+    "after_sha256": "B70AB3A2696270A35DA52AE47FE3CA6D648960E79D644B683370A0C4D2FDBD06",
+    "save_exact_bytes": true,
+    "draft_preserved_source": true,
+    "before_sha256": "B7750E468FB80AC8D7E5CDDED278AC2D7576D272089B2D5F9656B48284C08108"
+  },
+  "source_preservation": true,
+  "normal_uninstall_preserves_preferences": true,
+  "review": "stock-corrected/VISUAL_REVIEW.json",
+  "native_result_sha256": "53f8ae39ad16974c4a0deee81f1e6e7fc1c264b97fbf8dcf896710f0468457c6",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Dark/default DPI, explicit OpenGL under software VM; physical adapters and long-lived workload remain separate",
+    "One actual VCF-to-PDF transition and two-page generated PDF; navigation/close and exact Save accepted, not arbitrary document compatibility",
+    "No fresh package build or personal profile/service change",
+    "First attempt rejected wrong readiness control and was removed; original failure retained in stock-native/ASSESSMENT.json"
+  ]
+}

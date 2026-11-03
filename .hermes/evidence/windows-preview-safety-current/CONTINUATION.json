@@ -1,0 +1,24 @@
+{
+  "status": "progress; current Windows temporal PDF/read-only keyboard/explicit Save accepted; full goal remains active",
+  "runtime_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+  "completed": [
+    "Previous verified delivery checkpoint1eab8ccb pushed to origin/main",
+    "Fresh ordinary stock-client exact NSIS install58 hashes",
+    "VCF-to-PDF100 samples;70 settled identical page bounds and4 reviewed temporal captures",
+    "Inspector VCF/PDF arrows and Space preserve source",
+    "Explicit Edit draft leaves disk unchanged; Ctrl+S exact intended bytes; Escape close",
+    "Normal app close/uninstall preserve prefs and unrelated sources",
+    "Both QA domains/four volumes/private homes/viewers removed;duplicate transports/observation samples retired",
+    "Roadmap/current release-notes version discrepancies corrected;54 full explicit requirements inventoried,not all verified"
+  ],
+  "acceptance": ".hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json",
+  "next": [
+    "Finish concentrated requirement-by-requirement audit; include prose/user UI requirements beyond54 bullet inventory",
+    "Inspect direct native/runtime evidence and exact source/payload carry basis for workflow,media,picker/folder,resource scopes; repair actual gaps",
+    "Clicked read-only text selection/focus variants still require broader GUI audit; current keyboard result does not cover those variants",
+    "Finalize docs/release gate with real software outcomes; keep existing owner/external list parked"
+  ],
+  "producer": ".hermes/evidence/assistive-delivery-current/windows/cohort-client.py --use-stock-base --application-nsis-stage dist/windows-candidate --application-actor EXPLICIT_INPUT --output NEW_CASE",
+  "resources": "No live process/VM/CI handle pending from this turn; retained stock base remains a named pending consumer for broader concentrated Windows GUI workflow audit",
+  "limits": "Current binaries unchanged; no new package build,public release,personal configuration or memory mutation"
+}

@@ -1,0 +1,94 @@
+{
+  "status": "complete for both owned cases",
+  "domains_removed": 2,
+  "volumes_removed": 4,
+  "private_displays_profiles_viewers": "producer teardown; exact HOME and PID absence verified",
+  "removed_disposable": [
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-native/privacy-accepted-0.png",
+      "bytes": 956554,
+      "sha256": "49277da84f2f2aab90b3b619b6af1fa37e6227e003bd54c6f2c9691af37fe5ad"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-native/initial-native.png",
+      "bytes": 483941,
+      "sha256": "246cbc3948d6c2f76c371f560794fe1e8d0dc99595cc5c1ef56dbf7cd55ff9fd"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-native/second-native.png",
+      "bytes": 416108,
+      "sha256": "72e82459a811ad53bd0259dace825adddde6c8988aeae7aabf38ac753ffe839d"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-native/current-native.png",
+      "bytes": 1083355,
+      "sha256": "9eeb2bd1e5dc4db4c784b6ea05be680feea2e250d07e807d73a71343f746dd0c"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-native/running-native.png",
+      "bytes": 1694461,
+      "sha256": "6fd74e73db88c3dcae6555d50ccb1aed25d6fd70f631ad6ff3b0536dfbdc0058"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-native/latest-native.png",
+      "bytes": 545699,
+      "sha256": "71d9fe7e9508aa58a0f0182bdb701bd8d099685341a83f1bac275cc0d876b4f1"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-corrected/privacy-accepted-0.png",
+      "bytes": 953076,
+      "sha256": "e3f6aee7b4e4e7cbba01d681910f14f1ea08152f33cf7678e78b1fe858625b19"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-corrected/native-progress.png",
+      "bytes": 92819,
+      "sha256": "6834a92676eb7426ec581f91cdf10dd36d4dad3db4d5b4cc3f0c6fa8ef226594"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-corrected/current-desktop.png",
+      "bytes": 1692403,
+      "sha256": "a69833f9a3272ac2214fd8d077148e3023becd8f91d36769faa4d96175042ed8"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-corrected/current-application.png",
+      "bytes": 503078,
+      "sha256": "466abca81215e7aa4e71c0e9844f198480ffaf7a357cce9624e9fab007dc061c"
+    },
+    {
+      "path": ".hermes/evidence/windows-preview-safety-current/stock-corrected/RESULTS.zip",
+      "bytes": 273329,
+      "sha256": "695f516acf7c9a4e645467f10f6eda215963692cb8397623963cecdd592fb54f"
+    },
+    {
+      "path": ".hermes/evidence/assistive-delivery-current/windows/__pycache__/cohort-client.cpython-312.pyc",
+      "bytes": 107094,
+      "purpose": "Task py_compile validation output"
+    }
+  ],
+  "remaining_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-safety-current",
+      "purpose": "Compact native receipts, original accepted/rejected captures and reproducible actor/inventory; no pending temporary consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Unchanged current usable Windows deliverables and58-file payload"
+    }
+  ],
+  "user_and_retained_base_state": "preserved",
+  "no_build": "No compile tree/configuration allocated; cargo fmt only",
+  "allocated_bytes_after": {
+    "target/debug/deps": 41448210432,
+    "target/debug/incremental": 22745296896,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39226630144,
+    ".hermes/evidence/windows-preview-safety-current": 4390912
+  },
+  "allocated_delta": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 0,
+    ".hermes/evidence/windows-preview-safety-current": 4386816
+  }
+}

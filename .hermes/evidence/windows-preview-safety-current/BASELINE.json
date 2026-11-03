@@ -1,0 +1,11 @@
+{
+  "source": "1eab8ccb1b5ab6bab51d31a00b22740a3bd2114e",
+  "allocated_bytes": {
+    "target/debug/deps": 41448210432,
+    "target/debug/incremental": 22745296896,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33280208896,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39226630144,
+    ".hermes/evidence/windows-preview-safety-current": 4096
+  },
+  "cleanup_owner": "Existing cohort-client ExitStack owns new VM, volumes, private desktop and fixture; this small source/receipt root retained for roadmap acceptance; no build planned"
+}

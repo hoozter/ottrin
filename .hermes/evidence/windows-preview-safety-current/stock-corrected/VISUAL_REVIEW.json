@@ -1,0 +1,23 @@
+{
+  "status": "reviewed all seven original native captures",
+  "captures": {
+    "pdf-frame-99.png": "51989161b1462f26cafc741f28be6ec7456bf50fb5257baf1e6d160211d32ac0",
+    "edit-before-save.png": "61cd9b9f18aa7c577939cc79981aadc5cda374566e592fdcd3406b9149fc766b",
+    "pdf-frame-0.png": "51989161b1462f26cafc741f28be6ec7456bf50fb5257baf1e6d160211d32ac0",
+    "edit-after-save.png": "fa86804fed2d701f2451584e81650c0401d9e1fdb3c7e3bbf77cc6aa4e39a797",
+    "vcf-read-only.png": "44f2cf0ccdbd6774924258bc22be551e119d3b5abfbd576bbec1dc51695fa6f2",
+    "pdf-frame-30.png": "51989161b1462f26cafc741f28be6ec7456bf50fb5257baf1e6d160211d32ac0",
+    "pdf-frame-10.png": "51989161b1462f26cafc741f28be6ec7456bf50fb5257baf1e6d160211d32ac0"
+  },
+  "assessment": [
+    "Four PDF frames show same width-fitted white page and second-page leading edge with stable reserved scrollbar gutter; no oscillation visible in these samples. All70 settled measured bounds match.",
+    "Read-only VCF shows ordinary selectable content and separate pencil action.",
+    "Explicit edit shows marker in draft; native exact-byte test proves disk remains original until Save. After Save the marker appears in read-only view.",
+    "Shared Inspector titlebar is edge-aligned with a clear close action."
+  ],
+  "limits": [
+    "Software Windows11 VM, Dark/default DPI, explicit bundled OpenGL",
+    "100 temporal observations of one two-page synthetic PDF; no universal PDF or hardware claim",
+    "Keyboard routing checked after normal open; clicked-body selection/focus variations belong to broader UI audit, not this receipt"
+  ]
+}
