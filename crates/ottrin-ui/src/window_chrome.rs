@@ -181,6 +181,15 @@ pub(crate) enum WmBtn {
 pub(crate) fn paint_viewport_frame(ctx: &Context, colors: Colors, is_windows: bool) {
     use crate::rounded_alpha_callback_enabled;
 
+    let mut colors = colors;
+    if ctx.input(|i| {
+        i.viewport().maximized.unwrap_or(false) || i.viewport().fullscreen.unwrap_or(false)
+    }) {
+        colors.app_radius = 0;
+    }
+    #[cfg(target_os = "windows")]
+    eframe::set_window_corner_radius(ctx, f32::from(colors.app_radius));
+
     // Paint the same rounded border and alpha mask for every Ottrin viewport.
     // The GL callback runs first to fix the alpha channel, then the
     // border stroke paints on top so it is never occluded.

@@ -164,6 +164,11 @@ pub use {egui_wgpu, wgpu};
 
 mod epi;
 
+#[cfg(target_os = "windows")]
+mod window_shape;
+#[cfg(target_os = "windows")]
+pub use window_shape::set_window_corner_radius;
+
 // Re-export everything in `epi` so `eframe` users don't have to care about what `epi` is:
 pub use epi::*;
 

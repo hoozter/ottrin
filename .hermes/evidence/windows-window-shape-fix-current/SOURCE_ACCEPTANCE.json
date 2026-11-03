@@ -1,0 +1,21 @@
+{
+  "status": "source checks pass; native correction and delivery not yet accepted",
+  "base_source": "1e4871d0712f9d938d14a6d61dd3c9f4aac9dcca",
+  "implementation": "Existing eframe owns native winit windows; per-viewport physical-radius request applied before root/immediate painting in both Glow and WGPU. GDIregions compared beforechange toavoidself-repaintloop. Ownership transferred only onSetWindowRgn success; failure reported andguardcleanup retained.",
+  "tests": {
+    "ui_passed": 471,
+    "existing_ignored": 1,
+    "native_and_windows_all_target_strict_lint": "pass",
+    "workspace_and_new_vendor_module_format": "pass"
+  },
+  "current_packages": "UnchangedCBC7cohort; never claim thissourcecheck asnativeorpackagedacceptance",
+  "pending": [
+    "Build exactcommittedWindowscandidate",
+    "Native0/24radius across mainSettingseditorInspectorchooserProperties, bothrenderers, resize/maximize/livechanges, idle/resource check",
+    "Linuxsharedmaximizedframe regression andnewcohortdelivery",
+    "Ownedobsoletecompiler/stagingcleanup afterconsumersfinish"
+  ],
+  "references": [
+    ".hermes/evidence/windows-window-radius-current/NATIVE_RADIUS_ASSESSMENT.json"
+  ]
+}

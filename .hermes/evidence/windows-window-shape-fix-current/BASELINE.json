@@ -1,0 +1,14 @@
+{
+  "source": "1e4871d0712f9d938d14a6d61dd3c9f4aac9dcca",
+  "updated_utc": "2026-11-03T18:46:36.441350+00:00",
+  "compiler_roots": {
+    "target/debug/deps": 41440964965,
+    "target/debug/incremental": 22658905319,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33292031625,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39438437229,
+    "target/release/deps": 4290352679,
+    "target/x86_64-pc-windows-gnu/release/deps": 3764507157
+  },
+  "build_policy": "Reuse native/WindowsGNU target trees and standard existing features; no extra target or profile. Native VM allocation later must use canonical registered teardown.",
+  "regression_evidence": ".hermes/evidence/windows-window-radius-current/NATIVE_RADIUS_ASSESSMENT.json"
+}

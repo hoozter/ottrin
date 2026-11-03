@@ -666,6 +666,9 @@ impl GlowWinitRunning<'_> {
             painter.clear(screen_size_in_pixels, clear_color);
         }
 
+        #[cfg(target_os = "windows")]
+        crate::window_shape::apply(&integration.egui_ctx, viewport_id, &window);
+
         painter.paint_and_update_textures(
             screen_size_in_pixels,
             pixels_per_point,
@@ -1549,6 +1552,9 @@ fn render_immediate_viewport(
         screen_size_in_pixels,
         [0.0, 0.0, 0.0, 0.0],
     );
+
+    #[cfg(target_os = "windows")]
+    crate::window_shape::apply(egui_ctx, viewport_id, window);
 
     painter.borrow_mut().paint_and_update_textures(
         screen_size_in_pixels,

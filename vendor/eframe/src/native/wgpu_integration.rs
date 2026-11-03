@@ -699,6 +699,9 @@ impl WgpuWinitRunning<'_> {
                 true
             }
         });
+        #[cfg(target_os = "windows")]
+        crate::window_shape::apply(&egui_ctx, viewport_id, window);
+
         let vsync_secs = painter.paint_and_update_textures(
             viewport_id,
             pixels_per_point,
@@ -1093,6 +1096,9 @@ fn render_immediate_viewport(
     }
 
     let clipped_primitives = egui_ctx.tessellate(shapes, pixels_per_point);
+    #[cfg(target_os = "windows")]
+    crate::window_shape::apply(&egui_ctx, ids.this, window);
+
     painter.paint_and_update_textures(
         ids.this,
         pixels_per_point,
