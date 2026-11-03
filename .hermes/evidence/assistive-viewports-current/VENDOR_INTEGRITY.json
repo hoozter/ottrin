@@ -1,0 +1,14 @@
+{
+  "status": "verified original crate checksum, two native-factory source diffs and unchanged remaining source/assets",
+  "upstream_revision": "44cdd653e2317d300fb8a6c9c36b03f23991e803",
+  "original_archive_sha256": "457481173e6db5ca9fa2be93a58df8f4c7be639587aeb4853b526c6cf87db4e6",
+  "changed_files": [
+    "src/native/glow_integration.rs",
+    "src/native/wgpu_integration.rs"
+  ],
+  "added_licenses": [
+    "LICENSE-APACHE",
+    "LICENSE-MIT"
+  ],
+  "purpose": "Initialize adapters once for every native viewport before first visibility, using the existing event-loop proxy; no replacement accessibility service"
+}

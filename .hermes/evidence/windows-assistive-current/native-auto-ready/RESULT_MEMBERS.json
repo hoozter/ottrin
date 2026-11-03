@@ -1,0 +1,18 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "28a37ec8b199426d9400bd6eb9d5759ec9f5887173088c96ba3b740f1adb3f19"
+  },
+  "main-before-provider.png": {
+    "bytes": 31720,
+    "sha256": "2b1968dd7a413746e4839d337dd73531819797596c8bad95e24beb7719701d67"
+  },
+  "OWNER.json": {
+    "bytes": 1076,
+    "sha256": "3f8b93e53ef6436328ecf0d9c018d7848a05fb801d295b4dba70b9ab351faccc"
+  },
+  "RESULT.json": {
+    "bytes": 32194,
+    "sha256": "66e28f5976cb9f955a07aca9a4c5d8015e2a376f0f5ed3a918f44a55312d844d"
+  }
+}

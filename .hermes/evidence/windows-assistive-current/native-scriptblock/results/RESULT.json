@@ -1,0 +1,14 @@
+﻿{
+    "desktop_ready":  true,
+    "stack":  "at Expand-Archive\u003cBegin\u003e, C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\Modules\\Microsoft.PowerShell.Archive\\Microsoft.PowerShell.Archive.psm1: line 328\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 58\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "error":  "Access to the path \u0027payload\u0027 is denied.",
+    "phase":  "waiting for observed owned desktop",
+    "scope":  "Current release GUI native UIAutomation under a fresh ordinary interactive token; explicit borrowed accepted portable runtime, not package or physical adapter acceptance",
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSIe3eca7758a64",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "status":  "failed native UIAutomation gate"
+}

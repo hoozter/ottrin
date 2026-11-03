@@ -1,0 +1,9 @@
+{
+  "status": "pass scoped native Windows main controls; fail secondary Settings accessibility",
+  "scope": "Exact837606a7 release GUI plus documented accepted runtime, fresh ordinary token/session1, explicit bundled OpenGL. Not a rebuilt cohort.",
+  "canonical_result_sha256": "496794fde34f8ecee3f5133cc6877ab57b8684c0cd1c24d02e0520a64387a8c0",
+  "root_names_and_enabled_states": "All required main controls found, Forward disabled and Parent enabled; UIA Menu/Settings actions create the correct Settings HWND",
+  "secondary_failure": "Settings root is a native window but no custom Close/control subtree appears before the15-second observation deadline; eframe0.33.3 initializes only root viewport",
+  "service_cleanup_exit": 0,
+  "next": "Rebuild with the native per-viewport framework correction already verified on Linux and repeat exact Windows scope"
+}

@@ -1,0 +1,548 @@
+[
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/root",
+    "name": "ottrin-app",
+    "role": 75
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/13826925289788388",
+    "name": "",
+    "role": 23
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/13826925289788388",
+    "name": "",
+    "role": 23
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/12058422785012360852",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/3823728296237565050",
+    "name": "Manage administrator helper",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/17794167510023729845",
+    "name": "Manage index service",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/11285458723522814979",
+    "name": "Show hidden files",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/7013794108358514051",
+    "name": "Show command bar",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/9625134454971495335",
+    "name": "1 item",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/16786436148584391832",
+    "name": "",
+    "role": 27
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/18279503351622298421",
+    "name": "fixture",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/2149144012321793260",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/12155784055467151017",
+    "name": "New tab",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/12024340198050307720",
+    "name": "Close window",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/9507032737657169704",
+    "name": "Maximize or restore window",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/6691554058325783556",
+    "name": "Minimize window",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/15519518840931565227",
+    "name": "Back",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/16221556708473132728",
+    "name": "Forward",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/13128160878883926930",
+    "name": "Parent folder",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/1648155294849289654",
+    "name": "Menu",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/13780187409465466566",
+    "name": "Switch to Grid view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/18127232030440252801",
+    "name": "View Options",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/15613769196291431644",
+    "name": "Open /",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/18319643550470940460",
+    "name": "\u203a",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/11598232030241188139",
+    "name": "Open /var",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/13715732684604903157",
+    "name": "\u203a",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/891804292310924043",
+    "name": "Open /var/tmp",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/632088521469452321",
+    "name": "\u203a",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/13910783141918357148",
+    "name": "Open /var/tmp/.ottrin-picker-qa-55t36tw3",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/838551111435766609",
+    "name": "\u203a",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/1567537594959668756",
+    "name": "Open /var/tmp/.ottrin-picker-qa-55t36tw3/fixture",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/5925338324957776727",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/14337427087040896152",
+    "name": "",
+    "role": 39
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/17579311112190465560",
+    "name": "Sort",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/13113415431978622367",
+    "name": "",
+    "role": 11
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/350875457560158619",
+    "name": "A-Z",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/12632764818355464446",
+    "name": "100%",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/17704914114191460705",
+    "name": "Reset current view size",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/6151369648958317599",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/17381831127554352952",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/16344823335354652273",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/14975941100887097462",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/3018424379912881308",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/5962719353404837183",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/15235520560571707682",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/9144649408979300231",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/9252851791574934738",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/7140377713877999861",
+    "name": "proof.txt",
+    "role": 62
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/6770068988216678567",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/13274354220506944188",
+    "name": "Close window",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/5908695325778704980",
+    "name": "\ue8b8 Settings",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/6092430714722039142",
+    "name": "Preferences",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/12357255608900591104",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/16547936584207356240",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/5644588229537241093",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/6531047027802854958",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/14167960253586517027",
+    "name": "Search",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/7288433258677180570",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/2198239875804803915",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/11916765862040035251",
+    "name": "General",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/2561118738570751922",
+    "name": "Default behavior and application preferences.",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/9995640283110445475",
+    "name": "Default view",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/16981483694848442358",
+    "name": "Column view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/416685877360203403",
+    "name": "List view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/15456339750668832746",
+    "name": "Grid view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/11151493332100797404",
+    "name": "Default thumbnail behavior",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/8010695293806337786",
+    "name": "These defaults also change when you toggle thumbnails from View Options.",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/137599706184323115",
+    "name": "Show thumbnails in Grid view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/11739636329089433935",
+    "name": "Show thumbnails in List view",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/3320374601424542134",
+    "name": "Terminal Launcher",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/15552748698780812342",
+    "name": "Not installed. Suggested path: /var/tmp/.ottrin-picker-qa-55t36tw3/home/.local/bin/ottrin",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/9213379806126426652",
+    "name": "Install `ottrin` command",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/18133002691010254878",
+    "name": "Remove launcher",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/15614811206770538459",
+    "name": "Cleanup",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/9052308686129566979",
+    "name": "Use this before deleting an AppImage/portable build if you enabled background indexing or want Ottrin's generated data removed.",
+    "role": 29
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/13382285520734879158",
+    "name": "Cleanup Ottrin data",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/273504014700640463",
+    "name": "Remove preferences files",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/15153017171639590179",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/1/16818315632177508751",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/4275327715713519359",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/12387542792079190208",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/15539495969100832259",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/11689276557415672144",
+    "name": "",
+    "role": 67
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/3718530046101830652",
+    "name": "Expand locations rail",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/15218894657440035709",
+    "name": "Home \u00b7 /var/tmp/.ottrin-picker-qa-55t36tw3/home",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/10296513172781035874",
+    "name": "Root \u00b7 /",
+    "role": 43
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/6913751754092144713",
+    "name": "Show or hide info panel",
+    "role": 62
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/7638201207804466704",
+    "name": "Show or hide drop-folder panel",
+    "role": 62
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/4773062127429984282",
+    "name": "Toggle Search",
+    "role": 62
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/17382232011088073212",
+    "name": "Show or hide Activity",
+    "role": 62
+  },
+  {
+    "bus": ":1.5",
+    "path": "/org/a11y/atspi/accessible/0/12475306165196749265",
+    "name": "Show or hide Trash",
+    "role": 62
+  }
+]

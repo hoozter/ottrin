@@ -1,0 +1,125 @@
+--- /home/campbell/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/eframe-0.33.3/src/native/wgpu_integration.rs	2006-07-24 03:21:28.000000000 +0200
++++ vendor/eframe/src/native/wgpu_integration.rs	2026-11-03 01:50:52.218290081 +0100
+@@ -66,6 +66,7 @@
+ ///
+ /// Wrapped in an `Rc<RefCell<…>>` so it can be re-entrantly shared via a weak-pointer.
+ pub struct SharedState {
++    _accesskit_proxy: EventLoopProxy<UserEvent>,
+     egui_ctx: egui::Context,
+     viewports: Viewports,
+     painter: egui_wgpu::winit::Painter,
+@@ -131,6 +132,7 @@
+             viewports,
+             painter,
+             viewport_from_window,
++            _accesskit_proxy,
+             ..
+         } = &mut *shared;
+ 
+@@ -140,6 +142,7 @@
+                 &running.integration.egui_ctx,
+                 viewport_from_window,
+                 painter,
++                _accesskit_proxy,
+             );
+         }
+     }
+@@ -151,6 +154,7 @@
+             viewports,
+             viewport_from_window,
+             painter,
++            _accesskit_proxy,
+             ..
+         } = &mut *running.shared.borrow_mut();
+ 
+@@ -162,7 +166,13 @@
+             None,
+             painter,
+         )
+-        .initialize_window(event_loop, egui_ctx, viewport_from_window, painter);
++        .initialize_window(
++            event_loop,
++            egui_ctx,
++            viewport_from_window,
++            painter,
++            _accesskit_proxy,
++        );
+     }
+ 
+     #[cfg(target_os = "android")]
+@@ -311,6 +321,7 @@
+         );
+ 
+         let shared = Rc::new(RefCell::new(SharedState {
++            _accesskit_proxy: self.repaint_proxy.lock().clone(),
+             egui_ctx,
+             viewport_from_window,
+             viewports,
+@@ -646,6 +657,7 @@
+             viewports,
+             painter,
+             viewport_from_window,
++            _accesskit_proxy,
+             ..
+         } = &mut *shared_mut;
+ 
+@@ -903,6 +915,7 @@
+         egui_ctx: &egui::Context,
+         windows_id: &mut HashMap<WindowId, ViewportId>,
+         painter: &mut egui_wgpu::winit::Painter,
++        _accesskit_proxy: &EventLoopProxy<UserEvent>,
+     ) {
+         if self.window.is_some() {
+             return; // we already have one
+@@ -912,7 +925,10 @@
+ 
+         let viewport_id = self.ids.this;
+ 
+-        match egui_winit::create_window(egui_ctx, event_loop, &self.builder) {
++        let builder = self.builder.clone();
++        #[cfg(feature = "accesskit")]
++        let builder = builder.with_visible(false);
++        match egui_winit::create_window(egui_ctx, event_loop, &builder) {
+             Ok(window) => {
+                 windows_id.insert(window.id(), viewport_id);
+ 
+@@ -933,6 +949,16 @@
+                     painter.max_texture_side(),
+                 ));
+ 
++                #[cfg(feature = "accesskit")]
++                {
++                    self.egui_winit.as_mut().unwrap().init_accesskit(
++                        event_loop,
++                        &window,
++                        _accesskit_proxy.clone(),
++                    );
++                    window.set_visible(self.builder.visible.unwrap_or(true));
++                }
++
+                 egui_winit::update_viewport_info(&mut self.info, egui_ctx, &window, true);
+                 self.window = Some(window);
+             }
+@@ -984,6 +1010,7 @@
+             viewports,
+             painter,
+             viewport_from_window,
++            _accesskit_proxy,
+             ..
+         } = &mut *shared.borrow_mut();
+ 
+@@ -997,7 +1024,13 @@
+         );
+         if viewport.window.is_none() {
+             event_loop_context::with_current_event_loop(|event_loop| {
+-                viewport.initialize_window(event_loop, egui_ctx, viewport_from_window, painter);
++                viewport.initialize_window(
++                    event_loop,
++                    egui_ctx,
++                    viewport_from_window,
++                    painter,
++                    _accesskit_proxy,
++                );
+             });
+         }
+ 

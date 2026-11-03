@@ -1,0 +1,104 @@
+[
+  {
+    "case": "native",
+    "status": "failed native UIAutomation gate",
+    "phase": "waiting for observed owned desktop",
+    "error": "File C:\\WINDOWS\\TEMP\\ottrin-msi-dc8b123807f840f98b8337f4893c5ed9\\native-controls.ps1 cannot be loaded because running scripts is disabled on this system. For more information, see about_Execution_Policies at https:/go.microsoft.com/fwlink/?LinkID=135170.",
+    "service_cleanup_exit": null,
+    "cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-uia-client.qcow2",
+        "ottrin-uia-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    }
+  },
+  {
+    "case": "native-auto-ready",
+    "status": "failed native UIAutomation gate",
+    "phase": "native main UIAutomation tree and actions",
+    "error": "Exception calling \"GetCurrentPropertyValue\" with \"1\" argument(s): \"Value cannot be null.\r\nParameter name: property\"",
+    "service_cleanup_exit": 0,
+    "cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-uia-client.qcow2",
+        "ottrin-uia-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    }
+  },
+  {
+    "case": "native-root-details",
+    "status": "failed native UIAutomation gate",
+    "phase": "native main UIAutomation tree and actions",
+    "error": "Native accessibility provider did not expose window controls",
+    "service_cleanup_exit": 0,
+    "cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-uia-client.qcow2",
+        "ottrin-uia-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    }
+  },
+  {
+    "case": "native-root-diagnostic",
+    "status": "failed native UIAutomation gate",
+    "phase": "waiting for observed owned desktop",
+    "error": "Owned desktop was not observed",
+    "service_cleanup_exit": null,
+    "cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-uia-client.qcow2",
+        "ottrin-uia-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    }
+  },
+  {
+    "case": "native-scriptblock",
+    "status": "failed native UIAutomation gate",
+    "phase": "waiting for observed owned desktop",
+    "error": "Access to the path 'payload' is denied.",
+    "service_cleanup_exit": null,
+    "cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-uia-client.qcow2",
+        "ottrin-uia-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    }
+  },
+  {
+    "case": "native-user-payload",
+    "status": "failed native UIAutomation gate",
+    "phase": "native main UIAutomation tree and actions",
+    "error": "Native accessibility provider did not expose window controls",
+    "service_cleanup_exit": 0,
+    "cleanup": {
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-uia-client.qcow2",
+        "ottrin-uia-client-fixture.iso"
+      ],
+      "fixture_removed": true,
+      "base_still_off": true,
+      "retained_pending_volume": null
+    }
+  }
+]

@@ -1,0 +1,101 @@
+{
+  "status": "pass native Linux Settings/Inspector actions and read-only interface check",
+  "scope": "Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance",
+  "binary_sha256": "7af5510321724cb753afbc9ca67ff9f5bad06609d0f5a0360058fcd0fd572276",
+  "accessibility": {
+    "enabled": true,
+    "bus_pid": 632539,
+    "private_bus": true
+  },
+  "registered_application_roots": [
+    [
+      ":1.5",
+      "/org/a11y/atspi/accessible/root"
+    ]
+  ],
+  "application_pid": 632542,
+  "tree_nodes": 60,
+  "visible_names": [
+    "ottrin-app",
+    "Manage administrator helper",
+    "Manage index service",
+    "Show hidden files",
+    "Show command bar",
+    "1 item",
+    "fixture",
+    "New tab",
+    "Close window",
+    "Maximize or restore window",
+    "Minimize window",
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Menu",
+    "Switch to Grid view",
+    "View Options",
+    "Open /",
+    "\u203a",
+    "Open /var",
+    "\u203a",
+    "Open /var/tmp",
+    "\u203a",
+    "Open /var/tmp/.ottrin-picker-qa-08n7fhrn",
+    "\u203a",
+    "Open /var/tmp/.ottrin-picker-qa-08n7fhrn/fixture",
+    "Sort",
+    "A-Z",
+    "100%",
+    "Reset current view size",
+    "proof.txt",
+    "Expand locations rail",
+    "Home \u00b7 /var/tmp/.ottrin-picker-qa-08n7fhrn/home",
+    "Root \u00b7 /",
+    "Show or hide info panel",
+    "Show or hide drop-folder panel",
+    "Toggle Search",
+    "Show or hide Activity",
+    "Show or hide Trash"
+  ],
+  "cancel_control_exposed": false,
+  "visible_file_exposed": true,
+  "expected_names": [
+    "Back",
+    "Forward",
+    "Parent folder",
+    "Close window",
+    "Minimize window",
+    "Maximize or restore window"
+  ],
+  "control_states": {
+    "Back": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Forward": {
+      "enabled": false,
+      "sensitive": false
+    },
+    "Parent folder": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Close window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Minimize window": {
+      "enabled": true,
+      "sensitive": true
+    },
+    "Maximize or restore window": {
+      "enabled": true,
+      "sensitive": true
+    }
+  },
+  "glyph_only_buttons": [],
+  "settings_native_open_close": true,
+  "inspector_editable_nodes": [],
+  "inspector_native_open_close": true,
+  "native_close_exit": 0,
+  "source_bytes_preserved": true
+}

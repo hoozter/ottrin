@@ -1,0 +1,97 @@
+{
+  "status": "completed baseline-owned cleanup",
+  "guest_count": 6,
+  "owned_volumes_removed": 12,
+  "private_profiles_displays_buses_viewers_removed": true,
+  "retired": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native/RESULTS.zip",
+      "bytes": 1564,
+      "reason": "Exact native members retained separately"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native/boot.png",
+      "bytes": 481802,
+      "reason": "Redundant private console observation"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native/account.png",
+      "bytes": 2253375,
+      "reason": "Redundant private console observation"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native/desktop-ready.png",
+      "bytes": 1210625,
+      "reason": "Rejected/partial observer readiness; signed native account/desktop token receipt retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-auto-ready/RESULTS.zip",
+      "bytes": 31895,
+      "reason": "Exact native members retained separately"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-auto-ready/desktop-ready.png",
+      "bytes": 962408,
+      "reason": "Rejected/partial observer readiness; signed native account/desktop token receipt retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-root-details/RESULTS.zip",
+      "bytes": 59201,
+      "reason": "Exact native members retained separately"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-root-diagnostic/RESULTS.zip",
+      "bytes": 1063,
+      "reason": "Exact native members retained separately"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-scriptblock/RESULTS.zip",
+      "bytes": 1507,
+      "reason": "Exact native members retained separately"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-scriptblock/account.png",
+      "bytes": 477853,
+      "reason": "Redundant private console observation"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-scriptblock/desktop-ready.png",
+      "bytes": 962346,
+      "reason": "Rejected/partial observer readiness; signed native account/desktop token receipt retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-user-payload/RESULTS.zip",
+      "bytes": 5853,
+      "reason": "Exact native members retained separately"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-user-payload/account.png",
+      "bytes": 480072,
+      "reason": "Redundant private console observation"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-user-payload/desktop-ready.png",
+      "bytes": 962951,
+      "reason": "Rejected/partial observer readiness; signed native account/desktop token receipt retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage",
+      "bytes": 55444113,
+      "reason": "All baseline consumers terminal; upcoming viewport-fix test requires a new input, not these old bytes"
+    }
+  ],
+  "remaining": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current",
+      "purpose": "Compact exact native baseline/observer errors, main UIAutomation positive scope and secondary-window defect evidence"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "purpose": "Current built837 release GUI; preserve current compiler output until corrected Windows source replacement passes"
+    },
+    {
+      "path": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+      "purpose": "Existing clean base for native recheck of corrected per-viewport source; protected base and three named retained environments preserved"
+    }
+  ]
+}

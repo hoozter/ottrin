@@ -1,0 +1,15 @@
+{
+  "source_revision": "837606a7fb33c5f5231fc846bd7eea4dc034a67d",
+  "tracked_tree_clean": true,
+  "sizes_before": {
+    "target/debug/deps": "35G\ttarget/debug/deps",
+    "target/debug/incremental": "20G\ttarget/debug/incremental",
+    "target/x86_64-pc-windows-gnu/debug/deps": "31G\ttarget/x86_64-pc-windows-gnu/debug/deps",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "37G\ttarget/x86_64-pc-windows-gnu/debug/incremental",
+    "target/x86_64-pc-windows-gnu/release/deps": "3.7G\ttarget/x86_64-pc-windows-gnu/release/deps",
+    "target/x86_64-pc-windows-gnu/release/incremental": "4.0K\ttarget/x86_64-pc-windows-gnu/release/incremental"
+  },
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage",
+  "purpose": "Current standard Windows GNU release app for native UIAutomation and subsequent cohort delivery; current deliverables preserved",
+  "cleanup_owner": "windows-assistive-current; private stage retired after native consumers finish; current release executable/compiler caches retained for current delivery"
+}

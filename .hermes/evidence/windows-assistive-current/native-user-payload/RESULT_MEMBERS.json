@@ -1,0 +1,14 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "8171fbaf6317809621c559551db0fdbf9efb63d05e2a115cce25c8e1bdfbaf18"
+  },
+  "OWNER.json": {
+    "bytes": 1076,
+    "sha256": "e6a997be52a0af1060a155a3f45122e0e985bc443532c4a7a0188787609db8ab"
+  },
+  "RESULT.json": {
+    "bytes": 32174,
+    "sha256": "5686c63fb72f789c2b4783f72739a7a275766e9d21283e66f4715e023ada21a9"
+  }
+}

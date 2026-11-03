@@ -1,0 +1,10 @@
+{
+  "purpose": "Standard native debug build of corrected per-viewport AccessKit initialization; no extra target tree; retain current compiler cache and remove superseded standalone outputs after native consumers close",
+  "sizes_before": {
+    "target/debug/deps": "35G\ttarget/debug/deps",
+    "target/debug/incremental": "20G\ttarget/debug/incremental",
+    "target/x86_64-pc-windows-gnu/debug/deps": "31G\ttarget/x86_64-pc-windows-gnu/debug/deps",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "37G\ttarget/x86_64-pc-windows-gnu/debug/incremental"
+  },
+  "cleanup_owner": "assistive-viewports-current; current deliverables preserved, owned GUI sessions use registered teardown"
+}

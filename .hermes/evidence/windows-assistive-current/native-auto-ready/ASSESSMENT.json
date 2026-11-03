@@ -1,0 +1,16 @@
+{
+  "status": "rejected optional observer property lookup",
+  "cause": "Installed .NET UIAutomationClient does not expose ProviderDescriptionProperty; diagnostic property was null before tree collection",
+  "accepted_scope": "Automatic guarded desktop readiness completes under exact fresh account; native GUI maps and screenshot retained; service teardown0",
+  "unaccepted_scope": "No native UIAutomation tree or actions accepted",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-uia-client.qcow2",
+      "ottrin-uia-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

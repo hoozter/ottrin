@@ -196,6 +196,27 @@ Evidence and exact remaining storage/consumers are in
 This is native Linux source acceptance; delivered packages, Windows UI Automation,
 Settings/Inspector flows and actual screen-reader usability remain separate.
 
+Native Windows UI Automation for source837606a7 now verifies all eight required
+main-window names, disabled Forward and enabled Parent, and actual Settings menu
+invocation. The Settings HWND exists but its controls have no accessible subtree.
+Linux reproduces the same secondary-window omission. The pinned eframe native
+factories initialized AccessKit only for the root. The authoritative per-viewport
+initialization now installs adapters before first visibility in Glow and WGPU.
+Original crate checksum, two-file source diff and origin licenses are verified.
+Linux native Settings/Inspector open/Close, automatic focus, read-only Inspector
+interfaces, multi-window bus loss and source preservation pass on debug GUI
+SHA2569fe0c5bd7a27bce6c24a887578b216de9fcd92bd6d6d0de6f63dd46cb62c5890.
+The locked build, app/UI suites and strict all-target lint pass. This remains
+source/native Linux acceptance; the new Windows build, native UIA and refreshed
+package cohort are next. No screen-reader usability or updated package claim is
+made. Hosted41549356308 passes all four jobs for preceding837606a7, not this patch.
+Evidence: `assistive-viewports-current/`, `assistive-modals-current/` and
+`windows-assistive-current/`. All six baseline Windows guests/twelve volumes,
+private desktops/profiles and old private UIA input stage are removed. The native
+Linux profiles/displays/buses are also removed. Current compiler outputs/caches
+remain for verified replacement and pending Windows build; obsolete-output
+pruning is required before handoff. Stable delivered package bytes are unchanged.
+
 Continue in this order:
 
 1. Audit the remaining software/platform/theme/resource and supported integration

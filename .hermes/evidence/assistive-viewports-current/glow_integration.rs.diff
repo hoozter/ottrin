@@ -1,0 +1,118 @@
+--- /home/campbell/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/eframe-0.33.3/src/native/glow_integration.rs	2006-07-24 03:21:28.000000000 +0200
++++ vendor/eframe/src/native/glow_integration.rs	2026-11-03 01:50:52.194289875 +0100
+@@ -84,6 +84,7 @@
+ /// The setup is divided between the `new` fn and `on_resume` fn. we can just assume that `on_resume` is a continuation of
+ /// `new` fn on all platforms. only on android, do we get multiple resumed events because app can be suspended.
+ struct GlutinWindowContext {
++    _accesskit_proxy: EventLoopProxy<UserEvent>,
+     egui_ctx: egui::Context,
+ 
+     swap_interval: glutin::surface::SwapInterval,
+@@ -145,6 +146,7 @@
+         event_loop: &ActiveEventLoop,
+         storage: Option<&dyn Storage>,
+         native_options: &mut NativeOptions,
++        accesskit_proxy: EventLoopProxy<UserEvent>,
+     ) -> Result<(GlutinWindowContext, egui_glow::Painter)> {
+         profiling::function_scope!();
+         let window_settings = epi_integration::load_window_settings(storage);
+@@ -158,7 +160,13 @@
+         .with_visible(false); // Start hidden until we render the first frame to fix white flash on startup (https://github.com/emilk/egui/pull/3631)
+ 
+         let mut glutin_window_context = unsafe {
+-            GlutinWindowContext::new(egui_ctx, winit_window_builder, native_options, event_loop)?
++            GlutinWindowContext::new(
++                egui_ctx,
++                winit_window_builder,
++                native_options,
++                event_loop,
++                accesskit_proxy,
++            )?
+         };
+ 
+         // Creates the window - must come before we create our glow context
+@@ -215,6 +223,7 @@
+             event_loop,
+             storage.as_deref(),
+             &mut self.native_options,
++            self.repaint_proxy.lock().clone(),
+         )?;
+         let gl = painter.gl().clone();
+ 
+@@ -262,20 +271,6 @@
+                 });
+         }
+ 
+-        #[cfg(feature = "accesskit")]
+-        {
+-            let event_loop_proxy = self.repaint_proxy.lock().clone();
+-            let viewport = glutin.viewports.get_mut(&ViewportId::ROOT).unwrap(); // we always have a root
+-            if let Viewport {
+-                window: Some(window),
+-                egui_winit: Some(egui_winit),
+-                ..
+-            } = viewport
+-            {
+-                egui_winit.init_accesskit(event_loop, window, event_loop_proxy);
+-            }
+-        }
+-
+         if self
+             .native_options
+             .viewport
+@@ -916,6 +911,7 @@
+         viewport_builder: ViewportBuilder,
+         native_options: &NativeOptions,
+         event_loop: &ActiveEventLoop,
++        accesskit_proxy: EventLoopProxy<UserEvent>,
+     ) -> Result<Self> {
+         profiling::function_scope!();
+ 
+@@ -1083,6 +1079,7 @@
+         // https://github.com/emilk/egui/pull/2541#issuecomment-1370767582
+ 
+         let mut slf = Self {
++            _accesskit_proxy: accesskit_proxy,
+             egui_ctx: egui_ctx.clone(),
+             swap_interval,
+             gl_config,
+@@ -1133,10 +1130,11 @@
+             window
+         } else {
+             log::debug!("Creating a window for viewport {viewport_id:?}");
+-            let window_attributes = egui_winit::create_winit_window_attributes(
+-                &self.egui_ctx,
+-                viewport.builder.clone(),
+-            );
++            let builder = viewport.builder.clone();
++            #[cfg(feature = "accesskit")]
++            let builder = builder.with_visible(false);
++            let window_attributes =
++                egui_winit::create_winit_window_attributes(&self.egui_ctx, builder);
+             if window_attributes.transparent()
+                 && self.gl_config.supports_transparency() == Some(false)
+             {
+@@ -1156,14 +1154,21 @@
+ 
+         viewport.egui_winit.get_or_insert_with(|| {
+             log::debug!("Initializing egui_winit for viewport {viewport_id:?}");
+-            egui_winit::State::new(
++            #[allow(unused_mut)]
++            let mut state = egui_winit::State::new(
+                 self.egui_ctx.clone(),
+                 viewport_id,
+                 event_loop,
+                 Some(window.scale_factor() as f32),
+                 event_loop.system_theme(),
+                 self.max_texture_side,
+-            )
++            );
++            #[cfg(feature = "accesskit")]
++            {
++                state.init_accesskit(event_loop, window, self._accesskit_proxy.clone());
++                window.set_visible(viewport.builder.visible.unwrap_or(true));
++            }
++            state
+         });
+ 
+         if viewport.gl_surface.is_none() {

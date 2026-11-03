@@ -1,0 +1,14 @@
+﻿{
+    "desktop_ready":  true,
+    "stack":  "at \u003cScriptBlock\u003e, \u003cNo file\u003e: line 56\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "error":  "File C:\\WINDOWS\\TEMP\\ottrin-msi-dc8b123807f840f98b8337f4893c5ed9\\native-controls.ps1 cannot be loaded because running scripts is disabled on this system. For more information, see about_Execution_Policies at https:/go.microsoft.com/fwlink/?LinkID=135170.",
+    "phase":  "waiting for observed owned desktop",
+    "scope":  "Current release GUI native UIAutomation under a fresh ordinary interactive token; explicit borrowed accepted portable runtime, not package or physical adapter acceptance",
+    "identity":  {
+                     "profile":  "C:\\Users\\OTMSIdc8b123807f8",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "status":  "failed native UIAutomation gate"
+}

@@ -1,0 +1,28 @@
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.0' (uid=1000 pid=641628 comm="kwin_x11 --replace" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.freedesktop.portal.Documents' requested by ':1.1' (uid=1000 pid=641631 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.2' (uid=1000 pid=641638 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'org.freedesktop.portal.Documents'
+Ignoring invalid max threads value 4294967295 > max (100000).
+
+(/usr/libexec/xdg-desktop-portal:641631): xdg-desktop-portal-WARNING **: 02:06:14.080: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+
+(/usr/libexec/xdg-desktop-portal:641631): xdg-desktop-portal-WARNING **: 02:06:14.080: The preferred method to match portal implementations to desktop environments is to use the portals.conf(5) configuration file
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.1' (uid=1000 pid=641631 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.freedesktop.impl.portal.desktop.kde' requested by ':1.1' (uid=1000 pid=641631 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'org.freedesktop.impl.portal.desktop.kde'
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.kde.KSplash' requested by ':1.0' (uid=1000 pid=641628 comm="kwin_x11 --replace" label="unconfined")
+
+(/usr/libexec/xdg-desktop-portal:641631): xdg-desktop-portal-WARNING **: 02:06:14.449: Failed connect to PipeWire: Couldn't connect to PipeWire
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.freedesktop.impl.portal.desktop.kwallet' requested by ':1.1' (uid=1000 pid=641631 comm="/usr/libexec/xdg-desktop-portal" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'org.freedesktop.impl.portal.desktop.kwallet'
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'org.freedesktop.portal.Desktop'
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.a11y.Bus' requested by ':1.11' (uid=1000 pid=641622 comm="/usr/bin/python3 .hermes/evidence/assistive-modals" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='ca.desrt.dconf' requested by ':1.12' (uid=1000 pid=641683 comm="/usr/libexec/at-spi-bus-launcher" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Successfully activated service 'ca.desrt.dconf'
+dbus-daemon[641695]: Activating service name='org.a11y.atspi.Registry' requested by ':1.1' (uid=1000 pid=641665 comm="/usr/lib/x86_64-linux-gnu/libexec/xdg-desktop-port" label="unconfined")
+dbus-daemon[641695]: Successfully activated service 'org.a11y.atspi.Registry'
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activating service name='org.freedesktop.systemd1' requested by ':1.17' (uid=1000 pid=641749 comm="/usr/bin/systemd-run --user --wait --collect --pip" label="unconfined")
+dbus-daemon[641627]: [session uid=1000 pid=641627] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1

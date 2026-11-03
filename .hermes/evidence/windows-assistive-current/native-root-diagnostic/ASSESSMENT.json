@@ -1,0 +1,15 @@
+{
+  "status": "rejected missed desktop-readiness observation; no application scope",
+  "observed": "Native actor reached its readiness deadline before normal desktop was signalled; black private-console frame retained; later QGA confirmed fresh account and Explorer. No readiness was fabricated.",
+  "correction": "Start the existing guarded desktop observer immediately after verified reboot; native account/nonce gate remains",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-uia-client.qcow2",
+      "ottrin-uia-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

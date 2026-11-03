@@ -1,0 +1,17 @@
+{
+  "status": "unaccepted native UIAutomation root-control observation",
+  "observed": "Current GUI starts, but observer times out before expected Close window node; no accepted native tree",
+  "insufficient_evidence": "No root/provider/screenshot diagnostic captured before timeout; do not infer a provider defect yet",
+  "service_cleanup_exit": 0,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-uia-client.qcow2",
+      "ottrin-uia-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "next": "Use exact established Ottrin native title, retain root/provider and last tree before timeout"
+}

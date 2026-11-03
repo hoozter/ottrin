@@ -51,6 +51,7 @@ panic = "abort"
 
 # Keep Windows Shift+Delete distinguishable from Ctrl+X without changing text Cut.
 [patch.crates-io]
+eframe = { path = "vendor/eframe" }
 egui-winit = { path = "vendor/egui-winit" }
 # Backport the upstream disabled-control guard for the pinned AT-SPI backend.
 accesskit_atspi_common = { path = "vendor/accesskit-atspi-common" }

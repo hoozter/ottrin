@@ -1,0 +1,36 @@
+{
+  "status": "Linux source/native viewport accessibility verified; Windows and refreshed delivery pending",
+  "binary_sha256": "9fe0c5bd7a27bce6c24a887578b216de9fcd92bd6d6d0de6f63dd46cb62c5890",
+  "native_receipts": {
+    "modals": {
+      "path": ".hermes/evidence/assistive-modals-current/main-modals/NATIVE_RESULT.json",
+      "sha256": "bd146e86409ac374ad7abc22fdbe12e7dc656395121f734a5d46141d79cc2397",
+      "status": "pass native Linux Settings/Inspector actions and read-only interface check"
+    },
+    "focus": {
+      "path": ".hermes/evidence/assistive-viewports-current/main-focus/NATIVE_RESULT.json",
+      "sha256": "24f6196f765f1042db1086cb84d24e3810d79833a8d8fae853c6247c4eedbfe9",
+      "status": "pass native Linux Settings/Inspector actions and read-only interface check"
+    },
+    "bus_loss": {
+      "path": ".hermes/evidence/assistive-viewports-current/main-lifecycle/NATIVE_RESULT.json",
+      "sha256": "e7ef500e1df4a28b1924dec9952ebecefb9dc291ba941aa171d1618360f96b40",
+      "status": "pass multi-viewport private accessibility-bus loss and actual client Close"
+    }
+  },
+  "scope": "Linux standard debug exact binary; not packaged cohort or screen-reader usability acceptance",
+  "build_and_checks": [
+    "build-final.stdout.gz",
+    "build-final.stderr.gz",
+    "tests.stdout.gz",
+    "tests.stderr.gz",
+    "clippy.stdout.gz",
+    "clippy.stderr.gz"
+  ],
+  "source_integrity": "VENDOR_INTEGRITY.json",
+  "pending": [
+    "Windows release build and native UIAutomation",
+    "obsolete compiler output cleanup",
+    "refreshed Linux/Windows cohort packaging and acceptance"
+  ]
+}
