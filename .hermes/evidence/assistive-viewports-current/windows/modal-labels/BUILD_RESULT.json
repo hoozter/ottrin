@@ -1,0 +1,7 @@
+{
+  "status": "standard Windows GNU release build passed",
+  "source": "55d78d0cd7328427176cabc1bfb058d65f8058db",
+  "application_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+  "scope": "Current GUI, not refreshed whole package cohort",
+  "log": "build.stderr.gz"
+}

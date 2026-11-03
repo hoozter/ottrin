@@ -1,0 +1,70 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "0f43a56c4b34a3252a07c6fe150f03e4ff53592dfacc16f8841d64c442b3dab9"
+  },
+  "inspector-root.json": {
+    "bytes": 318,
+    "sha256": "027f738e8605dd332def6fcdf5be49f7fedc7c5911061fbe897ac6edd252b796"
+  },
+  "inspector-tree.json": {
+    "bytes": 2689,
+    "sha256": "e0b450703da983a46b87e779f25890bb3b49cf2723d4190322d6ad4c7e12ce10"
+  },
+  "inspector.png": {
+    "bytes": 18276,
+    "sha256": "d0965c6f450e609bfcb33d446238917db9602e058ba035f3207def1fbe0b9e0c"
+  },
+  "main-before-provider.png": {
+    "bytes": 31311,
+    "sha256": "b716024943c7f72e81dd62d4d23f88791aea6bb5b1e6a107ae625cb55417428c"
+  },
+  "main-root.json": {
+    "bytes": 258,
+    "sha256": "636e5e857a18d683a6c10398277d6a106192b2bd75a99f7dfb69e426c0de4a72"
+  },
+  "main-tree.json": {
+    "bytes": 17729,
+    "sha256": "f45c63adda0ab5e8bc52e63ba2f036222e9a89b91a5a1b11f834753c3bd3069e"
+  },
+  "main.png": {
+    "bytes": 31311,
+    "sha256": "b716024943c7f72e81dd62d4d23f88791aea6bb5b1e6a107ae625cb55417428c"
+  },
+  "OWNER.json": {
+    "bytes": 1076,
+    "sha256": "2d6434588c0e889e0a65a088e252ada74a0f75f22a4e21a02097c19bbf660160"
+  },
+  "picker-grid.png": {
+    "bytes": 34031,
+    "sha256": "1ffccd0fd706180c38243b962856fa56dba9314da16ceb60e6e33899321f3c95"
+  },
+  "picker-list.png": {
+    "bytes": 33941,
+    "sha256": "8a51d7b5fa3c5c3f1cad48ee6a045352c555b1f1eeb406863868c5892ab4f15c"
+  },
+  "picker-root.json": {
+    "bytes": 305,
+    "sha256": "cfd62a080850048207ab09a526ca945c81579926f2271abe2b85d1278ecfadab"
+  },
+  "picker-tree.json": {
+    "bytes": 8087,
+    "sha256": "a1b40253a9f72f1b5d0e2e0cb2a7d2ee20c8635349c81a80cbb21edcd1f9ecb1"
+  },
+  "RESULT.json": {
+    "bytes": 33101,
+    "sha256": "c903fe5e5f309c985ed94769d5b7fc2ebd179006b16d7f70222a3d0ff704e997"
+  },
+  "settings-root.json": {
+    "bytes": 276,
+    "sha256": "fad94e27f1a61e239df2fab0531d01f6c3b01cb86a3ba39f2d128eba03329908"
+  },
+  "settings-tree.json": {
+    "bytes": 9920,
+    "sha256": "f36faf387810f4513c7805079731dae08eb7870cf5a47aea638fe7c63c4e8f07"
+  },
+  "settings.png": {
+    "bytes": 65467,
+    "sha256": "a5ae625df1c00dbb61c5be1bd8b4c0abc3f3350f506661fe1bc103be38bb2e31"
+  }
+}

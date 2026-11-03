@@ -1,0 +1,18 @@
+{
+  "status": "pass exact current GUI native Windows UIAutomation",
+  "source": "55d78d0cd7328427176cabc1bfb058d65f8058db",
+  "application_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+  "renderer": "opengl",
+  "scope": "Main names/disabled state; Settings/Inspector focus and independent Close; Inspector Edit text/More actions, no glyph-only buttons or ValuePattern editor; chooser Grid/List/Close/cancel; source/preferences preserved; service cleanup0",
+  "limits": "Private GUI candidate with borrowed accepted runtime; no refreshed whole-cohort or screen-reader usability acceptance",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-uia-client.qcow2",
+      "ottrin-uia-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

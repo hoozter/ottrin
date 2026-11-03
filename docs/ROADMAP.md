@@ -5,6 +5,15 @@
 Updated 2026-11-03. This is the active queue; dated checkpoints below retain
 only their original source/artifact scopes. Test totals are not roadmap completion.
 
+Active work: finish the native accessibility refresh, then rebuild and accept the
+Linux/Windows package cohort. The viewport fix is committed at ac740023; native
+Windows WGPU main/modal and picker scopes are verified on its exact GUI. Final
+Inspector action labels are committed at55d78d0c and verified on Linux and native
+Windows (default WGPU and OpenGL recovery). Refreshed package delivery remains
+required. Current usable packages
+remain at the earlier sources below. Owner signing/Store/hardware/final acceptance
+waits do not block this work.
+
 The stable Linux AppImage, portable archive, DEB and RPM now use clean source
 `bf3abfd32fc7654108e3f723f6a95c2f5866c5af`. Their exact hashes, completed scopes
 and limits are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. The stable
@@ -44,8 +53,9 @@ The daemon and five helper/renderer payloads remain byte-identical to the previo
 accepted delivery. Original928b7937 metadata/content10000-file resource receipts
 retain their source/package identity; their six30-second quiet samples measured
 0.067percent of one core and about13–17MiB RSS. No new sustained personal-workload
-claim is made. The personal enabled index service remains active on PID262779;
-this UI refresh does not restart it.
+claim is made. During that Linux promotion, the personal enabled index service
+was observed active on PID262779 and was not restarted. That historical
+observation is not a new measurement of the personal service.
 
 Current Linux evidence is `.hermes/evidence/picker-keyboard-selection-current/`.
 All completed native/GUI/browser profiles, processes, displays, buses and mounts,
@@ -235,6 +245,24 @@ these final labels, supported OpenGL recovery and refreshed delivery remain next
 Three superseded binaries/exact metadata recover2.31GiB; guarded removal of27
 obsolete incremental sessions recovers another1.03GiB. Compact acceptance and
 exact retained paths are in `assistive-viewports-current/CLEANUP.json`.
+
+The final55d78d0c standard Windows release GUI has SHA256d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e.
+Actual ordinary-user UIAutomation passes independently on WGPU and OpenGL:
+main names/states, Settings/Inspector automatic foreground focus and independent
+Close, Edit text/More actions labels with no Inspector glyph-only buttons,
+read-only interface observations, chooser Grid/List native actions and Close/cancel,
+source/preferences preservation and service cleanup0. Both guests/four volumes,
+private desktops/profiles/extractions and the final private stage are removed.
+Eleven obsolete matching GNU release GUI executables and exact dep-info/fingerprints
+are removed after compiler/configuration, reference, consumer and hard-link checks,
+recovering364519208bytes; all current binaries/libraries/caches remain.
+Evidence: `assistive-viewports-current/windows/modal-labels/ACCEPTANCE.json` and
+`windows/RELEASE_PE_CLEANUP.json`. These are exact GUI candidate scopes with a
+borrowed accepted runtime, not a refreshed package cohort. Current Windows
+indexd bytes differ from the delivered preview; fresh daemon/startup/resource
+acceptance is required before next promotion. The roadmap now distinguishes
+implemented local development MSIX from pending owner Store submission and binds
+the historical personal daemon PID observation to its original promotion.
 
 Continue in this order:
 
@@ -4063,11 +4091,12 @@ Start this phase after outcomes 1–3 are complete. Complete the independently a
 - Direct Windows ZIP/EXE/MSI downloads remain unsigned by owner decision. Keep
   checksums and explicit unsigned-publisher/SmartScreen disclosures; buying an
   Authenticode certificate is not a release gate.
-- Once Windows is ready for release, implement and accept a Microsoft Store MSIX
-  package, including package identity, helper/elevation, background indexing,
-  updates and uninstall behavior under MSIX deployment. The Store signs accepted
-  MSIX submissions. This is not an existing package or accepted integration and
-  does not provide signatures for the separate direct EXE/MSI downloads.
+- The local development MSIX package is implemented. Current0.1.0.4 has native
+  deployment, update, background startup/reboot and removal acceptance at its
+  recorded65676885 scope. Newer source still requires its own refreshed cohort
+  gates. Microsoft Store identity, listing, certification and submission remain
+  owner-dependent release work. Store signing applies to accepted Store packages;
+  it does not sign the separate direct EXE/MSI downloads.
 - Store submission/account work waits for readiness and the owner; independently
   executable implementation and unsigned direct-download acceptance continue.
 

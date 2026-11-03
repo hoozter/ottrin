@@ -1,0 +1,109 @@
+{
+  "status": "inspection only; native final-source consumer must finish before removal",
+  "items": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-84c902f04344f978.exe",
+      "bytes": 35139208,
+      "sha256": "626730d3a9aca1a085b9c4e38cac1a44069b72fe9343d00522a706265574e61a",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-84c902f04344f978.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-84c902f04344f978",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-c91f9c127a918703.exe",
+      "bytes": 35139370,
+      "sha256": "17c02586217f4df7719ca5e96352992a85c1a7285ab14576930e3ec3465a843f",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-c91f9c127a918703.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-c91f9c127a918703",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-2dd3df8c5bb8bce2.exe",
+      "bytes": 28676867,
+      "sha256": "40747535204d679f13aae8d8c75f05e85ecdb46c171a0b1c3d3b416e1abe2b49",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-2dd3df8c5bb8bce2.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-2dd3df8c5bb8bce2",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-badedf4557c06126.exe",
+      "bytes": 34859309,
+      "sha256": "aacea488ed30851f2c4d1af5020d28fa134643dbdaee7da8f1c8d7941003e05c",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-badedf4557c06126.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-badedf4557c06126",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-d63bcae2eb471fac.exe",
+      "bytes": 34036543,
+      "sha256": "325546c4699e75ad16e2c79dd6f83e946e9277eea1f46606672beb0fd756dd15",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-d63bcae2eb471fac.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-d63bcae2eb471fac",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-8fcc3c1e82c37b6e.exe",
+      "bytes": 28698391,
+      "sha256": "94e75ff76d0f4639f9449c2ab94dcaa4e3fecfa3c3aa60092f82894e54b45a45",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-8fcc3c1e82c37b6e.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-8fcc3c1e82c37b6e",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-97a0db3c387c2b88.exe",
+      "bytes": 35139713,
+      "sha256": "7514b6cb9b96435bf4993d33b2c4bb2ad2b2c56562305d625c962f0a21d87452",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-97a0db3c387c2b88.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-97a0db3c387c2b88",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-c281db1a81ee3088.exe",
+      "bytes": 28929848,
+      "sha256": "55fe6add5bacb243cbc2fbcd290aac8e337e8101096e182260796676787f6aa4",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-c281db1a81ee3088.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-c281db1a81ee3088",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-dbc2f0fe3d584e1e.exe",
+      "bytes": 33252053,
+      "sha256": "0a309cb2307477ce2135800a133cc7ee69651d45e6670ca97a3a5c886b97933c",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-dbc2f0fe3d584e1e.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-dbc2f0fe3d584e1e",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-1e78d69e50420bb6.exe",
+      "bytes": 35504041,
+      "sha256": "74960cd44952e89740689ee8393af1a615f536eee38ad82e22d1aebe29f65929",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-1e78d69e50420bb6.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-1e78d69e50420bb6",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-93faecff566f6ab5.exe",
+      "bytes": 35143865,
+      "sha256": "667a88bfb0d2f4fc4754908000ab91c19dbe44777f2028c5c01415d9593d56ba",
+      "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/deps/ottrin_app-93faecff566f6ab5.d",
+      "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/.fingerprint/ottrin-app-93faecff566f6ab5",
+      "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+      "replacement_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e"
+    }
+  ],
+  "basis": "Same exact Rust compiler/features/target/profile/rustflags/path identity; current standard release binary validated on Windows, each predecessor nlink1, exact dep-info/fingerprint known; active consumers/references still require check",
+  "references": [
+    ".hermes/evidence/assistive-viewports-current/windows/RELEASE_PE_CANDIDATES.json"
+  ],
+  "reference_status": "Inspect before removal; historical receipts do not constitute an active consumer"
+}

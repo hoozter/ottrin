@@ -1,0 +1,20 @@
+{
+  "scope": "Read current ordered queue and owner waiting list against delivery receipts and undated platform/distribution requirements",
+  "findings": [
+    {
+      "location": "docs/ROADMAP.md Signing and Windows distribution",
+      "problem": "Undated MSIX requirement still says no existing package/integration despite current delivered development MSIX0.1.0.4 native install/update/login/removal acceptance",
+      "correction": "Distinguish already implemented/tested local development MSIX from pending owner Store identity/submission/certification; keep all Store gates"
+    },
+    {
+      "location": "docs/ROADMAP.md current Linux daemon statement",
+      "problem": "Personal daemon PID is a historical promotion observation presented as current state",
+      "correction": "Bind observation to its original Linux promotion; no new personal runtime or sustained-workload claim"
+    },
+    {
+      "location": "docs/ROADMAP.md deferred picker requirement",
+      "result": "Current requirement explicitly limits Windows external dialogs to cooperating callers and preserves Linux opt-in portal integration; no universal Windows dialog replacement claim"
+    }
+  ],
+  "pending": "Documentation corrections applied; source/package/native scopes and genuine external waits preserved"
+}

@@ -1,0 +1,32 @@
+{
+  "status": "Windows standard release GUI passes native and OpenGL native UIAutomation",
+  "source": "55d78d0cd7328427176cabc1bfb058d65f8058db",
+  "application_sha256": "d36392ab783a0be5f4e9272ff6056e4ac31e61b3898e559423b2282922f9331e",
+  "cases": [
+    "opengl/ASSESSMENT.json",
+    "native/ASSESSMENT.json"
+  ],
+  "remaining": "Fresh complete Linux/Windows package cohort and exact current daemon/resource acceptance; owner/external release waits remain separate",
+  "retired": [
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/opengl/RESULTS.zip",
+      "bytes": 190789,
+      "reason": "Exact native archive members/rendered screenshots retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/opengl/privacy-accepted-0.png",
+      "bytes": 479628,
+      "reason": "Terminal privacy and desktop-token receipts retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/native/RESULTS.zip",
+      "bytes": 188936,
+      "reason": "Exact native archive members/rendered screenshots retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/native/privacy-accepted-0.png",
+      "bytes": 477896,
+      "reason": "Terminal privacy and desktop-token receipts retained"
+    }
+  ]
+}

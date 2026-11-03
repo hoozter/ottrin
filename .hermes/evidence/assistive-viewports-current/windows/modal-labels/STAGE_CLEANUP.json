@@ -1,0 +1,16 @@
+{
+  "status": "retired after both final GUI native consumers terminal; no active domain, file consumer or extra hard link",
+  "files": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage/uia-input.json",
+      "bytes": 11123,
+      "sha256": "11e17accfab0366a6081f4a962781cdad730713a9f5ef4656435bc4dc49e1be6"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage/uia.zip",
+      "bytes": 55432680,
+      "sha256": "28276436fbc9fa8bdd37eb064239e77dcd09361b18ff79c0dead915564f10110"
+    }
+  ],
+  "remaining": "Current standard release GUI/cache plus compact native evidence; fresh package cohort pending"
+}

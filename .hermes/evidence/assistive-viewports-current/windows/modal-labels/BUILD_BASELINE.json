@@ -1,0 +1,15 @@
+{
+  "source": "55d78d0cd7328427176cabc1bfb058d65f8058db",
+  "at": "2026-11-03T01:51:35.216286+00:00",
+  "tracked_dirty": [],
+  "allocated_bytes": {
+    "target/debug/deps": 40522899456,
+    "target/debug/incremental": 22256173056,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    "target/x86_64-pc-windows-gnu/release/deps": 4134178816,
+    ".hermes/evidence/assistive-viewports-current": 5160960
+  },
+  "purpose": "Standard Windows GNU release Inspector label refresh for actual native/recovery UIAutomation",
+  "cleanup_owner": "Roadmap task; terminal native cases remove owned VM/media/profiles and private input stage; retain exact evidence, current binaries and shared cache"
+}

@@ -1,6 +1,6 @@
 {
   "status": "Completed owned cleanup for viewport baseline and Linux modal-label checkpoint",
-  "owned_resources": "All six baseline Windows guests/twelve volumes, two new Windows guests/four volumes, seven native Linux desktop profiles/displays/buses, all private stage input and runtime extractions removed",
+  "owned_resources": "All ten Windows guests/twenty owned volumes, seven native Linux desktop profiles/displays/buses, both private UIA stages and runtime extractions removed",
   "standalone_cleanup": "STANDALONE_CLEANUP.json",
   "removed_binary_bytes": 2477272824,
   "incremental_cleanup": [
@@ -20,8 +20,11 @@
     },
     {
       "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release",
-      "purpose": "Current Windows ac740023 standard release GUI and useful cache; Inspector label refresh and accepted package cohort pending"
+      "purpose": "Current Windows55d78d0c standard release GUI and useful compiler cache; fresh whole-cohort/daemon acceptance pending"
     }
   ],
-  "current_deliverables_preserved": true
+  "current_deliverables_preserved": true,
+  "release_pe_cleanup": "windows/RELEASE_PE_CLEANUP.json",
+  "removed_windows_release_binaries": 11,
+  "removed_windows_release_binary_bytes": 364519208
 }
