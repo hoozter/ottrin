@@ -1,0 +1,6 @@
+{
+  "observer_pid": 990088,
+  "status": "Owned automatic OCR observer stopped after direct native observation of correct temporary-user desktop; finite native input/readiness continues on same fixture",
+  "actual_frame": "desktop-current.png",
+  "credential_or_policy_changes": false
+}

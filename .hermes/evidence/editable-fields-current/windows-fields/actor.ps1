@@ -1,0 +1,54 @@
+param([Parameter(Mandatory=$true)][string]$Root,[Parameter(Mandatory=$true)][string]$ExpectedSid)
+$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
+$out=Join-Path $Root 'results';$report=@{status='running';named_fields=@();scope='Exact installed Windows main-window creation/location/search native field names, values, cancellation and source preservation';cases=@()};$final='failed native main field audit';$owned=[Collections.Generic.List[Diagnostics.Process]]::new();$forms=[Collections.Generic.List[object]]::new();$install=$null
+function Require($value,$message){if(-not$value){throw $message}}
+function Save{$p=Join-Path $out 'RESULT.json';$tmp=$p+'.next';[IO.File]::WriteAllText($tmp,($report|ConvertTo-Json -Depth 30),[Text.UTF8Encoding]::new($false));if(Test-Path $p){[IO.File]::Replace($tmp,$p,[NullString]::Value)}else{[IO.File]::Move($tmp,$p)}}
+function Phase($value){$report.phase=$value;Save}
+function Run($exe,$arguments,$name){
+ $s=[Diagnostics.ProcessStartInfo]::new($exe,$arguments);$s.UseShellExecute=$false;$s.CreateNoWindow=$true;$s.RedirectStandardOutput=$true;$s.RedirectStandardError=$true;$clock=[Diagnostics.Stopwatch]::StartNew();$p=[Diagnostics.Process]::Start($s)
+ try{
+  $stdout=$p.StandardOutput.ReadToEndAsync();$stderr=$p.StandardError.ReadToEndAsync()
+  if(-not$p.WaitForExit(180000)){
+   $snapshot=@(Get-CimInstance Win32_Process|Where-Object {$_.ProcessId-eq$p.Id-or$_.ParentProcessId-eq$p.Id-or($install-and$_.ExecutablePath-and$_.ExecutablePath.StartsWith($install,[StringComparison]::OrdinalIgnoreCase))}|Select-Object Name,ProcessId,ParentProcessId,ExecutablePath,SessionId)
+   [IO.File]::WriteAllText((Join-Path $out ($name+'-timeout.json')),(@{seconds=$clock.Elapsed.TotalSeconds;root_pid=$p.Id;processes=$snapshot}|ConvertTo-Json -Depth 8),[Text.UTF8Encoding]::new($false));throw ('Owned process timeout '+$name)
+  }
+  Require ($stdout.Wait(5000)-and$stderr.Wait(5000)) 'Process streams not complete';$v=@{exit=$p.ExitCode;stdout=$stdout.Result;stderr=$stderr.Result;seconds=$clock.Elapsed.TotalSeconds};[IO.File]::WriteAllText((Join-Path $out ($name+'-process.json')),($v|ConvertTo-Json),[Text.UTF8Encoding]::new($false));Require ($v.exit-eq0) ('Native child failed '+$name);return $v
+ }finally{if(-not$p.HasExited){& "$env:SystemRoot\System32\taskkill.exe" /PID $p.Id /T /F|Out-Null;$null=$p.WaitForExit(10000)};$p.Dispose()}
+}
+& ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $Root 'native-controls.ps1'))));[PickerNative]::Init()
+Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes
+function Pump{[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 50}
+function Tree($w){return [Windows.Automation.AutomationElement]::FromHandle($w)}
+function Nodes($w,$name){$c=[Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty,$name);return @((Tree $w).FindAll([Windows.Automation.TreeScope]::Descendants,$c)|Where-Object {-not$_.Current.IsOffscreen})}
+function Node($w,$name,$kind){$deadline=[DateTime]::UtcNow.AddSeconds(20);do{$n=@(Nodes $w $name|Where-Object {$_.Current.ControlType-eq$kind});if($n.Count-eq1){return $n[0]};Pump}while([DateTime]::UtcNow-lt$deadline);[PickerNative]::Shot($w,(Join-Path $out 'missing-control.png'));throw ('Missing unique '+$name+' count='+$n.Count)}
+function Invoke($w,$name){$n=Node $w $name ([Windows.Automation.ControlType]::Button);$n.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke();Pump}
+function Key($w,$key){[PickerNative]::Focus($w);[Windows.Forms.SendKeys]::SendWait($key);Start-Sleep -Milliseconds 300;Pump}
+function Field($w,$name){$n=Node $w $name ([Windows.Automation.ControlType]::Edit);$v=$n.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current;return @{name=$n.Current.Name;value=$v.Value;read_only=$v.IsReadOnly;role='Edit'}}
+try{
+ Require ([Security.Principal.WindowsIdentity]::GetCurrent().User.Value-eq$ExpectedSid) 'Wrong owned account'
+ $identity=Get-Content (Join-Path $Root 'application-input.json') -Raw|ConvertFrom-Json;foreach($file in $identity.files){Require ((Get-FileHash (Join-Path $Root $file.name)).Hash.ToLowerInvariant()-eq$file.sha256) 'Native actor input mismatch'};$report.package=$identity
+ $manifest=Get-Content (Join-Path $Root 'payload.json') -Raw|ConvertFrom-Json;$install=Join-Path $env:LOCALAPPDATA 'Programs\Ottrin';$app=Join-Path $install 'bin\ottrin.exe';Require (-not(Test-Path $install)) 'Existing installation retained'
+ Phase 'install exact staged NSIS';$null=Run (Join-Path $Root 'current-setup.exe') '/S' 'install'
+ foreach($file in $manifest.PSObject.Properties){Require ((Get-FileHash (Join-Path $install $file.Name)).Hash.ToLowerInvariant()-eq$file.Value) ('Payload mismatch '+$file.Name)}
+ $null=Run $app 'index service-remove' 'index-remove';Require (@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue).Count-eq0) 'Owned index process remains'
+ $corpus=Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'OttrinFields';Require (-not(Test-Path $corpus)) 'Existing corpus retained';$null=[IO.Directory]::CreateDirectory($corpus);$source=Join-Path $corpus 'preserve.txt';[IO.File]::WriteAllText($source,'owned original',[Text.UTF8Encoding]::new($false));$sourceHash=(Get-FileHash $source).Hash
+ $config=Get-Content (Join-Path $Root 'config-template.json') -Raw|ConvertFrom-Json;$config.bookmarks=@();$config.graphics_renderer='Native';$config.search.include_roots=@($corpus);$config.search.content_indexing_enabled=$false;$pref=Join-Path $env:APPDATA 'ottrin\config.json';Require (-not(Test-Path $pref)) 'Existing config retained';$null=[IO.Directory]::CreateDirectory((Split-Path $pref))
+ foreach($theme in @('Dark','Light')){
+  Phase ($theme+' main fields');$config.theme=$theme;[IO.File]::WriteAllText($pref,($config|ConvertTo-Json -Depth 30),[Text.UTF8Encoding]::new($false))
+  $s=[Diagnostics.ProcessStartInfo]::new($app,('"'+$corpus+'"'));$s.UseShellExecute=$false;$p=[Diagnostics.Process]::Start($s);$owned.Add($p);$deadline=[DateTime]::UtcNow.AddSeconds(25)
+  do{$w=[PickerNative]::Window($p.Id,'Ottrin');if($w-ne[IntPtr]::Zero){break};Pump}while([DateTime]::UtcNow-lt$deadline);Require ($w-ne[IntPtr]::Zero) 'No owned main window';[PickerNative]::Focus($w)
+  foreach($kind in @('File','Folder')){
+   Invoke $w 'Menu';Invoke $w ('New '+$kind);$name=$kind+' name';$f=Field $w $name;Require ($f.value-eq''-and-not$f.read_only) 'Wrong creation role/value';Key $w ('draft-'+$kind.ToLowerInvariant());$typed=Field $w $name;Require ($typed.value-eq('draft-'+$kind.ToLowerInvariant())) 'Typing did not reach named field';[PickerNative]::Shot($w,(Join-Path $out ($theme+'-'+$kind+'.png')));Invoke $w 'Cancel';Require (-not(Test-Path (Join-Path $corpus $typed.value))) 'Cancel created output';$report.cases+=@{theme=$theme;case='creation-'+$kind;initial=$f;typed=$typed;cancel_preserved_source=$true};Save
+  }
+  Key $w '^l';$f=Field $w 'Location';Require ($f.value.TrimEnd('\')-eq$corpus.TrimEnd('\')) 'Location value mismatch';$report.cases+=@{theme=$theme;case='location';field=$f};Key $w '{ESC}'
+  Key $w '^f';$f=Field $w 'Search files and folders';Require (-not$f.read_only) 'Search unexpectedly read-only';$report.cases+=@{theme=$theme;case='search';field=$f};Key $w '{ESC}';Invoke $w 'Close window';Require ($p.WaitForExit(15000)-and$p.ExitCode-eq0) 'Normal native close failed';Require ((Get-FileHash $source).Hash-eq$sourceHash) 'Source changed';Save
+ }
+ $saved=(Get-FileHash $pref).Hash;Phase 'supported uninstall';$uninstaller=Join-Path $out 'owned-uninstall.exe';Copy-Item (Join-Path $install 'Uninstall.exe') $uninstaller;$null=Run $uninstaller ('/S _?='+$install) 'uninstall';Remove-Item $uninstaller;Require (-not(Test-Path $install)) 'Installation remains';Require ((Get-FileHash $pref).Hash-eq$saved) 'Uninstall changed preferences';Require ((Get-FileHash $source).Hash-eq$sourceHash) 'Source changed';$report.preferences_preserved=$true;$report.source_preserved=$true;$final='pass native installed main-field scope; captures require review'
+}catch{$report.error=$_.Exception.Message;$report.stack=$_.ScriptStackTrace}
+finally{
+ foreach($p in $owned){if(-not$p.HasExited){& "$env:SystemRoot\System32\taskkill.exe" /PID $p.Id /T /F|Out-Null;$null=$p.WaitForExit(10000)}}
+ if($install-and(Test-Path $app)-and$manifest-and(Get-FileHash $app).Hash.ToLowerInvariant()-eq$manifest.'bin/ottrin.exe'){try{$report.cleanup_index_remove=Run $app 'index service-remove' 'cleanup-index-remove'}catch{$report.cleanup_index_error=$_.Exception.Message;$final='failed owned index teardown'}}
+ if($install){$left=@(Get-CimInstance Win32_Process|Where-Object {$_.ExecutablePath-and$_.ExecutablePath.StartsWith($install,[StringComparison]::OrdinalIgnoreCase)});$report.remaining_owned_installed_processes=$left.Count;if($left.Count){$final='failed owned process teardown'}}
+ $report.status=$final;Save
+}
+if(-not$final.StartsWith('pass')){exit 1}

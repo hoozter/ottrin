@@ -28,6 +28,8 @@ cd Ottrin-*-linux-x86_64
 
 Install the local `.deb` with `sudo apt install ./ottrin_0.1.0_amd64.deb`, or the local `.rpm` with `sudo dnf install ./ottrin-0.1.0-1.x86_64.rpm`.
 
+Current packages do not install an Ottrin APT/DNF repository. Uploading a new GitHub release alone does not update an installed copy; download and install the newer package manually. A signed update repository can be added later, but is not configured by these builds.
+
 Removing the DEB or RPM stops native index daemons and removes Ottrin’s native user and Administrator service registrations. Reinstalling refreshes running native services; stopped services stay stopped. Independent portable/AppImage indexers, preferences, saved indexes and your files are retained. If an offline user has a customized service override whose ownership cannot be established, removal stops with an error before changing services. Resolve that override under the owning account before retrying removal. See [ROADMAP.md](ROADMAP.md) for the tested scope and remaining native installation gates.
 
 ### Windows Portable
@@ -44,10 +46,9 @@ Run `Ottrin-*-windows-x64-setup.exe` to install under the current user's local a
 
 ### macOS
 
-The package source creates `Ottrin-*-macos-*.zip`. After an accepted package is
-published, unzip it and move `Ottrin.app` to Applications. No current macOS
-artifact is accepted: native launch, Finder integration, quarantine/Gatekeeper,
-and signing still require macOS release-candidate evidence.
+Deferred until the Linux/Windows roadmap and release acceptance are complete.
+No current macOS package is accepted, and its platform/signing checks are outside
+the active Linux/Windows goal.
 
 ## Basic Navigation
 

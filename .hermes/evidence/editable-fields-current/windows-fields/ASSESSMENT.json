@@ -1,0 +1,16 @@
+{
+  "status": "failed field audit; two Dark creation-name/value/cancel checks passed",
+  "result": "GUEST_RESULT.json",
+  "failure": "Location comparison expected unprefixed path; source canonicalizes direct-open paths on Windows and editable address uses original display string. Actual failing value was not saved; next producer records exact field and expected canonical value before asserting.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope_limit": "Driver exit0 reflects terminal collection/teardown, not actor acceptance."
+}

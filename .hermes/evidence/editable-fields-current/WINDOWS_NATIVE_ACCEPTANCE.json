@@ -1,0 +1,41 @@
+{
+  "status": "pass native installed main-field names/values/cancellation/source and removal-preserved preferences",
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "artifacts": [
+    {
+      "name": "current-setup.exe",
+      "sha256": "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd"
+    }
+  ],
+  "cases": 8,
+  "native_result": ".hermes/evidence/editable-fields-current/windows-fields-native-path/results/RESULT.json",
+  "actor_sha256": "4862a2a245c61f681541e40101ff5747c7b510628c4f1d74fec5bed8cce4f9ab",
+  "frozen_executed_actor_sha256": "4862a2a245c61f681541e40101ff5747c7b510628c4f1d74fec5bed8cce4f9ab",
+  "native_capture_review": {
+    "status": "four original native captures directly reviewed",
+    "sha256": {
+      "Light-File.png": "9a7672a77d7e6d102a5eec2ff233d967686d12966f5f97961469caf823d0fecb",
+      "Dark-File.png": "adf03eaff67bdca81f324055e02ea0017ec2f5b6273b507a5d45df9c1dbfbe82",
+      "Dark-Folder.png": "79e82a86a9988091c6924caab47cfe01d9ed7c2048c0a612498fdc4a0ef212f9",
+      "Light-Folder.png": "0000e6ee8f8c163f5b4f6db6f5291b49913ff34bfa7bdb4a4373eb870ea23c3f"
+    }
+  },
+  "install_seconds": 122.3067708,
+  "scope": "Owned ordinary Windows stock-client desktop, bundled software OpenGL/default DPI. Exact File name/Folder name, typed values/cancel, canonical Location and search native Edit roles in Dark/Light, original bytes and removal-preserved preferences.",
+  "limits": [
+    "Not native acceptance of every theme/document/numeric control or human assistive usability",
+    "Earlier unprefixed-path assertion failed; no failing Location value was captured. Current result records exact canonical prefix and value; product source unchanged between native attempts.",
+    "One retry cancelled before product actor when its intended fixture patch failed to apply; all owned resources removed.",
+    "MSIX9 assembly is separate; prior MSIX8 lifecycle keeps its exact original scope."
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

@@ -13,29 +13,28 @@ A fast, keyboard-first file manager built in Rust with [egui](https://github.com
 
 ## Release Artifacts
 
-When a verified release is published, its artifacts will be available from
-[GitHub Releases](https://github.com/hoozter/ottrin/releases). The current
-v0.1.0 source tree remains a release candidate; no exact-current-commit
-artifact is claimed as published or accepted. See the
-[Release Checklist](docs/RELEASE_CHECKLIST.md) for outstanding gates.
+Public releases will be available from [GitHub Releases](https://github.com/hoozter/ottrin/releases).
+The current 0.1.0 is a locally tested development candidate; no public release is
+claimed. The latest usable local packages and exact source/hashes/tested scopes are
+recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. See the [roadmap](docs/ROADMAP.md)
+for current delivery and the [release checklist](docs/RELEASE_CHECKLIST.md) for gates.
 
-The intended first release formats are Linux AppImage, portable tarball, DEB
-and RPM, and Windows portable zip, per-user installer and per-user MSI. macOS
-implementation and acceptance are deferred until the Linux/Windows roadmap is
-complete. Windows MSI packages have been built and tested
-natively for normal installation, upgrade, repair and removal. Failed-transaction
-MSI registration rollback still fails native tests and blocks acceptance; see the
-[roadmap](docs/ROADMAP.md) for exact artifact scopes. Native macOS construction
-and platform acceptance remain pending.
+Local Linux formats are AppImage, portable tarball, DEB and RPM. Windows has portable
+ZIP, a per-user NSIS installer and an unsigned development MSIX for local testing.
+The MSI remains held: native failed-transaction registration rollback can lose
+registration while application files remain. Its normal install/update/removal
+receipts do not waive that failure. Store submission waits for the owner's later
+account/certification work; a paid signing certificate is not required for this plan.
+macOS construction and acceptance are deferred outside the Linux/Windows goal.
 
-The latest locally verified Linux build is kept at
-`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, with its checksum and source
-provenance beside it. Bash packaging replaces the previous output only after
-building its replacement successfully; it does not retain release archives.
-Packaging stages and desktop QA profiles are disposable and removed when their
-owning operation ends. Windows portable staging uses one managed
-`windows-payload/` folder, replacing its previous contents. Installer and MSI packagers consume it; the full build
-entry point removes it after both finish.
+The stable Linux AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
+Windows candidates are at `dist/windows-candidate/`. Verified replacements use
+these stable paths; superseded packages and owned temporary QA resources are
+retired after consumers. The current Windows 58-file payload is retained with its
+candidate for exact identity checks; no versioned package folders accumulate.
+Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
+is a build-time snapshot; repository manifests/documents record later acceptance.
 
 ### Linux
 
@@ -77,10 +76,9 @@ this compatibility path is accepted.
 
 ### macOS
 
-The macOS package source produces `Ottrin-*-macos-*.zip`, containing
-`Ottrin.app`. It is not yet a published or accepted artifact: native launch,
-Finder behavior, quarantine/Gatekeeper handling, and production signing remain
-release gates on macOS.
+Deferred until the Linux/Windows roadmap and release acceptance are complete.
+Existing packaging source does not imply a current accepted macOS build, and
+macOS signing/launch checks do not block Linux/Windows work.
 
 ---
 

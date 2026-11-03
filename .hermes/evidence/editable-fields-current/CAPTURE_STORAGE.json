@@ -1,0 +1,15 @@
+{
+  "retained_original_native_linux": [
+    ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/new-file.png",
+    ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/new-folder.png",
+    ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/existing-entry-refusal.png",
+    ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/rename.png",
+    ".hermes/evidence/editable-fields-current/linux-fields-light/new-file.png",
+    ".hermes/evidence/editable-fields-current/linux-fields-light/new-folder.png",
+    ".hermes/evidence/editable-fields-current/linux-fields-light/existing-entry-refusal.png",
+    ".hermes/evidence/editable-fields-current/linux-fields-light/rename.png"
+  ],
+  "scope": "Eight reviewed Linux originals remain locally with recorded SHA256. They show unrelated world-readable temporary-directory names in ancestor columns and are excluded from Git publication. No image content is edited or reconstructed.",
+  "native_windows": "Four reviewed product captures in windows-fields-native-path/results are published; source data is entirely fixture-owned.",
+  "owned_disposable_resources": "All removed; CLEANUP_FINAL.json is authoritative."
+}

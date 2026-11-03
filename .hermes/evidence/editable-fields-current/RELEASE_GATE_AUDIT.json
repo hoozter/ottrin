@@ -1,0 +1,86 @@
+{
+  "scope": "Seven explicit release gate clauses reviewed now; not the full54-roadmap/15-user audit or a completion percentage",
+  "requirements": [
+    {
+      "id": 41,
+      "requirement": "`cargo fmt --all --check`, `cargo check --workspace --all-targets`, `cargo test --workspace` and strict workspace Clippy pass.",
+      "classification": "proved current exact-source Linux/Windows hosted workspace format/check/test/strict-lint scope",
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "CI41639409624: Windows Cargo test completed13:33:25Z and strict workspace Clippy13:33:52Z; Linux verify passed",
+        "SOURCE_CHECKS.json"
+      ],
+      "limits": "Overall hosted job still completing its release build; no whole-roadmap acceptance inferred."
+    },
+    {
+      "id": 42,
+      "requirement": "Linux and Windows CI pass for the release commit.",
+      "classification": "proved exact-source Linux/Windows CI: four successful jobs",
+      "evidence": [
+        "CI_CURRENT.json"
+      ],
+      "limits": "No whole-roadmap acceptance implied."
+    },
+    {
+      "id": 43,
+      "requirement": "Rebuilt artifact checksums verify and archive inspection finds the expected app, indexer, helper, policies, assets and documentation.",
+      "classification": "proved published content and post-publication checksum scope",
+      "evidence": [
+        "PACKAGE_CONTENT_ACCEPTANCE.json",
+        "HOST_PAYLOAD.json",
+        "ASSEMBLY_ACCEPTANCE.json",
+        "PAYLOAD.json",
+        "DELIVERED_HASHES.json"
+      ],
+      "limits": "Content/identity inspection does not replace functional acceptance outside the recorded native scope."
+    },
+    {
+      "id": 51,
+      "requirement": "`README.md`, `USER_GUIDE.md`, `ROADMAP.md` and `RELEASE_NOTES.md` agree with the exact artifacts.",
+      "classification": "proved current repository delivery-document reconciliation; packaged delivery snapshot explicit",
+      "evidence": [
+        "README.md",
+        "docs/USER_GUIDE.md",
+        "docs/ROADMAP.md",
+        "docs/RELEASE_NOTES.md",
+        "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+      ],
+      "limits": "Generated SOURCE_REVISION identifies packaged source; packaged documents are build-time snapshots. Historical paragraphs are not current acceptance claims."
+    },
+    {
+      "id": 52,
+      "requirement": "Version, artifact names, checksums and generated release notes agree.",
+      "classification": "proved current local artifact names/version/checksums and repository delivery notes",
+      "evidence": [
+        "DELIVERED_HASHES.json",
+        "BUILD_RESULT.json",
+        "windows/BUILD_RESULT.json",
+        "ASSEMBLY_ACCEPTANCE.json",
+        "docs/RELEASE_NOTES.md"
+      ],
+      "limits": "No public release publication implied."
+    },
+    {
+      "id": 53,
+      "requirement": "Linux signatures and all artifact checksums verify after download; unsigned Windows direct downloads are labeled explicitly.",
+      "classification": "owner signing identity wait plus independent software/delivery checks",
+      "evidence": [
+        "docs/ROADMAP.md#ownerexternal-waiting-list",
+        "PACKAGE_CONTENT_ACCEPTANCE.json",
+        "HOST_PAYLOAD.json",
+        "ASSEMBLY_ACCEPTANCE.json"
+      ],
+      "limits": "All seven local post-publication artifact checksums verify. Production Linux signatures remain an owner-identity/key wait; unsigned Windows direct preview is explicitly documented."
+    },
+    {
+      "id": 54,
+      "requirement": "David reviews the release notes and any remaining known limitations. No blocker is waived without a written decision.",
+      "classification": "owner final acceptance wait",
+      "evidence": [
+        "docs/ROADMAP.md#ownerexternal-waiting-list"
+      ],
+      "limits": "Never inferred from automated/native test totals; remaining software work continues."
+    }
+  ]
+}

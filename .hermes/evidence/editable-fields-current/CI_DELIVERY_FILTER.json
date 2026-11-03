@@ -1,0 +1,57 @@
+{
+  "status": "parsed actual GitHub workflow; narrow literal prose exclusions and representative mixed runtime/packaging/license/workflow inclusion checked",
+  "patterns": [
+    ".hermes/evidence/**",
+    "dist/**",
+    "docs/ROADMAP.md",
+    "README.md",
+    "docs/USER_GUIDE.md",
+    "docs/RELEASE_NOTES.md"
+  ],
+  "cases": [
+    {
+      "paths": [
+        "README.md",
+        "docs/USER_GUIDE.md",
+        "docs/RELEASE_NOTES.md",
+        "docs/ROADMAP.md"
+      ],
+      "push_ci_expected": false
+    },
+    {
+      "paths": [
+        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+        ".hermes/evidence/editable-fields-current/CI_CURRENT.json"
+      ],
+      "push_ci_expected": false
+    },
+    {
+      "paths": [
+        "README.md",
+        "crates/ottrin-ui/src/lib.rs"
+      ],
+      "push_ci_expected": true
+    },
+    {
+      "paths": [
+        "packaging/linux/package-deb.sh"
+      ],
+      "push_ci_expected": true
+    },
+    {
+      "paths": [
+        "docs/THIRD_PARTY_NOTICES.md"
+      ],
+      "push_ci_expected": true
+    },
+    {
+      "paths": [
+        ".github/workflows/ci.yml"
+      ],
+      "push_ci_expected": true
+    }
+  ],
+  "pull_requests": "Unconditional existing pull_request trigger retained",
+  "release_workflows": "Unchanged; all existing release gates retained",
+  "scope": "Local trigger-configuration check; not a fresh hosted result for later documentation/policy checkpoint. Exact runtime36 CI_CURRENT remains four-success evidence. Initial check assumed BaseLoader null was Python None; this loader represents it as an empty scalar, now explicitly accepted."
+}

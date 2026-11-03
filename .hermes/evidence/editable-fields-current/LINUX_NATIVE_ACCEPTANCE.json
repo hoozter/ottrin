@@ -1,0 +1,339 @@
+{
+  "status": "pass exact native creation/rename/location/search field-name/value scope with source preservation and normal close",
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "cases": [
+    {
+      "case": "linux-fields-dark-observed",
+      "control": {
+        "status": "functional checks pass; native captures require review",
+        "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+        "artifact_sha256": "5d4fdcb88ad5d633bf8d50e74898e1980925d593404c4151bb6d566cbaa6d97f",
+        "theme": "Dark",
+        "scope": "Private X11/software Dark100 or Light150 exact staged AppImage native creation/rename/location/search names and values, cancellation, existing-name refusal and byte preservation; no whole-roadmap or complete accessibility claim",
+        "worker_sha256": "0807da464636bc456df1e4e2979e9d3fe061c3b2350e8c0e4539a5944bb80c2f",
+        "teardown": {
+          "status": "closed",
+          "profile": "/var/tmp/.ottrin-picker-qa-j1fuxygz",
+          "owned_processes_reaped": [
+            {
+              "pid": 982786,
+              "exit": 0
+            },
+            {
+              "pid": 982789,
+              "exit": 0
+            },
+            {
+              "pid": 982790,
+              "exit": 15
+            },
+            {
+              "pid": 982861,
+              "exit": 0
+            }
+          ],
+          "owned_children": {
+            "stopped": [
+              982867,
+              982933
+            ],
+            "unreadable_foreign_processes_preserved": 3
+          },
+          "owned_mounts_unmounted": [
+            "142 34 0:64 / /var/tmp/.ottrin-picker-qa-j1fuxygz/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+          ],
+          "profile_removed": true
+        }
+      },
+      "result": {
+        "status": "pass packaged main-menu creation/cancellation/refusal scope",
+        "cases": [
+          {
+            "case": "new-file",
+            "field": {
+              "role": "entry",
+              "accessible_name": "File name",
+              "initial_value": "",
+              "typed_value": "created.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "new-folder",
+            "field": {
+              "role": "entry",
+              "accessible_name": "Folder name",
+              "initial_value": "",
+              "typed_value": "CreatedFolder"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "cancel-new-file",
+            "field": {
+              "role": "entry",
+              "accessible_name": "File name",
+              "initial_value": "",
+              "typed_value": "cancelled.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "existing-file-refused",
+            "field": {
+              "role": "entry",
+              "accessible_name": "File name",
+              "initial_value": "",
+              "typed_value": "preserve.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "named-rename-edit-cancel",
+            "field": {
+              "role": "entry",
+              "accessible_name": "New name",
+              "typed_value": "cancelled-rename.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "named-location",
+            "value": "/var/tmp/.ottrin-picker-qa-j1fuxygz/home/Documents",
+            "status": "pass"
+          },
+          {
+            "case": "named-search",
+            "value": "",
+            "status": "pass"
+          }
+        ],
+        "source_bytes_preserved": true,
+        "created_file_empty": true,
+        "created_folder_empty": true,
+        "normal_close_exit": 0,
+        "limit": "Native AT-SPI creation/rename/location/search field names and values; whole UI, assistive usability and other platforms separate"
+      },
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-j1fuxygz",
+        "owned_processes_reaped": [
+          {
+            "pid": 982786,
+            "exit": 0
+          },
+          {
+            "pid": 982789,
+            "exit": 0
+          },
+          {
+            "pid": 982790,
+            "exit": 15
+          },
+          {
+            "pid": 982861,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            982867,
+            982933
+          ],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [
+          "142 34 0:64 / /var/tmp/.ottrin-picker-qa-j1fuxygz/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+        ],
+        "profile_removed": true
+      }
+    },
+    {
+      "case": "linux-fields-light",
+      "control": {
+        "status": "functional checks pass; native captures require review",
+        "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+        "artifact_sha256": "5d4fdcb88ad5d633bf8d50e74898e1980925d593404c4151bb6d566cbaa6d97f",
+        "theme": "Light",
+        "scope": "Private X11/software Dark100 or Light150 exact staged AppImage native creation/rename/location/search names and values, cancellation, existing-name refusal and byte preservation; no whole-roadmap or complete accessibility claim",
+        "worker_sha256": "0807da464636bc456df1e4e2979e9d3fe061c3b2350e8c0e4539a5944bb80c2f",
+        "teardown": {
+          "status": "closed",
+          "profile": "/var/tmp/.ottrin-picker-qa-smwpwf35",
+          "owned_processes_reaped": [
+            {
+              "pid": 983191,
+              "exit": 0
+            },
+            {
+              "pid": 983194,
+              "exit": 0
+            },
+            {
+              "pid": 983195,
+              "exit": 15
+            },
+            {
+              "pid": 983264,
+              "exit": 0
+            }
+          ],
+          "owned_children": {
+            "stopped": [
+              983290,
+              983358
+            ],
+            "unreadable_foreign_processes_preserved": 3
+          },
+          "owned_mounts_unmounted": [],
+          "profile_removed": true
+        }
+      },
+      "result": {
+        "status": "pass packaged main-menu creation/cancellation/refusal scope",
+        "cases": [
+          {
+            "case": "new-file",
+            "field": {
+              "role": "entry",
+              "accessible_name": "File name",
+              "initial_value": "",
+              "typed_value": "created.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "new-folder",
+            "field": {
+              "role": "entry",
+              "accessible_name": "Folder name",
+              "initial_value": "",
+              "typed_value": "CreatedFolder"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "cancel-new-file",
+            "field": {
+              "role": "entry",
+              "accessible_name": "File name",
+              "initial_value": "",
+              "typed_value": "cancelled.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "existing-file-refused",
+            "field": {
+              "role": "entry",
+              "accessible_name": "File name",
+              "initial_value": "",
+              "typed_value": "preserve.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "named-rename-edit-cancel",
+            "field": {
+              "role": "entry",
+              "accessible_name": "New name",
+              "typed_value": "cancelled-rename.txt"
+            },
+            "status": "pass"
+          },
+          {
+            "case": "named-location",
+            "value": "/var/tmp/.ottrin-picker-qa-smwpwf35/home/Documents",
+            "status": "pass"
+          },
+          {
+            "case": "named-search",
+            "value": "",
+            "status": "pass"
+          }
+        ],
+        "source_bytes_preserved": true,
+        "created_file_empty": true,
+        "created_folder_empty": true,
+        "normal_close_exit": 0,
+        "limit": "Native AT-SPI creation/rename/location/search field names and values; whole UI, assistive usability and other platforms separate"
+      },
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-smwpwf35",
+        "owned_processes_reaped": [
+          {
+            "pid": 983191,
+            "exit": 0
+          },
+          {
+            "pid": 983194,
+            "exit": 0
+          },
+          {
+            "pid": 983195,
+            "exit": 15
+          },
+          {
+            "pid": 983264,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            983290,
+            983358
+          ],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    }
+  ],
+  "reviewed_originals": [
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/new-file.png",
+      "sha256": "2dc4fad3e3615b016e078b6fe73cc444aefb628f8bb1755f00825794f158fc05",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/new-folder.png",
+      "sha256": "519cc501c6980efa3aaff809f6b95af536a15c2265d7f1dbad82259b3dc073a0",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/existing-entry-refusal.png",
+      "sha256": "c8d64575d4e8c5269d1559177b075705ab56660246ac0fd5b150b633f4768426",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-dark-observed/rename.png",
+      "sha256": "74fdb9c982fa1116a07380b80604959fd7fcaa8a568f60b6eb0260f9d553cbd7",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-light/new-file.png",
+      "sha256": "af1656501ef0163a1251a80017b9e5a4bce630cbb4443ecf24419de7110052a6",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-light/new-folder.png",
+      "sha256": "96ae9c41a95d7b9405942558a7ba9d84acd9e32336101b1bb0e0ea574b21f777",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-light/existing-entry-refusal.png",
+      "sha256": "1b96b0151a20a45812272de1cf462a5d0123cb512f2a67babb76d5d908d5e7c7",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/linux-fields-light/rename.png",
+      "sha256": "47cb4733a725e9ac2c5a6b1f909a46a3fa0a4e5c585de7d55b474943aa3710e0",
+      "review": "Directly reviewed original: appropriate Dark100/Light150 surfaces, focused typed field, readable modal title/actions/refusal. Names and values proven separately via AT-SPI."
+    }
+  ],
+  "scope": "Private X11/software Dark100 and Light150.14 actual cases; eight originals directly reviewed. Two source input types, cancel, occupied-name refusal, rename typing/cancel, location and search. Not all theme/numeric/document/native controls or human assistive usability.",
+  "first_failure": "linux-fields-dark immediate post-type rename assertion failed without waiting for native update; bounded wait succeeds on same artifact; original preserved.",
+  "shortcut_control": "shortcut-control/RESULT.json: stock xmessage also fails Alt+F4 with org.kde.kglobalaccel absent; not an Ottrin shortcut acceptance."
+}

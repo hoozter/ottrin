@@ -1,0 +1,26 @@
+{
+  "removed_generated_controllers": [
+    {
+      "path": ".hermes/evidence/editable-fields-current/windows-fields-canonical/controller.ps1",
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+      "bytes": 4866
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/windows-fields/controller.ps1",
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+      "bytes": 4866
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/windows-fields-native-path/controller.ps1",
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4",
+      "bytes": 4866
+    },
+    {
+      "path": ".hermes/evidence/editable-fields-current/assembly/controller.ps1",
+      "sha256": "0a84d4ce5b0a5f53749440631977e2b702afb408963e0b0a01df5443eb90541f",
+      "bytes": 6844
+    }
+  ],
+  "reason": "All four consumers terminal. Exact frozen DRIVER_SOURCE.py and actor/input/result receipts retain producer identity; generated controller copies are disposable reproducible inputs. Raw result bytes/captures unchanged.",
+  "retained_scope": "Current source/native acceptance, failures and curated originals; no live resources or superseded package output"
+}

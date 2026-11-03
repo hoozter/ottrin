@@ -1,0 +1,14 @@
+{
+  "status": "cancelled before native product actor: intended assertion patch had not applied",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "No passing product claim. Same packages retained; next run uses corrected frozen actor."
+}

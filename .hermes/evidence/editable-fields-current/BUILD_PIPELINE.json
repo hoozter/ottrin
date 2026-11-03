@@ -1,0 +1,16 @@
+{
+  "status": "both staged builds completed; exact content/native acceptance and promotion remain required",
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "controller_pid": 973293,
+  "steps": [
+    {
+      "name": "linux",
+      "exit": 0
+    },
+    {
+      "name": "windows",
+      "exit": 0
+    }
+  ],
+  "active": "windows"
+}

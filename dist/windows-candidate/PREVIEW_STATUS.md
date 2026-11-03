@@ -1,7 +1,7 @@
 # Current Windows preview
 
-Source `d6ebd918ed62660a346e51508bdef4b8c91f9c97`: ZIP/NSIS and unsigned development MSIX0.1.0.8.
+Source `36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7`: ZIP/NSIS and unsigned development MSIX 0.1.0.9.
 
-Actual installed cooperating-picker14 cases expose named filter/filename/Location fields and preserve caller ownership, sources and preferences. Native MSIX7-to8 update, ordinary GUI, menu/Space/Escape and visibility behavior, actual login startup and removal pass. The stock-client fixture needed a recorded temporary-account login recovery and an additional real reboot; no Ottrin startup policy was changed. Every non-GUI payload is unchanged except daemon timestamp/checksum metadata; earlier broader scopes retain original hashes.
+Current installed native Dark/Light main-window creation/location/search field-name/value and cancellation checks pass; source bytes and preferences survive supported removal. Development MSIX revision 9 passes native MakeAppx assembly/unpack and complete 58-file equality with this ZIP/NSIS payload. Runtime/update/login acceptance is historical MSIX revision 8, linked with its exact original hashes; no fresh 8-to-9 update/login claim. All non-GUI helpers and libraries match; the complete daemon differs only in timestamp/checksum.
 
-Software OpenGL/default-DPI scope; physical graphics, Store signing, final owner review and the broader editable-field accessibility audit remain separate. Required MSI rollback remains held on its exact diagnostic input. See ../WINDOWS_CANDIDATE_ACCEPTANCE.json.
+Private software VM/default DPI; physical graphics, Store submission, human assistive usability and full roadmap acceptance remain separate. Required MSI rollback remains held. See ../WINDOWS_CANDIDATE_ACCEPTANCE.json.

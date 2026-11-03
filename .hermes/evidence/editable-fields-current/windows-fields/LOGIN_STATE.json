@@ -1,0 +1,28 @@
+{
+  "product_processes": 0,
+  "password_present": true,
+  "fixture": {
+    "nonce": "f7a4db017acf472aa3d7dc1656d28d66",
+    "task": "OttrinOwnedMsiControl",
+    "profiles_before": [
+      "S-1-5-18|C:\\WINDOWS\\system32\\config\\systemprofile",
+      "S-1-5-19|C:\\WINDOWS\\ServiceProfiles\\LocalService",
+      "S-1-5-20|C:\\WINDOWS\\ServiceProfiles\\NetworkService",
+      "S-1-5-21-3790294415-2606194316-2422870471-1000|C:\\Users\\OttrinStockAdmin",
+      "S-1-5-21-3790294415-2606194316-2422870471-1001|C:\\Users\\defaultuser0"
+    ],
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "status": "prepared",
+    "actor_sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "scope": "Fresh hosted Windows native file-only per-user controls; standalone QA identity,not an application publisher",
+    "phase": "ready for owned interactive reboot",
+    "root": "C:\\WINDOWS\\TEMP\\ottrin-msi-f7a4db017acf472aa3d7dc1656d28d66",
+    "account": "OTMSIf7a4db017acf"
+  },
+  "console_user": "OTSTOCKB7AFEE40\\OTMSIf7a4db017acf",
+  "default_user": "OTMSIf7a4db017acf",
+  "auto_admin_logon": "1",
+  "auto_logon_count": 0,
+  "boot_ticks": 639293118965000000,
+  "user_description": "Ottrin MSI QA f7a4db017acf472aa3d7dc1656d28d66"
+}

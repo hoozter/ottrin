@@ -4,30 +4,31 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local candidate
 
-The currently delivered Linux AppImage, portable archive, DEB and RPM and Windows
-ZIP/NSIS/development MSIX0.1.0.8 use runtime source
-`d6ebd918ed62660a346e51508bdef4b8c91f9c97`. Stable delivery paths are
-`dist/packages/` and `dist/windows-candidate/`; their acceptance receipts are the
-authority for exact artifact hashes and tested scopes. All four CI jobs pass for
-that source. Native Linux and Windows checks verify named picker fields without
-replacing their roles or values. The MSIX8 evidence includes an actual7-to8 update,
-GUI operation, a recovered fixture login followed by Windows-started indexing,
-and removal preserving preferences and native index identity. The roadmap records
-the material fixture recovery and all limits; earlier startup-disabled and broad
-workflow receipts retain their original source/artifact scope.
+The locally delivered Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/
+development MSIX 0.1.0.9 use runtime source `36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7`.
+Their exact hashes/scopes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`
+and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. All four exact-source hosted jobs
+pass, including Linux/Windows workspace tests and strict lint.
 
-A subsequent source correction names creation, rename, location, search, command,
-pattern, theme and document text fields. Rendered tests check roles/names/values
-and actual creation/rename keyboard editing;469 UI tests pass with one existing
-ignored, alongside native/Windows strict lint and formatting. This correction
-is not yet in the delivered packages listed above: new package/native acceptance
-and publication remain pending. Numeric/color-picker accessibility is a separate
-remaining audit; this is not a claim that every control is accessible.
+Existing text controls now expose contextual native names while preserving roles,
+values, selection and editing behavior.469 UI tests pass (one existing ignored).
+The new AppImage passes 14 native Dark at 100%/Light at 150% creation/rename/location/search
+checks; installed NSIS passes eight Dark/Light creation/cancellation/location/search
+checks. Source preservation, normal close, removal-preserved preferences and all 12
+original native captures are verified within those stated scopes.
 
-The required MSI remains held for its ordinary-user registration rollback failure.
-No public release, Store submission or final owner acceptance is implied by local
-delivery. Packaged documentation is a build-time snapshot; the repository roadmap
-and stable acceptance manifests track subsequent delivery.
+Development MSIX revision 9 passes native MakeAppx assembly/unpack and58-file equality.
+Earlier MSIX8 update/login/removal and broader workflow, picker, Office/media,
+resource and installer-fault results retain their exact original hashes; the
+roadmap records the unchanged source/payload basis. No fresh MSIX9 lifecycle,
+physical graphics or complete UI/assistive acceptance is implied. MSI remains held
+for ordinary-user registration rollback. No public release or Store submission.
+
+Packaged documents are a build-time delivery snapshot; `SOURCE_REVISION.txt`
+identifies actual package source. Repository documents and stable acceptance
+manifests record subsequent delivery and acceptance. All task-owned QA VMs/media,
+profiles, stages and superseded output are removed; current packages and compact
+evidence are retained.
 
 ## Highlights
 

@@ -1,0 +1,25 @@
+crates/ottrin-ui/src/widget_style.rs:732:                                .add(egui::TextEdit::singleline(&mut text).themed(&c))
+crates/ottrin-ui/src/widget_style.rs:888:                    input_rect = ui.text_edit_singleline(&mut text).rect;
+crates/ottrin-ui/src/widget_style.rs:1041:                        ui.add(egui::TextEdit::singleline(&mut value).themed(&c))
+crates/ottrin-ui/src/appearance_editor.rs:255:                ui.add(egui::TextEdit::singleline(&mut self.theme_editor.save_as_name).desired_width(220.0).themed(&c));
+crates/ottrin-ui/src/appearance_editor.rs:518:                        egui::TextEdit::singleline(&mut hex)
+crates/ottrin-ui/src/picker.rs:892:                                egui::TextEdit::singleline(&mut location)
+crates/ottrin-ui/src/picker.rs:958:                            egui::TextEdit::singleline(&mut self.query)
+crates/ottrin-ui/src/picker.rs:1306:                        egui::TextEdit::singleline(&mut filename)
+crates/ottrin-ui/src/lib.rs:12990:                    egui::TextEdit::singleline(&mut bar.text)
+crates/ottrin-ui/src/lib.rs:13352:                                                        egui::TextEdit::multiline(&mut snippet)
+crates/ottrin-ui/src/lib.rs:15170:                        egui::TextEdit::singleline(&mut self.search_ui.query)
+crates/ottrin-ui/src/lib.rs:16140:                        egui::TextEdit::singleline(&mut self.command_frame.input)
+crates/ottrin-ui/src/lib.rs:18210:                            egui::TextEdit::multiline(&mut snippet)
+crates/ottrin-ui/src/lib.rs:19725:                                                egui::TextEdit::multiline(&mut editor.buffer)
+crates/ottrin-ui/src/lib.rs:19736:                                                egui::TextEdit::multiline(&mut editor.buffer)
+crates/ottrin-ui/src/lib.rs:20224:                            egui::TextEdit::singleline(&mut pending.name_input)
+crates/ottrin-ui/src/lib.rs:20367:                            egui::TextEdit::singleline(&mut pending.name_input)
+crates/ottrin-ui/src/lib.rs:22311:                                                        egui::TextEdit::singleline(&mut self.search_ui.exclude_glob_input).hint_text("e.g. *.log").themed(&c));
+crates/ottrin-ui/src/lib.rs:22370:                                                        egui::TextEdit::singleline(&mut self.search_ui.include_glob_input).hint_text("e.g. *.pdf").themed(&c));
+crates/ottrin-ui/src/lib.rs:23785:            egui::TextEdit::singleline(&mut editor.search_query)
+crates/ottrin-ui/src/lib.rs:23857:                let output = egui::TextEdit::multiline(&mut editor.buffer)
+crates/ottrin-ui/src/lib.rs:28143:                                ui.text_edit_singleline(&mut String::new()).request_focus();
+crates/ottrin-ui/src/lib.rs:28254:                let mut output = egui::TextEdit::singleline(&mut text)
+crates/ottrin-ui/src/lib.rs:28286:                    egui::TextEdit::singleline(&mut text)
+crates/ottrin-ui/src/lib.rs:28599:                            ui.text_edit_singleline(&mut text).request_focus();

@@ -1,0 +1,6 @@
+{
+  "status": "current canonical driver byte-identical to actual successful frozen native producer",
+  "sha256": "d87d16968b1db3f6f03a6cd5dcad5b05690b96f2ce91a3af71efff3422db9f5b",
+  "native_case": "windows-fields-native-path/OWNER.json",
+  "scope": "Custom actor metadata now states declared actor/result scope; native NSIS result independently assessed. Earlier failed/cancelled cases remain original."
+}

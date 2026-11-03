@@ -1,0 +1,34 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-b0thikdt",
+  "owned_processes_reaped": [
+    {
+      "pid": 982382,
+      "exit": 0
+    },
+    {
+      "pid": 982385,
+      "exit": 0
+    },
+    {
+      "pid": 982386,
+      "exit": 15
+    },
+    {
+      "pid": 982458,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      982464,
+      982533
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "65 34 0:64 / /var/tmp/.ottrin-picker-qa-b0thikdt/runtime/doc rw,nosuid,nodev,relatime shared:160 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "Native creation workflow failed; inspect preserved log",
+  "profile_removed": true
+}

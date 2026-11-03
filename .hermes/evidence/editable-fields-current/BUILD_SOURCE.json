@@ -1,0 +1,9 @@
+{
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Deliver named main/dialog/theme/source text controls; preserve stable d6 until acceptance",
+  "pending_consumers": [],
+  "cleanup_owner": "editable-fields-current owned producers and final cleanup",
+  "cleanup_complete": true,
+  "delivery_status": "Verified main-field Linux cohort published; staging removed"
+}

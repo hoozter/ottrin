@@ -3,12 +3,15 @@ name: ci
 on:
   push:
     branches: ["**"]
-    # Status and delivery receipts do not change the verified runtime source.
+    # Delivery receipts and these prose manuals do not change runtime source.
     # Pull requests retain full verification regardless of their changed paths.
     paths-ignore:
       - ".hermes/evidence/**"
       - "dist/**"
       - "docs/ROADMAP.md"
+      - "README.md"
+      - "docs/USER_GUIDE.md"
+      - "docs/RELEASE_NOTES.md"
   pull_request:
 
 # A superseded revision must not keep consuming runners or report stale failures.

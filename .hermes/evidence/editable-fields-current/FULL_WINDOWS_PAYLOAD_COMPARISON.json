@@ -1,0 +1,31 @@
+{
+  "status": "pass complete58-file comparison with exact daemon PE metadata-only difference",
+  "previous_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "candidate_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "entries": 58,
+  "changed": {
+    "SOURCE_REVISION.txt": {
+      "previous_sha256": "b3094a4d4d4eb12b4906254c4d2cd401d64793cd70fd8d6f7799033dee30da41",
+      "candidate_sha256": "9ff0fac733104b262f8df00c44ca94aa98bfee181cad408d16e71064e6146197"
+    },
+    "docs/RELEASE_NOTES.md": {
+      "previous_sha256": "e91c30b6d51cd73875f22373373caa2daa2197ce2e29c23b1d94bf72ccb5bc31",
+      "candidate_sha256": "febc8bf3a09a5184a50940072bb2e2ceeb9328fa865b80177ab0d40a21b22b87"
+    },
+    "docs/ROADMAP.md": {
+      "previous_sha256": "406f31adbf7340a7d33699593fa5decabdfcff0b30a9c587d4e9a7c290b0a4ae",
+      "candidate_sha256": "f7fb320022ab1edc2f0ecd74f6559be0ffbcf402059c27cf7640d7ab004db781"
+    },
+    "bin/ottrin-indexd.exe": {
+      "previous_sha256": "e085ea437a1fb06d0b6707a1f9dd88fcb727926283f7bc00f1382bad6c0a0590",
+      "candidate_sha256": "963185900617959ab680a90d5fe1245d85b7fb07bb162bc50a8b7ed5b2ee5464"
+    },
+    "bin/ottrin.exe": {
+      "previous_sha256": "4779eaa7655ef90b5a8196e066cd3d3a7ca18a0c3f069de9af35ad8120ba2d38",
+      "candidate_sha256": "92c2f25ef5904af3cc60c68c51c70e0088fa2d9b99e19cabc3c29816f99e7022"
+    }
+  },
+  "unchanged_entries": 53,
+  "daemon_identity": "WINDOWS_INDEX_PE_COMPARISON.json",
+  "scope": "GUI independently requires native acceptance; documentation/provenance changes expected. All other helpers, libraries, fonts, icons and transaction payloads byte-identical."
+}

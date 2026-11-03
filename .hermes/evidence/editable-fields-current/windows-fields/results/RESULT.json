@@ -1,0 +1,64 @@
+{
+    "cleanup_index_remove":  {
+                                 "stdout":  "Session indexing stopped; no background Ottrin index task was installed.\n",
+                                 "stderr":  "",
+                                 "seconds":  3.4196177999999997,
+                                 "exit":  0
+                             },
+    "remaining_owned_installed_processes":  0,
+    "package":  {
+                    "source_revision":  "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd"
+                                  }
+                              ],
+                    "actor_sha256":  "54e5a348cc0fa86bad1a5019bb7e6101dd7ba4aab813eff9e20fe8b92b348de3",
+                    "scope":  "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+                },
+    "phase":  "Dark main fields",
+    "scope":  "Exact installed Windows main-window creation/location/search native field names, values, cancellation and source preservation",
+    "stack":  "at Require, \u003cNo file\u003e: line 4\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 43\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "cases":  [
+                  {
+                      "initial":  {
+                                      "read_only":  false,
+                                      "name":  "File name",
+                                      "value":  "",
+                                      "role":  "Edit"
+                                  },
+                      "case":  "creation-File",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "read_only":  false,
+                                    "name":  "File name",
+                                    "value":  "draft-file",
+                                    "role":  "Edit"
+                                },
+                      "theme":  "Dark"
+                  },
+                  {
+                      "initial":  {
+                                      "read_only":  false,
+                                      "name":  "Folder name",
+                                      "value":  "",
+                                      "role":  "Edit"
+                                  },
+                      "case":  "creation-Folder",
+                      "cancel_preserved_source":  true,
+                      "typed":  {
+                                    "read_only":  false,
+                                    "name":  "Folder name",
+                                    "value":  "draft-folder",
+                                    "role":  "Edit"
+                                },
+                      "theme":  "Dark"
+                  }
+              ],
+    "status":  "failed native main field audit",
+    "error":  "Location value mismatch",
+    "named_fields":  [
+
+                     ]
+}

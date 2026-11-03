@@ -1,0 +1,13 @@
+{
+  "head": "e22011c197b409e15be4d64707f8d470a9577435",
+  "sizes": {
+    "target/debug/deps": "41448280064",
+    "target/debug/incremental": "22741540864",
+    "target/x86_64-pc-windows-gnu/debug/deps": "33310941184",
+    "target/x86_64-pc-windows-gnu/debug/incremental": "39529926656",
+    "target/release/deps": "4299341824",
+    "target/x86_64-pc-windows-gnu/release/deps": "3769561088"
+  },
+  "evidence_root": "/home/campbell/Projects/Ottrin/.hermes/evidence/editable-fields-current",
+  "stages_created": []
+}

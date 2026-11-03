@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-u4586n3r",
+  "owned_processes_reaped": [
+    {
+      "pid": 994058,
+      "exit": 0
+    },
+    {
+      "pid": 994061,
+      "exit": 0
+    },
+    {
+      "pid": 994062,
+      "exit": 15
+    },
+    {
+      "pid": 994112,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "143",
+  "profile_removed": true
+}

@@ -2,129 +2,107 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-03. This is the single active queue. Historical results retain
-original source/artifact scope. Passing checks do not complete the full roadmap;
-packaged documentation is a build-time snapshot.
+Updated 2026-11-03. This is the single active queue. Historical receipts retain
+original source/artifact scope; passing checks do not complete the full roadmap.
+Packaged documentation is a build-time delivery snapshot. Generated
+`SOURCE_REVISION.txt` identifies the actual source inside each package; these
+repository documents and the stable acceptance manifests record later acceptance.
 
-All seven local Linux/Windows packages now use clean runtime source
-`d6ebd918ed62660a346e51508bdef4b8c91f9c97`. Linux AppImage, portable archive, DEB
-and RPM are at `dist/packages/`; Windows ZIP/NSIS/development MSIX0.1.0.8 are at
-`dist/windows-candidate/`. The current AppImage is
-`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea`.
-The authoritative manifests are `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`
-and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. All seven hashes and sidecars are
-verified after publication. CI41627781952 passes all four exact-source Linux and
-Windows verification/performance jobs. No public release or Store submission is
-implied; the failed MSI remains held on its exact diagnostic input.
+All seven current local packages use clean runtime source `36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7`.
+Linux AppImage, portable archive, DEB and RPM are at `dist/packages/`; Windows
+ZIP/NSIS/development MSIX 0.1.0.9 are at `dist/windows-candidate/`. The AppImage's
+stable path is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`5d4fdcb88ad5d633bf8d50e74898e1980925d593404c4151bb6d566cbaa6d97f`. Exact scopes/hashes are in
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. All seven artifacts/sidecars are rehashed
+after publication. CI41639409624 passes all four exact-source Linux/Windows jobs,
+including workspace tests/check/strict lint. No public release or Store submission
+is implied; the failed ordinary-user MSI remains held on its exact diagnostic input.
 
-The native Windows audit found unnamed picker text fields. The shared themed
-text editor now supports explicit accessible names without replacing its edit
-role, value or selection. Picker folder filtering, indexed search, filename and
-Location editors supply their names. All27 picker tests,465 full UI tests (one
-existing ignored), strict native/Windows Clippy and formatting pass. A rendered
-Dark/Light Open/Save/folder matrix verifies names, roles and values. This does not
-make every editable field elsewhere in Ottrin accessible.
+Existing production text controls now have contextual native names: File name,
+Folder name, New name, Location, search, command, include/exclude patterns, theme
+name/per-color hex and document/source/read-only preview text. A single shared
+native-label helper preserves each control's role, value and selection; existing
+raw/themed visuals and edit-mode gates are unchanged. Four new rendered Dark/Light
+tests check actual composed dialogs, keyboard editing and values. All 469 UI tests
+pass (one existing ignored), plus local strict Linux/Windows UI/app lint and format.
+This does not accept every numeric/color-picker control or human assistive usability.
 
-The exact new AppImage passes six native AT-SPI cases: Dark100 and Light150
-Open/Save/folder, actual Location editing, correct names/values, normal cancellation,
-source/preferences preserved and no index socket. All six originals were directly
-reviewed. The new installed NSIS passes14 ordinary-user cooperating-picker cases:
-Open/Save/folder, filters, multiple selection, caller ownership, explicit overwrite,
-EOF/owner-loss cancellation and concurrent-request independence. Every case has
-named Edit controls; Location is checked separately. Source/preferences survive
-supported uninstall; all four native Dark/Light/custom/overwrite originals are
-reviewed. These are software OpenGL/default-DPI Windows and private X11 Linux
-scopes, not universal Windows chooser replacement or human screen-reader review.
+The exact new AppImage passes 14 native AT-SPI checks across Dark at 100% and Light at 150%:
+New File/Folder with empty outputs, cancel, occupied-name refusal, rename editing/
+cancel, Location and search names/values, original bytes preserved and normal native
+Close. All eight originals are directly reviewed. The installed current NSIS passes
+eight Dark/Light UIAutomation checks for named creation fields, typed values/cancel,
+canonical Windows Location and search; source bytes and preferences survive supported
+uninstall. All four originals are directly reviewed. These are private X11/software
+Linux and ordinary-user software OpenGL/default-DPI Windows scopes.
 
-The first new installer attempt exceeded the picker actor's120-second deadline
-before any picker action. The successful retry uses the existing canonical NSIS
-fixture's180-second bound and records117.5 seconds for setup on this software VM;
-it does not diagnose or accept physical installation performance. Failed results
-remain intact. The NSIS driver now resolves declared staging and stable package
-receipts through one input check; undeclared paths and symlinks are rejected.
+Development MSIX revision 9 passes actual native production MakeAppx assembly/unpack and
+complete 58-file equality with this ZIP/NSIS payload. MSIX8 update/login/removal
+acceptance remains historical with its exact original source/artifact hashes and
+recorded fixture login recovery. No fresh8-to9 deployment/login is claimed. No
+installation/startup/daemon source changes in this cohort; the Linux daemon and
+non-GUI payloads match, while the complete Windows daemon differs only in PE
+timestamp/checksum metadata. Earlier picker, full workflow, installer-fault,
+Office/media, theme and resource scopes retain original hashes, with explicit
+source/payload comparison rather than relabelled as fresh runs. The personal Linux
+service/data remain intact; no personal restart or configuration mutation was needed.
 
-Development MSIX8 passes native production MakeAppx assembly/unpack and58-file
-identity, actual7-to8 update, ordinary GUI/menu/Space/Escape/Hidden-System controls,
-preference/index identity, real login-started package daemon and removal. All11
-originals are reviewed. The stock test image consumed its temporary auto-login
-credentials after the first login, leaving the second boot without a user. The
-nonce/SID-bound fixture account was recovered and a third normal reboot completed
-the original login observer without an Ottrin CLI or startup-setting change.
-This material fixture recovery is recorded in `upgrade-enabled/LOGIN_RECOVERY.json`.
-Future fixture setup provisions its two planned logins explicitly. The earlier7d
-startup-disabled180-second observation keeps its original artifact scope; it was
-not repeated or relabelled as an MSIX8 result.
+Failed first test-fixture and native-role assumptions are preserved. An immediate
+Linux post-type assertion was replaced with a bounded native-provider observation;
+the same artifact then passed. The first Windows fixture expected an unprefixed
+Location and did not save the failing value; the accepted run records/tests the exact
+canonical prefix. An unintended retry was cancelled before its product actor and
+cleaned up. The canonical custom-actor driver now describes the actor's declared
+scope instead of claiming an unrelated preview-safety scenario. Independent stock
+`xmessage` also fails Alt+F4 in the private KWin fixture, where
+`org.kde.kglobalaccel` is absent: an Ottrin-specific shortcut defect is not established.
+Native Close remains verified; Alt+F4 is a separate fixture/acceptance question.
 
-Additional exact-AppImage Dark100 native checks pass main-menu New File/Folder,
-creation cancellation, occupied-name refusal, source preservation, empty outputs
-and normal native-button Close. Exactly two empty owned0700 transaction directories
-are retained for Undo, matching the creation implementation. The first producer
-rejected these as unexpected; its failure remains recorded. A later Alt+F4 route
-through the QA key helper did not close within15 seconds. The native Close-button
-result does not diagnose or accept that shortcut. The native creation input also
-has an empty accessible name: this is confirmed remaining software work.
+The delivery checkpoint also corrects the push-only CI filter for README, user
+guide and release-note prose. Runtime/packaging/license/workflow changes, every
+pull request and the release workflows retain their gates. This workflow change
+is locally parsed/checked and will trigger its own hosted run; it is distinct
+from the four-success runtime36 run above.
 
-Current cohort evidence is `.hermes/evidence/picker-accessibility-current/`.
-Only picker labels and opt-in shared input naming change shipping source from7d.
-Every non-GUI Linux payload is byte-identical; the Windows daemon differs only in
-PE timestamp/checksum and other non-GUI payloads match. Earlier full27-check
-AppImage/portable workflow, browser/portal, installer-fault, Office/media, appearance
-and service scopes keep original hashes, supported by the recorded source/payload
-projection rather than called fresh reruns. The personal Linux service remains
-intentionally running its identical21fe daemon; no personal restart/settings/data
-mutation was required for this label-only release.
-
-All four owned Windows cases, eight volumes, private desktops/profiles/buses and
-mounts are removed. Superseded package output, stages, source archive and baseline
-alias are retired after consumers. Thirteen obsolete incremental sessions were
-removed through the guarded producer, preserving newest sessions and current
-compiler/dependency caches. Protected Windows bases, user data, current deliverables
-and the held MSI remain. Exact cleanup and retained-evidence paths are in
-`picker-accessibility-current/CLEANUP_FINAL.json`.
-
-The next source correction names all production TextEdit fields outside the
-picker, including File name/Folder name creation, New name, Location, search,
-command, include/exclude patterns, theme name and per-color hex, read-only preview
-text and explicit document/source editors. One shared metadata helper preserves
-widget roles, values, selection and existing raw/themed visuals. Four new rendered
-tests exercise actual composed creation/rename keyboard editing, location/source,
-search/command and theme fields in Dark/Light.469 UI tests pass (one existing
-ignored), with native/Windows strict Clippy and formatting. Two initial test
-fixture/role assumptions failed and were corrected without weakening product
-safety. This source work is not yet a delivered-package claim. Native Linux/Windows
-checks, exact package acceptance and publication remain next; numeric/color-picker
-controls and private-desktop Alt+F4 remain unaccepted audit items.
+Evidence: `.hermes/evidence/editable-fields-current/`. Four owned Windows cases,
+eight volumes, seven private desktops/profiles/buses and all mounts are removed.
+Consumed source/transport inputs, extractions, superseded packages and stages are
+retired after consumers. Fifteen obsolete incremental sessions were removed through
+the guarded producer, preserving newest sessions, current binaries and useful caches.
+Exact baseline comparisons/remaining retained paths are in `CLEANUP_FINAL.json`.
+Current deliverables and compact original evidence remain; user data, protected
+Windows bases and the held MSI are preserved.
 
 Continue in this order:
 
-1. Audit and name editable controls outside the picker, starting with the confirmed
-   unnamed creation input. Batch the related source corrections, test rendered
-   roles/names/values and verify native Linux/Windows controls. Investigate the
-   private-desktop Alt+F4 observation without treating it as a proven product bug
-   or bypassing the real native Close gate.
-2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
-   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains54 full multiline
+1. Complete the concentrated requirement-by-requirement Linux/Windows audit.
+   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
-   with15 user UI/service/delivery requirements. These overlap and are not a
-   completion percentage. Inspect each clause's current direct evidence and
-   unchanged responsibility, including appearance-role ownership, Services states,
-   remaining media, storage/cross-volume and platform daily-driver scopes.
-3. Close remaining independently executable shared-picker, Linux FileChooser/
-   FileManager1 and reversible Windows folder-integration software/caller gaps.
-   Keep actual existing native scopes; do not defer these because signing, Store,
-   hardware or final user review waits exist. Do not repeat fulfilled fault
-   matrices without changed inputs or a reproduced defect.
-4. Reconcile the final release matrix and documentation, leaving only actual
-   [owner/external waits](#ownerexternal-waiting-list). Identity/signing, Store
-   submission, unavailable physical hardware, personal administrator setup and
-   final owner acceptance remain explicit waits. No macOS build is added.
+   with 15 UI/service/delivery requirements. They overlap and are not a completion
+   percentage. `editable-fields-current/RELEASE_GATE_AUDIT.json` reviews seven
+   release-gate clauses only. Inspect every clause's direct evidence and unchanged
+   responsibility, including all 39 appearance mappings, Services state/actions,
+   numeric/color-picker controls, remaining media and storage/cross-volume workflows.
+   Keep the observed rename/creation field-height difference for the visual consistency
+   audit; do not infer whole-interface acceptance from field-name tests.
+2. Close independently executable picker, Linux FileChooser/FileManager1 and
+   reversible Windows folder-integration software/caller gaps. Retain supported
+   caller/platform boundaries; Windows cooperating-picker checks do not establish
+   universal dialog replacement. Signing/Store/hardware/owner review do not stall
+   dependency-ready work. Do not repeat fulfilled fault matrices without changed
+   inputs or a reproduced defect. Resolve the private Alt+F4 fixture question
+   separately from normal native Close behavior.
+3. Reconcile the final release matrix and remaining documents, leaving only actual
+   [owner/external waits](#ownerexternal-waiting-list). Signing identity/key, Store
+   account/submission, unavailable physical hardware, personal administrator setup
+   and final owner acceptance remain explicit waits. No macOS build is added.
 
 The ordinary-user MSI registration rollback gate remains failed. Independent
-file-only authoring reproduces it without Ottrin/WiX; elevated diagnostics isolate
-execution context and do not authorize an elevation, ACL, policy or manual-registry
-workaround. Original failures and strict terminal assessment remain intact. This
-held gate must not stall dependency-ready work or count as a successful MSI release.
+file-only authoring reproduces it; elevated diagnostics do not authorize production
+elevation, ACL/policy changes or manual-registry compensation. Keep the original
+failure/input and strict terminal assessment. This held gate does not stall other
+software work or count as a successful MSI release.
 
 ## Picker Shift selection — source correction, 2026-11-02
 

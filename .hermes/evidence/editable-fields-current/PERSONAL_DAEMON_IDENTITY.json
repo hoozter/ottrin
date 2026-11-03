@@ -1,0 +1,8 @@
+{
+  "status": "read-only current mapped executable matches delivered unchanged daemon",
+  "pid": 885280,
+  "comm": "ottrin-indexd",
+  "sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "service_or_configuration_mutation": false,
+  "scope": "Identity only; no fresh CPU/idle/lifecycle benchmark inferred"
+}

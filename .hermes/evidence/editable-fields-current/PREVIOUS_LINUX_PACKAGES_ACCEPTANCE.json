@@ -1,0 +1,39 @@
+{
+  "status": "pass exact current package-content and native picker accessible-name scope; broader audit incomplete",
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d986bfcd2c2938c69cd8c21f99ef46ff9103da67d8d155c10e6335af43915d6c",
+    "Ottrin-0.1.0-x86_64.AppImage": "06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "d8b08aae6a7f8f96feb8578e57bdd765788a08de21fb65e27c74f90e1986ad0e",
+    "ottrin_0.1.0_amd64.deb": "288d8bdfe648053c0ab392b589d6a30b62661fd56fb2f2cd75d883272f266cce"
+  },
+  "evidence": ".hermes/evidence/picker-accessibility-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the fixed HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "current_native_picker": ".hermes/evidence/picker-accessibility-current/LINUX_NATIVE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/picker-accessibility-current/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/picker-accessibility-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "indexd_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "unchanged_responsibility_basis": {
+    "previous_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+    "previous_receipt": ".hermes/evidence/picker-accessibility-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Only picker field labels and optional shared text-edit accessible-name rendering changed shipping source. Main fields keep the None path; helpers/dependencies/assets unchanged. Prior full workflow, installer/index/preview/browser/theme scopes retain original hashes; they are not newly executed on this cohort."
+  },
+  "hosted_source": {
+    "run": 41627781952,
+    "tested_source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+    "all_four_jobs_success": true
+  },
+  "limits": [
+    "Local unsigned delivery; no public release",
+    "Private X11/software AT-SPI Dark100/Light150; physical graphics and human assistive use separate",
+    "Full remaining roadmap and broader main-UI editable-field accessibility audit not accepted"
+  ],
+  "cleanup": "Native picker desktops/profiles/processes/mounts and content extraction removed; exact stage retired by publication; compiler-cache cleanup separately receipted"
+}

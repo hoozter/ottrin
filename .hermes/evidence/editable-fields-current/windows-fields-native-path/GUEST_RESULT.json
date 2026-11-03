@@ -1,0 +1,141 @@
+{
+  "source_preserved": true,
+  "remaining_owned_installed_processes": 0,
+  "package": {
+    "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd"
+      }
+    ],
+    "actor_sha256": "4862a2a245c61f681541e40101ff5747c7b510628c4f1d74fec5bed8cce4f9ab",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "phase": "supported uninstall",
+  "scope": "Exact installed Windows main-window creation/location/search native field names, values, cancellation and source preservation",
+  "preferences_preserved": true,
+  "cases": [
+    {
+      "initial": {
+        "read_only": false,
+        "name": "File name",
+        "value": "",
+        "role": "Edit"
+      },
+      "case": "creation-File",
+      "cancel_preserved_source": true,
+      "typed": {
+        "read_only": false,
+        "name": "File name",
+        "value": "draft-file",
+        "role": "Edit"
+      },
+      "theme": "Dark"
+    },
+    {
+      "initial": {
+        "read_only": false,
+        "name": "Folder name",
+        "value": "",
+        "role": "Edit"
+      },
+      "case": "creation-Folder",
+      "cancel_preserved_source": true,
+      "typed": {
+        "read_only": false,
+        "name": "Folder name",
+        "value": "draft-folder",
+        "role": "Edit"
+      },
+      "theme": "Dark"
+    },
+    {
+      "field": {
+        "read_only": false,
+        "name": "Location",
+        "value": "\\\\?\\C:\\Users\\OTMSIa5e8a87bafb6\\Documents\\OttrinFields",
+        "role": "Edit"
+      },
+      "case": "location",
+      "expected_native_path": "\\\\?\\C:\\Users\\OTMSIa5e8a87bafb6\\Documents\\OttrinFields",
+      "theme": "Dark"
+    },
+    {
+      "field": {
+        "read_only": false,
+        "name": "Search files and folders",
+        "value": "",
+        "role": "Edit"
+      },
+      "case": "search",
+      "theme": "Dark"
+    },
+    {
+      "initial": {
+        "read_only": false,
+        "name": "File name",
+        "value": "",
+        "role": "Edit"
+      },
+      "case": "creation-File",
+      "cancel_preserved_source": true,
+      "typed": {
+        "read_only": false,
+        "name": "File name",
+        "value": "draft-file",
+        "role": "Edit"
+      },
+      "theme": "Light"
+    },
+    {
+      "initial": {
+        "read_only": false,
+        "name": "Folder name",
+        "value": "",
+        "role": "Edit"
+      },
+      "case": "creation-Folder",
+      "cancel_preserved_source": true,
+      "typed": {
+        "read_only": false,
+        "name": "Folder name",
+        "value": "draft-folder",
+        "role": "Edit"
+      },
+      "theme": "Light"
+    },
+    {
+      "field": {
+        "read_only": false,
+        "name": "Location",
+        "value": "\\\\?\\C:\\Users\\OTMSIa5e8a87bafb6\\Documents\\OttrinFields",
+        "role": "Edit"
+      },
+      "case": "location",
+      "expected_native_path": "\\\\?\\C:\\Users\\OTMSIa5e8a87bafb6\\Documents\\OttrinFields",
+      "theme": "Light"
+    },
+    {
+      "field": {
+        "read_only": false,
+        "name": "Search files and folders",
+        "value": "",
+        "role": "Edit"
+      },
+      "case": "search",
+      "theme": "Light"
+    }
+  ],
+  "status": "pass native installed main-field scope; captures require review",
+  "location_observed": {
+    "expected": "\\\\?\\C:\\Users\\OTMSIa5e8a87bafb6\\Documents\\OttrinFields",
+    "field": {
+      "read_only": false,
+      "name": "Location",
+      "value": "\\\\?\\C:\\Users\\OTMSIa5e8a87bafb6\\Documents\\OttrinFields",
+      "role": "Edit"
+    }
+  },
+  "named_fields": []
+}

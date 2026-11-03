@@ -1,0 +1,105 @@
+{
+  "status": "All owned native resources, disposable stages/source inputs, superseded packages and obsolete compiler sessions removed",
+  "native_cases": [
+    {
+      "case": "assembly",
+      "uuid": "8ab9180c-ce4d-4ac4-981b-5cea3f8c455b",
+      "removed_volumes": [
+        "ottrin-msix-assembly.qcow2",
+        "ottrin-msix-assembly-fixture.iso"
+      ]
+    },
+    {
+      "case": "windows-fields",
+      "uuid": "726685cb-dca5-4ac9-88ac-5c77799a7581",
+      "removed_volumes": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "case": "windows-fields-canonical",
+      "uuid": "53df1056-5298-4ccd-8e0a-da8267d623c5",
+      "removed_volumes": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "case": "windows-fields-native-path",
+      "uuid": "46016458-1ec4-4ba2-9b6e-2a6bd22ae3d3",
+      "removed_volumes": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    }
+  ],
+  "removed_volumes": 8,
+  "removed_private_profiles": [
+    "/var/tmp/.ottrin-picker-qa-i7idmypl",
+    "/var/tmp/.ottrin-picker-qa-u4586n3r",
+    "/var/tmp/.ottrin-picker-qa-84fgb3pn",
+    "/var/tmp/.ottrin-picker-qa-y85_evhv",
+    "/var/tmp/.ottrin-picker-qa-b0thikdt",
+    "/var/tmp/.ottrin-picker-qa-j1fuxygz",
+    "/var/tmp/.ottrin-picker-qa-smwpwf35"
+  ],
+  "retired_paths": [
+    ".hermes/packaging-tmp/.linux-desktop-extract",
+    ".hermes/packaging-tmp/.windows-msix-source",
+    ".hermes/evidence/editable-fields-current/source.zip"
+  ],
+  "compiler_storage": {
+    "target/debug/deps": {
+      "baseline": 41448280064,
+      "current": 41448361984,
+      "delta": 81920
+    },
+    "target/debug/incremental": {
+      "baseline": 22741540864,
+      "current": 22743330816,
+      "delta": 1789952
+    },
+    "target/x86_64-pc-windows-gnu/debug/deps": {
+      "baseline": 33310941184,
+      "current": 33310941184,
+      "delta": 0
+    },
+    "target/x86_64-pc-windows-gnu/debug/incremental": {
+      "baseline": 39529926656,
+      "current": 39531646976,
+      "delta": 1720320
+    },
+    "target/release/deps": {
+      "baseline": 4299341824,
+      "current": 4299345920,
+      "delta": 4096
+    },
+    "target/x86_64-pc-windows-gnu/release/deps": {
+      "baseline": 3769561088,
+      "current": 3769569280,
+      "delta": 8192
+    }
+  },
+  "compiler_cleanup": "Guarded helper removed15 obsolete sessions after explicit same-process identity reviews, exclusive locks and newest-session checks. Current binaries, dependencies and newest finalized caches retained. Same compiler/configuration test executable ottrin_ui-11a85ca5198af5b6 replaced its earlier version; no extra target configuration or blanket clean. Physical reclaim is not inferred from allocation due concurrent VM writes.",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/editable-fields-current",
+      "purpose": "Compact source/native checks, failed-attempt diagnostics, producers and original reviewed captures; no live QA consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current four-format verified usable Linux delivery"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current verified Windows ZIP/NSIS/MSIX9 and58-file payload"
+    }
+  ],
+  "protected_bases_preserved": {
+    "win11ltsc": "4e160378-2610-4072-b528-048e4c9f509e",
+    "ottrin-copy-cleanup-qa": "9b2e795f-fb04-4adb-95a7-8832f8894c67"
+  },
+  "personal_service": "Normal personal index service/data preserved; native Linux daemon bytes unchanged",
+  "limits": "Whole roadmap not complete; exact verified cohort published locally. Historical native scopes retain original source/artifact hashes."
+}

@@ -1,0 +1,29 @@
+{
+  "source_checks": [
+    {
+      "path": "SOURCE_CHECKS_FIRST_FAILURE.json",
+      "result": "failed: real text session placed on unsupported disposable HOME filesystem; switched to established FIEMAP-capable fixture root, preserving metadata safety checks"
+    },
+    {
+      "path": "SOURCE_CHECKS_SECOND_FAILURE.json",
+      "result": "failed: test filtered only single-line TextInput, omitting native MultilineTextInput; helper now checks both roles and actual source field value"
+    }
+  ],
+  "native_linux": [
+    {
+      "path": "linux-fields-dark/CONTROL.json",
+      "result": "failed immediate post-typing rename read; exact same artifact passes a bounded native-provider update wait; original worker preserved"
+    }
+  ],
+  "native_windows": [
+    {
+      "path": "windows-fields/ASSESSMENT.json",
+      "result": "failed canonical Location expectation; two Dark creation fields passed, no broad acceptance"
+    },
+    {
+      "path": "windows-fields-canonical/ASSESSMENT.json",
+      "result": "cancelled before product actor because patch did not apply; teardown confirmed"
+    }
+  ],
+  "scope": "Failures are original and not overwritten or relabelled. Current accepted checks, when complete, have separate receipts."
+}

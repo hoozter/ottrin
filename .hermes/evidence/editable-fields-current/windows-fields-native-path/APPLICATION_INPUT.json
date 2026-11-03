@@ -1,0 +1,11 @@
+{
+  "source_revision": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
+  "files": [
+    {
+      "name": "current-setup.exe",
+      "sha256": "baa0f58dd0aca74de6d3d8f5140b22c1b72e608402b9dadb1924d1e57b7772fd"
+    }
+  ],
+  "actor_sha256": "4862a2a245c61f681541e40101ff5747c7b510628c4f1d74fec5bed8cce4f9ab",
+  "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+}

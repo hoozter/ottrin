@@ -1,0 +1,17 @@
+{
+  "status": "running",
+  "scope": "Editable-field naming correction only; stable packages remain d6ebd918",
+  "checks": [
+    {
+      "name": "full-ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 101
+    }
+  ]
+}
