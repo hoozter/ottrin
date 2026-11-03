@@ -1,0 +1,18 @@
+{
+  "native_status": "pass native Windows UIAutomation observations",
+  "renderer": "native",
+  "source": "ac7400235f04d9c63d032823aaf06e652b216eab",
+  "application_sha256": "661841c326efa2b32f260dd2b1399f674e9ba7fe79f5304bfdaff7d34ce0ded1",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-uia-client.qcow2",
+      "ottrin-uia-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "accepted_scope": "Native Windows WGPU picker exact visible title, names, Grid/List native actions, Close/cancel and preference/source preservation; no index started",
+  "limits": "GUI661841c3 with borrowed656 runtime; Inspector label fix not in this executable; not delivery or screen-reader usability acceptance"
+}

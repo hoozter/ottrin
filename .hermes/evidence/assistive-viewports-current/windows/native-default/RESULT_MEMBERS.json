@@ -1,0 +1,58 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "af27ba3890619fae5f8e73c210d376955f5fad39dec7584319b319ec28105b1c"
+  },
+  "inspector-root.json": {
+    "bytes": 318,
+    "sha256": "b45c775805b077c38dfe1b25ac94f85b0a11cdd206050bf002ee107ad9fa4e70"
+  },
+  "inspector-tree.json": {
+    "bytes": 2674,
+    "sha256": "07efd28675e5ffc6c56f46772088675e3ef9466fd33189e8dfb2af2eb1b49c8e"
+  },
+  "inspector.png": {
+    "bytes": 18276,
+    "sha256": "d0965c6f450e609bfcb33d446238917db9602e058ba035f3207def1fbe0b9e0c"
+  },
+  "main-before-provider.png": {
+    "bytes": 31575,
+    "sha256": "3780983f601766757050cd75339177c33b87e75abf26d6002c55985cef313509"
+  },
+  "main-root.json": {
+    "bytes": 258,
+    "sha256": "923cf1fda2a1b12bcd19dd08a9dde7abee2c0b56093db45698ab18ba02c139ab"
+  },
+  "main-tree.json": {
+    "bytes": 17729,
+    "sha256": "6b2470b91e8c956a807fe7aa18053c50a3a8b5a6ff4df79d102320225958800c"
+  },
+  "main.png": {
+    "bytes": 31525,
+    "sha256": "2d33e336e47f6041faddcb5f8604662dfb35491b83a26af9635ce17630e2bd5e"
+  },
+  "OWNER.json": {
+    "bytes": 1076,
+    "sha256": "890854fe21f9c16aab9bcb2974d81f94d9e95899cd7e53fc5269922f9f7a4bc6"
+  },
+  "picker-root.json": {
+    "bytes": 257,
+    "sha256": "768ce3993d2c934fe5d6f8dfc2435a383447ab01ed7870b376e1496a7c70018c"
+  },
+  "RESULT.json": {
+    "bytes": 32902,
+    "sha256": "ca534ac773813c966f27eed9e532ee5fdbf705eae5304e78e4c266cdcb5ae7c9"
+  },
+  "settings-root.json": {
+    "bytes": 276,
+    "sha256": "1fee2faf82454dcfa4a2df7794281ef81c7603ac34c465bf2eb7fd40160a0396"
+  },
+  "settings-tree.json": {
+    "bytes": 9903,
+    "sha256": "025e2f09cb07757723fb2f48b3805ec0fb0026c125ac77977aceb33cd25b29cd"
+  },
+  "settings.png": {
+    "bytes": 56949,
+    "sha256": "bb455d9fb7d79dc2a6df434901f3d953171f694a110d967d297be531eb58bc4c"
+  }
+}

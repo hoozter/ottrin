@@ -217,6 +217,25 @@ Linux profiles/displays/buses are also removed. Current compiler outputs/caches
 remain for verified replacement and pending Windows build; obsolete-output
 pruning is required before handoff. Stable delivered package bytes are unchanged.
 
+Sourceac740023 Windows GNU release GUI SHA256661841c326efa2b32f260dd2b1399f674e9ba7fe79f5304bfdaff7d34ce0ded1
+now passes native WGPU main names/states, automatic Settings/Inspector focus,
+independent child Close and main Close0. The picker observer first selected a
+hidden Winit event target; that attempt is rejected for picker/source-hash scope.
+A picker-only corrected observer requires the exact visible title. Native WGPU
+Grid/List actions, rendered review, Close/cancel and source/preferences preservation
+pass without starting indexing. Both guests/four volumes and the private stage
+are removed. No whole-cohort or screen-reader usability acceptance is inferred.
+The modal audit also exposed Inspector edit/overflow buttons with glyph-only names.
+Shared preview buttons now use their action labels; overflow uses More actions.
+Native Linux verifies Edit text/More actions, no Inspector glyph-only buttons,
+read-only interfaces, both child Close actions and source preservation on GUI
+SHA256dfe289200841108914358f946d41f0d0bdc4ab6bdde6acd47ad59fcccdb2f88e.
+The full app/UI suites, strict lint and formatting pass. Windows verification of
+these final labels, supported OpenGL recovery and refreshed delivery remain next.
+Three superseded binaries/exact metadata recover2.31GiB; guarded removal of27
+obsolete incremental sessions recovers another1.03GiB. Compact acceptance and
+exact retained paths are in `assistive-viewports-current/CLEANUP.json`.
+
 Continue in this order:
 
 1. Audit the remaining software/platform/theme/resource and supported integration

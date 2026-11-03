@@ -1,0 +1,27 @@
+{
+  "status": "Completed owned cleanup for viewport baseline and Linux modal-label checkpoint",
+  "owned_resources": "All six baseline Windows guests/twelve volumes, two new Windows guests/four volumes, seven native Linux desktop profiles/displays/buses, all private stage input and runtime extractions removed",
+  "standalone_cleanup": "STANDALONE_CLEANUP.json",
+  "removed_binary_bytes": 2477272824,
+  "incremental_cleanup": [
+    "INCREMENTAL_RESULT.json",
+    "MODAL_NAMES_INCREMENTAL_RESULT.json"
+  ],
+  "removed_incremental_sessions": 27,
+  "retired_stage": "windows/CASE_CLEANUP.json",
+  "remaining": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current",
+      "purpose": "Compact source/native/check/cleanup evidence; no active fixture consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug",
+      "purpose": "Current verified Linux binaries, libraries and useful compiler cache"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release",
+      "purpose": "Current Windows ac740023 standard release GUI and useful cache; Inspector label refresh and accepted package cohort pending"
+    }
+  ],
+  "current_deliverables_preserved": true
+}

@@ -2,7 +2,7 @@
 from pathlib import Path
 import argparse,dbus,hashlib,importlib.util,json,os,resource,signal,subprocess,time
 resource.setrlimit(resource.RLIMIT_CORE,(0,0))
-root=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--case',required=True);args=parser.parse_args();assert args.case in ['main-modals'];e=Path(__file__).resolve().parent/args.case;e.mkdir(exist_ok=False)
+root=Path.cwd();parser=argparse.ArgumentParser();parser.add_argument('--case',required=True);parser.add_argument('--output',type=Path);args=parser.parse_args();assert args.case in ['main-modals'];e=args.output.resolve() if args.output else Path(__file__).resolve().parent/args.case;assert e.is_relative_to(root/'.hermes/evidence');e.mkdir(exist_ok=False)
 spec=importlib.util.spec_from_file_location('desktop',root/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(spec);spec.loader.exec_module(desktop)
 binary=root/'target/debug/ottrin-app';report={'status':'running','scope':'Temporary native Linux debug AccessKit configuration; not shipped package or screen-reader usability acceptance','binary_sha256':hashlib.file_digest(binary.open('rb'),'sha256').hexdigest()}
 def save():(e/'NATIVE_RESULT.json').write_text(json.dumps(report,indent=2)+'\n')
@@ -122,6 +122,8 @@ try:
   items=snapshot('main-after-settings');file=node_named(items,'proof.txt');rect=dbus.Interface(bus.get_object(file['bus'],file['path']),'org.a11y.atspi.Component').GetExtents(int(Atspi.CoordType.SCREEN));x,y,w,h=map(int,rect);assert w>0 and h>0
   run(['xdotool','windowactivate','--sync',window,'mousemove',str(x+w//2),str(y+h//2),'click','1']).check_returncode();time.sleep(.3)
   invoke_node(node_named(items,'Menu'));menu=wait_snapshot('inspector-menu',lambda items:any(n['name']=='Quick Inspector Selection' for n in items));invoke_node(node_named(menu,'Quick Inspector Selection'));inspector=child_window('^Ottrin Quick Inspector');run(['import','-window',inspector,str(e/'inspector.png')]).check_returncode();inspector_nodes=wait_snapshot('inspector',lambda items:any(n['name']=='Close window' and (n['bus'],n['path']) not in main_close for n in items))
+  inspector_glyph_buttons=[n for n in inspector_nodes if n['role']==int(Atspi.Role.PUSH_BUTTON) and any(0xe000<=ord(c)<=0xf8ff for c in n['name'])];report['inspector_glyph_buttons']=inspector_glyph_buttons;save();assert not inspector_glyph_buttons,'Inspector buttons still expose icon-font characters'
+  assert all(any(n['name']==expected for n in inspector_nodes) for expected in ['Edit text','More actions']),'Inspector action labels are missing'
   close=[n for n in inspector_nodes if n['name']=='Close window' and (n['bus'],n['path']) not in main_close];assert len(close)==1
   prefix=close[0]['path'].rsplit('/',1)[0]+'/'
   editable=[]

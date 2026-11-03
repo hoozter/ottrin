@@ -1,0 +1,13 @@
+{
+  "files": {
+    "target/debug/deps/ottrin_ui-3c5a4506ad299059": {
+      "basis": "Previously executed same-project native test, superseded by current full app/UI suites"
+    },
+    "target/debug/deps/ottrin_ui-6085b67ae28fc422": {
+      "basis": "Previously executed same-project native test, superseded by current full app/UI suites"
+    },
+    "target/debug/deps/ottrin_app-31ef45045bbf3c0e": {
+      "basis": "Previously native-verified GUI replaced by current exact Linux viewport GUI"
+    }
+  }
+}

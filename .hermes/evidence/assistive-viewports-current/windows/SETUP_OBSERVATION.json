@@ -1,0 +1,5 @@
+{
+  "status": "rejected controller setup before guest allocation; producer corrected",
+  "error": "Output evidence directory did not exist before frozen driver write",
+  "resolution": "Shared controller creates its output directory after existing-owner refusal and before writing frozen inputs; resumed same unused case with no guest or product execution repeated"
+}

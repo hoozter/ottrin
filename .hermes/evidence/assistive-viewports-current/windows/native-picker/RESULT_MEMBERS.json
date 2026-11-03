@@ -1,0 +1,30 @@
+{
+  "DESKTOP_READY.json": {
+    "bytes": 280,
+    "sha256": "6594bdefb9adc7de203a2c752c13ea0dd2abc7129fe652f2143b2331e7d2ff0e"
+  },
+  "OWNER.json": {
+    "bytes": 1076,
+    "sha256": "465bf72d9c69d067ba00ccdea8c7652dfae765e7ed2092bc241f6a72cbe18e46"
+  },
+  "picker-grid.png": {
+    "bytes": 31335,
+    "sha256": "2997b34f2400b35217bd1d12e8d96761d41ab4eebba55a5728c2d1ac2b1706b0"
+  },
+  "picker-list.png": {
+    "bytes": 31236,
+    "sha256": "be680e99d523e747a95686443b381cab506a6486f4327b2a9b291315f2a2f33a"
+  },
+  "picker-root.json": {
+    "bytes": 306,
+    "sha256": "dcb45eed45a502958291a4f03992b20b49e9b5e6e8fe6170588ad2f94a801aa7"
+  },
+  "picker-tree.json": {
+    "bytes": 7512,
+    "sha256": "316faeabeb1a23083f2ac2b567c5859f020cbad30993706d172ba272ae1eff8d"
+  },
+  "RESULT.json": {
+    "bytes": 32649,
+    "sha256": "b0a97289e1fa8981f820dbe5920821b04849b69005e393635a76bb76c23d100d"
+  }
+}

@@ -1,0 +1,10 @@
+﻿{
+    "class":  "Window Class",
+    "title":  "Ottrin — Accessibility proof",
+    "actor_apartment":  "STA",
+    "process":  2680,
+    "name":  "Ottrin — Accessibility proof",
+    "type":  "ControlType.Window",
+    "framework":  "Win32",
+    "provider_description_api_available":  false
+}

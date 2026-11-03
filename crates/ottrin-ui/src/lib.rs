@@ -19373,7 +19373,7 @@ impl OttrinApp {
                 ui.with_layout(Layout::top_down(Align::Min), |ui| {
                     ui.horizontal(|ui| {
                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                            themed_menu_button(ui,
+                            let more_actions = themed_menu_button(ui,
                                 RichText::new(MI_MORE_VERT).color(c.text).size(18.0 * c.font_scale), c,
                                 |ui| {
                                     if self.quick_inspector_only
@@ -19453,9 +19453,11 @@ impl OttrinApp {
                                         ui.close();
                                     }
                                 },
-                            )
-                            .response
-                            .on_hover_text("More actions");
+                            );
+                            ui.ctx().accesskit_node_builder(more_actions.response.id, |node| {
+                                node.set_label("More actions");
+                            });
+                            more_actions.response.on_hover_text("More actions");
                             if self.preview.text_editor.is_some() {
                                 if inspector_icon_button(
                                     ui,

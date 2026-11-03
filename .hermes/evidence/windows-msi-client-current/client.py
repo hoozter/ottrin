@@ -25,6 +25,7 @@ interactive_case=bool(args.msix_runtime or not(args.update_manifest or args.msix
 assert bool(args.output)==bool(args.update_manifest or args.msix_parse_only or args.msix_stage or args.msix_runtime or args.use_updated_base or args.use_stock_base or args.native_test),'New comparison needs an explicit new evidence root'
 r=Path.cwd();e=args.output.resolve() if args.output else Path(__file__).resolve().parent
 assert not args.output or not (e/'OWNER.json').exists(),'Do not replace an existing owned run'
+e.mkdir(parents=True,exist_ok=True)
 (e/'DRIVER_SOURCE.py').write_bytes(Path(__file__).read_bytes())
 name='ottrin-uia-client' if args.application_uia_stage else 'ottrin-transport-probe' if args.native_transport_probe else 'ottrin-nsis-client' if args.application_nsis_stage else 'ottrin-native-test' if args.native_test else 'ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
 def virsh(*args):return subprocess.check_output(['virsh','-c','qemu:///system',*args],text=True).strip()

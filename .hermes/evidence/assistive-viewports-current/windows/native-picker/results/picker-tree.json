@@ -1,0 +1,314 @@
+﻿[
+    {
+        "rect":  [
+                     904,
+                     5,
+                     28,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Close window",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     6,
+                     12,
+                     100,
+                     14
+                 ],
+        "focusable":  false,
+        "name":  "Accessibility proof",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     18,
+                     59,
+                     34,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Parent folder",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     60,
+                     64,
+                     34,
+                     18
+                 ],
+        "focusable":  true,
+        "name":  "Open C:\\",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     102,
+                     64,
+                     51,
+                     18
+                 ],
+        "focusable":  true,
+        "name":  "Open C:\\Users",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     161,
+                     64,
+                     149,
+                     18
+                 ],
+        "focusable":  true,
+        "name":  "Open C:\\Users\\OTMSI1d00223f871c",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     318,
+                     64,
+                     153,
+                     18
+                 ],
+        "focusable":  true,
+        "name":  "Open C:\\Users\\OTMSI1d00223f871c\\OttrinOwnedAssistive",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     480,
+                     64,
+                     34,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Edit location",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     522,
+                     62,
+                     399,
+                     21
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Edit",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     18,
+                     96,
+                     104,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.ComboBox",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     130,
+                     103,
+                     30,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "1 item",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     888,
+                     96,
+                     34,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Show read-only preview",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     846,
+                     96,
+                     34,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Show hidden files",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     804,
+                     96,
+                     34,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Grid view",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     762,
+                     96,
+                     34,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "List view",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     20,
+                     150,
+                     41,
+                     17
+                 ],
+        "focusable":  false,
+        "name":  "Places",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     20,
+                     170,
+                     130,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Home",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     20,
+                     201,
+                     130,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Root",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     20,
+                     232,
+                     130,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Desktop",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     20,
+                     263,
+                     130,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Downloads",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     20,
+                     294,
+                     130,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Documents",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     166,
+                     142,
+                     762,
+                     25
+                 ],
+        "focusable":  true,
+        "name":  "proof.txt",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     12,
+                     560,
+                     64,
+                     17
+                 ],
+        "focusable":  false,
+        "name":  "File name",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     84,
+                     560,
+                     843,
+                     21
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Edit",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     874,
+                     592,
+                     53,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Open",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     805,
+                     592,
+                     60,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Cancel",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    }
+]

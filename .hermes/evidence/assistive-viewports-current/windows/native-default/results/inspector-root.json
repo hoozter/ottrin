@@ -1,0 +1,10 @@
+﻿{
+    "class":  "Window Class",
+    "title":  "Ottrin Quick Inspector — proof.txt",
+    "actor_apartment":  "STA",
+    "process":  3240,
+    "name":  "Ottrin Quick Inspector — proof.txt",
+    "type":  "ControlType.Window",
+    "framework":  "Win32",
+    "provider_description_api_available":  false
+}

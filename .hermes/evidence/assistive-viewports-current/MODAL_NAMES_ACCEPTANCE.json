@@ -1,0 +1,14 @@
+{
+  "status": "Linux native Inspector action labels verified",
+  "source_parent": "ac7400235f04d9c63d032823aaf06e652b216eab",
+  "gui_sha256": "dfe289200841108914358f946d41f0d0bdc4ab6bdde6acd47ad59fcccdb2f88e",
+  "native_result": "modal-names-native/NATIVE_RESULT.json",
+  "source_bytes_preserved": true,
+  "no_private_glyph_inspector_buttons": true,
+  "named_controls": [
+    "Edit text",
+    "More actions"
+  ],
+  "checks": "Locked debug build, 49 app/2 daemon/3 CLI/461 UI tests plus 3 scoped subprocess controls, strict app/UI all-target lint and format pass; one existing ignored UI test",
+  "scope": "Linux debug source acceptance, not Windows named-button acceptance or refreshed package delivery"
+}

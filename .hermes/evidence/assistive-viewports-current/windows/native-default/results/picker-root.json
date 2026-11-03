@@ -1,0 +1,10 @@
+﻿{
+    "class":  "Winit Thread Event Target",
+    "title":  "",
+    "actor_apartment":  "STA",
+    "process":  3768,
+    "name":  "",
+    "type":  "ControlType.Pane",
+    "framework":  "Win32",
+    "provider_description_api_available":  false
+}

@@ -1,0 +1,16 @@
+{
+  "source_parent": "ac7400235f04d9c63d032823aaf06e652b216eab",
+  "changed_source": {
+    "crates/ottrin-ui/src/lib.rs": "a98a4b6ba975b18fe4063a586af212ef3bc6e6988029855c80a896f8403a6931",
+    "crates/ottrin-ui/src/preview_render.rs": "b9daf9551887980698434afd3952a9c992d6a0dbc135396c5b953f0a576739c9"
+  },
+  "allocated_bytes": {
+    "target/debug/deps": 40522768384,
+    "target/debug/incremental": 22252130304,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    ".hermes/evidence/assistive-viewports-current": 62246912,
+    ".hermes/packaging-tmp/.windows-assistive-stage": 55455744
+  },
+  "cleanup_owner": "Current roadmap task; retain current outputs until new native label acceptance, remove superseded matching standalone outputs and finalized incremental sessions after consumers close"
+}

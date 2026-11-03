@@ -1,0 +1,110 @@
+﻿[
+    {
+        "rect":  [
+                     709,
+                     32,
+                     28,
+                     28
+                 ],
+        "focusable":  true,
+        "name":  "Close window",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     33,
+                     39,
+                     154,
+                     14
+                 ],
+        "focusable":  false,
+        "name":  "Quick Inspector — proof.txt",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     695,
+                     80,
+                     38,
+                     33
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     651,
+                     81,
+                     36,
+                     30
+                 ],
+        "focusable":  true,
+        "name":  "",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     39,
+                     117,
+                     56,
+                     16
+                 ],
+        "focusable":  true,
+        "name":  "− text",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     103,
+                     116,
+                     49,
+                     18
+                 ],
+        "focusable":  false,
+        "name":  "Text 100%",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     160,
+                     117,
+                     56,
+                     16
+                 ],
+        "focusable":  true,
+        "name":  "+ text",
+        "type":  "ControlType.Button",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     56,
+                     163,
+                     317,
+                     19
+                 ],
+        "focusable":  false,
+        "name":  "Ottrin read-only assistive proof.",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    },
+    {
+        "rect":  [
+                     240,
+                     544,
+                     291,
+                     13
+                 ],
+        "focusable":  false,
+        "name":  "proof.txt · Filetype: plain text file · Encoding: UTF-8 · Lines: 1",
+        "type":  "ControlType.Text",
+        "enabled":  true
+    }
+]

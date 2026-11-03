@@ -1,0 +1,16 @@
+{
+  "source": "ac7400235f04d9c63d032823aaf06e652b216eab",
+  "at": "2026-11-03T01:24:52.291889+00:00",
+  "tracked_dirty": [],
+  "allocated_bytes": {
+    "target/debug/deps": 42999545856,
+    "target/debug/incremental": 22602227712,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33242849280,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39005777920,
+    "target/x86_64-pc-windows-gnu/release/deps": 4065005568,
+    ".hermes/evidence/windows-assistive-current": 5894144,
+    ".hermes/evidence/assistive-viewports-current": 503808
+  },
+  "purpose": "Standard Windows GNU release replacement for native UIAutomation viewport verification",
+  "cleanup_owner": "Current roadmap task; remove owned UIA fixtures and obsolete matching binaries after verified replacement, retain shared useful caches"
+}

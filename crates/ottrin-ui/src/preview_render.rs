@@ -252,7 +252,8 @@ pub(crate) fn inspector_action_button(
     ui.add(
         egui::Button::new(RichText::new(format!("{icon}  {label}")).size(11.5 * c.font_scale))
             .min_size(Vec2::new(108.0, 30.0))
-            .themed(&c),
+            .themed(&c)
+            .accessible_name(label),
     )
     .on_hover_text(tooltip)
 }
@@ -267,7 +268,8 @@ pub(crate) fn inspector_icon_button(
     ui.add(
         egui::Button::new(RichText::new(icon).size(16.0 * c.font_scale))
             .min_size(Vec2::new(30.0, 28.0))
-            .themed(&c),
+            .themed(&c)
+            .accessible_name(label),
     )
     .on_hover_text(format!("{label}\n{tooltip}"))
 }

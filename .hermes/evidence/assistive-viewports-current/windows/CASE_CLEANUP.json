@@ -1,0 +1,38 @@
+{
+  "status": "Two native cases terminal; domains/four volumes and private desktops/profiles removed",
+  "retired": [
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/native-default/RESULTS.zip",
+      "bytes": 125895,
+      "reason": "Exact raw result members or final rendered screenshots retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/native-default/privacy-accepted-0.png",
+      "bytes": 1492137,
+      "reason": "Terminal privacy/account observations retained in producer token and readiness receipts"
+    },
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/native-picker/RESULTS.zip",
+      "bytes": 56190,
+      "reason": "Exact raw result members or final rendered screenshots retained"
+    },
+    {
+      "path": ".hermes/evidence/assistive-viewports-current/windows/native-picker/privacy-accepted-0.png",
+      "bytes": 478310,
+      "reason": "Terminal privacy/account observations retained in producer token and readiness receipts"
+    }
+  ],
+  "retired_private_stage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage/uia-input.json",
+      "bytes": 11193,
+      "sha256": "9d044ff49c066ac5a4b90d3e729f364fb10e2f31e2a77e359323af0b7c8b7d53"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-assistive-stage/uia.zip",
+      "bytes": 55432640,
+      "sha256": "00e64ede6ff65c7debd1583f528337f6faddcd7d2d542f0290e2ec96e6dacecf"
+    }
+  ],
+  "remaining": "Exact build/native receipts, raw native members and accepted rendered screenshots; no active consumer or private stage"
+}

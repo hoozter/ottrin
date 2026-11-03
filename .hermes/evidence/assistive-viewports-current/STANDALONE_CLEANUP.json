@@ -1,0 +1,43 @@
+{
+  "status": "verified superseded standalone binaries, exact dep-info/fingerprints removed",
+  "items": [
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-6085b67ae28fc422",
+      "bytes": 799355272,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f7ccf5036735c2fd",
+      "replacement_sha256": "38027532366443839b5fc787933b8257ee4876e1f8eda4756679dc6687f65cc7",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-6085b67ae28fc422",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-6085b67ae28fc422.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-6085b67ae28fc422"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-3c5a4506ad299059",
+      "bytes": 799148816,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f7ccf5036735c2fd",
+      "replacement_sha256": "38027532366443839b5fc787933b8257ee4876e1f8eda4756679dc6687f65cc7",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-3c5a4506ad299059",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-3c5a4506ad299059.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-3c5a4506ad299059"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-31ef45045bbf3c0e",
+      "bytes": 878768736,
+      "replacement": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app",
+      "replacement_sha256": "9fe0c5bd7a27bce6c24a887578b216de9fcd92bd6d6d0de6f63dd46cb62c5890",
+      "paths": [
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-31ef45045bbf3c0e",
+        "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-31ef45045bbf3c0e.d",
+        "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-31ef45045bbf3c0e"
+      ],
+      "basis": "Same compiler/profile/rustflags/target identity for tests; authoritative AccessKit production configuration replaces former application binary; current peers built and test suites passed"
+    }
+  ],
+  "recovered_binary_bytes": 2477272824,
+  "current_executables_and_shared_libraries_preserved": true
+}

@@ -8,7 +8,8 @@ function AwaitWindow($process,$title){
  $deadline=[DateTime]::UtcNow.AddSeconds(30)
  do{
   Require (-not$process.HasExited) 'Application exited before its declared window appeared'
-  $window=if($title){[PickerNative]::Window($process.Id,$title)}else{[PickerNative]::AnyWindow($process.Id)}
+  Require (-not[string]::IsNullOrWhiteSpace($title)) 'Exact declared visible window title required'
+  $window=[PickerNative]::Window($process.Id,$title)
   if($window-ne[IntPtr]::Zero){Start-Sleep -Milliseconds 300;return $window}
   Start-Sleep -Milliseconds 100
  }while([DateTime]::UtcNow-lt$deadline)
@@ -57,21 +58,28 @@ try{
  Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes
  & ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $Root 'native-controls.ps1'))));[PickerNative]::Init()
  $uiaInput=Get-Content (Join-Path $Root 'uia-input.json') -Raw|ConvertFrom-Json;Require ((Get-FileHash (Join-Path $Root 'uia.zip')).Hash.ToLowerInvariant()-eq$uiaInput.archive_sha256) 'Private UIAutomation input mismatch'
+ Require (@('native','opengl')-contains$uiaInput.renderer) 'Declared renderer required';$result.renderer=$uiaInput.renderer;$rendererArgs=if($uiaInput.renderer-eq'opengl'){@('--renderer','opengl')}else{@()}
  $extract=Join-Path $profilePath 'OttrinOwnedAssistivePayload';Require (-not(Test-Path $extract)) 'Existing payload must not be replaced';Expand-Archive (Join-Path $Root 'uia.zip') $extract
  $app=Join-Path $extract 'Ottrin-0.1.0-windows-x64\bin\ottrin.exe';Require ((Get-FileHash $app).Hash.ToLowerInvariant()-eq$uiaInput.application_sha256) 'Current Windows GUI identity mismatch';$result.input=$uiaInput
  $fixture=Join-Path $profilePath 'OttrinOwnedAssistive';Require (-not(Test-Path $fixture)) 'Existing user source must not be replaced';$null=New-Item -ItemType Directory $fixture;$source=Join-Path $fixture 'proof.txt';[IO.File]::WriteAllText($source,'Ottrin read-only assistive proof.');$sourceHash=(Get-FileHash $source).Hash
  $config=Get-Content (Join-Path $Root 'config-template.json') -Raw|ConvertFrom-Json;$config.theme='Dark';$config.default_view_mode='List';$config.bookmarks=@();$config.installed_office_previews_enabled=$false;$config.search.include_roots=@($fixture);$config.search.exclude_roots=@();$config.search.content_indexing_enabled=$false
  $pref=Join-Path $env:APPDATA 'ottrin\config.json';Require (-not(Test-Path $pref)) 'Existing preferences must not be replaced';$null=[IO.Directory]::CreateDirectory((Split-Path $pref));[IO.File]::WriteAllText($pref,($config|ConvertTo-Json -Depth 60),[Text.UTF8Encoding]::new($false))
+ Require (@('all','picker-only')-contains$uiaInput.flow) 'Declared UIAutomation flow required';$result.flow=$uiaInput.flow
+ if($uiaInput.flow-eq'all'){
  Phase 'native main UIAutomation tree and actions'
- $main=Start-Process $app -ArgumentList @(('"'+$fixture+'"'),'--renderer','opengl') -PassThru;$ownedProcesses+=@($main);$mainStarted=$true;$window=AwaitWindow $main 'Ottrin';[PickerNative]::Place($window);[PickerNative]::Focus($window)
+ $main=Start-Process $app -ArgumentList (@(('"'+$fixture+'"'))+$rendererArgs) -PassThru;$ownedProcesses+=@($main);$mainStarted=$true;$window=AwaitWindow $main 'Ottrin';[PickerNative]::Place($window);[PickerNative]::Focus($window)
  [PickerNative]::Shot($window,(Join-Path $out 'main-before-provider.png'));$element=Tree $window 'main';[PickerNative]::Shot($window,(Join-Path $out 'main.png'))
  foreach($name in @('Back','Forward','Parent folder','New tab','Menu','Manage administrator helper','Manage index service','Close window')){$null=Named $element $name}
  $result.forward_disabled=-not(Named $element 'Forward').Current.IsEnabled;$result.parent_enabled=(Named $element 'Parent folder').Current.IsEnabled;Require ($result.forward_disabled-and$result.parent_enabled) 'Windows enabled-state mapping is incorrect'
  Phase 'native Settings UIAutomation subtree';Invoke $element 'Menu';$element=[System.Windows.Automation.AutomationElement]::FromHandle($window);Invoke $element 'Settings…'
- $settings=AwaitWindow $main 'Ottrin Settings';$result.settings_foreground=([PickerNative]::GetForegroundWindow()-eq$settings);$settingsTree=Tree $settings 'settings';[PickerNative]::Shot($settings,(Join-Path $out 'settings.png'));$null=Named $settingsTree 'Close window';CloseWindow $settings;Start-Sleep -Milliseconds 500;Require (-not$main.HasExited) 'Settings close terminated the main window';$result.settings_native_close=$true
+ $settings=AwaitWindow $main 'Ottrin Settings';$result.settings_foreground=([PickerNative]::GetForegroundWindow()-eq$settings);Require $result.settings_foreground 'Settings did not receive native foreground focus';$settingsTree=Tree $settings 'settings';[PickerNative]::Shot($settings,(Join-Path $out 'settings.png'));$null=Named $settingsTree 'Close window';CloseWindow $settings;Start-Sleep -Milliseconds 500;Require (-not$main.HasExited) 'Settings close terminated the main window';$result.settings_native_close=$true
  Phase 'native read-only Inspector accessibility'
  $element=[System.Windows.Automation.AutomationElement]::FromHandle($window);ClickElement $window (Named $element 'proof.txt');Invoke $element 'Menu';$element=[System.Windows.Automation.AutomationElement]::FromHandle($window);Invoke $element 'Quick Inspector Selection'
- $inspector=AwaitWindow $main 'Ottrin Quick Inspector — proof.txt';$result.inspector_foreground=([PickerNative]::GetForegroundWindow()-eq$inspector);$inspectorTree=Tree $inspector 'inspector';
+ $inspector=AwaitWindow $main 'Ottrin Quick Inspector — proof.txt';$result.inspector_foreground=([PickerNative]::GetForegroundWindow()-eq$inspector);Require $result.inspector_foreground 'Inspector did not receive native foreground focus';$inspectorTree=Tree $inspector 'inspector';
+ foreach($name in @('Edit text','More actions')){$null=Named $inspectorTree $name}
+ $buttonCondition=[System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Button);$result.inspector_glyph_buttons=@()
+ foreach($button in $inspectorTree.FindAll([System.Windows.Automation.TreeScope]::Descendants,$buttonCondition)){if($button.Current.Name.ToCharArray()|Where-Object {([int]$_)-ge0xe000-and([int]$_)-le0xf8ff}){$result.inspector_glyph_buttons+=@($button.Current.Name)}}
+ Require ($result.inspector_glyph_buttons.Count-eq0) 'Inspector still exposes glyph-only button names'
  $result.inspector_value_controls=@();$editCondition=[System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Edit)
  foreach($edit in $inspectorTree.FindAll([System.Windows.Automation.TreeScope]::Descendants,$editCondition)){
   $supported=@($edit.GetSupportedPatterns()|Where-Object {$_.Id-eq[System.Windows.Automation.ValuePattern]::Pattern.Id})
@@ -79,9 +87,10 @@ try{
  }
  [PickerNative]::Shot($inspector,(Join-Path $out 'inspector.png'));CloseWindow $inspector;Start-Sleep -Milliseconds 500;Require (-not$main.HasExited) 'Inspector close terminated main';$result.inspector_native_close=$true
  CloseWindow $window;Require ($main.WaitForExit(15000)) 'Native main Close did not exit';$main.WaitForExit();Require ($main.ExitCode-eq0) 'Main native Close exit failed';$result.main_native_close_exit=$main.ExitCode
+ }
  Phase 'native chooser UIAutomation view and Close actions'
- $prefBefore=(Get-FileHash $pref).Hash;$start=[Diagnostics.ProcessStartInfo]::new($app,'picker --renderer opengl');$start.UseShellExecute=$false;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$picker=[Diagnostics.Process]::Start($start);$ownedProcesses+=@($picker);$stdout=$picker.StandardOutput.ReadToEndAsync();$stderr=$picker.StandardError.ReadToEndAsync()
- $request=@{mode='open';title='Accessibility proof';initial_directory=(NativePath $fixture)};$picker.StandardInput.Write(($request|ConvertTo-Json -Depth 5 -Compress));$picker.StandardInput.Close();$pickWindow=AwaitWindow $picker $null;[PickerNative]::Place($pickWindow);[PickerNative]::Focus($pickWindow);$pickTree=Tree $pickWindow 'picker'
+ $prefBefore=(Get-FileHash $pref).Hash;$start=[Diagnostics.ProcessStartInfo]::new($app,('picker '+($rendererArgs-join' ')));$start.UseShellExecute=$false;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$picker=[Diagnostics.Process]::Start($start);$ownedProcesses+=@($picker);$stdout=$picker.StandardOutput.ReadToEndAsync();$stderr=$picker.StandardError.ReadToEndAsync()
+ $request=@{mode='open';title='Accessibility proof';initial_directory=(NativePath $fixture)};$picker.StandardInput.Write(($request|ConvertTo-Json -Depth 5 -Compress));$picker.StandardInput.Close();$pickWindow=AwaitWindow $picker 'Ottrin — Accessibility proof';[PickerNative]::Place($pickWindow);[PickerNative]::Focus($pickWindow);$pickTree=Tree $pickWindow 'picker'
  foreach($name in @('Parent folder','Edit location','Grid view','List view','Show hidden files','Show read-only preview','Close window','Cancel')){$null=Named $pickTree $name}
  Invoke $pickTree 'Grid view';[PickerNative]::Shot($pickWindow,(Join-Path $out 'picker-grid.png'));Invoke $pickTree 'List view';[PickerNative]::Shot($pickWindow,(Join-Path $out 'picker-list.png'));CloseWindow $pickWindow
  Require ($picker.WaitForExit(15000)) 'Native picker Close did not exit';$picker.WaitForExit();Require ($stdout.Wait(5000)-and$stderr.Wait(5000)) 'Picker output stayed open';Require ($picker.ExitCode-eq0) ('Picker exit failed: '+$stderr.Result);$response=$stdout.Result|ConvertFrom-Json;Require (-not$response.accepted) 'Close accepted a file';$result.picker_response=$response;$result.picker_native_close_exit=$picker.ExitCode;$result.picker_preferences_preserved=((Get-FileHash $pref).Hash-eq$prefBefore)

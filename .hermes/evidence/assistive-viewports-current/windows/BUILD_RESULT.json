@@ -1,0 +1,9 @@
+{
+  "status": "standard Windows GNU release build passed",
+  "source": "ac7400235f04d9c63d032823aaf06e652b216eab",
+  "application_sha256": "661841c326efa2b32f260dd2b1399f674e9ba7fe79f5304bfdaff7d34ce0ded1",
+  "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/release/ottrin-app.exe",
+  "scope": "Current GUI only; borrowed runtime in private UIAutomation input, not delivered cohort",
+  "log": "build.stderr.gz",
+  "build_duration": "5m 14s"
+}
