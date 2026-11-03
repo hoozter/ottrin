@@ -1,0 +1,34 @@
+{
+  "status": "reviewed original native captures within scoped workflow",
+  "artifact_sha256": "b800e23d7c0cb821a813b4300cb93c149ebb36ebc8838eae9b2e2d591e2fea84",
+  "runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "scope": "Private X11 software desktop, default Dark theme; all 21 original screenshots directly reviewed after completed 27-check workflow",
+  "images": {
+    "01-miller-documents.png": "09f2b0526f3dc36bc06e20b66cfde103ed1a97de8bae400484e680c2b2fe081f",
+    "01a-search-result-context.png": "6ccf824753b1ef5777dde34a10fc8f8150fb854bb02280d81077c148bfa4f179",
+    "01a-search-result.png": "7247dc5a13063c9abb22ac3eb7e91cc882c0614cbb2d177e670a42ad6932ce7e",
+    "02-list-documents.png": "0cbbf3367ce24dc5a508e59db2f46d6def59e12456c7aa13e0312c1958ed81a5",
+    "03-grid-documents.png": "986b2e6d17eab85d98fd979b335fbff9aba75b54c1c090dfe4f58bbfe1e6c206",
+    "04-copy-result.png": "d4c1383608bc26072091d1001a45851f0b2467aa968e8f9a6cc9293312362eaa",
+    "05-quick-inspector-text.png": "c4af23ca053c991e56db7cd8ab09822db209be4391d6d8c20e5fb1454aba6125",
+    "06-quick-inspector-image.png": "8a594396b944b51db849b3b98ace88c451297ecfb9232c063cc02064506458c8",
+    "07-quick-inspector-pdf.png": "175b424b3aaaaa0b77ba43349edba3d97503864c10c3d3f3e9beb0c86d6aa436",
+    "07a-quick-inspector-second-pdf.png": "4e431c0befaf584e836e28b6b60a1f771168d5937567e5709eedb6e7ded3e29d",
+    "08-quick-inspector-docx.png": "cd2b94d15b3b3a1db0bf6b908a2e961e5b8c9ab1266e119ea68288e3b027e6d7",
+    "08a-quick-inspector-svg.png": "885afe203e1d5ba01f0e72f556cba54ee8dd74689dd845155716c6142a57a7c1",
+    "09-quick-inspector-xlsx.png": "ee65e9a412c31d8afa8a73c143772a7b2475c12275ab108dd970afda276fc225",
+    "10-quick-inspector-xlsm.png": "ebe8460f26890349ac99bd414e63ddabcff07e49364aa555140aa41a87abe237",
+    "11-quick-inspector-pptx.png": "72e706f31d043caf88246a0497f091ca9a22cf8bbfb33242a913d0235b2c3750",
+    "12-quick-inspector-archive.png": "ebe409f49ab16c9cb8a22b7cd0867776311a50027bd61ccdc9680358da75e0a7",
+    "13-quick-inspector-folder.png": "8ee999f27d8a9ba763cc161934ba0c20888b3f0518293ead6378455cde015b59",
+    "14-quick-inspector-generic.png": "fdf4a85969336159b60ee6297fcf2eb50da4ae4cc675675677e3aa98e26d0316",
+    "15-multi-select.png": "d7e098a96755057a19ecddfa46eb6cf8005cdc38fc922e4c1334c06cff67e76d",
+    "17-tabs.png": "d7d382db1da8743c43d25766cd27a9f900b0cfc6c65326616e341270d43a740e",
+    "18-tandem.png": "5893793414879ce40dddfdfd5640e8c5832fd6f8553ead7fe28c512ee296463b"
+  },
+  "observations": [
+    "Miller/List/Grid, search/menu, copy, previews, multiselect, tabs and Tandem rendered without misplaced menu columns or inset custom titlebars in captured surfaces",
+    "DOCX extraction and PPTX text fallback remain limited representations; this does not prove Office fidelity or installed-provider conversion",
+    "Not exhaustive appearance, accessibility, Wayland, physical GPU, or full roadmap acceptance"
+  ]
+}

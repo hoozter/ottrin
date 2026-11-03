@@ -1,0 +1,397 @@
+{
+  "status": "pass",
+  "original_files": {
+    "ottrin-preview.svg": "cc59302173875b9b2d585dc548aaa68a3ea6ddaa13d4ae8c13346a7465edb389",
+    "preview-second.pdf": "5a5f6aa0c249a5fdbb57ba588df80c490b0f616342cc3608d8b72083b451981a",
+    "notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "delete-me.txt": "5078283f111be8e78a234298da76baef74ef2772d165183d95d59e94508d88f3",
+    "letter.docx": "0791d7249d636f01e9bad35d2adaa9e622c429bcb5391666aa395dd5f855bece",
+    "workbook.xlsx": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "trash-me.txt": "df1151693f3caf87a756f4b8c5f416e8236ccdb3312ce1f03de7a2ffc6dc90b3",
+    "image.png": "1b54fda3cfefb7ad3318689fb0474f9221897f4400a0f1eef6666a2500de8b6d",
+    "preview.pdf": "616fe5798f2f4f4f1f1ee09829a7714c9546440261ef7954a2af507c7d56cf93",
+    "archive.zip": "e8969fd92a8417488ada2c004382ce2a1a756706ec624454af96a823c8e2e60e",
+    "sample.json": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b",
+    "wide.xlsx": "a84f3c500a6a746787788274ed67df0896011de4a80de0d44b22aac9b1e6c60f",
+    "slides.pptx": "7612ee7c170918df0c8b43b74cc5b4068b67a592738c6dc484772c8b0fc2a2fc",
+    "opaque.bin": "ec3b694e30de3544298f0d914245edf2556a641f57e607feac27964c7c401986",
+    "macros.xlsm": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "PreviewFolder/child.txt": "fbda031238c39b2d4882f13a009c354b5caa4279cce4b98b87c19d6d8bae0181"
+  },
+  "expected_files": {
+    "ottrin-preview.svg": "cc59302173875b9b2d585dc548aaa68a3ea6ddaa13d4ae8c13346a7465edb389",
+    "preview-second.pdf": "5a5f6aa0c249a5fdbb57ba588df80c490b0f616342cc3608d8b72083b451981a",
+    "notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "letter.docx": "0791d7249d636f01e9bad35d2adaa9e622c429bcb5391666aa395dd5f855bece",
+    "workbook.xlsx": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "image.png": "1b54fda3cfefb7ad3318689fb0474f9221897f4400a0f1eef6666a2500de8b6d",
+    "preview.pdf": "616fe5798f2f4f4f1f1ee09829a7714c9546440261ef7954a2af507c7d56cf93",
+    "archive.zip": "e8969fd92a8417488ada2c004382ce2a1a756706ec624454af96a823c8e2e60e",
+    "wide.xlsx": "a84f3c500a6a746787788274ed67df0896011de4a80de0d44b22aac9b1e6c60f",
+    "slides.pptx": "7612ee7c170918df0c8b43b74cc5b4068b67a592738c6dc484772c8b0fc2a2fc",
+    "opaque.bin": "ec3b694e30de3544298f0d914245edf2556a641f57e607feac27964c7c401986",
+    "macros.xlsm": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "PreviewFolder/child.txt": "fbda031238c39b2d4882f13a009c354b5caa4279cce4b98b87c19d6d8bae0181",
+    "renamed.json": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b",
+    "Subfolder/notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "MultiTarget/notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "MultiTarget/sample.json": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b"
+  },
+  "actual_files": {
+    "ottrin-preview.svg": "cc59302173875b9b2d585dc548aaa68a3ea6ddaa13d4ae8c13346a7465edb389",
+    "preview-second.pdf": "5a5f6aa0c249a5fdbb57ba588df80c490b0f616342cc3608d8b72083b451981a",
+    "notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "letter.docx": "0791d7249d636f01e9bad35d2adaa9e622c429bcb5391666aa395dd5f855bece",
+    "workbook.xlsx": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "renamed.json": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b",
+    "image.png": "1b54fda3cfefb7ad3318689fb0474f9221897f4400a0f1eef6666a2500de8b6d",
+    "preview.pdf": "616fe5798f2f4f4f1f1ee09829a7714c9546440261ef7954a2af507c7d56cf93",
+    "archive.zip": "e8969fd92a8417488ada2c004382ce2a1a756706ec624454af96a823c8e2e60e",
+    "wide.xlsx": "a84f3c500a6a746787788274ed67df0896011de4a80de0d44b22aac9b1e6c60f",
+    "slides.pptx": "7612ee7c170918df0c8b43b74cc5b4068b67a592738c6dc484772c8b0fc2a2fc",
+    "opaque.bin": "ec3b694e30de3544298f0d914245edf2556a641f57e607feac27964c7c401986",
+    "macros.xlsm": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "Subfolder/notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "MultiTarget/notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "MultiTarget/sample.json": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b",
+    "PreviewFolder/child.txt": "fbda031238c39b2d4882f13a009c354b5caa4279cce4b98b87c19d6d8bae0181",
+    "Subfolder/.ottrin-txn-f32cb3a2265ef1f36080392e25563e0d/copy-journal": "afa840e5b60a3414d63f9293c507380f478dd07cb5a59d6450256ca698a0bfe9",
+    "MultiTarget/.ottrin-txn-9fe0365019a78c0f06ac6d060e6572eb/copy-journal": "86693835cdc90d5e46ee1d200c51d9bd4bdbd67c46a3f9a8c4f798e535217d2d",
+    "MultiTarget/.ottrin-txn-d16e63d06d353ba1354bb14398e643ae/copy-journal": "2458acf9cb8b743b4cb86659f3ad25612899d1a9e15f3bb7a8dee4552630d095"
+  },
+  "unexpected": [
+    "MultiTarget/.ottrin-txn-9fe0365019a78c0f06ac6d060e6572eb/copy-journal",
+    "MultiTarget/.ottrin-txn-d16e63d06d353ba1354bb14398e643ae/copy-journal",
+    "Subfolder/.ottrin-txn-f32cb3a2265ef1f36080392e25563e0d/copy-journal"
+  ],
+  "missing": [],
+  "changed": [],
+  "retained_copy_journals": {
+    "MultiTarget/.ottrin-txn-9fe0365019a78c0f06ac6d060e6572eb/copy-journal": {
+      "schema": 5,
+      "phase": "published",
+      "operation": {
+        "id": "a5bd8b55443bd7be6aa61e8fda0f966c",
+        "item_index": 0,
+        "item_count": 2
+      },
+      "source": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f6e6f7465732e747874"
+      },
+      "publication": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f4d756c74695461726765742f6e6f7465732e747874"
+      },
+      "transaction": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f4d756c74695461726765742f2e6f747472696e2d74786e2d3966653033363530313961373863306630366163366430363065363537326562"
+      },
+      "parent_identity": {
+        "device": 66306,
+        "inode": 17972870,
+        "generation": {
+          "kind": 1,
+          "bytes": [
+            134,
+            62,
+            18,
+            1,
+            115,
+            236,
+            124,
+            46
+          ]
+        }
+      },
+      "transaction_identity": {
+        "device": 66306,
+        "inode": 17973131,
+        "generation": {
+          "kind": 1,
+          "bytes": [
+            139,
+            63,
+            18,
+            1,
+            34,
+            33,
+            178,
+            3
+          ]
+        }
+      },
+      "parent_mount": 2147483684,
+      "transaction_mount": 2147483684,
+      "boot_id": "b09afa67-09f8-4c95-bfb2-76fb9f47fcd3",
+      "publication_content": {
+        "entries": [
+          {
+            "path": {
+              "encoding": "unix-bytes",
+              "units_hex": ""
+            },
+            "identity": {
+              "device": 66306,
+              "inode": 17973136,
+              "file_type": "regular"
+            },
+            "content": {
+              "kind": "regular",
+              "size": 49,
+              "sha256_hex": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312"
+            }
+          }
+        ]
+      },
+      "publication_objects": [
+        {
+          "path": {
+            "encoding": "unix-bytes",
+            "units_hex": ""
+          },
+          "mount": 2147483684,
+          "handle": {
+            "kind": 1,
+            "bytes": [
+              144,
+              63,
+              18,
+              1,
+              202,
+              242,
+              36,
+              105
+            ]
+          }
+        }
+      ],
+      "displaced_content": null,
+      "displaced_objects": null
+    },
+    "MultiTarget/.ottrin-txn-d16e63d06d353ba1354bb14398e643ae/copy-journal": {
+      "schema": 5,
+      "phase": "published",
+      "operation": {
+        "id": "a5bd8b55443bd7be6aa61e8fda0f966c",
+        "item_index": 1,
+        "item_count": 2
+      },
+      "source": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f73616d706c652e6a736f6e"
+      },
+      "publication": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f4d756c74695461726765742f73616d706c652e6a736f6e"
+      },
+      "transaction": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f4d756c74695461726765742f2e6f747472696e2d74786e2d6431366536336430366433353362613133353462623134333938653634336165"
+      },
+      "parent_identity": {
+        "device": 66306,
+        "inode": 17972870,
+        "generation": {
+          "kind": 1,
+          "bytes": [
+            134,
+            62,
+            18,
+            1,
+            115,
+            236,
+            124,
+            46
+          ]
+        }
+      },
+      "transaction_identity": {
+        "device": 66306,
+        "inode": 17973146,
+        "generation": {
+          "kind": 1,
+          "bytes": [
+            154,
+            63,
+            18,
+            1,
+            225,
+            76,
+            160,
+            124
+          ]
+        }
+      },
+      "parent_mount": 2147483684,
+      "transaction_mount": 2147483684,
+      "boot_id": "b09afa67-09f8-4c95-bfb2-76fb9f47fcd3",
+      "publication_content": {
+        "entries": [
+          {
+            "path": {
+              "encoding": "unix-bytes",
+              "units_hex": ""
+            },
+            "identity": {
+              "device": 66306,
+              "inode": 17973149,
+              "file_type": "regular"
+            },
+            "content": {
+              "kind": "regular",
+              "size": 13,
+              "sha256_hex": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b"
+            }
+          }
+        ]
+      },
+      "publication_objects": [
+        {
+          "path": {
+            "encoding": "unix-bytes",
+            "units_hex": ""
+          },
+          "mount": 2147483684,
+          "handle": {
+            "kind": 1,
+            "bytes": [
+              157,
+              63,
+              18,
+              1,
+              68,
+              123,
+              223,
+              26
+            ]
+          }
+        }
+      ],
+      "displaced_content": null,
+      "displaced_objects": null
+    },
+    "Subfolder/.ottrin-txn-f32cb3a2265ef1f36080392e25563e0d/copy-journal": {
+      "schema": 5,
+      "phase": "published",
+      "operation": {
+        "id": "75dec0ef5f6117f2da20e73204d65712",
+        "item_index": 0,
+        "item_count": 1
+      },
+      "source": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f6e6f7465732e747874"
+      },
+      "publication": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f537562666f6c6465722f6e6f7465732e747874"
+      },
+      "transaction": {
+        "encoding": "unix-bytes",
+        "units_hex": "2f7661722f746d702f2e6f747472696e2d7069636b65722d71612d75336a61333138712f776f726b666c6f772f686f6d652f446f63756d656e74732f537562666f6c6465722f2e6f747472696e2d74786e2d6633326362336132323635656631663336303830333932653235353633653064"
+      },
+      "parent_identity": {
+        "device": 66306,
+        "inode": 17972851,
+        "generation": {
+          "kind": 1,
+          "bytes": [
+            115,
+            62,
+            18,
+            1,
+            3,
+            170,
+            111,
+            44
+          ]
+        }
+      },
+      "transaction_identity": {
+        "device": 66306,
+        "inode": 17973120,
+        "generation": {
+          "kind": 1,
+          "bytes": [
+            128,
+            63,
+            18,
+            1,
+            114,
+            132,
+            134,
+            251
+          ]
+        }
+      },
+      "parent_mount": 2147483684,
+      "transaction_mount": 2147483684,
+      "boot_id": "b09afa67-09f8-4c95-bfb2-76fb9f47fcd3",
+      "publication_content": {
+        "entries": [
+          {
+            "path": {
+              "encoding": "unix-bytes",
+              "units_hex": ""
+            },
+            "identity": {
+              "device": 66306,
+              "inode": 17973121,
+              "file_type": "regular"
+            },
+            "content": {
+              "kind": "regular",
+              "size": 49,
+              "sha256_hex": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312"
+            }
+          }
+        ]
+      },
+      "publication_objects": [
+        {
+          "path": {
+            "encoding": "unix-bytes",
+            "units_hex": ""
+          },
+          "mount": 2147483684,
+          "handle": {
+            "kind": 1,
+            "bytes": [
+              129,
+              63,
+              18,
+              1,
+              60,
+              31,
+              119,
+              138
+            ]
+          }
+        }
+      ],
+      "displaced_content": null,
+      "displaced_objects": null
+    }
+  },
+  "data_files": {
+    "ottrin-preview.svg": "cc59302173875b9b2d585dc548aaa68a3ea6ddaa13d4ae8c13346a7465edb389",
+    "preview-second.pdf": "5a5f6aa0c249a5fdbb57ba588df80c490b0f616342cc3608d8b72083b451981a",
+    "notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "letter.docx": "0791d7249d636f01e9bad35d2adaa9e622c429bcb5391666aa395dd5f855bece",
+    "workbook.xlsx": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "renamed.json": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b",
+    "image.png": "1b54fda3cfefb7ad3318689fb0474f9221897f4400a0f1eef6666a2500de8b6d",
+    "preview.pdf": "616fe5798f2f4f4f1f1ee09829a7714c9546440261ef7954a2af507c7d56cf93",
+    "archive.zip": "e8969fd92a8417488ada2c004382ce2a1a756706ec624454af96a823c8e2e60e",
+    "wide.xlsx": "a84f3c500a6a746787788274ed67df0896011de4a80de0d44b22aac9b1e6c60f",
+    "slides.pptx": "7612ee7c170918df0c8b43b74cc5b4068b67a592738c6dc484772c8b0fc2a2fc",
+    "opaque.bin": "ec3b694e30de3544298f0d914245edf2556a641f57e607feac27964c7c401986",
+    "macros.xlsm": "e8f0e67147af5ef040260f34ea654d0484012d7a0cf8f7a09b772d313d1a7cef",
+    "Subfolder/notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "MultiTarget/notes.txt": "bba68a6cd95ded17ba9cb54d54c51c58579ca9c85a055b857742bc428aa3f312",
+    "MultiTarget/sample.json": "ac091855c4d71cceb17413b9c174e994b5c2aad26c195ea62effd3460434d95b",
+    "PreviewFolder/child.txt": "fbda031238c39b2d4882f13a009c354b5caa4279cce4b98b87c19d6d8bae0181"
+  },
+  "trash_bytes_preserved": true
+}

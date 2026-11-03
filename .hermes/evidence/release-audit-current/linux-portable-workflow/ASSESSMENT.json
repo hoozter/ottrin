@@ -1,0 +1,12 @@
+{
+  "status": "failed current packaged workflow",
+  "artifact_sha256": "b800e23d7c0cb821a813b4300cb93c149ebb36ebc8838eae9b2e2d591e2fea84",
+  "runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "scope": "Exact delivered portable archive daily-driver workflow through its real bin/ottrin launcher in private X11/AT-SPI/software desktop",
+  "driver_sha256": "c1ecd06bd3e836d5b0b320b3a644db740a138831a15ba60ab30e9d3e5b6a577e",
+  "owned_extraction": "/var/tmp/ottrin-portable-workflow-n03iti16",
+  "launcher_sha256": "1c44bdf5463b1212aab46002cf9d5c41e48c846c07287a4fc24af849069c6b75",
+  "portable_source": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 7d10a8b6eba74e642fcf5028af737a98bb5c0958\nWorking tree: clean\nTracked diff SHA-256: none",
+  "error": "AssertionError()",
+  "assessment": "Producer rejected formatted source provenance as a bare revision before desktop allocation; corrected parser retains original metadata and validates exact Git revision line. No application failure."
+}

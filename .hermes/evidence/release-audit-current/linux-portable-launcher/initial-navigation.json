@@ -1,0 +1,28 @@
+{
+  "accessible_entry": {
+    "x": 1172,
+    "y": 452,
+    "width": 240,
+    "height": 25
+  },
+  "accessible_window": {
+    "x": 448,
+    "y": 380,
+    "width": 1024,
+    "height": 680
+  },
+  "x11_window": {
+    "X": 448,
+    "Y": 380,
+    "WIDTH": 1024,
+    "HEIGHT": 680
+  },
+  "x11_window_relative_target": {
+    "x": 844,
+    "y": 84
+  },
+  "a11y_desktop_target": {
+    "x": 1292,
+    "y": 464
+  }
+}

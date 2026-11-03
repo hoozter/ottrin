@@ -50,6 +50,16 @@ now separates focus/motion from double-click input, checks scrolled row bounds,
 and refuses an existing evidence root before allocation. An accidentally reused
 root was cancelled and its original tracked bytes restored exactly from Git.
 
+The exact delivered portable archive independently completes the same27-check
+workflow through its real `bin/ottrin` launcher and bundled library environment.
+All21 original native captures were directly reviewed; fixture bytes match the
+intended changes. This remains Dark/private-X11/software scope, including the
+truthfully labelled document/text fallbacks, rather than Office-fidelity or
+all-platform acceptance. Its extraction, processes, profile and portal mount are
+removed. Evidence: `release-audit-current/linux-portable-launcher/`. The first
+portable producer attempt rejected formatted source metadata before allocating a
+desktop; the corrected parser checks the exact Git-revision line.
+
 The personal Linux service was still running an older daemon. Ottrin's supported
 `index service-install` refresh now runs the exact delivered indexd binary, with
 saved preferences unchanged. It reports Ready,167516 indexed items and a ready

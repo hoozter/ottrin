@@ -36,5 +36,7 @@
     "Broader daily-driver and concentrated remaining roadmap audit not accepted"
   ],
   "cleanup": "Private startup desktops/profiles and completed extraction removed; exact staging retired after publication; compiler caches preserved.",
-  "current_workflow": ".hermes/evidence/release-audit-current/cohort/LINUX_WORKFLOW_ACCEPTANCE.json"
+  "current_workflow": ".hermes/evidence/release-audit-current/cohort/LINUX_WORKFLOW_ACCEPTANCE.json",
+  "current_portable_workflow": ".hermes/evidence/release-audit-current/linux-portable-launcher/CONTROL.json",
+  "current_portable_workflow_visual": ".hermes/evidence/release-audit-current/linux-portable-launcher/VISUAL_REVIEW.json"
 }
