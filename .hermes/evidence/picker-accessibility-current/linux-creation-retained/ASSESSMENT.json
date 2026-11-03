@@ -1,0 +1,6 @@
+{
+  "status": "functional creation and exact filesystem checks passed before unverified keyboard-close route failed",
+  "facts": "Captured filesystem contains only original source, empty new file/folder, and exactly two empty owned0700 retained Undo directories. Source bytes preserved, occupied-name refusal and cancellation exercised. Alt+F4 through the QA key helper did not produce normal process exit within15s.",
+  "next": "Use the native Close window action already required by the production startup fixture. This does not accept or diagnose the failed Alt+F4 route; keep it distinct from creation behavior.",
+  "cleanup": "TEARDOWN.json confirms profile removed and owned process/children stopped"
+}

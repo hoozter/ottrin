@@ -1,0 +1,84 @@
+{
+  "status": "completed output cleanup; current deliverables and compact evidence retained",
+  "retired_files": [
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/RESULTS.zip",
+      "bytes": 328998,
+      "sha256": "df65417aa792cac1c59fa4ef19b6e37bcb3ae1671309b14acec4b4ed6b901030",
+      "reason": "Exact raw members verified and preserved; redundant export transport retired"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/RESULT_EXPORT_PROCESS.json",
+      "bytes": 584970,
+      "sha256": "2ef24ae4f7ebc40b3c207b24a8089222aeefbc632faa5deef515e280c09224a0",
+      "reason": "Exact raw members verified and preserved; redundant export transport retired"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/windows-picker/observed-desktop-2.png",
+      "bytes": 9083,
+      "sha256": "794e304b22dab6b5b93604bc86e85055b7e903ec144620cf4540a34c1ac08fbe",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/windows-picker/observed-desktop-3.png",
+      "bytes": 963477,
+      "sha256": "267abc40b00f284b6bcc01c8db2b8115ffa837198a7c37e9204ea28cdfa64cb8",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/windows-picker/observed-desktop.png",
+      "bytes": 480453,
+      "sha256": "b9ac86f3094c8c262be84a9911aca1ed698c4141261cac7ace7ff9bcd8175da2",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/windows-picker/picker-live.png",
+      "bytes": 964018,
+      "sha256": "e49bf773dc79ce90e178c20f0a8f540e8f7e7236043e4e7231c26863f3bf3e9f",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/observed-desktop-2.png",
+      "bytes": 1692208,
+      "sha256": "29004ab3cab3b7fd08a331d55be3c2ba64c01298b328dc2da524f9a6b8d49b3b",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/observed-desktop.png",
+      "bytes": 482334,
+      "sha256": "27f9f08d6eb95aea910b9754d630e860f69a159d1f7d9195de172bdaefae08bd",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/picker-current.png",
+      "bytes": 1692851,
+      "sha256": "b363353c314e1a89e8899176a6cb3143ef9007b4af546dab9a9c0be874b28db7",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/observed-desktop.png",
+      "bytes": 2523597,
+      "sha256": "be1e18e12149f2d52f11d1a793a45129e7f8246a7869ceade112a7c9d8484933",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/runtime-current.png",
+      "bytes": 12011,
+      "sha256": "8b9f4e978b2aca5c5962468006a0435c4812a35d9c2b911717b8a15d4d2f3475",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/login-current.png",
+      "bytes": 479927,
+      "sha256": "23b540f24971ac29b3da421f382fff65b1aed932b4a19a9fed53e35afcca1d20",
+      "reason": "Superseded boot/readiness observation; actual native product captures, desktop-ready and privacy decisions retained"
+    },
+    {
+      "path": ".hermes/evidence/picker-accessibility-current/update-driver.py",
+      "bytes": 3201,
+      "sha256": "6bf888f57fc8d3d40909e702edc1576558f2c961aa3920365ee77e147025bbc9",
+      "reason": "Consumed one-time patch producer; canonical driver and native frozen snapshots preserve actual implementation"
+    }
+  ],
+  "all_native_product_originals_preserved": true
+}

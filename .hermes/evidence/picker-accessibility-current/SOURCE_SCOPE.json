@@ -1,0 +1,24 @@
+{
+  "status": "pass source-change scope; native packaging acceptance separate",
+  "previous_runtime_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "candidate_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "changed_paths": [
+    "crates/ottrin-ui/src/picker.rs",
+    "crates/ottrin-ui/src/widget_style.rs",
+    "docs/RELEASE_NOTES.md",
+    "docs/ROADMAP.md",
+    "scripts/linux-desktop-qa.py",
+    "scripts/tests/test_linux_desktop_qa.py"
+  ],
+  "shipping_changes": [
+    "Shared themed text editor may set an explicit accessible name after the original TextEdit renders; role/value/selection unchanged",
+    "Picker labels folder filter/indexed search, filename and location controls",
+    "Rendered regression checks native accessibility nodes across themes and caller modes; test-only source"
+  ],
+  "shipping_source_sha256": {
+    "crates/ottrin-ui/src/picker.rs": "b1d95726a0030bc66c2da2b1a8e404c12cc8f235b036dcc738cd8560b6261c42",
+    "crates/ottrin-ui/src/widget_style.rs": "79333f3980c49eba1b79a5fae899ae5fc322990d0a927344a23703711481adb1"
+  },
+  "unchanged": "All other shipping crates, dependency inputs, vendor source, packaging scripts, assets and policies unchanged; intervening release notes/roadmap and Linux QA producer changes retain their exact existing scopes",
+  "limits": "Older acceptance keeps original package hashes; full payload comparison and native changed-role acceptance required for this cohort"
+}

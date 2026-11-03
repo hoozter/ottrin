@@ -1,0 +1,34 @@
+{
+  "status": "all7 stable artifacts and sidecars verified after publication",
+  "runtime_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "artifacts": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/ottrin-0.1.0-1.x86_64.rpm",
+      "sha256": "d986bfcd2c2938c69cd8c21f99ef46ff9103da67d8d155c10e6335af43915d6c"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+      "sha256": "06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz",
+      "sha256": "d8b08aae6a7f8f96feb8578e57bdd765788a08de21fb65e27c74f90e1986ad0e"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages/ottrin_0.1.0_amd64.deb",
+      "sha256": "288d8bdfe648053c0ab392b589d6a30b62661fd56fb2f2cd75d883272f266cce"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip",
+      "sha256": "7b8a0dace9de49f175e7e7c6479b8f68436ca10983a8a8bbd792ac2009b1ba23"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe",
+      "sha256": "2e612ad931d05c8fa6d36aa477a125949f234505ff78a988168643d2652399bd"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
+      "sha256": "3f8b78c7b7ec3d657cf1e4e5ee25735ef067cb34035e7649a63a610d1c2114d4"
+    }
+  ]
+}

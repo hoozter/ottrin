@@ -1,0 +1,110 @@
+{
+  "status": "owned QA processes/profiles/displays/buses/mounts/VMs/media, stages/source/baseline alias and superseded output retired after consumers",
+  "native_cases": [
+    {
+      "case": "windows-picker",
+      "uuid": "8755ba28-ea10-4a72-ae72-129456377861",
+      "volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "case": "windows-picker-install-deadline",
+      "uuid": "40f09d24-4c11-4a30-ad95-d103ac002203",
+      "volumes_removed": [
+        "ottrin-nsis-client.qcow2",
+        "ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "case": "assembly",
+      "uuid": "623be582-8387-46e1-a527-06cfe63d6900",
+      "volumes_removed": [
+        "ottrin-msix-assembly.qcow2",
+        "ottrin-msix-assembly-fixture.iso"
+      ]
+    },
+    {
+      "case": "upgrade-enabled",
+      "uuid": "48da363d-9310-4ae3-a488-bfe0b97abd0e",
+      "volumes_removed": [
+        "ottrin-msix-runtime.qcow2",
+        "ottrin-msix-runtime-fixture.iso"
+      ]
+    }
+  ],
+  "native_volumes_removed": 8,
+  "private_profiles_removed": [
+    "/var/tmp/.ottrin-picker-qa-wwb7_7xo",
+    "/var/tmp/.ottrin-picker-qa-e1z1xceq",
+    "/var/tmp/.ottrin-picker-qa-6nyr1pyo",
+    "/var/tmp/.ottrin-picker-qa-xlezer0b",
+    "/var/tmp/.ottrin-picker-qa-yzv67aot",
+    "/var/tmp/.ottrin-picker-qa-rulnwscc",
+    "/var/tmp/.ottrin-picker-qa-i_wpm9n7",
+    "/var/tmp/.ottrin-picker-qa-wn2t_wgw"
+  ],
+  "retired_paths": [
+    ".hermes/packaging-tmp/.linux-native-desktop-stage",
+    ".hermes/packaging-tmp/.linux-desktop-extract",
+    ".hermes/packaging-tmp/.windows-picker-stage",
+    ".hermes/packaging-tmp/.windows-msix-source",
+    ".hermes/packaging-tmp/.windows-candidate-retired",
+    ".hermes/evidence/picker-accessibility-current/previous-input.msix",
+    ".hermes/evidence/picker-accessibility-current/source.zip"
+  ],
+  "compiler_storage": {
+    "target/debug/deps": {
+      "baseline": 41448239104,
+      "current": 41448280064,
+      "delta": 40960
+    },
+    "target/debug/incremental": {
+      "baseline": 22742679552,
+      "current": 22741540864,
+      "delta": -1138688
+    },
+    "target/x86_64-pc-windows-gnu/debug/deps": {
+      "baseline": 33280208896,
+      "current": 33310941184,
+      "delta": 30732288
+    },
+    "target/x86_64-pc-windows-gnu/debug/incremental": {
+      "baseline": 39227678720,
+      "current": 39529926656,
+      "delta": 302247936
+    },
+    "target/release/deps": {
+      "baseline": 4299317248,
+      "current": 4299341824,
+      "delta": 24576
+    },
+    "target/x86_64-pc-windows-gnu/release/deps": {
+      "baseline": 3769556992,
+      "current": 3769561088,
+      "delta": 4096
+    }
+  },
+  "compiler_cleanup": "All13 reviewed obsolete incremental sessions removed under exclusive locks and process checks. Refusals and explicit system-process inspection gaps retained in evidence. Newest finalized sessions, current metadata/dependencies/test executable and useful shared caches retained; no extra target/configuration or blanket clean. The same UI test output identity replaces its previous version; no superseded matching-config test executable generated.",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current",
+      "purpose": "Compact source/native acceptance, failed-attempt diagnostics, guarded cleanup records and reviewed original captures; no live consumers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current usable Linux four-format d6 delivery"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current usable d6 ZIP/NSIS/development MSIX8 plus58-file payload"
+    }
+  ],
+  "protected_bases_preserved": {
+    "win11ltsc": "4e160378-2610-4072-b528-048e4c9f509e",
+    "ottrin-copy-cleanup-qa": "9b2e795f-fb04-4adb-95a7-8832f8894c67"
+  },
+  "personal_service": "Preserved normal user service; daemon payload is byte-identical and no personal restart/settings mutation was needed",
+  "limits": "Full roadmap not complete; unnamed creation text input and private Alt+F4 observation remain explicit independent audit work"
+}

@@ -1,32 +1,30 @@
 {
-  "status": "pass current scoped local Windows preview; required MSI release held separately",
-  "source_commit": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "status": "pass current scoped local Windows picker preview; required MSI release held separately",
+  "source_commit": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "2901a9c5df46b96c86e9f0a41d81d466ed5ca5494d47282becdb9f2648bb459f",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935",
-    "Ottrin-0.1.0-windows-x64-development.msix": "1f4fc891519b537d78460835fc25cd8588f065e4fd147600cd5d3671389db5bf"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "7b8a0dace9de49f175e7e7c6479b8f68436ca10983a8a8bbd792ac2009b1ba23",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "2e612ad931d05c8fa6d36aa477a125949f234505ff78a988168643d2652399bd",
+    "Ottrin-0.1.0-windows-x64-development.msix": "3f8b78c7b7ec3d657cf1e4e5ee25735ef067cb34035e7649a63a610d1c2114d4"
   },
   "payload_files": 58,
-  "evidence_directory": ".hermes/evidence/release-audit-current/cohort",
+  "evidence_directory": ".hermes/evidence/picker-accessibility-current",
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_startup": ".hermes/evidence/release-audit-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json",
+  "current_native_picker": ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json",
   "native_msix": {
-    "upgrade-enabled": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/ACCEPTANCE.json",
-    "upgrade-disabled": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/ACCEPTANCE.json"
+    "upgrade-enabled": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/ACCEPTANCE.json"
   },
   "native_visibility": {
-    "upgrade-enabled": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/NATIVE_VISIBILITY_ACCEPTANCE.json",
-    "upgrade-disabled": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json"
+    "upgrade-enabled": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/NATIVE_VISIBILITY_ACCEPTANCE.json"
   },
-  "source_scope": ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
-  "full_payload_comparison": ".hermes/evidence/release-audit-current/cohort/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
-  "daemon_pe_identity": ".hermes/evidence/release-audit-current/cohort/WINDOWS_INDEX_PE_COMPARISON.json",
+  "source_scope": ".hermes/evidence/picker-accessibility-current/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/picker-accessibility-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+  "daemon_pe_identity": ".hermes/evidence/picker-accessibility-current/WINDOWS_INDEX_PE_COMPARISON.json",
   "unchanged_responsibility_basis": {
-    "previous_source": "4a1682bdee98b16b63a7723785091399e99b505f",
-    "previous_receipt": ".hermes/evidence/release-audit-current/cohort/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
-    "scope": "All prior installer-fault, conversion, resource and broader UI scopes retain original hashes. Current GUI startup reveal checked independently; all other shipping source unchanged. Daemon entire PE identical except timestamp/checksum; other helpers/dependencies byte-identical."
+    "previous_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+    "previous_receipt": ".hermes/evidence/picker-accessibility-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "scope": "Only picker labels and opt-in shared text-edit naming change shipping source. Current named-field/installed request and MSIX7-to8 enabled-login scopes are native checked. Prior disabled-login, installer-fault, conversion, resource and broader UI scopes retain original hashes. Daemon entire PE equal except timestamp/checksum; all non-GUI helpers/dependencies byte-identical."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
@@ -34,16 +32,16 @@
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
   "hosted_source": {
-    "run": 41605875200,
-    "tested_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+    "run": 41627781952,
+    "tested_source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
     "exact_source_all_four_jobs_success": true
   },
-  "public_windows_files_unchanged": true,
+  "public_release_published": false,
   "limits": [
     "Local unsigned preview, no official public release or Store submission",
-    "Software VM/default DPI; physical graphics, extended scaling and final owner review separate",
-    "Complete remaining cross-platform roadmap audit, physical hardware and final owner acceptance remain separate"
+    "Software VM/default DPI; physical graphics and final owner review separate",
+    "Complete cross-platform roadmap and broader main-UI editable-field accessibility audit remain incomplete",
+    "Actual MSIX fixture temporary-account login recovery and additional reboot recorded in LOGIN_RECOVERY.json; product startup settings unchanged"
   ],
-  "cleanup": "All native fixture VMs/media/consoles removed. Previous alias and superseded cohort retired after native consumers. Current stable payload and compact receipts retained.",
-  "current_cooperating_picker_audit": ".hermes/evidence/roadmap-audit-current/WINDOWS_PICKER_AUDIT.json"
+  "cleanup": "All native fixture VMs/media/consoles removed; superseded candidate, stage and baseline alias retired after consumers; current payload and compact evidence retained."
 }

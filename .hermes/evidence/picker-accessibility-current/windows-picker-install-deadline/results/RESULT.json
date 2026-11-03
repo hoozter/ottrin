@@ -1,0 +1,1075 @@
+{
+    "scope":  "Exact installed current Windows cooperating-picker and resource acceptance on ordinary software desktop",
+    "custom_pixels":  {
+                          "button":  9700,
+                          "border":  6156,
+                          "titlebar":  32510
+                      },
+    "phase":  "supported uninstall",
+    "picker_edit_controls":  [
+                                 {
+                                     "name":  "Filter this folder",
+                                     "bounds":  [
+                                                    603,
+                                                    62,
+                                                    318,
+                                                    25
+                                                ]
+                                 },
+                                 {
+                                     "name":  "File name",
+                                     "bounds":  [
+                                                    96,
+                                                    505,
+                                                    831,
+                                                    25
+                                                ]
+                                 }
+                             ],
+    "cases":  [
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "Dark-cold",
+                      "idle":  {
+                                   "scope":  "Visible ready picker; process-cold start with OS caches retained, no index process",
+                                   "cpu_percent_one_core":  0.10405374372866838,
+                                   "seconds":  30.032438199999998,
+                                   "working_set_bytes":  55549952,
+                                   "private_bytes":  36532224
+                               },
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c0061006c007000680061002e007400780074"
+                                                     }
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  300.0061,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:801da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit Dark-cold",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  "0061006c007000680061002e007400780074"
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "folder",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "Dark-folder",
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0042006500740061"
+                                                     }
+                                                 ],
+                                       "current_filter":  null,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  489.5167,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  ""
+                                                   },
+                                      "accept_label":  "Confirm selection",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0042006500740061"
+                                                            },
+                                      "parent_window":  "win32:901da",
+                                      "mode":  "folder",
+                                      "title":  "Ottrin picker audit Dark-folder"
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "Dark-repeated",
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c0062006500740061002e007400780074"
+                                                     }
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  255.31990000000002,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:a01da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit Dark-repeated",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  "0062006500740061002e007400780074"
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "Light-cold",
+                      "idle":  {
+                                   "scope":  "Visible ready picker; process-cold start with OS caches retained, no index process",
+                                   "cpu_percent_one_core":  0,
+                                   "seconds":  30.006780199999998,
+                                   "working_set_bytes":  59801600,
+                                   "private_bytes":  37408768
+                               },
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c0061006c007000680061002e007400780074"
+                                                     }
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  192.8843,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:b01da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit Light-cold",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  "0061006c007000680061002e007400780074"
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "folder",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "Light-folder",
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0042006500740061"
+                                                     }
+                                                 ],
+                                       "current_filter":  null,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  200.46,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  ""
+                                                   },
+                                      "accept_label":  "Confirm selection",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0042006500740061"
+                                                            },
+                                      "parent_window":  "win32:c01da",
+                                      "mode":  "folder",
+                                      "title":  "Ottrin picker audit Light-folder"
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "Light-repeated",
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c0062006500740061002e007400780074"
+                                                     }
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  186.09470000000002,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:d01da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit Light-repeated",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  "0062006500740061002e007400780074"
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "multiple",
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c0061006c007000680061002e007400780074"
+                                                     },
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c0062006500740061002e007400780074"
+                                                     }
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  207.0076,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:e01da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit multiple",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  ""
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  true,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "save",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "save-new",
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c006e00650077002d0073006100760065002e007400780074"
+                                                     }
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  258.0493,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:f01da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit save-new",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  "006e00650077002d0073006100760065002e007400780074"
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "save",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "save",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "save-overwrite",
+                      "response":  {
+                                       "accepted":  true,
+                                       "paths":  [
+                                                     {
+                                                         "encoding":  "windows-utf16-le",
+                                                         "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061005c007400610072006700650074002e007400780074"
+                                                     }
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  197.5774,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:1001da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit save-overwrite",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  "007400610072006700650074002e007400780074"
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "save",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "custom-theme",
+                      "response":  {
+                                       "accepted":  false,
+                                       "paths":  [
+
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  209.7713,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:1101da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit custom-theme",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  "0061006c007000680061002e007400780074"
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "disconnect",
+                      "response":  {
+                                       "accepted":  false,
+                                       "paths":  [
+
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  196.0858,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:1201da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit disconnect",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  ""
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "owner-loss",
+                      "response":  {
+                                       "accepted":  false,
+                                       "paths":  [
+
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  478.3953,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:1301da",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit owner-loss",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  ""
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "concurrent-one",
+                      "response":  {
+                                       "accepted":  false,
+                                       "paths":  [
+
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  261.5088,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:700e0",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit concurrent-one",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  ""
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0041006c007000680061"
+                                                            }
+                                  }
+                  },
+                  {
+                      "mode":  "open",
+                      "normal_exit":  0,
+                      "main_preferences_unchanged":  true,
+                      "case":  "concurrent-two",
+                      "response":  {
+                                       "accepted":  false,
+                                       "paths":  [
+
+                                                 ],
+                                       "current_filter":  0,
+                                       "choices":  {
+
+                                                   }
+                                   },
+                      "mapped_ms_upper_bound":  246.6023,
+                      "native_parent_verified":  true,
+                      "caller_enabled_state_preserved":  true,
+                      "no_index":  true,
+                      "request":  {
+                                      "parent_window":  "win32:c0242",
+                                      "current_filter":  0,
+                                      "title":  "Ottrin picker audit concurrent-two",
+                                      "filename":  {
+                                                       "encoding":  "windows-utf16-le",
+                                                       "units_hex":  ""
+                                                   },
+                                      "filters":  [
+                                                      {
+                                                          "name":  "Text documents",
+                                                          "patterns":  [
+                                                                           {
+                                                                               "kind":  "glob",
+                                                                               "value":  "*.txt"
+                                                                           }
+                                                                       ]
+                                                      }
+                                                  ],
+                                      "accept_label":  "Confirm selection",
+                                      "mode":  "open",
+                                      "multiple":  false,
+                                      "initial_directory":  {
+                                                                "encoding":  "windows-utf16-le",
+                                                                "units_hex":  "0043003a005c00550073006500720073005c004f0054004d00530049003500340062003800300063003400320064003100360063005c0044006f00630075006d0065006e00740073005c004f0074007400720069006e005000690063006b0065007200410075006400690074005c0042006500740061"
+                                                            }
+                                  }
+                  }
+              ],
+    "payload_files":  58,
+    "native_location_fields":  [
+                                   {
+                                       "name":  "Location",
+                                       "bounds":  [
+                                                      62,
+                                                      62,
+                                                      540,
+                                                      25
+                                                  ]
+                                   },
+                                   {
+                                       "name":  "Filter this folder",
+                                       "bounds":  [
+                                                      611,
+                                                      62,
+                                                      310,
+                                                      25
+                                                  ]
+                                   },
+                                   {
+                                       "name":  "File name",
+                                       "bounds":  [
+                                                      96,
+                                                      505,
+                                                      831,
+                                                      25
+                                                  ]
+                                   }
+                               ],
+    "package":  {
+                    "source_revision":  "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "2e612ad931d05c8fa6d36aa477a125949f234505ff78a988168643d2652399bd"
+                                  }
+                              ],
+                    "actor_sha256":  "49c1ca1383f56e8821f9cc704ea4c56b51ffd6e5de07ffcf604c95d6385166a0",
+                    "scope":  "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+                },
+    "preferences_preserved_by_removal":  true,
+    "custom_parameters":  {
+                              "window_border_width":  2,
+                              "button_radius":  12,
+                              "window_radius":  16,
+                              "font_scale":  1.2
+                          },
+    "identity":  {
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "named_fields":  [
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "Dark-cold"
+                         },
+                         {
+                             "fields":  {
+                                            "name":  "Filter this folder",
+                                            "bounds":  [
+                                                           602,
+                                                           62,
+                                                           319,
+                                                           21
+                                                       ]
+                                        },
+                             "case":  "Dark-folder"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "Dark-repeated"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "Light-cold"
+                         },
+                         {
+                             "fields":  {
+                                            "name":  "Filter this folder",
+                                            "bounds":  [
+                                                           602,
+                                                           62,
+                                                           319,
+                                                           21
+                                                       ]
+                                        },
+                             "case":  "Light-folder"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "Light-repeated"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "multiple"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "save-new"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "save-overwrite"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               603,
+                                                               62,
+                                                               318,
+                                                               25
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               96,
+                                                               505,
+                                                               831,
+                                                               25
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "custom-theme"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "disconnect"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "owner-loss"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "concurrent-one"
+                         },
+                         {
+                             "fields":  [
+                                            {
+                                                "name":  "Filter this folder",
+                                                "bounds":  [
+                                                               602,
+                                                               62,
+                                                               319,
+                                                               21
+                                                           ]
+                                            },
+                                            {
+                                                "name":  "File name",
+                                                "bounds":  [
+                                                               84,
+                                                               528,
+                                                               843,
+                                                               21
+                                                           ]
+                                            }
+                                        ],
+                             "case":  "concurrent-two"
+                         }
+                     ],
+    "source_bytes_preserved":  true,
+    "status":  "pass within native cooperating-picker/resource scope; actual captures require review",
+    "index_remove":  {
+                         "stdout":  "SUCCESS: The scheduled task \"Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002\" was successfully deleted.\r\nBackground Ottrin index task removed.\n",
+                         "stderr":  "",
+                         "seconds":  10.3193421,
+                         "exit":  0
+                     },
+    "remaining_owned_installed_processes":  0,
+    "concurrent_independent":  true
+}

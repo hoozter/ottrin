@@ -1,0 +1,40 @@
+{
+  "status": "failed pre-picker acceptance; preserved",
+  "evidence": {
+    "stack": "at Require, <No file>: line 4\r\nat Run, <No file>: line 7\r\nat <ScriptBlock>, <No file>: line 44\r\nat <ScriptBlock>, <No file>: line 1",
+    "remaining_owned_installed_processes": 1,
+    "package": {
+      "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+      "files": [
+        {
+          "name": "current-setup.exe",
+          "sha256": "2e612ad931d05c8fa6d36aa477a125949f234505ff78a988168643d2652399bd"
+        }
+      ],
+      "actor_sha256": "7eec7e43bbc441b0ad1330b0cb01c559d623d7472f80d40848850ac02bde01d7",
+      "scope": "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+    },
+    "phase": "install exact delivered NSIS",
+    "scope": "Exact installed current Windows cooperating-picker and resource acceptance on ordinary software desktop",
+    "identity": {
+      "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+      "administrator": false,
+      "session": 1
+    },
+    "cases": [],
+    "status": "failed owned process teardown",
+    "error": "Owned process timeout install",
+    "named_fields": []
+  },
+  "assessment": "Fresh installation exceeded the picker actor 120s deadline. Canonical NSIS lifecycle actor allows180s; the retry uses that existing bounded installer deadline, records elapsed time and timeout process identities, and improves descendant/background-task teardown. No product timeout cause inferred without diagnostics.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

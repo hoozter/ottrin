@@ -1,0 +1,49 @@
+{
+  "status": "pass current scoped local Windows preview; required MSI release held separately",
+  "source_commit": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "2901a9c5df46b96c86e9f0a41d81d466ed5ca5494d47282becdb9f2648bb459f",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "335ecdcdf7a9d5c34986775459d4e1c6575d969ecb7e9749d4fc22478c9fc935",
+    "Ottrin-0.1.0-windows-x64-development.msix": "1f4fc891519b537d78460835fc25cd8588f065e4fd147600cd5d3671389db5bf"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/release-audit-current/cohort",
+  "host_content": "HOST_PAYLOAD.json",
+  "current_native_startup": ".hermes/evidence/release-audit-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json",
+  "native_msix": {
+    "upgrade-enabled": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/ACCEPTANCE.json"
+  },
+  "native_visibility": {
+    "upgrade-enabled": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/NATIVE_VISIBILITY_ACCEPTANCE.json",
+    "upgrade-disabled": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/NATIVE_VISIBILITY_ACCEPTANCE.json"
+  },
+  "source_scope": ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/release-audit-current/cohort/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+  "daemon_pe_identity": ".hermes/evidence/release-audit-current/cohort/WINDOWS_INDEX_PE_COMPARISON.json",
+  "unchanged_responsibility_basis": {
+    "previous_source": "4a1682bdee98b16b63a7723785091399e99b505f",
+    "previous_receipt": ".hermes/evidence/release-audit-current/cohort/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "scope": "All prior installer-fault, conversion, resource and broader UI scopes retain original hashes. Current GUI startup reveal checked independently; all other shipping source unchanged. Daemon entire PE identical except timestamp/checksum; other helpers/dependencies byte-identical."
+  },
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "hosted_source": {
+    "run": 41605875200,
+    "tested_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+    "exact_source_all_four_jobs_success": true
+  },
+  "public_windows_files_unchanged": true,
+  "limits": [
+    "Local unsigned preview, no official public release or Store submission",
+    "Software VM/default DPI; physical graphics, extended scaling and final owner review separate",
+    "Complete remaining cross-platform roadmap audit, physical hardware and final owner acceptance remain separate"
+  ],
+  "cleanup": "All native fixture VMs/media/consoles removed. Previous alias and superseded cohort retired after native consumers. Current stable payload and compact receipts retained.",
+  "current_cooperating_picker_audit": ".hermes/evidence/roadmap-audit-current/WINDOWS_PICKER_AUDIT.json"
+}

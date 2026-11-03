@@ -2,139 +2,116 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-03. This is the single active queue. Historical receipts below
-retain their original source/artifact scope; passing checks are not completion
-of the full roadmap. Packaged documentation is a build-time snapshot.
+Updated 2026-11-03. This is the single active queue. Historical results retain
+original source/artifact scope. Passing checks do not complete the full roadmap;
+packaged documentation is a build-time snapshot.
 
-The confirmed picker accessible-name defect is now source-fixed: folder filter,
-indexed search, filename and Location editors expose names without replacing
-their text values or edit roles. The rendered Dark/Light Open/Save/folder matrix,
-all27 picker tests,465 full UI tests (one existing ignored), strict Linux/Windows
-Clippy and formatting pass. Current stable packages below still use7d and have
-not received this fix; fresh package/native acceptance is the next gate. Evidence:
-`.hermes/evidence/picker-accessibility-current/SOURCE_CHECKS.json`.
-
-Linux AppImage, portable archive, DEB and RPM at `dist/packages/`, and Windows
-ZIP/NSIS/development MSIX0.1.0.7 at `dist/windows-candidate/`, now use clean runtime
-source `7d10a8b6eba74e642fcf5028af737a98bb5c0958`. Exact-source CI41605875200 passes
-all four Linux/Windows verification and performance jobs. The stable AppImage is
+All seven local Linux/Windows packages now use clean runtime source
+`d6ebd918ed62660a346e51508bdef4b8c91f9c97`. Linux AppImage, portable archive, DEB
+and RPM are at `dist/packages/`; Windows ZIP/NSIS/development MSIX0.1.0.8 are at
+`dist/windows-candidate/`. The current AppImage is
 `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005`.
-The package authorities record every hash and exact scope:
-`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. No public release or Store submission is
-implied. The failed MSI is held separately and has not been replaced or waived.
+`06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea`.
+The authoritative manifests are `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`
+and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. All seven hashes and sidecars are
+verified after publication. CI41627781952 passes all four exact-source Linux and
+Windows verification/performance jobs. No public release or Store submission is
+implied; the failed MSI remains held on its exact diagnostic input.
 
-Ordinary no-location Column startup now requests the existing one-shot Home
-reveal. A rendered regression fails before and passes after the single constructor
-call;464 host UI tests pass, with1 existing ignored test. Exact AppImage startup/
-native Close passes Dark100 and Light150 with the default renderer. Actual installed
-NSIS startup, normal Close,58-file payload identity and supported uninstall preserving
-preferences/source pass Dark/Light with software OpenGL. Two earlier Windows QA
-lookups incorrectly required Documents to be globally unique across Miller ancestor
-columns. The accepted actor records both an ancestor at x=-1002 and the current Home
-row at x=720; actual bounds disambiguate them. Neither rejected attempt is acceptance.
+The native Windows audit found unnamed picker text fields. The shared themed
+text editor now supports explicit accessible names without replacing its edit
+role, value or selection. Picker folder filtering, indexed search, filename and
+Location editors supply their names. All27 picker tests,465 full UI tests (one
+existing ignored), strict native/Windows Clippy and formatting pass. A rendered
+Dark/Light Open/Save/folder matrix verifies names, roles and values. This does not
+make every editable field elsewhere in Ottrin accessible.
 
-Actual development MSIX6-to7 updates pass both login startup choices, ordinary
-non-elevated GUI, menu/Space/Escape ownership, Hidden/System visibility, real
-reboot/login and supported removal. Preferences and native index file identity are
-preserved. Disabled login startup is observed for180 seconds before any Ottrin CLI.
-All22 native captures are directly reviewed. The first new baseline focus attempt
-failed before update; the accepted console fixture uses observed normal taskbar
-input without security/foreground-policy changes. All fixture VMs/media/consoles
-are removed. This is default-DPI/software OpenGL, not physical-GPU/Store acceptance.
+The exact new AppImage passes six native AT-SPI cases: Dark100 and Light150
+Open/Save/folder, actual Location editing, correct names/values, normal cancellation,
+source/preferences preserved and no index socket. All six originals were directly
+reviewed. The new installed NSIS passes14 ordinary-user cooperating-picker cases:
+Open/Save/folder, filters, multiple selection, caller ownership, explicit overwrite,
+EOF/owner-loss cancellation and concurrent-request independence. Every case has
+named Edit controls; Location is checked separately. Source/preferences survive
+supported uninstall; all four native Dark/Light/custom/overwrite originals are
+reviewed. These are software OpenGL/default-DPI Windows and private X11 Linux
+scopes, not universal Windows chooser replacement or human screen-reader review.
 
-The exact delivered Linux AppImage now completes27 private X11 workflow checks:
-address/search/context actions, Miller/List/Grid, copy/multi-copy, text/image/two
-PDFs/DOCX/SVG/XLSX/XLSM/PPTX/archive/folder/generic Inspector, Trash/permanent delete,
-tabs/Tandem/rename and process health. All intended original/copied/renamed/trashed
-fixture bytes match. Exactly three destination-local Published Copy journals are
-validated against their source/publication paths and directory identities; they
-are intentional recovery metadata. An initial strengthened check rejected those
-journals as unexpected, with no missing or changed data files. All21 original
-same-artifact workflow captures are reviewed. This is synthetic Dark/X11 scope,
-not complete daily-driver or every appearance-control acceptance. The QA producer
-now separates focus/motion from double-click input, checks scrolled row bounds,
-and refuses an existing evidence root before allocation. An accidentally reused
-root was cancelled and its original tracked bytes restored exactly from Git.
+The first new installer attempt exceeded the picker actor's120-second deadline
+before any picker action. The successful retry uses the existing canonical NSIS
+fixture's180-second bound and records117.5 seconds for setup on this software VM;
+it does not diagnose or accept physical installation performance. Failed results
+remain intact. The NSIS driver now resolves declared staging and stable package
+receipts through one input check; undeclared paths and symlinks are rejected.
 
-The exact delivered portable archive independently completes the same27-check
-workflow through its real `bin/ottrin` launcher and bundled library environment.
-All21 original native captures were directly reviewed; fixture bytes match the
-intended changes. This remains Dark/private-X11/software scope, including the
-truthfully labelled document/text fallbacks, rather than Office-fidelity or
-all-platform acceptance. Its extraction, processes, profile and portal mount are
-removed. Evidence: `release-audit-current/linux-portable-launcher/`. The first
-portable producer attempt rejected formatted source metadata before allocating a
-desktop; the corrected parser checks the exact Git-revision line.
+Development MSIX8 passes native production MakeAppx assembly/unpack and58-file
+identity, actual7-to8 update, ordinary GUI/menu/Space/Escape/Hidden-System controls,
+preference/index identity, real login-started package daemon and removal. All11
+originals are reviewed. The stock test image consumed its temporary auto-login
+credentials after the first login, leaving the second boot without a user. The
+nonce/SID-bound fixture account was recovered and a third normal reboot completed
+the original login observer without an Ottrin CLI or startup-setting change.
+This material fixture recovery is recorded in `upgrade-enabled/LOGIN_RECOVERY.json`.
+Future fixture setup provisions its two planned logins explicitly. The earlier7d
+startup-disabled180-second observation keeps its original artifact scope; it was
+not repeated or relabelled as an MSIX8 result.
 
-The personal Linux service was still running an older daemon. Ottrin's supported
-`index service-install` refresh now runs the exact delivered indexd binary, with
-saved preferences unchanged. It reports Ready,167516 indexed items and a ready
-watcher. A30-second observation under concurrent QA host load used0.233% of one
-core (previous running binary0.433%); no sustained-idle or universal workload claim
-is made. Existing exact4a Windows unattended10000-file metadata evidence measured
-0.208% and0.104% in two30-second samples with no GUI present. Clicked VCF/plain-text
-body navigation and Space ownership pass Dark/Light; Windows temporal VCF-to-PDF
-and explicit Edit/Save have separately bound native acceptance. Those original
-receipts are carried by demonstrated unchanged source/payload, not relabelled as
-new runs.
+Additional exact-AppImage Dark100 native checks pass main-menu New File/Folder,
+creation cancellation, occupied-name refusal, source preservation, empty outputs
+and normal native-button Close. Exactly two empty owned0700 transaction directories
+are retained for Undo, matching the creation implementation. The first producer
+rejected these as unexpected; its failure remains recorded. A later Alt+F4 route
+through the QA key helper did not close within15 seconds. The native Close-button
+result does not diagnose or accept that shortcut. The native creation input also
+has an empty accessible name: this is confirmed remaining software work.
 
-Only the startup constructor call changes shipping code from4a. All Linux helpers,
-libraries/assets/policies are byte-identical. Windows daemon differs only in PE
-timestamp/checksum; all other daemon bytes and non-GUI helpers/libraries/assets
-match. Historical installer, Office provider, resource, picker/browser, appearance
-and accessibility scopes retain original hashes. Current cohort evidence is in
-`.hermes/evidence/release-audit-current/cohort/`; personal-service observations and
-workflow receipts are in its parent. Superseded packages/staging, source archive,
-owned profiles/VMs/media and unreferenced observations are retired. Personal data,
-protected Windows bases, useful compiler caches and the held MSI are preserved.
+Current cohort evidence is `.hermes/evidence/picker-accessibility-current/`.
+Only picker labels and opt-in shared input naming change shipping source from7d.
+Every non-GUI Linux payload is byte-identical; the Windows daemon differs only in
+PE timestamp/checksum and other non-GUI payloads match. Earlier full27-check
+AppImage/portable workflow, browser/portal, installer-fault, Office/media, appearance
+and service scopes keep original hashes, supported by the recorded source/payload
+projection rather than called fresh reruns. The personal Linux service remains
+intentionally running its identical21fe daemon; no personal restart/settings/data
+mutation was required for this label-only release.
 
-The exact installed Windows NSIS now passes14 cooperating-picker functional
-cases: Open/Save/folder, native parent ownership, filters, multiple selection,
-explicit overwrite confirmation, caller EOF/owner loss and independent concurrent
-requests. Sources/preferences remain unchanged; supported removal and complete
-owned VM/media/profile teardown pass. All four Dark/Light/custom/overwrite native
-captures are reviewed. Process-cold mapping is189–670ms with OS caches retained;
-visible-ready30-second samples use0.052–0.156% of one core,73–75MB working set and
-37MB private memory on this software VM. This is not physical/boot performance.
-The same audit proves a software gap: search and filename Edit controls have empty
-Windows UI Automation names. Name them in the shared picker and verify native
-packaged results before accepting accessibility. Receipt:
-`.hermes/evidence/roadmap-audit-current/WINDOWS_PICKER_AUDIT.json`. Two earlier
-actor attempts failed on installer-created index state and native-title lookup;
-those failures remain recorded and are not product acceptance.
+All four owned Windows cases, eight volumes, private desktops/profiles/buses and
+mounts are removed. Superseded package output, stages, source archive and baseline
+alias are retired after consumers. Thirteen obsolete incremental sessions were
+removed through the guarded producer, preserving newest sessions and current
+compiler/dependency caches. Protected Windows bases, user data, current deliverables
+and the held MSI remain. Exact cleanup and retained-evidence paths are in
+`picker-accessibility-current/CLEANUP_FINAL.json`.
 
 Continue in this order:
 
-1. Deliver the source-fixed picker field names and verify the native
-   packaged accessibility result. Continue the concentrated requirement-by-requirement
-   Linux/Windows audit.
+1. Audit and name editable controls outside the picker, starting with the confirmed
+   unnamed creation input. Batch the related source corrections, test rendered
+   roles/names/values and verify native Linux/Windows controls. Investigate the
+   private-desktop Alt+F4 observation without treating it as a proven product bug
+   or bypassing the real native Close gate.
+2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains54 full multiline
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
-   with15 explicit user UI/service/delivery requirements. Inspect direct current
-   evidence and unchanged source/payload for each clause; do not equate totals or
-   the27-check smoke with full acceptance. Finish appearance-role ownership,
-   Services states/actions, remaining media/picker/browser/folder-integration and
-   platform workflow scopes; repair actual missing or contradictory software.
-2. Close independently executable software/caller gaps for the shared themed
-   picker, Linux FileChooser/FileManager1 and reversible Windows folder integration.
-   These retain their implemented/native scopes; do not defer them again merely
-   because owner signing, hardware or final review waits exist. Do not repeat
-   fulfilled fault matrices without changed inputs or a reproduced defect.
-3. Reconcile the final release-candidate requirement matrix and documentation,
-   leaving only actual owner/external waits. The [waiting list](#ownerexternal-waiting-list)
-   retains owner identity/signing/Store submission, unavailable physical hardware,
-   personal administrator setup and final owner acceptance. No macOS build is added.
+   with15 user UI/service/delivery requirements. These overlap and are not a
+   completion percentage. Inspect each clause's current direct evidence and
+   unchanged responsibility, including appearance-role ownership, Services states,
+   remaining media, storage/cross-volume and platform daily-driver scopes.
+3. Close remaining independently executable shared-picker, Linux FileChooser/
+   FileManager1 and reversible Windows folder-integration software/caller gaps.
+   Keep actual existing native scopes; do not defer these because signing, Store,
+   hardware or final user review waits exist. Do not repeat fulfilled fault
+   matrices without changed inputs or a reproduced defect.
+4. Reconcile the final release matrix and documentation, leaving only actual
+   [owner/external waits](#ownerexternal-waiting-list). Identity/signing, Store
+   submission, unavailable physical hardware, personal administrator setup and
+   final owner acceptance remain explicit waits. No macOS build is added.
 
-The MSI ordinary-user registration rollback gate remains failed. Independent
-file-only native authoring reproduces it without Ottrin/WiX; matching elevated
-diagnostics isolate execution context but do not authorize an elevation, ACL,
-policy or manual-registry workaround. Original failures and the strict terminal
-status assessment remain intact. Actual/diagnostic VM/media teardown is verified;
-see `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json` and
-`windows-msi-security-context-current/COMPARISON.json`. This held gate must not
-stall dependency-ready work or be counted as a successful MSI release.
+The ordinary-user MSI registration rollback gate remains failed. Independent
+file-only authoring reproduces it without Ottrin/WiX; elevated diagnostics isolate
+execution context and do not authorize an elevation, ACL, policy or manual-registry
+workaround. Original failures and strict terminal assessment remain intact. This
+held gate must not stall dependency-ready work or count as a successful MSI release.
 
 ## Picker Shift selection — source correction, 2026-11-02
 

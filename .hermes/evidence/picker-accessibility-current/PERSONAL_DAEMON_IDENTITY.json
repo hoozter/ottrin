@@ -1,0 +1,7 @@
+{
+  "status": "active normal service preserved; actual daemon matches delivered bytes",
+  "pid": 885280,
+  "comm": "ottrin-indexd",
+  "sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "scope": "Read-only process/service identity; no restart, CLI status launch, preferences or data mutation"
+}

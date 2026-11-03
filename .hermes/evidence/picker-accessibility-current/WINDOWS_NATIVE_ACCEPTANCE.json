@@ -1,0 +1,69 @@
+{
+  "status": "pass actual installed native picker field-name and cooperating-request scope",
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "artifacts": [
+    {
+      "name": "current-setup.exe",
+      "sha256": "2e612ad931d05c8fa6d36aa477a125949f234505ff78a988168643d2652399bd"
+    }
+  ],
+  "native_result": ".hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/results/RESULT.json",
+  "actor_sha256": "49c1ca1383f56e8821f9cc704ea4c56b51ffd6e5de07ffcf604c95d6385166a0",
+  "cases": 14,
+  "named_edit_controls_in_all_cases": true,
+  "location_fields": [
+    {
+      "name": "Location",
+      "bounds": [
+        62,
+        62,
+        540,
+        25
+      ]
+    },
+    {
+      "name": "Filter this folder",
+      "bounds": [
+        611,
+        62,
+        310,
+        25
+      ]
+    },
+    {
+      "name": "File name",
+      "bounds": [
+        96,
+        505,
+        831,
+        25
+      ]
+    }
+  ],
+  "native_capture_review": {
+    "status": "four original native captures directly reviewed",
+    "sha256": {
+      "overwrite-confirmation.png": "714edafd13f59f798840ab1e9db5ad783795dfe7482e4c80b83b3346516a217a",
+      "Dark-picker.png": "6f5ad5b84c41d95dd9765f0f4494c4473d4db1676c07f90a50c2f8865a255ba9",
+      "custom-picker.png": "939e724f1fa626b7dccfbea391321db53e1c0ef0a4f6faeaf5c10427e99e0be3",
+      "Light-picker.png": "754f0a689fc73d6bbfe7aea46d3d7c219c44d87ae0fa4928ccf92e300ce5d4e3"
+    }
+  },
+  "install_seconds": 117.5265357,
+  "scope": "Owned ordinary Windows stock-client desktop, explicit bundled software OpenGL, default DPI; source bytes/preferences/native caller ownership/cancellation/concurrency/overwrite/theme-role checks; no index process during picker cases",
+  "limits": [
+    "No universal Windows dialog replacement, physical GPU or human screen-reader acceptance",
+    "Original120-second installer attempt timed out and is retained as failed; successful retry uses existing canonical180-second installer deadline",
+    "Custom font/color/corners observed in native screenshot; no exhaustive39-setting theme-editor acceptance claimed"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

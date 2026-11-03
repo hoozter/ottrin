@@ -1,0 +1,11 @@
+{
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "files": [
+    {
+      "name": "current-setup.exe",
+      "sha256": "2e612ad931d05c8fa6d36aa477a125949f234505ff78a988168643d2652399bd"
+    }
+  ],
+  "actor_sha256": "7eec7e43bbc441b0ad1330b0cb01c559d623d7472f80d40848850ac02bde01d7",
+  "scope": "Exact current NSIS installed preview safety under an ordinary native Windows token on a disposable stock-client clone; scoped explicit actor input, no installer-upgrade or physical hardware claim"
+}

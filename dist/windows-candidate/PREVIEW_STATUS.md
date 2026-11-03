@@ -1,7 +1,7 @@
 # Current Windows preview
 
-Source `7d10a8b6eba74e642fcf5028af737a98bb5c0958`: ZIP/NSIS and unsigned development MSIX0.1.0.7.
+Source `d6ebd918ed62660a346e51508bdef4b8c91f9c97`: ZIP/NSIS and unsigned development MSIX0.1.0.8.
 
-Current native installed no-location Home startup and actual MSIX6-to7 update, ordinary GUI, preference/index identity, real login with startup enabled/disabled and removal pass. Every non-GUI payload is unchanged except daemon timestamp/checksum metadata; earlier broader scopes remain separately bound to original receipts.
+Actual installed cooperating-picker14 cases expose named filter/filename/Location fields and preserve caller ownership, sources and preferences. Native MSIX7-to8 update, ordinary GUI, menu/Space/Escape and visibility behavior, actual login startup and removal pass. The stock-client fixture needed a recorded temporary-account login recovery and an additional real reboot; no Ottrin startup policy was changed. Every non-GUI payload is unchanged except daemon timestamp/checksum metadata; earlier broader scopes retain original hashes.
 
-Physical graphics/scaling, Store signing and final owner acceptance remain separate. Required MSI rollback remains held on its exact diagnostic input, not offered as a current package. See ../WINDOWS_CANDIDATE_ACCEPTANCE.json.
+Software OpenGL/default-DPI scope; physical graphics, Store signing, final owner review and the broader editable-field accessibility audit remain separate. Required MSI rollback remains held on its exact diagnostic input. See ../WINDOWS_CANDIDATE_ACCEPTANCE.json.

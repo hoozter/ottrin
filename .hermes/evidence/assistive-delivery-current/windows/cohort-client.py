@@ -7,7 +7,7 @@ for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
 parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);args=parser.parse_args()
 assert not args.office_worksheet or args.office_installed,'Worksheet surface requires the installed Office fixture'
 assert not args.office_installed or (args.application_nsis_stage and args.output and not args.use_stock_base and not args.use_updated_base),'Installed Office uses its exact declared retained-provider clone'
-assert not args.application_actor or (args.application_nsis_stage and args.use_stock_base and args.output and not args.office_installed),'Explicit actor requires stable-package stock-client case'
+assert not args.application_actor or (args.application_nsis_stage and args.use_stock_base and args.output and not args.office_installed),'Explicit actor requires a receipt-bound package and stock-client case'
 assert not args.application_actor or (args.application_actor.is_file() and not args.application_actor.is_symlink()),'Actor must be a regular reviewable input'
 application_case=bool(args.application_msi or args.application_nsis_stage or args.application_uia_stage)
 assert not args.native_transport_probe or (args.use_stock_base and args.output and not any([application_case,args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'Transport probe requires an isolated stock case'
@@ -34,6 +34,19 @@ e.mkdir(parents=True,exist_ok=True)
 name='ottrin-uia-client' if args.application_uia_stage else 'ottrin-transport-probe' if args.native_transport_probe else 'ottrin-nsis-client' if args.application_nsis_stage else 'ottrin-native-test' if args.native_test else 'ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
 def virsh(*args):return subprocess.check_output(['virsh','-c','qemu:///system',*args],text=True).strip()
 def save(n,data):(e/n).write_text(json.dumps(data,indent=2)+'\n')
+def nsis_input(stage):
+ assert not stage.is_symlink()
+ stage=stage.resolve()
+ if stage==r/'dist/windows-candidate':
+  accepted=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());revision=accepted['source_commit'];artifacts=accepted['artifacts'];receipt_root=(r/accepted['evidence_directory']).resolve();assert receipt_root.is_relative_to(r/'.hermes/evidence')
+  payload=json.loads((receipt_root/'PAYLOAD.json').read_text());assert len(payload)==accepted['payload_files']==58
+ else:
+  build=json.loads((e.parent/'windows/BUILD_RESULT.json').read_text());accepted=json.loads((e.parent/'HOST_PAYLOAD.json').read_text())
+  assert stage==r/'.hermes/packaging-tmp/.windows-picker-stage'==Path(build['stage'])
+  assert build['status'].startswith('portable and NSIS build pass') and accepted['status']=='pass within host archive/content scope'
+  assert accepted['source_revision']==build['source_revision'] and accepted['artifacts']==build['artifacts']
+  revision=build['source_revision'];artifacts=build['artifacts'];payload=json.loads((e.parent/'PAYLOAD.json').read_text());assert len(payload)==accepted['payload_files']==58
+ return revision,artifacts,payload
 assert name not in virsh('list','--all','--name').splitlines()
 if not args.use_stock_base and not args.office_installed:
  assert virsh('domstate','win11ltsc')=='shut off'
@@ -256,18 +269,10 @@ with ExitStack() as stack:
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('application.msi','application-input.json','payload.json','config-template.json')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n $packageInput=Get-Content (Join-Path $root 'application-input.json') -Raw|ConvertFrom-Json;if((Get-FileHash (Join-Path $root 'application.msi')).Hash.ToLowerInvariant()-ne$packageInput.sha256){throw 'Actual MSI input mismatch'}\n"+script[end:]
   if args.office_installed:
-   stage=args.application_nsis_stage.resolve();assert not args.application_nsis_stage.is_symlink()
-   if stage==r/'dist/windows-candidate':
-    accepted=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());revision=accepted['source_commit'];artifacts=accepted['artifacts'];receipt_root=(r/accepted['evidence_directory']).resolve();assert receipt_root.is_relative_to(r/'.hermes/evidence');payload=json.loads((receipt_root/'PAYLOAD.json').read_text())
-   else:
-    build=json.loads((e.parent/'windows/BUILD_RESULT.json').read_text());accepted=json.loads((e.parent/'HOST_PAYLOAD.json').read_text())
-    assert stage==r/'.hermes/packaging-tmp/.windows-picker-stage'==Path(build['stage'])
-    assert build['status'].startswith('portable and NSIS build pass') and accepted['status']=='pass within host archive/content scope'
-    assert accepted['source_revision']==build['source_revision'] and accepted['artifacts']==build['artifacts']
-    revision=build['source_revision'];artifacts=accepted['artifacts'];payload=json.loads((e.parent/'PAYLOAD.json').read_text())
-    payload_root=stage/'windows-payload/Ottrin-0.1.0-windows-x64'
-    assert {str(p.relative_to(payload_root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in payload_root.rglob('*') if p.is_file()}==payload
-    assert 'Git revision: '+revision+'\nWorking tree: clean\n' in (payload_root/'SOURCE_REVISION.txt').read_text()
+   stage=args.application_nsis_stage.resolve();revision,artifacts,payload=nsis_input(args.application_nsis_stage)
+   payload_root=stage/'windows-payload/Ottrin-0.1.0-windows-x64'
+   assert {str(p.relative_to(payload_root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in payload_root.rglob('*') if p.is_file()}==payload
+   assert 'Git revision: '+revision+'\nWorking tree: clean\n' in (payload_root/'SOURCE_REVISION.txt').read_text()
    setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';assert hashlib.sha256(setup.read_bytes()).hexdigest()==artifacts[setup.name];os.link(setup,fixture/'current-setup.exe')
    assert len(payload)==58
    (fixture/'payload.json').write_text(json.dumps(payload));identity={'source_revision':revision,'files':[{'name':'current-setup.exe','sha256':artifacts[setup.name]}],'fixtures':{},'ui_case':'worksheet' if args.office_worksheet else 'document'}
@@ -280,11 +285,9 @@ with ExitStack() as stack:
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
   if args.application_nsis_stage and args.application_actor:
-   stage=args.application_nsis_stage.resolve();assert stage==r/'dist/windows-candidate' and not args.application_nsis_stage.is_symlink()
-   accepted=json.loads((r/'dist/WINDOWS_CANDIDATE_ACCEPTANCE.json').read_text());receipt_root=(r/accepted['evidence_directory']).resolve();assert receipt_root.is_relative_to(r/'.hermes/evidence')
-   payload=json.loads((receipt_root/'PAYLOAD.json').read_text());assert len(payload)==accepted['payload_files']==58
-   setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';digest=hashlib.sha256(setup.read_bytes()).hexdigest();assert digest==accepted['artifacts'][setup.name];os.link(setup,fixture/'current-setup.exe')
-   identity={'source_revision':accepted['source_commit'],'files':[{'name':'current-setup.exe','sha256':digest}],'actor_sha256':hashlib.sha256(args.application_actor.read_bytes()).hexdigest(),'scope':scope}
+   stage=args.application_nsis_stage.resolve();revision,artifacts,payload=nsis_input(args.application_nsis_stage)
+   setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';digest=hashlib.sha256(setup.read_bytes()).hexdigest();assert digest==artifacts[setup.name];os.link(setup,fixture/'current-setup.exe')
+   identity={'source_revision':revision,'files':[{'name':'current-setup.exe','sha256':digest}],'actor_sha256':hashlib.sha256(args.application_actor.read_bytes()).hexdigest(),'scope':scope}
    (fixture/'payload.json').write_text(json.dumps(payload));(fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity)
    config=json.loads((r/'.hermes/evidence/linux-cli-options-package-current/after100/TEARDOWN.json').read_text())['persisted_config'];(fixture/'config-template.json').write_text(json.dumps(config))
    shutil.copy2(r/'.hermes/evidence/desktop-package-current/windows/gui/NATIVE_CONTROLS_INPUT.ps1',fixture/'native-controls.ps1')

@@ -1,0 +1,11 @@
+{
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current/source.zip",
+  "status": "consumed by native MSIX8 assembly; owned source archive retired",
+  "sha256": "7102981545de326314920f49853254e047f1b12c1ab31c82a1808226003ec646",
+  "archive_bytes": 172488040,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

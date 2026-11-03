@@ -1,0 +1,145 @@
+{
+  "status": "pass native AT-SPI field names, roles, values and cancellation; captures require review",
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "artifact_sha256": "06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea",
+  "theme": "Dark",
+  "scale": "1",
+  "cases": [
+    {
+      "mode": "open",
+      "initial_fields": [
+        {
+          "name": "File name",
+          "value": ""
+        },
+        {
+          "name": "Filter this folder",
+          "value": ""
+        }
+      ],
+      "location_fields": [
+        {
+          "name": "File name",
+          "value": ""
+        },
+        {
+          "name": "Filter this folder",
+          "value": ""
+        },
+        {
+          "name": "Location",
+          "value": "/var/tmp/.ottrin-picker-qa-xlezer0b/sources"
+        }
+      ],
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "normal_exit": 0,
+      "preferences_and_source_unchanged": true,
+      "no_index_socket": true
+    },
+    {
+      "mode": "save",
+      "initial_fields": [
+        {
+          "name": "File name",
+          "value": "suggested.txt"
+        },
+        {
+          "name": "Filter this folder",
+          "value": ""
+        }
+      ],
+      "location_fields": [
+        {
+          "name": "File name",
+          "value": "suggested.txt"
+        },
+        {
+          "name": "Filter this folder",
+          "value": ""
+        },
+        {
+          "name": "Location",
+          "value": "/var/tmp/.ottrin-picker-qa-xlezer0b/sources"
+        }
+      ],
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "normal_exit": 0,
+      "preferences_and_source_unchanged": true,
+      "no_index_socket": true
+    },
+    {
+      "mode": "folder",
+      "initial_fields": [
+        {
+          "name": "Filter this folder",
+          "value": ""
+        }
+      ],
+      "location_fields": [
+        {
+          "name": "Filter this folder",
+          "value": ""
+        },
+        {
+          "name": "Location",
+          "value": "/var/tmp/.ottrin-picker-qa-xlezer0b/sources"
+        }
+      ],
+      "response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      },
+      "normal_exit": 0,
+      "preferences_and_source_unchanged": true,
+      "no_index_socket": true
+    }
+  ],
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-xlezer0b",
+    "owned_processes_reaped": [
+      {
+        "pid": 935861,
+        "exit": 0
+      },
+      {
+        "pid": 935886,
+        "exit": 0
+      },
+      {
+        "pid": 935887,
+        "exit": 15
+      },
+      {
+        "pid": 935978,
+        "exit": 0
+      },
+      {
+        "pid": 936159,
+        "exit": 0
+      },
+      {
+        "pid": 936232,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

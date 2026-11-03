@@ -1,0 +1,32 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-i_wpm9n7",
+  "owned_processes_reaped": [
+    {
+      "pid": 951476,
+      "exit": 0
+    },
+    {
+      "pid": 951480,
+      "exit": 0
+    },
+    {
+      "pid": 951481,
+      "exit": 15
+    },
+    {
+      "pid": 951597,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      951625,
+      951693
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Native creation workflow failed; inspect preserved log",
+  "profile_removed": true
+}

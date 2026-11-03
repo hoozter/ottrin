@@ -1,0 +1,30 @@
+{
+  "status": "pass exact AppImage native field-name/role/value/cancellation scope",
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "artifact_sha256": "06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea",
+  "cases": [
+    {
+      "result": ".hermes/evidence/picker-accessibility-current/linux-picker-dark/RESULT.json",
+      "theme": "Dark",
+      "scale": "1",
+      "reviewed_originals": {
+        "folder-location.png": "c56dd6eb648fe6c310aaa7c51fa854fdf6887f9ef36d9aa2f2c0e816506bbb63",
+        "open-location.png": "3bd430a1fc6c713722381b61e86368542573c505635cb326e6759a11af6e3b46",
+        "save-location.png": "81920325557e6cec22c4115264e0f63eaad4933a58409002eaecdad831a9fd20"
+      }
+    },
+    {
+      "result": ".hermes/evidence/picker-accessibility-current/linux-picker-light/RESULT.json",
+      "theme": "Light",
+      "scale": "1.5",
+      "reviewed_originals": {
+        "folder-location.png": "0cfc0130eb64f87fa1e1a1ada5191b6077b85324c825dab8b649063f805bb529",
+        "open-location.png": "9e16d82fa7ee23450c8e48206fd923e2388f5196ab7a87674f29dd8302d7a1fe",
+        "save-location.png": "fe04c48f8b8714e0ed8aa3633447a756b72ed9a801d7f576d37bf12d36ce06f6"
+      }
+    }
+  ],
+  "original_captures_directly_reviewed": true,
+  "scope": "Private X11/software AT-SPI; Dark100 and Light150 Open/Save/folder, native Location editing, no index socket, source/preferences preserved; not screen-reader human or full roadmap acceptance",
+  "cleanup": "Both owned desktops, profiles, mounts and processes removed; content-verification extraction also removed after its consumer finished"
+}

@@ -1,0 +1,21 @@
+{
+  "status": "all11 original native captures directly reviewed within exact package scope",
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "artifact_sha256": "3f8b78c7b7ec3d657cf1e4e5ee25735ef067cb34035e7649a63a610d1c2114d4",
+  "version": "0.1.0.8",
+  "images": {
+    "visibility-restored.png": "e5b006bb47858736787ce31f75874d6a5ac67c5a5624d3e6b4dac73554f3ddf6",
+    "main.png": "ade2475140c115dda0b0f4572c95e1bc938b72dd62bdd1a693511e70c75776db",
+    "visibility-show-all.png": "c1ee8c9cb90ba3f4156f563b27e0ad847e8ee4a4934419361a631c20a05e1208",
+    "updated-main.png": "e086d641ee9dead6d9cc91a0dfb114f0648e3e4c2d16fe83224ccb3c0777f910",
+    "updated-main-menu-after-space.png": "e6447a25e7c64f059309ecc096482478c6e2f8c72fab9ff47d16e2362f4f3a68",
+    "updated-inspector-before-normal-space.png": "c992db364e5dac83d7aa15a05689ab22ec6b2f3bd69c973e5fcd16bd03dd24bb",
+    "visibility-address-input.png": "073d3ee5248de3192fe4778d31e882f676b9dd94174f008cd0e94a77aca8ef7e",
+    "updated-inspector-menu.png": "97438e27f64396c047e436283f5a7bf06b034ba68787c5b2f0714ad76315e2c6",
+    "updated-main-menu-before-space.png": "e6447a25e7c64f059309ecc096482478c6e2f8c72fab9ff47d16e2362f4f3a68",
+    "visibility-default.png": "e5b006bb47858736787ce31f75874d6a5ac67c5a5624d3e6b4dac73554f3ddf6",
+    "updated-fixture-selected.png": "11e09978bbc09a352e00e6657c4d8fa6ff52c29ce919210d9b56fdebed71e8a3"
+  },
+  "scope": "Original baseline7 GUI, updated8 main/selection/Inspector/menu Space/Escape and hidden/system visibility/address roundtrip; software OpenGL/default DPI; no whole-roadmap or physical adapter acceptance",
+  "fixture_login_recovery": "LOGIN_RECOVERY.json is an explicit additional real reboot after the stock base consumed temporary auto-login; not an Ottrin startup-policy change"
+}

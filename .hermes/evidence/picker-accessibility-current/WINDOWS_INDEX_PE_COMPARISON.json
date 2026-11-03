@@ -1,0 +1,32 @@
+{
+  "status": "pass: complete PE equal apart from COFF timestamp and optional-header checksum",
+  "versions": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+      "sha256": "7a878c8a66e61a5021d2901d056e462bf9304690b180af7f7a4f9aea73fbff96",
+      "bytes": 5954052,
+      "timestamp_offset": 136,
+      "checksum_offset": 216,
+      "timestamp": 1793696129,
+      "checksum": 5956762
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+      "sha256": "e085ea437a1fb06d0b6707a1f9dd88fcb727926283f7bc00f1382bad6c0a0590",
+      "bytes": 5954052,
+      "timestamp_offset": 136,
+      "checksum_offset": 216,
+      "timestamp": 1793706000,
+      "checksum": 5966633
+    }
+  ],
+  "different_offsets": [
+    136,
+    137,
+    216,
+    217,
+    218
+  ],
+  "normalized_whole_file_sha256": "765702e2ca368f0ad9f4345d81b4eff1110a9e410490fcff18babdb12c495727",
+  "scope": "All code/data/resources/imports/unwind/relocation/debug and every other byte identical. Prior CPU/runtime receipts retain original hashes; no fresh benchmark claimed."
+}

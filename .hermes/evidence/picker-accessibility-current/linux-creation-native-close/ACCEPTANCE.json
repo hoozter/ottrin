@@ -1,0 +1,48 @@
+{
+  "status": "pass scoped main-menu creation/cancellation/refusal and native Close",
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "artifact_sha256": "06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea",
+  "functional_receipt": "FUNCTIONAL_RESULT.json",
+  "filesystem_receipt": "FILESYSTEM.json",
+  "reviewed_original_images": {
+    "new-file.png": "31cd2e2a88ab6c9c0e04965f6cb6dd69dd34d542fd57192619a273821b6867be",
+    "existing-entry-refusal.png": "04f18423d314745deaad37acf1762d4672aa129a67b5a42e6941c48288515dbd",
+    "new-folder.png": "0428d7c9e3b606bdeef178380bc68a10d9f6239570ab58dd580eb12894b5e250"
+  },
+  "limits": [
+    "Dark100 private software X11 only; no complete daily-driver acceptance",
+    "Creation text field remains unnamed in native accessibility output; independent software audit required",
+    "Earlier Alt+F4 helper route failed to close; this native-button Close result does not accept or diagnose that shortcut"
+  ],
+  "owned_teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-wn2t_wgw",
+    "owned_processes_reaped": [
+      {
+        "pid": 952831,
+        "exit": 0
+      },
+      {
+        "pid": 952834,
+        "exit": 0
+      },
+      {
+        "pid": 952835,
+        "exit": 15
+      },
+      {
+        "pid": 952929,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        952958,
+        953049
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

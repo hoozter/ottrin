@@ -1,0 +1,26 @@
+{
+  "checks": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+      "payload_files": 58,
+      "status": "accepted matching receipt"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+      "payload_files": 58,
+      "status": "accepted matching receipt"
+    },
+    {
+      "case": "undeclared path",
+      "status": "rejected"
+    },
+    {
+      "case": "symlink input",
+      "status": "rejected"
+    }
+  ],
+  "owned_fixture_removed": true,
+  "scope": "Actual stable/staged receipts and negative input admission; native execution acceptance separate"
+}

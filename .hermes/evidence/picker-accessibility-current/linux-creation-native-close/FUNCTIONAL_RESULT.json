@@ -1,0 +1,42 @@
+{
+  "status": "pass packaged main-menu creation/cancellation/refusal scope",
+  "cases": [
+    {
+      "case": "new-file",
+      "field": {
+        "role": "entry",
+        "accessible_name": ""
+      },
+      "status": "pass"
+    },
+    {
+      "case": "new-folder",
+      "field": {
+        "role": "entry",
+        "accessible_name": ""
+      },
+      "status": "pass"
+    },
+    {
+      "case": "cancel-new-file",
+      "field": {
+        "role": "entry",
+        "accessible_name": ""
+      },
+      "status": "pass"
+    },
+    {
+      "case": "existing-file-refused",
+      "field": {
+        "role": "entry",
+        "accessible_name": ""
+      },
+      "status": "pass"
+    }
+  ],
+  "source_bytes_preserved": true,
+  "created_file_empty": true,
+  "created_folder_empty": true,
+  "normal_close_exit": 0,
+  "limit": "Functional native GUI scope only; recorded field names do not constitute accessibility acceptance"
+}

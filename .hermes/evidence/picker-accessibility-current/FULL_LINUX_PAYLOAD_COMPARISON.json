@@ -1,0 +1,53 @@
+{
+  "status": "pass full AppImage file/symlink/mode comparison",
+  "previous_source": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "candidate_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "previous_artifact_sha256": "b4eacc644440e84e26678bb77313940f244be9be2cadb249042ee75232f7b005",
+  "candidate_artifact_sha256": "06d384e7e2ffa74f1c76f6f67618d3f0f6b9c21e692646a1d3dc0bf60583e8ea",
+  "entries": 113,
+  "changed": {
+    "usr/bin/ottrin": {
+      "previous": {
+        "sha256": "bd3385f0bbdf0ed312eeba08c7c04a0bdc00063cbe809609720f521bf79d425d",
+        "mode": 493
+      },
+      "candidate": {
+        "sha256": "cb86b3bd826d52ce1568263d2635366248075b8dc6a7708fa96d490a0c102cdf",
+        "mode": 493
+      }
+    },
+    "usr/share/doc/ottrin/SOURCE_REVISION.txt": {
+      "previous": {
+        "sha256": "7a1c5fe40bbf609213dceece31271efcb2c48d8206e6d75dedc64f3ac70c72ff",
+        "mode": 436
+      },
+      "candidate": {
+        "sha256": "b3094a4d4d4eb12b4906254c4d2cd401d64793cd70fd8d6f7799033dee30da41",
+        "mode": 436
+      }
+    },
+    "usr/share/doc/ottrin/RELEASE_NOTES.md": {
+      "previous": {
+        "sha256": "e3c7927f5843dd92a21d44b4db68bc37538dcf57eb780f0b0ce91de804f51bfd",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "e91c30b6d51cd73875f22373373caa2daa2197ce2e29c23b1d94bf72ccb5bc31",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/ROADMAP.md": {
+      "previous": {
+        "sha256": "d0d9eea8dbd4dc003bc9e920d420ddcc7da127ba8b5b06102b23f872e7d9e1eb",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "406f31adbf7340a7d33699593fa5decabdfcff0b30a9c587d4e9a7c290b0a4ae",
+        "mode": 420
+      }
+    }
+  },
+  "unchanged_entries": 109,
+  "scope": "Every runtime library, helper, font, asset, launcher, policy and other documentation input unchanged. GUI change independently checked in native captures; roadmap/provenance differences expected. Prior UI scopes remain historical, not freshly rerun.",
+  "temporary_extractions_removed": true
+}

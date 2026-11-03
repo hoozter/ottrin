@@ -1,0 +1,15 @@
+{
+  "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current/previous-input.msix",
+  "canonical_previous": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
+  "sha256": "1f4fc891519b537d78460835fc25cd8588f065e4fd147600cd5d3671389db5bf",
+  "version": "0.1.0.7",
+  "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "purpose": "Actual MSIX7-to8 native update/GUI/login/removal acceptance; temporary hard link to exact existing baseline",
+  "pending_consumers": [],
+  "cleanup_owner": "picker-accessibility-current; unlink retained_input after owned native update consumer and all mounts/VMs close; retain canonical until candidate accepted",
+  "completed_consumers": [
+    "upgrade-enabled"
+  ],
+  "input_retired_after_consumers": true,
+  "replay_limit": "Former exact MSIX7 consumed before retirement; raw inputs and previous payload receipt retain original identity"
+}

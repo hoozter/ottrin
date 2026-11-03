@@ -1,0 +1,9 @@
+{
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Deliver verified picker accessible names; stable7d packages retained until exact native acceptance",
+  "pending_consumers": [],
+  "cleanup_owner": "picker-accessibility-current; producer registered failure teardown; successful staging retained only for these consumers",
+  "cleanup_complete": true,
+  "delivery_status": "Verified picker-name Linux cohort published; staging removed"
+}

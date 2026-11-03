@@ -1,0 +1,61 @@
+{
+  "status": "pass within actual native update/ordinary GUI/real reboot/login/removal scope",
+  "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+  "package_input": {
+    "runtime_script_sha256": "ec02e8ef94581d8d52962e62c47eb774e3f9daf6dab27f66ca411ed9da82692a",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "3f8b78c7b7ec3d657cf1e4e5ee25735ef067cb34035e7649a63a610d1c2114d4",
+    "source_revision": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
+    "version": "0.1.0.8",
+    "startup_enabled": true,
+    "previous": {
+      "sha256": "1f4fc891519b537d78460835fc25cd8588f065e4fd147600cd5d3671389db5bf",
+      "version": "0.1.0.7",
+      "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958"
+    }
+  },
+  "native_receipt": "RUNTIME_RESULT.json",
+  "updated_menu_keys": {
+    "source_sha256": "50C6A3E7D1D8029C750535A7250DDECDE20A9AEEDD1C26F092A38AD3E21FA970",
+    "normal_space_open_close": true,
+    "inspector_menu_escape_keeps_window_open": true,
+    "source_and_directory_unchanged": true,
+    "main_menu_space_keeps_inspector_closed": true,
+    "status": "pass"
+  },
+  "preferences_and_index_file_identity_preserved": true,
+  "actual_login": {
+    "pid": 8384,
+    "administrator": false,
+    "session": 1,
+    "package": "Ottrin.Development_0.1.0.8_x64__vs01n017nxmbr"
+  },
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "private_console_cleanup_verified": true,
+  "native_visibility_receipt": "Captured for separate hash-bound rendered review; not accepted by this lifecycle assessor",
+  "scope_limit": "Owned Windows software SPICE, exact package identity and ordinary runtime token; unsigned development deployment uses the explicit administrative fixture. Not Store signing/certification, physical graphics, current NSIS/MSI acceptance or whole-Windows-roadmap completion.",
+  "fixture_login_recovery": {
+    "status": "normal recovery reboot verified; original login actor remains authoritative",
+    "domain_uuid": "48da363d-9310-4ae3-a488-bfe0b97abd0e",
+    "scope": "Only fixture-owned temporary MSIX account credential and automatic login; no Ottrin CLI, startup setting, signing policy, original VM or user-data changes",
+    "nonce": "008ab7fd75fe4b11ba319c3b67d7b23f",
+    "no_ottrin_cli": true,
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "reboot_command": "shutdown.exe /r /t 15",
+    "previous_auto_admin_logon": "0",
+    "previous_password_present": false,
+    "before_boot_ticks": 639293081605000000,
+    "fixture_account_password_reset": true,
+    "after_boot_ticks": 639293086415000000,
+    "observed_console_user": "OTSTOCKB7AFEE40\\OTMSIX008ab7fd75fe"
+  }
+}

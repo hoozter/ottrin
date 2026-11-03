@@ -1,0 +1,32 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-rulnwscc",
+  "owned_processes_reaped": [
+    {
+      "pid": 949237,
+      "exit": 0
+    },
+    {
+      "pid": 949240,
+      "exit": 0
+    },
+    {
+      "pid": 949241,
+      "exit": 15
+    },
+    {
+      "pid": 949375,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      949381,
+      949450
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Native creation workflow failed; inspect preserved log",
+  "profile_removed": true
+}
