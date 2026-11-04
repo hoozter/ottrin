@@ -36,9 +36,9 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages use runtime `dacedd8d`; Windows ZIP/NSIS and unsigned
+The four Linux packages use runtime `31616771`; Windows ZIP/NSIS and unsigned
 development MSIX0.1.0.17 retain accepted runtime `45830098`. Exact-source
-CI41911407933 passes all four Linux/Windows verification/performance jobs.
+CI41920332944 passes all four Linux/Windows verification/performance jobs.
 Linux administrator Copy supports authenticated history loading after restart,
 freshly checked Undo and confirmed cleanup. Recovered history is distinguished
 from a known completed batch; reloading a fully undone Copy shows Copy undone
@@ -55,15 +55,24 @@ not a personal/large-corpus guarantee. The managed personal daemon is Ready on t
 matching binary with exact preferences/startup/database identity preserved.
 Evidence: `.hermes/evidence/recovery-transport-delivery-current/`.
 
-The next Grid source correction uses measured two-line captions shared by the
-browser and picker. Native review caught untidy extension wrapping; its refinement
-passes503 UI tests and strict Linux/Windows cross-target lint but still needs
-refined native/package acceptance. Windows direct-UAC pipe transport has focused
-native evidence at its original source scope and is not yet in Windows458.
-Windows administrator Copy recovery, full theme/interface consistency, remaining
-supported integration gates, MSI rollback, physical coverage and final user
-acceptance remain open. Owned test environments and superseded packages/staging
-are removed; current deliverables, compact evidence and useful compiler caches remain.
+The delivered Grid layout uses measured, centered, at-most-two-line filenames in
+both the browser and cooperating picker. Actual AppImage review covers Dark/Light,
+100% and controlled150% software-X11 desktop scaling, normal/enlarged Grid captions
+and picker cancellation. All24 original captures were reviewed. The unchanged
+helper/service scopes above retain their original DAC acceptance; they were not
+freshly rerun. Evidence: `.hermes/evidence/grid-caption-delivery-current/`.
+
+The subsequent single-line caption and one-shot Miller footer wakeup fixes pass505
+UI tests and strict native/Windows cross-target lint. They still need native/package
+acceptance and are not in the delivered316 image. The captured initial0-item footer
+finding remains open until that verification.
+
+Windows direct-UAC pipe transport has focused native evidence at its original
+source scope and is not yet in Windows458. Windows administrator Copy recovery,
+full theme/interface consistency, remaining supported integration gates, MSI
+rollback, physical coverage and final user acceptance remain open. Owned test
+environments and superseded packages/staging are removed; current deliverables,
+compact evidence and useful compiler caches remain.
 
 ### Linux
 

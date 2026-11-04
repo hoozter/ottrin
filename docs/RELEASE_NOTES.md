@@ -4,9 +4,9 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM use runtime `dacedd8d`; Windows ZIP/NSIS and
+Linux AppImage/portable/DEB/RPM use runtime `31616771`; Windows ZIP/NSIS and
 unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
-CI41911407933 passes all four Linux/Windows verification/performance jobs.
+CI41920332944 passes all four Linux/Windows verification/performance jobs.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind delivered hashes and acceptance scopes.
@@ -38,12 +38,17 @@ is claimed. Existing AppImage/portable users update the separately installed
 helper through Settings → Services → Update / reinstall helper with administrator
 authentication. This delivery did not silently replace the personal system helper.
 
-The next Grid source correction shares measured two-line filename layout between
-the browser and picker. Native7fefe review caught untidy extension wrapping;
-a separator-wrapping refinement passes503 UI tests and strict Linux/Windows
-cross-target lint. Refined native/package acceptance is still required. A fresh
-account's no-input Miller count remains correct through30seconds; this does not
-close the earlier disabled-service initial-frame finding.
+The delivered Grid layout uses measured, centered, at-most-two-line filenames in
+both the browser and cooperating picker. Actual AppImage review covers Dark/Light,
+100% and controlled150% software-X11 desktop scaling, normal/enlarged Grid captions
+and picker cancellation. All24 original captures were reviewed. The unchanged
+helper/service scopes above retain their original DAC acceptance; they were not
+freshly rerun. Evidence: `.hermes/evidence/grid-caption-delivery-current/`.
+
+The subsequent single-line caption and one-shot Miller footer wakeup fixes pass505
+UI tests and strict native/Windows cross-target lint. They still need native/package
+acceptance and are not in the delivered316 image. The captured initial0-item footer
+finding remains open until that verification.
 
 Windows helper transport has a separate focused native checkpoint: direct UAC and
 shared local-pipe I/O replace PowerShell and request/response files. Its ten checks

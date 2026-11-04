@@ -9,15 +9,15 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` use runtime
-`dacedd8dfe7bd04cbfc4208d319d17a9d797deae`. Windows ZIP/NSIS/development
+`31616771f1e346d84c3b0bf5ab0fd29af1b6e89b`. Windows ZIP/NSIS/development
 MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`d85465b902055bb40f39a873e1eeb52fa975e4d3a26ea39eb6cf33977f6024e2`.
+`b4e2995dcec8f0dd7a03b36b8dcba68f4d8e3ca34707ad88a9deaaf15cc7814e`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
-Exact DAC run41911407933 passes all four hosted jobs. Current Linux packages include
+Exact316 run41920332944 passes all four hosted jobs. Current Linux packages include
 restored administrator history provenance/refresh and typed completed-Undo state,
 with helper protocol3 readiness/update checks. Actual AppImage/FUSE protected Copy,
 restart/history/Undo/cleanup, native DEB two-reboot and four aa-to-DAC replacement
@@ -29,8 +29,9 @@ startup choice and database identity preserved. Superseded packages and consumed
 staging are removed. The personal system helper still needs owner authentication
 through Services to update. Windows458 remains unchanged.
 
-The next Grid caption refinement is source-tested, with native/package acceptance
-still pending. The ordered queue below records all remaining work. Earlier
+The Grid caption refinement is delivered with actual AppImage browser/picker
+Dark/Light100% and controlled150% software-X11 review. Subsequent single-line
+caption and Miller footer wakeup fixes remain source-tested only. The ordered queue below records all remaining work. Earlier
 checkpoints retain their historical source/artifact scopes.
 
 The current Linux packages correct Services showing a false red error for an
@@ -520,9 +521,10 @@ software-X11 supplement also passes: normal/enlarged Grid captions and actual
 picker Dark/Light controls are directly reviewed, with physical-width checks
 confirming the configured backend scale. All24 original captures across the main
 fixture, scale supplement and reboot observations were reviewed.
-Current CI41920332944 has three green jobs; Windows tests/lint pass and its release
-build remains live.
-The candidate has not replaced delivered DAC packages.
+CI41920332944 completed successfully in all four jobs. Guarded promotion replaced
+the four Linux formats with this exact316 cohort, restarted the managed daemon
+to Ready and preserved startup/preferences/database identity. Windows458 is
+unchanged; superseded packages and consumed staging were removed.
 
 That native review also exposed a separate single-line Miller caption reducing a
 long hyphenated filename to `00-…` while leaving the row width unused. A production
@@ -531,7 +533,8 @@ file rows, theme-card names and sort headers;504 UI tests and strict Linux/Windo
 cross-target lint pass. `DEVELOPMENT.md` requires glyph-level width checks and the
 shared helper. A queued CI edit adds the required formatter gate with explicit
 rustfmt/clippy components. These follow-ups need native/package acceptance and
-are held locally to avoid cancelling the current candidate's hosted run.
+were committed separately after source verification; the previous hosted run
+completed successfully, so they can now be pushed without cancellation.
 
 The current316 native DEB reboot fixture again captures an early phase0 footer
 showing0 items beside populated rows; its installed-but-disabled warm-index phase
@@ -542,9 +545,9 @@ for painting and invalidation, requesting one corrected frame only when that
 caption changes. The regression proves correction without user input and return
 to idle. All505 UI tests and strict Linux/Windows cross-target lint pass. Native/
 package acceptance of this follow-up remains required; it is not in316 or the
-currently delivered DAC image. All three current owned QA guests/nine volumes,
+delivered316 image. All three current owned QA guests/nine volumes,
 credentials, consumed transports and extraction are removed. The111MiB immutable
-Grid stage remains solely for CI/publication; five obsolete incremental sessions
+Grid stage was consumed by successful publication; five obsolete incremental sessions
 were removed (0.33GiB reported). No whole-interface or roadmap completion is implied.
 
 1. Package and verify the subsequent Windows transport and Grid source fixes, then finish administrator Copy recovery, including the Windows canonical

@@ -319,7 +319,7 @@
       "id": 41,
       "section": "Release candidate gate",
       "requirement": "`cargo fmt --all --check`, `cargo check --workspace --all-targets`, `cargo test --workspace` and strict workspace Clippy pass.",
-      "classification": "candidate verification in progress; delivered check scopes retained",
+      "classification": "delivered source checks pass; final combined release audit pending",
       "evidence": [
         ".hermes/evidence/worksheet-alignment-current/corrected/HOSTED_FINAL.json",
         ".github/workflows/ci.yml",
@@ -329,13 +329,13 @@
         ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/theme-delivery-current/CI_CURRENT.json"
       ],
-      "assessment": "The old shipping4a statement was stale. Delivered LinuxDAC and Windows458 each have their own all-four-job CI receipts. Candidate316 has explicit source-snapshot formatting proof and three green hosted jobs; its Windows verification is still live. The final combined release candidate is not accepted."
+      "assessment": "Delivered Linux316 has explicit source-snapshot formatter proof and all four successful hosted jobs in run41920332944. Windows458 retains its own all-four-job CI receipt. The subsequent formatter CI gate and caption/footer fixes await hosted and package verification. The final combined release candidate is not accepted."
     },
     {
       "id": 42,
       "section": "Release candidate gate",
       "requirement": "Linux and Windows CI pass for the release commit.",
-      "classification": "pending exact candidate CI completion; prior delivered runtimes verified",
+      "classification": "delivered runtimes verified; final release commit pending",
       "evidence": [
         ".hermes/evidence/worksheet-alignment-current/corrected/HOSTED_FINAL.json",
         ".github/workflows/ci.yml",
@@ -343,7 +343,7 @@
         ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/theme-delivery-current/CI_CURRENT.json"
       ],
-      "assessment": "Delivered LinuxDAC run41911407933 and Windows458 run41809847269 each pass all four jobs at their exact sources. Candidate316 run41920332944 is live; three jobs pass and Windows verification remains in Cargo test. No final release-commit or whole-platform acceptance is inferred."
+      "assessment": "Delivered Linux316 run41920332944 and Windows458 run41809847269 each pass all four jobs at their exact sources. No final release-commit or whole-platform acceptance is inferred."
     },
     {
       "id": 43,

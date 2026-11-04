@@ -9,11 +9,11 @@
   },
   "ci": {
     "run_id": 41920332944,
-    "status": "Three jobs success; Windows workspace tests/lint pass, release build confirmed live",
+    "status": "terminal success; all four jobs passed",
     "url": "https://github.com/hoozter/ottrin/actions/runs/41920332944"
   },
-  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-  "stable_deliverables": "Delivered LinuxDAC / unchanged Windows458; do not replace until new exact-source package acceptance",
+  "stage": null,
+  "stable_deliverables": "Linux316 promoted; Windows458 unchanged",
   "goal": "active/incomplete",
   "native": {
     "status": "terminal: main AppImage,150% supplement and two-reboot counter fixture all assessed",
@@ -24,5 +24,6 @@
       "SCALE150_ACCEPTANCE.json",
       "WARM_COUNTER_OBSERVATION.json"
     ]
-  }
+  },
+  "promotion": "PROMOTION.json: terminal pass; stage and retired packages removed"
 }
