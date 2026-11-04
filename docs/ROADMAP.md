@@ -3,199 +3,100 @@
 ## Current delivery and next work
 
 Updated 2026-11-04. This is the single active queue. Historical sections and
-receipts retain their original source/artifact scope. They are not additional
-active queues or claims that old pending work remains unfinished today.
-Packaged manuals are build-time snapshots; `SOURCE_REVISION.txt` identifies the
-actual runtime source, and the repository's stable acceptance manifests record
-later delivery acceptance.
+receipts keep their original artifact/source scope. Passing a focused test does
+not complete a broader native, platform or user-acceptance requirement.
 
-All seven current local packages use runtime source
-`47a772af0a15c353922aa9a78d14afdaa13ced1a`: four Linux formats at `dist/packages/`, plus
-ZIP/NSIS/development MSIX 0.1.0.14 at `dist/windows-candidate/`.
-The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5`. Exact source, artifact hashes and acceptance scopes are in
+### Usable local preview
+
+All seven stable packages remain runtime
+`47a772af0a15c353922aa9a78d14afdaa13ced1a`: four Linux formats in `dist/packages/`
+and ZIP/NSIS/development MSIX0.1.0.14 in `dist/windows-candidate/`.
+The AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. This is a local functional preview;
-full roadmap and final owner acceptance remain open. No public release,
-signing or Store submission is implied. MSI remains held.
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
+No public release, signing, Store submission or MSI acceptance is implied.
 
-| Current work | Verified state |
+The stable preview includes off-thread storage discovery, changed-only index
+observations and removal of unchanged GUI repaints. Its scoped Linux and Windows
+Native/OpenGL idle samples pass below2% of one core. Windows Dark144DPI controls,
+new-drive discovery, index counts, close/uninstall and native window-region
+receipts retain their original scopes in `gui-idle-refresh-current/`.
+Physical graphics, other scales/themes, sustained workloads and whole-interface
+acceptance are not established by those samples.
+
+Packaged manuals are build-time snapshots. `SOURCE_REVISION.txt` identifies the
+runtime; repository acceptance manifests and this queue record later progress.
+Documentation/evidence checkpoints do not require rebuilding unchanged runtime.
+
+### Current candidate: event-driven Services
+
+Runtime source: `f463ff268f1c0850360fb3d1d81da18a3d3240ec`.
+Evidence/producers: `.hermes/evidence/service-wake-current/`.
+Stable packages above are preserved until the candidate's remaining gates pass.
+
+| Requirement/gate | Current evidence |
 | --- | --- |
-| Source | Committed/pushed `47a772af`: unchanged storage/index observations no longer repaint the GUI. Storage discovery runs off-thread and starts lazily; fresh mutation guards outrank stale observations. The index worker polls independently and wakes only on changed diagnostics. Initial unknown storage preserves selected indexed volumes. |
-| Source checks | 481 UI tests pass, one existing ignored; strict native/Windows UI/app all-target lint and formatting pass. |
-| Linux delivery | Four formats pass content/namespace checks. Exact AppImage passes native idle/index-count workflow at Dark150; original baseline/current captures reviewed. Normal close and source/preferences preserved. |
-| Windows delivery | ZIP/NSIS share all 58 payload files; installer SHA256 `99821f41cff0454b3d095770408c1c302052cbabd779d05eb990cdeba533d7f4`. Both Native/OpenGL pass actual 144 DPI index-count1/2/1 and new DOS-drive insertion without injected input. Six original full-window captures reviewed; ordinary close/uninstall preserve source/preferences. MSIX14 passes native MakeAppx/unpack and 58-file equality, not fresh deployment/update/login. |
-| Hosted gates | CI 41750766499: all four exact-source Linux/Windows verification and isolated release-performance jobs pass. |
-| GUI performance | Matched 30-second private software fixtures: Linux 4.600% to 0.067% of one core; Windows Native 73.062% to no observed processor-time delta, OpenGL 7.758% to no observed delta. Both Windows samples exceed 30 seconds, same driver/DPI/bounds/workarea/one-file corpus. All current samples pass the strict below 2% criterion. Zero observed delta is limited by counter resolution and sample duration, not a universal zero-CPU claim. |
+| Source behavior | Independent future-login checkbox; startup changes preserve current daemon state; Linux repair preserves disabled startup. Scheduler scripts use exact encoded input and direct readable errors. Pending service/status views sleep until their worker wakes them. |
+| Source checks |489 Linux UI tests pass, one existing ignored; formatting and strict native/Windows Search/UI/app all-target lint pass. The rendered pending-service regression verifies no animation/polling and a real completion wakeup. |
+| Linux packaging |All four formats build and pass package/content/namespace checks. |
+| Linux native settings |Seven exact-AppImage cases pass at private software X11 Dark150: malformed settings are preserved/rejected, read-only theme save retains the24px draft, retry saves it, Search labels are truthful, close and source/preferences are preserved. Three original captures directly reviewed. Startup-error checks are stderr diagnostics, not native error-dialog acceptance. |
+| Linux candidate daemon |Fresh private1000-file watcher/create/rename/delete/query/restart/two-shutdown probe passes;0.033% one core over30seconds without clients during measurement. Private state/processes removed. |
+| Personal Linux daemon |Read-only sample of the older running daemon: enabled, Ready,193207 items, watcher ready, no error;0.267% one core over30seconds. No restart or settings change. This is neither current-candidate nor sustained acceptance. |
+| Windows packaging |ZIP/NSIS build and all58 payload files match. Installer SHA256 `2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f`. |
+| Windows Services |Setup now completes (observed20–23seconds) and the diagnostic reached14 states. Full acceptance remains open: one run stopped at an ambiguous Refresh selector; the corrected selector identifies the index-section control, but an extra reader then caused a receipt-sharing failure. Both failed runs and teardown remain. An identical-actor/package clean-observer rerun is active; no assertions or deadlines were relaxed. |
+| Windows remaining gates |Fresh core9case settings/close/uninstall workflow, complete16-state/six-toggle Services workflow, MSIX16 assembly/fresh private daemon probe, and final Windows CI verification remain pending. Exact clean Git input is prepared for MSIX; no assembly/deployment success is claimed. |
+| Hosted checks |CI41779769053: Linux verification and both isolated performance jobs pass; Windows full verification is still running. Earlier6f CI failed the readable-error assertion; it is not counted as a passing run. |
 
-Current evidence and registered producers:
-`.hermes/evidence/gui-idle-refresh-current/`.
-`DELIVERY_VERIFICATION.json` rehashes all seven stable artifacts/sidecars and all
-58 Windows payload files. `CLEANUP_FINAL.json` verifies two owned VMs/four volumes,
-five private profiles, source archive, consumed transports/extraction, candidate
-stages and superseded packages removed. Twenty-five obsolete incremental sessions
-were removed; newest per-configuration state retained, final inspection zero.
-Current packages, compact evidence, useful compiler caches, user data, protected
-bases and the small reusable signed display-driver cache remain.
+The current native Services fixture checks initial setup, update/reinstall,
+stop/restart, externally disabled registration, disabled repair and uninstall.
+Six native checkbox actions must preserve daemon PIDs, task-instance counts and
+permissions. Partial diagnostic progress does not replace the complete matrix.
 
-Complete daemon ELF/PE loaded-image comparison matches the preceding748a source
-outside nonfunctional metadata. Linux reuses the exact historical private1,000-file
-watcher/query/restart/shutdown and bounded CPU receipt through that identity proof;
-it is not a fresh daemon CPU sample. The current Windows assembly account also
-passes a fresh1,000-file watcher/create/rename/delete/query/restart/two-stop check,
-with 0.208% one core over 30.01 seconds. That noninteractive account does not establish
-ordinary-user scheduler acceptance. Current ordinary-user GUI checks separately
-observe Ready/watcher and automatic1/2/1 counts on both platforms.
-Sustained/large-corpus/personal-service/physical-graphics acceptance remains separate.
-Personal services/settings/data were not changed. Earlier numeric, theme mapping,
-window-region, preview, picker, folder, service and media receipts retain their
-exact historical source/artifact scope; no whole-interface acceptance is inferred.
+Completed cleanup: retired unpublished6f candidates and its unconsumed archive
+(553546060bytes),22 obsolete incremental sessions, completed Linux extraction
+(76560003bytes), private Linux profiles and terminal Windows VM disks/desktops/
+bootstrap inputs. Newest compiler state, useful shared caches, protected bases,
+user data and stable packages remain. Current candidate stages are
+`.hermes/packaging-tmp/.linux-native-desktop-stage` and
+`.hermes/packaging-tmp/.windows-picker-stage`; current source archive is
+`service-wake-current/cohort/source.zip`. They have declared native/MSIX/delivery
+consumers. The live VM owns its current overlay/media and has registered teardown.
 
-The earlier `9c914bd6` and `4b0f64a4` candidates were superseded before publication.
-The first correction fixed closed text-editor focus, but native Windows selection
-also focuses a file-row button. egui reports that as keyboard input wanted, so the
-broader guard blocked F2. The new regression reproduces the focused-row failure,
-and its correction preserves actual text ownership. Original failed native results
-and frozen actors remain; all twelve unpublished packages, unused source archives,
-owned desktops/VMs/volumes and consumed transports from those cohorts are removed.
-No earlier Linux pass is used to override an installed Windows failure.
+### Ordered implementation and acceptance queue
 
-The historical 100-run GitHub audit snapshot recorded 30 failures, 18 cancellations
-and 52 successes at its original 0aac checkpoint; these are not current rolling counts. Representative raw logs establish the earlier
-Windows debug benchmark timing and HTML startup-filter failures; subsequent fixes
-retain strict isolated release budgets and every renderer security sample. A
-Windows watcher polling test previously unwrapped transient SQLite DatabaseBusy.
-Its deterministic lock/recovery correction now passes all four exact-source b18
-hosted gates without accepting wrong hits, raising deadlines or suppressing other
-database errors. Evidence/prose pushes skip redundant full CI;
-pull requests, shipping source, packaging, security and workflow changes retain
-all gates. Notifications and production policies have not been changed.
+1. Finish this candidate's Windows Services/core/MSIX and exact-source CI gates.
+   Review the original native captures, promote one coherent seven-format cohort
+   to the stable paths, and finish owned cleanup. Do not rebuild or change source
+   to compensate for a test-observer/selector defect.
+2. Complete actual Linux polkit prompt/cancel/setup/reinstall and managed-index
+   service/login/runtime states in an owned full-system environment. These are
+   independently executable software QA, not owner waits. Reuse cached distro
+   bases; preserve personal services and protected VMs.
+3. Finish the theme/interface consistency audit and implementation. U08 remains
+   unfulfilled: preview navigation and Sync are invented, address fill differs
+   from the production breadcrumb frame, and miniatures apply full-size corners
+   without scaling. Reuse actual production presenters and geometry. Verify all
+   supported controls, role ownership, tabs, menus, text/icon alignment and window
+   styling; field-map/test counts do not prove whole-interface consistency.
+4. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
+   Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
+   DEB/RPM and cooperating Windows caller receipts retain their exact scopes.
+   Do not infer universal Windows dialog replacement or repeat fulfilled matrices
+   without changed inputs or a reproduced defect.
+5. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
+   (54 roadmap bullets) and `release-audit-current/USER_REQUIREMENTS.json` (15
+   overlapping user requirements), reconcile the release matrix/documents, and
+   leave only actual [owner/external waits](#ownerexternal-waiting-list).
+   These inventories are not a completion percentage.
 
-Picker/folder audit: actual Linux browser/Flatpak portal callers, native DEB/RPM
-lifecycle and installed Windows cooperating picker evidence retain exact original
-artifacts. Current directory/index launch ownership is byte-identical in all nine
-inspected modules; no new timing claim is made. Runtime36 folder integration now
-has actual Linux FileManager1 methods/default restoration/Dolphin preservation and
-all five native Windows menu/default dispatches, repair and supported uninstall
-preservation evidence. The original 39-control Linux appearance acceptance retains its source/artifact
-scope; current numeric naming and actions have additional native checks above.
-The historical native Windows comparison confirmed opaque outside corners.
-That defect is now source-fixed and delivered with actual native-region evidence
-on all six window types, pointer gestures and live editor/Cancel propagation as
-scoped above. Current Dark Windows144DPI complete-window captures now pass in
-both software renderers; other scales/themes, physical graphics and whole-interface
-coverage remain separate acceptance gaps. Remaining service states/prompt acceptance and whole-interface
-scope still require explicit audit. No universal
-Windows system-picker interception or full roadmap completion is claimed.
-
-Current service follow-up (2026-11-04): source `6f0a58e9` has fresh Linux
-package/content, seven native settings cases and a private daemon probe, but is
-not promoted. The ordinary-user Windows Services matrix still fails setup.
-A captured app child was querying XML/owner at64.96 seconds; that query completed
-and a registration child was observed at131.32 seconds, before the180-second
-UI timeout. This establishes multiple slow calls, not a proven single hung
-statement. The clone, two volumes, private console and consumed bootstrap are
-removed; safe originals and decoded scripts remain in
-`service-startup-current/cohort/services-launch-observation/`.
-CI41773667747 passes Linux verification and both performance jobs; full Windows
-Search tests fail the readable-error transport assertion because a thrown error
-arrives as CLIXML, despite the earlier focused transport step passing. The shared
-transport now catches terminating errors and writes their messages directly to
-stderr; formatting and Windows Search all-target strict Clippy pass. The existing
-native regression assertion remains unchanged and native CI must verify this
-correction. Neither this error-format fix nor the diagnostic resolves service
-responsiveness. Stable packages remain runtime47a above.
-
-Services repaint follow-up: pending setup and folder/portal status now display
-static themed progress text and use the existing worker-completion wakeups.
-The previous spinner continuously requested immediate frames despite the page's
-100ms polling interval. The new rendered regression verifies that a pending
-Services page settles without animation/polling and that the worker wakes and
-reports completion. All489 UI tests pass (one existing ignored), formatting and
-strict native/Windows Search/UI/app all-target lint pass. This removes a proven
-repaint source, but native setup timing and service lifecycle are not yet accepted.
-The unpublished6f candidates and unconsumed MSIX16 archive were retired after
-all diagnostic consumers finished (553,546,060 bytes); stable47a remains intact.
-Twenty-two obsolete incremental sessions were removed; newest per-configuration
-state remains. Fresh packaging and native checks are next, with source archives
-prepared only when a native MSIX assembly consumer is ready.
-
-Continue in this order:
-
-1. Build and verify fresh settings/service packages with the encoded Windows
-   task transport, then deliver them as one coherent package cohort. Stable deliverables remain
-   runtime47a772af above. Retired diagnostic candidate e3e33ae passes all4 hosted CI jobs, all4 Linux
-   package content gates,7 Linux native settings cases/3 reviewed originals,
-   and9 Windows settings cases/7 reviewed originals. Native MSIX15 assembly
-   matches all58 payload files. Fresh private1000-file Linux and Windows daemon
-   watcher/query/restart/two-shutdown probes pass at0.100% and0.208% of one core
-   over30seconds respectively; the Windows probe is SYSTEM-account software-VM
-   scope, not ordinary-user login or sustained/human acceptance.
-   Prior Windows Services setup remained Working with no registered task after
-   180seconds. A native ordinary-user trace of the unchanged registration script
-   instead completed in3.7087seconds through encoded command input, created the
-   correct task and removed it through the supported CLI. The source now uses
-   one UTF16LE encoded transport for all scheduler scripts, with UTF8/readable
-   text output. A bounded native Windows regression covers comments, quotes,
-   Unicode and readable failures. Local cross-compilation passes; its actual
-   native execution and the new app's service matrix still gate delivery.
-   Evidence: `config-status-current/cohort/registration-trace/` and
-   `service-startup-current/`. This is a source fix supported by a diagnostic;
-   it is not fresh packaged UI/service lifecycle acceptance.
-   The independent login-control gap is now implemented in source: installed
-   Linux services can enable/disable future startup without --now, and repair
-   retains a disabled startup choice; Windows
-   changes the owned task's enabled flag without replacing registration or
-   changing runtime, with MSIX startup policy/collision guards retained.
-   Services presents this choice separately from Start/restart, Stop and
-   uninstall, and Search health no longer displays the internal none marker.
-   Current source passes247 Search tests and488 UI tests (existing ignored
-   tests retained), strict native/Windows app/UI lint and formatting. Actual
-   login-toggle runtime acceptance and fresh packages remain required; these
-   source changes are not yet in the stable or e3e33ae candidate packages.
-   Complete native core close/uninstall/preservation independently of the
-   service matrix, then require current source CI, both native scopes, all
-   payload checks and owned cleanup before stable promotion. Completed e3
-   extractions/source archive and all terminal VM/transport fixtures are removed;
-   all superseded e3 candidate stages were retired after diagnostic consumers
-   finished. Stable deliverables remain intact; fresh candidates reuse the same
-   documented staging paths. See the current evidence cleanup receipts.
-2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
-   The theme editor still hand-paints navigation arrows and a Sync example that
-   differ from the real toolbar. Reuse the actual interface components; field
-   mapping checks do not fulfil the requested accurate live preview. Actual
-   Linux polkit prompt/cancel/setup/reinstall and managed-service state coverage
-   remain independent software QA work in an owned full-system environment.
-   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
-   roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
-   with 15 UI/service/delivery requirements. They overlap and are not a completion
-   percentage. `editable-fields-current/RELEASE_GATE_AUDIT.json` reviews seven
-   release-gate clauses only. Inspect every clause's direct evidence and unchanged
-   responsibility, including all 39 appearance mappings, Services state/actions,
-   numeric/color-picker controls, remaining media and storage/cross-volume workflows.
-   Current navigation/filename/focus delivery is complete at the scoped52 native
-   checks; do not infer whole-interface acceptance from it. Verify the remaining
-   Windows window-radius/platform behavior, service states/prompt and menu families.
-   The shared Windows opaque-corner correction is delivered at the scopes above;
-   continue actual DPI, fully visible layout and remaining whole-interface controls.
-   Current bounded CPU acceptance is established separately above; it is not inferred from functional shape/resize success.
-3. Close independently executable picker, Linux FileChooser/FileManager1 and
-   reversible Windows folder-integration software/caller gaps. Retain supported
-   caller/platform boundaries; Windows cooperating-picker checks do not establish
-   universal dialog replacement. Signing/Store/hardware/owner review do not stall
-   dependency-ready work. Do not repeat fulfilled fault matrices without changed
-   inputs or a reproduced defect. Resolve the private Alt+F4 fixture question
-   separately from normal native Close behavior.
-4. Reconcile the final release matrix and remaining documents, leaving only actual
-   [owner/external waits](#ownerexternal-waiting-list). Signing identity/key, Store
-   account/submission, unavailable physical hardware, personal administrator setup
-   and final owner acceptance remain explicit waits. No macOS build is added.
-
-The ordinary-user MSI registration rollback gate remains failed. Independent
-file-only authoring reproduces it; elevated diagnostics do not authorize production
-elevation, ACL/policy changes or manual-registry compensation. Keep the original
-failure/input and strict terminal assessment. This held gate does not stall other
-software work or count as a successful MSI release.
+The ordinary-user MSI registration rollback gate remains failed, including an
+independent file-only control. Preserve the exact held diagnostic input. Do not
+substitute elevation, ACL/policy changes or manual registry compensation for a
+working installer. This gate does not stall other dependency-ready work.
+Signing identity/key, Store account/submission, unavailable physical hardware,
+personal administrator setup and final human acceptance remain explicit waits.
+No macOS build or paid Windows signing work is added.
 
 ## Picker Shift selection — source correction, 2026-11-02
 

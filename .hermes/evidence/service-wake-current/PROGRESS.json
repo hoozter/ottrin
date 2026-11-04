@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-04T06:15:56.187778+00:00",
+  "runtime_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "stable_runtime_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "status": "candidate native/delivery gates pending; goal active",
+  "completed": [
+    "all4 Linux package/content gates",
+    "Linux7case native settings and3original reviews",
+    "fresh Linux1000-file daemon probe and cleanup",
+    "Windows58-file ZIP/NSIS identity",
+    "actual personal Linux daemon read-only CPU/health observation"
+  ],
+  "pending": [
+    "complete clean-observer Windows Services16states/6toggles",
+    "current Windows core9case workflow",
+    "MSIX16 native assembly/daemon/payload comparison",
+    "Windows full CI41779769053",
+    "stable promotion and owned cleanup",
+    "remaining ordered roadmap software and acceptance"
+  ],
+  "diagnostic_failures_preserved": [
+    "cohort/services-refresh-ambiguity/FAILURE_REVIEW.json",
+    "cohort/services-reader-sharing/FAILURE_REVIEW.json"
+  ],
+  "live_services_fixture": {
+    "domain": "ottrin-nsis-client",
+    "uuid": "25e8917a-408f-4eaa-ab8d-b9d95976283e",
+    "producer": "cohort-client.py",
+    "cleanup_owner": "cohort/services/OWNER.json"
+  },
+  "source_archive_consumer": "Native MSIX16 assembly; exact source prepared, no assembly pass yet"
+}
