@@ -1,0 +1,30 @@
+{
+  "runtime_source": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "current_stable_runtime": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "hosted_ci_run": 41761626619,
+  "hosted_ci_status": "all four jobs passed",
+  "services_live_session": 78357,
+  "services_owner": "services/OWNER.json",
+  "completed": [
+    "Linux package content/native7case/3original review",
+    "Linux private1000file daemon runtime0.100% one core/30sec",
+    "Windows primary9cases/7originals reviewed; whole combined actor failed in extra Services matrix",
+    "Native MSIX15 assembly and58file comparison",
+    "Windows private SYSTEM1000file daemon runtime0.208% one core/30sec",
+    "Completed AppImage extraction/archive/MSIX VM and consumed native transports retired"
+  ],
+  "next": [
+    "Poll live services session78357; use observe-native.py --case services; do not restart a live clone",
+    "Export/review terminal focused Services result, including60second in-flight process snapshots and exact task state; do not assume a larger diagnostic observation fixes product responsiveness",
+    "Core native actor now omits extra Services work but retains9cases/close/uninstall/preservation; finish this independent acceptance after source/service disposition",
+    "Require both current native scope and service-state gates before stable promotion; promotion still fails closed",
+    "Complete missing independent installed-service login toggle, Linux polkit/managed-service QA and authoritative theme preview component reuse",
+    "Continue complete54plus15 requirement audit and remaining picker/folder outcomes; no false owner wait"
+  ],
+  "remaining_owned_storage": {
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": "Current4 candidate artifacts pending final native delivery gates",
+    ".hermes/packaging-tmp/.windows-picker-stage": "Current ZIP/NSIS/MSIX15 and58payload pending service/core delivery gates",
+    ".hermes/evidence/config-status-current/cohort": "Compact current receipts, producers, reviewed originals and retained failure diagnostics; source archive removed",
+    "services/OWNER.json": "Live focused Services clone/two volumes and private display; producer owns terminal teardown"
+  }
+}

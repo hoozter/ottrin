@@ -1,0 +1,14 @@
+{
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "working_tree_at_build": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "scope": "Current settings-preservation and actionable Windows startup-dialog candidate. Prior runtime/UI source checks and cleaned failed fixture remain in parent; all stable source47a deliverables stay until current package/native/hosted gates pass.",
+  "pending_consumers": [
+    "production package content and namespace checks",
+    "native settings rejection/save-retry and Search health workflow",
+    "current hosted source gates",
+    "MSIX15 native assembly and fresh scoped daemon checks",
+    "seven-format publication and owned cleanup"
+  ],
+  "cleanup_owner": "config-status-current/cohort"
+}

@@ -1,0 +1,11 @@
+{
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/config-status-current/cohort/source.zip",
+  "status": "consumed by native MSIX15 assembly; owned source archive retired",
+  "sha256": "e56d64a5b98da29d42f35bf6aba7f286bcad976819b4b0551f115ca1e768f513",
+  "archive_bytes": 200711385,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

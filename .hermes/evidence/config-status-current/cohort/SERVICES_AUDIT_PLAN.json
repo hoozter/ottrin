@@ -1,0 +1,27 @@
+{
+  "status": "source audit and native plan; not native acceptance",
+  "runtime_source": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "source_files": {
+    "crates/ottrin-ui/src/lib.rs": "c66f9ca2c521ebe74d20b0b0cf17c8763542657f71711389d0e70752678569b2",
+    "crates/ottrin-platform/src/helper_setup.rs": "f65e54948cc6b91ad4484a4e485d96c161052c362ff7a0765f20746132b5f2f2",
+    "crates/ottrin-search/src/lib.rs": "05c66f716061c89ce5be9ad50a559626d6b090b538bb0b99cbefaf5a230fab40",
+    "crates/ottrin-search/src/windows_index_task.ps1": "2bac23739e333cee860b4c45229356453c115b0225c4051e7d38da90c61ff014"
+  },
+  "requirements": {
+    "U03": {
+      "source_evidence": [
+        "Services shortcut routes to Services and invalidates cached status",
+        "Helper setup stages both executables outside FUSE before pkexec --disable-internal-agent",
+        "Code distinguishes cancellation126 from execution/authentication errors and retains stderr",
+        "Focused staging/cleanup/error and routing tests exist within prior validated suite"
+      ],
+      "remaining": "Actual Linux authentication agent/prompt/cancellation/setup/reinstall in an owned full-system environment. No personal authentication inferred."
+    },
+    "U04": {
+      "native_plan": "Ten ordinary-user Windows states through the actual Services controls, plus independent task registration/owner/action/login flag/runtime and source/preferences/saved-index checks; five captures planned",
+      "remaining": "Native execution/capture review, Linux managed service and error states, MSIX-specific startup controls",
+      "implementation_gap": "Ordinary installed-but-disabled service has no direct in-app automatic-startup toggle: update correctly preserves disabled intent, and only enable/setup when uninstalled is exposed. Implement and accept explicit independent login control later; do not call the full requirement complete."
+    }
+  },
+  "scope": "Read-only audit during package builds; native plan uses the existing owned VM, touches no host personal service and does not claim whole-roadmap completion."
+}

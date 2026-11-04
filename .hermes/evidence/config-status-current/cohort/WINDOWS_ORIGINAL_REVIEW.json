@@ -1,0 +1,24 @@
+{
+  "directly_reviewed_originals": 7,
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "captures": {
+    "invalid-settings-native.png": "a8d84a919b0fbcfacb0c9f41f469693bcdb6e42cbfe6a10f6d3b17d499e03f29",
+    "Native-save-refused.png": "adaa6d26e80fd1c23475ca5d20e844a6fff73b854e01fd0d2f13c0c8cae28690",
+    "Native-save-retried.png": "ca43e7d5f9d5462ffa4334a59570a6d6c0bb7aad048a09cf51593bd714e8d13d",
+    "Native-search-health.png": "4927ce6ce4bef6e607d01c08062563fc940f8e950c056c523181b69655b2534c",
+    "OpenGL-save-refused.png": "ab9ea25944c59ab337a59d648c0964924a30199d97d28cbcd0e175ae9c8f83bb",
+    "OpenGL-save-retried.png": "383b343d328e1223669c30dccabd0a0ee089a9b89fe66e2126e7f460f6ac9009",
+    "OpenGL-search-health.png": "53759f0f534cbe78fad89b8331f00747760d208197a0407ad112a1791ba5a8c4"
+  },
+  "findings": [
+    "Native MessageBox contains actual parse error, preserved-file path and diagnostic log; visible focused OK",
+    "Both renderer captures retain editor,24px draft and complete read-only preservation error",
+    "Both successful-retry captures show editor closed, selected saved Settings audit theme and rounded Settings frame",
+    "Both Search captures distinguish active daemon from absent optional login task"
+  ],
+  "limits": [
+    "Nine cases passed before additional service setup timed out",
+    "Overall actor failed; normal final close/uninstall and complete preferences/source end checks were not reached",
+    "This is an original-image review, not WINDOWS_NATIVE_ACCEPTANCE or Services acceptance"
+  ]
+}

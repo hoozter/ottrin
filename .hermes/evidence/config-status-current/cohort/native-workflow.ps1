@@ -56,7 +56,7 @@
   Phase ($renderer+' actual Search backend and login status')
   (Node $settings 'Search' ([Windows.Automation.ControlType]::RadioButton)).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select();Pump;RevealText $settings 'Start index at login';$null=Node $settings 'active in the index daemon' ([Windows.Automation.ControlType]::Text);Require (@(Nodes $settings 'active while Ottrin is running').Count-eq0) 'Stale watcher lifetime wording remains'
   [PickerNative]::Shot($settings,(Join-Path $out ($renderer+'-search-health.png')));$report.cases+=@{renderer=$renderer;case='native Search separates daemon runtime and login';dpi=[DpiDesktop]::GetDpiForWindow($settings)};Save
-  if($renderer-eq'OpenGL'){RunServicesAudit $settings}
+  # Services has its own independently required native actor and receipt.
   CloseOwned $settings;[PickerNative]::Focus($w);Invoke $w 'Close window';Require ($p.WaitForExit(15000)-and$p.ExitCode-eq0) 'Normal close failed';$saved=Get-Content $pref -Raw|ConvertFrom-Json;Require ($saved.default_view_mode-eq'List'-and$saved.custom_themes[0].dark.app_radius-eq24) 'Saved preferences changed on close';Require ((Get-FileHash $source).Hash-eq$sourceHash) 'Source changed'
  }
  $saved=(Get-FileHash $pref).Hash;Phase 'supported uninstall';$uninstaller=Join-Path $out 'owned-uninstall.exe';Copy-Item (Join-Path $install 'Uninstall.exe') $uninstaller;$null=Run $uninstaller ('/S _?='+$install) 'uninstall';Remove-Item $uninstaller;Require (-not(Test-Path $install)) 'Installation remains';Require ((Get-FileHash $pref).Hash-eq$saved) 'Uninstall changed preferences';Require ((Get-FileHash $source).Hash-eq$sourceHash) 'Source changed';$report.preferences_preserved=$true;$report.source_preserved=$true;$final='pass native settings rejection/save-retry and Search status workflow'
@@ -65,7 +65,6 @@
  if($settings-and[DpiDesktop]::IsWindowVisible($settings)){
   try{[PickerNative]::Shot($settings,(Join-Path $out 'failure-settings.png'));$report.failure_controls=@((Tree $settings).FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.Condition]::TrueCondition)|ForEach-Object {@{name=$_.Current.Name;type=$_.Current.ControlType.ProgrammaticName;enabled=$_.Current.IsEnabled;offscreen=$_.Current.IsOffscreen}})}catch{$report.failure_capture_error=$_.Exception.Message}
  }
- try{$task=OwnedIndexTask;$report.failure_task=if($task){@{name=$task.Name;enabled=$task.Enabled;state=$task.State;last_result=$task.LastTaskResult;instances=$task.GetInstances(0).Count}}else{'absent'}}catch{$report.failure_task_error=$_.Exception.Message}
  Save
 }
 finally{

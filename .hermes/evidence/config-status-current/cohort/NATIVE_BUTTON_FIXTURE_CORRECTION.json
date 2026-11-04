@@ -1,0 +1,20 @@
+{
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "failure": "Generic egui native helper found no visible exact OK button in the standard Win32 message box; original captures prove actual dialog/default button and actionable error are visible. No production defect inferred.",
+  "correction": "Focus the actual native error dialog and press Enter to activate its default button; record independent exit1 and unchanged-file assertions. Export the classic-dialog control inventory for diagnosis.",
+  "prior_attempt_teardown": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "reviewed_originals": [
+    "native-dialog-button-failure/results/invalid-settings-native.png",
+    "native-dialog-button-failure/results/missing-control.png"
+  ],
+  "source_unchanged": true
+}

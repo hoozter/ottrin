@@ -10,14 +10,24 @@
   Require ($task.Definition.Actions.Item(1).Path-eq(Join-Path $install 'bin\ottrin-indexd.exe')-and$task.Definition.Actions.Item(1).Arguments-eq'--index-daemon') 'Task does not target the current daemon'
   return $task
  }
+ # The original60second in-flight failure is retained. This longer diagnostic
+ # observation measures terminal behavior on the cold software VM; it does not
+ # accept60second responsiveness or change production deadlines.
+ function ServicePending($window,$expected,$clock){
+  if($clock.Elapsed.TotalSeconds-lt60){return}
+  if(@($report.service_pending|Where-Object {$_.expected-eq$expected}).Count){return}
+  $rows=@(Get-CimInstance Win32_Process|Where-Object {$_.ParentProcessId-eq$p.Id-or$_.ProcessId-eq$p.Id}|ForEach-Object {@{name=$_.Name;pid=$_.ProcessId;parent=$_.ParentProcessId;session=$_.SessionId;created=[string]$_.CreationDate;register_task=([string]$_.CommandLine).Contains('RegisterTaskDefinition');query_task=([string]$_.CommandLine).Contains('$task.Xml');stop_task=([string]$_.CommandLine).Contains('Stop-OttrinIndexTask')}})
+  $name='service-pending-'+@($report.service_pending).Count+'.png';[PickerNative]::Shot($window,(Join-Path $out $name))
+  $report.service_pending+=@{expected=$expected;seconds=$clock.Elapsed.TotalSeconds;processes=$rows;capture=$name};Save
+ }
  function ServiceButton($window,$name){
-  $deadline=[DateTime]::UtcNow.AddSeconds(60)
-  do{$nodes=@(Nodes $window $name|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::Button-and$_.Current.IsEnabled});if($nodes.Count-eq1){return $nodes[0]};Pump}while([DateTime]::UtcNow-lt$deadline)
+  $deadline=[DateTime]::UtcNow.AddSeconds(180);$clock=[Diagnostics.Stopwatch]::StartNew()
+  do{$nodes=@(Nodes $window $name|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::Button-and$_.Current.IsEnabled});if($nodes.Count-eq1){return $nodes[0]};ServicePending $window $name $clock;Pump}while([DateTime]::UtcNow-lt$deadline)
   throw ('Service action is not enabled: '+$name)
  }
  function ServiceText($window,$name){
-  $deadline=[DateTime]::UtcNow.AddSeconds(60)
-  do{if(@(VisibleText $window $name).Count-eq1){return};Pump}while([DateTime]::UtcNow-lt$deadline)
+  $deadline=[DateTime]::UtcNow.AddSeconds(180);$clock=[Diagnostics.Stopwatch]::StartNew()
+  do{if(@(VisibleText $window $name).Count-eq1){return};ServicePending $window $name $clock;Pump}while([DateTime]::UtcNow-lt$deadline)
   [PickerNative]::Shot($window,(Join-Path $out 'service-state-missing.png'));throw ('Native service state not visible: '+$name)
  }
  function InvokeService($window,$name){(ServiceButton $window $name).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke();Pump}
@@ -37,7 +47,7 @@
  }
  function RunServicesAudit($settings){
   Phase 'Native service registration/runtime action matrix'
-  $report.service_matrix=@{status='running';states=@();scope='Ordinary-user current NSIS, existing Task Scheduler service controls. No reboot/login, MSIX startup, Linux polkit or full U04 acceptance.';known_interface_gap='Installed-but-disabled ordinary service has no direct in-app login enable/disable control; update preserves disabled intent. Track separately for implementation.'};Save
+  $report.service_pending=@();$report.service_matrix=@{status='running';states=@();scope='Ordinary-user current NSIS, existing Task Scheduler service controls. No reboot/login, MSIX startup, Linux polkit or full U04 acceptance.';known_interface_gap='Installed-but-disabled ordinary service has no direct in-app login enable/disable control; update preserves disabled intent. Track separately for implementation.'};Save
   [PickerNative]::Focus($settings);(Node $settings 'Services' ([Windows.Automation.ControlType]::RadioButton)).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select();Pump
   [PickerNative]::Wheel($settings,2400);Pump;[PickerNative]::Wheel($settings,2400);Pump
   ObserveService $settings 'session running; login not installed' $false $false $true

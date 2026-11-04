@@ -1,0 +1,22 @@
+{
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "primary_cases_completed": 9,
+  "whole_actor_status": "failed native settings preservation workflow",
+  "observation_deadline_seconds": 60,
+  "actual_ui": "Working\u2026; service controls disabled; daemon stopped; automatic startup Off",
+  "actual_task": "absent",
+  "failure_capture_sha256": "6d7a5d21f5eab243a866dc90501736b5dcd60ee45001ce769c14f5ffcdb064c9",
+  "installer_seconds": 127.35785809999999,
+  "conclusion": "The60second observation expired while the action was in flight. Terminal service outcome remains unproven; do not infer permission failure or a passed registration.",
+  "next": "Measure focused service setup through its terminal result, with in-flight child process/task snapshots and elapsed times. Preserve original60second failure and responsiveness concern.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

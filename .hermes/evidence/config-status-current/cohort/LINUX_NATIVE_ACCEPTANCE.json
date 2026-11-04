@@ -1,0 +1,57 @@
+{
+  "status": "pass scoped Linux native settings rejection/save-retry and Search status",
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "artifact_sha256": "cb5b35427d5eb7fc700065bd2c3715daea40a74e385e6bc0402c7437f65ff3be",
+  "cases": 7,
+  "captures": [
+    {
+      "path": "linux-candidate/theme-save-refused.png",
+      "sha256": "472443218ea63bec462825b34b221204cf941bdbd2bcbd091c86b55b95b79f1d",
+      "review": "Reviewed original: editor and24px draft remain visible; complete read-only save error is visible below the action footer."
+    },
+    {
+      "path": "linux-candidate/theme-save-retried.png",
+      "sha256": "446479f53adcf87a144341658d516519e94b7ded9a12394d724e4d76b4d3e6b7",
+      "review": "Reviewed original: editor closed after retry; Settings shows selected saved theme and shared24px window corners."
+    },
+    {
+      "path": "linux-candidate/search-health.png",
+      "sha256": "420ea37fa47edd2ee45b78fcb602bb55d65ef3683e85e61a50bf4a842c1eb659",
+      "review": "Reviewed original: watcher active in index daemon; login state separately says no login service installed, without falsely implying indexing is stopped."
+    }
+  ],
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-sh8uoopy",
+    "owned_processes_reaped": [
+      {
+        "pid": 1513660,
+        "exit": 0
+      },
+      {
+        "pid": 1513663,
+        "exit": 0
+      },
+      {
+        "pid": 1513664,
+        "exit": 15
+      },
+      {
+        "pid": 1513751,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1513787,
+        1513858
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "namespace_gate_pending_at_native_launch": false,
+  "content_gate_now_verified": true,
+  "scope": "Exact AppImage/private X11/software Dark150. Main/Properties/Inspector/index CLI startup errors are stderr diagnostics, not Linux native error-dialog acceptance. Real editor read-only save refusal retains draft and original bytes; repaired retry persists. Search labels, normal close and source preservation pass. No whole-appearance, sustained CPU, physical graphics or whole-roadmap claim."
+}

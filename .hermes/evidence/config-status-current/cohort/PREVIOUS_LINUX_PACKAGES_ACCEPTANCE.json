@@ -1,0 +1,38 @@
+{
+  "evidence": ".hermes/evidence/gui-idle-refresh-current",
+  "source_scope": ".hermes/evidence/gui-idle-refresh-current/SOURCE_SCOPE.json",
+  "hosted_source": {
+    "run": 41750766499,
+    "tested_source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+    "all_four_jobs_success": true
+  },
+  "limits": [
+    "Bounded private software-renderer idle samples; no universal zero CPU, sustained-use or physical graphics acceptance",
+    "Current checks exercise changed observation responsibilities; other receipts retain original hashes/scopes",
+    "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
+  ],
+  "status": "pass scoped current Linux idle-observation preview; full roadmap incomplete",
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "8b5168cea16b3111b6ae8211a4f02c49904cd7e900f678eead0a0fe01e528cf4",
+    "Ottrin-0.1.0-x86_64.AppImage": "6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "66af2e4c1a8d171e6e585024fcffe38a9754b1ba6c7789ae6f48d0c46289effe",
+    "ottrin_0.1.0_amd64.deb": "eed4f22ee462aeaa57c45b4c70019a3017b3d8605691fdb3e67c16be7b078cdb"
+  },
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "current_native_fields": ".hermes/evidence/gui-idle-refresh-current/LINUX_NATIVE_ACCEPTANCE.json",
+  "full_payload_comparison": ".hermes/evidence/gui-idle-refresh-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "daemon_runtime_reuse": ".hermes/evidence/gui-idle-refresh-current/LINUX_DAEMON_REUSE.json",
+  "unchanged_responsibility_basis": {
+    "previous_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+    "previous_receipt": ".hermes/evidence/gui-idle-refresh-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Storage roots are observed off the GUI thread, start lazily with the locations rail and wake it only on changes; fresh mutation guards outrank late observer results. Remote index status polls independently and wakes only on changed diagnostics. Initial unknown storage never clears selected indexed volumes. Search diagnostics only adds Eq/PartialEq derives."
+  }
+}

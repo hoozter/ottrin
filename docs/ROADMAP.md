@@ -152,6 +152,19 @@ Continue in this order:
    software work, not owner waits. The theme editor's hand-painted navigation
    arrows and Sync example still differ from the actual toolbar; real-component
    preview reuse remains incomplete despite earlier field mapping checks.
+   Subsequent native run completed all9 settings cases and7 reviewed original
+   captures across Native/OpenGL. Its separate service action was still Working
+   with disabled controls and no registered task when the60second observation
+   expired; no terminal permission/setup error was observed. A focused Services
+   actor now measures up to180seconds and captures child-process stages after60
+   seconds; the original failure and responsiveness concern remain recorded.
+   Core settings and Services producers are separated so either failure retains
+   its actual scope; both independent acceptance gates remain required.
+   Exact e3e33ae hosted CI passed all4 jobs (run41761626619). Native MSIX15
+   assembly/unpack passed all58 payload hashes. Its fresh private SYSTEM-account
+   1000-file daemon watcher/query/restart/two-shutdown probe passed at0.208% one
+   core over30seconds; this is not ordinary-user login or sustained acceptance.
+   Both assembly volumes/VM and the consumed200.7MB source archive were removed.
    Current candidate proof is not stable delivery. All seven stable packages
    remain47a until exact-source Windows/assembly/CI and cleanup gates pass.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.

@@ -1,0 +1,19 @@
+{
+  "source_head": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "observed_at": "2026-11-04T01:52:18.030460+00:00",
+  "compiler_roots": {
+    "target/debug/deps": 41676689681,
+    "target/debug/incremental": 23610891800,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33300491605,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39791904328,
+    "target/release/deps": 4445313593,
+    "target/x86_64-pc-windows-gnu/release/deps": 3921047500
+  },
+  "purpose": "Rebuilt coherent source after actionable Windows dialog correction; original flags/features, shared caches and stable stage paths reused.",
+  "cleanup_owner": "config-status-current/cohort",
+  "staging_roots": {
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": false,
+    ".hermes/packaging-tmp/.windows-picker-stage": false
+  },
+  "evidence_parent": "/home/campbell/Projects/Ottrin/.hermes/evidence/config-status-current"
+}
