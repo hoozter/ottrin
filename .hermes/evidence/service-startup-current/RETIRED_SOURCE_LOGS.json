@@ -1,0 +1,106 @@
+{
+  "reason": "Fulfilled intermediate source checks have a current passing replacement; compact historical receipts retained, duplicate raw logs retired",
+  "files": [
+    {
+      "path": "pre-linux-repair-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pre-linux-repair-native-clippy.log",
+      "bytes": 321,
+      "sha256": "e4d5f39044648f5239c37924cb1d4ed12123d7eedce0d6ff681e9c6efedf5883"
+    },
+    {
+      "path": "pre-linux-repair-search-tests.log",
+      "bytes": 21139,
+      "sha256": "eb94dd4cd8951a2fa2ee93036497d24a346d70cbbe8ba25a4c0d0b467f1a6c97"
+    },
+    {
+      "path": "pre-linux-repair-ui-tests.log",
+      "bytes": 44413,
+      "sha256": "16a49f84d6e1118a63c9065a0a610bb556f5c3a6aa06992139ca65a67c595f2c"
+    },
+    {
+      "path": "pre-linux-repair-windows-clippy.log",
+      "bytes": 70,
+      "sha256": "86975382dd06f4957302518830817925877fd55a634d1d95d7cd367bde92691d"
+    },
+    {
+      "path": "pre-readable-errors-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pre-readable-errors-native-clippy.log",
+      "bytes": 321,
+      "sha256": "dbcef08127e77dff11e280da85b4ee1f85420cd2dc6acfd99779eee1d1ade785"
+    },
+    {
+      "path": "pre-readable-errors-search-tests.log",
+      "bytes": 21222,
+      "sha256": "07cd9c964252ba662209d0c2697bed83a5299bf4d3f02719f1cdf5d4b2f42c97"
+    },
+    {
+      "path": "pre-readable-errors-ui-tests.log",
+      "bytes": 44413,
+      "sha256": "9f07a373ac74eb906b161b25f8d4611e88866df2b2283f39ae43f3ea47caccc1"
+    },
+    {
+      "path": "pre-readable-errors-windows-clippy.log",
+      "bytes": 321,
+      "sha256": "88eea60c60148afbf0527a17b46fa8737dd241ed96a1e46da691df9a954d11f8"
+    },
+    {
+      "path": "pre-transport-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pre-transport-native-clippy.log",
+      "bytes": 321,
+      "sha256": "993e2c281dbdd421e4e82235e465ec5f0003389318fa39124e6e0b5dfe6659d6"
+    },
+    {
+      "path": "pre-transport-search-tests.log",
+      "bytes": 21139,
+      "sha256": "ab021cbd0f32a9a56148230b7e2859e3839c6a8447b353fafa388345fa9b09b6"
+    },
+    {
+      "path": "pre-transport-ui-tests.log",
+      "bytes": 44413,
+      "sha256": "f0acf8a036b15525a86076874d0056a4acd6bed93467e4ca5153db552f9ceed5"
+    },
+    {
+      "path": "pre-transport-windows-clippy.log",
+      "bytes": 321,
+      "sha256": "ee2e1aa952237711bd1960eed7e90deb3051880ac801f7ae72fb66c4f13acfb3"
+    },
+    {
+      "path": "pre-windows-dependency-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pre-windows-dependency-native-clippy.log",
+      "bytes": 321,
+      "sha256": "0b9c7cdc005d2f5f900530ca162f56cd334cbc4d8000b81b61b5adff95d05d9b"
+    },
+    {
+      "path": "pre-windows-dependency-search-tests.log",
+      "bytes": 21139,
+      "sha256": "0a0b2fd6c5ac3df1f679568053e55713da41613741c3369824d95dc68189c73a"
+    },
+    {
+      "path": "pre-windows-dependency-ui-tests.log",
+      "bytes": 44413,
+      "sha256": "9d233ee7733826f628c5a20b31c91d39f9d80ff15c1883572f4ee5693a16beb3"
+    },
+    {
+      "path": "pre-windows-dependency-windows-clippy.log",
+      "bytes": 321,
+      "sha256": "87473e98f66a5cee0890682972b24596eddb1bdb751aa4ac645bcaf55bfd6b8c"
+    }
+  ],
+  "removed_bytes": 264608
+}

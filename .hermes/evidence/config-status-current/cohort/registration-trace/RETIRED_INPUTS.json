@@ -1,0 +1,40 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/config-status-current/cohort/registration-trace/RESULTS.zip",
+          "bytes": 4179,
+          "sha256": "3f0556404b36d8b637709b8d818ddbcb7d0ef0626cbbfe45219cbfebdaed6757"
+        },
+        {
+          "path": ".hermes/evidence/config-status-current/cohort/registration-trace/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/config-status-current/cohort/registration-trace/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "f3f78a705ae621eb5e197321e3f318cc6d3e40cb809dac95f5601640ac2e2b4b"
+        },
+        {
+          "path": ".hermes/evidence/config-status-current/cohort/registration-trace/CONTROLLER_PROCESS.json",
+          "bytes": 1939,
+          "sha256": "b198fb805eed4ce6762f6f2d659123d41d7ac6231ff7cfc11b6e1fd8f020b894"
+        },
+        {
+          "path": ".hermes/evidence/config-status-current/cohort/registration-trace/readiness.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".hermes/evidence/config-status-current/cohort/registration-trace/privacy-accepted-0.png",
+          "bytes": 1211743,
+          "sha256": "01c45617b4fd4d13336c95969385b548731ea79b952639810cd5de277fd814e1"
+        }
+      ],
+      "bytes": 1223610
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

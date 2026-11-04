@@ -1,0 +1,104 @@
+{
+  "status": "pass scoped current source tests and native/Windows strict lint; package/native service acceptance pending",
+  "parent_revision": "def09c95a6b98e0dc3529f88deb9034fd31b26ee",
+  "files": {
+    "crates/ottrin-search/Cargo.toml": "16c4c90c8c35c925618bdb3e723926d2dfbae57ea469ebecc5d9b3fcb1117b0c",
+    "Cargo.lock": "f4729d17d1bb9af00af3afdae6b708c1e729c1074d2aa7d283f5b6e715f83fa0",
+    "crates/ottrin-search/src/lib.rs": "045b0e9131bef0b2088f1ddcdf3fde45e2c87a1bf641a62b7fe23dea3192b464",
+    "crates/ottrin-search/src/windows_index_startup.ps1": "ca44f565703632857b5f6d00b127bc2fc3612d821e1f11209aa40f2063e96e97",
+    "crates/ottrin-ui/src/lib.rs": "71d6b0c5c742e28e688559ca357748304ca27d26b5a904eddbce7b36eba8a7eb"
+  },
+  "checks": [
+    {
+      "name": "search-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-search",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "counts": {
+    "linux_search_passed": 247,
+    "linux_search_ignored": 2,
+    "ui_passed": 488,
+    "ui_ignored": 1
+  },
+  "behavior": [
+    "One encoded UTF16LE PowerShell transport for task identity/query/install/stop/login controls; explicit readable text and UTF8 output",
+    "Windows-native regression checks multiline comments, quotes, Unicode and readable error output with bounded owned process teardown; cross-compiled here, execution still requires native Windows",
+    "Installed-service checkbox changes future login startup independently of current indexing",
+    "Linux repair retains disabled login intent and resumes a previously running disabled index",
+    "MSIX user/policy and conflicting-unpackaged-task checks retained",
+    "Services controls and Search status wording clarified"
+  ],
+  "native_diagnostic": "Unchanged prior task script created ordinary-user task in3.7087sec through encoded input; compare prior180sec in-flight registration failure. This supports the transport fix but is not new app/native lifecycle acceptance.",
+  "dependency": "Existing locked base64 version; direct use scoped to Windows only",
+  "limits": [
+    "No current-source native runtime or package delivery inferred from source tests",
+    "Stable seven-format deliverables remain47a; superseded private e3 candidate stages retired after diagnostics"
+  ]
+}

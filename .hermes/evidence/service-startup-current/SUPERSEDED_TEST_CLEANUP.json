@@ -1,0 +1,40 @@
+{
+  "removed_targets": 6,
+  "removed_test_binary_bytes": 891223272,
+  "replacements": [
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-bd223c1018e0fe86",
+      "new": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+      "new_sha256": "df14f870391b305bf26f5068b8ab2fc6e1284b004a4e78b4483c6051399c5127",
+      "matching_compiler_fields": [
+        "rustc",
+        "features",
+        "declared_features",
+        "target",
+        "profile",
+        "path",
+        "rustflags",
+        "config",
+        "compile_kind"
+      ]
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f02e4c5b6fe6d4cb",
+      "new": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc",
+      "new_sha256": "c1ce7ddea7e4b0da2b0c62b479c00a81df0278d7ff41239f8cb25a0f05fda636",
+      "matching_compiler_fields": [
+        "rustc",
+        "features",
+        "declared_features",
+        "target",
+        "profile",
+        "path",
+        "rustflags",
+        "config",
+        "compile_kind"
+      ]
+    }
+  ],
+  "incoming_links_checked": true,
+  "guards": "Canonical cleanup prepare/apply under one shared lock, process/use/hard-link and change guards"
+}

@@ -1,0 +1,34 @@
+{
+  "cleanup_index_remove": {
+    "stdout": "SUCCESS: The scheduled task \"Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002\" was successfully deleted.\r\nBackground Ottrin index task removed.\n",
+    "stderr": "",
+    "seconds": 13.0003066,
+    "exit": 0
+  },
+  "registration": {
+    "principal": "OTMSIcf16b6542e76",
+    "action": "C:\\Users\\OTMSIcf16b6542e76\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe",
+    "enabled": true
+  },
+  "package": {
+    "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "b39f85a3366a02ea90f82db1dba1ca667804e18712f1d48f2a26429bb496219f"
+      }
+    ],
+    "actor_sha256": "796d45d20de191aa4d3ae37e54bb597b7d83b41c034b423245b40504a756854b",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "phase": "trace unchanged task registration statements",
+  "scope": "Diagnostic execution trace of unchanged production task registration script via EncodedCommand; not application UI or service acceptance",
+  "status": "pass diagnostic registration script; application transport/native controls not accepted",
+  "trace": {
+    "transport": "EncodedCommand with execution trace; source statements unchanged",
+    "seconds": 3.7104293999999998,
+    "completed": true,
+    "exit": 0
+  },
+  "cases": []
+}

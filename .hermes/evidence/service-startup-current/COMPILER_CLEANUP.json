@@ -1,0 +1,26 @@
+{
+  "status": "complete for current source checks; new package builds have separate ownership",
+  "obsolete_incremental_sessions_removed": 65,
+  "reviewed_batches": [
+    19,
+    23,
+    23
+  ],
+  "latest_finalized_sessions_retained": true,
+  "obsolete_sessions_remaining": 0,
+  "superseded_test_executables_depinfo_fingerprints": "SUPERSEDED_TEST_CLEANUP.json",
+  "before": {
+    "target/debug/deps": 41676689681,
+    "target/debug/incremental": 23610891800,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33300491605,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39791904328
+  },
+  "after": {
+    "target/debug/deps": 41726578071,
+    "target/debug/incremental": 24279322480,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33303958666,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40030099385
+  },
+  "guards": "Exact absolute roots, no compiler consumers, identity-specific persistent-agent review; transient unreadable process refusals were rechecked only after those processes exited; no broad exception added.",
+  "remaining": "Latest shared compiler caches retained. Prior candidate stages retired after all native/trace consumers finished; stable packages preserved."
+}

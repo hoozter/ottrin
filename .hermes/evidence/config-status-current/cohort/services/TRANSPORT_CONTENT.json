@@ -1,0 +1,71 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 162,
+      "sha256": "cc12f7826efd605cc158f83efc953dbbde9a532583ee628a6b0ec860c8fa8b2e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "failure-settings.png",
+      "bytes": 217782,
+      "sha256": "a993e63f376580a5614eea705a960100e95952055ed80141dc842fa0a7b687c2",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "a9140fa356dcca05e99f8fd70fa023dff10fe9b89d08c9b5e8fc38895314c520",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 90,
+      "sha256": "125de1e93f961c20664f9ca634b2cfbe70b287d2f0223e48cebdc26677ba20a3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "79a56feadc8015fd31d0da5354e5a2b783c69298a76e277fed5617e09282ff21",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 18888,
+      "sha256": "dd12a7a9fa4e3d9aa9baaf19c696672565f07914aa31fba62b7c04dea90a224b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-pending-0.png",
+      "bytes": 217854,
+      "sha256": "9409863a0105f7c0e736b2ffac46a5428251c3f0d294e27f29ee4f1b0d114a51",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "services-session-running.png",
+      "bytes": 172685,
+      "sha256": "e2e848f0377c3d047b4c15ba6ba92e3dbd36741949b2ec5e2aa11d4f86b122a3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 191659,
+      "sha256": "e839bd463c0b9a6ea486f232effe837c743a502b13c8f4aafbef23f5272c8703",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 113019,
+      "sha256": "83c2e972ce98b2103cd2ee126a02e0c7a643bd8e37b5ac164454bd25add7a594",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "6f44551a05148aa590fa57289df78c71dd14e21343f099dda7cea0585f12dfda",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

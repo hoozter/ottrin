@@ -615,6 +615,11 @@ impl SearchService {
         install_sqlite_schedule(config)
     }
 
+    /// Change future login startup without starting or stopping the current index.
+    pub fn set_sqlite_schedule_enabled(enabled: bool) -> Result<String, String> {
+        set_sqlite_schedule_enabled(enabled)
+    }
+
     pub fn uninstall_sqlite_schedule() -> Result<String, String> {
         uninstall_sqlite_schedule()
     }
@@ -1846,6 +1851,27 @@ const WINDOWS_INDEX_IDENTITY_SCRIPT: &str =
     include_str!("../../../packaging/windows/windows-index-identity.ps1");
 
 #[cfg(target_os = "windows")]
+fn index_powershell_command(script: &str) -> std::process::Command {
+    use base64::Engine;
+
+    // Windows PowerShell parses a command string again after CreateProcess
+    // argument quoting. Send the exact multiline script as UTF-16LE instead.
+    let script = format!("[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n{script}");
+    let bytes: Vec<_> = script.encode_utf16().flat_map(u16::to_le_bytes).collect();
+    let encoded = base64::engine::general_purpose::STANDARD.encode(bytes);
+    let mut command = internal_command("powershell.exe");
+    command.args([
+        "-NoProfile",
+        "-NonInteractive",
+        "-OutputFormat",
+        "Text",
+        "-EncodedCommand",
+        &encoded,
+    ]);
+    command
+}
+
+#[cfg(target_os = "windows")]
 fn windows_index_task_name() -> Result<String, String> {
     static NAME: std::sync::OnceLock<String> = std::sync::OnceLock::new();
     if let Some(name) = NAME.get() {
@@ -1854,8 +1880,7 @@ fn windows_index_task_name() -> Result<String, String> {
     let script = format!(
         "$ErrorActionPreference='Stop'; {WINDOWS_INDEX_IDENTITY_SCRIPT}\n[Console]::Out.Write((Get-OttrinIndexTaskName))"
     );
-    let output = internal_command("powershell.exe")
-        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+    let output = index_powershell_command(&script)
         .output()
         .map_err(|error| format!("Failed to resolve index task identity: {error}"))?;
     if !output.status.success() {
@@ -1887,8 +1912,7 @@ fn stop_registered_windows_index_task() -> Result<(), String> {
     let script = format!(
         "try {{ $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; {WINDOWS_INDEX_IDENTITY_SCRIPT}\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) {{ Stop-OttrinIndexTask $task }} }} catch {{ [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }}"
     );
-    let output = internal_command("powershell.exe")
-        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+    let output = index_powershell_command(&script)
         .output()
         .map_err(|error| format!("Cannot stop the registered index task: {error}"))?;
     if !output.status.success() {
@@ -1921,10 +1945,9 @@ fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool
 #[cfg(target_os = "windows")]
 fn query_sqlite_windows_task() -> Result<Option<SqliteWindowsTaskRegistration>, String> {
     let script = format!(
-        "try {{ $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); {WINDOWS_INDEX_IDENTITY_SCRIPT}\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) {{ Assert-OttrinTaskOwner $task; [Console]::Out.Write($task.Xml) }} }} catch {{ [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }}"
+        "try {{ $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; {WINDOWS_INDEX_IDENTITY_SCRIPT}\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) {{ Assert-OttrinTaskOwner $task; [Console]::Out.Write($task.Xml) }} }} catch {{ [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }}"
     );
-    let output = internal_command("powershell.exe")
-        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+    let output = index_powershell_command(&script)
         .output()
         .map_err(|error| format!("Failed to inspect the Ottrin Index task: {error}"))?;
     parse_sqlite_windows_task_query(output.status.success(), &output.stdout, &output.stderr)
@@ -1984,6 +2007,10 @@ fn uninstall_sqlite_windows_task_with(
 enum SqliteSystemdOperation {
     IsEnabled,
     IsActive,
+    DaemonReload,
+    EnableNow,
+    Enable,
+    Disable,
     Restart,
     Stop,
     DisableNowService,
@@ -1995,6 +2022,10 @@ impl SqliteSystemdOperation {
         match self {
             Self::IsEnabled => &["--user", "is-enabled", "--quiet", "ottrin-index.service"],
             Self::IsActive => &["--user", "is-active", "--quiet", "ottrin-index.service"],
+            Self::DaemonReload => &["--user", "daemon-reload"],
+            Self::EnableNow => &["--user", "enable", "--now", "ottrin-index.service"],
+            Self::Enable => &["--user", "enable", "ottrin-index.service"],
+            Self::Disable => &["--user", "disable", "ottrin-index.service"],
             Self::Restart => &["--user", "restart", "ottrin-index.service"],
             Self::Stop => &["--user", "stop", "ottrin-index.service"],
             Self::DisableNowService => &["--user", "disable", "--now", "ottrin-index.service"],
@@ -2005,6 +2036,10 @@ impl SqliteSystemdOperation {
         match self {
             Self::IsEnabled => "query whether the service is enabled",
             Self::IsActive => "query whether the service is active",
+            Self::DaemonReload => "reload the service definition",
+            Self::EnableNow => "enable and start the service",
+            Self::Enable => "enable automatic startup",
+            Self::Disable => "disable automatic startup",
             Self::Restart => "restart the service",
             Self::Stop => "stop the service",
             Self::DisableNowService => "disable and stop the service",
@@ -2332,6 +2367,88 @@ fn prepare_running_daemon_for_upgrade() -> Result<(), String> {
     client.prepare_upgrade_and_wait()
 }
 
+/// Change future login startup independently of the current daemon's lifetime.
+pub fn set_sqlite_schedule_enabled(enabled: bool) -> Result<String, String> {
+    #[cfg(target_os = "linux")]
+    {
+        set_sqlite_systemd_enabled_with(
+            sqlite_systemd_service_path().is_file(),
+            enabled,
+            run_sqlite_systemd,
+        )?;
+    }
+    #[cfg(target_os = "windows")]
+    {
+        if ottrin_platform::windows_startup::is_packaged()? {
+            if enabled {
+                enable_package_index_startup()?;
+            } else {
+                ottrin_platform::windows_startup::disable_index()?;
+            }
+        } else {
+            let executable =
+                find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
+            let output = index_powershell_command(&format!(
+                "{WINDOWS_INDEX_IDENTITY_SCRIPT}\n{}",
+                include_str!("windows_index_startup.ps1")
+            ))
+            .env("OTTRIN_TASK_EXECUTABLE", executable)
+            .env(
+                "OTTRIN_TASK_ENABLED",
+                if enabled { "true" } else { "false" },
+            )
+            .output()
+            .map_err(|error| format!("Cannot change index startup: {error}"))?;
+            if !output.status.success() {
+                return Err(format!(
+                    "Cannot change index startup ({}): {}",
+                    output.status,
+                    String::from_utf8_lossy(&output.stderr).trim()
+                ));
+            }
+        }
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    {
+        let _ = enabled;
+        return Err("Automatic index startup is not supported on this platform.".into());
+    }
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    Ok(format!(
+        "Automatic startup at sign-in {}. Current indexing is unchanged.",
+        if enabled { "enabled" } else { "disabled" }
+    ))
+}
+
+#[cfg(target_os = "windows")]
+fn enable_package_index_startup() -> Result<(), String> {
+    ottrin_platform::windows_startup::index_state()?;
+    if query_sqlite_windows_task()?.is_some() {
+        return Err("Another Ottrin installation has a Task Scheduler index service. Remove that service from its Services settings before enabling this package's automatic startup.".into());
+    }
+    ottrin_platform::windows_startup::enable_index()
+}
+
+#[cfg(target_os = "linux")]
+fn set_sqlite_systemd_enabled_with(
+    installed: bool,
+    enabled: bool,
+    mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
+) -> Result<(), String> {
+    if !installed {
+        return Err("Install the background index service before changing login startup.".into());
+    }
+    let operation = if enabled {
+        SqliteSystemdOperation::Enable
+    } else {
+        SqliteSystemdOperation::Disable
+    };
+    if !run(operation)? {
+        return Err(format!("Could not {}", operation.label()));
+    }
+    Ok(())
+}
+
 pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> {
     let ottrin = find_ottrin_binary()
         .ok_or_else(|| "Could not find this package's index executable.".to_string())?;
@@ -2355,11 +2472,7 @@ pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> 
     #[cfg(target_os = "windows")]
     {
         if ottrin_platform::windows_startup::is_packaged()? {
-            ottrin_platform::windows_startup::index_state()?;
-            if query_sqlite_windows_task()?.is_some() {
-                return Err("Another Ottrin installation has a Task Scheduler index service. Remove that service from its Services settings before enabling this package's automatic startup.".into());
-            }
-            ottrin_platform::windows_startup::enable_index()?;
+            enable_package_index_startup()?;
             ensure_windows_search_daemon(&ottrin)?.update_config(config.clone())?;
             return Ok("Windows startup enabled. Index daemon is ready; Windows manages package updates and removal.".into());
         }
@@ -2548,9 +2661,14 @@ fn install_sqlite_systemd_user_daemon(indexer: &Path) -> Result<String, String> 
     std::fs::create_dir_all(&unit_dir)
         .map_err(|e| format!("Cannot create systemd unit dir: {}", e))?;
     let service_path = unit_dir.join("ottrin-index.service");
+    let installed = service_path.is_file();
+    let enabled = !installed || run_sqlite_systemd(SqliteSystemdOperation::IsEnabled)?;
+    let was_running = installed
+        && (run_sqlite_systemd(SqliteSystemdOperation::IsActive)?
+            || SearchDaemonClient::connect_default()?.ping().is_ok());
 
     prepare_sqlite_systemd_upgrade_with(
-        service_path.is_file(),
+        installed,
         prepare_running_daemon_for_upgrade,
         run_sqlite_systemd,
     )?;
@@ -2561,19 +2679,34 @@ fn install_sqlite_systemd_user_daemon(indexer: &Path) -> Result<String, String> 
         .map_err(|error| format!("Failed to write {}: {error}", temporary_path.display()))?;
     std::fs::rename(&temporary_path, &service_path)
         .map_err(|error| format!("Failed to install {}: {error}", service_path.display()))?;
-    for args in [
-        vec!["--user", "daemon-reload"],
-        vec!["--user", "enable", "--now", "ottrin-index.service"],
-    ] {
-        let status = std::process::Command::new("systemctl")
-            .args(&args)
-            .status()
-            .map_err(|e| e.to_string())?;
-        if !status.success() {
-            return Err(format!("systemctl {:?} exited with {}", args, status));
+    finish_sqlite_systemd_install_with(installed, enabled, was_running, run_sqlite_systemd)?;
+    Ok(if enabled {
+        "Ottrin index service configured; automatic startup is enabled.".into()
+    } else {
+        "Ottrin index service updated; automatic startup remains disabled.".into()
+    })
+}
+
+#[cfg(target_os = "linux")]
+fn finish_sqlite_systemd_install_with(
+    installed: bool,
+    enabled: bool,
+    was_running: bool,
+    mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
+) -> Result<(), String> {
+    let start = if !installed {
+        Some(SqliteSystemdOperation::EnableNow)
+    } else if enabled || was_running {
+        Some(SqliteSystemdOperation::Restart)
+    } else {
+        None
+    };
+    for operation in std::iter::once(SqliteSystemdOperation::DaemonReload).chain(start) {
+        if !run(operation)? {
+            return Err(format!("Could not {}", operation.label()));
         }
     }
-    Ok("Persistent Ottrin index daemon enabled with a systemd user service.".to_string())
+    Ok(())
 }
 
 #[cfg(target_os = "linux")]
@@ -2999,19 +3132,13 @@ fn systemd_exec_quote(path: &Path) -> String {
 
 #[cfg(target_os = "windows")]
 fn install_sqlite_windows_task(ottrin: &Path) -> Result<String, String> {
-    let output = internal_command("powershell.exe")
-        .args([
-            "-NoProfile",
-            "-NonInteractive",
-            "-Command",
-            &format!(
-                "{WINDOWS_INDEX_IDENTITY_SCRIPT}\n{}",
-                include_str!("windows_index_task.ps1")
-            ),
-        ])
-        .env("OTTRIN_TASK_EXECUTABLE", ottrin)
-        .output()
-        .map_err(|error| format!("Failed to configure the index task: {error}"))?;
+    let output = index_powershell_command(&format!(
+        "{WINDOWS_INDEX_IDENTITY_SCRIPT}\n{}",
+        include_str!("windows_index_task.ps1")
+    ))
+    .env("OTTRIN_TASK_EXECUTABLE", ottrin)
+    .output()
+    .map_err(|error| format!("Failed to configure the index task: {error}"))?;
     if !output.status.success() {
         return Err(format!(
             "Index task setup failed ({}): {}",
@@ -4907,6 +5034,90 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn repairing_a_disabled_login_service_preserves_its_startup_choice() {
+        for was_running in [false, true] {
+            let mut operations = Vec::new();
+            finish_sqlite_systemd_install_with(true, false, was_running, |operation| {
+                operations.push(operation);
+                Ok(true)
+            })
+            .unwrap();
+            let expected = if was_running {
+                vec![
+                    SqliteSystemdOperation::DaemonReload,
+                    SqliteSystemdOperation::Restart,
+                ]
+            } else {
+                vec![SqliteSystemdOperation::DaemonReload]
+            };
+            assert_eq!(operations, expected);
+        }
+        let mut operations = Vec::new();
+        finish_sqlite_systemd_install_with(false, true, false, |operation| {
+            operations.push(operation);
+            Ok(true)
+        })
+        .unwrap();
+        assert_eq!(
+            operations,
+            [
+                SqliteSystemdOperation::DaemonReload,
+                SqliteSystemdOperation::EnableNow
+            ]
+        );
+        assert!(finish_sqlite_systemd_install_with(true, false, true, |_| Ok(false)).is_err());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn login_startup_choice_does_not_start_or_stop_the_index() {
+        for enabled in [false, true] {
+            let mut calls = Vec::new();
+            set_sqlite_systemd_enabled_with(true, enabled, |operation| {
+                calls.push(operation);
+                Ok(true)
+            })
+            .unwrap();
+            assert_eq!(
+                calls,
+                [if enabled {
+                    SqliteSystemdOperation::Enable
+                } else {
+                    SqliteSystemdOperation::Disable
+                }]
+            );
+            assert_eq!(
+                calls[0].args(),
+                [
+                    "--user",
+                    if enabled { "enable" } else { "disable" },
+                    "ottrin-index.service"
+                ]
+            );
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn login_startup_choice_reports_missing_service_and_command_failures() {
+        let error = set_sqlite_systemd_enabled_with(false, true, |_| {
+            panic!("No service must not run systemctl")
+        })
+        .unwrap_err();
+        assert!(error.contains("Install the background index service"));
+        assert!(
+            set_sqlite_systemd_enabled_with(true, true, |_| Ok(false))
+                .unwrap_err()
+                .contains("enable automatic startup")
+        );
+        assert_eq!(
+            set_sqlite_systemd_enabled_with(true, false, |_| Err("bus unavailable".into())),
+            Err("bus unavailable".into())
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn sqlite_background_status_distinguishes_enabled_but_stopped() {
         let status = sqlite_systemd_status_with(true, |operation| match operation {
             SqliteSystemdOperation::IsEnabled => Ok(true),
@@ -5198,6 +5409,70 @@ mod tests {
     }
 
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn index_powershell_preserves_multiline_comments_quotes_and_unicode() {
+        use std::io::Read;
+
+        let script = r#"
+$ErrorActionPreference = 'Stop'
+# A comment must end here rather than swallowing later statements.
+$literal = @'
+folder "quoted" \ 雪 & $literal
+'@
+[Console]::Out.Write($literal)
+"#;
+        for (body, expected_success) in [
+            (format!("{WINDOWS_INDEX_IDENTITY_SCRIPT}\n{script}"), true),
+            ("throw 'Readable script failure: 雪'".to_owned(), false),
+        ] {
+            let mut child = ContentProviderChild(
+                index_powershell_command(&body)
+                    .stdout(std::process::Stdio::piped())
+                    .stderr(std::process::Stdio::piped())
+                    .spawn()
+                    .unwrap(),
+            );
+            let deadline = Instant::now() + Duration::from_secs(30);
+            let status = loop {
+                if let Some(status) = child.0.try_wait().unwrap() {
+                    break status;
+                }
+                assert!(
+                    Instant::now() < deadline,
+                    "PowerShell command did not finish"
+                );
+                std::thread::sleep(Duration::from_millis(20));
+            };
+            let mut stdout = String::new();
+            let mut stderr = String::new();
+            child
+                .0
+                .stdout
+                .take()
+                .unwrap()
+                .read_to_string(&mut stdout)
+                .unwrap();
+            child
+                .0
+                .stderr
+                .take()
+                .unwrap()
+                .read_to_string(&mut stderr)
+                .unwrap();
+            assert_eq!(status.success(), expected_success, "{stderr}");
+            if expected_success {
+                assert_eq!(stdout, r#"folder "quoted" \ 雪 & $literal"#);
+            } else {
+                assert!(stderr.contains("Readable script failure"), "{stderr}");
+                assert!(
+                    !stderr.contains("CLIXML"),
+                    "Errors must remain readable: {stderr}"
+                );
+            }
+        }
+    }
 
     #[test]
     fn windows_internal_commands_request_no_console_window() {

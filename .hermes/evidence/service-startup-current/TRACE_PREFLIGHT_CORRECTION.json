@@ -1,0 +1,16 @@
+{
+  "error": "FileNotFoundError(2, 'No such file or directory')",
+  "cause": "Shared actor expects accepted package inputs under the output parent; corrected output to config-status-current/cohort/registration-trace",
+  "preflight_allocated_no_vm_or_volumes": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "removed_disposable_files": [
+    "trace/OWNER.json",
+    "trace/DRIVER_SOURCE.py"
+  ]
+}

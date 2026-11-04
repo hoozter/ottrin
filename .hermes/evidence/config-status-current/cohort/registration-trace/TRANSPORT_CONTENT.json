@@ -1,0 +1,41 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 249,
+      "sha256": "68c10fb89d1a96f6bd02aed33ce9290ca53e69c94c60a55fe4e8f06526b3292a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 257,
+      "sha256": "bdd86fe512ec33d7fe20d3990538e0fcbc3effb0062e4fa38d19834eeee1ef6d",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 97,
+      "sha256": "29247ae36c54634678515346ac90321270183931cd07d0dbde7f95e76a251bf0",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "1292399638041f5230c1493e007b75e941900715f16640de57956a8dc3814767",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 2170,
+      "sha256": "8c984815f8af66b7a2da11dab930974352c281b4393710386eb86fc90c811dee",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "task-trace.json",
+      "bytes": 12326,
+      "sha256": "51a322f6ff9445d2b9227f1f8c88c2eb5418411b7910418339084ff43551332b",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

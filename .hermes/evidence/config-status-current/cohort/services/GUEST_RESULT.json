@@ -1,0 +1,341 @@
+{
+  "settings_host": {
+    "title": "Settings",
+    "pid": 8252,
+    "type": "ControlType.Window"
+  },
+  "scope": "Independent ordinary-user NSIS Services actions and actual task/runtime state; Dark144DPI OpenGL. Core settings/appearance and MSIX acceptance separate",
+  "phase": "Native service registration/runtime action matrix",
+  "failure_controls": [
+    {
+      "name": "Close window",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "\ue8b8 Settings",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Preferences",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "General",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Appearance",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Files",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Services",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Search",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Search",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Cache",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Services",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Set up and manage Ottrin's optional system integration.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.ProgressBar",
+      "enabled": true
+    },
+    {
+      "name": "Working\u2026",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Administrator operations",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Ready \u2014 Windows prompts when needed",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "The bundled helper uses Windows\u2019 administrator prompt when a protected file operation needs elevation.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Background index service",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Stopped",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Automatic startup at sign-in: Off",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Indexing starts when you open Ottrin and continues after closing its windows. Enable automatic startup to also start indexing when you sign in.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Enable automatic startup",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Start / restart",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Stop indexing",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Refresh status",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Desktop integration",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Folder integration",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Add Open in Ottrin to folder, drive and folder-background menus. On Windows 11, use Show more options. Default folder opening is a separate choice below.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Off \u2014 Windows folder menus keep their current actions",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Enable folder menu actions",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Refresh status",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Default folder opening",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Windows keeps its current folder-opening default",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Applies when an application asks Windows for the default folder action. Programs that explicitly launch Explorer or use another verb keep that behavior. Virtual folders stay with Windows.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": false
+    },
+    {
+      "name": "Use Ottrin to open folders",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    }
+  ],
+  "cases": [],
+  "failure_task": "absent",
+  "service_pending": [
+    {
+      "expected": "Update / reinstall service",
+      "seconds": 109.64638599999999,
+      "processes": [
+        {
+          "pid": 5044,
+          "stop_task": false,
+          "name": "ottrin.exe",
+          "parent": 1192,
+          "query_task": false,
+          "created": "11/04/2026 04:36:31",
+          "register_task": false,
+          "session": 1
+        },
+        {
+          "pid": 2564,
+          "stop_task": true,
+          "name": "powershell.exe",
+          "parent": 5044,
+          "query_task": true,
+          "created": "11/04/2026 04:37:47",
+          "register_task": true,
+          "session": 1
+        }
+      ],
+      "capture": "service-pending-0.png"
+    }
+  ],
+  "stack": "at ServiceButton, <No file>: line 139\r\nat ObserveService, <No file>: line 149\r\nat RunServicesAudit, <No file>: line 169\r\nat <ScriptBlock>, <No file>: line 197\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "b39f85a3366a02ea90f82db1dba1ca667804e18712f1d48f2a26429bb496219f"
+      }
+    ],
+    "actor_sha256": "67c20fc0929b2c5c8d9410a40bd334fb191c136b4671e76753b8eb1b7480aa57",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "dpi_setup": {
+    "selected_label": "150%",
+    "method": "Native Scale ComboBox Expand, visible150percent ListItem Select",
+    "actual_settings_dpi": 144
+  },
+  "display_modes": [
+    "640x480x32",
+    "1024x768x32",
+    "800x600x32",
+    "2048x1152x32",
+    "1920x1080x32",
+    "1920x1200x32",
+    "1600x1200x32",
+    "1680x1050x32",
+    "1440x900x32",
+    "1280x1024x32",
+    "1280x960x32",
+    "1280x768x32",
+    "1360x768x32",
+    "1400x1050x32",
+    "1792x1344x32",
+    "1856x1392x32",
+    "1920x1440x32",
+    "1280x720x32",
+    "5120x2160x32",
+    "4096x2160x32",
+    "3840x2160x32",
+    "2560x1080x32",
+    "2560x1600x32"
+  ],
+  "error": "Service action is not enabled: Update / reinstall service",
+  "service_matrix": {
+    "scope": "Ordinary-user current NSIS, existing Task Scheduler service controls. No reboot/login, MSIX startup, Linux polkit or full U04 acceptance.",
+    "status": "running",
+    "states": [
+      {
+        "native_setup_action": "Enable automatic startup",
+        "native_login": "Automatic startup at sign-in: Off",
+        "case": "session running; login not installed",
+        "login_enabled": false,
+        "task_instances": 0,
+        "task_name": null,
+        "task_enabled": null,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": false
+      }
+    ],
+    "known_interface_gap": "Installed-but-disabled ordinary service has no direct in-app login enable/disable control; update preserves disabled intent. Track separately for implementation."
+  },
+  "status": "failed independent native Services workflow",
+  "remaining_owned_installed_processes": 0,
+  "cleanup_index_remove": {
+    "stdout": "Session indexing stopped; no background Ottrin index task was installed.\n",
+    "stderr": "",
+    "seconds": 4.3585307,
+    "exit": 0
+  },
+  "display_mode": "1920x1440"
+}

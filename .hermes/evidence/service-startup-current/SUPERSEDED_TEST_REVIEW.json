@@ -1,0 +1,90 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-bd223c1018e0fe86",
+      "kind": "build-cache",
+      "reason": "Superseded owned test output from the temporary unconditional codec dependency graph",
+      "evidence": "Current search-tests passed with replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b; rustc, target, profile, features, rustflags, config and source path match. The codec dependency is now Windows-only. This obsolete test executable/dep-info/fingerprint is not a shipping binary or dependency library."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-bd223c1018e0fe86.d",
+      "kind": "build-cache",
+      "reason": "Superseded owned test output from the temporary unconditional codec dependency graph",
+      "evidence": "Current search-tests passed with replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b; rustc, target, profile, features, rustflags, config and source path match. The codec dependency is now Windows-only. This obsolete test executable/dep-info/fingerprint is not a shipping binary or dependency library."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-search-bd223c1018e0fe86",
+      "kind": "build-cache",
+      "reason": "Superseded owned test output from the temporary unconditional codec dependency graph",
+      "evidence": "Current search-tests passed with replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b; rustc, target, profile, features, rustflags, config and source path match. The codec dependency is now Windows-only. This obsolete test executable/dep-info/fingerprint is not a shipping binary or dependency library."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f02e4c5b6fe6d4cb",
+      "kind": "build-cache",
+      "reason": "Superseded owned test output from the temporary unconditional codec dependency graph",
+      "evidence": "Current ui-tests passed with replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc; rustc, target, profile, features, rustflags, config and source path match. The codec dependency is now Windows-only. This obsolete test executable/dep-info/fingerprint is not a shipping binary or dependency library."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f02e4c5b6fe6d4cb.d",
+      "kind": "build-cache",
+      "reason": "Superseded owned test output from the temporary unconditional codec dependency graph",
+      "evidence": "Current ui-tests passed with replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc; rustc, target, profile, features, rustflags, config and source path match. The codec dependency is now Windows-only. This obsolete test executable/dep-info/fingerprint is not a shipping binary or dependency library."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-f02e4c5b6fe6d4cb",
+      "kind": "build-cache",
+      "reason": "Superseded owned test output from the temporary unconditional codec dependency graph",
+      "evidence": "Current ui-tests passed with replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc; rustc, target, profile, features, rustflags, config and source path match. The codec dependency is now Windows-only. This obsolete test executable/dep-info/fingerprint is not a shipping binary or dependency library."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Exact unchanged persistent PAM or polkit agent predates this task; unreadable exe/cwd/maps are not claimed inspected. Scoped retirement covers only owned superseded test executables/dep-info/fingerprints with passing matching-setting replacements; source, current binaries and user data retained. Exception applies only to this exact process identity."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Exact unchanged persistent PAM or polkit agent predates this task; unreadable exe/cwd/maps are not claimed inspected. Scoped retirement covers only owned superseded test executables/dep-info/fingerprints with passing matching-setting replacements; source, current binaries and user data retained. Exception applies only to this exact process identity."
+    }
+  ],
+  "replacements": [
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-bd223c1018e0fe86",
+      "new": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+      "new_sha256": "df14f870391b305bf26f5068b8ab2fc6e1284b004a4e78b4483c6051399c5127",
+      "matching_compiler_fields": [
+        "rustc",
+        "features",
+        "declared_features",
+        "target",
+        "profile",
+        "path",
+        "rustflags",
+        "config",
+        "compile_kind"
+      ]
+    },
+    {
+      "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f02e4c5b6fe6d4cb",
+      "new": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc",
+      "new_sha256": "c1ce7ddea7e4b0da2b0c62b479c00a81df0278d7ff41239f8cb25a0f05fda636",
+      "matching_compiler_fields": [
+        "rustc",
+        "features",
+        "declared_features",
+        "target",
+        "profile",
+        "path",
+        "rustflags",
+        "config",
+        "compile_kind"
+      ]
+    }
+  ]
+}

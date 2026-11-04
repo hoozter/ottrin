@@ -1,0 +1,83 @@
+{
+  "status": "pass scoped source tests/lint; native login toggle and package delivery pending",
+  "parent_revision": "def09c95a6b98e0dc3529f88deb9034fd31b26ee",
+  "files": {
+    "crates/ottrin-search/src/lib.rs": "e8263c775558c758d8927213be71c31ff7935649a01d6a9bbbb88642c64ba367",
+    "crates/ottrin-search/src/windows_index_startup.ps1": "ca44f565703632857b5f6d00b127bc2fc3612d821e1f11209aa40f2063e96e97",
+    "crates/ottrin-ui/src/lib.rs": "71d6b0c5c742e28e688559ca357748304ca27d26b5a904eddbce7b36eba8a7eb"
+  },
+  "checks": [
+    {
+      "name": "search-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-search",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "behavior": "Login enabled flag is independent of current runtime. Windows existing task identity/owner/action/least privilege required; MSIX enable cannot bypass user/policy or an existing unpackaged task. Services separates login and runtime controls; absent login health and singular indexed file wording clarified.",
+  "limits": [
+    "Windows task registration from prior source remains under native trace; no claim that this new flag setter fixes that separate problem",
+    "No new package or native runtime acceptance inferred from source tests"
+  ]
+}

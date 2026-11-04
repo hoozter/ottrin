@@ -1,0 +1,16 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-ea268e832702de9b",
+    "bytes": 78834512,
+    "sha256": "92412f8d3cfe678521403a08a428132462caa65b7e878a4f43fcac5d423cd555",
+    "check": "search-tests",
+    "purpose": "Verified prior tests before adding the encoded PowerShell transport; retain until a matching new replacement passes"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc",
+    "bytes": 812390656,
+    "sha256": "7b0fadabdca763b1b7907f0e759d76777a1ceddadcfc62d782e4a7b108ffc592",
+    "check": "ui-tests",
+    "purpose": "Verified prior tests before adding the encoded PowerShell transport; retain until a matching new replacement passes"
+  }
+]

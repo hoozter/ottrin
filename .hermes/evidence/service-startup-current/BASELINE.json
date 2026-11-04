@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-04T03:35:05.357320+00:00",
+  "compiler_roots": {
+    "target/debug/deps": 41676689681,
+    "target/debug/incremental": 23610891800,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33300491605,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39791904328
+  },
+  "purpose": "Independent login startup toggle; original compiler settings and shared caches; source checks wait until live Windows candidate fixture stops",
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/service-startup-current",
+  "candidate_scope": "Existing e3 runtime artifacts remain bound to that source; this source change requires fresh packages before delivery"
+}

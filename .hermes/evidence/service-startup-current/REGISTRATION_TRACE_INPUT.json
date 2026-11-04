@@ -1,0 +1,9 @@
+{
+  "scope": "Production e3 task body unchanged, native ordinary-user trace with EncodedCommand transport; no acceptance claim or security-policy change",
+  "production_scripts": {
+    "packaging/windows/windows-index-identity.ps1": "d1eeba407934dec845f7d9e1b850f4cfc7bb2d089c3410bfb7e67fe32fdc4fa4",
+    "crates/ottrin-search/src/windows_index_task.ps1": "2bac23739e333cee860b4c45229356453c115b0225c4051e7d38da90c61ff014"
+  },
+  "actor_sha256": "796d45d20de191aa4d3ae37e54bb597b7d83b41c034b423245b40504a756854b",
+  "next": "After source checks terminal, run via shared owned cohort-client in its own output root; inspect every terminal trace before changing production behavior"
+}

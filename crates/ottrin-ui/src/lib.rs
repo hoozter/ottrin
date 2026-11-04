@@ -21262,9 +21262,17 @@ impl OttrinApp {
             ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Indexing starts when you open Ottrin and continues after closing its windows. Enable automatic startup to also start indexing when you sign in." });
             ui.label(if package_managed { "Windows manages this package's login startup and removes it with Ottrin. Stopping indexing or disabling automatic startup keeps your saved index and preferences." } else { "Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index." });
             ui.add_space(6.0);
+            if installed {
+                let mut enabled = status.enabled;
+                if ui.checkbox(&mut enabled, "Start index automatically at sign-in").changed() {
+                    self.begin_index_service_action(ui.ctx(), move || SearchService::set_sqlite_schedule_enabled(enabled));
+                }
+                ui.label(RichText::new("Controls the next sign-in. Use Start / restart or Stop indexing to change what is running now.").color(c.text_muted));
+                ui.add_space(6.0);
+            }
             ui.horizontal_wrapped(|ui| {
-                let setup_label = if package_managed && status.enabled { "Repair automatic startup" } else if package_managed || !installed { "Enable automatic startup" } else { "Update / reinstall service" };
-                if ui.add(egui::Button::new(setup_label).themed(&c)).clicked() {
+                let setup_label = if installed { "Update / reinstall service" } else { "Enable automatic startup" };
+                if !package_managed && ui.add(egui::Button::new(setup_label).themed(&c)).clicked() {
                     let config = self.state.config.search.clone();
                     self.begin_index_service_action(ui.ctx(), move || SearchService::install_sqlite_schedule(&config));
                 }
@@ -21275,7 +21283,7 @@ impl OttrinApp {
                 if ui.add(egui::Button::new("Stop indexing").themed(&c)).clicked() {
                     self.begin_index_service_action(ui.ctx(), SearchService::stop_sqlite_schedule);
                 }
-                if installed && ui.add(egui::Button::new(if package_managed { "Disable automatic startup" } else { "Uninstall service" }).themed(&c)).clicked() {
+                if installed && !package_managed && ui.add(egui::Button::new("Uninstall service").themed(&c)).clicked() {
                     self.begin_index_service_action(ui.ctx(), SearchService::uninstall_sqlite_schedule);
                 }
                 #[cfg(target_os = "windows")]
@@ -22710,7 +22718,7 @@ impl OttrinApp {
                                                     });
                                                 };
                                                 let sqlite_detail = if diag.indexed_items > 0 {
-                                                    format!("{} files indexed", diag.indexed_items)
+                                                    format!("{} {} indexed", diag.indexed_items, if diag.indexed_items == 1 { "file" } else { "files" })
                                                 } else {
                                                     "building first index".to_string()
                                                 };
@@ -22740,7 +22748,11 @@ impl OttrinApp {
                                                         diag.watcher_last_error.as_deref().unwrap_or("Selected folders are unavailable; Ottrin retries automatically.")
                                                     },
                                                 );
-                                                let sqlite_schedule_detail = format!("{} ({})", sqlite_sched.source, sqlite_sched.detail);
+                                                let sqlite_schedule_detail = if sqlite_sched.source == "none" {
+                                                    format!("Off — {}", sqlite_sched.detail)
+                                                } else {
+                                                    format!("{} ({})", sqlite_sched.detail, sqlite_sched.source)
+                                                };
                                                 health_row(
                                                     ui,
                                                     sqlite_sched.enabled.then_some(true),
@@ -27365,6 +27377,73 @@ mod tests {
                 detail: "Needs repair".into(),
             },
         );
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[test]
+    fn installed_services_expose_login_choice_separately_from_runtime_controls() {
+        for (source, setup, uninstall, login_choice) in [
+            ("none", "Enable automatic startup", false, false),
+            (
+                "systemd user service",
+                "Update / reinstall service",
+                true,
+                true,
+            ),
+            (
+                "Windows Task Scheduler",
+                "Update / reinstall service",
+                true,
+                true,
+            ),
+            ("Windows Startup apps", "", false, true),
+        ] {
+            let mut app = OttrinApp::default();
+            app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
+                source: source.into(),
+                enabled: false,
+                detail: "Installed but disabled".into(),
+            });
+            let ctx = Context::default();
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(1800.0))),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let colors = app.colors;
+                        app.render_services_settings(ui, colors);
+                    });
+                },
+            );
+            let visible = |name: &str| {
+                output.shapes.iter().any(|shape| {
+                    matches!(&shape.shape, egui::Shape::Text(text) if text.galley.job.text == name)
+                })
+            };
+            assert_eq!(
+                visible("Start index automatically at sign-in"),
+                login_choice,
+                "{source}"
+            );
+            assert_eq!(visible("Uninstall service"), uninstall, "{source}");
+            for label in ["Start / restart", "Stop indexing"] {
+                assert!(
+                    visible(label),
+                    "Missing independent runtime control: {source}: {label}"
+                );
+            }
+            if !setup.is_empty() {
+                assert!(visible(setup), "Missing setup action: {source}");
+            }
+            if login_choice {
+                assert!(
+                    !visible("Enable automatic startup"),
+                    "Do not offer duplicate installation: {source}"
+                );
+            }
+        }
     }
 
     #[test]

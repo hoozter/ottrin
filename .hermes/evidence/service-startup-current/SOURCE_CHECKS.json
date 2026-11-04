@@ -1,0 +1,77 @@
+{
+  "status": "pass source UI tests/native and Windows strict lint/format; native GUI and packaging separate",
+  "scope": "Encoded PowerShell transport for task identity/query/install/startup changes, plus independent login toggle, unchanged runtime intent, actual Services controls and preserved MSIX policy/collision guards. Full Search/UI tests and strict native/Windows lint; native runtime and packaging separate.",
+  "checks": [
+    {
+      "name": "search-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-search",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ]
+}

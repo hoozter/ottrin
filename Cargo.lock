@@ -3427,6 +3427,7 @@ dependencies = [
 name = "ottrin-search"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "fs2",
  "globset",
  "libc",

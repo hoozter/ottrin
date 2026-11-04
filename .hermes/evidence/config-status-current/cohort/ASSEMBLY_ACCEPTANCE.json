@@ -19,5 +19,7 @@
     "base_still_off": true,
     "retained_pending_volume": null
   },
-  "scope": "Actual clean Git source/production MakeAppx assembly, then native unpack and independent host ZIP comparison; no Store/signing/runtime acceptance"
+  "scope": "Actual clean Git source/production MakeAppx assembly, then native unpack and independent host ZIP comparison; no Store/signing/runtime acceptance",
+  "artifact_retired": true,
+  "retirement_receipt": "CANDIDATE_RETIREMENT.json"
 }

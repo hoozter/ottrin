@@ -1,0 +1,14 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_search-bd223c1018e0fe86",
+    "sha256": "9e16c3ed5d875edf01f3f9699d1de2b4c329e803f24466d86eddf404d21c15b9",
+    "bytes": 78833176,
+    "check": "search-tests"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f02e4c5b6fe6d4cb",
+    "sha256": "70f3cf22fd7b076d101d6350cb9198aebaff712fd6eb822c87634c3dce872f39",
+    "bytes": 812390096,
+    "check": "ui-tests"
+  }
+]

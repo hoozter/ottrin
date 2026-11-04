@@ -90,84 +90,50 @@ Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
 
-1. Current GUI idle observation repair and seven-format delivery are complete
-   at the bounded Linux/Windows software-renderer scopes above. The strict CPU
-   failure has a matched passing successor; preserve its baseline and do not repeat
-   fulfilled matrices without changed inputs or a reproduced defect. Continue with
-   the concentrated requirement audit below. In particular, inspect Search/Services
-   consistency: current Windows Search health still describes the watcher as active
-   only while Ottrin runs, despite the independent daemon design; establish actual
-   service/runtime behavior before correcting that wording. Also review the proven
-   malformed-config silent-default/preservation gap recorded in
-   `gui-idle-refresh-current/LINUX_FIXTURE_FAILURES.json`. These are software work,
-   not owner waits. Native/physical/sustained/human acceptance retains its explicit
-   scope. Evidence/prose-only pushes skip redundant CI; shipping changes retain gates.
-   Source checkpoint: settings load now fails explicitly on malformed/unreadable
-   configuration instead of silently starting with defaults. Main GUI, Inspector,
-   Properties, picker, CLI and daemon callers propagate that error. Saves use an
-   atomic temporary file, retain a linked target and existing ordinary file modes,
-   refuse read-only targets, and preserve invalid files changed after startup.
-   Theme Save/Create/Save as new keep the editable draft and original configuration
-   on failure; success/close follows successful persistence. General settings saves
-   report failures instead of claiming success. Search health chooses wording from
-   its actual backend, separates login startup from daemon runtime and preserves
-   service status/error details. All487 UI tests pass (one existing ignored),
-   including10 configuration tests and an actual theme-draft failure/repair/retry
-   regression; strict native/Windows UI/app all-target lint and format pass.
-   Exact a3db AppImage acceptance passed all7 settings-error/theme-save/Search
-   workflows and3 reviewed originals. Fresh private1000-file daemon watcher,
-   query, restart and two shutdowns passed with0.033% one core over30seconds.
-   The canonical namespace test had generated an invalid partial AppConfig;
-   its corrected required fields now pass actual AppImage/RPM namespace gates.
-   The Windows fixture then used the wrong native startup-dialog title and was
-   stopped/cleaned after two passing malformed-config CLI/daemon refusals.
-   Source inspection also found that the dialog hid the actionable error behind
-   a log path. Its reporter now displays the actual summary/details, plus the
-   log path or explicit logging failure. Only that Windows reporter changed after
-   the487-pass UI checkpoint; native/Windows app lint and formatting pass.
-   Evidence and frozen attempts: `config-status-current/`, including
-   `ATTEMPT_A3DB.json`, `linux-a3db/` and `native-dialog-title-failure/`.
-   Superseded candidate stages and the unused source archive were retired;
-   no current deliverable or personal service/settings/data was changed.
-   Rebuild coherent packages and repeat current native gates with the corrected
-   fixture. All seven stable packages above remain47a; no Windows/package
-   acceptance or full roadmap completion is inferred from the source checks.
-   Current e3e33ae candidate update: all four Linux package content gates and
-   seven Linux native settings workflows pass; three original captures reviewed.
-   Fresh private1000-file Linux daemon watcher/query/restart/two-shutdown probe
-   passes at0.100% one core over30seconds. The completed76.6MB AppImage extraction
-   was removed after file identity, open-consumer and mount checks. Windows native
-   startup dialog now visibly explains the preserved configuration and dismisses
-   correctly; Native renderer theme save refusal/retry and Search pass. The
-   additional Services matrix fails after enabling startup because its expected
-   reinstall action is not found. This is not accepted or dismissed as a fixture
-   issue: the next exact-package run captures the failure window/accessibility
-   tree and actual scheduled task before teardown. It completes both renderer
-   settings scopes before the additional matrix. Previous clone/two volumes and
-   consumed transport were removed; retained compact failure evidence is under
-   `config-status-current/cohort/native-service-transition-failure/`.
-   Existing ordinary installed-but-disabled services also need an independent
-   login enable/disable control; repair intentionally preserves disabled intent.
-   This implementation and actual Linux polkit/managed-service QA remain ready
-   software work, not owner waits. The theme editor's hand-painted navigation
-   arrows and Sync example still differ from the actual toolbar; real-component
-   preview reuse remains incomplete despite earlier field mapping checks.
-   Subsequent native run completed all9 settings cases and7 reviewed original
-   captures across Native/OpenGL. Its separate service action was still Working
-   with disabled controls and no registered task when the60second observation
-   expired; no terminal permission/setup error was observed. A focused Services
-   actor now measures up to180seconds and captures child-process stages after60
-   seconds; the original failure and responsiveness concern remain recorded.
-   Core settings and Services producers are separated so either failure retains
-   its actual scope; both independent acceptance gates remain required.
-   Exact e3e33ae hosted CI passed all4 jobs (run41761626619). Native MSIX15
-   assembly/unpack passed all58 payload hashes. Its fresh private SYSTEM-account
-   1000-file daemon watcher/query/restart/two-shutdown probe passed at0.208% one
-   core over30seconds; this is not ordinary-user login or sustained acceptance.
-   Both assembly volumes/VM and the consumed200.7MB source archive were removed.
-   Current candidate proof is not stable delivery. All seven stable packages
-   remain47a until exact-source Windows/assembly/CI and cleanup gates pass.
+1. Build and verify fresh settings/service packages with the encoded Windows
+   task transport, then deliver them as one coherent package cohort. Stable deliverables remain
+   runtime47a772af above. Retired diagnostic candidate e3e33ae passes all4 hosted CI jobs, all4 Linux
+   package content gates,7 Linux native settings cases/3 reviewed originals,
+   and9 Windows settings cases/7 reviewed originals. Native MSIX15 assembly
+   matches all58 payload files. Fresh private1000-file Linux and Windows daemon
+   watcher/query/restart/two-shutdown probes pass at0.100% and0.208% of one core
+   over30seconds respectively; the Windows probe is SYSTEM-account software-VM
+   scope, not ordinary-user login or sustained/human acceptance.
+   Prior Windows Services setup remained Working with no registered task after
+   180seconds. A native ordinary-user trace of the unchanged registration script
+   instead completed in3.7087seconds through encoded command input, created the
+   correct task and removed it through the supported CLI. The source now uses
+   one UTF16LE encoded transport for all scheduler scripts, with UTF8/readable
+   text output. A bounded native Windows regression covers comments, quotes,
+   Unicode and readable failures. Local cross-compilation passes; its actual
+   native execution and the new app's service matrix still gate delivery.
+   Evidence: `config-status-current/cohort/registration-trace/` and
+   `service-startup-current/`. This is a source fix supported by a diagnostic;
+   it is not fresh packaged UI/service lifecycle acceptance.
+   The independent login-control gap is now implemented in source: installed
+   Linux services can enable/disable future startup without --now, and repair
+   retains a disabled startup choice; Windows
+   changes the owned task's enabled flag without replacing registration or
+   changing runtime, with MSIX startup policy/collision guards retained.
+   Services presents this choice separately from Start/restart, Stop and
+   uninstall, and Search health no longer displays the internal none marker.
+   Current source passes247 Search tests and488 UI tests (existing ignored
+   tests retained), strict native/Windows app/UI lint and formatting. Actual
+   login-toggle runtime acceptance and fresh packages remain required; these
+   source changes are not yet in the stable or e3e33ae candidate packages.
+   Complete native core close/uninstall/preservation independently of the
+   service matrix, then require current source CI, both native scopes, all
+   payload checks and owned cleanup before stable promotion. Completed e3
+   extractions/source archive and all terminal VM/transport fixtures are removed;
+   all superseded e3 candidate stages were retired after diagnostic consumers
+   finished. Stable deliverables remain intact; fresh candidates reuse the same
+   documented staging paths. See the current evidence cleanup receipts.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
+   The theme editor still hand-paints navigation arrows and a Sync example that
+   differ from the real toolbar. Reuse the actual interface components; field
+   mapping checks do not fulfil the requested accurate live preview. Actual
+   Linux polkit prompt/cancel/setup/reinstall and managed-service state coverage
+   remain independent software QA work in an owned full-system environment.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
    with 15 UI/service/delivery requirements. They overlap and are not a completion
