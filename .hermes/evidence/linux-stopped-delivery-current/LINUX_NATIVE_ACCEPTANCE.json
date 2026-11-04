@@ -1,0 +1,92 @@
+{
+  "status": "pass scoped fresh AppImage Services stopped-state, helper and native control acceptance",
+  "source_revision": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+  "appimage": {
+    "name": "Ottrin-0.1.0-x86_64.AppImage",
+    "sha256": "a4073e944502aa7ab3208ee1ae2da139f959d9a44eddc4ea5c7e75ea1b15855c"
+  },
+  "service_states": 9,
+  "startup_checkbox_checks": 5,
+  "gui_close_and_reopen": {
+    "normal_exit": 0,
+    "after_close": {
+      "pid": 5386,
+      "enabled": "disabled",
+      "installed": true
+    },
+    "after_reopen": {
+      "pid": 5386,
+      "enabled": "disabled",
+      "installed": true
+    }
+  },
+  "helper_cases": [
+    "actual setup prompt cancelled; helper absent; cancellation visible",
+    "actual setup authenticated; root-owned helper and policy; ready UI",
+    "actual reinstall authenticated and completed"
+  ],
+  "source_preserved": true,
+  "reviewed_original_captures": {
+    "setup-needed": {
+      "sha256": "29fdb722f69640bfbcd6f8155ba7d27624a102eecd058c1e4044dff7490920ba",
+      "review": "Direct lock route reaches Services; setup needed/action visible."
+    },
+    "cancel-prompt": {
+      "sha256": "04ed368f38f59bece8ed9f833a3ed8e093740d7918029a36249c237e70d63f6d",
+      "review": "Real graphical polkit prompt for staged helper."
+    },
+    "setup-cancelled": {
+      "sha256": "6c59b22d13667951a615ad8f402902517248511a19d6ea6c3ec6883908ec58c2",
+      "review": "Cancellation visible; helper remains uninstalled."
+    },
+    "setup-prompt": {
+      "sha256": "059a63f212add7ecb769fdfe01dcd9128f008638f09ea6678f6853ff7feeb088",
+      "review": "Retry opens a new graphical administrator prompt."
+    },
+    "setup-ready": {
+      "sha256": "e37b3bb3aaac538a4e947e2ebf6548f1c354df9af3b5cc13b8a044eaab3b673f",
+      "review": "Root-owned helper is reflected by green ready status."
+    },
+    "reinstall-prompt": {
+      "sha256": "9739cea20e35938cf36606281d8f09d9804cbdff65a5422e1694cbcbc58369ba",
+      "review": "Reinstall prompts after temporary authorization is revoked."
+    },
+    "reinstall-ready": {
+      "sha256": "e37b3bb3aaac538a4e947e2ebf6548f1c354df9af3b5cc13b8a044eaab3b673f",
+      "review": "Reinstall completes and ready status remains."
+    },
+    "index-running-startup-on": {
+      "sha256": "6f00b709f7ab267abe253c2b27ec69be2be96458735cdc4c075e2fb3f561b826",
+      "review": "Green running state, checked startup choice, update and uninstall controls."
+    },
+    "index-stopped-startup-off": {
+      "sha256": "556d1abaab98408554519c0ada7ba459f9b5488cb9da4ae9729197c698b697ef",
+      "review": "ACCEPTED TARGET: gray Stopped with disabled startup, no red connection-refused text in Services."
+    },
+    "index-uninstalled": {
+      "sha256": "90fc6c292abf7c5205b2522606e4aee322f46b2138ffe549e8eb1bc934761ae2",
+      "review": "ACCEPTED TARGET: gray Stopped and Enable automatic startup after uninstall; no false Services error."
+    },
+    "index-reopened": {
+      "sha256": "4eb161ee6ea356b48f070f8761476c47dc413f246cfe6cf2f5575603921a6725",
+      "review": "DIAGNOSTIC ONLY: running/disabled state visible but immediate post-resize image includes an incomplete white region; not accepted as a settled full-window/theme capture."
+    }
+  },
+  "limits": [
+    "Private Ubuntu24 software-X11/PAM/GNOME-polkit fixture only; no physical, browser or whole-interface acceptance",
+    "No protected-file elevation or real login/reboot acceptance",
+    "Fresh normal GUI close/reopen and PID retention accepted; post-resize screenshot is diagnostic, not settled-window acceptance"
+  ],
+  "remaining_ui_audit_findings": [
+    "Main-window search indicator remains red when indexing is intentionally stopped; Services presentation is corrected, whole-interface status coherence is unfinished",
+    "Immediate post-resize capture is incomplete; verify settled repaint and fix producer observation before treating resize captures as acceptance"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  }
+}

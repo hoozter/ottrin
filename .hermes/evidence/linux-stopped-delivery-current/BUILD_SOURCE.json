@@ -1,0 +1,10 @@
+{
+  "source_revision": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+  "working_tree_at_build": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "scope": "Linux-only stopped-state presentation correction; Windows source behavior unchanged and current Windows deliverables retained at f463",
+  "pending_consumers": [],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-stopped-delivery-current",
+  "cleanup_complete": true,
+  "delivery_status": "Verified four-format Linux 061 cohort promoted; Windows f463 retained; stage/extraction retired"
+}

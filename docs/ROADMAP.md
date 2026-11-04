@@ -8,21 +8,28 @@ not complete a broader native, platform or user-acceptance requirement.
 
 ### Usable local preview
 
-All seven stable packages remain runtime
-`f463ff268f1c0850360fb3d1d81da18a3d3240ec`: four Linux formats in `dist/packages/`
-and ZIP/NSIS/development MSIX0.1.0.16 in `dist/windows-candidate/`.
-The AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02`.
+The four Linux formats in `dist/packages/` now use runtime
+`0613162ddee19361e02eb9a3cc315d8a4e643493`. Windows ZIP/NSIS/development
+MSIX0.1.0.16 remain the accepted `f463ff268f1c0850360fb3d1d81da18a3d3240ec`
+cohort in `dist/windows-candidate/`; the status correction changes Linux-only code.
+The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`a4073e944502aa7ab3208ee1ae2da139f959d9a44eddc4ea5c7e75ea1b15855c`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
-Known current Linux preview issue: an intentionally stopped/uninstalled index
-can display red "Needs attention" when SIGTERM leaves a socket pathname behind.
-The mounted AppImage's setup and service actions work; the stopped-state display
-fails visual acceptance. The source correction passes two real-socket regressions,
-489 UI tests and strict Linux/Windows lint. New Linux packages and fresh rendered
-verification are still pending; the current f463 packages do not contain that fix.
+The current Linux packages correct Services showing a false red error for an
+intentionally stopped/uninstalled index with a stale socket pathname. Fresh
+mounted-AppImage captures show gray Stopped in both states. This is Services
+acceptance, not whole-interface completion: the main-window search indicator
+still turns red when stopped, and settled resize observation remains open.
+
+The source tree additionally shares real navigation/menu/view/breadcrumb
+presenters with the theme preview, replacing ASCII arrows, the fake raised path
+and invented Sync button. 490 UI tests and strict native/Windows UI lint pass.
+This source-only theme work is not in the current 061 Linux or f463 Windows packages;
+full preview/interface audit, native visual checks and the next UI package batch
+remain required. Source scope: `theme-presenters-current/IMPLEMENTATION.json`.
 
 The preview retains off-thread storage discovery and changed-only index
 observations. The earlier47a Linux/Windows Native/OpenGL GUI idle measurements
@@ -35,11 +42,13 @@ Packaged manuals are build-time snapshots. `SOURCE_REVISION.txt` identifies the
 runtime; repository acceptance manifests and this queue record later progress.
 Documentation/evidence checkpoints do not require rebuilding unchanged runtime.
 
-### Delivered cohort: event-driven Services
+### Earlier delivered cohort: event-driven Services
 
 Runtime source: `f463ff268f1c0850360fb3d1d81da18a3d3240ec`.
 Evidence/producers: `.hermes/evidence/service-wake-current/`.
-All seven artifacts above are promoted, rehashed and match the accepted source.
+This historical f463 cohort promoted seven artifacts. Its four Linux packages
+were subsequently replaced by the061 delivery above; original receipts keep
+their f463 hashes/scopes.
 `cohort/DELIVERY_VERIFICATION.json` and `cohort/CLEANUP_FINAL.json` bind delivery
 and cleanup; the whole roadmap remains unfinished.
 
@@ -147,23 +156,48 @@ configuration. No candidates remain. Current binaries/caches and all seven
 stable deliverables are retained. Exact paths/purposes and before/after sizes
 are in `linux-appimage-services-current/CLEANUP.json`.
 
+### Delivered Linux stopped-state correction, 2026-11-04
+
+All four061 Linux formats pass production package/content/namespace checks and
+are promoted at the stable paths. CI41794783542 passes all four exact-source
+Linux/Windows verification/performance jobs. The daemon's mapped image is
+identical to f463 apart from excluded metadata, and a fresh private1000-file
+probe still verifies create/rename/delete watchers, queries, persistence/restart,
+two protocol shutdowns and0.067% one-core CPU over30seconds.
+
+The fresh mounted AppImage passes helper setup/cancel/reinstall, nine native
+service states/five checkbox changes and correct Services Stopped presentation.
+A normal GUI close exits0; reopening keeps the exact managed daemon PID and
+its disabled-startup choice. Eleven original images were reviewed. The immediate
+post-resize image is diagnostic, not settled-window acceptance; two target
+stopped/uninstalled images are accepted. A separate real f463-to-061 DEB
+replacement passes enabled/running, disabled/running and disabled/stopped states;
+all first ensure calls succeed, and1000 source files plus preferences are unchanged.
+This is same-version preview replacement, not semantic-version or reboot testing.
+
+The protected-operation probe is not a positive pass. It captured a no-seat,
+background session and pkexec127 Not authorized, with no filesystem effect.
+Official polkit policy/session documentation explains why this does not meet the
+active local-console condition. The positive test must use a genuine local seat;
+no permission rule was relaxed. This remains independently executable software QA.
+Evidence: `.hermes/evidence/linux-stopped-delivery-current/`.
+
 ### Ordered implementation and acceptance queue
 
-1. Build and verify new Linux packages containing the stopped-state source fix;
-   require fresh stopped/uninstalled screenshots before accepting that UI result.
-   Keep the current f463 artifacts identified as unchanged until promotion.
-   Then complete protected-file elevation, normal GUI-close daemon retention,
-   login/reboot and actual binary-version upgrade readiness in an owned full-system
-   environment. Published portable/AppImage graphical helper setup/cancel/reinstall,
-   AppImage native startup-control actions and DEB/RPM CLI service states with
-   delayed startup are scoped above. Remaining software checks are independently
-   executable, not owner waits. Reuse cached bases and preserve personal services.
-2. Finish the theme/interface consistency audit and implementation. U08 remains
-   unfulfilled: preview navigation and Sync are invented, address fill differs
-   from the production breadcrumb frame, and miniatures apply full-size corners
-   without scaling. Reuse actual production presenters and geometry. Verify all
-   supported controls, role ownership, tabs, menus, text/icon alignment and window
-   styling; field-map/test counts do not prove whole-interface consistency.
+1. Complete positive protected-file elevation in a genuine local-seat Linux
+   desktop fixture, then real login/reboot and remaining AppImage/portable binary
+   replacement readiness. Background no-seat denial is diagnosed, not positive
+   acceptance.061 package delivery, normal GUI-close retention, same-version DEB
+   replacement, helper setup and native Services controls are scoped above and
+   need not be repeated without changed inputs or a reproduced concern.
+2. Finish the theme/interface consistency audit and implementation. The source
+   now reuses live navigation/menu/view/breadcrumb widgets in the editor; it is
+   tested source work awaiting the next UI delivery. U08 remains unfinished:
+   titlebar/tabs, file rows/status controls, miniature corner scaling and inspector
+   role ownership still need actual shared presenters and native verification.
+   Include the main search indicator's stopped-state color and settled resize
+   observation. Verify every supported control/role, text/icon alignment and
+   window styling; field-map/test counts do not prove whole-interface consistency.
 3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
    Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
    DEB/RPM and cooperating Windows caller receipts retain their exact scopes.

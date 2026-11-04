@@ -1,0 +1,14 @@
+{
+  "status": "implemented and source-tested; native/theme audit and new cross-platform packaging remain pending",
+  "source_sha256": "63385b3816ac5b083a0f642514eede6b704f35472506e877c7da47b17301372f",
+  "checks": "SOURCE_CHECK.json",
+  "scope": "One production presentation path for navigation buttons, menu/view controls and breadcrumb bar; live main/tandem controllers retained; theme preview uses these controls instead of ASCII arrows, raised fake path and invented Sync. Accessible preview clicks select Navigation styling.",
+  "remaining": [
+    "Native editor/rendered acceptance across supported themes/scales",
+    "Real file rows, tabs/titlebar/status controls and miniature geometry still need the full consistency audit",
+    "Main search indicator stopped-state color and settled resize observation remain open"
+  ],
+  "temporary_worktree_removed": true,
+  "temporary_branch_removed": true,
+  "compiler_configurations": "Existing main checkout target/cache only; no worktree target tree"
+}

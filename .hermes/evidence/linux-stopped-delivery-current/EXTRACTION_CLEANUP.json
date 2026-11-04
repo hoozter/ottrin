@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "bytes": 76560682,
+  "open_consumers": false,
+  "outside_hard_links": false,
+  "current_release_replacements_match": true,
+  "reason": "Content and namespace consumers finished; native GUI consumed the actual staged mounted AppImage instead",
+  "removed": true
+}

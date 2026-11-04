@@ -1,0 +1,11 @@
+{
+  "status": "pass Linux-only behavior change; staged runtime matches committed source",
+  "candidate_source": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+  "previous_linux_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "changed_runtime_files": [
+    "crates/ottrin-search/src/daemon_client.rs",
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "scope": "Linux endpoint-presence API and Linux Services stopped-state mapping; Windows code behavior unchanged; Windows artifacts retain f463 provenance",
+  "source_checks": ".hermes/evidence/linux-appimage-services-current/SOURCE_CHECKS.json"
+}

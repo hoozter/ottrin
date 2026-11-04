@@ -36,18 +36,22 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The current seven local artifacts use clean runtime `f463ff26`.
-All four exact-source CI jobs pass. Current package checks include seven Linux
-settings cases, nine Windows settings cases on Native/OpenGL, and sixteen Windows
-Services states with six independent login toggles. Reviewed originals and
-source/preferences-preserving close/uninstall bind those scopes. Fresh private
-1,000-file daemon probes pass below1% of one core on both platforms. Development
-MSIX0.1.0.16 passes native assembly/unpack and58-file equality; installed-package
-startup/update/login coverage remains separate. Earlier GUI-idle, appearance,
-preview, picker, folder and media receipts retain their exact historical scopes.
-Full roadmap, Linux polkit/managed-service checks, MSI rollback, physical/sustained
-coverage and final daily-driver acceptance remain open. See the roadmap and stable
-acceptance manifests for exact scopes.
+The four Linux packages use runtime `0613162d`; Windows ZIP/NSIS/MSIX16 retain
+accepted runtime `f463ff26`. CI41794783542 passes all four exact-source jobs for
+the Linux correction. The mounted AppImage verifies gray Stopped in Services,
+nine service states/five startup toggles, real helper setup/cancel/reinstall and
+normal GUI close/reopen with the managed PID retained. Three real same-version
+DEB replacement states preserve source, preferences and the startup choice.
+The fresh Linux1000-file daemon probe measures0.067% of one core over30seconds.
+Windows retains its earlier9 settings cases,16 Services states/six startup toggles,
+58-file payload/MSIX16 assembly and scoped daemon acceptance. These are bounded
+software fixtures, not sustained, physical or whole-interface acceptance.
+
+Source-only theme work now shares live toolbar/breadcrumb widgets with the editor;
+490 UI tests and strict Linux/Windows UI lint pass. It is not in the current packages.
+Full theme/role consistency, positive local-seat protected-file elevation,
+login/reboot, MSI rollback, physical coverage and final daily-driver acceptance
+remain open. See the roadmap and stable manifests for exact evidence and limits.
 
 ### Linux
 

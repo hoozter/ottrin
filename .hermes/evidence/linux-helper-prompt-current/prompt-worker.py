@@ -64,6 +64,35 @@ try:
   q.wait_for(lambda:visible('Update / reinstall helper') and not visible('Working…'),'reinstall completion',timeout=45)
   assert helper.is_file() and helper.stat().st_uid==0
   capture('reinstall-ready');report['cases'].append('actual reinstall authenticated and completed')
+  if (base/'QA_PROTECTED_INPUT.json').exists():
+   report['session_properties']=subprocess.check_output(['loginctl','show-session',report['login_session_id'],'-p','Active','-p','Remote','-p','Class','-p','Seat','-p','Type','-p','Service','-p','State'],text=True)
+   report['helper_policy']=subprocess.check_output(['pkaction','--action-id','org.ottrin.filesystem.privileged','--verbose'],text=True)
+   session=dict(line.split('=',1) for line in report['session_properties'].splitlines() if '=' in line)
+   assert session.get('Seat') and session.get('Active')=='yes','Positive protected-file acceptance requires a genuine active local-seat fixture; do not relax policy or mistake background denial for cancellation'
+   destination=Path('/var/lib/ottrin-owned-protected-qa')
+   try:
+    (destination/'ordinary-write.txt').write_text('Must be refused')
+    raise AssertionError('Ordinary account unexpectedly wrote the protected directory')
+   except PermissionError:pass
+   def copy_request(source):return json.dumps({'command':{'File':{'Copy':{'sources':[str(source)],'destination':str(destination),'conflict':'Skip'}}},'context':{'reason':'Owned native polkit acceptance','cwd':str(fixture.parent)}}).encode()
+   def elevated_copy(source):
+    child=subprocess.Popen(['pkexec','/usr/libexec/ottrin/ottrin-priv-helper','--stdio-json'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    children.append(child);child.stdin.write(copy_request(source));child.stdin.close();return child
+   subprocess.run(['pkcheck','--revoke-temp'],check=True,capture_output=True)
+   report['temporary_authorizations_after_revoke']=subprocess.run(['pkcheck','--list-temp'],capture_output=True,text=True).stdout
+   cancelled=elevated_copy(fixture.parent/'cancel-copy.txt')
+   try:
+    cancel=q.wait_for(lambda:auth_button('Cancel'),'protected-operation cancel prompt',timeout=25)
+   except BaseException:
+    report['protected_cancel_process']={'exit':cancelled.poll(),'stdout':cancelled.stdout.read().decode() if cancelled.poll() is not None else None,'stderr':cancelled.stderr.read().decode() if cancelled.poll() is not None else None}
+    raise
+   capture('protected-copy-cancel-prompt');assert cancel.queryAction().doAction(0)
+   assert cancelled.wait(timeout=15)==126
+   approved=elevated_copy(fixture);authenticate('protected-copy')
+   assert approved.wait(timeout=20)==0,approved.stderr.read().decode()
+   response=json.loads(approved.stdout.read());assert response['status']=='Success',response
+   report['protected_helper']={'ordinary_write_denied':True,'cancel_exit':126,'authenticated_response':response,'scope':'Installed helper exact pkexec/stdio transport and actual graphical authentication; not Ottrin file-manager retry UI acceptance'}
+   capture('protected-copy-completed')
   if image_config:
    settings=q.wait_for(lambda:q.run('xdotool','search','--onlyvisible','--name','^Ottrin Settings$',capture=True,check=False).stdout.strip(),'settings window')
    assert len(settings.split())==1
@@ -96,14 +125,44 @@ try:
    q.click_accessible_name('Update / reinstall service','push button')
    state=q.wait_for(lambda:settled(False,False),'repair preserves stopped disabled index',timeout=45)
    report['service_states'].append({'action':'repair disabled stopped service','state':state})
+   q.wait_for(lambda:visible('Stopped') and not visible('Needs attention'),'stopped status without a false error',timeout=20)
    capture('index-stopped-startup-off')
    q.click_accessible_name('Start / restart','push button')
    state=q.wait_for(lambda:settled(False,True),'explicit index restart',timeout=45)
    report['service_states'].append({'action':'explicit restart','state':state})
+   def window_id(title):
+    def lookup():
+     ids=q.run('xdotool','search','--all','--onlyvisible','--pid',str(app.pid),'--name','^'+title+'$',capture=True,check=False).stdout.split()
+     return ids[0] if len(ids)==1 else None
+    return q.wait_for(lookup,'unique '+title+' window')
+   def close_window(title):
+    wid=window_id(title)
+    geometry=dict(line.split('=',1) for line in q.run('xdotool','getwindowgeometry','--shell',wid,capture=True).stdout.splitlines() if '=' in line)
+    x,y,width=[int(geometry[k]) for k in ['X','Y','WIDTH']]
+    buttons=[]
+    for node in q.named_nodes('Close window'):
+     box=node.queryComponent().getExtents(q.pyatspi.DESKTOP_COORDS)
+     if node.getRoleName()=='push button' and x<=box.x<x+width and y<=box.y<y+50:buttons.append(node)
+    assert len(buttons)==1,'Window close control must belong to the requested viewport'
+    assert buttons[0].queryAction().doAction(0)
+   close_window('Ottrin Settings')
+   q.wait_for(lambda:not q.run('xdotool','search','--all','--onlyvisible','--pid',str(app.pid),'--name','^Ottrin Settings$',capture=True,check=False).stdout.strip(),'settings closed')
+   close_window('Ottrin');assert app.wait(timeout=15)==0
+   after_close=service_state();assert after_close['pid']==state['pid']>0 and after_close['enabled']=='disabled'
+   app=subprocess.Popen([str(executable),str(fixture.parent)],stdout=log,stderr=log);children.append(app);q.target_process_id=app.pid
+   q.wait_for(q.ottrin_app,'reopened packaged application',timeout=30)
+   q.click_accessible_name('Manage administrator helper','push button')
+   q.wait_for(lambda:visible('Start index automatically at sign-in'),'managed service retained on reopen',timeout=20)
+   after_reopen=q.wait_for(lambda:settled(False,True),'same managed daemon after GUI reopen',timeout=20)
+   assert after_reopen['pid']==after_close['pid']
+   report['gui_close_and_reopen']={'normal_exit':0,'after_close':after_close,'after_reopen':after_reopen}
+   q.run('xdotool','windowsize','--sync',window_id('Ottrin Settings'),'1200','960')
+   capture('index-reopened')
    q.click_accessible_name('Uninstall service','push button')
    q.wait_for(lambda:not unit.exists() and not visible('Working…'),'service uninstall',timeout=45)
    assert service_state()['pid']==0
    report['service_states'].append({'action':'uninstall','state':service_state()})
+   q.wait_for(lambda:visible('Stopped') and not visible('Needs attention'),'uninstalled status without a false error',timeout=20)
    capture('index-uninstalled')
   assert hashlib.sha256(fixture.read_bytes()).hexdigest()==original
   report['source_preserved']=True;report['status']='pass'

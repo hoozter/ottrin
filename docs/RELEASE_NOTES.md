@@ -4,37 +4,35 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development MSIX0.1.0.16
-use runtime `f463ff268f1c0850360fb3d1d81da18a3d3240ec`. All seven artifacts and
-sidecars, plus all58 Windows payload files, are rehashed at the stable paths.
-Exact-source CI41779769053 passes all four verification/performance jobs.
+Linux AppImage/portable/DEB/RPM use runtime `0613162d`; Windows ZIP/NSIS/MSIX16
+retain the accepted `f463ff26` cohort. The Linux-only Services correction now
+shows gray Stopped after intentional stop/uninstall even when a socket pathname
+remains. All four exact-source CI jobs41794783542 pass.
 
-Settings now reject malformed/unreadable files without replacing them. A failed
-theme save retains the draft and original settings; after permissions are fixed,
-retry persists the same draft. Windows startup failures provide a native error
-and diagnostic log path. Fresh package checks pass seven Linux cases and nine
-Windows cases on Native/OpenGL, with original captures reviewed.
+The new mounted AppImage verifies real helper setup/cancel/reinstall, nine
+service states/five independent startup toggles, and normal GUI close/reopen with
+the same managed daemon PID and disabled startup choice retained. Actual
+same-version f463-to-061 DEB replacement passes enabled/running,
+disabled/running and disabled/stopped cases; first ensure succeeds and1000 source
+files/preferences are unchanged. A fresh Linux daemon probe passes watcher,
+query, persistence/restart and two shutdowns at0.067% of one core over30seconds.
 
-Services separates automatic startup at the next sign-in from the daemon running
-now. Windows passes sixteen native states and six checkbox toggles that preserve
-current daemon PIDs, task instances and permissions. Linux source/unit checks cover
-future-startup commands and preservation of a disabled choice during repair;
-actual managed-service/polkit prompt coverage remains pending. Pending service
-work uses completion wakeups instead of a continuously repainting spinner.
+Earlier f463 configuration-preservation/theme-save, Windows Native/OpenGL,
+Windows16-state service management and MSIX16 assembly evidence retains its exact
+scope. The main search indicator's stopped color and settled resize observation
+remain in the consistency audit. A protected-copy probe was denied in a no-seat
+background session; positive local-console elevation remains unverified.
 
-Fresh private1,000-file daemon probes pass watcher changes, queries, persistence,
-restart and two shutdowns: Linux0.033% and Windows0.208% of one core over30seconds.
-The Windows probe uses the disposable SYSTEM assembly account. These bounded
-samples do not establish sustained/physical acceptance or replace the older GUI
-idle receipts. MSIX16 passes native MakeAppx/unpack and58-file equality; installed
-startup/update/login acceptance remains separate.
+The source now shares production navigation/menu/view/breadcrumb presentation
+with the theme editor, removing its invented Sync control and ASCII navigation.
+490 UI tests and strict native/Windows UI lint pass. This is source-only work;
+current packages do not contain it and the full theme/role audit remains open.
 
-Owned VMs, profiles, source archive, staging/extraction, consumed bootstrap and
-superseded packages are removed. Personal services/settings were preserved.
-Full theme/interface and caller audits, Linux prompt/managed-service acceptance,
-MSI rollback, signing/Store and final owner acceptance remain open. Packaged
-manuals are build-time snapshots; repository manifests/docs record later delivery.
-No public release is implied.
+Owned VM/profile/bootstrap resources, extraction and superseded Linux packages
+are removed. Current Windows packages and personal services/data were preserved.
+Login/reboot, broader caller/visual/physical acceptance, MSI rollback, signing/Store
+and final owner acceptance remain open. Packaged manuals are build-time snapshots;
+repository manifests/docs record later delivery. No public release is implied.
 
 ## Highlights
 

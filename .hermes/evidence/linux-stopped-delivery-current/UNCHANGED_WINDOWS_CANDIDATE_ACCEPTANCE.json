@@ -1,0 +1,45 @@
+{
+  "evidence": ".hermes/evidence/service-wake-current/cohort",
+  "source_scope": ".hermes/evidence/service-wake-current/cohort/SOURCE_SCOPE.json",
+  "hosted_source": {
+    "run": 41779769053,
+    "tested_source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+    "all_four_jobs_success": true
+  },
+  "limits": [
+    "Current private software-renderer settings and service actions only; previous47a GUI idle scope retains its original source/artifact, no fresh GUI CPU or physical acceptance",
+    "Current settings save-retry and ordinary Windows task/login controls are scoped; actual Linux prompt/managed-service and new MSIX startup-checkbox coverage remain open",
+    "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
+  ],
+  "status": "pass scoped current Windows settings-preservation preview; MSI release held separately",
+  "source_commit": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "621647d10471a184762dbe39cc40b4231af6a96589f5468820689c45de076e4c",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f",
+    "Ottrin-0.1.0-windows-x64-development.msix": "2987d5de5a229246978a6294c02607b25c7809a2d3daa5aaf8f54ab828069121"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/service-wake-current/cohort",
+  "host_content": "HOST_PAYLOAD.json",
+  "current_native_fields": ".hermes/evidence/service-wake-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json",
+  "services_current_scope": ".hermes/evidence/service-wake-current/cohort/WINDOWS_SERVICES_ACCEPTANCE.json",
+  "full_payload_comparison": ".hermes/evidence/service-wake-current/cohort/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+  "daemon_runtime": ".hermes/evidence/service-wake-current/cohort/WINDOWS_DAEMON_RUNTIME.json",
+  "native_msix": {
+    "current_assembly": ".hermes/evidence/service-wake-current/cohort/ASSEMBLY_ACCEPTANCE.json",
+    "limit": "MSIX16 assembly/unpack only; deployment/update/login/removal acceptance retains historical source/artifact scopes"
+  },
+  "unchanged_responsibility_basis": {
+    "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+    "previous_receipt": ".hermes/evidence/service-wake-current/cohort/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "scope": "Reject malformed/unreadable configuration without replacement; checked atomic settings saves and retained theme draft on error; actionable Windows startup failure reporting; truthful backend/login Search health. Independent future-login controls preserve current daemon state, with Linux disabled-startup repair retention and existing MSIX policy/collision guards. All Windows scheduler bodies use a single UTF16LE encoded input/UTF8 direct-error transport. Services progress/status views use worker completion wakes instead of continuous animation/polling."
+  },
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "public_release_published": false
+}

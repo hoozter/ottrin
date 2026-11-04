@@ -1,0 +1,20 @@
+{
+  "status": "diagnosed non-local fixture denial; positive protected-file acceptance remains open",
+  "observation": {
+    "exit": 127,
+    "stdout": "",
+    "stderr": "Error executing command as another user: Not authorized\n\nThis incident has been reported.\n"
+  },
+  "session_properties": "Seat=\nRemote=no\nService=login\nType=unspecified\nClass=background\nActive=yes\nState=active\n",
+  "policy": "org.ottrin.filesystem.privileged:\n  description:       Run privileged operations for Ottrin\n  message:           Authentication is required to perform this privileged operation in Ottrin.\n  vendor:            Ottrin\n  vendor_url:        https://github.com/hoozter/ottrin\n  icon:              system-file-manager\n  implicit any:      no\n  implicit inactive: no\n  implicit active:   auth_admin_keep\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\n\n",
+  "filesystem_effects": {
+    "cancel_copy_exists": false,
+    "authenticated_copy_exists": false
+  },
+  "interpretation": "The active background session has no local seat. Ottrin allows administrator authentication only for active local-console clients; all other clients are denied. This explains the no-prompt refusal in this fixture and does not prove positive desktop elevation. No policy exception or privilege workaround was added.",
+  "sources": [
+    "https://www.freedesktop.org/software/polkit/docs/latest/polkit.8.html",
+    "https://github.com/polkit-org/polkit/blob/master/src/polkitbackend/polkitbackendsessionmonitor-systemd.c"
+  ],
+  "next": "Use a genuine local-seat desktop session to verify cancellation and authenticated protected-file operations. This is independently executable software QA, not an owner wait."
+}

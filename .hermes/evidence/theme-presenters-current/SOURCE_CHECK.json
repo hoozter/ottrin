@@ -1,0 +1,51 @@
+{
+  "source_before_sha256": "6ab1356e09e728c00a71a34c77eb67e64bb426c53e1fccbf1c3c329ebea3720e",
+  "draft_sha256": "63385b3816ac5b083a0f642514eede6b704f35472506e877c7da47b17301372f",
+  "scope": "Draft UI tests at the existing crate path and compiler configuration; source restored before any delivery mutation",
+  "status": "pass source UI suite and strict native/Windows UI lint",
+  "checks": [
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-ui",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-ui",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    }
+  ],
+  "exit": 0,
+  "delivery_source_restored": true
+}

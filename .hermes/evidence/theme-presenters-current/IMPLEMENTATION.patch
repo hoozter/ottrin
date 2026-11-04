@@ -1,0 +1,876 @@
+diff --git a/crates/ottrin-ui/src/lib.rs b/crates/ottrin-ui/src/lib.rs
+index 5233ae4b..0b5b403d 100644
+--- a/crates/ottrin-ui/src/lib.rs
++++ b/crates/ottrin-ui/src/lib.rs
+@@ -559,6 +559,219 @@ enum PointerNavigation {
+     Up,
+ }
+ 
++// Widget presentation is shared by live navigation and the theme editor.
++// Callers own navigation, menus and filesystem effects.
++fn navigation_buttons(
++    ui: &mut egui::Ui,
++    c: Colors,
++    enabled: [bool; 3],
++) -> Option<PointerNavigation> {
++    let mut action = None;
++    for (index, kind, icon, label, tip, empty_tip) in [
++        (
++            0,
++            PointerNavigation::Back,
++            MI_ARROW_BACK,
++            "Back",
++            "Back to previous folder (Alt+Left)",
++            "Back history is empty. Open another folder first.",
++        ),
++        (
++            1,
++            PointerNavigation::Forward,
++            MI_ARROW_FORWARD,
++            "Forward",
++            "Forward to next folder (Alt+Right)",
++            "Forward history is empty. Use Back first to create forward history.",
++        ),
++        (
++            2,
++            PointerNavigation::Up,
++            MI_ARROW_UP,
++            "Parent folder",
++            "Go to parent folder (Alt+Up)",
++            "This folder has no parent.",
++        ),
++    ] {
++        let color = if enabled[index] {
++            c.text_muted
++        } else {
++            c.text_muted.gamma_multiply(0.62)
++        };
++        if ui
++            .add_enabled(
++                enabled[index],
++                egui::Button::new(RichText::new(icon).size(20.0 * c.font_scale).color(color))
++                    .frame(false)
++                    .min_size(Vec2::splat(30.0))
++                    .themed(&c)
++                    .accessible_name(label),
++            )
++            .on_hover_text(if enabled[index] { tip } else { empty_tip })
++            .clicked()
++        {
++            action = Some(kind);
++        }
++    }
++    action
++}
++
++fn application_menu_button(ui: &mut egui::Ui, c: Colors) -> egui::Response {
++    let response = ui
++        .add(
++            egui::Button::image(
++                egui::Image::new(egui::include_image!("../../../assets/icon.svg"))
++                    .fit_to_exact_size(Vec2::splat(20.0))
++                    .tint(c.text_muted),
++            )
++            .frame(false)
++            .min_size(Vec2::splat(30.0))
++            .themed(&c),
++        )
++        .on_hover_text("Menu");
++    response.widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, "Menu"));
++    if response.hovered() {
++        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
++    }
++    response
++}
++
++fn view_mode_button(ui: &mut egui::Ui, c: Colors, view: ViewMode) -> egui::Response {
++    let icon = match view {
++        ViewMode::Miller => MI_VIEW_COLUMN,
++        ViewMode::List => MI_VIEW_LIST,
++        ViewMode::Grid => MI_APPS,
++    };
++    let label = view_toggle_accessibility_label(view);
++    let response = ui
++        .add(
++            egui::Button::new(
++                RichText::new(icon)
++                    .size(20.0 * c.font_scale)
++                    .color(c.text_muted),
++            )
++            .frame(false)
++            .min_size(Vec2::splat(30.0))
++            .themed(&c),
++        )
++        .on_hover_text(label);
++    response.widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, label));
++    response
++}
++
++fn view_options_button(ui: &mut egui::Ui, c: Colors) -> egui::Response {
++    let response = ui
++        .add(
++            egui::Button::new(
++                RichText::new(MI_DASHBOARD_CUSTOMIZE)
++                    .size(19.0 * c.font_scale)
++                    .color(c.text_muted),
++            )
++            .frame(false)
++            .min_size(Vec2::splat(30.0))
++            .themed(&c),
++        )
++        .on_hover_text("View Options");
++    response.widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, "View Options"));
++    if response.hovered() {
++        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
++    }
++    response
++}
++
++struct BreadcrumbResponse {
++    destination: Option<PathBuf>,
++    edit_requested: bool,
++}
++
++fn breadcrumb_bar(
++    ui: &mut egui::Ui,
++    c: Colors,
++    path: &Path,
++    id: egui::Id,
++    colorize_file_types: bool,
++    colorize_folder_labels: bool,
++) -> BreadcrumbResponse {
++    let palette = semantic_palette(&c);
++    let mut destination = None;
++    let mut crumb_right = None;
++    let frame = Frame::new()
++        .fill(c.toolbar_bg)
++        .corner_radius(c.border_radius)
++        .inner_margin(egui::Margin::symmetric(10, 3));
++    let address = frame.show(ui, |ui| {
++        ui.set_width(ui.available_width());
++        ScrollArea::horizontal()
++            .id_salt(id.with(path))
++            .auto_shrink([false, true])
++            .min_scrolled_width(0.0)
++            .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
++            .stick_to_right(true)
++            .show(ui, |ui| {
++                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
++                    ui.set_height(18.0);
++                    let crumbs = path_crumbs(path);
++                    for (index, crumb) in crumbs.iter().enumerate() {
++                        let icon = if crumb.is_root {
++                            MI_STORAGE
++                        } else {
++                            let semantic = semantic_for_path(&crumb.target);
++                            let style = style_for_semantic(
++                                &semantic,
++                                EntryVisualState::default(),
++                                &c,
++                                &palette,
++                                colorize_file_types,
++                                colorize_folder_labels,
++                            );
++                            material_icon(style.icon)
++                        };
++                        let response = ui.add(
++                            egui::Button::new(
++                                RichText::new(format!("{} {}", icon, crumb.label))
++                                    .color(c.text_muted)
++                                    .size(13.0 * c.font_scale),
++                            )
++                            .frame(false)
++                            .themed(&c)
++                            .accessible_name(format!("Open {}", path_label(&crumb.target))),
++                        );
++                        crumb_right = Some(response.rect.right());
++                        if response.clicked() {
++                            destination = Some(crumb.target.clone());
++                        }
++                        if response.hovered() {
++                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
++                        }
++                        if index + 1 < crumbs.len() {
++                            ui.label(
++                                RichText::new("›")
++                                    .color(c.text_muted)
++                                    .size(12.0 * c.font_scale),
++                            );
++                        }
++                    }
++                });
++            });
++    });
++    let rect = address.response.rect;
++    let edit_rect = Rect::from_min_max(
++        egui::pos2(
++            crumb_right.unwrap_or(rect.left()).min(rect.right()),
++            rect.top(),
++        ),
++        rect.max,
++    );
++    let edit = ui.interact(edit_rect, id.with("edit"), Sense::click());
++    if edit.hovered() {
++        ui.ctx().set_cursor_icon(egui::CursorIcon::Text);
++    }
++    BreadcrumbResponse {
++        destination,
++        edit_requested: edit.clicked(),
++    }
++}
++
+ // ── Async worker messages ─────────────────────────────────────────────────────
+ // ── Async worker messages ─────────────────────────────────────────────────────
+ 
+@@ -12151,82 +12364,8 @@ impl OttrinApp {
+                     let can_fwd = self.state.active_tab().can_go_forward();
+                     let can_up = self.state.active_tab().can_go_up();
+ 
+-                    let back_col = if can_back {
+-                        c.text_muted
+-                    } else {
+-                        c.text_muted.gamma_multiply(0.62)
+-                    };
+-                    let fwd_col = if can_fwd {
+-                        c.text_muted
+-                    } else {
+-                        c.text_muted.gamma_multiply(0.62)
+-                    };
+-                    let up_col = if can_up {
+-                        c.text_muted
+-                    } else {
+-                        c.text_muted.gamma_multiply(0.62)
+-                    };
+-                    if ui
+-                        .add_enabled(
+-                            can_back,
+-                            egui::Button::new(
+-                                RichText::new(MI_ARROW_BACK)
+-                                    .size(20.0 * c.font_scale)
+-                                    .color(back_col),
+-                            )
+-                            .frame(false)
+-                            .min_size(Vec2::splat(30.0))
+-                            .themed(&c)
+-                            .accessible_name("Back"),
+-                        )
+-                        .on_hover_text(if can_back {
+-                            "Back to previous folder in this tab (Alt+Left)"
+-                        } else {
+-                            "Back history is empty. Open another folder in this tab first."
+-                        })
+-                        .clicked()
+-                    {
+-                        self.pointer_navigate(active_tab_id, PointerNavigation::Back);
+-                    }
+-                    if ui
+-                        .add_enabled(
+-                            can_fwd,
+-                            egui::Button::new(
+-                                RichText::new(MI_ARROW_FORWARD)
+-                                    .size(20.0 * c.font_scale)
+-                                    .color(fwd_col),
+-                            )
+-                            .frame(false)
+-                            .min_size(Vec2::splat(30.0))
+-                            .themed(&c)
+-                            .accessible_name("Forward"),
+-                        )
+-                        .on_hover_text(if can_fwd {
+-                            "Forward to next folder in this tab (Alt+Right)"
+-                        } else {
+-                            "Forward history is empty. Use Back first to create forward history."
+-                        })
+-                        .clicked()
+-                    {
+-                        self.pointer_navigate(active_tab_id, PointerNavigation::Forward);
+-                    }
+-                    if ui
+-                        .add_enabled(
+-                            can_up,
+-                            egui::Button::new(
+-                                RichText::new(MI_ARROW_UP)
+-                                    .size(20.0 * c.font_scale)
+-                                    .color(up_col),
+-                            )
+-                            .frame(false)
+-                            .min_size(Vec2::splat(30.0))
+-                            .themed(&c)
+-                            .accessible_name("Parent folder"),
+-                        )
+-                        .on_hover_text("Go to parent folder (Alt+Up)")
+-                        .clicked()
+-                    {
+-                        self.pointer_navigate(active_tab_id, PointerNavigation::Up);
++                    if let Some(action) = navigation_buttons(ui, c, [can_back, can_fwd, can_up]) {
++                        self.pointer_navigate(active_tab_id, action);
+                     }
+                     ui.add_space(6.0);
+ 
+@@ -12236,24 +12375,7 @@ impl OttrinApp {
+ 
+                         // ── Hamburger menu ────────────────────────────────────
+                         let menu_popup_id = ui.make_persistent_id("hamburger_menu");
+-                        let menu_btn = ui
+-                            .add(
+-                                egui::Button::image(
+-                                    egui::Image::new(egui::include_image!(
+-                                        "../../../assets/icon.svg"
+-                                    ))
+-                                    .fit_to_exact_size(Vec2::splat(20.0))
+-                                    .tint(c.text_muted),
+-                                )
+-                                .frame(false)
+-                                .min_size(Vec2::splat(30.0)),
+-                            )
+-                            .on_hover_text("Menu");
+-                        menu_btn
+-                            .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, "Menu"));
+-                        if menu_btn.hovered() {
+-                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+-                        }
++                        let menu_btn = application_menu_button(ui, c);
+                         egui::Popup::menu(&menu_btn)
+                             .id(menu_popup_id)
+                             .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+@@ -12409,30 +12531,7 @@ impl OttrinApp {
+ 
+                         // View mode toggle — Material Icon
+                         let view = self.state.active_tab().view_mode;
+-                        let (view_icon, view_tip) = match view {
+-                            ViewMode::Miller => (MI_VIEW_COLUMN, "Switch to List view"),
+-                            ViewMode::List => (MI_VIEW_LIST, "Switch to Grid view"),
+-                            ViewMode::Grid => (MI_APPS, "Switch to Column view"),
+-                        };
+-                        let view_btn = ui
+-                            .add(
+-                                egui::Button::new(
+-                                    RichText::new(view_icon)
+-                                        .size(20.0 * c.font_scale)
+-                                        .color(c.text_muted),
+-                                )
+-                                .frame(false)
+-                                .min_size(Vec2::splat(30.0))
+-                                .themed(&c),
+-                            )
+-                            .on_hover_text(view_tip);
+-                        view_btn.widget_info(|| {
+-                            WidgetInfo::labeled(
+-                                WidgetType::Button,
+-                                true,
+-                                view_toggle_accessibility_label(view),
+-                            )
+-                        });
++                        let view_btn = view_mode_button(ui, c, view);
+                         if view_btn.clicked() {
+                             let next = match view {
+                                 ViewMode::Miller => ViewMode::List,
+@@ -12443,24 +12542,7 @@ impl OttrinApp {
+                         }
+ 
+                         let view_options_popup_id = ui.make_persistent_id("view_options_menu");
+-                        let view_options_btn = ui
+-                            .add(
+-                                egui::Button::new(
+-                                    RichText::new(MI_DASHBOARD_CUSTOMIZE)
+-                                        .size(19.0 * c.font_scale)
+-                                        .color(c.text_muted),
+-                                )
+-                                .frame(false)
+-                                .min_size(Vec2::splat(30.0))
+-                                .themed(&c),
+-                            )
+-                            .on_hover_text("View Options");
+-                        view_options_btn.widget_info(|| {
+-                            WidgetInfo::labeled(WidgetType::Button, true, "View Options")
+-                        });
+-                        if view_options_btn.hovered() {
+-                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+-                        }
++                        let view_options_btn = view_options_button(ui, c);
+                         egui::Popup::menu(&view_options_btn)
+                             .id(view_options_popup_id)
+                             .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+@@ -13061,92 +13143,20 @@ impl OttrinApp {
+         } else {
+             // Breadcrumb display
+             let path = self.displayed_path_for(tab_id);
+-            let palette = semantic_palette(&c);
+-            let frame = Frame::new()
+-                .fill(c.toolbar_bg)
+-                .corner_radius(c.border_radius)
+-                .inner_margin(egui::Margin::symmetric(10, 3));
+-            let mut crumb_right = None;
+-            let addr_resp = frame.show(ui, |ui| {
+-                ui.set_width(ui.available_width());
+-                ScrollArea::horizontal()
+-                    .id_salt(("address_crumbs", tab_id, &path))
+-                    .auto_shrink([false, true])
+-                    .min_scrolled_width(0.0)
+-                    .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
+-                    .stick_to_right(true)
+-                    .show(ui, |ui| {
+-                        ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+-                            ui.set_height(18.0);
+-                            let crumbs = path_crumbs(&path);
+-                            for (i, crumb) in crumbs.iter().enumerate() {
+-                                let display = &crumb.label;
+-                                let dest = crumb.target.clone();
+-                                let is_last = i == crumbs.len() - 1;
+-                                let text_color = c.text_muted;
+-                                let icon = if crumb.is_root {
+-                                    MI_STORAGE
+-                                } else {
+-                                    let sem = semantic_for_path(&dest);
+-                                    let style = style_for_semantic(
+-                                        &sem,
+-                                        EntryVisualState::default(),
+-                                        &c,
+-                                        &palette,
+-                                        self.state.config.colorize_file_types,
+-                                        self.state.config.colorize_folder_labels,
+-                                    );
+-                                    material_icon(style.icon)
+-                                };
+-                                let resp = ui.add(
+-                                    egui::Button::new(
+-                                        RichText::new(format!("{} {}", icon, display))
+-                                            .color(text_color)
+-                                            .size(13.0 * c.font_scale),
+-                                    )
+-                                    .frame(false)
+-                                    .themed(&c)
+-                                    .accessible_name(format!("Open {}", path_label(&dest))),
+-                                );
+-                                crumb_right = Some(resp.rect.right());
+-                                if resp.clicked() {
+-                                    self.focus_tab(tab_id);
+-                                    self.navigate_miller_pointer_folder(tab_id, dest);
+-                                }
+-                                if resp.hovered() {
+-                                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+-                                }
+-                                if !is_last {
+-                                    ui.label(
+-                                        RichText::new("›")
+-                                            .color(c.text_muted)
+-                                            .size(12.0 * c.font_scale),
+-                                    );
+-                                }
+-                            }
+-                        });
+-                    });
+-            });
+-            // The edit target covers only unused space, never the breadcrumb buttons.
+-            let frame_rect = addr_resp.response.rect;
+-            let edit_rect = Rect::from_min_max(
+-                egui::pos2(
+-                    crumb_right
+-                        .unwrap_or(frame_rect.left())
+-                        .min(frame_rect.right()),
+-                    frame_rect.top(),
+-                ),
+-                frame_rect.max,
+-            );
+-            let bar_interact = ui.interact(
+-                edit_rect,
+-                egui::Id::new(("addr_bar_click", tab_id)),
+-                Sense::click(),
++            let id = ui.make_persistent_id(("address_bar", tab_id));
++            let response = breadcrumb_bar(
++                ui,
++                c,
++                &path,
++                id,
++                self.state.config.colorize_file_types,
++                self.state.config.colorize_folder_labels,
+             );
+-            if bar_interact.hovered() {
+-                ui.ctx().set_cursor_icon(egui::CursorIcon::Text);
++            if let Some(destination) = response.destination {
++                self.focus_tab(tab_id);
++                self.navigate_miller_pointer_folder(tab_id, destination);
+             }
+-            if bar_interact.clicked() {
++            if response.edit_requested {
+                 let path_str = self.displayed_path_for(tab_id).display().to_string();
+                 self.focus_tab(tab_id);
+                 let bar = self.address_bar_state_mut(tab_id);
+@@ -16965,85 +16975,10 @@ impl OttrinApp {
+             .map(|t| t.can_go_up())
+             .unwrap_or(false);
+ 
+-        let back_col = if can_back {
+-            c.text_muted
+-        } else {
+-            c.text_muted.gamma_multiply(0.62)
+-        };
+-        let fwd_col = if can_fwd {
+-            c.text_muted
+-        } else {
+-            c.text_muted.gamma_multiply(0.62)
+-        };
+-        let up_col = if can_up {
+-            c.text_muted
+-        } else {
+-            c.text_muted.gamma_multiply(0.62)
+-        };
+-
+         ui.spacing_mut().item_spacing.x = 2.0;
+         ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+-            if ui
+-                .add_enabled(
+-                    can_back,
+-                    egui::Button::new(
+-                        RichText::new(MI_ARROW_BACK)
+-                            .size(20.0 * c.font_scale)
+-                            .color(back_col),
+-                    )
+-                    .frame(false)
+-                    .min_size(Vec2::splat(30.0))
+-                    .themed(&c)
+-                    .accessible_name("Back"),
+-                )
+-                .on_hover_text(if can_back {
+-                    "Back to previous folder in this pane (Alt+Left when active)"
+-                } else {
+-                    "Back history is empty for this pane."
+-                })
+-                .clicked()
+-            {
+-                self.pointer_navigate(tab_id, PointerNavigation::Back);
+-            }
+-            if ui
+-                .add_enabled(
+-                    can_fwd,
+-                    egui::Button::new(
+-                        RichText::new(MI_ARROW_FORWARD)
+-                            .size(20.0 * c.font_scale)
+-                            .color(fwd_col),
+-                    )
+-                    .frame(false)
+-                    .min_size(Vec2::splat(30.0))
+-                    .themed(&c)
+-                    .accessible_name("Forward"),
+-                )
+-                .on_hover_text(if can_fwd {
+-                    "Forward to next folder in this pane (Alt+Right when active)"
+-                } else {
+-                    "Forward history is empty. Use Back first to create forward history."
+-                })
+-                .clicked()
+-            {
+-                self.pointer_navigate(tab_id, PointerNavigation::Forward);
+-            }
+-            if ui
+-                .add_enabled(
+-                    can_up,
+-                    egui::Button::new(
+-                        RichText::new(MI_ARROW_UP)
+-                            .size(20.0 * c.font_scale)
+-                            .color(up_col),
+-                    )
+-                    .frame(false)
+-                    .min_size(Vec2::splat(30.0))
+-                    .themed(&c)
+-                    .accessible_name("Parent folder"),
+-                )
+-                .on_hover_text("Go to parent folder (Alt+Up when active)")
+-                .clicked()
+-            {
+-                self.pointer_navigate(tab_id, PointerNavigation::Up);
++            if let Some(action) = navigation_buttons(ui, c, [can_back, can_fwd, can_up]) {
++                self.pointer_navigate(tab_id, action);
+             }
+             ui.add_space(6.0);
+ 
+@@ -17052,30 +16987,7 @@ impl OttrinApp {
+                 .tab_by_id(tab_id)
+                 .map(|t| t.view_mode)
+                 .unwrap_or(ViewMode::Miller);
+-            let (view_icon, view_tip) = match view {
+-                ViewMode::Miller => (MI_VIEW_COLUMN, "Switch to List view"),
+-                ViewMode::List => (MI_VIEW_LIST, "Switch to Grid view"),
+-                ViewMode::Grid => (MI_APPS, "Switch to Column view"),
+-            };
+-            let view_btn = ui
+-                .add(
+-                    egui::Button::new(
+-                        RichText::new(view_icon)
+-                            .size(20.0 * c.font_scale)
+-                            .color(c.text_muted),
+-                    )
+-                    .frame(false)
+-                    .min_size(Vec2::splat(30.0))
+-                    .themed(&c),
+-                )
+-                .on_hover_text(view_tip);
+-            view_btn.widget_info(|| {
+-                WidgetInfo::labeled(
+-                    WidgetType::Button,
+-                    true,
+-                    view_toggle_accessibility_label(view),
+-                )
+-            });
++            let view_btn = view_mode_button(ui, c, view);
+             if view_btn.clicked() {
+                 self.focus_tab(tab_id);
+                 let next = match view {
+@@ -17086,23 +16998,7 @@ impl OttrinApp {
+                 self.set_tab_view_mode(tab_id, next);
+             }
+             let view_options_popup_id = ui.make_persistent_id(("view_options_menu", tab_id));
+-            let view_options_btn = ui
+-                .add(
+-                    egui::Button::new(
+-                        RichText::new(MI_DASHBOARD_CUSTOMIZE)
+-                            .size(18.0 * c.font_scale)
+-                            .color(c.text_muted),
+-                    )
+-                    .frame(false)
+-                    .min_size(Vec2::splat(30.0))
+-                    .themed(&c),
+-                )
+-                .on_hover_text("View Options");
+-            view_options_btn
+-                .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, "View Options"));
+-            if view_options_btn.hovered() {
+-                ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+-            }
++            let view_options_btn = view_options_button(ui, c);
+             egui::Popup::menu(&view_options_btn)
+                 .id(view_options_popup_id)
+                 .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+@@ -25388,7 +25284,7 @@ fn theme_editor_large_preview(
+     let outer = rect;
+     let frame = rect.shrink(14.0);
+     let title_h = (frame.height() * 0.13).clamp(32.0, 44.0);
+-    let nav_h = (frame.height() * 0.11).clamp(28.0, 38.0);
++    let nav_h = (CUSTOM_TITLEBAR_HEIGHT * preview.font_scale).ceil();
+     let status_h = (frame.height() * 0.08).clamp(22.0, 28.0);
+     let titlebar = Rect::from_min_size(frame.min, Vec2::new(frame.width(), title_h));
+     let nav = Rect::from_min_size(
+@@ -25523,50 +25419,39 @@ fn theme_editor_large_preview(
+     );
+ 
+     p.rect_filled(nav, 0.0, preview.toolbar_bg);
+-    for (idx, glyph) in ["<-", "->", "^"].into_iter().enumerate() {
+-        let x = nav.left() + 20.0 + idx as f32 * 28.0;
+-        p.text(
+-            egui::pos2(x, nav.center().y),
+-            Align2::CENTER_CENTER,
+-            glyph,
+-            FontId::monospace(10.0 * preview.font_scale),
+-            preview.text_dim,
+-        );
+-    }
+-    let address = Rect::from_min_max(
+-        egui::pos2(nav.left() + 104.0, nav.top() + 7.0),
+-        egui::pos2(nav.right() - 92.0, nav.bottom() - 7.0),
+-    );
+-    p.rect_filled(address, preview.border_radius as f32, preview.panel_raised);
+-    p.rect_stroke(
+-        address,
+-        preview.border_radius as f32,
+-        Stroke::new(1.0, mix_color(preview.border, preview.bg, 0.28)),
+-        egui::StrokeKind::Inside,
+-    );
+-    p.with_clip_rect(address.shrink(4.0)).text(
+-        egui::pos2(address.left() + 10.0, address.center().y),
+-        Align2::LEFT_CENTER,
+-        "/home/user/projects/ottrin",
+-        FontId::proportional(10.0 * preview.font_scale),
+-        preview.text_dim,
+-    );
+-    let accent_button = Rect::from_min_size(
+-        egui::pos2(nav.right() - 72.0, nav.top() + 7.0),
+-        Vec2::new(54.0, nav.height() - 14.0),
+-    );
+-    p.rect_filled(
+-        accent_button,
+-        preview.button_radius as f32,
+-        preview.button_bg,
+-    );
+-    p.text(
+-        accent_button.center(),
+-        Align2::CENTER_CENTER,
+-        "Sync",
+-        FontId::proportional(10.0 * preview.font_scale),
+-        preview.button_text,
++    let mut navigation_ui = ui.new_child(
++        egui::UiBuilder::new()
++            .id_salt("theme_preview_navigation")
++            .max_rect(nav.shrink2(Vec2::new(8.0, 0.0)))
++            .layout(Layout::left_to_right(Align::Center)),
+     );
++    navigation_ui.set_clip_rect(nav.intersect(ui.clip_rect()));
++    navigation_ui.spacing_mut().item_spacing.x = 2.0;
++    let mut navigation_clicked =
++        navigation_buttons(&mut navigation_ui, preview, [true, false, true]).is_some();
++    navigation_ui.add_space(6.0);
++    navigation_ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
++        ui.add_space(4.0);
++        navigation_clicked |= application_menu_button(ui, preview).clicked();
++        navigation_clicked |= view_mode_button(ui, preview, ViewMode::Miller).clicked();
++        navigation_clicked |= view_options_button(ui, preview).clicked();
++        ui.add_space(6.0);
++        let width = (ui.available_width() - 20.0).max(80.0);
++        ui.allocate_ui(Vec2::new(width, 26.0), |ui| {
++            ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
++                let id = ui.make_persistent_id("preview_breadcrumbs");
++                let address = breadcrumb_bar(
++                    ui,
++                    preview,
++                    Path::new("/home/user/projects/ottrin"),
++                    id,
++                    true,
++                    false,
++                );
++                navigation_clicked |= address.destination.is_some() || address.edit_requested;
++            });
++        });
++    });
+ 
+     p.rect_filled(bookmarks, 0.0, preview.bookmarks_bg);
+     for (idx, icon) in [MI_HOME, MI_STORAGE, MI_DESCRIPTION, MI_DOWNLOAD]
+@@ -25775,7 +25660,6 @@ fn theme_editor_large_preview(
+     );
+ 
+     let regions = vec![
+-        (ThemePreviewRegion::Accent, accent_button),
+         (ThemePreviewRegion::SelectedRow, selected_row),
+         (
+             ThemePreviewRegion::Accent,
+@@ -25792,19 +25676,32 @@ fn theme_editor_large_preview(
+         (ThemePreviewRegion::Borders, border_rect),
+     ];
+ 
+-    let hovered_region = response
+-        .hover_pos()
++    let hovered_region = ui
++        .ctx()
++        .pointer_hover_pos()
++        .filter(|pos| rect.contains(*pos) && ui.rect_contains_pointer(rect))
+         .and_then(|pos| theme_editor_region_at_pos(&regions, pos));
+     if hovered_region.is_some() {
+         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+     }
+-    let clicked_region = if ui.ctx().input(|i| {
++    let clicked_region = if navigation_clicked {
++        Some(ThemePreviewRegion::Navigation)
++    } else if ui.rect_contains_pointer(rect)
++        && ui.ctx().input(|i| {
++            i.pointer.primary_clicked()
++                && i.pointer
++                    .interact_pos()
++                    .is_some_and(|pos| sidebar.contains(pos))
++        })
++    {
++        Some(ThemePreviewRegion::Sidebar)
++    } else if ui.ctx().input(|i| {
+         i.pointer.primary_clicked()
+             && i.pointer
+                 .interact_pos()
+-                .is_some_and(|pos| sidebar.contains(pos))
++                .is_some_and(|pos| nav.contains(pos))
+     }) {
+-        Some(ThemePreviewRegion::Sidebar)
++        Some(ThemePreviewRegion::Navigation)
+     } else if response.clicked() {
+         hovered_region
+     } else {
+@@ -33175,6 +33072,94 @@ mod tests {
+         );
+     }
+ 
++    #[test]
++    fn theme_preview_exposes_the_live_navigation_controls_and_selects_their_role() {
++        use egui::accesskit::{Action, ActionRequest, Role};
++        let mut app = OttrinApp::default();
++        app.state.active_tab_mut().view_mode = ViewMode::Miller;
++        let colors = app.colors;
++        let input = |events| egui::RawInput {
++            screen_rect: Some(Rect::from_min_size(
++                egui::Pos2::ZERO,
++                Vec2::new(1000.0, 700.0),
++            )),
++            events,
++            ..Default::default()
++        };
++        let live_context = Context::default();
++        live_context.enable_accesskit();
++        let live = live_context.run(input(vec![]), |ctx| app.render_nav_row(ctx));
++        let preview_context = Context::default();
++        preview_context.enable_accesskit();
++        let mut selected = None;
++        let mut render = |events| {
++            preview_context.run(input(events), |ctx| {
++                egui::CentralPanel::default().show(ctx, |ui| {
++                    selected =
++                        theme_editor_large_preview(ui, colors, ThemePreviewRegion::Defaults).1;
++                });
++            })
++        };
++        let preview = render(vec![]);
++        let buttons = |output: &egui::FullOutput| {
++            output
++                .platform_output
++                .accesskit_update
++                .as_ref()
++                .unwrap()
++                .nodes
++                .iter()
++                .filter(|(_, node)| node.role() == Role::Button)
++                .map(|(id, node)| {
++                    (
++                        node.label().unwrap_or_default().to_owned(),
++                        (*id, node.bounds().unwrap()),
++                    )
++                })
++                .collect::<std::collections::HashMap<_, _>>()
++        };
++        let live_buttons = buttons(&live);
++        let preview_buttons = buttons(&preview);
++        for name in [
++            "Back",
++            "Forward",
++            "Parent folder",
++            "Menu",
++            "Switch to List view",
++            "View Options",
++        ] {
++            let actual = live_buttons.get(name).expect("Live toolbar control").1;
++            let sample = preview_buttons
++                .get(name)
++                .expect("Preview must use real toolbar widgets")
++                .1;
++            assert!(
++                (actual.width() - sample.width()).abs() < 0.1,
++                "{name}: width"
++            );
++            assert!(
++                (actual.height() - sample.height()).abs() < 0.1,
++                "{name}: height"
++            );
++        }
++        assert!(!preview.shapes.iter().any(|shape| matches!(&shape.shape,egui::Shape::Text(text) if ["Sync","<-","->","^"].contains(&text.galley.job.text.as_str()))));
++        assert!(
++            preview_buttons
++                .keys()
++                .filter(|label| label.starts_with("Open "))
++                .count()
++                >= 3,
++            "Preview must show the production breadcrumb controls"
++        );
++        let target = preview_buttons["Back"].0;
++        let _ = render(vec![egui::Event::AccessKitActionRequest(ActionRequest {
++            action: Action::Click,
++            target,
++            data: None,
++        })]);
++        assert_eq!(selected, Some(ThemePreviewRegion::Navigation));
++    }
++
+     pub(super) fn rendered_text_fields(output: &egui::FullOutput) -> Vec<(String, String)> {
+         output
+             .platform_output

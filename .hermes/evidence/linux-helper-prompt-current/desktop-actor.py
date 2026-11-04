@@ -5,6 +5,7 @@ assert os.geteuid()==0 and os.uname().nodename=='ottrin-native-ubuntu-desktop-qa
 source=sys.argv[1];account=pwd.getpwnam('ottrinqa');uid=account.pw_uid
 report={'status':'running','source':source,'scope':'Real graphical polkit setup/cancel/reinstall in disposable Ubuntu login session'}
 xvfb=None
+protected=None
 try:
  assert 'Git revision: '+source in pathlib.Path('/usr/share/doc/ottrin/SOURCE_REVISION.txt').read_text()
  removed=subprocess.run(['env','DEBIAN_FRONTEND=noninteractive','apt-get','-y','remove','ottrin'],capture_output=True,text=True,timeout=120)
@@ -29,6 +30,9 @@ try:
   report['launch_kind']='portable'
  os.chown(out,uid,account.pw_gid)
  fixture=base/'fixtures';fixture.mkdir();(fixture/'preserve.txt').write_text('Original owned fixture.\n')
+ if (base/'QA_PROTECTED_INPUT.json').exists():
+  protected=pathlib.Path('/var/lib/ottrin-owned-protected-qa');assert not protected.exists();protected.mkdir(mode=0o700)
+  (fixture/'cancel-copy.txt').write_text('Cancelled privileged copy must not appear.\n')
  pref=base/'.config/ottrin/config.json';pref.parent.mkdir(parents=True,exist_ok=True)
  pref.write_text(json.dumps({'theme':'Dark','list_columns':['Name','Kind','Size','Modified'],'command_frame_always_visible':False,'show_hidden_files':False,'target':{'current':None,'pinned':[],'has_ever_set':False,'recent':[]},'default_view_mode':'Miller','search_setup_completed':True,'window_size':[1100,800],'search':{'include_roots':[str(fixture)],'content_indexing_enabled':False}}))
  for p in [fixture,*fixture.rglob('*'),pref,*pref.parents]:
@@ -43,6 +47,11 @@ try:
  report['worker_exit']=result.returncode
  if (out/'WORKER_RESULT.json').exists():report['worker']=json.loads((out/'WORKER_RESULT.json').read_text())
  assert result.returncode==0,report.get('worker',result.stderr[-1500:])
+ if protected is not None:
+  copied=protected/'preserve.txt';assert copied.is_file() and copied.stat().st_uid==0
+  assert copied.read_bytes()==(fixture/'preserve.txt').read_bytes()
+  assert not (protected/'cancel-copy.txt').exists()
+  report['protected_copy']={'root_owned_copy_matches_source':True,'cancelled_destination_absent':True}
  report['status']='pass'
 except BaseException as error:report.update(status='fail',error=repr(error))
 finally:
@@ -51,6 +60,11 @@ finally:
  subprocess.run(['systemctl','stop',f'user@{uid}.service'],capture_output=True)
  if xvfb is not None:
   xvfb.terminate();xvfb.wait(timeout=10)
+ if protected is not None:
+  report['protected_outputs_before_cleanup']={'cancel_copy_exists':(protected/'cancel-copy.txt').exists(),'authenticated_copy_exists':(protected/'preserve.txt').exists()}
+  import shutil
+  shutil.rmtree(protected)
+  report['owned_protected_directory_removed']=not protected.exists()
  secret=base/'.qa-password'
  if secret.exists():secret.unlink()
  report['private_password_removed']=not secret.exists()

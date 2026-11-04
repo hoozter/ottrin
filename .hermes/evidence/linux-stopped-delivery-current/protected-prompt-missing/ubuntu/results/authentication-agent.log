@@ -1,0 +1,4 @@
+
+(polkit-gnome-authentication-agent-1:5144): GLib-CRITICAL **: 08:20:47.215: g_variant_new_string: assertion 'string != NULL' failed
+
+(polkit-gnome-authentication-agent-1:5144): polkit-gnome-1-WARNING **: 08:20:47.216: Failed to register client: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.gnome.SessionManager was not provided by any .service files

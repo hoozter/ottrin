@@ -1,0 +1,83 @@
+{
+  "verified_at": "2026-11-04T09:31:58.695989+00:00",
+  "removed_paths": [
+    ".hermes/packaging-tmp/.linux-native-desktop-stage",
+    ".hermes/packaging-tmp/.linux-stopped-retired",
+    ".hermes/packaging-tmp/.linux-desktop-extract",
+    ".hermes/worktrees/theme-preview-presenters"
+  ],
+  "owned_vm_cleanup": [
+    {
+      "domain": "ottrin-native-ubuntu-desktop-qa",
+      "volumes": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ],
+      "absent_now": true
+    },
+    {
+      "domain": "ottrin-native-ubuntu-desktop-qa",
+      "volumes": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ],
+      "absent_now": true
+    },
+    {
+      "domain": "ottrin-native-ubuntu-desktop-qa",
+      "volumes": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ],
+      "absent_now": true
+    },
+    {
+      "domain": "ottrin-native-ubuntu-desktop-qa",
+      "volumes": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ],
+      "absent_now": true
+    }
+  ],
+  "compiler_bytes_before": {
+    "target/debug/deps": 41727121588,
+    "target/debug/incremental": 24281214480,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33305582739,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40082690647,
+    "target/release/deps": 4445345288,
+    "target/x86_64-pc-windows-gnu/release/deps": 3996437967
+  },
+  "compiler_bytes_after": {
+    "target/debug/deps": 41729610638,
+    "target/debug/incremental": 24404306272,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336217703,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40304729986,
+    "target/release/deps": 4445355018,
+    "target/x86_64-pc-windows-gnu/release/deps": 3996437967
+  },
+  "incremental_cleanup": "7 obsolete sessions removed; fresh inspection found zero candidates",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-stopped-delivery-current",
+      "purpose": "Compact delivery, native QA, failed protected-copy diagnosis and cleanup evidence"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-presenters-current",
+      "purpose": "Source implementation and test/lint receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current four Linux packages and acceptance evidence"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Unchanged current Windows candidate"
+    }
+  ],
+  "preserved": "User data, protected VMs, shared compiler caches, current binaries and unrelated worktrees"
+}

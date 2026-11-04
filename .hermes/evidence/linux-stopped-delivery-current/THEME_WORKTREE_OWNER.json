@@ -1,0 +1,11 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/worktrees/theme-preview-presenters",
+  "branch": "branch/theme-preview-presenters-0613162d",
+  "source_base": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+  "purpose": "Continue shared production/theme preview presenter implementation while exact-source CI gates the already accepted Linux package candidate",
+  "compiler_configuration": "No build in this worktree; apply verified draft to the main checkout after delivery, use existing target/cache there",
+  "cleanup_owner": "current roadmap goal; remove worktree after safely applying its owned changes",
+  "cleanup_complete": true,
+  "applied_to_main_source_sha256": "63385b3816ac5b083a0f642514eede6b704f35472506e877c7da47b17301372f",
+  "worktree_and_branch_removed": true
+}

@@ -1,0 +1,68 @@
+{
+  "status": "pass",
+  "source": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+  "previous_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "scope": "Actual f463-to-061 same-package-version DEB replacement; enabled/running, disabled/running and disabled/stopped; first ensure, saved search/source/preferences. No semantic-version, reboot/login or GUI upgrade acceptance.",
+  "cases": [
+    {
+      "enabled": true,
+      "running": true,
+      "before": {
+        "pid": 3919,
+        "enabled": true
+      },
+      "after_package_transaction": {
+        "pid": 4205,
+        "enabled": true
+      },
+      "after_first_ensure": {
+        "pid": 4205,
+        "enabled": true
+      },
+      "first_ensure_exit": 0,
+      "first_ensure_seconds": 0.01089231000000268,
+      "first_ensure_stdout": "",
+      "source_and_preferences_preserved": true
+    },
+    {
+      "enabled": false,
+      "running": true,
+      "before": {
+        "pid": 4623,
+        "enabled": false
+      },
+      "after_package_transaction": {
+        "pid": 4909,
+        "enabled": false
+      },
+      "after_first_ensure": {
+        "pid": 4909,
+        "enabled": false
+      },
+      "first_ensure_exit": 0,
+      "first_ensure_seconds": 0.010158928000009837,
+      "first_ensure_stdout": "",
+      "source_and_preferences_preserved": true
+    },
+    {
+      "enabled": false,
+      "running": false,
+      "before": {
+        "pid": 0,
+        "enabled": false
+      },
+      "after_package_transaction": {
+        "pid": 0,
+        "enabled": false
+      },
+      "after_first_ensure": {
+        "pid": 5679,
+        "enabled": false
+      },
+      "first_ensure_exit": 0,
+      "first_ensure_seconds": 0.05476119100001142,
+      "first_ensure_stdout": "",
+      "source_and_preferences_preserved": true
+    }
+  ]
+}

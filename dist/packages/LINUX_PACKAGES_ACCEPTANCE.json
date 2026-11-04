@@ -1,24 +1,13 @@
 {
-  "evidence": ".hermes/evidence/service-wake-current/cohort",
-  "source_scope": ".hermes/evidence/service-wake-current/cohort/SOURCE_SCOPE.json",
-  "hosted_source": {
-    "run": 41779769053,
-    "tested_source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
-    "all_four_jobs_success": true
-  },
-  "limits": [
-    "Current private software-renderer settings and service actions only; previous47a GUI idle scope retains its original source/artifact, no fresh GUI CPU or physical acceptance",
-    "Published DEB/RPM CLI service states and portable/AppImage graphical helper setup pass within their recorded scopes. AppImage native service actions pass, but intentional stop/uninstall can show a false red error from a stale socket; source fix tested, fresh Linux packages/rendered acceptance pending. Login/upgrade and MSIX startup-checkbox acceptance remain separate.",
-    "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
-  ],
-  "status": "pass scoped current Linux settings-preservation preview; full roadmap incomplete",
-  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "status": "pass scoped Services stopped-state Linux delivery; full roadmap incomplete",
+  "source_revision": "0613162ddee19361e02eb9a3cc315d8a4e643493",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "62b0e7a04fe86b72ae8a6ea077caed09e42b9e009d080c94cac142d1bf36872a",
-    "Ottrin-0.1.0-x86_64.AppImage": "b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "74e647a024b5ab7a73c68cf3cf0fef1ad0791d4425e653fdec93b0c14e7085de",
-    "ottrin_0.1.0_amd64.deb": "ffb2b7566c83b38aed615eefd615c457fc0d3b0927068c5a7cba96febc6dbd85"
+    "ottrin-0.1.0-1.x86_64.rpm": "659443d3e45770b407ba262cac356395041b1009243a91957951af71f5d6078b",
+    "Ottrin-0.1.0-x86_64.AppImage": "a4073e944502aa7ab3208ee1ae2da139f959d9a44eddc4ea5c7e75ea1b15855c",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "85873c58fffbeb47f4e20d164cf1a0d62c095252ff61f8d2483917bf7ded145d",
+    "ottrin_0.1.0_amd64.deb": "457852d11e17a5ccec1a4bed11f6f7a813b907dd9c9a6da361ec1ab494408123"
   },
+  "evidence": ".hermes/evidence/linux-stopped-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -27,16 +16,23 @@
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
-  "current_native_fields": ".hermes/evidence/service-wake-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
-  "full_payload_comparison": ".hermes/evidence/service-wake-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json",
-  "daemon_runtime": ".hermes/evidence/service-wake-current/cohort/LINUX_DAEMON_RUNTIME.json",
-  "unchanged_responsibility_basis": {
-    "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
-    "previous_receipt": ".hermes/evidence/service-wake-current/cohort/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
-    "scope": "Reject malformed/unreadable configuration without replacement; checked atomic settings saves and retained theme draft on error; actionable Windows startup failure reporting; truthful backend/login Search health. Independent future-login controls preserve current daemon state, with Linux disabled-startup repair retention and existing MSIX policy/collision guards. All Windows scheduler bodies use a single UTF16LE encoded input/UTF8 direct-error transport. Services progress/status views use worker completion wakes instead of continuous animation/polling."
+  "hosted_source": {
+    "run": 41794783542,
+    "tested_source_revision": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+    "all_four_jobs_success": true
   },
-  "linux_managed_cli_acceptance": ".hermes/evidence/linux-service-acceptance-current/ACCEPTANCE.json",
-  "linux_graphical_helper_acceptance": ".hermes/evidence/linux-helper-prompt-current/ACCEPTANCE.json",
-  "linux_appimage_services_observations": ".hermes/evidence/linux-appimage-services-current/ACCEPTANCE.json",
-  "pending_source_fix": ".hermes/evidence/linux-appimage-services-current/SOURCE_CHECKS.json"
+  "native_services": ".hermes/evidence/linux-stopped-delivery-current/LINUX_NATIVE_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/linux-stopped-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "same_version_deb_update": ".hermes/evidence/linux-stopped-delivery-current/DEB_UPDATE_ACCEPTANCE.json",
+  "payload_comparison": ".hermes/evidence/linux-stopped-delivery-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "unchanged_native_settings_basis": ".hermes/evidence/service-wake-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
+  "limits": [
+    "Private Ubuntu24 software-X11/PAM/GNOME-polkit fixture only; no physical, browser or whole-interface acceptance",
+    "No protected-file elevation or real login/reboot acceptance",
+    "Fresh normal GUI close/reopen and PID retention accepted; post-resize screenshot is diagnostic, not settled-window acceptance",
+    "Main-window search indicator remains red when indexing is intentionally stopped; Services presentation is corrected, whole-interface status coherence is unfinished",
+    "Immediate post-resize capture is incomplete; verify settled repaint and fix producer observation before treating resize captures as acceptance",
+    "Protected-file probe was denied in a background session with no local seat; positive local-console elevation remains unverified",
+    "Windows packages remain f463; no signing, Store submission, public release or whole-roadmap acceptance"
+  ]
 }

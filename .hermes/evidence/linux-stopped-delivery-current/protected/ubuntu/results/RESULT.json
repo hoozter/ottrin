@@ -1,0 +1,36 @@
+{
+  "status": "fail",
+  "source": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+  "scope": "Real graphical polkit setup/cancel/reinstall in disposable Ubuntu login session",
+  "launch_kind": "AppImage/FUSE",
+  "worker_exit": 1,
+  "worker": {
+    "status": "fail",
+    "cases": [
+      "actual setup prompt cancelled; helper absent; cancellation visible",
+      "actual setup authenticated; root-owned helper and policy; ready UI",
+      "actual reinstall authenticated and completed"
+    ],
+    "login_session_id": "17",
+    "fuse_mount": {
+      "executable": "/tmp/.mount_Ottrin2k56AM/usr/bin/ottrin",
+      "mountinfo": "107 29 0:44 / /tmp/.mount_Ottrin2k56AM ro,nosuid,nodev,relatime shared:209 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000"
+    },
+    "session_properties": "Seat=\nRemote=no\nService=login\nType=unspecified\nClass=background\nActive=yes\nState=active\n",
+    "helper_policy": "org.ottrin.filesystem.privileged:\n  description:       Run privileged operations for Ottrin\n  message:           Authentication is required to perform this privileged operation in Ottrin.\n  vendor:            Ottrin\n  vendor_url:        https://github.com/hoozter/ottrin\n  icon:              system-file-manager\n  implicit any:      no\n  implicit inactive: no\n  implicit active:   auth_admin_keep\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\n\n",
+    "temporary_authorizations_after_revoke": "",
+    "protected_cancel_process": {
+      "exit": 127,
+      "stdout": "",
+      "stderr": "Error executing command as another user: Not authorized\n\nThis incident has been reported.\n"
+    },
+    "error": "AssertionError('Timed out waiting for protected-operation cancel prompt')"
+  },
+  "error": "AssertionError({'status': 'fail', 'cases': ['actual setup prompt cancelled; helper absent; cancellation visible', 'actual setup authenticated; root-owned helper and policy; ready UI', 'actual reinstall authenticated and completed'], 'login_session_id': '17', 'fuse_mount': {'executable': '/tmp/.mount_Ottrin2k56AM/usr/bin/ottrin', 'mountinfo': '107 29 0:44 / /tmp/.mount_Ottrin2k56AM ro,nosuid,nodev,relatime shared:209 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000'}, 'session_properties': 'Seat=\\nRemote=no\\nService=login\\nType=unspecified\\nClass=background\\nActive=yes\\nState=active\\n', 'helper_policy': 'org.ottrin.filesystem.privileged:\\n  description:       Run privileged operations for Ottrin\\n  message:           Authentication is required to perform this privileged operation in Ottrin.\\n  vendor:            Ottrin\\n  vendor_url:        https://github.com/hoozter/ottrin\\n  icon:              system-file-manager\\n  implicit any:      no\\n  implicit inactive: no\\n  implicit active:   auth_admin_keep\\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\\n\\n', 'temporary_authorizations_after_revoke': '', 'protected_cancel_process': {'exit': 127, 'stdout': '', 'stderr': 'Error executing command as another user: Not authorized\\n\\nThis incident has been reported.\\n'}, 'error': \"AssertionError('Timed out waiting for protected-operation cancel prompt')\"})",
+  "protected_outputs_before_cleanup": {
+    "cancel_copy_exists": false,
+    "authenticated_copy_exists": false
+  },
+  "owned_protected_directory_removed": true,
+  "private_password_removed": true
+}
