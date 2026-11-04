@@ -1,0 +1,29 @@
+{
+  "current_runtime_source": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "current_run": 41761626619,
+  "current_run_url": "https://github.com/hoozter/ottrin/actions/runs/41761626619",
+  "all_four_jobs_success": true,
+  "most_recent_failed_ci": {
+    "run": 41658014132,
+    "source": "9c914bd64f92550a9ef7f77fb06073307348b0cd",
+    "error": "content_only_watcher_updates_moves_deletes_and_detaches_when_disabled unwrapped transient SQLite DatabaseBusy in test polling",
+    "fix": "b18f7b48",
+    "verified_fix_ancestor": true
+  },
+  "recent60_run_snapshot": {
+    "success": 37,
+    "failure": 13,
+    "cancelled": 10,
+    "failures_include_independent_msi_diagnostic": 2
+  },
+  "limits": [
+    "Recent60 results are a bounded historical snapshot, not a count of all user notification emails",
+    "Native MSI registration rollback remains an explicit independent held release defect",
+    "Current native package Services transition remains under investigation; not covered by current CI success"
+  ],
+  "actions": [
+    "No notification settings changed",
+    "No rerun or workflow dispatch triggered for this read-only inspection",
+    "Evidence/documentation-only checkpoint will use skip ci to avoid redundant runs"
+  ]
+}

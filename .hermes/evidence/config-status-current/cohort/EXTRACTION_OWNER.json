@@ -1,0 +1,8 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "pending_consumers": [],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks",
+  "removed": true,
+  "cleanup_receipt": "EXTRACTION_CLEANUP.json"
+}

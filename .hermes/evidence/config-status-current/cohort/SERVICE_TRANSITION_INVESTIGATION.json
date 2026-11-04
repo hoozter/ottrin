@@ -1,0 +1,21 @@
+{
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "previous_result": "native-service-transition-failure/GUEST_RESULT.json",
+  "completed_cases": 6,
+  "failed_action": "Service action is not enabled: Update / reinstall service",
+  "production_defect": "Not yet determined; the previous fixture omitted the failing UI/error/task snapshot.",
+  "next_fixture_changes": [
+    "Complete both renderer preservation cases before service matrix",
+    "Capture native failure window, actual accessibility names and actual Task Scheduler state before teardown"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "status": "pass inspected production source scope; behavioral acceptance separately gated",
+  "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "candidate_source": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "changed_files": [
+    "crates/ottrin-app/src/bin/ottrin-indexd.rs",
+    "crates/ottrin-app/src/main.rs",
+    "crates/ottrin-search/src/lib.rs",
+    "crates/ottrin-ui/Cargo.toml",
+    "crates/ottrin-ui/src/appearance_editor.rs",
+    "crates/ottrin-ui/src/config.rs",
+    "crates/ottrin-ui/src/internal_picker.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/picker.rs",
+    "crates/ottrin-ui/src/properties.rs",
+    "packaging/tests/verify-linux-native-daemon-ownership.py"
+  ],
+  "shipping_behavior": "Reject invalid/unreadable configuration at entry points; preserve settings through checked atomic saves; retain theme drafts and original configuration on failed saves; backend-specific Search health separates daemon runtime and login registration; Windows startup MessageBox shows actionable failure and logging outcome. The namespace ownership fixture now supplies the required AppConfig schema.",
+  "unchanged_responsibilities": [
+    "No intentional indexing-algorithm, picker interaction, folder integration, service registration or theme-field mapping change in this cohort"
+  ],
+  "limits": [
+    "Compiled daemon identity differs; fresh Linux/Windows daemon behavior required independently",
+    "UI487 tests predate only the Windows startup-report change; exact hosted checks tracked separately",
+    "Native Services registration transition remains under investigation; no service acceptance inferred",
+    "Theme editor still hand-paints navigation and includes a Sync control; full real-component preview requirement remains incomplete"
+  ]
+}

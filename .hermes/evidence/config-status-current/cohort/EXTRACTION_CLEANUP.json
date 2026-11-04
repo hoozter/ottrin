@@ -1,0 +1,15 @@
+{
+  "source_revision": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "purpose": "Completed exact AppImage content/native settings and full payload comparison extraction",
+  "files": 115,
+  "removed_logical_bytes": 76553046,
+  "gui_sha256": "f7fc8a7d9446bcb09f030346c5ec4de870e5e52f82ee33276ab3d830d5f0f87d",
+  "guards": [
+    "Current release GUI bytes match extracted GUI",
+    "Native owned display/process teardown complete",
+    "No extracted files have hard-link consumers",
+    "No extracted file reported open by fuser",
+    "No mounted paths in extraction"
+  ]
+}

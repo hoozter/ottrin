@@ -132,6 +132,28 @@ Continue in this order:
    Rebuild coherent packages and repeat current native gates with the corrected
    fixture. All seven stable packages above remain47a; no Windows/package
    acceptance or full roadmap completion is inferred from the source checks.
+   Current e3e33ae candidate update: all four Linux package content gates and
+   seven Linux native settings workflows pass; three original captures reviewed.
+   Fresh private1000-file Linux daemon watcher/query/restart/two-shutdown probe
+   passes at0.100% one core over30seconds. The completed76.6MB AppImage extraction
+   was removed after file identity, open-consumer and mount checks. Windows native
+   startup dialog now visibly explains the preserved configuration and dismisses
+   correctly; Native renderer theme save refusal/retry and Search pass. The
+   additional Services matrix fails after enabling startup because its expected
+   reinstall action is not found. This is not accepted or dismissed as a fixture
+   issue: the next exact-package run captures the failure window/accessibility
+   tree and actual scheduled task before teardown. It completes both renderer
+   settings scopes before the additional matrix. Previous clone/two volumes and
+   consumed transport were removed; retained compact failure evidence is under
+   `config-status-current/cohort/native-service-transition-failure/`.
+   Existing ordinary installed-but-disabled services also need an independent
+   login enable/disable control; repair intentionally preserves disabled intent.
+   This implementation and actual Linux polkit/managed-service QA remain ready
+   software work, not owner waits. The theme editor's hand-painted navigation
+   arrows and Sync example still differ from the actual toolbar; real-component
+   preview reuse remains incomplete despite earlier field mapping checks.
+   Current candidate proof is not stable delivery. All seven stable packages
+   remain47a until exact-source Windows/assembly/CI and cleanup gates pass.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them
