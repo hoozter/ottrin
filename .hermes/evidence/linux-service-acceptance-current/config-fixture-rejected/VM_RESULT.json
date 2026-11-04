@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "status": "fail",
+  "package_sha256": "ffb2b7566c83b38aed615eefd615c457fc0d3b0927068c5a7cba96febc6dbd85",
+  "uuid": "02a34625-9971-4b07-ba9c-353fc9e3ae88",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('{\\n  \"source\": \"f463ff268f1c0850360fb3d1d81da18a3d3240ec\",\\n  \"status\": \"fail\",\\n  \"scope\": \"Published native package CLI with real user systemd; no graphical controls, polkit prompts, reboot or binary upgrade acceptance\",\\n  \"states\": [],\\n  \"error\": \"RuntimeError(\\\\\"[\\'runuser\\', \\'-u\\', \\'ottrinqa\\', \\'--\\', \\'env\\', \\'-i\\', \\'PATH=/usr/sbin:/usr/bin:/sbin:/bin\\', \\'HOME=/home/ottrinqa\\', \\'USER=ottrinqa\\', \\'XDG_RUNTIME_DIR=/run/user/1000\\', \\'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus\\', \\'/usr/bin/ottrin\\', \\'index\\', \\'service-install\\']: 1:  ottrin: Could not load Ottrin settings /home/ottrinqa/.config/ottrin/config.json: missing field `theme` at line 1 column 156. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\\\\\\\\n\\\\\")\",\\n  \"user_manager_stopped\": true\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

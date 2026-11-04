@@ -67,6 +67,26 @@ The QA controller now raises failure for an explicitly failed actor after safely
 exporting its evidence, with registered teardown retained; replay of both actual
 failed and passed results verifies this reporting change without rerunning matrices.
 
+### Linux managed-service CLI acceptance, 2026-11-04
+
+The exact published f463 DEB and RPM pass the same11-state matrix in fresh
+Ubuntu24 and Fedora44 system VMs. Real user systemd checks cover install,
+enable/disable without changing the running PID, repair of disabled running and
+stopped services, explicit restart and removal. A guest-only seven-second
+`ExecStartPre` delay verifies that the first `index ensure` call succeeds after
+7.06/7.10seconds. A daemon remains running after the CLI client exits. Source and
+preferences remain byte-identical. Evidence and frozen producers:
+`.hermes/evidence/linux-service-acceptance-current/ACCEPTANCE.json`.
+
+This is CLI acceptance, not native checkbox, graphical helper/authentication,
+GUI-close, login/reboot or binary-version upgrade acceptance. Those remain in
+the first queue item. The first fixture was correctly rejected for missing
+required settings fields; its failed result is retained separately and is not
+counted as an accepted service run. All three task VMs/nine volumes, private
+SSH keys, seeds and result transport archives were removed. Only compact
+receipts, producers and logs remain in that evidence directory; no compiler or
+runtime source changed and the current seven packages remain unchanged.
+
 ### Ordered implementation and acceptance queue
 
 1. Complete actual Linux polkit prompt/cancel/setup/reinstall and managed-index

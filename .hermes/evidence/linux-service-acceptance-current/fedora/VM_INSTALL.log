@@ -1,0 +1,898 @@
+Package                                  Arch   Version                           Repository                            Size
+Upgrading:
+ expat                                   x86_64 0:2.9.0-1.fc44                    updates                          349.6 KiB
+   replacing expat                       x86_64 0:2.7.3-2.fc44                    4e4a4f70cfdd4047b39087e8606c2591 316.8 KiB
+Installing:
+ ottrin                                  x86_64 0:0.1.0-1                         @commandline                      63.3 MiB
+ python3-gobject                         x86_64 0:3.56.3-1.fc44                   updates                           27.7 KiB
+ xdg-desktop-portal                      x86_64 0:1.22.1-1.fc44                   updates                            1.9 MiB
+ xdg-desktop-portal-gtk                  x86_64 0:1.15.3-3.fc44                   fedora                           469.2 KiB
+ xdotool                                 x86_64 1:3.20211022.1-10.fc44            fedora                           105.3 KiB
+ xorg-x11-server-Xvfb                    x86_64 0:21.1.25-2.fc44                  updates                            1.9 MiB
+Installing dependencies:
+ ModemManager-glib                       x86_64 0:1.24.2-3.fc44                   fedora                             1.5 MiB
+ abattis-cantarell-vf-fonts              noarch 0:0.301-17.fc44                   fedora                           192.7 KiB
+ abseil-cpp                              x86_64 0:20260107.1-1.fc44               fedora                             2.6 MiB
+ adwaita-cursor-theme                    noarch 0:50.0-1.fc44                     fedora                            11.4 MiB
+ adwaita-icon-theme                      noarch 0:50.0-1.fc44                     fedora                             1.1 MiB
+ adwaita-icon-theme-legacy               noarch 0:46.2-7.fc44                     fedora                             2.1 MiB
+ alsa-lib                                x86_64 0:1.2.16.1-1.fc44                 updates                            1.5 MiB
+ aribb24                                 x86_64 0:1.0.3^20160216git5e9be27-5.fc44 fedora                            83.0 KiB
+ at-spi2-atk                             x86_64 0:2.60.7-1.fc44                   updates                          284.1 KiB
+ at-spi2-core                            x86_64 0:2.60.7-1.fc44                   updates                            1.6 MiB
+ atk                                     x86_64 0:2.60.7-1.fc44                   updates                          252.5 KiB
+ avahi-glib                              x86_64 0:0.9~rc2-8.fc44                  fedora                            19.5 KiB
+ avahi-libs                              x86_64 0:0.9~rc2-8.fc44                  fedora                           179.2 KiB
+ bluez-libs                              x86_64 0:5.87+1.git8750129efca8-1.fc44   updates                          202.3 KiB
+ bubblewrap                              x86_64 0:0.12.0-1.fc44                   updates                          139.8 KiB
+ cairo                                   x86_64 0:1.18.6-1.fc44                   updates                            1.8 MiB
+ cairo-gobject                           x86_64 0:1.18.6-1.fc44                   updates                           31.0 KiB
+ cdparanoia-libs                         x86_64 0:10.2-50.fc44                    fedora                           113.3 KiB
+ cjson                                   x86_64 0:1.7.19-1.fc44                   updates                           67.8 KiB
+ codec2                                  x86_64 0:1.2.0-9.fc44                    fedora                             1.4 MiB
+ colord-libs                             x86_64 0:1.4.8-4.fc44                    fedora                           830.4 KiB
+ cups-filesystem                         noarch 1:2.4.19-3.fc44                   updates                            0.0   B
+ cups-libs                               x86_64 1:2.4.19-3.fc44                   updates                          634.6 KiB
+ default-fonts-core-sans                 noarch 0:4.3-1.fc44                      fedora                            11.9 KiB
+ duktape                                 x86_64 0:2.7.0-11.fc44                   fedora                           623.6 KiB
+ exempi                                  x86_64 0:2.6.4-9.fc44                    fedora                             1.4 MiB
+ exiv2-libs                              x86_64 0:0.28.9-1.fc44                   updates                            2.9 MiB
+ fdk-aac-free                            x86_64 0:2.0.3-2.fc44                    fedora                           628.3 KiB
+ fftw-libs-single                        x86_64 0:3.3.10-17.fc44                  fedora                             3.6 MiB
+ flac-libs                               x86_64 0:1.5.0-8.fc44                    fedora                           627.3 KiB
+ fontconfig                              x86_64 0:2.17.0-4.fc44                   fedora                           776.4 KiB
+ fonts-filesystem                        noarch 1:5.0.0-2.fc44                    fedora                             0.0   B
+ fribidi                                 x86_64 0:1.0.16-4.fc44                   fedora                           190.0 KiB
+ game-music-emu                          x86_64 0:0.6.4-3.fc44                    fedora                           360.0 KiB
+ gdk-pixbuf2                             x86_64 0:2.44.6^really2.44.4-3.fc44      updates                            2.5 MiB
+ geoclue2                                x86_64 0:2.8.2-1.fc44                    updates                          413.2 KiB
+ giflib                                  x86_64 0:6.1.3-2.fc44                    updates                          122.1 KiB
+ glib-networking                         x86_64 0:2.80.1-8.fc44                   updates                          750.4 KiB
+ glycin-libs                             x86_64 0:2.1.5-1.fc44                    updates                            4.3 MiB
+ glycin-loaders                          x86_64 0:2.1.5-1.fc44                    updates                           13.8 MiB
+ gobject-introspection                   x86_64 0:1.86.0-3.fc44                   fedora                           397.3 KiB
+ google-noto-fonts-common                noarch 0:20251201-2.fc44                 fedora                            17.7 KiB
+ google-noto-sans-vf-fonts               noarch 0:20251201-2.fc44                 fedora                             1.4 MiB
+ gpgmepp                                 x86_64 0:2.0.1-3.fc44                    fedora                           441.6 KiB
+ graphene                                x86_64 0:1.10.8-4.fc44                   fedora                           158.3 KiB
+ gsettings-desktop-schemas               x86_64 0:50.1-1.fc44                     updates                            6.1 MiB
+ gsm                                     x86_64 0:1.0.24-2.fc44                   fedora                            65.7 KiB
+ gstreamer1                              x86_64 0:1.28.8-1.fc44                   updates                            5.5 MiB
+ gstreamer1-plugins-base                 x86_64 0:1.28.8-1.fc44                   updates                            7.5 MiB
+ gtk-update-icon-cache                   x86_64 0:3.24.52-2.fc44                  updates                           62.0 KiB
+ gtk3                                    x86_64 0:3.24.52-2.fc44                  updates                           22.8 MiB
+ hicolor-icon-theme                      noarch 0:0.18-3.fc44                     fedora                            72.4 KiB
+ highway                                 x86_64 0:1.3.0-2.fc44                    fedora                             5.5 MiB
+ hwdata                                  noarch 0:0.412-1.fc44                    updates                           10.1 MiB
+ ilbc                                    x86_64 0:3.0.4-19.fc44                   fedora                            91.3 KiB
+ inih-cpp                                x86_64 0:62-2.fc44                       fedora                            40.0 KiB
+ iso-codes                               noarch 0:4.20.1-3.fc44                   fedora                            22.3 MiB
+ jbigkit-libs                            x86_64 0:2.1-33.fc44                     fedora                           117.2 KiB
+ json-glib                               x86_64 0:1.10.8-5.fc44                   fedora                           596.2 KiB
+ lame-libs                               x86_64 0:3.100-21.fc44                   fedora                             1.2 MiB
+ lcms2                                   x86_64 0:2.16-7.fc44                     fedora                           445.7 KiB
+ libICE                                  x86_64 0:1.1.2-4.fc44                    fedora                           198.3 KiB
+ libSM                                   x86_64 0:1.2.5-4.fc44                    fedora                           100.9 KiB
+ libX11                                  x86_64 0:1.8.13-3.fc44                   updates                            1.3 MiB
+ libX11-common                           noarch 0:1.8.13-3.fc44                   updates                            1.1 MiB
+ libX11-xcb                              x86_64 0:1.8.13-3.fc44                   updates                           10.8 KiB
+ libXau                                  x86_64 0:1.0.12-4.fc44                   fedora                            72.8 KiB
+ libXcomposite                           x86_64 0:0.4.6-7.fc44                    fedora                            40.3 KiB
+ libXcursor                              x86_64 0:1.2.3-4.fc44                    fedora                            53.3 KiB
+ libXdamage                              x86_64 0:1.1.6-7.fc44                    fedora                            39.5 KiB
+ libXdmcp                                x86_64 0:1.1.5-5.fc44                    fedora                            82.1 KiB
+ libXext                                 x86_64 0:1.3.6-5.fc44                    fedora                            89.8 KiB
+ libXfixes                               x86_64 0:6.0.1-7.fc44                    fedora                            34.0 KiB
+ libXfont2                               x86_64 0:2.0.9-1.fc44                    updates                          317.8 KiB
+ libXft                                  x86_64 0:2.3.8-10.fc44                   fedora                           168.3 KiB
+ libXi                                   x86_64 0:1.8.3-1.fc44                    updates                           80.6 KiB
+ libXinerama                             x86_64 0:1.1.5-10.fc44                   fedora                            14.8 KiB
+ libXmu                                  x86_64 0:1.2.1-5.fc44                    fedora                           191.1 KiB
+ libXrandr                               x86_64 0:1.5.4-7.fc44                    fedora                            55.6 KiB
+ libXrender                              x86_64 0:0.9.12-4.fc44                   fedora                            49.9 KiB
+ libXt                                   x86_64 0:1.3.1-4.fc44                    fedora                           437.6 KiB
+ libXtst                                 x86_64 0:1.2.5-4.fc44                    fedora                            33.4 KiB
+ libXv                                   x86_64 0:1.0.13-4.fc44                   fedora                            25.9 KiB
+ libXxf86vm                              x86_64 0:1.1.6-4.fc44                    fedora                            25.1 KiB
+ libaom                                  x86_64 0:3.15.2-1.fc44                   updates                            5.4 MiB
+ libaribcaption                          x86_64 0:1.1.1-4.fc44                    fedora                           260.0 KiB
+ libasyncns                              x86_64 0:0.8-34.fc44                     updates                           55.4 KiB
+ libavcodec-free                         x86_64 0:8.1.3-2.fc44                    updates                           10.4 MiB
+ libavformat-free                        x86_64 0:8.1.3-2.fc44                    updates                            2.8 MiB
+ libavutil-free                          x86_64 0:8.1.3-2.fc44                    updates                          975.2 KiB
+ libbluray                               x86_64 0:1.4.0-3.fc44                    fedora                           318.3 KiB
+ libcamera                               x86_64 0:0.7.2-2.fc44                    updates                            2.2 MiB
+ libcanberra                             x86_64 0:0.30-39.fc44                    fedora                           265.6 KiB
+ libchromaprint                          x86_64 0:1.6.0-4.fc44                    fedora                            69.1 KiB
+ libcloudproviders                       x86_64 0:0.4.1-1.fc44                    updates                          124.0 KiB
+ libcue                                  x86_64 0:2.3.0-14.fc44                   fedora                            85.7 KiB
+ libdatrie                               x86_64 0:0.2.14-2.fc44                   fedora                            61.7 KiB
+ libdav1d                                x86_64 0:1.5.4-1.fc44                    updates                            1.8 MiB
+ libdrm                                  x86_64 0:2.4.134-1.fc44                  updates                          405.8 KiB
+ libdvdnav                               x86_64 0:7.0.0-1.fc44                    fedora                           124.8 KiB
+ libdvdread                              x86_64 0:7.0.1-1.fc44                    fedora                           182.0 KiB
+ libebur128                              x86_64 0:1.2.6-15.fc44                   fedora                            39.2 KiB
+ libepoxy                                x86_64 0:1.5.10-12.fc44                  fedora                             1.1 MiB
+ libfontenc                              x86_64 0:1.1.8-5.fc44                    fedora                            66.8 KiB
+ libgexiv2                               x86_64 0:0.16.2-1.fc44                   updates                          267.7 KiB
+ libglvnd                                x86_64 1:1.7.0-9.fc44                    fedora                           526.5 KiB
+ libglvnd-egl                            x86_64 1:1.7.0-9.fc44                    fedora                            68.6 KiB
+ libglvnd-gles                           x86_64 1:1.7.0-9.fc44                    fedora                            97.7 KiB
+ libglvnd-glx                            x86_64 1:1.7.0-9.fc44                    fedora                           601.0 KiB
+ libgsf                                  x86_64 0:1.14.60-1.fc44                  updates                          993.5 KiB
+ libgudev                                x86_64 0:238-9.fc44                      fedora                            91.7 KiB
+ libgusb                                 x86_64 0:0.4.9-5.fc44                    fedora                           157.9 KiB
+ libgxps                                 x86_64 0:0.3.2-12.fc44                   fedora                           192.0 KiB
+ libheif                                 x86_64 0:1.23.7-1.fc44                   updates                            2.4 MiB
+ libicu                                  x86_64 0:77.1-3.fc44                     updates                           36.6 MiB
+ libimobiledevice                        x86_64 0:1.4.0-3.fc44                    updates                          324.6 KiB
+ libimobiledevice-glue                   x86_64 0:1.3.2-1.fc44                    updates                          123.2 KiB
+ libjpeg-turbo                           x86_64 0:3.1.3-1.fc44                    fedora                           818.2 KiB
+ libjxl                                  x86_64 1:0.11.2-1.fc44                   updates                            4.1 MiB
+ liblc3                                  x86_64 0:1.1.3-7.fc44                    fedora                           174.7 KiB
+ libldac                                 x86_64 0:2.0.2.3-19.fc44                 fedora                            78.0 KiB
+ liblerc                                 x86_64 0:4.3.0-1.fc44                    updates                          661.2 KiB
+ libmodplug                              x86_64 1:0.8.9.0-29.fc44                 fedora                           367.1 KiB
+ libnotify                               x86_64 0:0.8.9-1.fc44                    updates                          127.7 KiB
+ libogg                                  x86_64 2:1.3.6-2.fc44                    fedora                            45.6 KiB
+ libopenjph                              x86_64 0:0.25.3-3.fc44                   fedora                           482.1 KiB
+ libopenmpt                              x86_64 0:0.8.10-1.fc44                   updates                            1.9 MiB
+ libosinfo                               x86_64 0:1.12.0-5.fc44                   fedora                             1.2 MiB
+ libpciaccess                            x86_64 0:0.16-17.fc44                    fedora                            48.4 KiB
+ libplist                                x86_64 0:2.7.0-1.fc44                    updates                          248.7 KiB
+ libproxy                                x86_64 0:0.5.12-2.fc44                   fedora                           102.1 KiB
+ librabbitmq                             x86_64 0:0.18.1-1.fc44                   updates                           89.4 KiB
+ librist                                 x86_64 0:0.2.11-1.fc44                   fedora                           182.1 KiB
+ librsvg2                                x86_64 0:2.62.4-1.fc44                   updates                            5.0 MiB
+ libsbc                                  x86_64 0:2.1-2.fc44                      fedora                            93.3 KiB
+ libsmbclient                            x86_64 2:4.24.0-6.fc44                   fedora                           171.6 KiB
+ libsndfile                              x86_64 0:1.2.2-11.fc44                   fedora                           553.9 KiB
+ libsodium                               x86_64 0:1.0.22-1.fc44                   updates                          481.5 KiB
+ libsoup3                                x86_64 0:3.6.6-11.fc44                   updates                            1.2 MiB
+ libstemmer                              x86_64 0:3.0.1-11.fc44                   fedora                           641.3 KiB
+ libswresample-free                      x86_64 0:8.1.3-2.fc44                    updates                          155.2 KiB
+ libthai                                 x86_64 0:0.1.30-2.fc44                   fedora                           800.9 KiB
+ libtheora                               x86_64 1:1.1.1-41.fc44                   fedora                           480.9 KiB
+ libtiff                                 x86_64 0:4.7.2-3.fc44                    updates                          648.6 KiB
+ libtinysparql                           x86_64 0:3.11.1-1.fc44                   updates                            1.0 MiB
+ libudfread                              x86_64 0:1.2.0-3.fc44                    fedora                            62.0 KiB
+ libunwind                               x86_64 0:1.8.3-4.fc44                    updates                          194.0 KiB
+ libusbmuxd                              x86_64 0:2.1.1-1.fc44                    updates                           75.1 KiB
+ libva                                   x86_64 0:2.23.0-3.fc44                   fedora                           345.6 KiB
+ libvdpau                                x86_64 0:1.5-11.fc44                     fedora                            20.6 KiB
+ libvisual                               x86_64 1:0.4.2-4.fc44                    fedora                           464.5 KiB
+ libvmaf                                 x86_64 0:3.0.0-5.fc44                    fedora                           846.8 KiB
+ libvorbis                               x86_64 1:1.3.7-14.fc44                   fedora                           837.0 KiB
+ libvpl                                  x86_64 1:2.17.0-1.fc44                   updates                          437.7 KiB
+ libvpx                                  x86_64 0:1.15.0-5.fc44                   fedora                             3.3 MiB
+ libwayland-client                       x86_64 0:1.26.0-1.fc44                   updates                           66.0 KiB
+ libwayland-cursor                       x86_64 0:1.26.0-1.fc44                   updates                           37.2 KiB
+ libwayland-egl                          x86_64 0:1.26.0-1.fc44                   updates                           12.3 KiB
+ libwbclient                             x86_64 2:4.24.0-6.fc44                   fedora                            71.0 KiB
+ libwebp                                 x86_64 0:1.6.0-3.fc44                    fedora                           968.0 KiB
+ libxcb                                  x86_64 0:1.17.0-7.fc44                   fedora                             1.1 MiB
+ libxdo                                  x86_64 1:3.20211022.1-10.fc44            fedora                            87.4 KiB
+ libxkbcommon-x11                        x86_64 0:1.13.1-2.fc44                   fedora                            35.4 KiB
+ libxkbfile                              x86_64 0:1.1.3-5.fc44                    fedora                           201.7 KiB
+ libxshmfence                            x86_64 0:1.3.2-8.fc44                    fedora                            12.3 KiB
+ libxslt                                 x86_64 0:1.1.43-6.fc44                   fedora                           471.8 KiB
+ libyuv                                  x86_64 0:0-0.61.20260213git6067afd.fc44  fedora                           683.7 KiB
+ libzip                                  x86_64 0:1.11.4-3.fc44                   fedora                           143.8 KiB
+ llvm-filesystem                         x86_64 0:22.1.8-4.fc44                   updates                            0.0   B
+ llvm-libs                               x86_64 0:22.1.8-4.fc44                   updates                          140.5 MiB
+ lm_sensors-libs                         x86_64 0:3.6.0-24.fc44                   fedora                            85.7 KiB
+ lpcnetfreedv                            x86_64 0:0.5-10.fc44                     fedora                            14.8 MiB
+ lttng-ust                               x86_64 0:2.14.0-5.fc44                   fedora                             1.3 MiB
+ mesa-dri-drivers                        x86_64 0:26.2.5-1.fc44                   updates                           53.2 MiB
+ mesa-filesystem                         x86_64 0:26.2.5-1.fc44                   updates                            3.6 KiB
+ mesa-libEGL                             x86_64 0:26.2.5-1.fc44                   updates                          398.4 KiB
+ mesa-libGL                              x86_64 0:26.2.5-1.fc44                   updates                          374.2 KiB
+ mesa-libgbm                             x86_64 0:26.2.5-1.fc44                   updates                           19.5 KiB
+ mpg123-libs                             x86_64 0:1.32.10-3.fc44                  fedora                           825.7 KiB
+ ngtcp2-crypto-gnutls                    x86_64 0:1.21.0-1.fc44                   fedora                            39.5 KiB
+ nspr                                    x86_64 0:4.39.0-7.fc44                   updates                          327.1 KiB
+ nss                                     x86_64 0:3.131.0-1.fc44                  updates                            2.0 MiB
+ nss-softokn                             x86_64 0:3.131.0-1.fc44                  updates                            2.1 MiB
+ nss-softokn-freebl                      x86_64 0:3.131.0-1.fc44                  updates                            1.1 MiB
+ nss-sysinit                             x86_64 0:3.131.0-1.fc44                  updates                           17.9 KiB
+ nss-util                                x86_64 0:3.131.0-1.fc44                  updates                          212.8 KiB
+ openapv-libs                            x86_64 0:0.2.1.2-1.fc44                  fedora                           125.1 KiB
+ opencore-amr                            x86_64 0:0.1.6-10.fc44                   fedora                           352.6 KiB
+ openh264                                x86_64 0:2.6.0-3.fc44                    fedora-cisco-openh264              1.1 MiB
+ openjpeg                                x86_64 0:2.5.4-5.fc44                    updates                          464.2 KiB
+ openpgm                                 x86_64 0:5.3.128-6.fc44                  fedora                           320.3 KiB
+ opus                                    x86_64 0:1.6-2.fc44                      fedora                           467.7 KiB
+ orc                                     x86_64 0:0.4.41-3.fc44                   fedora                           721.9 KiB
+ osinfo-db                               noarch 0:20251212-1.fc44                 fedora                             4.2 MiB
+ osinfo-db-tools                         x86_64 0:1.12.0-5.fc44                   fedora                           190.3 KiB
+ pango                                   x86_64 0:1.57.1-1.fc44                   fedora                             1.0 MiB
+ pipewire-jack-audio-connection-kit-libs x86_64 0:1.6.11-1.fc44                   updates                          520.4 KiB
+ pipewire-libs                           x86_64 0:1.6.11-1.fc44                   updates                            9.7 MiB
+ pixman                                  x86_64 0:0.46.2-3.fc44                   fedora                           718.2 KiB
+ polkit                                  x86_64 0:127-2.fc44.2                    fedora                           493.8 KiB
+ polkit-libs                             x86_64 0:127-2.fc44.2                    fedora                           220.4 KiB
+ poppler                                 x86_64 0:26.01.0-3.fc44                  fedora                             4.0 MiB
+ poppler-data                            noarch 0:0.4.11-11.fc44                  fedora                            12.3 MiB
+ poppler-glib                            x86_64 0:26.01.0-3.fc44                  fedora                           658.8 KiB
+ pulseaudio-libs                         x86_64 0:17.0-9.fc44                     fedora                             3.4 MiB
+ python3-cairo                           x86_64 0:1.28.0-5.fc44                   fedora                           508.8 KiB
+ python3-gobject-base                    x86_64 0:3.56.3-1.fc44                   updates                            1.6 MiB
+ rav1e-libs                              x86_64 0:0.8.1-3.fc44                    fedora                             3.1 MiB
+ rtkit                                   x86_64 0:0.11-70.fc44                    fedora                           137.8 KiB
+ samba-client-libs                       x86_64 2:4.24.0-6.fc44                   fedora                            11.2 MiB
+ samba-common                            noarch 2:4.24.0-6.fc44                   fedora                           202.8 KiB
+ samba-core-libs                         x86_64 2:4.24.0-6.fc44                   fedora                             1.7 MiB
+ samba-ndr-libs                          x86_64 2:4.24.0-6.fc44                   fedora                             4.7 MiB
+ shared-mime-info                        x86_64 0:2.4-3.fc44                      fedora                             5.2 MiB
+ snappy                                  x86_64 0:1.2.2-4.fc44                    fedora                            79.9 KiB
+ sound-theme-freedesktop                 noarch 0:0.8-31.fc44                     fedora                           460.4 KiB
+ soxr                                    x86_64 0:0.1.3-21.fc44                   fedora                           191.3 KiB
+ spandsp                                 x86_64 0:0.0.6-22.fc44                   fedora                           856.3 KiB
+ speex                                   x86_64 0:1.2.0-21.fc44                   fedora                           128.4 KiB
+ spirv-tools-libs                        x86_64 0:2026.1-1.fc44                   fedora                             6.1 MiB
+ srt-libs                                x86_64 0:1.5.7-1.fc44                    updates                            1.1 MiB
+ svt-av1-libs                            x86_64 0:3.1.2-2.fc44                    fedora                             5.6 MiB
+ totem-pl-parser                         x86_64 0:3.26.7-1.fc44                   updates                          315.2 KiB
+ twolame-libs                            x86_64 0:0.4.0-9.fc44                    fedora                           161.4 KiB
+ uchardet                                x86_64 0:0.0.8-10.fc44                   fedora                           275.3 KiB
+ upower-libs                             x86_64 0:1.91.5-1.fc44                   updates                          178.7 KiB
+ vo-amrwbenc                             x86_64 0:0.1.3-24.fc44                   fedora                           157.8 KiB
+ webrtc-audio-processing                 x86_64 0:2.1-5.fc44                      fedora                             1.1 MiB
+ wireplumber                             x86_64 0:0.5.19-1.fc44                   updates                          514.3 KiB
+ wireplumber-libs                        x86_64 0:0.5.19-1.fc44                   updates                            1.5 MiB
+ xevd-libs                               x86_64 0:0.5.0-6.fc44                    fedora                           379.9 KiB
+ xeve-libs                               x86_64 0:0.5.1-6.fc44                    fedora                           904.7 KiB
+ xkbcomp                                 x86_64 0:1.5.0-2.fc44                    fedora                           225.0 KiB
+ xml-common                              noarch 0:0.6.3-68.fc44                   fedora                            78.4 KiB
+ xorg-x11-server-common                  x86_64 0:21.1.25-2.fc44                  updates                          127.3 KiB
+ xorg-x11-xauth                          x86_64 1:1.1.5-1.fc44                    fedora                            52.1 KiB
+ xprop                                   x86_64 0:1.2.8-5.fc44                    fedora                            54.5 KiB
+ xvidcore                                x86_64 0:1.3.7-19.fc44                   fedora                           878.3 KiB
+ zeromq                                  x86_64 0:4.3.5-22.fc43                   fedora                           894.1 KiB
+ zvbi                                    x86_64 0:0.2.46-1.fc44                   updates                            1.2 MiB
+Installing weak dependencies:
+ adwaita-mono-fonts                      noarch 0:50.0-1.fc44                     fedora                             5.6 MiB
+ adwaita-sans-fonts                      noarch 0:50.0-1.fc44                     fedora                             1.7 MiB
+ dconf                                   x86_64 0:0.49.0-5.fc44                   fedora                           306.9 KiB
+ exiv2                                   x86_64 0:0.28.9-1.fc44                   updates                           12.2 MiB
+ intel-mediasdk                          x86_64 0:23.2.2-11.fc44                  updates                           24.5 MiB
+ intel-vpl-gpu-rt                        x86_64 0:26.3.4-1.fc44                   updates                           11.7 MiB
+ libcamera-ipa                           x86_64 0:0.7.2-2.fc44                    updates                          593.2 KiB
+ libcanberra-gtk3                        x86_64 0:0.30-39.fc44                    fedora                            70.4 KiB
+ libheif-ffmpeg                          x86_64 0:1.23.7-1.fc44                   updates                           32.0 KiB
+ localsearch                             x86_64 0:3.11.2-1.fc44                   updates                            3.5 MiB
+ logrotate                               x86_64 0:3.22.0-5.fc44                   fedora                           152.8 KiB
+ pipewire                                x86_64 0:1.6.11-1.fc44                   updates                          461.7 KiB
+ pipewire-alsa                           x86_64 0:1.6.11-1.fc44                   updates                          157.7 KiB
+ pipewire-jack-audio-connection-kit      x86_64 0:1.6.11-1.fc44                   updates                           30.0   B
+ pipewire-plugin-libcamera               x86_64 0:1.6.11-1.fc44                   updates                          142.5 KiB
+ pipewire-pulseaudio                     x86_64 0:1.6.11-1.fc44                   updates                          464.3 KiB
+ polkit-pkla-compat                      x86_64 0:0.1-32.fc44                     fedora                            89.1 KiB
+ tinysparql                              x86_64 0:3.11.1-1.fc44                   updates                            2.6 MiB
+ upower                                  x86_64 0:1.91.5-1.fc44                   updates                          312.1 KiB
+ usbmuxd                                 x86_64 0:1.1.1^20251205git3ded00c-1.fc44 updates                          149.0 KiB
+
+Transaction Summary:
+ Installing:       266 packages
+ Upgrading:          1 package
+ Replacing:          1 package
+
+Updating and loading repositories:
+ Fedora 44 - x86_64 - Updates           100% |   1.1 MiB/s |  12.5 MiB |  00m11s
+ Fedora 44 openh264 (From Cisco) - x86_ 100% | 482.0   B/s |   5.3 KiB |  00m11s
+ Fedora 44 - x86_64                     100% |   3.6 MiB/s |  50.9 MiB |  00m14s
+Repositories loaded.
+Total size of inbound packages is 199 MiB. Need to download 172 MiB.
+After this operation, 693 MiB extra will be used (install 693 MiB, remove 317 KiB).
+[  1/266] xdotool-1:3.20211022.1-10.fc4 100% | 294.4 KiB/s |  54.5 KiB |  00m00s
+[  2/266] xdg-desktop-portal-gtk-0:1.15 100% | 739.3 KiB/s | 143.4 KiB |  00m00s
+[  3/266] libxdo-1:3.20211022.1-10.fc44 100% |   2.0 MiB/s |  42.2 KiB |  00m00s
+[  4/266] libXcursor-0:1.2.3-4.fc44.x86 100% |   1.5 MiB/s |  32.5 KiB |  00m00s
+[  5/266] fontconfig-0:2.17.0-4.fc44.x8 100% |   1.2 MiB/s | 278.2 KiB |  00m00s
+[  6/266] libxkbcommon-x11-0:1.13.1-2.f 100% | 830.5 KiB/s |  23.3 KiB |  00m00s
+[  7/266] default-fonts-core-sans-0:4.3 100% |   1.4 MiB/s |  29.2 KiB |  00m00s
+[  8/266] fonts-filesystem-1:5.0.0-2.fc 100% | 444.9 KiB/s |   8.9 KiB |  00m00s
+[  9/266] polkit-0:127-2.fc44.2.x86_64  100% |   3.3 MiB/s | 171.8 KiB |  00m00s
+[ 10/266] xml-common-0:0.6.3-68.fc44.no 100% |   1.1 MiB/s |  31.1 KiB |  00m00s
+[ 11/266] libXinerama-0:1.1.5-10.fc44.x 100% | 511.0 KiB/s |  14.3 KiB |  00m00s
+[ 12/266] libXtst-0:1.2.5-4.fc44.x86_64 100% | 161.7 KiB/s |  21.0 KiB |  00m00s
+[ 13/266] libXfixes-0:6.0.1-7.fc44.x86_ 100% | 159.5 KiB/s |  19.3 KiB |  00m00s
+[ 14/266] libXrender-0:0.9.12-4.fc44.x8 100% | 216.2 KiB/s |  27.9 KiB |  00m00s
+[ 15/266] polkit-libs-0:127-2.fc44.2.x8 100% |   2.5 MiB/s |  72.8 KiB |  00m00s
+[ 16/266] libxcb-0:1.17.0-7.fc44.x86_64 100% |   4.1 MiB/s | 238.0 KiB |  00m00s
+[ 17/266] duktape-0:2.7.0-11.fc44.x86_6 100% |   3.6 MiB/s | 172.0 KiB |  00m00s
+[ 18/266] abattis-cantarell-vf-fonts-0: 100% |   4.2 MiB/s | 120.4 KiB |  00m00s
+[ 19/266] libXext-0:1.3.6-5.fc44.x86_64 100% |   1.9 MiB/s |  40.7 KiB |  00m00s
+[ 20/266] libXau-0:1.0.12-4.fc44.x86_64 100% | 229.4 KiB/s |  33.7 KiB |  00m00s
+[ 21/266] google-noto-sans-vf-fonts-0:2 100% |   3.4 MiB/s | 614.9 KiB |  00m00s
+[ 22/266] google-noto-fonts-common-0:20 100% | 115.9 KiB/s |  17.7 KiB |  00m00s
+[ 23/266] libgudev-0:238-9.fc44.x86_64  100% |   1.7 MiB/s |  35.2 KiB |  00m00s
+[ 24/266] json-glib-0:1.10.8-5.fc44.x86 100% |   5.9 MiB/s | 175.5 KiB |  00m00s
+[ 25/266] xorg-x11-server-common-0:21.1 100% | 205.3 KiB/s |  35.3 KiB |  00m00s
+[ 26/266] libXdmcp-0:1.1.5-5.fc44.x86_6 100% |   1.8 MiB/s |  37.1 KiB |  00m00s
+[ 27/266] libglvnd-glx-1:1.7.0-9.fc44.x 100% |   5.4 MiB/s | 132.5 KiB |  00m00s
+[ 28/266] pixman-0:0.46.2-3.fc44.x86_64 100% |   9.4 MiB/s | 297.4 KiB |  00m00s
+[ 29/266] xorg-x11-xauth-1:1.1.5-1.fc44 100% | 247.1 KiB/s |  34.3 KiB |  00m00s
+[ 30/266] xdg-desktop-portal-0:1.22.1-1 100% |   1.2 MiB/s | 530.5 KiB |  00m00s
+[ 31/266] libglvnd-1:1.7.0-9.fc44.x86_6 100% |   4.5 MiB/s | 114.7 KiB |  00m00s
+[ 32/266] libXmu-0:1.2.1-5.fc44.x86_64  100% |   3.2 MiB/s |  79.6 KiB |  00m00s
+[ 33/266] libXt-0:1.3.1-4.fc44.x86_64   100% |   7.2 MiB/s | 184.9 KiB |  00m00s
+[ 34/266] libICE-0:1.1.2-4.fc44.x86_64  100% |   3.0 MiB/s |  80.2 KiB |  00m00s
+[ 35/266] libSM-0:1.2.5-4.fc44.x86_64   100% |   2.1 MiB/s |  44.6 KiB |  00m00s
+[ 36/266] xorg-x11-server-Xvfb-0:21.1.2 100% |   1.8 MiB/s | 877.3 KiB |  00m00s
+[ 37/266] python3-cairo-0:1.28.0-5.fc44 100% | 977.2 KiB/s | 130.0 KiB |  00m00s
+[ 38/266] python3-gobject-0:3.56.3-1.fc 100% | 108.7 KiB/s |  18.0 KiB |  00m00s
+[ 39/266] gstreamer1-0:1.28.8-1.fc44.x8 100% |  16.8 MiB/s |   1.7 MiB |  00m00s
+[ 40/266] cdparanoia-libs-0:10.2-50.fc4 100% |  88.4 KiB/s |  56.0 KiB |  00m01s
+[ 41/266] gstreamer1-plugins-base-0:1.2 100% |   2.7 MiB/s |   2.4 MiB |  00m01s
+[ 42/266] graphene-0:1.10.8-4.fc44.x86_ 100% | 376.1 KiB/s |  60.9 KiB |  00m00s
+[ 43/266] libXv-0:1.0.13-4.fc44.x86_64  100% | 397.2 KiB/s |  18.7 KiB |  00m00s
+[ 44/266] python3-gobject-base-0:3.56.3 100% | 309.0 KiB/s | 404.5 KiB |  00m01s
+[ 45/266] iso-codes-0:4.20.1-3.fc44.noa 100% |   5.5 MiB/s |   4.0 MiB |  00m01s
+[ 46/266] libjpeg-turbo-0:3.1.3-1.fc44. 100% | 544.5 KiB/s | 243.4 KiB |  00m00s
+[ 47/266] libogg-2:1.3.6-2.fc44.x86_64  100% |   1.4 MiB/s |  33.5 KiB |  00m00s
+[ 48/266] libvisual-1:0.4.2-4.fc44.x86_ 100% |   1.1 MiB/s | 158.5 KiB |  00m00s
+[ 49/266] libglvnd-egl-1:1.7.0-9.fc44.x 100% |  44.9 KiB/s |  37.2 KiB |  00m01s
+[ 50/266] libtheora-1:1.1.1-41.fc44.x86 100% | 928.8 KiB/s | 170.0 KiB |  00m00s
+[ 51/266] libvorbis-1:1.3.7-14.fc44.x86 100% |   5.3 MiB/s | 191.0 KiB |  00m00s
+[ 52/266] orc-0:0.4.41-3.fc44.x86_64    100% |   5.9 MiB/s | 224.2 KiB |  00m00s
+[ 53/266] fribidi-0:1.0.16-4.fc44.x86_6 100% | 368.2 KiB/s |  53.8 KiB |  00m00s
+[ 54/266] opus-0:1.6-2.fc44.x86_64      100% |   1.2 MiB/s | 255.4 KiB |  00m00s
+[ 55/266] libXft-0:2.3.8-10.fc44.x86_64 100% |   3.2 MiB/s |  74.3 KiB |  00m00s
+[ 56/266] libdatrie-0:0.2.14-2.fc44.x86 100% |   1.6 MiB/s |  33.1 KiB |  00m00s
+[ 57/266] libthai-0:0.1.30-2.fc44.x86_6 100% |   5.3 MiB/s | 216.1 KiB |  00m00s
+[ 58/266] libX11-0:1.8.13-3.fc44.x86_64 100% |  14.8 MiB/s | 680.0 KiB |  00m00s
+[ 59/266] libX11-xcb-0:1.8.13-3.fc44.x8 100% |  84.6 KiB/s |  10.8 KiB |  00m00s
+[ 60/266] pango-0:1.57.1-1.fc44.x86_64  100% | 906.1 KiB/s | 366.1 KiB |  00m00s
+[ 61/266] libX11-common-0:1.8.13-3.fc44 100% | 957.8 KiB/s | 175.3 KiB |  00m00s
+[ 62/266] libXi-0:1.8.3-1.fc44.x86_64   100% |   1.5 MiB/s |  41.3 KiB |  00m00s
+[ 63/266] gdk-pixbuf2-0:2.44.6^really2. 100% |  10.9 MiB/s | 490.4 KiB |  00m00s
+[ 64/266] shared-mime-info-0:2.4-3.fc44 100% |   5.9 MiB/s | 402.0 KiB |  00m00s
+[ 65/266] adwaita-icon-theme-0:50.0-1.f 100% | 716.6 KiB/s | 404.9 KiB |  00m01s
+[ 66/266] colord-libs-0:1.4.8-4.fc44.x8 100% |   3.5 MiB/s | 233.7 KiB |  00m00s
+[ 67/266] hicolor-icon-theme-0:0.18-3.f 100% | 142.2 KiB/s |  66.0 KiB |  00m00s
+[ 68/266] libXcomposite-0:0.4.6-7.fc44. 100% | 191.9 KiB/s |  24.2 KiB |  00m00s
+[ 69/266] libXdamage-0:1.1.6-7.fc44.x86 100% |   1.0 MiB/s |  23.3 KiB |  00m00s
+[ 70/266] gsettings-desktop-schemas-0:5 100% | 655.8 KiB/s | 864.4 KiB |  00m01s
+[ 71/266] libXrandr-0:1.5.4-7.fc44.x86_ 100% |   1.3 MiB/s |  27.8 KiB |  00m00s
+[ 72/266] libepoxy-0:1.5.10-12.fc44.x86 100% |   1.1 MiB/s | 230.4 KiB |  00m00s
+[ 73/266] adwaita-cursor-theme-0:50.0-1 100% |   1.6 MiB/s | 380.7 KiB |  00m00s
+[ 74/266] gtk3-0:3.24.52-2.fc44.x86_64  100% |   3.9 MiB/s |   6.1 MiB |  00m02s
+[ 75/266] libgusb-0:0.4.9-5.fc44.x86_64 100% | 425.8 KiB/s |  64.7 KiB |  00m00s
+[ 76/266] lcms2-0:2.16-7.fc44.x86_64    100% | 971.3 KiB/s | 191.4 KiB |  00m00s
+[ 77/266] cairo-gobject-0:1.18.6-1.fc44 100% | 496.8 KiB/s |  16.9 KiB |  00m00s
+[ 78/266] cairo-0:1.18.6-1.fc44.x86_64  100% |  12.3 MiB/s | 757.6 KiB |  00m00s
+[ 79/266] mesa-dri-drivers-0:26.2.5-1.f 100% |   4.1 MiB/s |  13.8 MiB |  00m03s
+[ 80/266] libXxf86vm-0:1.1.6-4.fc44.x86 100% | 195.3 KiB/s |  18.2 KiB |  00m00s
+[ 81/266] mesa-filesystem-0:26.2.5-1.fc 100% | 365.6 KiB/s |   9.1 KiB |  00m00s
+[ 82/266] mesa-libgbm-0:26.2.5-1.fc44.x 100% | 561.0 KiB/s |  15.1 KiB |  00m00s
+[ 83/266] libxshmfence-0:1.3.2-8.fc44.x 100% | 660.8 KiB/s |  13.2 KiB |  00m00s
+[ 84/266] lm_sensors-libs-0:3.6.0-24.fc 100% | 283.3 KiB/s |  41.9 KiB |  00m00s
+[ 85/266] spirv-tools-libs-0:2026.1-1.f 100% |   2.4 MiB/s |   1.7 MiB |  00m01s
+[ 86/266] adwaita-icon-theme-legacy-0:4 100% | 503.0 KiB/s |   2.5 MiB |  00m05s
+[ 87/266] xkbcomp-0:1.5.0-2.fc44.x86_64 100% |   2.4 MiB/s | 103.9 KiB |  00m00s
+[ 88/266] mesa-libEGL-0:26.2.5-1.fc44.x 100% | 316.2 KiB/s | 141.0 KiB |  00m00s
+[ 89/266] libxkbfile-0:1.1.3-5.fc44.x86 100% |   2.5 MiB/s |  93.7 KiB |  00m00s
+[ 90/266] libfontenc-0:1.1.8-5.fc44.x86 100% | 263.0 KiB/s |  32.3 KiB |  00m00s
+[ 91/266] libunwind-0:1.8.3-4.fc44.x86_ 100% |   2.7 MiB/s |  79.6 KiB |  00m00s
+[ 92/266] geoclue2-0:2.8.2-1.fc44.x86_6 100% |   4.7 MiB/s | 149.2 KiB |  00m00s
+[ 93/266] mesa-libGL-0:26.2.5-1.fc44.x8 100% |  27.4 KiB/s | 138.6 KiB |  00m05s
+[ 94/266] avahi-glib-0:0.9~rc2-8.fc44.x 100% | 769.1 KiB/s |  15.4 KiB |  00m00s
+[ 95/266] avahi-libs-0:0.9~rc2-8.fc44.x 100% | 494.5 KiB/s |  71.7 KiB |  00m00s
+[ 96/266] ModemManager-glib-0:1.24.2-3. 100% |   1.6 MiB/s | 337.9 KiB |  00m00s
+[ 97/266] libXfont2-0:2.0.9-1.fc44.x86_ 100% | 320.3 KiB/s | 135.2 KiB |  00m00s
+[ 98/266] fdk-aac-free-0:2.0.3-2.fc44.x 100% |   1.5 MiB/s | 350.3 KiB |  00m00s
+[ 99/266] libebur128-0:1.2.6-15.fc44.x8 100% |   1.0 MiB/s |  25.7 KiB |  00m00s
+[100/266] liblc3-0:1.1.3-7.fc44.x86_64  100% | 669.9 KiB/s | 106.5 KiB |  00m00s
+[101/266] libldac-0:2.0.2.3-19.fc44.x86 100% |   1.3 MiB/s |  43.5 KiB |  00m00s
+[102/266] libsbc-0:2.1-2.fc44.x86_64    100% |   1.4 MiB/s |  50.1 KiB |  00m00s
+[103/266] fftw-libs-single-0:3.3.10-17. 100% |   1.9 MiB/s |   1.2 MiB |  00m01s
+[104/266] libsndfile-0:1.2.2-11.fc44.x8 100% |   1.1 MiB/s | 224.1 KiB |  00m00s
+[105/266] spandsp-0:0.0.6-22.fc44.x86_6 100% |   1.3 MiB/s | 335.0 KiB |  00m00s
+[106/266] pulseaudio-libs-0:17.0-9.fc44 100% |   1.7 MiB/s | 705.3 KiB |  00m00s
+[107/266] flac-libs-0:1.5.0-8.fc44.x86_ 100% |   3.8 MiB/s | 225.7 KiB |  00m00s
+[108/266] gsm-0:1.0.24-2.fc44.x86_64    100% |   1.8 MiB/s |  36.0 KiB |  00m00s
+[109/266] lame-libs-0:3.100-21.fc44.x86 100% |   1.7 MiB/s | 341.0 KiB |  00m00s
+[110/266] mpg123-libs-0:1.32.10-3.fc44. 100% |   1.7 MiB/s | 362.3 KiB |  00m00s
+[111/266] webrtc-audio-processing-0:2.1 100% | 512.6 KiB/s | 441.9 KiB |  00m01s
+[112/266] abseil-cpp-0:20260107.1-1.fc4 100% |   1.8 MiB/s | 799.6 KiB |  00m00s
+[113/266] bluez-libs-0:5.87+1.git875012 100% |   2.8 MiB/s |  84.6 KiB |  00m00s
+[114/266] alsa-lib-0:1.2.16.1-1.fc44.x8 100% |   1.4 MiB/s | 565.7 KiB |  00m00s
+[115/266] libpciaccess-0:0.16-17.fc44.x 100% | 907.0 KiB/s |  27.2 KiB |  00m00s
+[116/266] libwayland-client-0:1.26.0-1. 100% | 266.8 KiB/s |  35.5 KiB |  00m00s
+[117/266] libwayland-cursor-0:1.26.0-1. 100% | 663.4 KiB/s |  19.2 KiB |  00m00s
+[118/266] libdrm-0:2.4.134-1.fc44.x86_6 100% | 253.7 KiB/s | 166.7 KiB |  00m01s
+[119/266] llvm-filesystem-0:22.1.8-4.fc 100% | 385.2 KiB/s |  10.0 KiB |  00m00s
+[120/266] pipewire-libs-0:1.6.11-1.fc44 100% | 806.9 KiB/s |   2.7 MiB |  00m03s
+[121/266] at-spi2-atk-0:2.60.7-1.fc44.x 100% |  83.3 KiB/s |  89.6 KiB |  00m01s
+[122/266] at-spi2-core-0:2.60.7-1.fc44. 100% | 893.5 KiB/s | 402.1 KiB |  00m00s
+[123/266] atk-0:2.60.7-1.fc44.x86_64    100% | 505.6 KiB/s |  82.4 KiB |  00m00s
+[124/266] cups-libs-1:2.4.19-3.fc44.x86 100% | 972.1 KiB/s | 270.2 KiB |  00m00s
+[125/266] cups-filesystem-1:2.4.19-3.fc 100% | 384.9 KiB/s |  12.3 KiB |  00m00s
+[126/266] gtk-update-icon-cache-0:3.24. 100% |  97.8 KiB/s |  33.8 KiB |  00m00s
+[127/266] libcloudproviders-0:0.4.1-1.f 100% | 923.3 KiB/s |  46.2 KiB |  00m00s
+[128/266] libtinysparql-0:3.11.1-1.fc44 100% | 274.1 KiB/s | 364.3 KiB |  00m01s
+[129/266] libstemmer-0:3.0.1-11.fc44.x8 100% | 850.2 KiB/s | 146.2 KiB |  00m00s
+[130/266] libwayland-egl-0:1.26.0-1.fc4 100% | 413.7 KiB/s |  12.4 KiB |  00m00s
+[131/266] libnotify-0:0.8.9-1.fc44.x86_ 100% | 329.7 KiB/s |  56.7 KiB |  00m00s
+[132/266] libsoup3-0:3.6.6-11.fc44.x86_ 100% |   1.3 MiB/s | 409.5 KiB |  00m00s
+[133/266] glycin-libs-0:2.1.5-1.fc44.x8 100% |   1.9 MiB/s |   1.5 MiB |  00m01s
+[134/266] glycin-loaders-0:2.1.5-1.fc44 100% |   2.7 MiB/s |   3.2 MiB |  00m01s
+[135/266] libtiff-0:4.7.2-3.fc44.x86_64 100% | 381.5 KiB/s | 233.5 KiB |  00m01s
+[136/266] jbigkit-libs-0:2.1-33.fc44.x8 100% |   1.3 MiB/s |  54.3 KiB |  00m00s
+[137/266] libwebp-0:1.6.0-3.fc44.x86_64 100% |   1.4 MiB/s | 329.9 KiB |  00m00s
+[138/266] libasyncns-0:0.8-34.fc44.x86_ 100% | 220.4 KiB/s |  30.2 KiB |  00m00s
+[139/266] xprop-0:1.2.8-5.fc44.x86_64   100% |   5.1 KiB/s |  35.3 KiB |  00m07s
+[140/266] hwdata-0:0.412-1.fc44.noarch  100% |   1.5 MiB/s |   1.7 MiB |  00m01s
+[141/266] liblerc-0:4.3.0-1.fc44.x86_64 100% | 210.4 KiB/s | 231.2 KiB |  00m01s
+[142/266] glib-networking-0:2.80.1-8.fc 100% | 155.9 KiB/s | 202.2 KiB |  00m01s
+[143/266] libproxy-0:0.5.12-2.fc44.x86_ 100% |   1.1 MiB/s |  45.4 KiB |  00m00s
+[144/266] bubblewrap-0:0.12.0-1.fc44.x8 100% | 181.4 KiB/s |  66.9 KiB |  00m00s
+[145/266] libheif-0:1.23.7-1.fc44.x86_6 100% |   1.7 MiB/s | 871.1 KiB |  00m01s
+[146/266] libopenjph-0:0.25.3-3.fc44.x8 100% | 797.6 KiB/s | 161.9 KiB |  00m00s
+[147/266] rav1e-libs-0:0.8.1-3.fc44.x86 100% | 719.6 KiB/s |   1.1 MiB |  00m02s
+[148/266] libicu-0:77.1-3.fc44.x86_64   100% |   1.5 MiB/s |  10.8 MiB |  00m07s
+[149/266] libjxl-1:0.11.2-1.fc44.x86_64 100% |   1.8 MiB/s |   1.2 MiB |  00m01s
+[150/266] svt-av1-libs-0:3.1.2-2.fc44.x 100% | 729.4 KiB/s |   2.0 MiB |  00m03s
+[151/266] highway-0:1.3.0-2.fc44.x86_64 100% |   1.7 MiB/s | 694.6 KiB |  00m00s
+[152/266] librsvg2-0:2.62.4-1.fc44.x86_ 100% |   2.7 MiB/s |   1.9 MiB |  00m01s
+[153/266] libdav1d-0:1.5.4-1.fc44.x86_6 100% | 629.0 KiB/s | 664.8 KiB |  00m01s
+[154/266] libvmaf-0:3.0.0-5.fc44.x86_64 100% | 939.1 KiB/s | 202.9 KiB |  00m00s
+[155/266] libaom-0:3.15.2-1.fc44.x86_64 100% |   2.3 MiB/s |   1.9 MiB |  00m01s
+[156/266] openjpeg-0:2.5.4-5.fc44.x86_6 100% |   2.3 MiB/s | 196.8 KiB |  00m00s
+[157/266] polkit-pkla-compat-0:0.1-32.f 100% | 270.3 KiB/s |  43.8 KiB |  00m00s
+[158/266] pipewire-0:1.6.11-1.fc44.x86_ 100% |   2.1 MiB/s | 141.4 KiB |  00m00s
+[159/266] rtkit-0:0.11-70.fc44.x86_64   100% | 273.7 KiB/s |  55.3 KiB |  00m00s
+[160/266] adwaita-mono-fonts-0:50.0-1.f 100% | 945.5 KiB/s |   1.4 MiB |  00m02s
+[161/266] adwaita-sans-fonts-0:50.0-1.f 100% | 590.2 KiB/s | 764.9 KiB |  00m01s
+[162/266] localsearch-0:3.11.2-1.fc44.x 100% | 589.1 KiB/s | 887.2 KiB |  00m02s
+[163/266] openh264-0:2.6.0-3.fc44.x86_6 100% |  82.6 KiB/s | 435.0 KiB |  00m05s
+[164/266] llvm-libs-0:22.1.8-4.fc44.x86 100% |   1.5 MiB/s |  34.1 MiB |  00m23s
+[165/266] libcue-0:2.3.0-14.fc44.x86_64 100% | 120.0 KiB/s |  35.4 KiB |  00m00s
+[166/266] exempi-0:2.6.4-9.fc44.x86_64  100% | 700.7 KiB/s | 611.0 KiB |  00m01s
+[167/266] libgxps-0:0.3.2-12.fc44.x86_6 100% | 381.8 KiB/s |  78.6 KiB |  00m00s
+[168/266] libosinfo-0:1.12.0-5.fc44.x86 100% |   1.6 MiB/s | 317.4 KiB |  00m00s
+[169/266] libzip-0:1.11.4-3.fc44.x86_64 100% |   1.5 MiB/s |  74.9 KiB |  00m00s
+[170/266] poppler-glib-0:26.01.0-3.fc44 100% |   3.4 MiB/s | 216.2 KiB |  00m00s
+[171/266] osinfo-db-0:20251212-1.fc44.n 100% |   2.6 MiB/s | 491.0 KiB |  00m00s
+[172/266] libxslt-0:1.1.43-6.fc44.x86_6 100% | 837.9 KiB/s | 192.7 KiB |  00m00s
+[173/266] gpgmepp-0:2.0.1-3.fc44.x86_64 100% | 713.7 KiB/s | 149.2 KiB |  00m00s
+[174/266] poppler-0:26.01.0-3.fc44.x86_ 100% |   5.2 MiB/s |   1.4 MiB |  00m00s
+[175/266] libcanberra-gtk3-0:0.30-39.fc 100% | 241.7 KiB/s |  30.5 KiB |  00m00s
+[176/266] libcanberra-0:0.30-39.fc44.x8 100% |   3.6 MiB/s |  88.0 KiB |  00m00s
+[177/266] sound-theme-freedesktop-0:0.8 100% |   7.0 MiB/s | 382.5 KiB |  00m00s
+[178/266] dconf-0:0.49.0-5.fc44.x86_64  100% |   2.9 MiB/s | 113.3 KiB |  00m00s
+[179/266] osinfo-db-tools-0:1.12.0-5.fc 100% |  71.6 KiB/s |  74.4 KiB |  00m01s
+[180/266] libheif-ffmpeg-0:1.23.7-1.fc4 100% | 813.7 KiB/s |  27.7 KiB |  00m00s
+[181/266] gobject-introspection-0:1.86. 100% |   3.3 MiB/s | 122.7 KiB |  00m00s
+[182/266] tinysparql-0:3.11.1-1.fc44.x8 100% |   1.3 MiB/s |   1.0 MiB |  00m01s
+[183/266] nspr-0:4.39.0-7.fc44.x86_64   100% | 389.2 KiB/s | 144.4 KiB |  00m00s
+[184/266] nss-softokn-0:3.131.0-1.fc44. 100% |   1.6 MiB/s | 449.4 KiB |  00m00s
+[185/266] poppler-data-0:0.4.11-11.fc44 100% |   1.4 MiB/s |   2.0 MiB |  00m01s
+[186/266] nss-util-0:3.131.0-1.fc44.x86 100% | 583.3 KiB/s |  91.6 KiB |  00m00s
+[187/266] nss-sysinit-0:3.131.0-1.fc44. 100% | 652.3 KiB/s |  20.2 KiB |  00m00s
+[188/266] giflib-0:6.1.3-2.fc44.x86_64  100% |   1.3 MiB/s |  55.7 KiB |  00m00s
+[189/266] nss-0:3.131.0-1.fc44.x86_64   100% |   1.0 MiB/s | 765.1 KiB |  00m01s
+[190/266] nss-softokn-freebl-0:3.131.0- 100% | 533.3 KiB/s | 390.9 KiB |  00m01s
+[191/266] libavutil-free-0:8.1.3-2.fc44 100% |   1.3 MiB/s | 381.1 KiB |  00m00s
+[192/266] libsmbclient-2:4.24.0-6.fc44. 100% |   1.8 MiB/s |  82.6 KiB |  00m00s
+[193/266] game-music-emu-0:0.6.4-3.fc44 100% | 911.3 KiB/s | 172.2 KiB |  00m00s
+[194/266] libbluray-0:1.4.0-3.fc44.x86_ 100% |   1.4 MiB/s | 149.5 KiB |  00m00s
+[195/266] libchromaprint-0:1.6.0-4.fc44 100% | 240.5 KiB/s |  44.0 KiB |  00m00s
+[196/266] libdvdnav-0:7.0.0-1.fc44.x86_ 100% | 393.8 KiB/s |  58.7 KiB |  00m00s
+[197/266] libdvdread-0:7.0.1-1.fc44.x86 100% |   1.2 MiB/s |  82.1 KiB |  00m00s
+[198/266] libmodplug-1:0.8.9.0-29.fc44. 100% | 527.0 KiB/s | 182.9 KiB |  00m00s
+[199/266] librist-0:0.2.11-1.fc44.x86_6 100% |   1.1 MiB/s |  88.2 KiB |  00m00s
+[200/266] libavformat-free-0:8.1.3-2.fc 100% | 589.2 KiB/s |   1.2 MiB |  00m02s
+[201/266] libswresample-free-0:8.1.3-2. 100% | 437.8 KiB/s |  70.5 KiB |  00m00s
+[202/266] aribb24-0:1.0.3^20160216git5e 100% |   1.2 MiB/s |  40.5 KiB |  00m00s
+[203/266] codec2-0:1.2.0-9.fc44.x86_64  100% |   3.0 MiB/s | 644.3 KiB |  00m00s
+[204/266] ilbc-0:3.0.4-19.fc44.x86_64   100% |   2.7 MiB/s |  57.2 KiB |  00m00s
+[205/266] libavcodec-free-0:8.1.3-2.fc4 100% |   1.9 MiB/s |   4.5 MiB |  00m02s
+[206/266] libaribcaption-0:1.1.1-4.fc44 100% | 696.2 KiB/s | 117.7 KiB |  00m00s
+[207/266] libva-0:2.23.0-3.fc44.x86_64  100% | 726.2 KiB/s | 121.3 KiB |  00m00s
+[208/266] openapv-libs-0:0.2.1.2-1.fc44 100% |   3.0 MiB/s |  68.1 KiB |  00m00s
+[209/266] zeromq-0:4.3.5-22.fc43.x86_64 100% | 515.1 KiB/s | 468.2 KiB |  00m01s
+[210/266] opencore-amr-0:0.1.6-10.fc44. 100% |   1.1 MiB/s | 183.4 KiB |  00m00s
+[211/266] snappy-0:1.2.2-4.fc44.x86_64  100% | 317.9 KiB/s |  43.2 KiB |  00m00s
+[212/266] speex-0:1.2.0-21.fc44.x86_64  100% |   2.3 MiB/s |  71.6 KiB |  00m00s
+[213/266] libvpx-0:1.15.0-5.fc44.x86_64 100% |   4.4 MiB/s |   1.2 MiB |  00m00s
+[214/266] vo-amrwbenc-0:0.1.3-24.fc44.x 100% |   3.3 MiB/s |  85.0 KiB |  00m00s
+[215/266] xevd-libs-0:0.5.0-6.fc44.x86_ 100% |   4.7 MiB/s | 169.6 KiB |  00m00s
+[216/266] twolame-libs-0:0.4.0-9.fc44.x 100% | 980.0 KiB/s |  68.6 KiB |  00m00s
+[217/266] libvdpau-0:1.5-11.fc44.x86_64 100% | 131.9 KiB/s |  16.5 KiB |  00m00s
+[218/266] xeve-libs-0:0.5.1-6.fc44.x86_ 100% |   1.6 MiB/s | 283.9 KiB |  00m00s
+[219/266] samba-common-2:4.24.0-6.fc44. 100% |   4.1 MiB/s | 182.4 KiB |  00m00s
+[220/266] xvidcore-0:1.3.7-19.fc44.x86_ 100% | 697.1 KiB/s | 267.0 KiB |  00m00s
+[221/266] samba-core-libs-2:4.24.0-6.fc 100% |   2.3 MiB/s | 513.1 KiB |  00m00s
+[222/266] libudfread-0:1.2.0-3.fc44.x86 100% |   1.5 MiB/s |  34.7 KiB |  00m00s
+[223/266] openpgm-0:5.3.128-6.fc44.x86_ 100% |   1.1 MiB/s | 184.9 KiB |  00m00s
+[224/266] soxr-0:0.1.3-21.fc44.x86_64   100% |   2.6 MiB/s |  88.2 KiB |  00m00s
+[225/266] samba-client-libs-2:4.24.0-6. 100% |   3.3 MiB/s |   3.2 MiB |  00m01s
+[226/266] ngtcp2-crypto-gnutls-0:1.21.0 100% | 183.8 KiB/s |  24.4 KiB |  00m00s
+[227/266] libwbclient-2:4.24.0-6.fc44.x 100% |   2.3 MiB/s |  49.4 KiB |  00m00s
+[228/266] cjson-0:1.7.19-1.fc44.x86_64  100% | 836.0 KiB/s |  32.6 KiB |  00m00s
+[229/266] libgexiv2-0:0.16.2-1.fc44.x86 100% | 644.3 KiB/s | 101.8 KiB |  00m00s
+[230/266] samba-ndr-libs-2:4.24.0-6.fc4 100% | 823.0 KiB/s |   1.3 MiB |  00m02s
+[231/266] libgsf-0:1.14.60-1.fc44.x86_6 100% | 526.2 KiB/s | 272.0 KiB |  00m01s
+[232/266] uchardet-0:0.0.8-10.fc44.x86_ 100% | 602.9 KiB/s | 106.7 KiB |  00m00s
+[233/266] upower-libs-0:1.91.5-1.fc44.x 100% |   1.1 MiB/s |  60.3 KiB |  00m00s
+[234/266] totem-pl-parser-0:3.26.7-1.fc 100% | 237.3 KiB/s | 148.1 KiB |  00m01s
+[235/266] inih-cpp-0:62-2.fc44.x86_64   100% | 756.9 KiB/s |  25.0 KiB |  00m00s
+[236/266] exiv2-libs-0:0.28.9-1.fc44.x8 100% | 905.7 KiB/s | 940.1 KiB |  00m01s
+[237/266] libvpl-1:2.17.0-1.fc44.x86_64 100% | 264.9 KiB/s | 166.9 KiB |  00m01s
+[238/266] librabbitmq-0:0.18.1-1.fc44.x 100% | 985.7 KiB/s |  44.4 KiB |  00m00s
+[239/266] srt-libs-0:1.5.7-1.fc44.x86_6 100% | 943.5 KiB/s | 429.3 KiB |  00m00s
+[240/266] libopenmpt-0:0.8.10-1.fc44.x8 100% |   1.5 MiB/s | 810.5 KiB |  00m01s
+[241/266] lpcnetfreedv-0:0.5-10.fc44.x8 100% |   2.2 MiB/s |   7.3 MiB |  00m03s
+[242/266] libsodium-0:1.0.22-1.fc44.x86 100% | 937.4 KiB/s | 210.0 KiB |  00m00s
+[243/266] zvbi-0:0.2.46-1.fc44.x86_64   100% |   1.3 MiB/s | 443.6 KiB |  00m00s
+[244/266] pipewire-alsa-0:1.6.11-1.fc44 100% |   1.4 MiB/s |  64.1 KiB |  00m00s
+[245/266] pipewire-jack-audio-connectio 100% | 427.2 KiB/s |  12.0 KiB |  00m00s
+[246/266] wireplumber-0:0.5.19-1.fc44.x 100% | 427.4 KiB/s | 144.5 KiB |  00m00s
+[247/266] wireplumber-libs-0:0.5.19-1.f 100% |   1.4 MiB/s | 472.8 KiB |  00m00s
+[248/266] pipewire-plugin-libcamera-0:1 100% |   1.8 MiB/s |  75.4 KiB |  00m00s
+[249/266] pipewire-pulseaudio-0:1.6.11- 100% |   1.0 MiB/s | 220.8 KiB |  00m00s
+[250/266] logrotate-0:3.22.0-5.fc44.x86 100% | 432.9 KiB/s |  77.1 KiB |  00m00s
+[251/266] pipewire-jack-audio-connectio 100% | 349.3 KiB/s | 151.2 KiB |  00m00s
+[252/266] upower-0:1.91.5-1.fc44.x86_64 100% |   1.8 MiB/s | 134.9 KiB |  00m00s
+[253/266] exiv2-0:0.28.9-1.fc44.x86_64  100% |   2.2 MiB/s |   2.0 MiB |  00m01s
+[254/266] libimobiledevice-0:1.4.0-3.fc 100% | 142.1 KiB/s | 148.2 KiB |  00m01s
+[255/266] libplist-0:2.7.0-1.fc44.x86_6 100% | 499.5 KiB/s | 100.4 KiB |  00m00s
+[256/266] intel-vpl-gpu-rt-0:26.3.4-1.f 100% |   1.5 MiB/s |   3.7 MiB |  00m02s
+[257/266] libglvnd-gles-1:1.7.0-9.fc44. 100% | 174.4 KiB/s |  28.6 KiB |  00m00s
+[258/266] libcamera-0:0.7.2-2.fc44.x86_ 100% |   1.5 MiB/s | 744.9 KiB |  00m01s
+[259/266] libyuv-0:0-0.61.20260213git60 100% | 960.2 KiB/s | 209.3 KiB |  00m00s
+[260/266] libimobiledevice-glue-0:1.3.2 100% |   1.2 MiB/s |  55.8 KiB |  00m00s
+[261/266] lttng-ust-0:2.14.0-5.fc44.x86 100% |   1.5 MiB/s | 376.3 KiB |  00m00s
+[262/266] libusbmuxd-0:2.1.1-1.fc44.x86 100% | 216.5 KiB/s |  37.4 KiB |  00m00s
+[263/266] usbmuxd-0:1.1.1^20251205git3d 100% | 461.3 KiB/s |  68.3 KiB |  00m00s
+[264/266] expat-0:2.9.0-1.fc44.x86_64   100% |   1.7 MiB/s | 136.0 KiB |  00m00s
+[265/266] libcamera-ipa-0:0.7.2-2.fc44. 100% | 878.8 KiB/s | 182.8 KiB |  00m00s
+[266/266] intel-mediasdk-0:23.2.2-11.fc 100% | 902.3 KiB/s |   3.1 MiB |  00m04s
+--------------------------------------------------------------------------------
+[266/266] Total                         100% |   3.5 MiB/s | 172.3 MiB |  00m50s
+Running transaction
+Importing OpenPGP key 0x6D9F90A6:
+ UserID     : "Fedora (44) <fedora-44-primary@fedoraproject.org>"
+ Fingerprint: 36F612DCF27F7D1A48A835E4DBFCF71C6D9F90A6
+ From       : file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-44-x86_64
+The key was successfully imported.
+[  1/270] Verify package files          100% | 405.0   B/s | 267.0   B |  00m01s
+[  2/270] Prepare transaction           100% |   1.8 KiB/s | 268.0   B |  00m00s
+[  3/270] Installing libjpeg-turbo-0:3. 100% |  22.2 MiB/s | 819.9 KiB |  00m00s
+[  4/270] Upgrading expat-0:2.9.0-1.fc4 100% |  10.7 MiB/s | 351.7 KiB |  00m00s
+[  5/270] Installing avahi-libs-0:0.9~r 100% |  11.8 MiB/s | 181.8 KiB |  00m00s
+[  6/270] Installing nspr-0:4.39.0-7.fc 100% |  21.4 MiB/s | 328.9 KiB |  00m00s
+[  7/270] Installing libX11-xcb-0:1.8.1 100% |   1.0 MiB/s |  11.6 KiB |  00m00s
+[  8/270] Installing libogg-2:1.3.6-2.f 100% |   3.5 MiB/s |  47.1 KiB |  00m00s
+[  9/270] Installing libvorbis-1:1.3.7- 100% |  45.5 MiB/s | 839.6 KiB |  00m00s
+[ 10/270] Installing json-glib-0:1.10.8 100% |  14.9 MiB/s | 608.3 KiB |  00m00s
+[ 11/270] Installing libplist-0:2.7.0-1 100% |   9.1 MiB/s | 251.4 KiB |  00m00s
+[ 12/270] Installing libwayland-client- 100% |   4.7 MiB/s |  67.2 KiB |  00m00s
+[ 13/270] Installing lcms2-0:2.16-7.fc4 100% |  29.1 MiB/s | 447.3 KiB |  00m00s
+[ 14/270] Installing gstreamer1-0:1.28. 100% |  62.9 MiB/s |   5.5 MiB |  00m00s
+[ 15/270] Installing fonts-filesystem-1 100% |  77.0 KiB/s | 788.0   B |  00m00s
+[ 16/270] Installing nss-util-0:3.131.0 100% |   1.7 MiB/s | 213.7 KiB |  00m00s
+>>> Running sysusers scriptlet: samba-common-2:4.24.0-6.fc44.noarch
+>>> Finished sysusers scriptlet: samba-common-2:4.24.0-6.fc44.noarch
+>>> Scriptlet output:
+>>> Creating group 'printadmin' with GID 991.
+>>> 
+[ 17/270] Installing samba-common-2:4.2 100% |   4.7 MiB/s | 206.3 KiB |  00m00s
+[ 18/270] Installing libwebp-0:1.6.0-3. 100% |  45.2 MiB/s | 972.1 KiB |  00m00s
+[ 19/270] Installing alsa-lib-0:1.2.16. 100% |  18.6 MiB/s |   1.5 MiB |  00m00s
+[ 20/270] Installing opus-0:1.6-2.fc44. 100% |  20.8 MiB/s | 468.8 KiB |  00m00s
+[ 21/270] Installing libimobiledevice-g 100% |   8.1 MiB/s | 124.8 KiB |  00m00s
+[ 22/270] Installing avahi-glib-0:0.9~r 100% |   2.0 MiB/s |  20.3 KiB |  00m00s
+[ 23/270] Installing libvpl-1:2.17.0-1. 100% |  22.6 MiB/s | 439.6 KiB |  00m00s
+[ 24/270] Installing gobject-introspect 100% |  21.8 MiB/s | 401.5 KiB |  00m00s
+[ 25/270] Installing openjpeg-0:2.5.4-5 100% |  26.8 MiB/s | 466.2 KiB |  00m00s
+[ 26/270] Installing libdav1d-0:1.5.4-1 100% |  80.0 MiB/s |   1.8 MiB |  00m00s
+[ 27/270] Installing libicu-0:77.1-3.fc 100% | 150.1 MiB/s |  36.6 MiB |  00m00s
+[ 28/270] Installing samba-core-libs-2: 100% |  60.0 MiB/s |   1.7 MiB |  00m00s
+[ 29/270] Installing hwdata-0:0.412-1.f 100% | 187.0 MiB/s |  10.1 MiB |  00m00s
+[ 30/270] Installing libglvnd-1:1.7.0-9 100% |  34.4 MiB/s | 527.8 KiB |  00m00s
+[ 31/270] Installing pixman-0:0.46.2-3. 100% |  46.8 MiB/s | 719.3 KiB |  00m00s
+[ 32/270] Installing libgudev-0:238-9.f 100% |   7.0 MiB/s |  93.2 KiB |  00m00s
+[ 33/270] Installing libXau-0:1.0.12-4. 100% |   5.6 MiB/s |  74.3 KiB |  00m00s
+[ 34/270] Installing libxcb-0:1.17.0-7. 100% |  33.7 MiB/s |   1.1 MiB |  00m00s
+[ 35/270] Installing polkit-libs-0:127- 100% |  11.4 MiB/s | 222.2 KiB |  00m00s
+[ 36/270] Installing samba-ndr-libs-2:4 100% |  45.0 MiB/s |   4.7 MiB |  00m00s
+[ 37/270] Installing upower-libs-0:1.91 100% |  11.7 MiB/s | 180.0 KiB |  00m00s
+[ 38/270] Installing libwayland-cursor- 100% |   2.7 MiB/s |  38.3 KiB |  00m00s
+[ 39/270] Installing libtheora-1:1.1.1- 100% |  16.9 MiB/s | 483.3 KiB |  00m00s
+[ 40/270] Installing libwbclient-2:4.24 100% |   5.0 MiB/s |  71.9 KiB |  00m00s
+[ 41/270] Installing libdvdread-0:7.0.1 100% |  13.8 MiB/s | 183.7 KiB |  00m00s
+[ 42/270] Installing openh264-0:2.6.0-3 100% |  53.1 MiB/s |   1.1 MiB |  00m00s
+[ 43/270] Installing svt-av1-libs-0:3.1 100% | 130.5 MiB/s |   5.6 MiB |  00m00s
+[ 44/270] Installing rav1e-libs-0:0.8.1 100% |  83.3 MiB/s |   3.1 MiB |  00m00s
+[ 45/270] Installing libwayland-egl-0:1 100% | 789.8 KiB/s |  13.4 KiB |  00m00s
+[ 46/270] Installing mpg123-libs-0:1.32 100% |  33.7 MiB/s | 828.3 KiB |  00m00s
+[ 47/270] Installing lame-libs-0:3.100- 100% |  52.3 MiB/s |   1.2 MiB |  00m00s
+[ 48/270] Installing gsm-0:1.0.24-2.fc4 100% |   5.1 MiB/s |  67.3 KiB |  00m00s
+[ 49/270] Installing liblc3-0:1.1.3-7.f 100% |  14.3 MiB/s | 175.7 KiB |  00m00s
+[ 50/270] Installing fdk-aac-free-0:2.0 100% |  38.4 MiB/s | 629.8 KiB |  00m00s
+[ 51/270] Installing libunwind-0:1.8.3- 100% |  12.0 MiB/s | 197.3 KiB |  00m00s
+[ 52/270] Installing mesa-filesystem-0: 100% | 429.3 KiB/s |   4.3 KiB |  00m00s
+[ 53/270] Installing gsettings-desktop- 100% |  95.8 MiB/s |   6.1 MiB |  00m00s
+[ 54/270] Installing shared-mime-info-0 100% |  39.3 MiB/s |   2.6 MiB |  00m00s
+[ 55/270] Installing fribidi-0:1.0.16-4 100% |   7.0 MiB/s | 192.5 KiB |  00m00s
+[ 56/270] Installing libICE-0:1.1.2-4.f 100% |  13.0 MiB/s | 199.7 KiB |  00m00s
+[ 57/270] Installing duktape-0:2.7.0-11 100% |   2.0 MiB/s | 625.6 KiB |  00m00s
+>>> Running sysusers scriptlet: polkit-0:127-2.fc44.2.x86_64
+>>> Finished sysusers scriptlet: polkit-0:127-2.fc44.2.x86_64
+>>> Scriptlet output:
+>>> Creating group 'polkitd' with GID 114.
+>>> Creating user 'polkitd' (User for polkitd) with UID 114 and GID 114.
+>>> 
+[ 58/270] Installing polkit-0:127-2.fc4 100% |   4.2 MiB/s | 504.9 KiB |  00m00s
+[ 59/270] Installing xml-common-0:0.6.3 100% |   1.5 MiB/s |  81.1 KiB |  00m00s
+[ 60/270] Installing iso-codes-0:4.20.1 100% |  40.1 MiB/s |  22.5 MiB |  00m01s
+>>> Running sysusers scriptlet: rtkit-0:0.11-70.fc44.x86_64
+>>> Finished sysusers scriptlet: rtkit-0:0.11-70.fc44.x86_64
+>>> Scriptlet output:
+>>> Creating group 'rtkit' with GID 990.
+>>> Creating user 'rtkit' (RealtimeKit) with UID 990 and GID 990.
+>>> 
+[ 61/270] Installing rtkit-0:0.11-70.fc 100% |   2.1 MiB/s | 140.9 KiB |  00m00s
+>>> Running %post scriptlet: rtkit-0:0.11-70.fc44.x86_64
+>>> Finished %post scriptlet: rtkit-0:0.11-70.fc44.x86_64
+>>> Scriptlet output:
+>>> Created symlink '/etc/systemd/system/graphical.target.wants/rtkit-daemon.service' → '/usr/lib/systemd/system/rtkit-daemon.service'.
+>>> 
+[ 62/270] Installing libproxy-0:0.5.12- 100% |   6.8 MiB/s | 104.4 KiB |  00m00s
+[ 63/270] Installing glib-networking-0: 100% |  17.8 MiB/s | 765.3 KiB |  00m00s
+[ 64/270] Installing libsoup3-0:3.6.6-1 100% |  28.4 MiB/s |   1.2 MiB |  00m00s
+[ 65/270] Installing osinfo-db-tools-0: 100% |   4.6 MiB/s | 196.5 KiB |  00m00s
+[ 66/270] Installing libSM-0:1.2.5-4.fc 100% |   6.2 MiB/s | 102.2 KiB |  00m00s
+[ 67/270] Installing libopenmpt-0:0.8.1 100% |  85.0 MiB/s |   1.9 MiB |  00m00s
+[ 68/270] Installing libdvdnav-0:7.0.0- 100% |   9.5 MiB/s | 126.5 KiB |  00m00s
+[ 69/270] Installing libxkbcommon-x11-0 100% |   2.0 MiB/s |  36.3 KiB |  00m00s
+[ 70/270] Installing libpciaccess-0:0.1 100% |   2.2 MiB/s |  49.8 KiB |  00m00s
+[ 71/270] Installing libdrm-0:2.4.134-1 100% |  10.8 MiB/s | 409.7 KiB |  00m00s
+[ 72/270] Installing osinfo-db-0:202512 100% |  16.4 MiB/s |   4.4 MiB |  00m00s
+[ 73/270] Installing libusbmuxd-0:2.1.1 100% |   5.8 MiB/s |  76.7 KiB |  00m00s
+[ 74/270] Installing libimobiledevice-0 100% |  18.7 MiB/s | 326.2 KiB |  00m00s
+[ 75/270] Installing nss-softokn-freebl 100% |  53.5 MiB/s |   1.1 MiB |  00m00s
+[ 76/270] Installing nss-softokn-0:3.13 100% |  82.9 MiB/s |   2.1 MiB |  00m00s
+[ 77/270] Installing nss-sysinit-0:3.13 100% | 762.7 KiB/s |  19.1 KiB |  00m00s
+[ 78/270] Installing nss-0:3.131.0-1.fc 100% |  49.8 MiB/s |   2.0 MiB |  00m00s
+[ 79/270] Installing abattis-cantarell- 100% |  11.9 MiB/s | 194.4 KiB |  00m00s
+[ 80/270] Installing libgusb-0:0.4.9-5. 100% |  11.1 MiB/s | 159.6 KiB |  00m00s
+[ 81/270] Installing colord-libs-0:1.4. 100% |  40.7 MiB/s | 833.4 KiB |  00m00s
+[ 82/270] Installing flac-libs-0:1.5.0- 100% |  32.4 MiB/s | 630.1 KiB |  00m00s
+[ 83/270] Installing libsndfile-0:1.2.2 100% |  28.5 MiB/s | 555.4 KiB |  00m00s
+[ 84/270] Installing exempi-0:2.6.4-9.f 100% |  40.0 MiB/s |   1.4 MiB |  00m00s
+[ 85/270] Installing libyuv-0:0-0.61.20 100% |  39.4 MiB/s | 685.3 KiB |  00m00s
+[ 86/270] Installing lttng-ust-0:2.14.0 100% |  24.8 MiB/s |   1.3 MiB |  00m00s
+[ 87/270] Installing libsodium-0:1.0.22 100% |  16.3 MiB/s | 482.6 KiB |  00m00s
+[ 88/270] Installing zvbi-0:0.2.46-1.fc 100% |   8.1 MiB/s |   1.2 MiB |  00m00s
+[ 89/270] Installing srt-libs-0:1.5.7-1 100% |  52.7 MiB/s |   1.1 MiB |  00m00s
+[ 90/270] Installing librabbitmq-0:0.18 100% |   6.8 MiB/s |  90.6 KiB |  00m00s
+[ 91/270] Installing inih-cpp-0:62-2.fc 100% |   3.1 MiB/s |  40.7 KiB |  00m00s
+[ 92/270] Installing exiv2-libs-0:0.28. 100% |  85.8 MiB/s |   2.9 MiB |  00m00s
+[ 93/270] Installing libgexiv2-0:0.16.2 100% |  14.6 MiB/s | 270.0 KiB |  00m00s
+[ 94/270] Installing uchardet-0:0.0.8-1 100% |   8.5 MiB/s | 277.4 KiB |  00m00s
+[ 95/270] Installing totem-pl-parser-0: 100% |   7.1 MiB/s | 334.7 KiB |  00m00s
+[ 96/270] Installing cjson-0:1.7.19-1.f 100% |   5.6 MiB/s |  69.2 KiB |  00m00s
+[ 97/270] Installing librist-0:0.2.11-1 100% |  12.0 MiB/s | 183.6 KiB |  00m00s
+[ 98/270] Installing ngtcp2-crypto-gnut 100% |   3.0 MiB/s |  40.4 KiB |  00m00s
+[ 99/270] Installing samba-client-libs- 100% | 109.8 MiB/s |  11.2 MiB |  00m00s
+[100/270] Installing libsmbclient-2:4.2 100% |  12.0 MiB/s | 172.3 KiB |  00m00s
+[101/270] Installing lpcnetfreedv-0:0.5 100% | 174.4 MiB/s |  14.8 MiB |  00m00s
+[102/270] Installing codec2-0:1.2.0-9.f 100% |  56.9 MiB/s |   1.4 MiB |  00m00s
+[103/270] Installing soxr-0:0.1.3-21.fc 100% |  12.6 MiB/s | 193.3 KiB |  00m00s
+[104/270] Installing openpgm-0:5.3.128- 100% |  13.7 MiB/s | 321.7 KiB |  00m00s
+[105/270] Installing zeromq-0:4.3.5-22. 100% |  13.6 MiB/s | 906.6 KiB |  00m00s
+[106/270] Installing libudfread-0:1.2.0 100% |   2.1 MiB/s |  63.4 KiB |  00m00s
+[107/270] Installing xvidcore-0:1.3.7-1 100% |  15.6 MiB/s | 879.9 KiB |  00m00s
+[108/270] Installing xeve-libs-0:0.5.1- 100% |  49.1 MiB/s | 905.9 KiB |  00m00s
+[109/270] Installing xevd-libs-0:0.5.0- 100% |  26.6 MiB/s | 381.1 KiB |  00m00s
+[110/270] Installing vo-amrwbenc-0:0.1. 100% |  12.0 MiB/s | 159.3 KiB |  00m00s
+[111/270] Installing twolame-libs-0:0.4 100% |  11.3 MiB/s | 162.5 KiB |  00m00s
+[112/270] Installing speex-0:1.2.0-21.f 100% |   8.5 MiB/s | 130.3 KiB |  00m00s
+[113/270] Installing snappy-0:1.2.2-4.f 100% |   5.0 MiB/s |  81.6 KiB |  00m00s
+[114/270] Installing opencore-amr-0:0.1 100% |  23.1 MiB/s | 355.1 KiB |  00m00s
+[115/270] Installing openapv-libs-0:0.2 100% |   2.4 MiB/s | 126.5 KiB |  00m00s
+[116/270] Installing libvpx-0:1.15.0-5. 100% | 113.5 MiB/s |   3.3 MiB |  00m00s
+[117/270] Installing ilbc-0:3.0.4-19.fc 100% |   6.5 MiB/s |  92.8 KiB |  00m00s
+[118/270] Installing aribb24-0:1.0.3^20 100% |   5.9 MiB/s |  84.4 KiB |  00m00s
+[119/270] Installing libmodplug-1:0.8.9 100% |  24.0 MiB/s | 369.0 KiB |  00m00s
+[120/270] Installing game-music-emu-0:0 100% |  23.5 MiB/s | 361.5 KiB |  00m00s
+[121/270] Installing giflib-0:6.1.3-2.f 100% |   9.3 MiB/s | 123.8 KiB |  00m00s
+[122/270] Installing sound-theme-freede 100% |  12.0 MiB/s | 467.2 KiB |  00m00s
+[123/270] Installing poppler-data-0:0.4 100% |  71.2 MiB/s |  12.4 MiB |  00m00s
+[124/270] Installing gpgmepp-0:2.0.1-3. 100% |  27.0 MiB/s | 442.5 KiB |  00m00s
+[125/270] Installing libxslt-0:1.1.43-6 100% |  14.1 MiB/s | 474.9 KiB |  00m00s
+[126/270] Installing libosinfo-0:1.12.0 100% |  28.7 MiB/s |   1.2 MiB |  00m00s
+[127/270] Installing libzip-0:1.11.4-3. 100% |  10.1 MiB/s | 144.9 KiB |  00m00s
+[128/270] Installing libcue-0:2.3.0-14. 100% |   5.3 MiB/s |  87.2 KiB |  00m00s
+[129/270] Installing libvmaf-0:3.0.0-5. 100% |  46.0 MiB/s | 848.2 KiB |  00m00s
+[130/270] Installing libaom-0:3.15.2-1. 100% | 127.6 MiB/s |   5.4 MiB |  00m00s
+[131/270] Installing highway-0:1.3.0-2. 100% | 138.4 MiB/s |   5.5 MiB |  00m00s
+[132/270] Installing libjxl-1:0.11.2-1. 100% |  91.5 MiB/s |   4.1 MiB |  00m00s
+[133/270] Installing libopenjph-0:0.25. 100% |  31.5 MiB/s | 483.3 KiB |  00m00s
+[134/270] Installing libheif-0:1.23.7-1 100% |  53.1 MiB/s |   2.4 MiB |  00m00s
+[135/270] Installing bubblewrap-0:0.12. 100% |   5.0 MiB/s | 142.1 KiB |  00m00s
+[136/270] Installing liblerc-0:4.3.0-1. 100% |  32.4 MiB/s | 662.7 KiB |  00m00s
+[137/270] Installing libasyncns-0:0.8-3 100% | 916.0 KiB/s |  56.8 KiB |  00m00s
+[138/270] Installing pulseaudio-libs-0: 100% |  59.6 MiB/s |   3.4 MiB |  00m00s
+[139/270] Installing libcanberra-0:0.30 100% |   4.3 MiB/s | 270.5 KiB |  00m00s
+[140/270] Installing jbigkit-libs-0:2.1 100% |   8.3 MiB/s | 119.2 KiB |  00m00s
+[141/270] Installing libtiff-0:4.7.2-3. 100% |  35.3 MiB/s | 650.8 KiB |  00m00s
+[142/270] Installing spandsp-0:0.0.6-22 100% |  46.6 MiB/s | 858.4 KiB |  00m00s
+[143/270] Installing libstemmer-0:3.0.1 100% |  39.2 MiB/s | 642.7 KiB |  00m00s
+[144/270] Installing libtinysparql-0:3. 100% |  45.8 MiB/s |   1.0 MiB |  00m00s
+[145/270] Installing libcloudproviders- 100% |   9.5 MiB/s | 125.9 KiB |  00m00s
+[146/270] Installing cups-filesystem-1: 100% | 148.4 KiB/s |   1.8 KiB |  00m00s
+[147/270] Installing cups-libs-1:2.4.19 100% |  38.8 MiB/s | 636.2 KiB |  00m00s
+[148/270] Installing llvm-filesystem-0: 100% |  88.5 KiB/s |   1.1 KiB |  00m00s
+[149/270] Installing llvm-libs-0:22.1.8 100% | 183.1 MiB/s | 140.5 MiB |  00m01s
+[150/270] Installing bluez-libs-0:5.87+ 100% |  15.3 MiB/s | 203.4 KiB |  00m00s
+[151/270] Installing abseil-cpp-0:20260 100% |  23.8 MiB/s |   2.6 MiB |  00m00s
+[152/270] Installing webrtc-audio-proce 100% |  30.5 MiB/s |   1.1 MiB |  00m00s
+[153/270] Installing libsbc-0:2.1-2.fc4 100% |   2.8 MiB/s |  94.4 KiB |  00m00s
+[154/270] Installing libldac-0:2.0.2.3- 100% | 908.6 KiB/s |  80.0 KiB |  00m00s
+[155/270] Installing libebur128-0:1.2.6 100% |   1.0 MiB/s |  40.6 KiB |  00m00s
+[156/270] Installing fftw-libs-single-0 100% |  23.3 MiB/s |   3.6 MiB |  00m00s
+[157/270] Installing pipewire-libs-0:1. 100% |  33.4 MiB/s |   9.8 MiB |  00m00s
+[158/270] Installing wireplumber-libs-0 100% |  30.3 MiB/s |   1.5 MiB |  00m00s
+[159/270] Installing wireplumber-0:0.5. 100% |  10.8 MiB/s | 533.2 KiB |  00m00s
+[160/270] Installing pipewire-jack-audi 100% |  17.6 MiB/s | 522.9 KiB |  00m00s
+[161/270] Installing pipewire-jack-audi 100% |  30.5 KiB/s | 312.0   B |  00m00s
+[162/270] Installing ModemManager-glib- 100% |  80.1 MiB/s |   1.5 MiB |  00m00s
+[163/270] Installing libfontenc-0:1.1.8 100% |   6.1 MiB/s |  68.2 KiB |  00m00s
+[164/270] Installing libXfont2-0:2.0.9- 100% |  20.8 MiB/s | 319.5 KiB |  00m00s
+[165/270] Installing spirv-tools-libs-0 100% | 141.8 MiB/s |   6.1 MiB |  00m00s
+[166/270] Installing lm_sensors-libs-0: 100% |   7.1 MiB/s |  86.8 KiB |  00m00s
+[167/270] Installing libxshmfence-0:1.3 100% |   1.3 MiB/s |  13.4 KiB |  00m00s
+[168/270] Installing mesa-dri-drivers-0 100% | 143.5 MiB/s |  53.2 MiB |  00m00s
+[169/270] Installing mesa-libgbm-0:26.2 100% | 424.0 KiB/s |  20.4 KiB |  00m00s
+[170/270] Installing adwaita-icon-theme 100% |   4.6 MiB/s |   2.4 MiB |  00m01s
+[171/270] Installing adwaita-cursor-the 100% | 170.6 MiB/s |  11.4 MiB |  00m00s
+[172/270] Installing adwaita-icon-theme 100% |   6.9 MiB/s |   1.3 MiB |  00m00s
+[173/270] Installing libepoxy-0:1.5.10- 100% |  63.9 MiB/s |   1.1 MiB |  00m00s
+[174/270] Installing hicolor-icon-theme 100% |   2.5 MiB/s | 179.7 KiB |  00m00s
+[175/270] Installing libX11-common-0:1. 100% |  18.2 MiB/s |   1.2 MiB |  00m00s
+[176/270] Installing libX11-0:1.8.13-3. 100% |  70.7 MiB/s |   1.3 MiB |  00m00s
+[177/270] Installing libXext-0:1.3.6-5. 100% |   7.4 MiB/s |  91.1 KiB |  00m00s
+[178/270] Installing libXi-0:1.8.3-1.fc 100% |   5.7 MiB/s |  81.6 KiB |  00m00s
+[179/270] Installing libXrender-0:0.9.1 100% |   4.2 MiB/s |  51.2 KiB |  00m00s
+[180/270] Installing libXfixes-0:6.0.1- 100% |   2.7 MiB/s |  35.4 KiB |  00m00s
+[181/270] Installing libXcursor-0:1.2.3 100% |   3.0 MiB/s |  55.0 KiB |  00m00s
+[182/270] Installing libXtst-0:1.2.5-4. 100% |   2.6 MiB/s |  34.5 KiB |  00m00s
+[183/270] Installing libXinerama-0:1.1. 100% |   1.3 MiB/s |  15.9 KiB |  00m00s
+[184/270] Installing mesa-libEGL-0:26.2 100% |  24.4 MiB/s | 399.4 KiB |  00m00s
+[185/270] Installing libglvnd-egl-1:1.7 100% |   4.3 MiB/s |  70.2 KiB |  00m00s
+[186/270] Installing libglvnd-gles-1:1. 100% |   8.1 MiB/s |  99.1 KiB |  00m00s
+[187/270] Installing libcamera-0:0.7.2- 100% |  34.3 MiB/s |   2.2 MiB |  00m00s
+[188/270] Installing libxdo-1:3.2021102 100% |   6.7 MiB/s |  88.7 KiB |  00m00s
+[189/270] Installing libXdamage-0:1.1.6 100% |   3.3 MiB/s |  41.1 KiB |  00m00s
+[190/270] Installing libXrandr-0:1.5.4- 100% |   4.6 MiB/s |  56.9 KiB |  00m00s
+[191/270] Installing libXv-0:1.0.13-4.f 100% |   2.4 MiB/s |  27.1 KiB |  00m00s
+[192/270] Installing libXxf86vm-0:1.1.6 100% |   2.3 MiB/s |  26.4 KiB |  00m00s
+[193/270] Installing mesa-libGL-0:26.2. 100% |  26.2 MiB/s | 375.1 KiB |  00m00s
+[194/270] Installing libglvnd-glx-1:1.7 100% |  36.8 MiB/s | 602.4 KiB |  00m00s
+[195/270] Installing libva-0:2.23.0-3.f 100% |  19.0 MiB/s | 349.6 KiB |  00m00s
+[196/270] Installing libvdpau-0:1.5-11. 100% |   1.6 MiB/s |  22.3 KiB |  00m00s
+[197/270] Installing libavutil-free-0:8 100% |  56.1 MiB/s | 976.5 KiB |  00m00s
+[198/270] Installing libchromaprint-0:1 100% |   4.6 MiB/s |  70.7 KiB |  00m00s
+[199/270] Installing libswresample-free 100% |  11.8 MiB/s | 156.5 KiB |  00m00s
+[200/270] Installing libXt-0:1.3.1-4.fc 100% |  23.8 MiB/s | 438.9 KiB |  00m00s
+[201/270] Installing libXmu-0:1.2.1-5.f 100% |  14.5 MiB/s | 193.0 KiB |  00m00s
+[202/270] Installing xorg-x11-xauth-1:1 100% |   2.2 MiB/s |  53.3 KiB |  00m00s
+[203/270] Installing libXcomposite-0:0. 100% |   2.9 MiB/s |  41.9 KiB |  00m00s
+[204/270] Installing libxkbfile-0:1.1.3 100% |  14.2 MiB/s | 203.0 KiB |  00m00s
+[205/270] Installing xkbcomp-0:1.5.0-2. 100% |   8.8 MiB/s | 226.1 KiB |  00m00s
+[206/270] Installing xorg-x11-server-co 100% |   9.6 MiB/s | 128.2 KiB |  00m00s
+[207/270] Installing xprop-0:1.2.8-5.fc 100% |   2.2 MiB/s |  55.9 KiB |  00m00s
+[208/270] Installing at-spi2-core-0:2.6 100% |  27.1 MiB/s |   1.6 MiB |  00m00s
+[209/270] Installing atk-0:2.60.7-1.fc4 100% |  19.1 MiB/s | 253.9 KiB |  00m00s
+[210/270] Installing at-spi2-atk-0:2.60 100% |  18.6 MiB/s | 286.2 KiB |  00m00s
+[211/270] Installing libdatrie-0:0.2.14 100% |   5.1 MiB/s |  62.8 KiB |  00m00s
+[212/270] Installing libthai-0:0.1.30-2 100% |  34.1 MiB/s | 802.7 KiB |  00m00s
+[213/270] Installing orc-0:0.4.41-3.fc4 100% |  25.3 MiB/s | 724.4 KiB |  00m00s
+[214/270] Installing libvisual-1:0.4.2- 100% |  26.8 MiB/s | 467.0 KiB |  00m00s
+[215/270] Installing graphene-0:1.10.8- 100% |  11.2 MiB/s | 160.0 KiB |  00m00s
+[216/270] Installing cdparanoia-libs-0: 100% |   8.6 MiB/s | 114.7 KiB |  00m00s
+[217/270] Installing python3-gobject-ba 100% |  25.7 MiB/s |   1.6 MiB |  00m00s
+[218/270] Installing libXdmcp-0:1.1.5-5 100% |   3.1 MiB/s |  83.6 KiB |  00m00s
+[219/270] Installing google-noto-fonts- 100% |   1.2 MiB/s |  18.5 KiB |  00m00s
+[220/270] Installing google-noto-sans-v 100% |  66.3 MiB/s |   1.4 MiB |  00m00s
+[221/270] Installing default-fonts-core 100% |   1.0 MiB/s |  18.2 KiB |  00m00s
+[222/270] Installing fontconfig-0:2.17. 100% | 718.8 KiB/s | 795.8 KiB |  00m01s
+[223/270] Installing cairo-0:1.18.6-1.f 100% |  73.1 MiB/s |   1.8 MiB |  00m00s
+[224/270] Installing cairo-gobject-0:1. 100% |   2.6 MiB/s |  31.8 KiB |  00m00s
+[225/270] Installing python3-cairo-0:1. 100% |  23.8 MiB/s | 512.3 KiB |  00m00s
+[226/270] Installing libgxps-0:0.3.2-12 100% |   8.6 MiB/s | 194.2 KiB |  00m00s
+[227/270] Installing libXft-0:2.3.8-10. 100% |  11.1 MiB/s | 169.8 KiB |  00m00s
+[228/270] Installing pango-0:1.57.1-1.f 100% |  27.4 MiB/s |   1.0 MiB |  00m00s
+[229/270] Installing gstreamer1-plugins 100% |  50.6 MiB/s |   7.5 MiB |  00m00s
+[230/270] Installing glycin-libs-0:2.1. 100% |  50.8 MiB/s |   4.3 MiB |  00m00s
+[231/270] Installing gdk-pixbuf2-0:2.44 100% |  30.5 MiB/s |   2.5 MiB |  00m00s
+[232/270] Installing librsvg2-0:2.62.4- 100% | 115.9 MiB/s |   5.0 MiB |  00m00s
+[233/270] Installing glycin-loaders-0:2 100% | 164.9 MiB/s |  13.8 MiB |  00m00s
+[234/270] Installing gtk-update-icon-ca 100% |   2.5 MiB/s |  63.2 KiB |  00m00s
+[235/270] Installing gtk3-0:3.24.52-2.f 100% |  95.4 MiB/s |  22.8 MiB |  00m00s
+[236/270] Installing libnotify-0:0.8.9- 100% | 476.5 KiB/s | 130.1 KiB |  00m00s
+>>> Running sysusers scriptlet: geoclue2-0:2.8.2-1.fc44.x86_64
+>>> Finished sysusers scriptlet: geoclue2-0:2.8.2-1.fc44.x86_64
+>>> Scriptlet output:
+>>> Creating group 'geoclue' with GID 989.
+>>> Creating user 'geoclue' (n/a) with UID 989 and GID 989.
+>>> 
+[237/270] Installing geoclue2-0:2.8.2-1 100% |   7.4 MiB/s | 417.4 KiB |  00m00s
+[238/270] Installing xdg-desktop-portal 100% |  23.8 MiB/s |   1.9 MiB |  00m00s
+[239/270] Installing libgsf-0:1.14.60-1 100% |  16.1 MiB/s |   1.0 MiB |  00m00s
+[240/270] Installing poppler-0:26.01.0- 100% |  99.1 MiB/s |   4.0 MiB |  00m00s
+[241/270] Installing poppler-glib-0:26. 100% |  37.9 MiB/s | 659.8 KiB |  00m00s
+[242/270] Installing libbluray-0:1.4.0- 100% |  22.3 MiB/s | 319.9 KiB |  00m00s
+[243/270] Installing libaribcaption-0:1 100% |  17.0 MiB/s | 261.5 KiB |  00m00s
+[244/270] Installing libavcodec-free-0: 100% |  99.0 MiB/s |  10.4 MiB |  00m00s
+[245/270] Installing libavformat-free-0 100% |  97.4 MiB/s |   2.8 MiB |  00m00s
+[246/270] Installing localsearch-0:3.11 100% |  29.7 MiB/s |   3.5 MiB |  00m00s
+[247/270] Installing libheif-ffmpeg-0:1 100% |   2.0 MiB/s |  32.7 KiB |  00m00s
+[248/270] Installing xdg-desktop-portal 100% |   3.9 MiB/s | 477.1 KiB |  00m00s
+[249/270] Installing libcanberra-gtk3-0 100% |   1.6 MiB/s |  73.7 KiB |  00m00s
+[250/270] Installing ottrin-0:0.1.0-1.x 100% | 157.0 MiB/s |  63.3 MiB |  00m00s
+[251/270] Installing python3-gobject-0: 100% |   1.7 MiB/s |  28.5 KiB |  00m00s
+[252/270] Installing xorg-x11-server-Xv 100% |  49.7 MiB/s |   1.9 MiB |  00m00s
+[253/270] Installing intel-mediasdk-0:2 100% | 130.2 MiB/s |  24.5 MiB |  00m00s
+[254/270] Installing intel-vpl-gpu-rt-0 100% | 143.9 MiB/s |  11.7 MiB |  00m00s
+[255/270] Installing xdotool-1:3.202110 100% |   4.4 MiB/s | 107.4 KiB |  00m00s
+[256/270] Installing pipewire-plugin-li 100% |   9.3 MiB/s | 143.2 KiB |  00m00s
+[257/270] Installing libcamera-ipa-0:0. 100% |   3.0 MiB/s | 598.9 KiB |  00m00s
+>>> Running sysusers scriptlet: pipewire-0:1.6.11-1.fc44.x86_64
+>>> Finished sysusers scriptlet: pipewire-0:1.6.11-1.fc44.x86_64
+>>> Scriptlet output:
+>>> Creating group 'pipewire' with GID 988.
+>>> Creating user 'pipewire' (PipeWire System Daemon) with UID 988 and GID 988.
+>>> 
+[258/270] Installing pipewire-0:1.6.11- 100% |   6.5 MiB/s | 468.5 KiB |  00m00s
+>>> Running %post scriptlet: pipewire-0:1.6.11-1.fc44.x86_64
+>>> Finished %post scriptlet: pipewire-0:1.6.11-1.fc44.x86_64
+>>> Scriptlet output:
+>>> Created symlink '/etc/systemd/user/sockets.target.wants/pipewire.socket' → '/usr/lib/systemd/user/pipewire.socket'.
+>>> 
+[259/270] Installing pipewire-alsa-0:1. 100% |  10.4 MiB/s | 159.5 KiB |  00m00s
+[260/270] Installing pipewire-pulseaudi 100% |   7.3 MiB/s | 472.2 KiB |  00m00s
+>>> Running %post scriptlet: pipewire-pulseaudio-0:1.6.11-1.fc44.x86_64
+>>> Finished %post scriptlet: pipewire-pulseaudio-0:1.6.11-1.fc44.x86_64
+>>> Scriptlet output:
+>>> Created symlink '/etc/systemd/user/sockets.target.wants/pipewire-pulse.socket' → '/usr/lib/systemd/user/pipewire-pulse.socket'.
+>>> 
+[261/270] Installing tinysparql-0:3.11. 100% |  11.4 MiB/s |   2.6 MiB |  00m00s
+[262/270] Installing exiv2-0:0.28.9-1.f 100% |  46.9 MiB/s |  12.2 MiB |  00m00s
+[263/270] Installing upower-0:1.91.5-1. 100% |   1.0 MiB/s | 317.7 KiB |  00m00s
+>>> Running %post scriptlet: upower-0:1.91.5-1.fc44.x86_64
+>>> Finished %post scriptlet: upower-0:1.91.5-1.fc44.x86_64
+>>> Scriptlet output:
+>>> Created symlink '/etc/systemd/system/graphical.target.wants/upower.service' → '/usr/lib/systemd/system/upower.service'.
+>>> 
+>>> Running sysusers scriptlet: usbmuxd-0:1.1.1^20251205git3ded00c-1.fc44.x86_64
+>>> Finished sysusers scriptlet: usbmuxd-0:1.1.1^20251205git3ded00c-1.fc44.x86_64
+>>> Scriptlet output:
+>>> Creating group 'usbmuxd' with GID 113.
+>>> Creating user 'usbmuxd' (usbmuxd user) with UID 113 and GID 113.
+>>> 
+[264/270] Installing usbmuxd-0:1.1.1^20 100% |   2.3 MiB/s | 151.4 KiB |  00m00s
+[265/270] Installing polkit-pkla-compat 100% |   2.8 MiB/s |  93.7 KiB |  00m00s
+[266/270] Installing adwaita-mono-fonts 100% | 139.8 MiB/s |   5.6 MiB |  00m00s
+[267/270] Installing adwaita-sans-fonts 100% |  45.3 MiB/s |   1.7 MiB |  00m00s
+[268/270] Installing logrotate-0:3.22.0 100% |   2.1 MiB/s | 155.4 KiB |  00m00s
+>>> Running %post scriptlet: logrotate-0:3.22.0-5.fc44.x86_64
+>>> Finished %post scriptlet: logrotate-0:3.22.0-5.fc44.x86_64
+>>> Scriptlet output:
+>>> Created symlink '/etc/systemd/system/timers.target.wants/logrotate.timer' → '/usr/lib/systemd/system/logrotate.timer'.
+>>> 
+[269/270] Installing dconf-0:0.49.0-5.f 100% |   4.5 MiB/s | 311.5 KiB |  00m00s
+[270/270] Removing expat-0:2.7.3-2.fc44 100% |   1.0   B/s |  14.0   B |  00m13s
+>>> Running %posttrans scriptlet: wireplumber-0:0.5.19-1.fc44.x86_64
+>>> Finished %posttrans scriptlet: wireplumber-0:0.5.19-1.fc44.x86_64
+>>> Scriptlet output:
+>>> Created symlink '/etc/systemd/user/pipewire-session-manager.service' → '/usr/lib/systemd/user/wireplumber.service'.
+>>> Created symlink '/etc/systemd/user/pipewire.service.wants/wireplumber.service' → '/usr/lib/systemd/user/wireplumber.service'.
+>>> 
+Warning: skipped OpenPGP checks for 1 package from repository: @commandline
+Complete!

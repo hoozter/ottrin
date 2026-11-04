@@ -1,0 +1,5 @@
+{
+  "status": "progress; two published native package service matrices completed",
+  "acceptance": "ACCEPTANCE.json",
+  "next": "Graphical polkit prompt/cancel/setup/reinstall and native startup checkbox; real upgrade/login readiness; remaining roadmap queue unchanged"
+}

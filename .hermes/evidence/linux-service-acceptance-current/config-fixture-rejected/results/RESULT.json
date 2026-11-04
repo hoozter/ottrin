@@ -1,0 +1,8 @@
+{
+  "source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "status": "fail",
+  "scope": "Published native package CLI with real user systemd; no graphical controls, polkit prompts, reboot or binary upgrade acceptance",
+  "states": [],
+  "error": "RuntimeError(\"['runuser', '-u', 'ottrinqa', '--', 'env', '-i', 'PATH=/usr/sbin:/usr/bin:/sbin:/bin', 'HOME=/home/ottrinqa', 'USER=ottrinqa', 'XDG_RUNTIME_DIR=/run/user/1000', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus', '/usr/bin/ottrin', 'index', 'service-install']: 1:  ottrin: Could not load Ottrin settings /home/ottrinqa/.config/ottrin/config.json: missing field `theme` at line 1 column 156. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\\n\")",
+  "user_manager_stopped": true
+}

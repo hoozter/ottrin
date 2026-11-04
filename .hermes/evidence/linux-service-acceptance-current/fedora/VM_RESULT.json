@@ -1,0 +1,17 @@
+{
+  "setup_control": false,
+  "distro": "fedora",
+  "domain": "ottrin-native-fedora-desktop-qa",
+  "mac": "52:54:00:6f:74:47",
+  "source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "status": "pass within actor scope",
+  "package_sha256": "62b0e7a04fe86b72ae8a6ea077caed09e42b9e009d080c94cac142d1bf36872a",
+  "uuid": "770111aa-ddb0-44b5-868b-796b4cf2f751",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "temporary_seed_and_ssh_keys_removed": true
+}

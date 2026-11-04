@@ -1,0 +1,43 @@
+{
+  "status": "pass scoped native Linux CLI service acceptance",
+  "runtime_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "results": {
+    "ubuntu": {
+      "package": "ottrin_0.1.0_amd64.deb",
+      "package_sha256": "ffb2b7566c83b38aed615eefd615c457fc0d3b0927068c5a7cba96febc6dbd85",
+      "states": 11,
+      "delayed_readiness_seconds": 7.064199896000019,
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ]
+    },
+    "fedora": {
+      "package": "ottrin-0.1.0-1.x86_64.rpm",
+      "package_sha256": "62b0e7a04fe86b72ae8a6ea077caed09e42b9e009d080c94cac142d1bf36872a",
+      "states": 11,
+      "delayed_readiness_seconds": 7.103966692,
+      "domain_removed": true,
+      "owned_volumes_removed": [
+        "ottrin-native-fedora-desktop-qa-base.qcow2",
+        "ottrin-native-fedora-desktop-qa-work.qcow2",
+        "ottrin-native-fedora-desktop-qa-seed.iso"
+      ]
+    }
+  },
+  "limits": [
+    "No graphical setup, authentication prompt/cancellation or checkbox acceptance",
+    "No user-login/reboot or actual binary-version upgrade acceptance",
+    "CLI client exit retention is not a GUI close test"
+  ],
+  "cleanup": {
+    "owned_domains_remaining": false,
+    "temporary_credentials_and_seeds_removed": true,
+    "result_transport_archives_removed": true,
+    "retained_evidence_root": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-service-acceptance-current",
+    "retained_purpose": "Compact frozen producers, package binding, original service states, provisioning logs and failed-fixture diagnosis; no VM disk or package copies",
+    "retained_bytes_before_receipt_refresh": 252418
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "status": "pass",
+  "scope": "Published native package CLI with real user systemd; no graphical controls, polkit prompts, reboot or binary upgrade acceptance",
+  "states": [
+    {
+      "label": "installed",
+      "registered": true,
+      "enabled": "enabled",
+      "active": "active",
+      "pid": 3565,
+      "cli": "source=systemd user service\nenabled=true\ndetail=Enabled and running\n"
+    },
+    {
+      "label": "disabled while running",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "active",
+      "pid": 3565,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Running but disabled\n"
+    },
+    {
+      "label": "enabled while running",
+      "registered": true,
+      "enabled": "enabled",
+      "active": "active",
+      "pid": 3565,
+      "cli": "source=systemd user service\nenabled=true\ndetail=Enabled and running\n"
+    },
+    {
+      "label": "repair disabled running service",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "active",
+      "pid": 3642,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Running but disabled\n"
+    },
+    {
+      "label": "stopped disabled",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "inactive",
+      "pid": 0,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Installed but disabled and stopped\n"
+    },
+    {
+      "label": "repair disabled stopped service",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "inactive",
+      "pid": 0,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Installed but disabled and stopped\n"
+    },
+    {
+      "label": "first ensure after delayed start",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "active",
+      "pid": 3710,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Running but disabled\n"
+    },
+    {
+      "label": "client exited; daemon remains",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "active",
+      "pid": 3710,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Running but disabled\n"
+    },
+    {
+      "label": "daemon retained after client exit",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "active",
+      "pid": 3710,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Running but disabled\n"
+    },
+    {
+      "label": "explicit restart",
+      "registered": true,
+      "enabled": "disabled",
+      "active": "active",
+      "pid": 3760,
+      "cli": "source=systemd user service\nenabled=false\ndetail=Running but disabled\n"
+    },
+    {
+      "label": "removed",
+      "registered": false,
+      "enabled": "not-found",
+      "active": "inactive",
+      "pid": 0,
+      "cli": "source=none\nenabled=false\ndetail=No login service is installed\n"
+    }
+  ],
+  "delayed_readiness_seconds": 7.064199896000019,
+  "source_and_preferences_preserved": true,
+  "user_manager_stopped": true
+}
