@@ -922,13 +922,12 @@ fn appearance_theme_card(
     let thumb = Rect::from_min_max(rect.min + Vec2::splat(8.0), rect.max - Vec2::new(8.0, 42.0));
     theme_miniature(ui, thumb, preview);
     let label_width = (width - if custom { 86.0 } else { 58.0 }).max(50.0);
-    let mut label_job = egui::text::LayoutJob::simple_singleline(
-        name.to_owned(),
+    let label_job = crate::widget_style::single_line_text_job(
+        name,
         FontId::proportional(12.0 * c.font_scale),
         c.text,
+        label_width,
     );
-    label_job.wrap.max_width = label_width;
-    label_job.wrap.max_rows = 1;
     let label = p.layout_job(label_job);
     let label_y = rect.bottom() - 21.0 - label.size().y / 2.0;
     p.galley(egui::pos2(rect.left() + 10.0, label_y), label, c.text);

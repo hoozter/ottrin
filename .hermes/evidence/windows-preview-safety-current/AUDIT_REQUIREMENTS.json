@@ -319,24 +319,31 @@
       "id": 41,
       "section": "Release candidate gate",
       "requirement": "`cargo fmt --all --check`, `cargo check --workspace --all-targets`, `cargo test --workspace` and strict workspace Clippy pass.",
-      "classification": "verified exact runtime source",
+      "classification": "candidate verification in progress; delivered check scopes retained",
       "evidence": [
         ".hermes/evidence/worksheet-alignment-current/corrected/HOSTED_FINAL.json",
         ".github/workflows/ci.yml",
-        ".hermes/evidence/windows-preview-safety-current/FORMAT_CHECK.json"
+        ".hermes/evidence/windows-preview-safety-current/FORMAT_CHECK.json",
+        ".hermes/evidence/grid-caption-delivery-current/FORMAT_CHECK.json",
+        ".hermes/evidence/grid-caption-delivery-current/CI_CURRENT.json",
+        ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json",
+        ".hermes/evidence/theme-delivery-current/CI_CURRENT.json"
       ],
-      "assessment": "Inspected all four completed hosted jobs and the actual workspace check/test/strict Clippy pipeline; shipping source is4a. Subsequent QA/docs changes are not a new runtime build."
+      "assessment": "The old shipping4a statement was stale. Delivered LinuxDAC and Windows458 each have their own all-four-job CI receipts. Candidate316 has explicit source-snapshot formatting proof and three green hosted jobs; its Windows verification is still live. The final combined release candidate is not accepted."
     },
     {
       "id": 42,
       "section": "Release candidate gate",
       "requirement": "Linux and Windows CI pass for the release commit.",
-      "classification": "verified exact runtime source",
+      "classification": "pending exact candidate CI completion; prior delivered runtimes verified",
       "evidence": [
         ".hermes/evidence/worksheet-alignment-current/corrected/HOSTED_FINAL.json",
-        ".github/workflows/ci.yml"
+        ".github/workflows/ci.yml",
+        ".hermes/evidence/grid-caption-delivery-current/CI_CURRENT.json",
+        ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json",
+        ".hermes/evidence/theme-delivery-current/CI_CURRENT.json"
       ],
-      "assessment": "Inspected all four completed hosted jobs and the actual workspace check/test/strict Clippy pipeline; shipping source is4a. Subsequent QA/docs changes are not a new runtime build."
+      "assessment": "Delivered LinuxDAC run41911407933 and Windows458 run41809847269 each pass all four jobs at their exact sources. Candidate316 run41920332944 is live; three jobs pass and Windows verification remains in Cargo test. No final release-commit or whole-platform acceptance is inferred."
     },
     {
       "id": 43,
@@ -426,5 +433,10 @@
       "assessment": "Owner signing identity/provisioning, Store account/submission or final review respectively; independent software work continues."
     }
   ],
-  "native_preview_checkpoint": ".hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json"
+  "native_preview_checkpoint": ".hermes/evidence/windows-preview-safety-current/ACCEPTANCE.json",
+  "latest_verification_scope_reconciliation": {
+    "date": "2026-11-04",
+    "candidate_source": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+    "scope": "Correct stale4a shipping assessment; retain original requirement clauses and historical receipts. Candidate UI follow-up edits are not part of its frozen artifacts."
+  }
 }

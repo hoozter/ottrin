@@ -1,0 +1,70 @@
+{
+  "status": "pass",
+  "startup_samples": [
+    {
+      "seconds_after_window": 0.6015217169999971,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 2.54428591300001,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 10.548787723999993,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 30.542820538,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    }
+  ],
+  "grid_cases": [
+    {
+      "theme": "Dark",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.0.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-light-1.0.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 0.75,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-0.75.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 1.85,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.85.png"
+    }
+  ],
+  "picker_cases": [
+    {
+      "theme": "Dark",
+      "capture": "picker-grid-dark.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    },
+    {
+      "theme": "Light",
+      "capture": "picker-grid-light.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    }
+  ],
+  "cold_scope": "Fresh account, no automatic-startup registration; first GUI launches its session daemon. No raw systemctl-stop precondition."
+}

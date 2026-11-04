@@ -1,0 +1,28 @@
+{
+  "source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "build": {
+    "tool_session": null,
+    "producer": "build.py",
+    "status": "terminal exit0; four-format build and content verification pass",
+    "log": "build.log",
+    "registered_teardown": "build.py stops its child process group and removes owned staging on failure/cancellation"
+  },
+  "ci": {
+    "run_id": 41920332944,
+    "status": "Three jobs success; Windows workspace tests/lint pass, release build confirmed live",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41920332944"
+  },
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "stable_deliverables": "Delivered LinuxDAC / unchanged Windows458; do not replace until new exact-source package acceptance",
+  "goal": "active/incomplete",
+  "native": {
+    "status": "terminal: main AppImage,150% supplement and two-reboot counter fixture all assessed",
+    "owned_vms_and9volumes_removed": true,
+    "directly_reviewed_original_captures": 24,
+    "receipts": [
+      "NATIVE_GRID_ACCEPTANCE.json",
+      "SCALE150_ACCEPTANCE.json",
+      "WARM_COUNTER_OBSERVATION.json"
+    ]
+  }
+}

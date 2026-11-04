@@ -1,0 +1,20 @@
+{
+  "status": "pass scoped source/rendered checks; native and package acceptance of this follow-up pending",
+  "base_source": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "b77939809bd3c86d17a8f6d9450c860332f266910129267e2dc093b57b43cd28"
+  },
+  "full_current_ui_suite": {
+    "passed": 505,
+    "failed": 0,
+    "existing_ignored": 1
+  },
+  "full_current_ui_log": ".hermes/evidence/miller-footer-wake-current/green.log",
+  "strict_native_lint": ".hermes/evidence/miller-footer-wake-current/native-lint.log",
+  "strict_windows_cross_target_lint": ".hermes/evidence/miller-footer-wake-current/windows-lint.log",
+  "cleanup": "Owned disposable test profiles/processes removed by scripts/test-workspace.py; five obsolete incremental sessions removed through guarded exact-root helper. Current configured test executable was overwritten by its verified replacement and is retained.",
+  "finding": "Native DEB phase0 screenshot shows0 items beside populated rows. Rendered ready-cache admission did not request a subsequent footer frame.",
+  "regression": "red.log fails the follow-up repaint assertion after proving the UI was idle.",
+  "correction": "Shared file_status_text drives both footer painting and Miller refresh invalidation. A changed caption schedules one frame; settled rendering returns to idle without a timer.",
+  "native_evidence": ".hermes/evidence/grid-caption-delivery-current/WARM_COUNTER_OBSERVATION.json"
+}

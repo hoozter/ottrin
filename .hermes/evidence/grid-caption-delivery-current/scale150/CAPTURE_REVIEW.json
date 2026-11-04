@@ -1,0 +1,15 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "grid-dark-1.0.png": "46507f08feab63c2d3c201466e14693a19a0e8b05d1f7d35e9ed876b928fb906",
+    "grid-light-1.0.png": "088874af0273a5601dc176840ea59d67b2d9f59c1bb60a66b1db970134180ccb",
+    "grid-dark-1.85.png": "550b34008aca3a5d864cbec074424345755ebce4f966505d09e6af2010f95155",
+    "grid-light-1.85.png": "0028157a107a55b4213dd70abf299741ebfe570d720221f5482cef1b2756853d",
+    "picker-grid-dark.png": "cb3fc8f0cd31c9009f1dc3b5470d743e56ed91ff2c8f9f9f90a9976395edc4f4",
+    "picker-grid-light.png": "1466d45e77df95d443631bf8fe2436231b077a483be2e5e23c7d8c291cf33bee"
+  },
+  "notes": [
+    "Dark/Light150% backend scale and normal/enlarged185% Grid captions directly reviewed: centered two-line captions, whole short extensions and bounded long-word overflow.",
+    "Actual picker Dark/Light captions and footer controls remain visible; Escape returns accepted=false with no paths."
+  ]
+}

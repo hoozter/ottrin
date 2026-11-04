@@ -1,0 +1,112 @@
+{
+  "status": "pass scoped actual AppImage/FUSE browser and cooperating-picker Grid caption acceptance",
+  "source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "artifact_sha256": "b4e2995dcec8f0dd7a03b36b8dcba68f4d8e3ca34707ad88a9deaaf15cc7814e",
+  "application_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+  "grid_cases": [
+    {
+      "theme": "Dark",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.0.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-light-1.0.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 0.75,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-0.75.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 1.85,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.85.png"
+    }
+  ],
+  "picker_cases": [
+    {
+      "theme": "Dark",
+      "capture": "picker-grid-dark.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    },
+    {
+      "theme": "Light",
+      "capture": "picker-grid-light.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    }
+  ],
+  "cold_startup_observation": [
+    {
+      "seconds_after_window": 0.6015217169999971,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 2.54428591300001,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 10.548787723999993,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 30.542820538,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    }
+  ],
+  "cold_scope": "Fresh account, no automatic-startup registration; first GUI launches its session daemon. No raw systemctl-stop precondition.",
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/cold-0.png": "c4e169ea4e0b4b2b43f030416ff3215e9dc14c8720bc89bc8c5c487bcda4a528",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/cold-2.png": "c4e169ea4e0b4b2b43f030416ff3215e9dc14c8720bc89bc8c5c487bcda4a528",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/cold-10.png": "c4e169ea4e0b4b2b43f030416ff3215e9dc14c8720bc89bc8c5c487bcda4a528",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/cold-30.png": "c4e169ea4e0b4b2b43f030416ff3215e9dc14c8720bc89bc8c5c487bcda4a528",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/grid-dark-1.0.png": "0e094e655617e098b15fdca82a20daa61d74da14b3decb3efc8187f9a579062f",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/grid-light-1.0.png": "f6c1c8868b7bc37f356f751a425b8c54621a67071f23a670f667bc727aa0df87",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/grid-dark-0.75.png": "72b33c355f7e4339b030745ed2cae2d3ead3dcf69c459d7110152428fcf000d4",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/grid-dark-1.85.png": "7f6ec5e748cfb1b43337cfa0255187a085709a8c20af4062e98624272b51a2ef",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/picker-grid-dark.png": "64e98ae5b79a4589365ecf56b92ff107a4ca1198eb646963ad9a62bdfab07604",
+    ".hermes/evidence/grid-caption-delivery-current/native/ubuntu/results/picker-grid-light.png": "81eba1161682aa71a56d4e6f5ac1a613c9b3d2ea0d12ecba8db84a3e8fd853c9"
+  },
+  "capture_notes": [
+    "Main browser Dark/Light100% and Dark75/185% show distinct centered captions with short extensions kept intact; long glyph-heavy names overflow within two rows.",
+    "Actual cooperating picker uses the same Grid captions in Dark/Light and cancellation returns accepted=false with no paths.",
+    "Fresh-account Miller count is1002 at0/2/10/30s.",
+    "The long wide-word Miller filename collapses to a short prefix despite available row width; record for a separate shared single-line layout correction.",
+    "No whole-interface or theme-editor acceptance inferred."
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_transport_removed": {
+    "bytes": 1071347,
+    "sha256": "91c1be5b5f60a1f989fe8feee13b914eb93ac8d5e65ad9b9d65bbe7d7dd4064f"
+  },
+  "limits": [
+    "Software X11/Ubuntu only; no physical graphics, Wayland, Windows or complete theme-editor audit.",
+    "Local cooperating CLI picker, browsing and cancellation; no new browser/portal/folder-integration acceptance.",
+    "Fresh-account count remained correct through30s; earlier installed-but-disabled initial-frame finding is not closed.",
+    "Native Miller wide-word caption underuses its row width; a separate follow-up is required.",
+    "Original unchanged helper/service/native recovery scopes remain bound to DAC in SOURCE_SCOPE.json; not freshly rerun."
+  ]
+}

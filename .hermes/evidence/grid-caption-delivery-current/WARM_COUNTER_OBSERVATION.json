@@ -1,0 +1,89 @@
+{
+  "status": "pass scoped native DEB startup/lifetime and observations; initial-frame footer defect retained",
+  "source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "deb_sha256": "dccdbeeaaa1069d352e7f9d2eac09af32a3919b813558506a6a34f7168f770a6",
+  "boot_ids": [
+    "d9cdcfa1-b2b3-469d-8da1-0edb130ec87f",
+    "ae01cdeb-1886-40f9-b63e-a4e7cf279bcd",
+    "7eebf375-1203-4ae9-ae55-0214e1665b7a"
+  ],
+  "startup_enabled_after_each_phase": [
+    true,
+    false,
+    false
+  ],
+  "gui_attempts": [
+    1,
+    1,
+    1
+  ],
+  "database_inode_preserved": true,
+  "normal_gui_close_keeps_daemon": true,
+  "disabled_warm_index_samples": [
+    {
+      "seconds_after_window": 0.6662755849999993,
+      "item_labels": [
+        "label | 1000 items"
+      ]
+    },
+    {
+      "seconds_after_window": 2.507286723,
+      "item_labels": [
+        "label | 1000 items"
+      ]
+    },
+    {
+      "seconds_after_window": 10.574711507999998,
+      "item_labels": [
+        "label | 1000 items"
+      ]
+    },
+    {
+      "seconds_after_window": 30.500896477999994,
+      "item_labels": [
+        "label | 1000 items"
+      ]
+    }
+  ],
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/main-phase0.png": "998be8e58d1a3567a88ea4d58fecf6ff9ee5ef2e31689b9d6aea9a0f5126876e",
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/main-phase1.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/main-phase2.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/disabled-login-running-index.png": "a1ae156be484e1aa0b3815731b2d1bdf5fc19cf2b8cd74b1001c9ef316104c3d",
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/warm-disabled-0.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/warm-disabled-2.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/warm-disabled-10.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    ".hermes/evidence/grid-caption-delivery-current/warm-counter/ubuntu/results/warm-disabled-30.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a"
+  },
+  "notes": [
+    "Disabled warm startup shows1000 items at every no-input sample through30s.",
+    "The separate phase0 screenshot reproduces0 items beside populated rows; rendered regression subsequently proves a model refresh could fail to request its footer follow-up frame.",
+    "Services still says Automatic startup at sign-in: Running but disabled; wording remains open."
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_transports": [
+    {
+      "sha256": "2f5cb02e2e834d78785b76612c7d99d94be41315776ef4cc7426183e57807c90",
+      "bytes": 112351
+    },
+    {
+      "sha256": "f53d09703329798895352118919a78e1407a77fa2afe1b5e9f42f4792614ca67",
+      "bytes": 446161
+    },
+    {
+      "sha256": "7a92431c13e3468eb4ffccac3574cb71a76aa98d227107990cab2873cc3cea03",
+      "bytes": 1051072
+    }
+  ],
+  "limits": [
+    "Initial phase0 screenshot shows0 items beside populated rows. Correct disabled-warm observations do not erase that finding or prove a code fix.",
+    "No physical desktop, Wayland, Windows or sustained resource claim."
+  ]
+}

@@ -13923,6 +13923,21 @@ impl OttrinApp {
             });
     }
 
+    fn file_status_text(&self, tab_id: u64) -> String {
+        let state = self.tab_ui.get(&tab_id);
+        let count = state.map_or(0, |state| state.main.entries.len());
+        let selected = state.and_then(|state| {
+            state
+                .main_sel
+                .and_then(|index| state.main.entries.get(index))
+        });
+        if let Some(entry) = selected {
+            format!("{count} item{}  ·  {}", plural_s(count), entry.name)
+        } else {
+            format!("{count} item{}", plural_s(count))
+        }
+    }
+
     fn render_status_bar(&mut self, ctx: &Context) {
         let c = self.colors;
         let bottom_bar_bg = c.statusbar_bg;
@@ -14114,22 +14129,7 @@ impl OttrinApp {
 
                         // Item count + selection name
                         let tab_id = self.state.active_tab().id;
-                        let count = self
-                            .tab_ui
-                            .get(&tab_id)
-                            .map(|s| s.main.entries.len())
-                            .unwrap_or(0);
-                        let sel_name = self
-                            .tab_ui
-                            .get(&tab_id)
-                            .and_then(|s| s.main_sel)
-                            .and_then(|i| self.tab_ui.get(&tab_id)?.main.entries.get(i))
-                            .map(|e| e.name.clone());
-                        let status = if let Some(name) = sel_name {
-                            format!("{count} item{}  ·  {name}", plural_s(count))
-                        } else {
-                            format!("{count} item{}", plural_s(count))
-                        };
+                        let status = self.file_status_text(tab_id);
                         let neutral = egui::TextFormat {
                             font_id: FontId::proportional(11.5 * c.font_scale),
                             color: bottom_text,
@@ -17430,7 +17430,14 @@ impl OttrinApp {
             .tab_ui
             .get(&tab_id)
             .and_then(|ui_state| ui_state.miller_reveal.clone());
+        let previous_status = self.file_status_text(tab_id);
         let (cols, current_col) = self.build_miller_model(tab_id);
+        if self.file_status_text(tab_id) != previous_status {
+            // The footer was laid out before this synchronous model refresh.
+            // Schedule its corrected frame even when the directory/index is
+            // already ready and no worker or user input will wake us again.
+            ui.ctx().request_repaint();
+        }
         if cols.is_empty() {
             return;
         }
@@ -37095,6 +37102,83 @@ mod tests {
         assert!(
             app.tab_ui[&tab_id].miller_preview_visible,
             "a pointer-selected file must reveal the complete preview, without requiring a keyboard navigation event"
+        );
+    }
+
+    #[test]
+    fn miller_model_refresh_wakes_the_footer_once_then_returns_to_idle() {
+        let root = tempfile::tempdir().unwrap();
+        let dir = root.path().to_path_buf();
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().current_dir = dir.clone();
+        app.status_message = None;
+        let state = app.tab_ui.entry(tab_id).or_default();
+        for ancestor in dir.ancestors() {
+            state
+                .miller_cache
+                .insert(ancestor.to_path_buf(), Ok(Vec::new()));
+        }
+        let entries: Vec<_> = ["first.txt", "second.txt"]
+            .into_iter()
+            .map(|name| FileEntry {
+                name: name.into(),
+                path: dir.join(name),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: None,
+                modified_unix_secs: None,
+            })
+            .collect();
+        state.miller_cache.insert(dir.clone(), Ok(entries.clone()));
+        state.main.dir = dir;
+        state.main.entries = entries;
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        let frame = |app: &mut OttrinApp| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(900.0, 600.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_status_bar(ctx);
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            )
+        };
+        for _ in 0..8 {
+            let _ = frame(&mut app);
+        }
+        let settled = frame(&mut app);
+        assert!(
+            settled.viewport_output[&egui::ViewportId::ROOT].repaint_delay > Duration::from_secs(1)
+        );
+        // A synchronous Miller cache read can populate the main column after
+        // the footer was drawn, with no remaining asynchronous wakeup or input.
+        app.tab_ui.get_mut(&tab_id).unwrap().main.entries.clear();
+        let refreshed = frame(&mut app);
+        assert_eq!(app.tab_ui[&tab_id].main.entries.len(), 2);
+        assert!(
+            refreshed.viewport_output[&egui::ViewportId::ROOT]
+                .repaint_delay
+                .is_zero(),
+            "A changed Miller snapshot must request the footer's follow-up frame"
+        );
+        let corrected = frame(&mut app);
+        assert!(corrected.shapes.iter().any(|shape| matches!(&shape.shape,
+            egui::Shape::Text(text) if text.galley.job.text == "2 items")));
+        for _ in 0..4 {
+            let _ = frame(&mut app);
+        }
+        let settled = frame(&mut app);
+        assert!(
+            settled.viewport_output[&egui::ViewportId::ROOT].repaint_delay > Duration::from_secs(1),
+            "The footer correction must not become an idle repaint loop"
         );
     }
 

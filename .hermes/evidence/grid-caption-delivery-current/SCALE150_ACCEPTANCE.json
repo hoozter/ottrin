@@ -1,0 +1,92 @@
+{
+  "status": "pass scoped actual AppImage150% browser/picker visual supplement",
+  "source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "artifact_sha256": "b4e2995dcec8f0dd7a03b36b8dcba68f4d8e3ca34707ad88a9deaaf15cc7814e",
+  "application_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+  "display": {
+    "size": [
+      1920,
+      1200
+    ],
+    "winit_scale_factor": 1.5,
+    "scope": "Owned guest software X11 display; explicit backend scaling, not physical-monitor acceptance."
+  },
+  "physical_widths": [
+    1200,
+    1200,
+    1200,
+    1200
+  ],
+  "picker_physical_widths": [
+    1410,
+    1410
+  ],
+  "grid_cases": [
+    {
+      "theme": "Dark",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.0.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-light-1.0.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 1.85,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.85.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.85,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-light-1.85.png"
+    }
+  ],
+  "picker_cases": [
+    {
+      "theme": "Dark",
+      "capture": "picker-grid-dark.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    },
+    {
+      "theme": "Light",
+      "capture": "picker-grid-light.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    }
+  ],
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/grid-caption-delivery-current/scale150/ubuntu/results/grid-dark-1.0.png": "46507f08feab63c2d3c201466e14693a19a0e8b05d1f7d35e9ed876b928fb906",
+    ".hermes/evidence/grid-caption-delivery-current/scale150/ubuntu/results/grid-light-1.0.png": "088874af0273a5601dc176840ea59d67b2d9f59c1bb60a66b1db970134180ccb",
+    ".hermes/evidence/grid-caption-delivery-current/scale150/ubuntu/results/grid-dark-1.85.png": "550b34008aca3a5d864cbec074424345755ebce4f966505d09e6af2010f95155",
+    ".hermes/evidence/grid-caption-delivery-current/scale150/ubuntu/results/grid-light-1.85.png": "0028157a107a55b4213dd70abf299741ebfe570d720221f5482cef1b2756853d",
+    ".hermes/evidence/grid-caption-delivery-current/scale150/ubuntu/results/picker-grid-dark.png": "cb3fc8f0cd31c9009f1dc3b5470d743e56ed91ff2c8f9f9f90a9976395edc4f4",
+    ".hermes/evidence/grid-caption-delivery-current/scale150/ubuntu/results/picker-grid-light.png": "1466d45e77df95d443631bf8fe2436231b077a483be2e5e23c7d8c291cf33bee"
+  },
+  "notes": [
+    "Dark/Light150% backend scale and normal/enlarged185% Grid captions directly reviewed: centered two-line captions, whole short extensions and bounded long-word overflow.",
+    "Actual picker Dark/Light captions and footer controls remain visible; Escape returns accepted=false with no paths."
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_transport_removed": {
+    "bytes": 458422,
+    "sha256": "a21355f60a6a3b12a50b7697108eca789cf30a47fcb8a4c27c19d7e52114980f"
+  },
+  "limits": [
+    "Controlled software-X11 backend scaling inside owned guest; no physical graphics/Wayland/Windows or full theme audit.",
+    "Caption text is enlarged with185% Grid density; custom-theme font-setting acceptance is not inferred."
+  ]
+}

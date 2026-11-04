@@ -1,0 +1,15 @@
+{
+  "next": [
+    "Poll existing exact-source CI41920332944; tests/lint and other three jobs passed, Windows release build is live. Do not cancel it for the queued follow-up source.",
+    "When all four jobs are terminal success, refresh CI_CURRENT.json, review/run promote-linux.py and update delivery docs. Current316 Grid/native150%/warm-counter scope is assessed; DAC remains stable until publication.",
+    "The following source checkpoint adds shared single-line captions, one-shot Miller footer wakeup and a formatter CI gate;505 UI tests and strict native/Windows cross-target lint pass. Native/package delivery remains required for those follow-ups.",
+    "After current CI completes, push the queued verified source checkpoint without cancellation churn, then build/verify/natively accept it at the stable candidate path.",
+    "Continue Windows canonical administrator Copy caller-bound registry and durable group cleanup restart ownership before enabling Copy; full theme/picker/integration/54+15 requirement audit remains."
+  ],
+  "inputs": [
+    ".hermes/evidence/grid-label-layout-current/WRAP_SOURCE_CHECKS.json",
+    ".hermes/evidence/grid-label-layout-current/NATIVE_REVIEW.json",
+    "docs/ROADMAP.md"
+  ],
+  "scope": "All24 original current captures reviewed. The warm disabled index samples are correct but phase0 native screenshot and a rendered regression reproduce the missing footer wakeup, now source-corrected only."
+}

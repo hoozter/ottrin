@@ -1,0 +1,18 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "main-phase0.png": "998be8e58d1a3567a88ea4d58fecf6ff9ee5ef2e31689b9d6aea9a0f5126876e",
+    "main-phase1.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    "main-phase2.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    "disabled-login-running-index.png": "a1ae156be484e1aa0b3815731b2d1bdf5fc19cf2b8cd74b1001c9ef316104c3d",
+    "warm-disabled-0.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    "warm-disabled-2.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    "warm-disabled-10.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    "warm-disabled-30.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a"
+  },
+  "notes": [
+    "Disabled warm startup shows1000 items at every no-input sample through30s.",
+    "The separate phase0 screenshot reproduces0 items beside populated rows; rendered regression subsequently proves a model refresh could fail to request its footer follow-up frame.",
+    "Services still says Automatic startup at sign-in: Running but disabled; wording remains open."
+  ]
+}

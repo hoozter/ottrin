@@ -1,0 +1,25 @@
+{
+  "status": "pass formatting for immutable source snapshot",
+  "source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "current_tree_command": "cargo fmt --all --check",
+  "current_tree_exit": 0,
+  "modified_rust_paths": [
+    {
+      "path": "crates/ottrin-ui/src/appearance_editor.rs",
+      "source_sha256": "3fb1d02dbaa22e52b3f573780f8f849034974f955d9b97934c8ec64b205aeb22",
+      "exit": 0
+    },
+    {
+      "path": "crates/ottrin-ui/src/file_row.rs",
+      "source_sha256": "7f1e9e21349514d3e34e956626ca4f4907389cf5533f32f2a6586579bdc8c7c3",
+      "exit": 0
+    },
+    {
+      "path": "crates/ottrin-ui/src/widget_style.rs",
+      "source_sha256": "556e6aace80d1bfe87b89532b68dbd43de7cb7fc79da3a5264ba834ae87a0be9",
+      "exit": 0
+    }
+  ],
+  "scope": "Full current workspace formatter passes. Unmodified Rust files match the source snapshot; the three modified Rust files are separately formatted directly from their immutable Git blobs, with child modules covered by the workspace check.",
+  "future_enforcement": "Queued CI source edit adds cargo fmt --all --check and explicit rustfmt/clippy components; it is not part of candidate316 CI."
+}

@@ -1,0 +1,30 @@
+{
+  "status": "pass exact unchanged-source/runtime scope binding; original native acceptance is not relabelled as a fresh run",
+  "source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "prior_source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "changed_crate_files": [
+    "crates/ottrin-ui/src/file_grid.rs",
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "changes": "Grid filename painting uses measured two-line separator wrapping; lib.rs only removes its superseded character-count helper. Grid allocation/hit geometry before label painting is unchanged.",
+  "unchanged_runtime_sha256": {
+    "index_daemon": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "privileged_helper": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "application_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+  "original_native_evidence": ".hermes/evidence/recovery-transport-delivery-current",
+  "retained_scopes": [
+    "Original DAC helper authentication/Copy/restart/history/Undo/cleanup",
+    "Original DAC daemon private idle sample, watcher/query/restart/shutdown",
+    "Original DAC native DEB login/two-reboot and aa-to-DAC binary replacement"
+  ],
+  "required_new_acceptance": [
+    "Actual new AppImage browser and cooperating-picker caption layout, theme/scaling and source preservation",
+    "Exact-source all-four-job CI before publication"
+  ],
+  "limits": [
+    "Previous native scopes remain tied to DAC and its actual packages; unchanged source and binary identities justify retaining them without repeating unaffected matrices.",
+    "No Windows packaged acceptance, full U08/theme audit, physical graphics or daily-driver completion."
+  ]
+}

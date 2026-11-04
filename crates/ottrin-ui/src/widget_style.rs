@@ -8,6 +8,22 @@ pub(crate) fn name_control(response: &Response, name: impl Into<String>) {
         .accesskit_node_builder(response.id, |node| node.set_label(name.into()));
 }
 
+/// Fill a bounded single line before eliding, even when a long word follows a
+/// separator. Word wrapping is useful for multiline captions; with one row it
+/// can discard almost the entire label at the first hyphen or space.
+pub(crate) fn single_line_text_job(
+    text: impl Into<String>,
+    font: egui::FontId,
+    color: egui::Color32,
+    width: f32,
+) -> egui::text::LayoutJob {
+    let mut job = egui::text::LayoutJob::simple_singleline(text.into(), font, color);
+    job.wrap.max_width = width.max(0.0);
+    job.wrap.max_rows = 1;
+    job.wrap.break_anywhere = true;
+    job
+}
+
 /// Keep sort markers visible when a column truncates its label. Icon spacing
 /// belongs to layout, and both header renderers use the installed icon font.
 pub(crate) fn paint_sort_header(
@@ -38,13 +54,7 @@ pub(crate) fn paint_sort_header(
         0.0
     };
     let reserved = icon.as_ref().map_or(0.0, |icon| icon.size().x + gap);
-    let mut job = egui::text::LayoutJob::simple(
-        label.into(),
-        font,
-        color,
-        (rect.width() - reserved).max(0.0),
-    );
-    job.wrap.max_rows = 1;
+    let job = single_line_text_job(label, font, color, rect.width() - reserved);
     let text = painter.layout_job(job);
     let width = text.size().x + reserved;
     let x = if right_align {

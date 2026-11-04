@@ -1,0 +1,10 @@
+{
+  "bytes": {
+    "target/debug/deps": 25230690432,
+    "target/debug/incremental": 25048746537,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28549830143,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42683677017,
+    "target/release": 4555719415,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/grid-caption-delivery-current": 0
+  }
+}

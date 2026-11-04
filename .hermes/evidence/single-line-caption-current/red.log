@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 9.00s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+test file_row::tests::long_filename_words_use_row_width_before_eliding ... FAILED
+
+failures:
+
+---- file_row::tests::long_filename_words_use_row_width_before_eliding stdout ----
+
+thread 'file_row::tests::long_filename_words_use_row_width_before_eliding' (2383121) panicked at crates/ottrin-ui/src/file_row.rs:181:13:
+Do not collapse a long filename to its prefix: "00-…"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    file_row::tests::long_filename_words_use_row_width_before_eliding
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 504 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

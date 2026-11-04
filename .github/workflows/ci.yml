@@ -39,6 +39,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ env.RUST_VERSION }}
+          components: clippy, rustfmt
 
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
@@ -73,6 +74,9 @@ jobs:
           $null = [Management.Automation.Language.Parser]::ParseFile((Join-Path $pwd 'packaging\windows\package-msix.ps1'), [ref]$tokens, [ref]$errors)
           if ($errors.Count) { throw ($errors | Out-String) }
           .\packaging\tests\windows-msix-template.ps1 -MakeAppx $tools[-1].FullName -Template packaging\windows\msix-manifest.xml -Icon assets\icon.png
+
+      - name: Cargo fmt
+        run: cargo fmt --all --check
 
       - name: Cargo check
         run: cargo check --workspace --all-targets

@@ -1,0 +1,62 @@
+{
+  "status": "pass",
+  "startup_samples": [],
+  "grid_cases": [
+    {
+      "theme": "Dark",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.0.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.0,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-light-1.0.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 1.85,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-dark-1.85.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.85,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a",
+      "capture": "grid-light-1.85.png"
+    }
+  ],
+  "picker_cases": [
+    {
+      "theme": "Dark",
+      "capture": "picker-grid-dark.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    },
+    {
+      "theme": "Light",
+      "capture": "picker-grid-light.png",
+      "cancelled": true,
+      "gui_sha256": "aad0c203c169020909627d5976edbf39ce89ffaa8db679278c6b022e42a1563a"
+    }
+  ],
+  "display": {
+    "size": [
+      1920,
+      1200
+    ],
+    "winit_scale_factor": 1.5,
+    "scope": "Owned guest software X11 display; explicit backend scaling, not physical-monitor acceptance."
+  },
+  "physical_widths": [
+    1200,
+    1200,
+    1200,
+    1200
+  ],
+  "picker_physical_widths": [
+    1410,
+    1410
+  ]
+}

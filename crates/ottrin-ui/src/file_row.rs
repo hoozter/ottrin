@@ -98,13 +98,12 @@ pub(crate) fn render_file_row(
 
     // Use measured glyph layout instead of character-count estimates. Reserve
     // the directory chevron so enlarged text never paints over that control.
-    let mut label_job = egui::text::LayoutJob::simple_singleline(
-        entry.name.clone(),
+    let label_job = crate::widget_style::single_line_text_job(
+        entry.name.as_str(),
         FontId::proportional(text_size),
         style.text_color,
+        (row_rect.width() - if is_dir { 56.0 } else { 40.0 }).max(1.0),
     );
-    label_job.wrap.max_width = (row_rect.width() - if is_dir { 56.0 } else { 40.0 }).max(1.0);
-    label_job.wrap.max_rows = 1;
     let galley = ui.painter().layout_job(label_job);
     let elided = galley.elided;
     ui.painter().galley(
@@ -132,5 +131,74 @@ pub(crate) fn render_file_row(
         response.on_hover_text(entry.name.clone())
     } else {
         response
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn long_filename_words_use_row_width_before_eliding() {
+        let ctx = egui::Context::default();
+        crate::install_application_fonts(&ctx);
+        let colors = Colors::preset(ottrin_core::ThemePreset::Ottrin, true);
+        for prefix in ["00-", "invoice "] {
+            let name = format!("{prefix}{}.txt", "W".repeat(40));
+            let entry = FileEntry {
+                path: std::path::PathBuf::from(&name),
+                name: name.clone(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: None,
+                modified_unix_secs: None,
+            };
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(400.0))),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        render_file_row(
+                            ui,
+                            &entry,
+                            EntryVisualState {
+                                selected: false,
+                                focused: true,
+                                hovered: false,
+                                opened: false,
+                                symlink_dir: false,
+                            },
+                            FileRowLayout {
+                                index: 0,
+                                width: 240.0,
+                                scale: 1.0,
+                            },
+                            &colors,
+                            &AppConfig::default(),
+                        );
+                    });
+                },
+            );
+            let label = output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) if text.galley.job.text == name => Some(text),
+                    _ => None,
+                })
+                .unwrap();
+            assert_eq!(label.galley.rows.len(), 1);
+            assert!(label.galley.elided);
+            let painted = label.galley.rows[0].text();
+            assert!(
+                painted.chars().filter(|c| *c == 'W').count() >= 8,
+                "Do not collapse a long filename to its prefix: {painted:?}"
+            );
+            assert!(painted.ends_with('…'));
+            assert!(label.galley.size().x <= 200.5);
+        }
     }
 }

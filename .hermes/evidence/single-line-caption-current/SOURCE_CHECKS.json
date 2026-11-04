@@ -1,0 +1,22 @@
+{
+  "status": "pass scoped source/rendered checks; native and package acceptance of this follow-up pending",
+  "base_source": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "source_sha256": {
+    "crates/ottrin-ui/src/file_row.rs": "f9989e872e6a8d8fe1f3da8e8821a64f5033871e535db2e58116579cbc03d137",
+    "crates/ottrin-ui/src/widget_style.rs": "58a2f0eb42666c9ca8d977e058d2800073edf9c953e77fa330b5ddaa4c8ef087",
+    "crates/ottrin-ui/src/appearance_editor.rs": "7377e2d219af619c24eebaa2ddfdf7c0329d3e785aaf1e2792a8d28aeb2c90e4",
+    ".github/workflows/ci.yml": "d8342bf184f0afa462cc6180a3b90d7acd230cafff973cbfd28654e16715d982"
+  },
+  "full_current_ui_suite": {
+    "passed": 505,
+    "failed": 0,
+    "existing_ignored": 1
+  },
+  "full_current_ui_log": ".hermes/evidence/miller-footer-wake-current/green.log",
+  "strict_native_lint": ".hermes/evidence/miller-footer-wake-current/native-lint.log",
+  "strict_windows_cross_target_lint": ".hermes/evidence/miller-footer-wake-current/windows-lint.log",
+  "cleanup": "Owned disposable test profiles/processes removed by scripts/test-workspace.py; five obsolete incremental sessions removed through guarded exact-root helper. Current configured test executable was overwritten by its verified replacement and is retained.",
+  "finding": "Native Miller long-word caption collapses to00-\u2026 before using its available width.",
+  "regression": "red.log reproduces the production row; green.log passed504 UI tests before the subsequent footer follow-up.",
+  "correction": "One single_line_text_job is used by file rows, theme cards and sort headers. CI now includes formatting with explicit rustfmt/clippy components."
+}

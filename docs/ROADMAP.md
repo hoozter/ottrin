@@ -511,6 +511,42 @@ startup/preferences/database identity preserved. `PROMOTION.json` records actual
 replacement and retirement; the111MiB candidate stage is consumed. The subsequent
 Grid refinement remains separately pending native/package acceptance.
 
+The316 Grid candidate now passes four-format content/provenance/namespace checks
+and actual AppImage/FUSE browser plus cooperating-picker caption/cancellation
+review. Ten original100%-desktop captures were reviewed; service/helper/HTML bytes
+match delivered DAC exactly, whose original recovery/resource/login scopes remain
+explicitly bound in `grid-caption-delivery-current/SOURCE_SCOPE.json`. The150%
+software-X11 supplement also passes: normal/enlarged Grid captions and actual
+picker Dark/Light controls are directly reviewed, with physical-width checks
+confirming the configured backend scale. All24 original captures across the main
+fixture, scale supplement and reboot observations were reviewed.
+Current CI41920332944 has three green jobs; Windows tests/lint pass and its release
+build remains live.
+The candidate has not replaced delivered DAC packages.
+
+That native review also exposed a separate single-line Miller caption reducing a
+long hyphenated filename to `00-…` while leaving the row width unused. A production
+rendered regression reproduces it. One shared single-line layout helper now fixes
+file rows, theme-card names and sort headers;504 UI tests and strict Linux/Windows
+cross-target lint pass. `DEVELOPMENT.md` requires glyph-level width checks and the
+shared helper. A queued CI edit adds the required formatter gate with explicit
+rustfmt/clippy components. These follow-ups need native/package acceptance and
+are held locally to avoid cancelling the current candidate's hosted run.
+
+The current316 native DEB reboot fixture again captures an early phase0 footer
+showing0 items beside populated rows; its installed-but-disabled warm-index phase
+shows1000 items without input at0/2/10/30s. The new rendered regression establishes
+the missing wakeup: synchronous Miller model population happened after footer
+layout and could leave the UI idle. Source now uses one status-caption function
+for painting and invalidation, requesting one corrected frame only when that
+caption changes. The regression proves correction without user input and return
+to idle. All505 UI tests and strict Linux/Windows cross-target lint pass. Native/
+package acceptance of this follow-up remains required; it is not in316 or the
+currently delivered DAC image. All three current owned QA guests/nine volumes,
+credentials, consumed transports and extraction are removed. The111MiB immutable
+Grid stage remains solely for CI/publication; five obsolete incremental sessions
+were removed (0.33GiB reported). No whole-interface or roadmap completion is implied.
+
 1. Package and verify the subsequent Windows transport and Grid source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness

@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 10.22s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+test tests::miller_model_refresh_wakes_the_footer_once_then_returns_to_idle ... FAILED
+
+failures:
+
+---- tests::miller_model_refresh_wakes_the_footer_once_then_returns_to_idle stdout ----
+
+thread 'tests::miller_model_refresh_wakes_the_footer_once_then_returns_to_idle' (2393734) panicked at crates/ottrin-ui/src/lib.rs:37141:9:
+A changed Miller snapshot must request the footer's follow-up frame
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::miller_model_refresh_wakes_the_footer_once_then_returns_to_idle
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 505 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

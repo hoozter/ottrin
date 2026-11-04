@@ -30,6 +30,8 @@ Every UI change must preserve shared theme roles and consistent text/icon alignm
 
 Window titles must never widen their viewport or push window controls off-screen. The shared title bar reserves Close first, truncates long titles and exposes the full title on hover. Short and truncated titles share the same leading inset; size-constrained widgets must not silently center short titles. Verify long filenames with real pointer closure as well as layout geometry; content cards must stay inside the window at enlarged text and desktop scaling.
 
+Bounded single-line captions must use `widget_style::single_line_text_job` so a long word after a hyphen or space fills the available width before the ellipsis. Do not enable word wrapping with a one-row limit. Multiline Grid captions measure the actual font and tile width, use their reserved two lines, and show full-name tooltips only for real overflow. Verify the painted glyphs as well as the text's bounding rectangle; a correctly sized box containing only a short prefix is not acceptable.
+
 Quick Inspector opens every file read-only. Only an explicit **Edit text** action
 may create an editor; asynchronous loading, reload of a preview, and selection
 navigation must never enable editing. Read-only previews leave arrow navigation
