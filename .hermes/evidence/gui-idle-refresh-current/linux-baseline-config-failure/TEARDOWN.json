@@ -1,0 +1,32 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-xr_dxrqf",
+  "owned_processes_reaped": [
+    {
+      "pid": 1440389,
+      "exit": 0
+    },
+    {
+      "pid": 1440392,
+      "exit": 0
+    },
+    {
+      "pid": 1440394,
+      "exit": 15
+    },
+    {
+      "pid": 1440467,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      1440473,
+      1440541
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Native idle workflow failed; inspect preserved result/log",
+  "profile_removed": true
+}

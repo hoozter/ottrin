@@ -1,0 +1,45 @@
+{
+  "status": "failed",
+  "case": "baseline",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "artifact_sha256": "ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb",
+  "scope": "Private software X11 Dark150; actual native workflow and idle sample. Full platform/physical acceptance separate.",
+  "vulkan_cpu_icd": {
+    "path": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "sha256": "d9f0938f98d74139277a0ad21aa10b46b26eafd5ccc8e40b6b6c0fa3e0acbb8c"
+  },
+  "worker_sha256": "beda1b3e873a12fac280226feaca42bf0da3a35e8aae9cff37535863eabb1c5f",
+  "error": "AssertionError('Native idle workflow failed; inspect preserved result/log')",
+  "teardown": {
+    "status": "failed",
+    "profile": "/var/tmp/.ottrin-picker-qa-xr_dxrqf",
+    "owned_processes_reaped": [
+      {
+        "pid": 1440389,
+        "exit": 0
+      },
+      {
+        "pid": 1440392,
+        "exit": 0
+      },
+      {
+        "pid": 1440394,
+        "exit": 15
+      },
+      {
+        "pid": 1440467,
+        "exit": 1
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1440473,
+        1440541
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "error": "Native idle workflow failed; inspect preserved result/log",
+    "profile_removed": true
+  }
+}

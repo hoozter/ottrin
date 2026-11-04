@@ -1,0 +1,48 @@
+{
+  "status": "pass exact seven-format publication and scoped owned cleanup",
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "artifacts": {
+    "dist/packages/ottrin-0.1.0-1.x86_64.rpm": {
+      "sha256": "8b5168cea16b3111b6ae8211a4f02c49904cd7e900f678eead0a0fe01e528cf4",
+      "bytes": 27937161,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-x86_64.AppImage": {
+      "sha256": "6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5",
+      "bytes": 32752832,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "sha256": "66af2e4c1a8d171e6e585024fcffe38a9754b1ba6c7789ae6f48d0c46289effe",
+      "bytes": 32372053,
+      "sidecar_matches": true
+    },
+    "dist/packages/ottrin_0.1.0_amd64.deb": {
+      "sha256": "eed4f22ee462aeaa57c45b4c70019a3017b3d8605691fdb3e67c16be7b078cdb",
+      "bytes": 21546380,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip": {
+      "sha256": "fab6aaadacd12a4047f56182c11d2038f4d69869963680dccdb3861dd2148cd8",
+      "bytes": 55493957,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe": {
+      "sha256": "99821f41cff0454b3d095770408c1c302052cbabd779d05eb990cdeba533d7f4",
+      "bytes": 39805229,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix": {
+      "sha256": "e11d32bab5961c6882e80769042c68b025c9875686ba4b4b261d583abeb2c517",
+      "bytes": 57018605,
+      "sidecar_matches": true
+    }
+  },
+  "windows_payload_files": 58,
+  "held_msi_preserved_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "limits": [
+    "Current GUI idle threshold and background observation pass at bounded private software-renderer scope",
+    "MSIX14 assembly/unpack only; historical lifecycle retains original hashes",
+    "Full roadmap, MSI rollback, sustained/personal/physical acceptance and signing/Store remain open"
+  ]
+}

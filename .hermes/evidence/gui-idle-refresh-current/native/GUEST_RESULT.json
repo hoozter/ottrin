@@ -1,0 +1,239 @@
+{
+  "settings_host": {
+    "title": "Settings",
+    "pid": 5620,
+    "type": "ControlType.Window"
+  },
+  "scope": "Exact current NSIS, same signed VirtIO144DPI/private one-file root as748a baseline; static main GUI CPU, background index status and new OS storage root reach the native UI without injected input; normal close and supported uninstall. Physical graphics, full appearance matrix and MSIX lifecycle separate",
+  "phase": "supported uninstall",
+  "preferences_preserved": true,
+  "cases": [
+    {
+      "dpi": 144,
+      "case": "native index label follows external create/delete without input",
+      "counts": [
+        1,
+        2,
+        1
+      ],
+      "renderer": "Native"
+    },
+    {
+      "label": "Windows \u00b7 C:\\Users\\OTMSIb1fa2305861b\\Documents\\OttrinFields\nIndexed search: disabled",
+      "dpi": 144,
+      "case": "new DOS device root visible without injected input",
+      "scope": "Insertion through actual GetLogicalDrives/canonical path discovery; subst is not physical removable-volume removal/reconnect",
+      "renderer": "Native"
+    },
+    {
+      "dpi": 144,
+      "case": "native index label follows external create/delete without input",
+      "counts": [
+        1,
+        2,
+        1
+      ],
+      "renderer": "OpenGL"
+    },
+    {
+      "label": "Windows \u00b7 C:\\Users\\OTMSIb1fa2305861b\\Documents\\OttrinFields\nIndexed search: disabled",
+      "dpi": 144,
+      "case": "new DOS device root visible without injected input",
+      "scope": "Insertion through actual GetLogicalDrives/canonical path discovery; subst is not physical removable-volume removal/reconnect",
+      "renderer": "OpenGL"
+    }
+  ],
+  "remaining_owned_installed_processes": 0,
+  "package": {
+    "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "99821f41cff0454b3d095770408c1c302052cbabd779d05eb990cdeba533d7f4"
+      }
+    ],
+    "actor_sha256": "2e52039d145f00deb646765e14669af3eabb6fde4e1c63d46704f12f1f4bba5c",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "dpi_setup": {
+    "selected_label": "150%",
+    "method": "Native Scale ComboBox Expand, visible150percent ListItem Select",
+    "actual_settings_dpi": 144
+  },
+  "source_preserved": true,
+  "display_modes": [
+    "640x480x32",
+    "1024x768x32",
+    "800x600x32",
+    "2048x1152x32",
+    "1920x1080x32",
+    "1920x1200x32",
+    "1600x1200x32",
+    "1680x1050x32",
+    "1440x900x32",
+    "1280x1024x32",
+    "1280x960x32",
+    "1280x768x32",
+    "1360x768x32",
+    "1400x1050x32",
+    "1792x1344x32",
+    "1856x1392x32",
+    "1920x1440x32",
+    "1280x720x32",
+    "5120x2160x32",
+    "4096x2160x32",
+    "3840x2160x32",
+    "2560x1080x32",
+    "2560x1600x32"
+  ],
+  "status": "pass native idle observation workflow; CPU values require separate criterion assessment",
+  "gui_idle_baseline": [
+    {
+      "seconds": 30.0237016,
+      "cpu_one_core_percent": 0,
+      "rss_before": 75522048,
+      "renderer": "Native",
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "index_after": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4132864,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793759923,
+        "last_scan_completed_unix_secs": 1793759923,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_after": 21,
+      "rss_after": 60420096,
+      "status": "pass current-scope criterion",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "dpi": 144,
+      "scope": "Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.",
+      "criterion": "StaticGUIbelow2percentonecore",
+      "index_before": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4132864,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793759923,
+        "last_scan_completed_unix_secs": 1793759923,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_before": 21
+    },
+    {
+      "seconds": 30.0166556,
+      "cpu_one_core_percent": 0,
+      "rss_before": 90357760,
+      "renderer": "OpenGL",
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "index_after": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 1593344,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 1511424,
+        "freelist_pages": 369,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793760028,
+        "last_scan_completed_unix_secs": 1793760028,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 3,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 32992,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_after": 26,
+      "rss_after": 62644224,
+      "status": "pass current-scope criterion",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "dpi": 144,
+      "scope": "Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.",
+      "criterion": "StaticGUIbelow2percentonecore",
+      "index_before": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 1593344,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 1511424,
+        "freelist_pages": 369,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793760028,
+        "last_scan_completed_unix_secs": 1793760028,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 3,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 32992,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_before": 26
+    }
+  ],
+  "display_mode": "1920x1440"
+}

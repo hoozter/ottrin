@@ -1,13 +1,24 @@
 {
-  "status": "pass scoped current Linux appearance numeric-control preview; full roadmap incomplete",
-  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
-  "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "36f9b9f82086e2dd866bdf835c0786944cd105dcc84571415ac069fca5f3494b",
-    "Ottrin-0.1.0-x86_64.AppImage": "ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "333cdba3051a5290197e738ae3a4fe02d8e07cfe2a313236ebeafeb46e0f5de8",
-    "ottrin_0.1.0_amd64.deb": "a917d81ca0f01b4eb6d4cd205b49e3c3548ba3fcf5fd14d6ae78453673bacec3"
+  "evidence": ".hermes/evidence/gui-idle-refresh-current",
+  "source_scope": ".hermes/evidence/gui-idle-refresh-current/SOURCE_SCOPE.json",
+  "hosted_source": {
+    "run": 41750766499,
+    "tested_source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+    "all_four_jobs_success": true
   },
-  "evidence": ".hermes/evidence/appearance-numeric-values-current",
+  "limits": [
+    "Bounded private software-renderer idle samples; no universal zero CPU, sustained-use or physical graphics acceptance",
+    "Current checks exercise changed observation responsibilities; other receipts retain original hashes/scopes",
+    "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
+  ],
+  "status": "pass scoped current Linux idle-observation preview; full roadmap incomplete",
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "8b5168cea16b3111b6ae8211a4f02c49904cd7e900f678eead0a0fe01e528cf4",
+    "Ottrin-0.1.0-x86_64.AppImage": "6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "66af2e4c1a8d171e6e585024fcffe38a9754b1ba6c7789ae6f48d0c46289effe",
+    "ottrin_0.1.0_amd64.deb": "eed4f22ee462aeaa57c45b4c70019a3017b3d8605691fdb3e67c16be7b078cdb"
+  },
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -16,26 +27,12 @@
     "exact current documentation and clean source notes",
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
-  "current_native_fields": ".hermes/evidence/appearance-numeric-values-current/LINUX_NATIVE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/appearance-numeric-values-current/SOURCE_SCOPE.json",
-  "full_payload_comparison": ".hermes/evidence/appearance-numeric-values-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
-  "daemon_runtime": ".hermes/evidence/appearance-numeric-values-current/LINUX_DAEMON_RUNTIME.json",
-  "indexd_binary_sha256": "d25c347506339a5a76df4f9a0e9485cef02d61399878534225cea188573764fe",
+  "current_native_fields": ".hermes/evidence/gui-idle-refresh-current/LINUX_NATIVE_ACCEPTANCE.json",
+  "full_payload_comparison": ".hermes/evidence/gui-idle-refresh-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "daemon_runtime_reuse": ".hermes/evidence/gui-idle-refresh-current/LINUX_DAEMON_REUSE.json",
   "unchanged_responsibility_basis": {
-    "previous_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
-    "previous_receipt": ".hermes/evidence/appearance-numeric-values-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
-    "scope": "Existing appearance number_row exposes numeric/property-specific restore names. Pinned egui0.33.3 DragValue now reads its final getter before numeric widget/accessibility metadata and range-step actions; visible/model/native values agree in the committed input frame. No duplicate state or caller override; no dependency version upgrades. Earlier receipts retain exact source/artifact scope. Changed daemon has fresh private1000-file watcher/query/restart/idle checks; no personal-service or full-roadmap acceptance."
-  },
-  "hosted_source": {
-    "run": 41740616987,
-    "tested_source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
-    "all_four_jobs_success": true
-  },
-  "limits": [
-    "Dark100/Light150 private X11/software named numeric typing/restore/Cancel; other workflow scopes retain original hashes",
-    "Current Windows native144DPI checks separate; broader appearance/platform and human acceptance incomplete",
-    "Prior strict software GUI CPU failure remains open; Fresh daemon CPU scope is separately recorded; strict GUI idle failure remains open",
-    "Local unsigned delivery; no public release or full roadmap acceptance"
-  ],
-  "cleanup": "Both owned Linux desktops/profiles/processes/mounts and content extraction removed; exact stage retired by publication; compiler-cache cleanup separately receipted"
+    "previous_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+    "previous_receipt": ".hermes/evidence/gui-idle-refresh-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Storage roots are observed off the GUI thread, start lazily with the locations rail and wake it only on changes; fresh mutation guards outrank late observer results. Remote index status polls independently and wakes only on changed diagnostics. Initial unknown storage never clears selected indexed volumes. Search diagnostics only adds Eq/PartialEq derives."
+  }
 }

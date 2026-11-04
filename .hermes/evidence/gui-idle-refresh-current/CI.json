@@ -1,0 +1,37 @@
+{
+  "conclusion": "success",
+  "databaseId": 41750766499,
+  "headSha": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "jobs": [
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 126315009355,
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41750766499/job/126315009355"
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 126315009631,
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41750766499/job/126315009631"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 126315009690,
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41750766499/job/126315009690"
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 126315009954,
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41750766499/job/126315009954"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/41750766499"
+}

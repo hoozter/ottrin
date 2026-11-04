@@ -1,0 +1,43 @@
+{
+  "status": "functional pass; CPU and original captures require review",
+  "case": "candidate",
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "artifact_sha256": "6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5",
+  "scope": "Private software X11 Dark150; actual native workflow and idle sample. Full platform/physical acceptance separate.",
+  "vulkan_cpu_icd": {
+    "path": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "sha256": "d9f0938f98d74139277a0ad21aa10b46b26eafd5ccc8e40b6b6c0fa3e0acbb8c"
+  },
+  "worker_sha256": "271a85d4a1ba7d2ef34f7caae8e8725d09126921be8161d2d4c6d238bd73a33a",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-lal4xnjf",
+    "owned_processes_reaped": [
+      {
+        "pid": 1447233,
+        "exit": 0
+      },
+      {
+        "pid": 1447236,
+        "exit": 0
+      },
+      {
+        "pid": 1447237,
+        "exit": 15
+      },
+      {
+        "pid": 1447302,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1447348,
+        1447415
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

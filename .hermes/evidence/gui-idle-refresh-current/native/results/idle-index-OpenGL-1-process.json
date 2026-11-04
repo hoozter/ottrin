@@ -1,0 +1,6 @@
+{
+    "stdout":  "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 1593344,\n  \"detail\": \"Ready · 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 1511424,\n  \"freelist_pages\": 369,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1793760028,\n  \"last_scan_completed_unix_secs\": 1793760028,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1793759923,\n  \"snapshot_revision\": 3,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 32992,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+    "stderr":  "",
+    "seconds":  0.0538994,
+    "exit":  0
+}

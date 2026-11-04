@@ -1,32 +1,34 @@
 {
-  "status": "pass scoped current Windows named-control and native144DPI preview; required MSI release held separately",
-  "source_commit": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "evidence": ".hermes/evidence/gui-idle-refresh-current",
+  "source_scope": ".hermes/evidence/gui-idle-refresh-current/SOURCE_SCOPE.json",
+  "hosted_source": {
+    "run": 41750766499,
+    "tested_source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+    "all_four_jobs_success": true
+  },
+  "limits": [
+    "Bounded private software-renderer idle samples; no universal zero CPU, sustained-use or physical graphics acceptance",
+    "Current checks exercise changed observation responsibilities; other receipts retain original hashes/scopes",
+    "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
+  ],
+  "status": "pass scoped current Windows idle-observation preview; MSI release held separately",
+  "source_commit": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "c213c35805edf59b2a59e937ab996a2c236bbc8e696ff831b37fc47537cc6b27",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "1844a2e984e4edecb5756cda82edd0666cd2b606a767d022eb160f0787d6f029",
-    "Ottrin-0.1.0-windows-x64-development.msix": "bb3a4d51c8e5b8b152071bee2bd7a99b08974779f0044d767e02d25714a60d9b"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "fab6aaadacd12a4047f56182c11d2038f4d69869963680dccdb3861dd2148cd8",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "99821f41cff0454b3d095770408c1c302052cbabd779d05eb990cdeba533d7f4",
+    "Ottrin-0.1.0-windows-x64-development.msix": "e11d32bab5961c6882e80769042c68b025c9875686ba4b4b261d583abeb2c517"
   },
   "payload_files": 58,
-  "evidence_directory": ".hermes/evidence/appearance-numeric-values-current",
+  "evidence_directory": ".hermes/evidence/gui-idle-refresh-current",
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_NATIVE_ACCEPTANCE.json",
-  "native_msix": {
-    "current_assembly": ".hermes/evidence/appearance-numeric-values-current/ASSEMBLY_ACCEPTANCE.json",
-    "historical_lifecycle_receipt": ".hermes/evidence/appearance-numeric-values-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
-    "historical_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
-    "limit": "MSIX13 assembly/unpack only; no fresh deployment/update/login/removal acceptance. Historical MSIX lifecycle keeps exact original source/artifact scope."
-  },
-  "source_scope": ".hermes/evidence/appearance-numeric-values-current/SOURCE_SCOPE.json",
-  "full_payload_comparison": ".hermes/evidence/appearance-numeric-values-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
-  "native_controls_and_dpi": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_NATIVE_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_DAEMON_RUNTIME.json",
+  "current_native_fields": ".hermes/evidence/gui-idle-refresh-current/WINDOWS_NATIVE_ACCEPTANCE.json",
   "gui_idle_baseline": [
     {
-      "seconds": 30.0685222,
-      "cpu_one_core_percent": 73.06228704515448,
-      "rss_before": 73306112,
+      "seconds": 30.0237016,
+      "cpu_one_core_percent": 0,
+      "rss_before": 75522048,
       "renderer": "Native",
       "bounds": [
         0,
@@ -38,7 +40,7 @@
         "active_root": null,
         "active_root_index": 0,
         "configured_roots": 1,
-        "database_bytes": 4640768,
+        "database_bytes": 4132864,
         "detail": "Ready \u00b7 1 indexed",
         "error": null,
         "estimated_total_items": null,
@@ -46,10 +48,10 @@
         "freelist_pages": 0,
         "indexed_items": 1,
         "last_completed_indexed_items": 1,
-        "last_progress_unix_secs": 1793755376,
-        "last_scan_completed_unix_secs": 1793755376,
+        "last_progress_unix_secs": 1793759923,
+        "last_scan_completed_unix_secs": 1793759923,
         "last_scan_duration_ms": null,
-        "last_scan_started_unix_secs": 1793755366,
+        "last_scan_started_unix_secs": 1793759923,
         "snapshot_revision": 1,
         "status": "ready",
         "total_roots": 1,
@@ -59,8 +61,8 @@
         "watcher_ready": true
       },
       "gdi_after": 21,
-      "rss_after": 70828032,
-      "status": "failed current-scope criterion",
+      "rss_after": 60420096,
+      "status": "pass current-scope criterion",
       "work_area": [
         0,
         0,
@@ -74,7 +76,7 @@
         "active_root": null,
         "active_root_index": 0,
         "configured_roots": 1,
-        "database_bytes": 4640768,
+        "database_bytes": 4132864,
         "detail": "Ready \u00b7 1 indexed",
         "error": null,
         "estimated_total_items": null,
@@ -82,10 +84,10 @@
         "freelist_pages": 0,
         "indexed_items": 1,
         "last_completed_indexed_items": 1,
-        "last_progress_unix_secs": 1793755376,
-        "last_scan_completed_unix_secs": 1793755376,
+        "last_progress_unix_secs": 1793759923,
+        "last_scan_completed_unix_secs": 1793759923,
         "last_scan_duration_ms": null,
-        "last_scan_started_unix_secs": 1793755366,
+        "last_scan_started_unix_secs": 1793759923,
         "snapshot_revision": 1,
         "status": "ready",
         "total_roots": 1,
@@ -97,9 +99,9 @@
       "gdi_before": 21
     },
     {
-      "seconds": 30.0086703,
-      "cpu_one_core_percent": 7.758174476661167,
-      "rss_before": 89100288,
+      "seconds": 30.0166556,
+      "cpu_one_core_percent": 0,
+      "rss_before": 90357760,
       "renderer": "OpenGL",
       "bounds": [
         0,
@@ -111,29 +113,29 @@
         "active_root": null,
         "active_root_index": 0,
         "configured_roots": 1,
-        "database_bytes": 4640768,
+        "database_bytes": 1593344,
         "detail": "Ready \u00b7 1 indexed",
         "error": null,
         "estimated_total_items": null,
-        "freelist_bytes": 0,
-        "freelist_pages": 0,
+        "freelist_bytes": 1511424,
+        "freelist_pages": 369,
         "indexed_items": 1,
         "last_completed_indexed_items": 1,
-        "last_progress_unix_secs": 1793755376,
-        "last_scan_completed_unix_secs": 1793755376,
+        "last_progress_unix_secs": 1793760028,
+        "last_scan_completed_unix_secs": 1793760028,
         "last_scan_duration_ms": null,
-        "last_scan_started_unix_secs": 1793755366,
-        "snapshot_revision": 1,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 3,
         "status": "ready",
         "total_roots": 1,
-        "wal_bytes": 4152,
+        "wal_bytes": 32992,
         "watched_roots": 1,
         "watcher_error": null,
         "watcher_ready": true
       },
       "gdi_after": 26,
-      "rss_after": 73490432,
-      "status": "failed current-scope criterion",
+      "rss_after": 62644224,
+      "status": "pass current-scope criterion",
       "work_area": [
         0,
         0,
@@ -147,22 +149,22 @@
         "active_root": null,
         "active_root_index": 0,
         "configured_roots": 1,
-        "database_bytes": 4640768,
+        "database_bytes": 1593344,
         "detail": "Ready \u00b7 1 indexed",
         "error": null,
         "estimated_total_items": null,
-        "freelist_bytes": 0,
-        "freelist_pages": 0,
+        "freelist_bytes": 1511424,
+        "freelist_pages": 369,
         "indexed_items": 1,
         "last_completed_indexed_items": 1,
-        "last_progress_unix_secs": 1793755376,
-        "last_scan_completed_unix_secs": 1793755376,
+        "last_progress_unix_secs": 1793760028,
+        "last_scan_completed_unix_secs": 1793760028,
         "last_scan_duration_ms": null,
-        "last_scan_started_unix_secs": 1793755366,
-        "snapshot_revision": 1,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 3,
         "status": "ready",
         "total_roots": 1,
-        "wal_bytes": 4152,
+        "wal_bytes": 32992,
         "watched_roots": 1,
         "watcher_error": null,
         "watcher_ready": true
@@ -170,29 +172,21 @@
       "gdi_before": 26
     }
   ],
-  "daemon_pe_comparison": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_INDEX_PE_COMPARISON.json",
+  "full_payload_comparison": ".hermes/evidence/gui-idle-refresh-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+  "daemon_runtime": ".hermes/evidence/gui-idle-refresh-current/WINDOWS_DAEMON_RUNTIME.json",
+  "native_msix": {
+    "current_assembly": ".hermes/evidence/gui-idle-refresh-current/ASSEMBLY_ACCEPTANCE.json",
+    "limit": "MSIX14 assembly/unpack only; deployment/update/login/removal acceptance retains historical source/artifact scopes"
+  },
   "unchanged_responsibility_basis": {
-    "previous_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
-    "previous_receipt": ".hermes/evidence/appearance-numeric-values-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
-    "scope": "Existing appearance number_row exposes numeric/property-specific restore names. Pinned egui0.33.3 DragValue now reads its final getter before numeric widget/accessibility metadata and range-step actions; visible/model/native values agree in the committed input frame. No duplicate state or caller override; no dependency version upgrades. Earlier receipts retain exact source/artifact scope. Changed daemon has fresh private1000-file watcher/query/restart/idle checks in the noninteractive assembly account; no ordinary-user service or full-roadmap acceptance."
+    "previous_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+    "previous_receipt": ".hermes/evidence/gui-idle-refresh-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "scope": "Storage roots are observed off the GUI thread, start lazily with the locations rail and wake it only on changes; fresh mutation guards outrank late observer results. Remote index status polls independently and wakes only on changed diagnostics. Initial unknown storage never clears selected indexed volumes. Search diagnostics only adds Eq/PartialEq derives."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "hosted_source": {
-    "run": 41740616987,
-    "tested_source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
-    "exact_source_all_four_jobs_success": true
-  },
-  "public_release_published": false,
-  "limits": [
-    "Dark144DPI software VM; other scale/theme combinations, physical graphics and human usability remain separate",
-    "Prior strict software GUI idle CPU failure remains open; Fresh daemon CPU scope is separately recorded; strict GUI idle failure remains open",
-    "MSIX13 assembly only; historical lifecycle keeps original hashes",
-    "Required MSI rollback remains held",
-    "All remaining roadmap requirements, full appearance/color-picker controls, signing/Store and final owner acceptance remain unaccepted"
-  ],
-  "cleanup": "All native fixture attempts and assembly VM/media/private console removed; exact stage and superseded candidate retired after consumers; current58-file payload and compact evidence retained."
+  "public_release_published": false
 }

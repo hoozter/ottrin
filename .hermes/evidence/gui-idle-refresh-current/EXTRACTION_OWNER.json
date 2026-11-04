@@ -1,0 +1,8 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "pending_consumers": [],
+  "cleanup": "Content, exact GUI ELF identity and current idle/background native checks complete; owned extraction removed",
+  "removed": true,
+  "removed_logical_bytes": 76531970
+}

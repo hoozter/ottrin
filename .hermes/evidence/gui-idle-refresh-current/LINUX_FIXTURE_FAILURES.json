@@ -1,0 +1,10 @@
+{
+  "status": "two setup attempts retired, neither produced a CPU sample",
+  "cases": [
+    "linux-baseline-setup-failure",
+    "linux-baseline-config-failure"
+  ],
+  "observed": "Second attempt records daemon ready/watcher ready with2items. Input custom_themes omitted SavedTheme.base_preset; load_config falls back to AppConfig::default on deserialize error, whose include_roots is HOME. Private HOME contained Documents pluspreserve.txt. The corrected fixture includes requiredbase_preset=Ottrin, matching the actual accepted Windows baseline actor.",
+  "earlier_assumption_corrected": "/var/tmp exclusion was incorrectly assumed. Actual input excludes only/proc,/sys,/dev,/run; these filtering settings are preserved.",
+  "future_audit_gap": "Existing config.rs silently defaults on malformed configuration; review preservation/error reporting during full reliability audit. Do not implement compatibility conversion or claim this fixture error is a production index readiness defect."
+}

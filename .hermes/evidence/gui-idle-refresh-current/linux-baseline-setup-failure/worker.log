@@ -1,0 +1,9 @@
+
+(process:1435316): dbind-WARNING **: 02:15:53.476: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/gui-idle-refresh-current/linux-baseline/WORKER_SOURCE.py", line 56, in <module>
+    report['index_before'] = q.wait_for(ready, 'quiet one-file index ready', timeout=60)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 70, in wait_for
+    raise AssertionError(f"Timed out waiting for {message}{suffix}")
+AssertionError: Timed out waiting for quiet one-file index ready

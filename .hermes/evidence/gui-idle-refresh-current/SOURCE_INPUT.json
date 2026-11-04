@@ -1,0 +1,11 @@
+{
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/gui-idle-refresh-current/source.zip",
+  "status": "consumed by native MSIX14 assembly; owned source archive retired",
+  "sha256": "707b8e84e191160a5a7e7b6aa9805de2772c0d3211c14daa311017dfc6f8afd0",
+  "archive_bytes": 198860066,
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

@@ -5,28 +5,30 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 ## Current local candidate
 
 The current Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development
-MSIX0.1.0.13 use runtime `748ae91aba51eb35f23e716ba7d4799623e082b6`. All seven artifacts/sidecars
+MSIX 0.1.0.14 use runtime `47a772af0a15c353922aa9a78d14afdaa13ced1a`. All seven artifacts/sidecars
 and 58 Windows payload files are independently rehashed at stable paths.
-Exact-source CI41740616987 passes all four jobs. Source checks pass 27 appearance
-and 476 UI tests (one existing ignored), native/Windows strict lint and formatting.
+Exact-source CI 41750766499 passes all four jobs; 481 UI tests pass (one existing
+ignored), with strict native/Windows lint and formatting.
 
-Native numeric metadata now describes the committed model value, replacing its
-pre-edit snapshot. Appearance numeric fields retain visible names and property-specific
-Restore actions. Native typing, Restore and Cancel pass on the exact Linux AppImage
-in Dark100/Light150. Installed Windows Native/OpenGL pass 34 complete native-region,
-actual 144 DPI and work-area observations; all22 unobscured full-window captures were
-reviewed. Live background owners have region observations, with separate full
-captures for every window type. Normal close and supported NSIS uninstall preserve
-source/preferences. Earlier pointer, preview, picker, folder, service and media
-acceptance retains its original source/artifact scope.
+Unchanged storage and index status no longer trigger GUI repainting. Storage
+observation runs off-thread, starts with the locations rail, rejects observations
+older than a fresh operation guard and preserves selected volumes before the
+initial snapshot. Index status observes changes independently of GUI frames.
+Matched private software-renderer 30-second samples pass the below 2% one-core
+GUI idle threshold on Linux and both Windows renderers. Native index counts follow
+external create/delete without injected input; Windows also observes an inserted
+OS DOS-drive root. Normal close/uninstall preserve fixture source/preferences.
+Four Linux and six Windows original captures were reviewed. This is bounded
+software-fixture acceptance, not universal zero CPU or sustained/physical testing.
 
-MSIX13 passes production MakeAppx assembly/unpack and complete58-file equality;
-deployment/update/login acceptance is historical. Prior strict GUI idle CPU failure,
-required MSI rollback, full roadmap/platform coverage, signing/Store and final
-owner acceptance remain open. No public release or personal service/settings
-change is claimed. Owned fixtures, consumed archives/extractions, superseded
-packages and obsolete compiler sessions are removed. Packaged manuals are build-time
-snapshots; repository manifests/documents record later acceptance.
+MSIX14 passes production MakeAppx/unpack and complete58-file equality; runtime,
+update and login acceptance retain historical exact scopes. Earlier numeric/theme,
+window-region, preview, picker, folder, service and media receipts likewise retain
+their original artifacts. Required MSI rollback, full roadmap/platform coverage,
+signing/Store and owner acceptance remain open. No public release or personal
+service/settings change is claimed. Owned fixtures, source archive, extraction,
+superseded packages and obsolete incremental state were removed. Packaged manuals
+are build-time snapshots; repository manifests/docs record later acceptance.
 
 ## Highlights
 

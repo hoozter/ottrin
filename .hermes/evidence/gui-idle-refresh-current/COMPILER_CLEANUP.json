@@ -1,5 +1,5 @@
 {
-  "status": "pass source-validation cleanup; latest tested binary and useful compiler caches retained for package builds",
+  "status": "pass source checks, packaging and final compiler-storage review; useful shared caches/current executables retained",
   "baseline": {
     "target/debug/deps": 41674554097,
     "target/debug/incremental": 23497764042,
@@ -13,21 +13,30 @@
     "target/debug/incremental": 23504670533,
     "target/x86_64-pc-windows-gnu/debug/deps": 33298656714,
     "target/x86_64-pc-windows-gnu/debug/incremental": 39678093236,
-    "target/release/deps": 4379884555,
-    "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+    "target/release/deps": 4379982616,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853141750
   },
   "delta": {
     "target/debug/deps": 197814,
     "target/debug/incremental": 6906491,
     "target/x86_64-pc-windows-gnu/debug/deps": 11480,
     "target/x86_64-pc-windows-gnu/debug/incremental": 1993796,
-    "target/release/deps": 0,
-    "target/x86_64-pc-windows-gnu/release/deps": 0
+    "target/release/deps": 98061,
+    "target/x86_64-pc-windows-gnu/release/deps": 120119
   },
   "obsolete_incremental_sessions_removed": 25,
   "all_reviewed_candidates_absent": true,
   "all_recorded_newest_sessions_retained": true,
   "final_obsolete_incremental_candidates": 0,
   "refusals": "Transient unreadable processes1420230/1420467 exited before retry; later unrelated cargo1420640 also exited. No new identity exceptions or validation bypass. Canonical helper removed9sessions before interruptions and16on completion.",
-  "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc replaced in place with the same compiler/profile/features;481UI tests pass,1existing ignored. No extra obsolete test executable was produced."
+  "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc replaced in place with the same compiler/profile/features;481UI tests pass,1existing ignored. No extra obsolete test executable was produced.",
+  "source_validation_sizes": {
+    "target/debug/deps": 41674751911,
+    "target/debug/incremental": 23504670533,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33298656714,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39678093236,
+    "target/release/deps": 4379884555,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+  },
+  "package_builds": "Original native/Windows release target/profile/features and caches reused; no extra target tree or test configuration. Existing current hashed binary paths were rebuilt in place."
 }

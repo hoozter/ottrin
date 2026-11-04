@@ -1,0 +1,125 @@
+{
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "status": "pass matched Linux AppImage idle and native index observation",
+  "scope": "Private X11, Dark150, one-file corpus, 5-second warmup and 30-second GUI-process CPU sample. Linux uses Glow with LIBGL_ALWAYS_SOFTWARE=1; the matched Vulkan ICD input was unused (no Vulkan driver maps). Native Search count follows external create/delete without injected input. No sustained, personal-service, physical graphics, storage insertion or whole-appearance acceptance.",
+  "cases": {
+    "baseline": {
+      "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+      "artifact_sha256": "ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb",
+      "worker_sha256": "271a85d4a1ba7d2ef34f7caae8e8725d09126921be8161d2d4c6d238bd73a33a",
+      "idle": {
+        "seconds": 30.000078979006503,
+        "cpu_one_core_percent": 4.599987889917551,
+        "no_external_probe_clients_or_injected_input_during_sample": true
+      },
+      "index_counts": [
+        1,
+        2,
+        1
+      ],
+      "captures": [
+        {
+          "path": "linux-baseline/main-idle.png",
+          "sha256": "44f49bd6ca856d873ebda28d466ff37dc9b6d1f1dcba8423b827c939606e24a1",
+          "review": "Reviewed original: one-file list, intact themed frame and controls; no error overlay."
+        },
+        {
+          "path": "linux-baseline/index-updated.png",
+          "sha256": "a3641d48776d956550995e9ab557ef02d73daa31d59a052f6cd092fa5065d05e",
+          "review": "Reviewed original: Settings Search health visibly shows 2 files indexed and active watcher, consistent themed navigation/cards."
+        }
+      ],
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-_mg77olj",
+        "owned_processes_reaped": [
+          {
+            "pid": 1445111,
+            "exit": 0
+          },
+          {
+            "pid": 1445114,
+            "exit": 0
+          },
+          {
+            "pid": 1445115,
+            "exit": 15
+          },
+          {
+            "pid": 1445181,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1445191,
+            1445259
+          ],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [
+          "96 34 0:64 / /var/tmp/.ottrin-picker-qa-_mg77olj/runtime/doc rw,nosuid,nodev,relatime shared:161 - fuse.portal portal rw,user_id=1000,group_id=1000"
+        ],
+        "profile_removed": true
+      }
+    },
+    "candidate": {
+      "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+      "artifact_sha256": "6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5",
+      "worker_sha256": "271a85d4a1ba7d2ef34f7caae8e8725d09126921be8161d2d4c6d238bd73a33a",
+      "idle": {
+        "seconds": 30.000090410991106,
+        "cpu_one_core_percent": 0.06666646575395858,
+        "no_external_probe_clients_or_injected_input_during_sample": true
+      },
+      "index_counts": [
+        1,
+        2,
+        1
+      ],
+      "captures": [
+        {
+          "path": "linux-candidate/main-idle.png",
+          "sha256": "449348d5ecc55ca5bd8a3af7a18acbf82a6b0ad51f68b65cc26c17755fc82be2",
+          "review": "Reviewed original: one-file list, intact themed frame and controls; no error overlay."
+        },
+        {
+          "path": "linux-candidate/index-updated.png",
+          "sha256": "a3641d48776d956550995e9ab557ef02d73daa31d59a052f6cd092fa5065d05e",
+          "review": "Reviewed original: Settings Search health visibly shows 2 files indexed and active watcher, consistent themed navigation/cards."
+        }
+      ],
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-lal4xnjf",
+        "owned_processes_reaped": [
+          {
+            "pid": 1447233,
+            "exit": 0
+          },
+          {
+            "pid": 1447236,
+            "exit": 0
+          },
+          {
+            "pid": 1447237,
+            "exit": 15
+          },
+          {
+            "pid": 1447302,
+            "exit": 0
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1447348,
+            1447415
+          ],
+          "unreadable_foreign_processes_preserved": 3
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      }
+    }
+  }
+}

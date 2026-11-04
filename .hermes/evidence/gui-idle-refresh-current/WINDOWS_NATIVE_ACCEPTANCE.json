@@ -1,0 +1,245 @@
+{
+  "status": "pass scoped Windows native idle and background observation",
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "installer_sha256": "99821f41cff0454b3d095770408c1c302052cbabd779d05eb990cdeba533d7f4",
+  "cases": 4,
+  "full_window_captures": 6,
+  "captures": {
+    "Native-idle-main.png": {
+      "sha256": "cbd18f5b98fb452bee2ba3f87c345794cf4c2875e02a4f373d1b4fc788144e35",
+      "review": "Reviewed complete original: intact main frame and one-file list."
+    },
+    "Native-index-updated.png": {
+      "sha256": "7ddf091b35ca4b3108793af3fe83f9a7db749cc3dd32abf47abb0ccbb9dbefc5",
+      "review": "Reviewed complete original: themed Search page visibly reports 2 files indexed and active watcher."
+    },
+    "Native-storage-updated.png": {
+      "sha256": "c0ca73d3ffc648e289b0bd3aef2c8a48622859bcf7dc67e839ac1e1cd1bd067a",
+      "review": "Reviewed complete original: additional locations-rail drive button appears, main frame/list intact; label verified through native accessibility result."
+    },
+    "OpenGL-idle-main.png": {
+      "sha256": "fe3e22578970c600c06149f9cbed5b532662ccca4f896b27aec6bdd8c845a730",
+      "review": "Reviewed complete original: intact main frame and one-file list."
+    },
+    "OpenGL-index-updated.png": {
+      "sha256": "3f1537a3dabbe878ee84215403164835947f99d88a118651d93a88f9df835db6",
+      "review": "Reviewed complete original: themed Search page visibly reports 2 files indexed and active watcher."
+    },
+    "OpenGL-storage-updated.png": {
+      "sha256": "fc922ec66958e22013c49fcc5763b007e379d23b078fb76bc2a07ff526d310dd",
+      "review": "Reviewed complete original: additional locations-rail drive button appears, main frame/list intact; label verified through native accessibility result."
+    }
+  },
+  "gui_idle_baseline": [
+    {
+      "seconds": 30.0237016,
+      "cpu_one_core_percent": 0,
+      "rss_before": 75522048,
+      "renderer": "Native",
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "index_after": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4132864,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793759923,
+        "last_scan_completed_unix_secs": 1793759923,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_after": 21,
+      "rss_after": 60420096,
+      "status": "pass current-scope criterion",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "dpi": 144,
+      "scope": "Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.",
+      "criterion": "StaticGUIbelow2percentonecore",
+      "index_before": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4132864,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793759923,
+        "last_scan_completed_unix_secs": 1793759923,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_before": 21
+    },
+    {
+      "seconds": 30.0166556,
+      "cpu_one_core_percent": 0,
+      "rss_before": 90357760,
+      "renderer": "OpenGL",
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "index_after": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 1593344,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 1511424,
+        "freelist_pages": 369,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793760028,
+        "last_scan_completed_unix_secs": 1793760028,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 3,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 32992,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_after": 26,
+      "rss_after": 62644224,
+      "status": "pass current-scope criterion",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "dpi": 144,
+      "scope": "Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.",
+      "criterion": "StaticGUIbelow2percentonecore",
+      "index_before": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 1593344,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 1511424,
+        "freelist_pages": 369,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793760028,
+        "last_scan_completed_unix_secs": 1793760028,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793759923,
+        "snapshot_revision": 3,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 32992,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_before": 26
+    }
+  ],
+  "matched_comparison": [
+    {
+      "renderer": "Native",
+      "baseline_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+      "baseline_cpu_one_core_percent": 73.06228704515448,
+      "current_cpu_one_core_percent": 0,
+      "matched_dpi": 144,
+      "matched_bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "matched_work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ]
+    },
+    {
+      "renderer": "OpenGL",
+      "baseline_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+      "baseline_cpu_one_core_percent": 7.758174476661167,
+      "current_cpu_one_core_percent": 0,
+      "matched_dpi": 144,
+      "matched_bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "matched_work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ]
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "checks": [
+    "Ordinary-user exact NSIS installation and full 58-file verification",
+    "Both software renderers meet GUI CPU below 2 percent of one core over 30 seconds",
+    "Native index count 1/2/1 after external mutations without injected input",
+    "Actual OS DOS-drive insertion reaches sleeping locations rail without injected input",
+    "Normal close, supported uninstall, source and saved-preference preservation"
+  ],
+  "limits": [
+    "Zero observed processor-time delta is limited by counter resolution and the bounded sample; no promise of universal zero CPU",
+    "Private signed-VirtIO software VM, Dark144DPI, one-file corpus; sustained, physical and personal-machine acceptance separate",
+    "DOS-drive insertion is not physical-volume removal/reconnect",
+    "Current check covers changed observation responsibilities; preceding numeric/shape/mapping scopes retain their exact historical artifacts",
+    "No Store/signing or fresh MSIX deployment/update/login acceptance"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "status": "functional pass; CPU and original captures require review",
+  "case": "baseline",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "artifact_sha256": "ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb",
+  "scope": "Private software X11 Dark150; actual native workflow and idle sample. Full platform/physical acceptance separate.",
+  "vulkan_cpu_icd": {
+    "path": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "sha256": "d9f0938f98d74139277a0ad21aa10b46b26eafd5ccc8e40b6b6c0fa3e0acbb8c"
+  },
+  "worker_sha256": "271a85d4a1ba7d2ef34f7caae8e8725d09126921be8161d2d4c6d238bd73a33a",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-_mg77olj",
+    "owned_processes_reaped": [
+      {
+        "pid": 1445111,
+        "exit": 0
+      },
+      {
+        "pid": 1445114,
+        "exit": 0
+      },
+      {
+        "pid": 1445115,
+        "exit": 15
+      },
+      {
+        "pid": 1445181,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1445191,
+        1445259
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "96 34 0:64 / /var/tmp/.ottrin-picker-qa-_mg77olj/runtime/doc rw,nosuid,nodev,relatime shared:161 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

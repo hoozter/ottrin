@@ -1,0 +1,12 @@
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 40.68s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 3 tests
+test storage_observer::tests::unchanged_observations_are_quiet_and_stale_discovery_cannot_replace_a_fresh_guard ... ok
+test storage_observer::tests::closing_does_not_wait_for_a_blocked_drive_query_or_publish_its_result ... ok
+test storage_observer::tests::a_sleeping_gui_receives_changed_roots_from_the_background_worker ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 478 filtered out; finished in 4.00s
+

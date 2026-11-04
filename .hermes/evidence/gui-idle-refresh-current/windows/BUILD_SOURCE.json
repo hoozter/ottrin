@@ -1,0 +1,10 @@
+{
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "working_tree_at_build": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "scope": "GUI idle refresh candidate; source checks pass but actual runtime/performance and hosted gates pending. Preserve all stable748a deliverables until acceptance.",
+  "pending_consumers": [],
+  "cleanup_owner": "gui-idle-refresh-current",
+  "cleanup_complete": true,
+  "delivery_status": "Verified current idle-observation cohort promoted; staging removed"
+}

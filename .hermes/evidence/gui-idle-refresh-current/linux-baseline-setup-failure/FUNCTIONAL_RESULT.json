@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "scope": "Actual AppImage, private X11/software Dark150, one-file root. GUI process CPU only; native Settings index-count update without injected input, source/preferences and normal close. No physical graphics/large corpus/full appearance acceptance.",
+  "error": "AssertionError('Timed out waiting for quiet one-file index ready')"
+}

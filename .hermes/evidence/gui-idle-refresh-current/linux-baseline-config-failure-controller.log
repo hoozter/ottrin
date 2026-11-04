@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/gui-idle-refresh-current/linux-native.py", line 25, in <module>
+    assert worker.wait(timeout=240)==0, 'Native idle workflow failed; inspect preserved result/log'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Native idle workflow failed; inspect preserved result/log

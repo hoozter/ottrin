@@ -1,0 +1,17 @@
+{
+  "status": "pass exact production source scope",
+  "previous_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "candidate_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "changed_files": [
+    "crates/ottrin-search/src/lib.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/remote_index.rs",
+    "crates/ottrin-ui/src/storage_observer.rs"
+  ],
+  "shipping_behavior": "Storage roots are observed off the GUI thread, start lazily with the locations rail and wake it only on changes; fresh mutation guards outrank late observer results. Remote index status polls independently and wakes only on changed diagnostics. Initial unknown storage never clears selected indexed volumes. Search diagnostics only adds Eq/PartialEq derives.",
+  "unchanged_responsibilities": [
+    "Theme mapping, windows, preview/editor, picker, folder integration, helper and service implementations",
+    "Index daemon runtime and indexing algorithm: current mapped ELF/PE identity established separately"
+  ],
+  "limits": "Current native observations and idle CPU checks cover changed responsibilities; earlier functional receipts keep their original exact sources/artifacts."
+}

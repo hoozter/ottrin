@@ -10,7 +10,7 @@ signal.signal(signal.SIGTERM,cancelled)
 extract_owned=False
 try:
  extract=root/'.hermes/packaging-tmp/.linux-desktop-extract';assert not extract.exists();extract.mkdir();extract_owned=True
- (e/'EXTRACTION_OWNER.json').write_text(json.dumps({'path':str(extract),'source':expected,'pending_consumers':['production package content/closure verification','Dark100/Light150 named numeric value/Restore/Cancel, source preservation and normal close'],'cleanup':'remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks'},indent=2)+'\n')
+ (e/'EXTRACTION_OWNER.json').write_text(json.dumps({'path':str(extract),'source':expected,'pending_consumers':['production package content/closure verification','Dark150 matched quiet GUI CPU/background index update, source/preferences and normal close'],'cleanup':'remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks'},indent=2)+'\n')
  source=(root/'packaging/verify-release-artifacts.sh').read_text()
  def chunk(start,end):return source[source.index(start):source.index(end,source.index(start))]
  def sha(p):

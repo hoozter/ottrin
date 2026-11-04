@@ -1,0 +1,11 @@
+{
+  "status": "pass unchanged mapped daemon responsibility",
+  "source_revision": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "current_binary_sha256": "90c6e4544dfd328fc543bc44b51a2a3d8bf82fd34840b42f20daeee72fb72e32",
+  "previous_runtime_receipt": ".hermes/evidence/appearance-numeric-values-current/LINUX_DAEMON_RUNTIME.json",
+  "previous_receipt_sha256": "ec460434e956fe4c96f0a589ce0eb63cf666460f13e8ed1eabc5da6999d7714a",
+  "previous_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "previous_binary_sha256": "d25c347506339a5a76df4f9a0e9485cef02d61399878534225cea188573764fe",
+  "comparison": "LINUX_INDEX_ELF_COMPARISON.json",
+  "scope": "No fresh1000-file Linux daemon runtime/CPU claim. Previous exact portable watcher/create/rename/delete/query/restart/two shutdowns and bounded quiet CPU acceptance are reused only because complete PT_LOAD comparison proves equality outside GNU build-id/ELF metadata. Current GUI independently observed current daemon Ready/watcher and1/2/1."
+}

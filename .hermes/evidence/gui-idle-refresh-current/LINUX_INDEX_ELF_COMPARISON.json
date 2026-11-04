@@ -1,0 +1,44 @@
+{
+  "status": "pass mapped-image identity",
+  "mapped_image_equal": true,
+  "whole_file_equal": false,
+  "versions": [
+    {
+      "sha256": "d25c347506339a5a76df4f9a0e9485cef02d61399878534225cea188573764fe",
+      "bytes": 5842168
+    },
+    {
+      "sha256": "90c6e4544dfd328fc543bc44b51a2a3d8bf82fd34840b42f20daeee72fb72e32",
+      "bytes": 5842168
+    }
+  ],
+  "different_loaded_byte_count": 20,
+  "different_loaded_offsets_first64": [
+    812,
+    813,
+    814,
+    815,
+    816,
+    817,
+    818,
+    819,
+    820,
+    821,
+    822,
+    823,
+    824,
+    825,
+    826,
+    827,
+    828,
+    829,
+    830,
+    831
+  ],
+  "different_loaded_bytes_outside_metadata": 0,
+  "build_id_descriptor": {
+    "offset": 812,
+    "bytes": 20
+  },
+  "scope": "Complete load-segment comparison, including code/data/dynamic dependencies. No prior daemon runtime or CPU acceptance is carried forward from binary identity when mapped_image_equal is false."
+}

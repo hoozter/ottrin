@@ -1,0 +1,40 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/gui-idle-refresh-current/native/RESULTS.zip",
+          "bytes": 689965,
+          "sha256": "39ac22343e42c4d2d9f3c758764589311c612af85a2a144bf4ffda500e79efd7"
+        },
+        {
+          "path": ".hermes/evidence/gui-idle-refresh-current/native/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/gui-idle-refresh-current/native/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "e8aa3448b4db0e45a4839901b4d599b2b4ba077d4443f7ecb40652216edea180"
+        },
+        {
+          "path": ".hermes/evidence/gui-idle-refresh-current/native/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "a08c7918e25a513094afed05e4d0e94088d5ac3cd3b9b64af943578a103cb7ac"
+        },
+        {
+          "path": ".hermes/evidence/gui-idle-refresh-current/native/readiness.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".hermes/evidence/gui-idle-refresh-current/native/privacy-accepted-0.png",
+          "bytes": 2177901,
+          "sha256": "331cc6f7ab79b844fd67ac6cd4cd7229f548e7ec16352f5efa51bc5fc8e434e9"
+        }
+      ],
+      "bytes": 2875553
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

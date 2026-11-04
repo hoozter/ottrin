@@ -1,0 +1,23 @@
+{
+  "extraction": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+    "pending_consumers": [],
+    "cleanup": "Content, exact GUI ELF identity and current idle/background native checks complete; owned extraction removed",
+    "removed": true,
+    "removed_logical_bytes": 76531970
+  },
+  "diagnostic_duplicates": [
+    {
+      "path": "native/current-diagnostic.ppm",
+      "bytes": 1034039,
+      "sha256": "5e4d6fc54316002ff5ddb638a9e099e7c6c549e6f14aa382d2ceeb15394f3c25"
+    },
+    {
+      "path": "native/LIVE_RESULT.json",
+      "bytes": 7650,
+      "sha256": "ca37922e9b5c5b318d025f992f90a143a2e791629bdce01aa0ace481c2c1126e"
+    }
+  ],
+  "native_private_inputs": "native/RETIRED_INPUTS.json"
+}

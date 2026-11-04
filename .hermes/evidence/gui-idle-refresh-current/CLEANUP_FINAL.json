@@ -1,0 +1,143 @@
+{
+  "status": "complete for current idle-observation task resources",
+  "owned_vms": [
+    {
+      "label": "native",
+      "uuid": "1353962c-d57d-4d4e-a48f-4862d8ae74ac",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "label": "assembly",
+      "uuid": "52d20c3c-e2ce-4fdf-8ae2-49dcac5534c4",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "removed_private_profiles": [
+    "/var/tmp/.ottrin-picker-qa-k9tp5d_k",
+    "/var/tmp/.ottrin-picker-qa-eho21yo_",
+    "/var/tmp/.ottrin-picker-qa-xr_dxrqf",
+    "/var/tmp/.ottrin-picker-qa-_mg77olj",
+    "/var/tmp/.ottrin-picker-qa-lal4xnjf"
+  ],
+  "removed_stages_extractions_archives": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-msix-source",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/gui-idle-refresh-current/source.zip"
+  ],
+  "consumed_inputs": {
+    "extraction": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+      "source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+      "pending_consumers": [],
+      "cleanup": "Content, exact GUI ELF identity and current idle/background native checks complete; owned extraction removed",
+      "removed": true,
+      "removed_logical_bytes": 76531970
+    },
+    "diagnostic_duplicates": [
+      {
+        "path": "native/current-diagnostic.ppm",
+        "bytes": 1034039,
+        "sha256": "5e4d6fc54316002ff5ddb638a9e099e7c6c549e6f14aa382d2ceeb15394f3c25"
+      },
+      {
+        "path": "native/LIVE_RESULT.json",
+        "bytes": 7650,
+        "sha256": "ca37922e9b5c5b318d025f992f90a143a2e791629bdce01aa0ace481c2c1126e"
+      }
+    ],
+    "native_private_inputs": "native/RETIRED_INPUTS.json"
+  },
+  "superseded_windows_logical_bytes": 293684500,
+  "superseded_linux": "Replaced at stable paths through production lifecycle after exact hashes, link and open-consumer checks",
+  "compiler_storage_comparison": {
+    "status": "pass source checks, packaging and final compiler-storage review; useful shared caches/current executables retained",
+    "baseline": {
+      "target/debug/deps": 41674554097,
+      "target/debug/incremental": 23497764042,
+      "target/x86_64-pc-windows-gnu/debug/deps": 33298645234,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 39676099440,
+      "target/release/deps": 4379884555,
+      "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+    },
+    "current": {
+      "target/debug/deps": 41674751911,
+      "target/debug/incremental": 23504670533,
+      "target/x86_64-pc-windows-gnu/debug/deps": 33298656714,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 39678093236,
+      "target/release/deps": 4379982616,
+      "target/x86_64-pc-windows-gnu/release/deps": 3853141750
+    },
+    "delta": {
+      "target/debug/deps": 197814,
+      "target/debug/incremental": 6906491,
+      "target/x86_64-pc-windows-gnu/debug/deps": 11480,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 1993796,
+      "target/release/deps": 98061,
+      "target/x86_64-pc-windows-gnu/release/deps": 120119
+    },
+    "obsolete_incremental_sessions_removed": 25,
+    "all_reviewed_candidates_absent": true,
+    "all_recorded_newest_sessions_retained": true,
+    "final_obsolete_incremental_candidates": 0,
+    "refusals": "Transient unreadable processes1420230/1420467 exited before retry; later unrelated cargo1420640 also exited. No new identity exceptions or validation bypass. Canonical helper removed9sessions before interruptions and16on completion.",
+    "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc replaced in place with the same compiler/profile/features;481UI tests pass,1existing ignored. No extra obsolete test executable was produced.",
+    "source_validation_sizes": {
+      "target/debug/deps": 41674751911,
+      "target/debug/incremental": 23504670533,
+      "target/x86_64-pc-windows-gnu/debug/deps": 33298656714,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 39678093236,
+      "target/release/deps": 4379884555,
+      "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+    },
+    "package_builds": "Original native/Windows release target/profile/features and caches reused; no extra target tree or test configuration. Existing current hashed binary paths were rebuilt in place."
+  },
+  "obsolete_incremental_sessions_removed": 25,
+  "final_obsolete_incremental_candidates": 0,
+  "protected_domains_retained": [
+    "ottrin-copy-cleanup-qa",
+    "ottrin-index-qa",
+    "ottrin-qa-20261011",
+    "win11ltsc"
+  ],
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/gui-idle-refresh-current",
+      "purpose": "Compact acceptance receipts, frozen producers, reviewed originals and diagnostic logs; current evidence retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-display-driver",
+      "purpose": "Small useful signed display-driver cache for native DPI QA"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Four latest usable Linux deliverables"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Latest ZIP/NSIS/MSIX14 and 58-file payload for delivery"
+    }
+  ],
+  "pending_disposable_consumers": [],
+  "scope": "Personal services/settings/data, current usable packages, protected VMs and useful shared compiler caches preserved."
+}
