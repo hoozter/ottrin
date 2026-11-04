@@ -1,0 +1,44 @@
+{
+  "status": "pass exact portable payload comparison",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "previous_source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "payload_files": 110,
+  "changes": {
+    "SOURCE_REVISION.txt": {
+      "previous": "ac007a0403ab5eed2de45ceb64994504a7f01110844148ddd64750f93c438453",
+      "current": "bc0fa3e177516371918f5e703c1eea282b6f3f697f7a9debdb93d19c94b2e981"
+    },
+    "libexec/ottrin/ottrin-indexd": {
+      "previous": "58a7f46a1adfff199fb844bb0f7b84a4bf3f644a6cb7ffc270ff8b10a69de2c2",
+      "current": "4cceba0adbdfe215cdb673837bf8863cec638e7c27cb090d52c1dc82ae463975"
+    },
+    "libexec/ottrin/ottrin": {
+      "previous": "3279f75e4ced16d32c3780b72e7f1f2010f29d71e6fbaf9d2098b6a496113c8a",
+      "current": "9d31b892628bc06c05a0312b248f27fa0ffa378f463d6a58a77b72ec19032cf9"
+    },
+    "libexec/ottrin/ottrin-priv-helper": {
+      "previous": "a4a4b97b92408c5f3820c37c9657f605cba8a551e9451e7b62b243e8e45ee7c3",
+      "current": "3e8f04b59ec41d3950ef412625901a94cebb43d6125197532c1adb6b9a45c558"
+    },
+    "docs/USER_GUIDE.md": {
+      "previous": "8c1d485108061df7fa429dd9513db8d944821d3758e738dc237dd76542900d88",
+      "current": "e65c11f71c0b1bf4add4a1543cb79a38e2d4005686e6e3b5edc049fe16791c89"
+    },
+    "docs/RELEASE_NOTES.md": {
+      "previous": "7b1d9796fb7074ebe9ced447d7ae4c80eea22f17a52c4a914b65dddb9dbf1087",
+      "current": "0cdd911b0e424f7fece119bf8a567bb742d7e8329e077c7232afc6ee649059fb"
+    },
+    "docs/ROADMAP.md": {
+      "previous": "67fce4665d7c809517058c2b19dfb0f65365444a9b10686b83272aaa6170ed90",
+      "current": "0443a59296a72211ee74bae65551f44ad4aa0d9037a6323c42e49330050def45"
+    },
+    "README.md": {
+      "previous": "0d23324fd250b94233403698001d93f4891e47b3eaa92f8c59b29344351af4ce",
+      "current": "8cde1a97cf6de58da555b460b4f00c55a461adff8e9865cc8bb2387635603663"
+    }
+  },
+  "daemon_byte_identical": false,
+  "daemon_sha256": "4cceba0adbdfe215cdb673837bf8863cec638e7c27cb090d52c1dc82ae463975",
+  "scope": "Only GUI, privileged helper, rebuilt daemon, provenance and manual snapshots change. Media/preview helpers and dependencies remain byte-identical. Changed daemon requires fresh runtime evidence; no prior CPU sample is carried forward.",
+  "fresh_daemon_runtime_required": true
+}

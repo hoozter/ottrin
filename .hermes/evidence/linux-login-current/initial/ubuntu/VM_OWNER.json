@@ -1,0 +1,14 @@
+{
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "volumes": [
+    "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+    "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+    "ottrin-native-ubuntu-desktop-qa-seed.iso"
+  ],
+  "base_cache": "/home/campbell/Projects/Ottrin/.hermes/tools/ubuntu24/noble-server-cloudimg-amd64.img",
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/controller.py",
+  "actor_sha256": "483145b6b07b5f73f0a4857ee7d6954d09550de5840af69fe95546710fe39184",
+  "controller_sha256": "3d3ef60d4a8748f05118986d3fd8a08dd152212a2036cdf51786207b42b97976",
+  "probe_sha256": "c50fe218eeb6a9f15dd5d16019854e0b57a7ccf234297975ca4b320a69d10bb7"
+}

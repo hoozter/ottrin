@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "pending_consumers": [
+    "production package content/closure verification",
+    "Content-only extraction; native GUI checks use actual mounted AppImage"
+  ],
+  "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks"
+}

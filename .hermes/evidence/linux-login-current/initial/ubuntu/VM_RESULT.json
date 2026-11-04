@@ -1,0 +1,21 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "41c09bebbc9c49022af8eb0d568813e668d1fe2d",
+  "status": "fail",
+  "package_sha256": "700fd94f3cbbdbc4e8eb27f11387f9f3211e89f74d02d61ad48bcb8a09b5c345",
+  "uuid": "68663a4e-5d10-4d90-9edc-eea062b3a679",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "boot_ids": [
+    "11f74379-8304-4491-b5cb-5483b69a96d9"
+  ],
+  "error": "AssertionError('l\\\\\\\\\\').stdout\\\\\\\\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 12, in run\\\\\\\\n    def run(*args):return subprocess.run(args,check=True,capture_output=True,text=True,timeout=45)\\\\\\\\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/usr/lib/python3.12/subprocess.py\\\\\", line 571, in run\\\\\\\\n    raise CalledProcessError(retcode, process.args,\\\\\\\\nsubprocess.CalledProcessError: Command \\\\\\\\\\'(\\\\\\\\\\'/usr/bin/ottrin\\\\\\\\\\', \\\\\\\\\\'index\\\\\\\\\\', \\\\\\\\\\'service-install\\\\\\\\\\')\\\\\\\\\\' returned non-zero exit status 1.\\\\\\\\n\\'})\",\\n  \"traceback\": \"Traceback (most recent call last):\\\\n  File \\\\\"/home/ottrincontrol/actor.py\\\\\", line 32, in <module>\\\\n    worker=json.loads(result.read_text());assert worker[\\'status\\']==\\'pass\\',worker\\\\n                                                 ^^^^^^^^^^^^^^^^^^^^^^^^\\\\nAssertionError: {\\'status\\': \\'fail\\', \\'phase\\': 0, \\'boot_id\\': \\'11f74379-8304-4491-b5cb-5483b69a96d9\\', \\'session_id\\': \\'c1\\', \\'gui_attempts\\': 0, \\'session\\': \\'Seat=seat0\\\\\\\\nRemote=no\\\\\\\\nService=lightdm-autologin\\\\\\\\nType=x11\\\\\\\\nActive=yes\\\\\\\\n\\', \\'error\\': \\\\\"CalledProcessError(1, (\\'/usr/bin/ottrin\\', \\'index\\', \\'service-install\\'))\\\\\", \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 53, in <module>\\\\\\\\n    report[\\\\\\\\\\'install\\\\\\\\\\']=run(\\\\\\\\\\'/usr/bin/ottrin\\\\\\\\\\',\\\\\\\\\\'index\\\\\\\\\\',\\\\\\\\\\'service-install\\\\\\\\\\').stdout\\\\\\\\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 12, in run\\\\\\\\n    def run(*args):return subprocess.run(args,check=True,capture_output=True,text=True,timeout=45)\\\\\\\\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/usr/lib/python3.12/subprocess.py\\\\\", line 571, in run\\\\\\\\n    raise CalledProcessError(retcode, process.args,\\\\\\\\nsubprocess.CalledProcessError: Command \\\\\\\\\\'(\\\\\\\\\\'/usr/bin/ottrin\\\\\\\\\\', \\\\\\\\\\'index\\\\\\\\\\', \\\\\\\\\\'service-install\\\\\\\\\\')\\\\\\\\\\' returned non-zero exit status 1.\\\\\\\\n\\'}\\\\n\"\\n}\\n/etc/systemd/system/default.target \u2192 /usr/lib/systemd/system/graphical.target.\\nSynchronizing state of lightdm.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.\\nExecuting: /usr/lib/systemd/systemd-sysv-install enable lightdm\\nThe unit files have no installation config (WantedBy=, RequiredBy=, UpheldBy=,\\nAlso=, or Alias= settings in the [Install] section, and DefaultInstance= for\\ntemplate units). This means they are not meant to be enabled or disabled using systemctl.\\n \\nPossible reasons for having these kinds of units are:\\n\u2022 A unit may be statically enabled by being symlinked from another unit\\'s\\n  .wants/, .requires/, or .upholds/ directory.\\n\u2022 A unit\\'s purpose may be to act as a helper for some other unit which has\\n  a requirement dependency on it.\\n\u2022 A unit may be started when needed via activation (socket, path, timer,\\n  D-Bus, udev, scripted systemctl call, ...).\\n\u2022 In case of template units, the unit is meant to be enabled with some\\n  instance name specified.\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

@@ -9,12 +9,12 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` now use runtime
-`47db1f97e909ffb0ce634868221b34a96974022a`. Windows ZIP/NSIS/development
+`f8db06a1bc626468913427a83bea3480913dbca5`. Windows ZIP/NSIS/development
 MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
-Source50a breadcrumb directory classification is delivered in Linux47db; it is
+Source50a breadcrumb directory classification is delivered in Linuxf8; it is
 not included in Windows458.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`6600ab5a17b675f0d521eb73053638a08a27dec86aee04078f9f843b35ae215e`.
+`d220b9c38252c2e83e916124b3b6124fcf849e3ed9bd4f12551d954453a1699e`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
@@ -31,7 +31,7 @@ invented Sync button and separately painted tab/window buttons. Actual window
 controls and the New tab button now use the production widgets. Miller file rows
 also use the production renderer: actual typography/icons/chevrons, theme colors,
 selection and hit rectangles. Pixel-rounded painting now matches hit testing, and
-measured filename elision reserves the chevron space. 495 UI tests and strict
+measured filename elision reserves the chevron space. 496 UI tests and strict
 native/Windows UI lint pass.
 The shared-widget changes first shipped in Linux/Windows458, including MSIX17.
 Linux47db includes them; Windows458 remains current. Exact Windows settings/preview,
@@ -350,90 +350,67 @@ remain separate.
 
 ### Ordered implementation and acceptance queue
 
-Source3b35dab5 adds a required helper protocol version and a bounded,
-unelevated capability probe. Incompatible helpers show **Update needed** with the
-existing reinstall action; malformed/version-mismatched requests are rejected
-before dispatch. Source verification: 496 UI tests pass (one existing ignored),
-11 helper tests and four probe tests pass, and strict native/Windows all-target
-lint passes. Actual debug-helper IPC verifies rejected requests leave files
-untouched and valid Copy/Undo/cleanup still works across fresh processes. Evidence:
-`.hermes/evidence/helper-protocol-current/`. Its four-format package-content checks
-and actual AppImage/FUSE old-helper upgrade pass: cancellation preserves the old
-helper and Update needed status; authentication installs the compatible helper and
-shows Ready; actual protected Copy, Activity Undo and confirmed cleanup pass with
-independent root byte/ownership checks. The rebuilt daemon passes fresh watcher,
-query, restart and two-stop checks at 0.10% one core over30seconds without clients
-in a private1000-file fixture. This is not a personal-service CPU measurement.
-Screenshot review caught a missing arrow glyph in the new guidance; the source now
-uses plain wording. The3b candidate packages and extraction were retired before
-delivery; the corrected cohort is described below. The
-stable Linux47db and Windows458 deliveries above are unchanged. Twelve original
-captures were directly reviewed; this does not close U08 or whole-interface
-acceptance. The owned VM, three volumes, credentials, transport and host input
-were removed; compact receipts remain in the evidence root.
-Windows elevated Copy remains unimplemented; it is now refused before dispatch
-rather than copying without returning recovery ownership.
+Delivered Linux `f8db06a1` now includes the required helper protocol and bounded unelevated
+capability probe. Incompatible helpers show Update needed and an update action;
+malformed/version-mismatched requests are refused before mutations. Current source
+passes 496 UI tests (one existing ignored), strict native/Windows lint and all four
+exact-source hosted jobs 41871666761. The corrected regression explicitly separates
+helper status from a ready HTML sandbox. Earlier 3b/41c diagnostic cohorts were retired; their receipts keep their original
+source/artifact scopes and do not establish release acceptance.
 
-Corrected runtime41c09beb passes four-format contents/runtime closure, matching
-payloads and the actual AppImage/FUSE old-helper update, cancellation, Ready state
-and protected Copy/Undo/cleanup workflow. Twelve fresh complete-window captures
-were reviewed; the corrected guidance displays without the missing glyph. Fresh
-private1000-file daemon watcher/query/restart/two-stop acceptance passes at0.13%
-one core over30seconds without clients. Exact receipts are in
-`.hermes/evidence/helper-readiness-delivery-current/`. Its accepted packages remain
-in `.hermes/packaging-tmp/.linux-native-desktop-stage/` pending exact-source hosted
-verification and publication. The owned VM/three volumes, credentials, host input,
-transport and content extraction are removed. The retained compact receipts and
-candidate's pending consumer are recorded in `CLEANUP_CURRENT.json`. A read-only,
-unelevated probe confirms the personal installed helper rejects protocol1; updating
-that installation needs owner authentication and does not block software work.
+All four current formats pass content/closure/provenance checks. Exact current
+AppImage/FUSE helper update/cancellation, authenticated protected Copy, actual app
+retry, Activity Undo and confirmed cleanup pass with independent root byte/ownership
+checks. Twelve current complete-window captures were reviewed. Native DEB acceptance
+covers initial setup, normal GUI close, two actual reboots and enabled/disabled
+startup; the SSH control account is separate from the desktop user. Four current
+AppImage/portable stable-path replacement from runtime47db to f8 cases preserve startup choice,
+Grid preference and database inode; all eight old/new windows were reviewed. The
+actual current FUSE daemon passes watcher/query/restart/two-shutdown checks at 0.13%
+one core over 30 seconds without clients on a private 1000-file fixture. All current
+receipts are in `.hermes/evidence/helper-readiness-final-current/`.
 
-Hosted41c Linux verification exposed an environment-dependent assertion in the
-new Services regression: the unrelated HTML sandbox legitimately displayed
-Installed and ready when Chromium was installed. The corrected test explicitly
-forces that state, scopes helper assertions to the helper section and retains
-both positive and negative checks. All496 UI tests pass locally (one existing
-ignored), with strict native/Windows lint. Only the test module changes; the
-production UI prefix is byte-identical to41c. Failure and correction evidence is
-`helper-readiness-delivery-current/CI_SCOPE_FIX.json`. The failed41c hosted job is
-not counted as a release pass. Keep its accepted runtime as the input to the
-independent Linux login/reboot fixture; final delivery needs the corrected source
-checkpoint's hosted verification and coherent package provenance.
+The accepted cohort is published at `dist/packages/`. The personal managed index
+was refreshed to the current daemon, is Ready, and retains startup choice, exact
+preferences hash and database identity. A separate read-only live 30-second sample
+with about 197000 items measured 0.57% one core, Ready/watcher ready/no error. External
+filesystem activity is uncontrolled; no sustained resource guarantee is inferred.
+The personal installed helper still rejects protocol 1 and needs owner authentication
+through Services > Update / reinstall helper. That wait does not stall software work.
 
-Completed delivery: Linux47db and Windows458/MSIX17 are at their stable paths;
-exact native scopes, fresh/update/login MSIX gates, four hosted jobs and owned
-fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap completion.
+Owned current test VMs/volumes, credentials, profiles, FUSE mounts, input aliases,
+transport archives and content extractions are removed. Promotion retires old
+packages and staging. Current deliverables, shared compiler caches and compact
+acceptance receipts remain. This is scoped delivery, not full roadmap or U08
+acceptance. Whole-interface findings include settled startup item-count/search
+status, automatic-startup wording and Grid filename legibility.
 
-1. Finish hosted verification and coherent packaging after the corrected Services
-   regression, then publish the helper compatibility cohort.
-   Complete ordinary-user rediscovery of elevated Copy history after restarting
+1. Complete ordinary-user rediscovery of elevated Copy history after restarting
    and the Windows receipt/Undo/cleanup bridge. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted
-   at the exact candidate scope above. Linux same-session helper and actual application retry/Activity workflow
+   at the exact delivered scope above. Linux same-session helper and actual application retry/Activity workflow
    are delivered and accepted above. The personal helper update needs the owner's
    OS authentication; that does not stall these software changes.
-2. Finish remaining Linux real login/reboot and AppImage/portable binary-version
-   replacement readiness. Earlier scoped Services, normal GUI-close and same-version
-   DEB replacement receipts retain their exact inputs; do not repeat unchanged
-   matrices without changed inputs or a reproduced concern.
-3. Finish the theme/interface consistency audit and implementation. The source
+2. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor, delivered
-   first in Linux/Windows458, retained in Linux47db, with bounded native acceptance. U08 remains unfinished:
+   in current Linuxf8 with bounded native acceptance; Windows458 retains its exact
+   earlier artifact/acceptance scope. U08 remains unfinished:
    tabs, window buttons and Miller file rows now share production presenters in
    source. Status controls, List/Grid representation, miniature corner scaling and
    inspector role ownership remain open. All affected controls need native visual
    verification. The exact458 Nord dark/light checks above cover preview row,
    tab and window-control selection; they do not close the full consistency audit.
-   Include the main search indicator's stopped-state color and settled resize
-   observation. Verify every supported control/role, text/icon alignment and
+   Include the main search indicator's stopped-state color, settled startup count/
+   readiness and resize observation; replace ambiguous automatic-startup wording
+   and review Grid caption width/truncation against actual tile space. Verify every supported control/role, text/icon alignment and
    window styling; field-map/test counts do not prove whole-interface consistency.
-4. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
+3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
    Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
    DEB/RPM and cooperating Windows caller receipts retain their exact scopes.
    MSIX17 startup-checkbox installed-package off/on and unchanged-daemon checks pass.
    Do not infer universal Windows dialog replacement or repeat fulfilled matrices
    without changed inputs or a reproduced defect.
-5. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
+4. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
    (54 roadmap bullets) and `release-audit-current/USER_REQUIREMENTS.json` (15
    overlapping user requirements), reconcile the release matrix/documents, and
    leave only actual [owner/external waits](#ownerexternal-waiting-list).

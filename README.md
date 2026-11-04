@@ -2,7 +2,7 @@
 
 **Navigate with clarity.**
 
-A fast, keyboard-first file manager built in Rust with [egui](https://github.com/emilk/egui). Miller columns, blazing-fast indexed search, rich file previews, and a full theme system — no Electron, no web views.
+A fast, keyboard-first file manager built in Rust with [egui](https://github.com/emilk/egui). Miller columns, blazing-fast indexed search, rich file previews, and a theme system with a native interface.
 
 [![CI](https://github.com/hoozter/ottrin/actions/workflows/ci.yml/badge.svg)](https://github.com/hoozter/ottrin/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/hoozter/ottrin)](https://github.com/hoozter/ottrin/releases)
@@ -36,9 +36,12 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages use runtime `47db1f97`; Windows ZIP/NSIS and unsigned
+The four Linux packages use runtime `f8db06a1`; Windows ZIP/NSIS and unsigned
 development MSIX0.1.0.17 remain on accepted runtime `45830098`. All four exact-source
-CI jobs41846558115 pass for47db. See the stable acceptance manifests for hashes.
+CI jobs 41871666761 pass for this runtime. Current Linux acceptance includes helper compatibility
+and authenticated update/recovery, two actual desktop reboots, and AppImage/portable
+binary replacement with enabled/disabled startup and Grid preference preserved.
+See the stable acceptance manifests for exact hashes and scopes.
 
 Linux privileged Copy now returns durable recovery references to Activity instead
 of committing a copy and reporting failure because its Undo receipt was lost.

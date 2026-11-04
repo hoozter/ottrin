@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux privileged Copy delivery; full roadmap incomplete",
-  "source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "status": "pass scoped Linux helper compatibility, native login/reboot and binary replacement delivery; full roadmap incomplete",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "d117ac60d8346ba2168f5c3caf5bbd847067080c1c86938fd00fc53e21492a1f",
-    "Ottrin-0.1.0-x86_64.AppImage": "6600ab5a17b675f0d521eb73053638a08a27dec86aee04078f9f843b35ae215e",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "21e3934752770bd37206a92865293bcafddd09dc1df8c4306eb9ee5e80e3d6ce",
-    "ottrin_0.1.0_amd64.deb": "e002a98e2bc83d513ebc53639997fc49d0bb0a5ed130549a5fea3faa8744c671"
+    "ottrin-0.1.0-1.x86_64.rpm": "30467e8baaa3ca2e23b61fc2062013b3b73997c9427bf074c57f8dd02c1682c4",
+    "Ottrin-0.1.0-x86_64.AppImage": "d220b9c38252c2e83e916124b3b6124fcf849e3ed9bd4f12551d954453a1699e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "225032c7039f56d00a680a7aa76e2d0b3e845a1303005b7bb9b85f1e79f72130",
+    "ottrin_0.1.0_amd64.deb": "fbd39a5c6080ebeb158572e155182f21812b4ea13abea429e87a0e50770c59ae"
   },
-  "evidence": ".hermes/evidence/privileged-copy-current",
+  "evidence": ".hermes/evidence/helper-readiness-final-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,20 +17,24 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "hosted_source": {
-    "run": 41846558115,
-    "tested_source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+    "run": 41871666761,
+    "tested_source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
     "all_four_jobs_success": true
   },
-  "native_privileged_copy": ".hermes/evidence/privileged-copy-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/privileged-copy-current/LINUX_DAEMON_RUNTIME.json",
-  "payload_comparison": ".hermes/evidence/privileged-copy-current/PAYLOAD_COMPARISON.json",
+  "native_privileged_copy": ".hermes/evidence/helper-readiness-final-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/helper-readiness-final-current/LINUX_DAEMON_RUNTIME.json",
+  "payload_comparison": ".hermes/evidence/helper-readiness-final-current/PAYLOAD_COMPARISON.json",
+  "native_login": ".hermes/evidence/helper-readiness-final-current/login/ACCEPTANCE.json",
+  "binary_replacement": ".hermes/evidence/helper-readiness-final-current/REPLACEMENT_ACCEPTANCE.json",
   "historical_service_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
   "limits": [
-    "Same-session Linux Copy and root-owned disposable destination only; source-level changed-object/refusal/partial/interrupted-cleanup tests have separate scopes",
-    "Windows privileged Copy and ordinary-user elevated-account Copy discovery after application restart remain open",
-    "No real Linux reboot/login, full upgrade matrix, physical graphics, complete theme audit or daily-driver acceptance",
-    "Four-format content verification; current GUI protected Copy uses actual mounted AppImage. Prior native update/Services matrices retain original hashes/scopes",
-    "Installed portable/AppImage helper requires Update / reinstall helper to receive its new binary; no automatic privileged installation",
-    "Windows remains458/MSIX17; no signing, public release, Store submission or full-roadmap completion"
+    "Current helper/Copy uses actual AppImage/FUSE; login/reboot uses native DEB; four-format contents/closure and namespace gates have their explicit scopes",
+    "Actual47db-to-f8 AppImage/portable replacement preserves enabled/disabled startup and Grid preference; future unknown schema/version transitions are not inferred",
+    "Ordinary-user elevated Copy restart discovery and Windows privileged Copy remain unfinished",
+    "Whole U08/theme audit, settled startup status, physical graphics, Wayland and final daily-driver acceptance remain open",
+    "Private1000-file idle sample is not a personal-index or large-corpus resource measurement",
+    "Personal helper installation requires owner authentication; no automatic privileged installation was performed",
+    "Windows remains458/MSIX17; no signing, public release or Store submission",
+    "Packaged development manuals are build-time snapshots atf8; repository delivery receipts are authoritative for subsequent acceptance/publication"
   ]
 }

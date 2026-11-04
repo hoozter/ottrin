@@ -4,9 +4,21 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM now use runtime `47db1f97`; Windows ZIP/NSIS and
+Linux AppImage/portable/DEB/RPM now use runtime `f8db06a1`; Windows ZIP/NSIS and
 unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
-CI41846558115 passes all four Linux/Windows verification/performance jobs.
+CI 41871666761 passes all four Linux/Windows verification/performance jobs.
+
+Helper readiness now checks the installed protocol/capabilities without elevation.
+An incompatible helper shows Update needed and the reinstall action, and unsupported
+requests are refused before file mutations. Actual AppImage update cancellation
+preserves the old helper; authenticated replacement changes status to Ready.
+
+Native Linux acceptance includes normal GUI close and two actual LightDM desktop
+reboots: startup enabled runs before the GUI; disabling it preserves the current
+PID and leaves the next boot stopped until opening Ottrin. Current AppImage and
+portable updates from runtime47db preserve enabled/disabled startup, Grid preference and
+index database identity. These are bounded Ubuntu software-X11 scopes, not complete
+Linux/hardware or theme acceptance.
 
 Linux administrator Copy uses the existing durable Copy registry and guarded
 Undo/cleanup APIs. Completed references reach Activity even after a later batch
@@ -14,8 +26,8 @@ failure. The actual mounted AppImage passes active LightDM seat0 authentication,
 protected Copy cancellation, authenticated Copy and real application denied-Copy
 retry, then Activity Undo and confirmed/authenticated cleanup. Independent root
 checks verify copied bytes/ownership and absence of the publication/stage after
-Undo/cleanup. Seven original full-window captures are directly reviewed.
-Five recovery tests,495 UI tests and nine helper tests pass; strict Linux/Windows
+Undo/cleanup. Twelve current full-window helper/recovery captures are directly reviewed.
+496 UI tests and the protocol/helper checks pass; strict Linux/Windows
 lint and actual ordinary-user helper JSON lifecycle/alias checks pass separately.
 
 For an existing AppImage/portable installation, use Settings → Services → Update /

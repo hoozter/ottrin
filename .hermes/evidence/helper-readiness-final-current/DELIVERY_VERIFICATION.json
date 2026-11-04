@@ -1,0 +1,59 @@
+{
+  "status": "pass current Linux delivery and owned cleanup; roadmap remains incomplete",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "30467e8baaa3ca2e23b61fc2062013b3b73997c9427bf074c57f8dd02c1682c4",
+    "Ottrin-0.1.0-x86_64.AppImage": "d220b9c38252c2e83e916124b3b6124fcf849e3ed9bd4f12551d954453a1699e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "225032c7039f56d00a680a7aa76e2d0b3e845a1303005b7bb9b85f1e79f72130",
+    "ottrin_0.1.0_amd64.deb": "fbd39a5c6080ebeb158572e155182f21812b4ea13abea429e87a0e50770c59ae"
+  },
+  "publication": "PROMOTION.json",
+  "native_receipts": [
+    "LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+    "login/ACCEPTANCE.json",
+    "REPLACEMENT_ACCEPTANCE.json"
+  ],
+  "personal_daemon_sample": "PERSONAL_DAEMON_SAMPLE.json",
+  "windows_preserved": true,
+  "cleanup": {
+    "owned_vms_removed": 3,
+    "owned_volumes_removed": 9,
+    "credentials_profiles_inputs_transports_and_fuse_mounts_removed": true,
+    "stage_retired_and_extraction_removed": true,
+    "obsolete_incremental_sessions_remaining": 0,
+    "protected_domains": {
+      "win11ltsc": "shut off",
+      "ottrin-copy-cleanup-qa": "shut off",
+      "ottrin-qa-20261011": "shut off",
+      "ottrin-index-qa": "shut off"
+    }
+  },
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current usable four-format Linux deliverables and authoritative acceptance manifest"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/helper-readiness-final-current",
+      "purpose": "Compact source/build/native/CI/promotion receipts, screenshots and repeatable producers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current",
+      "purpose": "Compact accepted41c baseline and two failed diagnostic trials; all corresponding VMs/volumes/credentials removed"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current binaries/dependencies and newest compiler caches shared with remaining roadmap work"
+    }
+  ],
+  "remaining_work": [
+    "Ordinary-user administrator Copy history rediscovery",
+    "Windows privileged Copy receipt/Undo/cleanup bridge",
+    "U08 theme/role/alignment audit including observed startup-status/Grid-caption issues",
+    "Remaining picker/caller integrations and full requirement/release audit"
+  ],
+  "owner_waits": [
+    "Personal helper update requires OS authentication; installed helper protocol probe exits2",
+    "Signing/Store credentials, unavailable physical hardware and final human acceptance"
+  ]
+}

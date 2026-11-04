@@ -1,0 +1,81 @@
+{
+  "status": "pass",
+  "phase": 1,
+  "boot_id": "deb9b97d-0c74-40a6-8bf8-3528ea369bb2",
+  "session_id": "c1",
+  "gui_attempts": 1,
+  "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nActive=yes\n",
+  "before_gui_auto_started_unit": {
+    "MainPID": "896",
+    "ActiveState": "active"
+  },
+  "before_gui_ready": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 700416,
+    "wal_bytes": 4152,
+    "freelist_pages": 0,
+    "freelist_bytes": 0,
+    "snapshot_revision": 2,
+    "detail": "Ready \u00b7 1000 indexed",
+    "indexed_items": 1000,
+    "last_completed_indexed_items": 1000,
+    "estimated_total_items": null,
+    "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1793812999,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1793812999,
+    "last_scan_completed_unix_secs": 1793813000,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1793813000,
+    "last_error": null
+  },
+  "before_gui_unit": {
+    "MainPID": "896",
+    "ActiveState": "active"
+  },
+  "after_gui_ready": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 700416,
+    "wal_bytes": 4152,
+    "freelist_pages": 0,
+    "freelist_bytes": 0,
+    "snapshot_revision": 2,
+    "detail": "Ready \u00b7 1000 indexed",
+    "indexed_items": 1000,
+    "last_completed_indexed_items": 1000,
+    "estimated_total_items": null,
+    "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1793812999,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1793812999,
+    "last_scan_completed_unix_secs": 1793813000,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1793813000,
+    "last_error": null
+  },
+  "after_gui_unit": {
+    "MainPID": "896",
+    "ActiveState": "active"
+  },
+  "after_normal_gui_close_unit": {
+    "MainPID": "896",
+    "ActiveState": "active"
+  },
+  "database_inode": 279556,
+  "source_and_preferences_preserved": true,
+  "startup_enabled": false
+}

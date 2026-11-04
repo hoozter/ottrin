@@ -1,0 +1,5 @@
+{
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Final coherent helper readiness cohort including corrected CI regression; verify actual payload identities before reusing unchanged native41c outcomes"
+}

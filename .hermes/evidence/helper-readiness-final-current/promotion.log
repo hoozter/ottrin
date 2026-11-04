@@ -1,0 +1,29 @@
+{
+  "status": "pass promoted exact four-format Linux cohort and restarted current managed daemon",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "30467e8baaa3ca2e23b61fc2062013b3b73997c9427bf074c57f8dd02c1682c4",
+    "Ottrin-0.1.0-x86_64.AppImage": "d220b9c38252c2e83e916124b3b6124fcf849e3ed9bd4f12551d954453a1699e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "225032c7039f56d00a680a7aa76e2d0b3e845a1303005b7bb9b85f1e79f72130",
+    "ottrin_0.1.0_amd64.deb": "fbd39a5c6080ebeb158572e155182f21812b4ea13abea429e87a0e50770c59ae"
+  },
+  "windows_preserved": true,
+  "managed_service": {
+    "before": {
+      "MainPID": "1999472",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/ottrin-index.service",
+      "ActiveState": "active"
+    },
+    "after": {
+      "MainPID": "2087672",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/ottrin-index.service",
+      "ActiveState": "active"
+    },
+    "binary_sha256": "4cceba0adbdfe215cdb673837bf8863cec638e7c27cb090d52c1dc82ae463975",
+    "ready": "Ready",
+    "startup_preserved": true,
+    "preferences_preserved": true,
+    "database_identity_preserved": true
+  },
+  "stage_and_retired_removed": true
+}

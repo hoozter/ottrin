@@ -1,0 +1,102 @@
+{
+  "status": "pass",
+  "phase": 0,
+  "source_revision": "41c09bebbc9c49022af8eb0d568813e668d1fe2d",
+  "control_account": "ottrincontrol",
+  "desktop_account": "ottrinqa",
+  "worker": {
+    "status": "pass",
+    "phase": 0,
+    "boot_id": "d2b2149e-aa9a-402a-8d5f-2210945307fc",
+    "session_id": "c1",
+    "gui_attempts": 1,
+    "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nActive=yes\n",
+    "install": "Ottrin index service configured; automatic startup is enabled.\n",
+    "before_gui_ready": {
+      "status": "Ready",
+      "loading_saved_snapshot": false,
+      "database_bytes": 28672,
+      "wal_bytes": 0,
+      "freelist_pages": 0,
+      "freelist_bytes": 0,
+      "snapshot_revision": 1,
+      "detail": "Ready \u00b7 1000 indexed",
+      "indexed_items": 1000,
+      "last_completed_indexed_items": 1000,
+      "estimated_total_items": null,
+      "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+      "configured_root_count": 1,
+      "watched_root_count": 1,
+      "watcher_ready": true,
+      "watcher_last_setup_unix_secs": 1793811487,
+      "watcher_last_error": null,
+      "active_root": null,
+      "active_root_index": 0,
+      "total_roots": 1,
+      "last_scan_started_unix_secs": 1793811487,
+      "last_scan_completed_unix_secs": 1793811487,
+      "last_scan_duration_ms": null,
+      "last_progress_unix_secs": 1793811487,
+      "last_error": null
+    },
+    "before_gui_unit": {
+      "MainPID": "4649",
+      "ActiveState": "active"
+    },
+    "after_gui_ready": {
+      "status": "Ready",
+      "loading_saved_snapshot": false,
+      "database_bytes": 28672,
+      "wal_bytes": 0,
+      "freelist_pages": 0,
+      "freelist_bytes": 0,
+      "snapshot_revision": 1,
+      "detail": "Ready \u00b7 1000 indexed",
+      "indexed_items": 1000,
+      "last_completed_indexed_items": 1000,
+      "estimated_total_items": null,
+      "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+      "configured_root_count": 1,
+      "watched_root_count": 1,
+      "watcher_ready": true,
+      "watcher_last_setup_unix_secs": 1793811487,
+      "watcher_last_error": null,
+      "active_root": null,
+      "active_root_index": 0,
+      "total_roots": 1,
+      "last_scan_started_unix_secs": 1793811487,
+      "last_scan_completed_unix_secs": 1793811487,
+      "last_scan_duration_ms": null,
+      "last_progress_unix_secs": 1793811487,
+      "last_error": null
+    },
+    "after_gui_unit": {
+      "MainPID": "4649",
+      "ActiveState": "active"
+    },
+    "after_normal_gui_close_unit": {
+      "MainPID": "4649",
+      "ActiveState": "active"
+    },
+    "database_inode": 279556,
+    "source_and_preferences_preserved": true,
+    "startup_enabled": true
+  },
+  "daemon_sha256": "4cceba0adbdfe215cdb673837bf8863cec638e7c27cb090d52c1dc82ae463975"
+}
+Created symlink /etc/systemd/system/default.target → /usr/lib/systemd/system/graphical.target.
+Synchronizing state of lightdm.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable lightdm
+The unit files have no installation config (WantedBy=, RequiredBy=, UpheldBy=,
+Also=, or Alias= settings in the [Install] section, and DefaultInstance= for
+template units). This means they are not meant to be enabled or disabled using systemctl.
+ 
+Possible reasons for having these kinds of units are:
+• A unit may be statically enabled by being symlinked from another unit's
+  .wants/, .requires/, or .upholds/ directory.
+• A unit's purpose may be to act as a helper for some other unit which has
+  a requirement dependency on it.
+• A unit may be started when needed via activation (socket, path, timer,
+  D-Bus, udev, scripted systemctl call, ...).
+• In case of template units, the unit is meant to be enabled with some
+  instance name specified.

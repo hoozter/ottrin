@@ -1,0 +1,15 @@
+{
+  "status": "published verified Linux f8 cohort; roadmap active and incomplete",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "verification": "DELIVERY_VERIFICATION.json",
+  "remaining_work": [
+    "Ordinary-user administrator Copy history rediscovery",
+    "Windows privileged Copy receipt/Undo/cleanup bridge",
+    "U08 theme/role/alignment audit including observed startup-status/Grid-caption issues",
+    "Remaining picker/caller integrations and full requirement/release audit"
+  ],
+  "owner_waits": [
+    "Personal helper update requires OS authentication; installed helper protocol probe exits2",
+    "Signing/Store credentials, unavailable physical hardware and final human acceptance"
+  ]
+}

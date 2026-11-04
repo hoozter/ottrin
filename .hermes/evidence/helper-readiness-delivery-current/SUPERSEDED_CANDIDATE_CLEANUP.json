@@ -1,0 +1,7 @@
+{
+  "status": "retired completed41c candidate after native/helper/login consumers; stable47db preserved",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "bytes": 115705257,
+  "payload_identity_retained": "NATIVE_ACCEPTED_PAYLOAD.json",
+  "reason": "Final coherent source checkpoint includes corrected CI test; compare its rebuilt runtime with accepted41c bytes before carrying native evidence"
+}

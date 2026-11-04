@@ -1,0 +1,8 @@
+{
+  "status": "input failure reproduced and corrected; not product startup acceptance",
+  "initial_failure": "Invalid minimal preferences omitted required list_columns/command_frame_always_visible/show_hidden_files/target; read-only exact CLI reproduced missing list_columns with isolated config and no host bus",
+  "source": "CONFIG_INPUT_FAILURE.json",
+  "change": "Supply the same complete required preference fields as the accepted native fixture, retain command stderr before raising, then rerun both actual reboots",
+  "initial_owned_vm_cleanup": "initial/ubuntu/VM_CLEANUP.json",
+  "initial_actor_and_controller_hashes_match_owner": true
+}

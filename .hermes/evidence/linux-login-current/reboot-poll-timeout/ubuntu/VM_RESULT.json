@@ -1,0 +1,22 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "41c09bebbc9c49022af8eb0d568813e668d1fe2d",
+  "status": "fail",
+  "package_sha256": "700fd94f3cbbdbc4e8eb27f11387f9f3211e89f74d02d61ad48bcb8a09b5c345",
+  "uuid": "0ab60f36-cffe-4ffb-801b-af28caf7e347",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "boot_ids": [
+    "0a1667c0-d8e9-40e2-bbbc-9530a24cb001",
+    "0489cd14-4040-418d-a449-0690efa2095c"
+  ],
+  "error": "TimeoutExpired(['ssh', '-F', '/dev/null', '-o', 'ForwardX11=no', '-i', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/ubuntu/.native-vm-bircnrkd/id_ed25519', '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'UserKnownHostsFile=/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/ubuntu/.native-vm-bircnrkd/known_hosts', '-o', 'ConnectTimeout=4', 'ottrincontrol@192.168.122.70', 'cat /proc/sys/kernel/random/boot_id'], 8)",
+  "temporary_seed_and_ssh_keys_removed": true
+}

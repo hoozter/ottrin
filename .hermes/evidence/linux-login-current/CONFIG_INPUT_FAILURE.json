@@ -1,0 +1,7 @@
+{
+  "scope": "Read-only CLI status with disposable config and runtime; host DBus explicitly unavailable",
+  "exit": 1,
+  "stdout": "",
+  "stderr": "ottrin: Could not load Ottrin settings /tmp/ot-fid5uyaj/config/ottrin/config.json: missing field `list_columns` at line 1 column 203. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n",
+  "profile_removed": true
+}

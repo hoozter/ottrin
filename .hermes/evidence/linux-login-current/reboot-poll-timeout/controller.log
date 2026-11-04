@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/controller.py", line 121, in <module>
+    observed=remote('cat','/proc/sys/kernel/random/boot_id',check=False,timeout=8)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/controller.py", line 94, in remote
+    def remote(*args,check=True,timeout=180):return run(ssh+[shlex.join(list(map(str,args)))],check=check,timeout=timeout)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/controller.py", line 24, in run
+    p=subprocess.run(list(map(str,args)),capture_output=True,text=True,timeout=timeout)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/usr/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['ssh', '-F', '/dev/null', '-o', 'ForwardX11=no', '-i', '/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/ubuntu/.native-vm-bircnrkd/id_ed25519', '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'UserKnownHostsFile=/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current/ubuntu/.native-vm-bircnrkd/known_hosts', '-o', 'ConnectTimeout=4', 'ottrincontrol@192.168.122.70', 'cat /proc/sys/kernel/random/boot_id']' timed out after 8 seconds

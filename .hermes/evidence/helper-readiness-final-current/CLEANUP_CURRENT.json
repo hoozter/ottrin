@@ -1,0 +1,31 @@
+{
+  "owned_vms_removed": 3,
+  "owned_volumes_removed": 9,
+  "credentials_profiles_inputs_transports_and_fuse_mounts_removed": true,
+  "stage_retired_and_extraction_removed": true,
+  "obsolete_incremental_sessions_remaining": 0,
+  "protected_domains": {
+    "win11ltsc": "shut off",
+    "ottrin-copy-cleanup-qa": "shut off",
+    "ottrin-qa-20261011": "shut off",
+    "ottrin-index-qa": "shut off"
+  },
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current usable four-format Linux deliverables and authoritative acceptance manifest"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/helper-readiness-final-current",
+      "purpose": "Compact source/build/native/CI/promotion receipts, screenshots and repeatable producers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-login-current",
+      "purpose": "Compact accepted41c baseline and two failed diagnostic trials; all corresponding VMs/volumes/credentials removed"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current binaries/dependencies and newest compiler caches shared with remaining roadmap work"
+    }
+  ]
+}

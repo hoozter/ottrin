@@ -1,0 +1,8 @@
+{
+  "scope": "Failed QA observation, not product failure; whole reboot gate remains incomplete",
+  "partial_progress": "Initial native service install, one GUI launch/normal close, first actual reboot/autostart, native checkbox disable and unchanged daemon PID all pass in the root phase receipts",
+  "failure": "An8-second SSH observation during the second actual reboot raised outside the bounded180-second retry loop; owned test VM was then torn down",
+  "correction": "Read-only SSH observation timeouts now return a retry result within the same180-second deadline; no guest restart on observation timeout. Fetch/extract/retire result transports after each completed phase to retain partial evidence.",
+  "cleanup": "reboot-poll-timeout/ubuntu/VM_CLEANUP.json",
+  "producer_hashes_match_failed_owner": true
+}

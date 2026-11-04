@@ -1,0 +1,24 @@
+{
+  "status": "pass current source UI suite and strict native/Windows lint; baseline helper protocol bodies unchanged",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "bbfef9410eaaca286ad67dd6754399eb01a8b842fe73079bdb0ea2240048809c",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "0342296ffe878f1e4bf283a81fcee63274682fe60a07cb5ba2f7b440ae402da2",
+    "crates/ottrin-platform/src/lib.rs": "0adc80f7abe7ab36317eb680495ebc235d0cc60781e900bfee794052cf71ac63",
+    "crates/ottrin-ui/src/lib.rs": "c95a07205d477a177e422c55ac42061c6c7e60fd995da41d2a42f162fca686bf",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "f5278b4c615ba7bc627121e29aecbc9bc8e87ceea9244f7a48b7f13987c7cb56",
+    "crates/ottrin-platform/src/helper_protocol.rs": "da6c25498d9e43431a4d269a6d36175ceb50481b86da8cbda65b8baafb7ed631"
+  },
+  "current_checks": {
+    "ci-scope-ui-suite.log": "496 passed; 0 failed; 1 ignored",
+    "ci-scope-native-lint.log": "Finished `dev`",
+    "ci-scope-windows-lint.log": "Finished `dev`"
+  },
+  "current_check_root": ".hermes/evidence/helper-readiness-delivery-current",
+  "scope": "496 UI tests pass, one existing ignored; strict native/Windows all-target UI lint after scoping helper status separately from ready HTML sandbox. All other recorded runtime source hashes match the prior protocol checks; current hosted workspace results and fresh native package checks are separate gates.",
+  "ci_correction": ".hermes/evidence/helper-readiness-delivery-current/CI_SCOPE_FIX.json",
+  "limits": [
+    "No full theme/daily-driver acceptance",
+    "Windows privileged Copy and ordinary-user elevated-account restart discovery remain incomplete"
+  ]
+}

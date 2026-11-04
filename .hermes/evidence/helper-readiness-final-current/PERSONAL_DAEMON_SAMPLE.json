@@ -1,0 +1,21 @@
+{
+  "status": "pass read-only live personal-daemon sample",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "pid": 2087672,
+  "binary_sha256": "4cceba0adbdfe215cdb673837bf8863cec638e7c27cb090d52c1dc82ae463975",
+  "before": {
+    "status": "Ready",
+    "indexed_items": 197081,
+    "watcher_ready": true,
+    "has_error": false
+  },
+  "after": {
+    "status": "Ready",
+    "indexed_items": 197086,
+    "watcher_ready": true,
+    "has_error": false
+  },
+  "seconds": 30.00006991700502,
+  "cpu_one_core_percent": 0.5666653460152052,
+  "scope": "Actual personal managed index, no agent queries during measurement and no reconfiguration. External filesystem activity/other clients are uncontrolled; this is one30-second sample, not sustained acceptance."
+}

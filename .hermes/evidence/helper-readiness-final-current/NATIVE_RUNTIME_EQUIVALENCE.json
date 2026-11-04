@@ -1,0 +1,58 @@
+{
+  "status": "changed runtime inputs require fresh native acceptance",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "baseline_source_revision": "41c09bebbc9c49022af8eb0d568813e668d1fe2d",
+  "baseline_archive_sha256": "1311b6c6029d52fa1bef7dd8fd1073dffc2e33bca3e885e876194758d25a3fec",
+  "current_archive_sha256": "225032c7039f56d00a680a7aa76e2d0b3e845a1303005b7bb9b85f1e79f72130",
+  "all_runtime_bytes_modes_links_identical": false,
+  "changed_runtime_paths": [
+    "libexec/ottrin/ottrin"
+  ],
+  "changes": {
+    "SOURCE_REVISION.txt": {
+      "baseline": {
+        "type": "0",
+        "mode": 436,
+        "linkname": "",
+        "sha256": "1c9a9e4ae5bf92b7120351bd778168367a60433bef9935cb0e3cee9a81e137ca"
+      },
+      "current": {
+        "type": "0",
+        "mode": 436,
+        "linkname": "",
+        "sha256": "bc0fa3e177516371918f5e703c1eea282b6f3f697f7a9debdb93d19c94b2e981"
+      }
+    },
+    "libexec/ottrin/ottrin": {
+      "baseline": {
+        "type": "0",
+        "mode": 493,
+        "linkname": "",
+        "sha256": "613e549f8e1842f1ad2fa088895ca24d3c0a6b668402a55b1e2f772b02d2d7e9"
+      },
+      "current": {
+        "type": "0",
+        "mode": 493,
+        "linkname": "",
+        "sha256": "9d31b892628bc06c05a0312b248f27fa0ffa378f463d6a58a77b72ec19032cf9"
+      }
+    },
+    "docs/ROADMAP.md": {
+      "baseline": {
+        "type": "0",
+        "mode": 436,
+        "linkname": "",
+        "sha256": "9a30ed59c0f408c9b8b4847c1bfd040a691a9f5f6f31a9b8f08c950a058bc85a"
+      },
+      "current": {
+        "type": "0",
+        "mode": 436,
+        "linkname": "",
+        "sha256": "0443a59296a72211ee74bae65551f44ad4aa0d9037a6323c42e49330050def45"
+      }
+    }
+  },
+  "baseline_native_execution": ".hermes/evidence/helper-readiness-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "baseline_login_execution": ".hermes/evidence/linux-login-current/ACCEPTANCE.json",
+  "scope": "Every portable payload file, directory, launcher, policy, dependency, file mode and link matches native-tested41c except the listed source note/roadmap. Current four-format content/closure verification and an actual current-AppImage FUSE smoke remain separate gates."
+}
