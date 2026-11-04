@@ -1746,7 +1746,12 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         HeadlessAction::IndexServiceStatus => {
             let status = ottrin_search::SearchService::sqlite_schedule_status();
             println!("source={}", status.source);
-            println!("enabled={}", status.enabled);
+            println!(
+                "enabled={}",
+                status
+                    .enabled
+                    .map_or("unknown", |enabled| if enabled { "true" } else { "false" })
+            );
             println!("detail={}", status.detail);
             Ok(())
         }

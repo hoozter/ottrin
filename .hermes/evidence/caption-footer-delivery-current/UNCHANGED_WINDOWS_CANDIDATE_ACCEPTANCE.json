@@ -1,0 +1,42 @@
+{
+  "status": "pass scoped shared-widget Windows preview delivery; full roadmap incomplete",
+  "source_commit": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "967a1e157356533bb151ad6463c5ebbc8f57d6f348e2238b91faac4c446d878b",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "e5e99978b9d99cff7e1f8d1d7151163db6a08f51ff0beb77873198995d41b4a6",
+    "Ottrin-0.1.0-windows-x64-development.msix": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/theme-delivery-current",
+  "hosted_source": {
+    "run": 41809847269,
+    "tested_source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "all_four_jobs_success": true
+  },
+  "host_content": ".hermes/evidence/theme-delivery-current/HOST_PAYLOAD.json",
+  "current_native_fields": ".hermes/evidence/theme-delivery-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/theme-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "native_msix": {
+    "current_assembly": ".hermes/evidence/theme-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "fresh_runtime": ".hermes/evidence/theme-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "enabled_disabled_upgrade": ".hermes/evidence/theme-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json"
+  },
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "source_only_followup": {
+    "source": "50a78015b8e23b6da558a12cc5d8536ce538e1d2",
+    "scope": "Breadcrumb directory classification source-tested, not included in this458 package"
+  },
+  "limits": [
+    "NSIS Dark144DPI Native/OpenGL settings and preview selection only; not every field/theme/scale",
+    "MSIX17 unsigned development deployment, fresh runtime and same-identity16-to17 updates; no Store/signing/physical acceptance",
+    "Previous full Services matrices retain original source/artifact scopes",
+    "Full U08 audit, Linux local-seat elevation, remaining picker/folder integration, MSI rollback and owner acceptance remain open"
+  ],
+  "public_release_published": false
+}

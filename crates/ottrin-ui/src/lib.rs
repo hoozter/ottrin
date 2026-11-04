@@ -21167,17 +21167,20 @@ impl OttrinApp {
                 SearchIndexStatus::Unavailable => c.error,
             };
             Self::render_service_status(ui, index_status, index_color);
-            ui.label(if installed {
-                format!("Automatic startup at sign-in: {}", status.detail)
-            } else {
-                "Automatic startup at sign-in: Off".to_string()
-            });
+            let startup = match status.enabled {
+                Some(true) => "On",
+                Some(false) => "Off",
+                None => "Unavailable",
+            };
+            ui.label(format!("Automatic startup at sign-in: {startup}"));
+            if status.enabled.is_none() {
+                ui.label(RichText::new(&status.detail).color(c.error));
+            }
             if !stopped && let Some(error) = &diag.last_error { ui.label(RichText::new(error).color(c.error)); }
             ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Indexing starts when you open Ottrin and continues after closing its windows. Enable automatic startup to also start indexing when you sign in." });
             ui.label(if package_managed { "Windows manages this package's login startup and removes it with Ottrin. Stopping indexing or disabling automatic startup keeps your saved index and preferences." } else { "Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index." });
             ui.add_space(6.0);
-            if installed {
-                let mut enabled = status.enabled;
+            if installed && let Some(mut enabled) = status.enabled {
                 if ui.checkbox(&mut enabled, "Start index automatically at sign-in").changed() {
                     self.begin_index_service_action(ui.ctx(), move || SearchService::set_sqlite_schedule_enabled(enabled));
                 }
@@ -22666,7 +22669,7 @@ impl OttrinApp {
                                                 };
                                                 health_row(
                                                     ui,
-                                                    sqlite_sched.enabled.then_some(true),
+                                                    sqlite_sched.enabled.filter(|enabled| *enabled),
                                                     "Start index at login",
                                                     &sqlite_schedule_detail,
                                                 );
@@ -27380,7 +27383,7 @@ mod tests {
         );
         app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
             source: "none".into(),
-            enabled: false,
+            enabled: Some(false),
             detail: "Not installed".into(),
         });
         let ctx = Context::default();
@@ -27461,7 +27464,7 @@ mod tests {
             let mut app = OttrinApp::default();
             app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
                 source: source.into(),
-                enabled: false,
+                enabled: Some(false),
                 detail: "Installed but disabled".into(),
             });
             let ctx = Context::default();
@@ -27557,7 +27560,7 @@ mod tests {
         let mut app = OttrinApp::default();
         app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
             source: "none".into(),
-            enabled: false,
+            enabled: Some(false),
             detail: "No login service is installed".into(),
         });
         // Hold status queries pending without consulting or changing the host.
@@ -38939,6 +38942,67 @@ mod tests {
     }
 
     #[test]
+    fn services_startup_label_describes_next_sign_in_without_runtime_wording() {
+        for (enabled, detail, expected) in [
+            (
+                Some(true),
+                "Enabled but stopped",
+                "Automatic startup at sign-in: On",
+            ),
+            (
+                Some(false),
+                "Running but disabled",
+                "Automatic startup at sign-in: Off",
+            ),
+            (
+                None,
+                "Status unavailable: user bus unavailable",
+                "Automatic startup at sign-in: Unavailable",
+            ),
+        ] {
+            let mut app = OttrinApp::default();
+            app.search_ui.sqlite_schedule_status = Some(LocateScheduleStatus {
+                source: "systemd user service".into(),
+                enabled,
+                detail: detail.into(),
+            });
+            let ctx = Context::default();
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(1800.0))),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let colors = app.colors;
+                        app.render_services_settings(ui, colors);
+                    });
+                },
+            );
+            assert!(
+                output.shapes.iter().any(|shape| matches!(&shape.shape,
+                egui::Shape::Text(text) if text.galley.job.text == expected)),
+                "Startup label must describe the next sign-in even when runtime differs"
+            );
+            let visible = |name: &str| {
+                output.shapes.iter().any(|shape| {
+                    matches!(&shape.shape,
+                egui::Shape::Text(text) if text.galley.job.text == name)
+                })
+            };
+            assert_eq!(
+                visible("Start index automatically at sign-in"),
+                enabled.is_some()
+            );
+            assert_eq!(
+                visible(detail),
+                enabled.is_none(),
+                "Probe errors must stay visible; runtime wording does not belong in startup status"
+            );
+        }
+    }
+
+    #[test]
     fn sqlite_schedule_status_is_cached_until_explicit_refresh() {
         let mut cached = None;
         let mut probes = 0;
@@ -38948,11 +39012,11 @@ mod tests {
                 probes += 1;
                 ottrin_search::LocateScheduleStatus {
                     source: "test".to_string(),
-                    enabled: true,
+                    enabled: Some(true),
                     detail: "cached".to_string(),
                 }
             });
-            assert!(status.enabled);
+            assert_eq!(status.enabled, Some(true));
         }
         assert_eq!(probes, 1);
 
@@ -38961,7 +39025,7 @@ mod tests {
             probes += 1;
             ottrin_search::LocateScheduleStatus {
                 source: "test".to_string(),
-                enabled: false,
+                enabled: Some(false),
                 detail: "refreshed".to_string(),
             }
         });

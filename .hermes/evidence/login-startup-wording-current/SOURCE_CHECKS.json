@@ -1,0 +1,30 @@
+{
+  "status": "pass source/rendered regression and strict checks; package/native acceptance pending",
+  "base_revision": "3191bc81898ba894eefaf489999d37520c8edcf6",
+  "source_sha256": {
+    "crates/ottrin-search/src/lib.rs": "9446700434ca09371c0414c89251793ea95d1030a6089042341b4a94c370a340",
+    "crates/ottrin-ui/src/lib.rs": "bb28be39230d5d181fd443b90d4085643af85dd34c4a9f291b1a8bba7f5b2175",
+    "crates/ottrin-app/src/main.rs": "62ea28794ecd42e614501b3f5baad7542c4b061f00de869a415a36a2329aedb7",
+    "docs/DEVELOPMENT.md": "841df86b73233d9c44e640ab7fd0d88736135f47305da153dc4fe8aee733b2b5"
+  },
+  "regression": "red.log reproduces rendered startup text mixing current runtime and next-sign-in choice; green suite tests On/Off/Unavailable, preserved probe error and no editable unknown checkbox.",
+  "search_tests": {
+    "passed": 250,
+    "failed": 0,
+    "existing_ignored": 2
+  },
+  "ui_tests": {
+    "passed": 506,
+    "failed": 0,
+    "existing_ignored": 1
+  },
+  "strict_native_lint": "native-lint.log: search/ui/app all-targets, exit0",
+  "strict_windows_cross_lint": "windows-lint.log: search/ui/app all-targets x86_64-pc-windows-gnu, exit0",
+  "formatter": "cargo fmt --all --check exit0",
+  "implementation": "Option<bool> separates unknown inspection from known Off; one strict systemd enabled-state probe is shared by user service, system service and legacy timer; SQLite startup status no longer queries current running state; CLI reports unknown explicitly.",
+  "limits": [
+    "Not in delivered Linux316, staged Linuxc4 or Windows458.",
+    "Native On/Off controls, packaged query-error rendering and new hosted source CI still required.",
+    "Windows native package/OS startup acceptance remains separate from cross-target lint."
+  ]
+}

@@ -32,6 +32,8 @@ Window titles must never widen their viewport or push window controls off-screen
 
 Bounded single-line captions must use `widget_style::single_line_text_job` so a long word after a hyphen or space fills the available width before the ellipsis. Do not enable word wrapping with a one-row limit. Multiline Grid captions measure the actual font and tile width, use their reserved two lines, and show full-name tooltips only for real overflow. Verify the painted glyphs as well as the text's bounding rectangle; a correctly sized box containing only a short prefix is not acceptable.
 
+Service settings distinguish what is running now from what starts at the next sign-in. Automatic startup uses an explicit On, Off or unavailable state; failed inspection must never become Off or an unchecked editable toggle. Keep probe errors visible and retain the runtime status separately. Systemd enabled-state probes must validate both the reported state and exit status rather than treating every nonzero result as disabled.
+
 Quick Inspector opens every file read-only. Only an explicit **Edit text** action
 may create an editor; asynchronous loading, reload of a preview, and selection
 navigation must never enable editing. Read-only previews leave arrow navigation

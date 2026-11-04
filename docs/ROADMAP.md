@@ -553,6 +553,21 @@ verification and both search-performance jobs pass; Windows workspace tests are
 still live. The delivered image remains316 and Windows remains458. No full theme,
 whole-interface, physical-platform or roadmap completion is implied.
 
+
+A subsequent Services correction is source-tested separately: automatic startup
+now says On, Off or Unavailable, while the running index keeps its own status.
+Unknown probes preserve their error and do not offer a false unchecked toggle.
+The shared enabled-state probe validates output plus exit status; systemd, Windows
+Task Scheduler/package and CLI status carry an explicit unknown value. SQLite
+startup inspection no longer queries current runtime. The rendered regression
+fails the old wording and passes all three states;250 search and506 UI tests,
+strict native/Windows all-target lint for search/UI/app, and formatting pass.
+This is not in delivered316 or stagedc4 and still needs native/package acceptance.
+Receipt: `login-startup-wording-current/SOURCE_CHECKS.json`. Owned disposable tests
+are removed;32 superseded incremental sessions were retired with newest per-
+configuration caches retained (1.00GiB reported). Current all-target check caches
+and the same configured, newly verified test binaries remain.
+
 1. Package and verify the subsequent Windows transport and Grid source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness

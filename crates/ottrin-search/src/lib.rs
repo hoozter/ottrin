@@ -1716,7 +1716,8 @@ pub fn system_locate_db_age_secs() -> Option<u64> {
 #[derive(Debug, Clone)]
 pub struct LocateScheduleStatus {
     pub source: String,
-    pub enabled: bool,
+    /// None means the registration could not be inspected; it does not mean Off.
+    pub enabled: Option<bool>,
     pub detail: String,
 }
 
@@ -1797,22 +1798,22 @@ fn sqlite_windows_task_status_with(
     match query() {
         Ok(Some(registration)) if registration.enabled => LocateScheduleStatus {
             source: "Windows Task Scheduler".to_string(),
-            enabled: true,
+            enabled: Some(true),
             detail: "Enabled at login".to_string(),
         },
         Ok(Some(_)) => LocateScheduleStatus {
             source: "Windows Task Scheduler".to_string(),
-            enabled: false,
+            enabled: Some(false),
             detail: "Installed but disabled".to_string(),
         },
         Ok(None) => LocateScheduleStatus {
             source: "none".to_string(),
-            enabled: false,
+            enabled: Some(false),
             detail: "No background Ottrin index task installed".to_string(),
         },
         Err(error) => LocateScheduleStatus {
             source: "Windows Task Scheduler".to_string(),
-            enabled: false,
+            enabled: None,
             detail: format!("Status unavailable: {error}"),
         },
     }
@@ -2027,7 +2028,7 @@ enum SqliteSystemdOperation {
 impl SqliteSystemdOperation {
     fn args(self) -> &'static [&'static str] {
         match self {
-            Self::IsEnabled => &["--user", "is-enabled", "--quiet", "ottrin-index.service"],
+            Self::IsEnabled => &["--user", "is-enabled", "ottrin-index.service"],
             Self::IsActive => &["--user", "is-active", "--quiet", "ottrin-index.service"],
             Self::DaemonReload => &["--user", "daemon-reload"],
             Self::EnableNow => &["--user", "enable", "--now", "ottrin-index.service"],
@@ -2056,6 +2057,9 @@ impl SqliteSystemdOperation {
 
 #[cfg(target_os = "linux")]
 fn run_sqlite_systemd(operation: SqliteSystemdOperation) -> Result<bool, String> {
+    if operation == SqliteSystemdOperation::IsEnabled {
+        return query_systemd_enabled(operation.args());
+    }
     std::process::Command::new("systemctl")
         .args(operation.args())
         .status()
@@ -2071,34 +2075,52 @@ fn sqlite_systemd_status_with(
     if !unit_exists {
         return LocateScheduleStatus {
             source: "none".to_string(),
-            enabled: false,
+            enabled: Some(false),
             detail: "No login service is installed".to_string(),
         };
     }
     let unavailable = |error: String| LocateScheduleStatus {
         source: "systemd user service".to_string(),
-        enabled: false,
+        enabled: None,
         detail: format!("Status unavailable: {error}"),
     };
     let enabled = match run(SqliteSystemdOperation::IsEnabled) {
         Ok(enabled) => enabled,
         Err(error) => return unavailable(error),
     };
-    let active = match run(SqliteSystemdOperation::IsActive) {
-        Ok(active) => active,
-        Err(error) => return unavailable(error),
-    };
-    let detail = match (enabled, active) {
-        (true, true) => "Enabled and running",
-        (true, false) => "Enabled but stopped",
-        (false, true) => "Running but disabled",
-        (false, false) => "Installed but disabled and stopped",
+    let detail = if enabled {
+        "On at sign-in"
+    } else {
+        "Off at sign-in"
     };
     LocateScheduleStatus {
         source: "systemd user service".to_string(),
-        enabled,
+        enabled: Some(enabled),
         detail: detail.to_string(),
     }
+}
+
+/// A failed systemctl query is not a disabled registration. Only the two
+/// expected persistent registration states establish the next-sign-in setting.
+fn parse_systemd_enabled(code: Option<i32>, stdout: &[u8], stderr: &[u8]) -> Result<bool, String> {
+    let state = String::from_utf8_lossy(stdout);
+    match (code, state.trim()) {
+        (Some(0), "enabled") => Ok(true),
+        (Some(1), "disabled") => Ok(false),
+        _ => Err(format!(
+            "Could not inspect automatic startup (exit {code:?}, state {:?}): {}",
+            state.trim(),
+            String::from_utf8_lossy(stderr).trim()
+        )),
+    }
+}
+
+fn query_systemd_enabled(args: &[&str]) -> Result<bool, String> {
+    let output = std::process::Command::new("systemctl")
+        .args(args)
+        .output()
+        .map_err(|error| format!("Could not inspect automatic startup: {error}"))?;
+    parse_systemd_enabled(output.status.code(), &output.stdout, &output.stderr)
 }
 
 fn systemd_user_unit_dir() -> PathBuf {
@@ -2124,7 +2146,7 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
             }
             return LocateScheduleStatus {
                 source: "systemd user service".to_string(),
-                enabled: false,
+                enabled: None,
                 detail: "Installed but systemctl is unavailable".to_string(),
             };
         }
@@ -2137,12 +2159,12 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
                 return match ottrin_platform::windows_startup::index_state() {
                     Ok(state) => LocateScheduleStatus {
                         source: WINDOWS_PACKAGE_STARTUP_SOURCE.into(),
-                        enabled: state.enabled(),
+                        enabled: Some(state.enabled()),
                         detail: state.detail().into(),
                     },
                     Err(error) => LocateScheduleStatus {
                         source: WINDOWS_PACKAGE_STARTUP_SOURCE.into(),
-                        enabled: false,
+                        enabled: None,
                         detail: format!("Status unavailable: {error}"),
                     },
                 };
@@ -2150,7 +2172,7 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
             Err(error) => {
                 return LocateScheduleStatus {
                     source: WINDOWS_PACKAGE_STARTUP_SOURCE.into(),
-                    enabled: false,
+                    enabled: None,
                     detail: format!("Status unavailable: {error}"),
                 };
             }
@@ -2163,7 +2185,7 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
     {
         LocateScheduleStatus {
             source: "none".to_string(),
-            enabled: false,
+            enabled: Some(false),
             detail: "No login service is installed".to_string(),
         }
     }
@@ -2174,43 +2196,45 @@ pub fn locate_schedule_status() -> LocateScheduleStatus {
     let unit_dir = systemd_user_unit_dir();
     let timer_path = unit_dir.join("ottrin-updatedb.timer");
     if timer_path.exists() {
-        let enabled = if command_exists("systemctl") {
-            std::process::Command::new("systemctl")
-                .args(["--user", "is-enabled", "ottrin-updatedb.timer"])
-                .status()
-                .map(|s| s.success())
-                .unwrap_or(true)
-        } else {
-            true
-        };
+        let enabled = query_systemd_enabled(&["--user", "is-enabled", "ottrin-updatedb.timer"]);
         return LocateScheduleStatus {
             source: "systemd user timer".to_string(),
-            enabled,
-            detail: if enabled {
-                "Enabled".to_string()
-            } else {
-                "Installed but disabled".to_string()
+            enabled: enabled.as_ref().ok().copied(),
+            detail: match enabled {
+                Ok(true) => "Enabled".into(),
+                Ok(false) => "Installed but disabled".into(),
+                Err(error) => format!("Status unavailable: {error}"),
             },
         };
     }
 
-    let crontab = std::process::Command::new("crontab")
-        .arg("-l")
-        .output()
-        .ok()
-        .and_then(|o| String::from_utf8(o.stdout).ok())
-        .unwrap_or_default();
+    let crontab = match std::process::Command::new("crontab").arg("-l").output() {
+        Ok(output) if output.status.success() => {
+            String::from_utf8_lossy(&output.stdout).into_owned()
+        }
+        result => {
+            let error = match result {
+                Ok(output) => String::from_utf8_lossy(&output.stderr).into_owned(),
+                Err(error) => error.to_string(),
+            };
+            return LocateScheduleStatus {
+                source: "crontab".into(),
+                enabled: None,
+                detail: format!("Status unavailable: {}", error.trim()),
+            };
+        }
+    };
     if crontab.contains("# ottrin-updatedb") {
         return LocateScheduleStatus {
             source: "crontab".to_string(),
-            enabled: true,
+            enabled: Some(true),
             detail: "Entry found (# ottrin-updatedb)".to_string(),
         };
     }
 
     LocateScheduleStatus {
         source: "none".to_string(),
-        enabled: false,
+        enabled: Some(false),
         detail: "No schedule detected".to_string(),
     }
 }
@@ -2822,11 +2846,7 @@ impl AdministratorSystemdOperation {
         match self {
             Self::DaemonReload => &["daemon-reload"],
             Self::EnableNow => &["enable", "--now", "ottrin-administrator-index.service"],
-            Self::IsEnabled => &[
-                "is-enabled",
-                "--quiet",
-                "ottrin-administrator-index.service",
-            ],
+            Self::IsEnabled => &["is-enabled", "ottrin-administrator-index.service"],
             Self::IsActive => &["is-active", "--quiet", "ottrin-administrator-index.service"],
             Self::Restart => &["restart", "ottrin-administrator-index.service"],
             Self::DisableNow => &["disable", "--now", "ottrin-administrator-index.service"],
@@ -2908,6 +2928,10 @@ fn install_administrator_index_service_with(
 
 #[cfg(target_os = "linux")]
 fn run_administrator_systemd(operation: AdministratorSystemdOperation) -> Result<bool, String> {
+    if matches!(operation, AdministratorSystemdOperation::IsEnabled) {
+        return query_systemd_enabled(operation.args());
+    }
+
     std::process::Command::new("systemctl")
         .args(operation.args())
         .status()
@@ -2946,14 +2970,14 @@ pub fn administrator_index_service_status() -> LocateScheduleStatus {
     if !paths.unit.is_file() {
         return LocateScheduleStatus {
             source: "none".to_string(),
-            enabled: false,
+            enabled: Some(false),
             detail: "Persistent Administrator index service is not installed".to_string(),
         };
     }
     if !command_exists("systemctl") {
         return LocateScheduleStatus {
             source: "systemd system service".to_string(),
-            enabled: false,
+            enabled: None,
             detail: "Installed but systemctl is unavailable".to_string(),
         };
     }
@@ -2962,7 +2986,7 @@ pub fn administrator_index_service_status() -> LocateScheduleStatus {
     match (enabled, active) {
         (Ok(enabled), Ok(active)) => LocateScheduleStatus {
             source: "systemd system service".to_string(),
-            enabled,
+            enabled: Some(enabled),
             detail: match (enabled, active) {
                 (true, true) => "Enabled and running",
                 (true, false) => "Enabled but stopped",
@@ -2973,7 +2997,7 @@ pub fn administrator_index_service_status() -> LocateScheduleStatus {
         },
         (Err(error), _) | (_, Err(error)) => LocateScheduleStatus {
             source: "systemd system service".to_string(),
-            enabled: false,
+            enabled: None,
             detail: format!("Status unavailable: {error}"),
         },
     }
@@ -2983,7 +3007,7 @@ pub fn administrator_index_service_status() -> LocateScheduleStatus {
 pub fn administrator_index_service_status() -> LocateScheduleStatus {
     LocateScheduleStatus {
         source: "none".to_string(),
-        enabled: false,
+        enabled: Some(false),
         detail: "Persistent Administrator indexing is supported only on Linux".to_string(),
     }
 }
@@ -5123,17 +5147,43 @@ mod tests {
         );
     }
 
+    #[test]
+    fn systemd_startup_probe_requires_a_recognized_state_and_exit_status() {
+        assert_eq!(parse_systemd_enabled(Some(0), b"enabled\n", b""), Ok(true));
+        assert_eq!(
+            parse_systemd_enabled(Some(1), b"disabled\n", b""),
+            Ok(false)
+        );
+        for (code, stdout, stderr) in [
+            (
+                Some(1),
+                b"".as_slice(),
+                b"Failed to connect to bus".as_slice(),
+            ),
+            (Some(0), b"disabled".as_slice(), b"".as_slice()),
+            (Some(1), b"enabled".as_slice(), b"".as_slice()),
+            (Some(1), b"masked".as_slice(), b"".as_slice()),
+            (None, b"".as_slice(), b"Interrupted".as_slice()),
+        ] {
+            assert!(parse_systemd_enabled(code, stdout, stderr).is_err());
+        }
+        assert!(
+            parse_systemd_enabled(Some(1), b"", b"Failed to connect to bus")
+                .unwrap_err()
+                .contains("Failed to connect to bus")
+        );
+    }
+
     #[cfg(target_os = "linux")]
     #[test]
-    fn sqlite_background_status_distinguishes_enabled_but_stopped() {
+    fn sqlite_background_status_describes_startup_without_querying_runtime() {
         let status = sqlite_systemd_status_with(true, |operation| match operation {
             SqliteSystemdOperation::IsEnabled => Ok(true),
-            SqliteSystemdOperation::IsActive => Ok(false),
             _ => panic!("status must not mutate the service"),
         });
 
-        assert!(status.enabled);
-        assert_eq!(status.detail, "Enabled but stopped");
+        assert_eq!(status.enabled, Some(true));
+        assert_eq!(status.detail, "On at sign-in");
     }
 
     #[cfg(target_os = "linux")]
@@ -5141,7 +5191,7 @@ mod tests {
     fn sqlite_background_status_reports_an_unavailable_systemd_probe() {
         let status = sqlite_systemd_status_with(true, |_| Err("user bus unavailable".to_string()));
 
-        assert!(!status.enabled);
+        assert_eq!(status.enabled, None);
         assert!(status.detail.contains("user bus unavailable"));
     }
 
@@ -5202,7 +5252,7 @@ mod tests {
         let status = sqlite_windows_task_status_with(|| Ok(None));
 
         assert_eq!(status.source, "none");
-        assert!(!status.enabled);
+        assert_eq!(status.enabled, Some(false));
         assert_eq!(status.detail, "No background Ottrin index task installed");
     }
 
@@ -5213,7 +5263,7 @@ mod tests {
         });
 
         assert_eq!(status.source, "Windows Task Scheduler");
-        assert!(status.enabled);
+        assert_eq!(status.enabled, Some(true));
         assert_eq!(status.detail, "Enabled at login");
     }
 
@@ -5223,7 +5273,7 @@ mod tests {
             sqlite_windows_task_status_with(|| Err("could not start schtasks".to_string()));
 
         assert_eq!(status.source, "Windows Task Scheduler");
-        assert!(!status.enabled);
+        assert_eq!(status.enabled, None);
         assert_eq!(
             status.detail,
             "Status unavailable: could not start schtasks"
@@ -5237,7 +5287,7 @@ mod tests {
         });
 
         assert_eq!(status.source, "Windows Task Scheduler");
-        assert!(!status.enabled);
+        assert_eq!(status.enabled, Some(false));
         assert_eq!(status.detail, "Installed but disabled");
     }
 
@@ -5313,7 +5363,7 @@ mod tests {
             let registration =
                 parse_sqlite_windows_task_xml(xml.as_bytes()).expect("valid task XML");
             let status = sqlite_windows_task_status_with(|| Ok(Some(registration)));
-            assert_eq!(status.enabled, expected);
+            assert_eq!(status.enabled, Some(expected));
             assert_eq!(
                 status.detail,
                 if expected {

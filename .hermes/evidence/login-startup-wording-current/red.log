@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 11.10s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+test tests::services_startup_label_describes_next_sign_in_without_runtime_wording ... FAILED
+
+failures:
+
+---- tests::services_startup_label_describes_next_sign_in_without_runtime_wording stdout ----
+
+thread 'tests::services_startup_label_describes_next_sign_in_without_runtime_wording' (2422582) panicked at crates/ottrin-ui/src/lib.rs:38966:13:
+Startup label must describe the next sign-in even when runtime differs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::services_startup_label_describes_next_sign_in_without_runtime_wording
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 506 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

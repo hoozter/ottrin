@@ -1,0 +1,30 @@
+{
+  "status": "pass owned test/process cleanup and obsolete incremental retirement",
+  "before_bytes": {
+    "target/debug/deps": 25230726933,
+    "target/debug/incremental": 25050478749,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28549830924,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42684420166,
+    ".hermes/evidence/login-startup-wording-current": 0
+  },
+  "after_bytes": {
+    "target/debug/deps": 25230835598,
+    "target/debug/incremental": 25050837135,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28549546491,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42685491495,
+    ".hermes/evidence/login-startup-wording-current": 107813
+  },
+  "compiler_cleanup": "incremental-cleanup.log:32 obsolete sessions removed,1.00GiB recovered; exact process identities verified and newest session per configuration retained",
+  "current_test_executables": [
+    "target/debug/deps/ottrin_search-a460327730eab4dc",
+    "target/debug/deps/ottrin_ui-c354643af000a7cc"
+  ],
+  "test_binary_policy": "same configured paths replaced by newly passing executables; current dependency libraries/fingerprints and useful native/Windows all-target Clippy caches retained; no extra target root",
+  "owned_disposable_profiles_and_processes": "scripts/test-workspace.py completed exit0 with its teardown; no VM allocated for this source change",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/login-startup-wording-current",
+      "purpose": "compact source-check logs, red regression and cleanup receipts"
+    }
+  ]
+}
