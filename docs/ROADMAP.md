@@ -106,6 +106,20 @@ native regression assertion remains unchanged and native CI must verify this
 correction. Neither this error-format fix nor the diagnostic resolves service
 responsiveness. Stable packages remain runtime47a above.
 
+Services repaint follow-up: pending setup and folder/portal status now display
+static themed progress text and use the existing worker-completion wakeups.
+The previous spinner continuously requested immediate frames despite the page's
+100ms polling interval. The new rendered regression verifies that a pending
+Services page settles without animation/polling and that the worker wakes and
+reports completion. All489 UI tests pass (one existing ignored), formatting and
+strict native/Windows Search/UI/app all-target lint pass. This removes a proven
+repaint source, but native setup timing and service lifecycle are not yet accepted.
+The unpublished6f candidates and unconsumed MSIX16 archive were retired after
+all diagnostic consumers finished (553,546,060 bytes); stable47a remains intact.
+Twenty-two obsolete incremental sessions were removed; newest per-configuration
+state remains. Fresh packaging and native checks are next, with source archives
+prepared only when a native MSIX assembly consumer is ready.
+
 Continue in this order:
 
 1. Build and verify fresh settings/service packages with the encoded Windows

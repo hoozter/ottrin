@@ -1,0 +1,76 @@
+{
+  "checks": [
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "scope": "Service progress/status views stop animating and polling; actual worker completion wakes UI. No claim of resolved Windows scheduler latency.",
+  "status": "pass source tests/lint/format; fresh native packaging required",
+  "ui_result": {
+    "passed": 489,
+    "ignored": 1
+  },
+  "source_sha256": "7224b7f481588070b417c616719fb2b73d5762cff415c27d7ccb8394a8809ac9",
+  "cleanup": {
+    "obsolete_incremental_sessions_removed": 22,
+    "superseded_candidates_and_archive_bytes": 553546060,
+    "previous_cohort_retirement": ".hermes/evidence/service-startup-current/cohort/CANDIDATE_RETIREMENT.json"
+  }
+}

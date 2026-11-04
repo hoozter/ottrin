@@ -21111,7 +21111,7 @@ impl OttrinApp {
                     if ui.add_enabled(status.pending,egui::Button::new("Apply pending change").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::portal_integration::apply);}
                     if ui.add_enabled(self.portal_status_rx.is_none(),egui::Button::new("Refresh status").themed(&c)).clicked() {Self::request_service_status(ui.ctx(),&mut self.portal_status_rx,ottrin_platform::portal_integration::status);}
                 });
-            } else {ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
+            } else {ui.label(RichText::new("Checking setup…").color(c.text_muted));}
         });
         ui.add_space(14.0);
     }
@@ -21156,7 +21156,7 @@ impl OttrinApp {
                         if status.default_enabled && ui.add(egui::Button::new("Restore previous folder defaults").themed(&c)).clicked(){self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable_default);}
                     });
                 }
-            }else{ui.spinner();ui.ctx().request_repaint_after(Duration::from_millis(100));}
+            }else{ui.label(RichText::new("Checking setup…").color(c.text_muted));}
         });
         ui.add_space(14.0);
     }
@@ -21181,10 +21181,9 @@ impl OttrinApp {
         }
         let busy = self.service_action_rx.is_some();
         if busy {
-            ui.horizontal(|ui| {
-                ui.spinner();
-                ui.label("Working…");
-            });
+            // Completion wakes the UI through begin_service_action. An animated
+            // spinner would continuously repaint while the OS operation waits.
+            ui.label(RichText::new("Working…").color(c.text_muted));
         }
         ui.add_enabled_ui(!busy, |ui| {
             ui.label(RichText::new(if cfg!(target_os="windows"){"Administrator operations"}else{"Administrator helper"}).strong().color(c.text));
@@ -21305,9 +21304,6 @@ impl OttrinApp {
                 self.render_folder_integration_settings(ui,c);
             }
         });
-        if busy {
-            ui.ctx().request_repaint_after(Duration::from_millis(100));
-        }
     }
 
     fn render_settings_modal(&mut self, ctx: &Context) {
@@ -27489,6 +27485,69 @@ mod tests {
                 Ok("Stopped".to_owned())
             );
         }
+    }
+
+    #[test]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    fn pending_services_sleep_until_the_worker_wakes_and_reports_completion() {
+        let mut app = OttrinApp::default();
+        app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
+            source: "none".into(),
+            enabled: false,
+            detail: "No login service is installed".into(),
+        });
+        // Hold status queries pending without consulting or changing the host.
+        let (_folder_sender, folder_pending) = mpsc::channel();
+        app.folder_status_rx = Some(folder_pending);
+        #[cfg(target_os = "linux")]
+        let (_portal_sender, portal_pending) = mpsc::channel();
+        #[cfg(target_os = "linux")]
+        {
+            app.portal_status_rx = Some(portal_pending);
+        }
+        let ctx = Context::default();
+        let (wake, awakened) = mpsc::channel();
+        ctx.set_request_repaint_callback(move |event| {
+            if event.delay.is_zero() {
+                let _ = wake.send(());
+            }
+        });
+        let (complete, pending) = mpsc::channel();
+        app.begin_service_action(&ctx, move || {
+            pending.recv().unwrap();
+            Ok("Setup completed".into())
+        });
+        // Drain layout/font settling. A spinner keeps requesting immediate
+        // frames forever; periodic polling also violates this idle contract.
+        let mut last = None;
+        for _ in 0..6 {
+            last = Some(ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(1800.0))),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let colors = app.colors;
+                        app.render_services_settings(ui, colors);
+                    });
+                },
+            ));
+        }
+        let output = last.unwrap();
+        assert!(
+            output.viewport_output[&egui::ViewportId::ROOT].repaint_delay > Duration::from_secs(1),
+            "Pending service work must not animate or poll the settings page"
+        );
+        while awakened.try_recv().is_ok() {}
+        complete.send(()).unwrap();
+        awakened.recv_timeout(Duration::from_secs(2)).unwrap();
+        app.poll_service_action();
+        assert_eq!(
+            app.service_action_result,
+            Some(Ok("Setup completed".into()))
+        );
+        assert!(app.service_action_rx.is_none());
     }
 
     #[test]
