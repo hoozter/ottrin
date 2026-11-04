@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "cases": [
+    "actual setup prompt cancelled; helper absent; cancellation visible",
+    "actual setup authenticated; root-owned helper and policy; ready UI",
+    "actual reinstall authenticated and completed"
+  ],
+  "login_session_id": "15",
+  "source_preserved": true
+}

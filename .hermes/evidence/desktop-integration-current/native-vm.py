@@ -3,7 +3,7 @@ from pathlib import Path
 from contextlib import ExitStack
 import argparse,hashlib,json,os,shlex,signal,subprocess,sys,tempfile,time,uuid,xml.etree.ElementTree as ET
 r=Path.cwd();drivers=Path(__file__).resolve().parent
-parser=argparse.ArgumentParser();parser.add_argument('distro',choices=['fedora','ubuntu']);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--published',action='store_true');parser.add_argument('--actor',type=Path);args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');distro=args.distro
+parser=argparse.ArgumentParser();parser.add_argument('distro',choices=['fedora','ubuntu']);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--published',action='store_true');parser.add_argument('--actor',type=Path);parser.add_argument('--input',type=Path,action='append',default=[]);parser.add_argument('--gui-qa',action='store_true');args=parser.parse_args();e=args.output.resolve();assert e.is_relative_to(r/'.hermes/evidence');distro=args.distro
 base=r/('.hermes/tools/fedora44/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2' if distro=='fedora' else '.hermes/tools/ubuntu24/noble-server-cloudimg-amd64.img')
 expected_base='28680fe5b371a5a82ebf43a31926e086a168e59949d03969c5093e7071f90b7f' if distro=='fedora' else '6a81c37564db9b1ee84e141922625e1d7c5b389b99bb3c572e0243607d5bb4d2'
 assert hashlib.file_digest(base.open('rb'),'sha256').hexdigest()==expected_base
@@ -13,6 +13,7 @@ build=json.loads((r/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json' if args.publi
 if not args.published:assert build['status'].startswith('four-format build pass')
 stage=r/'dist/packages' if args.published else Path(build['stage']);package=next(stage.glob('*.rpm' if distro=='fedora' else '*.deb'));portable=next(stage.glob('*portable.tar.gz'))
 name='ottrin-native-'+distro+'-desktop-qa';mac='52:54:00:6f:74:'+('47' if distro=='fedora' else '48');prefix=name+'-';owned_volumes=[];domain_uuid=None
+assert not args.gui_qa or distro=='ubuntu'
 actor=args.actor.resolve() if args.actor else drivers/'native-actor.py'
 assert actor.is_relative_to(r/'.hermes/evidence') and actor.is_file()
 for artifact in [package,portable]:
@@ -73,16 +74,17 @@ try:
   assert virsh('domuuid',name).stdout.strip()==domain_uuid;report['uuid']=domain_uuid
   deadline=time.monotonic()+240;address=None
   while time.monotonic()<deadline:
-   text=virsh('domifaddr',name,'--source','lease').stdout
-   for line in text.splitlines():
-    fields=line.split()
-    if mac in fields and len(fields)>3:address=fields[3].split('/')[0]
+   # Reused QA MACs can retain several unexpired cloud-init DUID leases.
+   # domifaddr's first grouped address may belong to an already removed guest.
+   leases=virsh('net-dhcp-leases','default','--mac',mac).stdout
+   matching=[line.split() for line in leases.splitlines() if mac in line and 'ipv4' in line]
+   address=sorted(matching,key=lambda fields:fields[:2])[-1][4].split('/')[0] if matching else None
    if address:
     ssh=['ssh','-F','/dev/null','-o','ForwardX11=no','-i',str(key),'-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile='+str(temporary/'known_hosts'),'-o','ConnectTimeout=4','ottrinqa@'+address]
     if not (temporary/'known_hosts').exists():
      scan=run(['ssh-keyscan','-T','3',address],check=False,timeout=6)
      if scan.returncode==0:(temporary/'known_hosts').write_text(scan.stdout)
-    if (temporary/'known_hosts').exists() and run(ssh+['true'],check=False,timeout=8).returncode==0:break
+    if (temporary/'known_hosts').exists() and run(ssh+['hostname'],check=False,timeout=8).stdout.strip()==name:break
    time.sleep(2)
   else:raise RuntimeError('Owned guest SSH unavailable')
   def remote(*args,check=True,timeout=180):return run(ssh+[shlex.join(list(map(str,args)))],check=check,timeout=timeout)
@@ -94,11 +96,14 @@ try:
   report['cloud_init']={'exit':cloud.returncode,'status':cloud_state['status'],'recoverable_errors':cloud_state.get('recoverable_errors'),'scope':'Provisioning warnings retained separately; product gates unchanged'}
   scp=['scp','-F','/dev/null','-o','ForwardX11=no','-i',str(key),'-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile='+str(temporary/'known_hosts')]
   for source,destination in [(package,'candidate.rpm' if distro=='fedora' else 'candidate.deb'),(portable,'portable.tar.gz'),(actor,'actor.py'),(drivers/'portal-probe.py','portal-probe.py')]:run(scp+[str(source),'ottrinqa@'+address+':'+destination],timeout=180)
+  for extra in args.input:
+   extra=extra.resolve();assert extra.is_relative_to(r) and extra.is_file()
+   run(scp+[str(extra),'ottrinqa@'+address+':'+extra.name],timeout=60)
   if distro=='fedora':
    install=remote('sudo','dnf','-y','install','/home/ottrinqa/candidate.rpm','xdg-desktop-portal','xdg-desktop-portal-gtk','xorg-x11-server-Xvfb','xdotool','python3-gobject',check=False,timeout=600)
   else:
    update=remote('sudo','apt-get','update',check=False,timeout=300);(out/'VM_APT_UPDATE.log').write_text(update.stdout+update.stderr);assert update.returncode==0
-   install=remote('sudo','env','DEBIAN_FRONTEND=noninteractive','apt-get','-y','install','/home/ottrinqa/candidate.deb','xdg-desktop-portal','xdg-desktop-portal-gtk','xvfb','xdotool','python3-gi',check=False,timeout=600)
+   install=remote('sudo','env','DEBIAN_FRONTEND=noninteractive','apt-get','-y','install','/home/ottrinqa/candidate.deb','xdg-desktop-portal','xdg-desktop-portal-gtk','xvfb','xdotool','python3-gi',*(['openbox','policykit-1-gnome','python3-pyatspi','python3-pil'] if args.gui_qa else []),check=False,timeout=600)
   (out/'VM_INSTALL.log').write_text(install.stdout+install.stderr)
   assert install.returncode==0,'Native package install failed; see VM_INSTALL.log'
   result=remote('sudo','python3','/home/ottrinqa/actor.py',build['source_revision'],distro,check=False,timeout=600);(out/'VM_ACTOR.log').write_text(result.stdout+result.stderr)

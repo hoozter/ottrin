@@ -87,12 +87,38 @@ SSH keys, seeds and result transport archives were removed. Only compact
 receipts, producers and logs remain in that evidence directory; no compiler or
 runtime source changed and the current seven packages remain unchanged.
 
+### Linux graphical administrator setup acceptance, 2026-11-04
+
+The exact published f463 portable launcher passes the real Services workflow in
+an owned Ubuntu24 software-X11/PAM login session with the stock GNOME polkit
+agent. The toolbar lock opens Services. The actual setup button opens a password
+prompt; Cancel leaves the helper absent and shows the cancellation message.
+Retrying with the temporary VM administrator password installs the root-owned
+helper and policy and changes the UI to green installed/ready with reinstall.
+After revoking temporary authorization, reinstall opens another real prompt and
+completes. The source fixture is preserved. All seven original captures were
+directly reviewed. Evidence: `.hermes/evidence/linux-helper-prompt-current/ACCEPTANCE.json`.
+
+This does not establish AppImage/FUSE-specific setup, protected-file elevation,
+native index startup-checkbox, login/reboot, actual binary-version upgrade or
+HTML rendering acceptance. The missing system browser is truthfully reported;
+the setup success message alone is not counted as browser/rendering readiness.
+A preceding controller attempt never reached SSH because it chose a stale DHCP
+lease. Address discovery now chooses the newest lease for the owned MAC and
+checks the SSH hostname. That failed provisioning attempt is retained separately.
+Both task VMs/six volumes, temporary credentials/seeds and transport archives
+were removed. Only compact frozen producers, logs and original images remain
+in the evidence directory. Runtime and all seven deliverables are unchanged.
+
 ### Ordered implementation and acceptance queue
 
-1. Complete actual Linux polkit prompt/cancel/setup/reinstall and managed-index
-   service/login/runtime states, including slow-start/upgrade readiness, in an
-   owned full-system environment. These are independently executable software QA,
-   not owner waits. Reuse cached distro bases and preserve personal services.
+1. Complete remaining Linux integration acceptance: AppImage/FUSE administrator
+   setup, protected-file elevation, native managed-index startup-checkbox and
+   login/runtime states, and actual binary-version upgrade readiness in an owned
+   full-system environment. Published portable graphical setup/cancel/reinstall
+   and DEB/RPM CLI service states with seven-second delayed startup are accepted
+   only within the scopes above. Remaining checks are independently executable
+   software QA, not owner waits. Reuse cached bases and preserve personal services.
 2. Finish the theme/interface consistency audit and implementation. U08 remains
    unfulfilled: preview navigation and Sync are invented, address fill differs
    from the production breadcrumb frame, and miniatures apply full-size corners

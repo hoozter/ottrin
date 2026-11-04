@@ -38,6 +38,6 @@
     "result_transport_archives_removed": true,
     "retained_evidence_root": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-service-acceptance-current",
     "retained_purpose": "Compact frozen producers, package binding, original service states, provisioning logs and failed-fixture diagnosis; no VM disk or package copies",
-    "retained_bytes_before_receipt_refresh": 252418
+    "retained_bytes_before_receipt_refresh": 252413
   }
 }

@@ -1,0 +1,13 @@
+{
+  "cause": "domifaddr grouped three still-unexpired leases for the reused QA MAC; first row was stale .67, current named lease was .69",
+  "evidence": {
+    "stale_expiries": [
+      "2026-11-04 09:05:53",
+      "2026-11-04 09:08:57"
+    ],
+    "current_expiry": "2026-11-04 09:19:11",
+    "current_hostname": "ottrin-native-ubuntu-desktop-qa"
+  },
+  "product_test_executed": false,
+  "correction": "Use newest DHCP lease for the owned MAC and validate SSH hostname"
+}

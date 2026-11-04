@@ -8,7 +8,7 @@
   },
   "limits": [
     "Current private software-renderer settings and service actions only; previous47a GUI idle scope retains its original source/artifact, no fresh GUI CPU or physical acceptance",
-    "Current settings save-retry and ordinary Windows task/login controls are scoped; published DEB/RPM CLI managed-service states pass on Ubuntu/Fedora; graphical Linux prompt/service controls, login/upgrade and new MSIX startup-checkbox coverage remain open",
+    "Published DEB/RPM CLI service states pass on Ubuntu/Fedora, and portable graphical helper setup/cancel/reinstall passes on Ubuntu; AppImage/FUSE helper setup, native Linux startup-checkbox, login/upgrade and new MSIX startup-checkbox coverage remain separate",
     "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
   ],
   "status": "pass scoped current Linux settings-preservation preview; full roadmap incomplete",
@@ -35,5 +35,6 @@
     "previous_receipt": ".hermes/evidence/service-wake-current/cohort/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
     "scope": "Reject malformed/unreadable configuration without replacement; checked atomic settings saves and retained theme draft on error; actionable Windows startup failure reporting; truthful backend/login Search health. Independent future-login controls preserve current daemon state, with Linux disabled-startup repair retention and existing MSIX policy/collision guards. All Windows scheduler bodies use a single UTF16LE encoded input/UTF8 direct-error transport. Services progress/status views use worker completion wakes instead of continuous animation/polling."
   },
-  "linux_managed_cli_acceptance": ".hermes/evidence/linux-service-acceptance-current/ACCEPTANCE.json"
+  "linux_managed_cli_acceptance": ".hermes/evidence/linux-service-acceptance-current/ACCEPTANCE.json",
+  "linux_graphical_helper_acceptance": ".hermes/evidence/linux-helper-prompt-current/ACCEPTANCE.json"
 }

@@ -1,0 +1,61 @@
+{
+  "status": "pass scoped real graphical helper setup/cancel/reinstall",
+  "runtime_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "portable": {
+    "name": "Ottrin-0.1.0-linux-x86_64-portable.tar.gz",
+    "sha256": "74e647a024b5ab7a73c68cf3cf0fef1ad0791d4425e653fdec93b0c14e7085de"
+  },
+  "native_worker": {
+    "status": "pass",
+    "cases": [
+      "actual setup prompt cancelled; helper absent; cancellation visible",
+      "actual setup authenticated; root-owned helper and policy; ready UI",
+      "actual reinstall authenticated and completed"
+    ],
+    "login_session_id": "15",
+    "source_preserved": true
+  },
+  "original_captures_directly_reviewed": {
+    "setup-needed": {
+      "sha256": "bdd0f8158ba4532489c8ca3431ea819787d2f248e562fbe448886bbf61955742",
+      "review": "Services is reached from the lock; setup needed and setup action visible."
+    },
+    "cancel-prompt": {
+      "sha256": "94be49b844bdf4b61fa57bb38f75aa4219c5020801ed3d7ac446a7e9e5b58643",
+      "review": "Actual stock polkit agent presents Cancel and Authenticate for the staged helper."
+    },
+    "setup-cancelled": {
+      "sha256": "e2e9496fe4809668d673633c764c574f695bbd340ba98e9ab23c07a70832dcb5",
+      "review": "Cancellation message and setup-needed state remain; helper is not claimed ready."
+    },
+    "setup-prompt": {
+      "sha256": "f20637b4069d1702315377b32375b12ab725a9d480229998b75c967363d7f065",
+      "review": "Retry presents a new real graphical administrator-password prompt."
+    },
+    "setup-ready": {
+      "sha256": "4edb7d6e740490c70adfaa19d0c1cd267c8ac1e296504ff2e3bbf93b6207a932",
+      "review": "Green installed-and-ready helper status and update/reinstall action; absent browser remains correctly reported."
+    },
+    "reinstall-prompt": {
+      "sha256": "06a60ac18059960092763e3cd65e61ac3f767870276228a3d57622a61e490d06",
+      "review": "Reinstall presents another real authentication prompt after revoking temporary authorization."
+    },
+    "reinstall-ready": {
+      "sha256": "4edb7d6e740490c70adfaa19d0c1cd267c8ac1e296504ff2e3bbf93b6207a932",
+      "review": "Reinstall completed; installed-and-ready helper status and usable controls visible."
+    }
+  },
+  "limits": [
+    "Ubuntu24 stock GNOME polkit agent in private software X11/PAM login session only",
+    "Portable launcher tested; AppImage FUSE-specific setup remains separate",
+    "No native startup-checkbox, real login/reboot, binary-version upgrade or protected-file-operation acceptance",
+    "No supported browser was installed; HTML browser/rendering acceptance is not claimed"
+  ],
+  "cleanup": {
+    "two_owned_vms_and_six_volumes_removed": true,
+    "temporary_qa_password_ssh_keys_and_seeds_removed": true,
+    "transport_archives_removed": true,
+    "retained_path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-helper-prompt-current",
+    "purpose": "Compact original screenshots, frozen producers, exact package/input hashes, logs and stale-lease diagnosis; no package copies or VM disks"
+  }
+}

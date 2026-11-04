@@ -1,0 +1,12 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "status": "fail",
+  "package_sha256": "ffb2b7566c83b38aed615eefd615c457fc0d3b0927068c5a7cba96febc6dbd85",
+  "uuid": "3395138d-f881-4037-8d1f-b2a6197f4b74",
+  "error": "RuntimeError('Owned guest SSH unavailable')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

@@ -1,0 +1,7 @@
+{
+  "verified_guest_input_hashes": {
+    "actor.py": "f2ff31840cea3a1da337d32b85c0a8dcef384dfca940a2a4a9ef12f4b08bd82c",
+    "prompt-worker.py": "aec7b3ca8226bf608119cb5a780f0258328a1aeb54ed08a0a6188da33901f48e",
+    "linux-desktop-qa.py": "c1ecd06bd3e836d5b0b320b3a644db740a138831a15ba60ab30e9d3e5b6a577e"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "cases": [
+    "actual setup prompt cancelled; helper absent; cancellation visible",
+    "actual setup authenticated; root-owned helper and policy; ready UI",
+    "actual reinstall authenticated and completed"
+  ],
+  "login_session_id": "15",
+  "source_preserved": true
+}
+Running as unit: ottrin-qa-desktop.service
+
+(process:4935): dbind-WARNING **: 07:26:23.326: AT-SPI: Error in GetItems, sender=:1.3, error=Unknown object '/org/a11y/atspi/cache'
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 5.076s
+CPU time consumed: 5ms
+Memory peak: 940.0K
+Memory swap peak: 0B
