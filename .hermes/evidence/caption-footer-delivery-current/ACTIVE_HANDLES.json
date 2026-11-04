@@ -1,0 +1,47 @@
+{
+  "source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "build": {
+    "tool_session": null,
+    "producer": "build.py",
+    "status": "terminal exit0; all four formats and production content checks pass",
+    "registered_teardown": "build.py finally stops process group; removes owned staging on failure/cancellation"
+  },
+  "ci": {
+    "run_id": 41929773433,
+    "status": "in_progress",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41929773433",
+    "jobs": [
+      {
+        "name": "search-performance (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "verify (windows-latest)",
+        "status": "in_progress",
+        "conclusion": ""
+      },
+      {
+        "name": "search-performance (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "verify (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "stable_deliverables": "Linux316 / Windows458; preserve until accepted replacement",
+  "native": {
+    "status": "terminal; main18 originals and saved-theme supplement4 originals directly reviewed; five guests/15volumes removed including three failed attempts",
+    "tool_session": null,
+    "receipts": [
+      "NATIVE_CAPTION_ACCEPTANCE.json",
+      "APPEARANCE_ACCEPTANCE.json",
+      "CLEANUP.json"
+    ]
+  },
+  "goal": "active/incomplete"
+}

@@ -1,0 +1,39 @@
+{
+  "status": "owned build/content/native fixtures cleaned; candidate retained for live exact-source CI/publication",
+  "before_bytes": {
+    "target/debug/deps": 25230726933,
+    "target/debug/incremental": 25050478749,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28549830924,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42684420166,
+    "target/release": 4545244724,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caption-footer-delivery-current": 0,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 0
+  },
+  "after_bytes": {
+    "target/debug/deps": 25230726933,
+    "target/debug/incremental": 25050478749,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28549830924,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42684420166,
+    "target/release": 4545244442,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caption-footer-delivery-current": 3892576,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 115841813
+  },
+  "owned_domains_removed": 5,
+  "owned_volumes_removed": 15,
+  "transports_extractions_keys_seed_wrappers_and_displays_removed": true,
+  "debug_compiler_roots_unchanged": true,
+  "release_cache": "same compiler configuration reused; current verified binaries replace same configured outputs; no extra target tree or test executable created",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Accepted scoped c4 Linux cohort awaiting exact-source CI41929773433 and guarded promotion",
+      "bytes": 115841813
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caption-footer-delivery-current",
+      "purpose": "compact receipts, executed producers, failure provenance and original captures"
+    }
+  ],
+  "protected_domains_preserved": true,
+  "scope": "Five disposed QA guests include three failed supplement attempts; failed results were not promoted to acceptance."
+}

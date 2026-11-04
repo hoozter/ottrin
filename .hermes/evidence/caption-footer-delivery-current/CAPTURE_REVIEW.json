@@ -1,0 +1,24 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "grid-light-1.0.png": "2f92558a4aabb4c673985805092144a4d9d799b7951df65ae821d80f6bc4da30",
+    "grid-dark-1.85.png": "6e6743e6f2033c97354d98e08cf19262a2a4ee2f70f310f06a10a32404b70975",
+    "miller150-dark.png": "ebcba2c1793ab6f66ca1f578d2dd74839a5ca1b606235815b0d1c5a80cbf89a3",
+    "cold-10.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "cold-0.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "picker-grid-dark.png": "6955674e24d5ad352eafed68e323178ae4e61a7d6c15e81a126bad20f9e3407a",
+    "miller-light.png": "bab94771fd9b884683bfc941e330f72b2cd9b9d0857ed8ce68a39d2915078592",
+    "appearance-dark.png": "4ffe7f7077e74dc45fd6d01d3ea65906532e05fb59cc903f98db45c745e2af75",
+    "cold-30.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "cold-2.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "list-dark.png": "a1d2eec3583933ed5a203f77816f1fc0f060dae4844f138ee8b1d6a03c9104e9",
+    "appearance-light.png": "bcbfb74075584a40823ec1971376c516a6691569dfa16643f590a1bc36415ab6",
+    "grid-dark-1.0.png": "8e07aaf3186e7fa55519961a00691facc9187d9c30cbd5a7dfdd63966605da0a",
+    "picker-grid-light.png": "426c42a1ac124fb42963d76975bc30d1399ca6c61d348efd6a500b874c79b47a",
+    "miller150-light.png": "d7b272499791a10308ff8d7f3abd9f5e1d58632a85a20a15e687cdadf53a88c8",
+    "grid-dark-0.75.png": "5547da46778a62c9d7426d2ef1f0a28a434de519d5662ea73b63b4367d177b65",
+    "list-light.png": "ca62d6c53d05777f4e12d72bec3a7eb909f5191e5d3368e29bc0430826d91581",
+    "miller-dark.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512"
+  },
+  "notes": "Miller Dark/Light100/150 fills width before ellipsis; footer1002 at0/2/10/30s; Grid/List/picker scoped review passes. Appearance long saved-theme card offscreen, requires supplement."
+}

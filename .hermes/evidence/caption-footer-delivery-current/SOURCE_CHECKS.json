@@ -1,0 +1,17 @@
+{
+  "status": "pass committed source matches505-test and strict Linux/Windows lint receipts",
+  "source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "source_sha256": {
+    "crates/ottrin-ui/src/file_row.rs": "f9989e872e6a8d8fe1f3da8e8821a64f5033871e535db2e58116579cbc03d137",
+    "crates/ottrin-ui/src/widget_style.rs": "58a2f0eb42666c9ca8d977e058d2800073edf9c953e77fa330b5ddaa4c8ef087",
+    "crates/ottrin-ui/src/appearance_editor.rs": "7377e2d219af619c24eebaa2ddfdf7c0329d3e785aaf1e2792a8d28aeb2c90e4",
+    ".github/workflows/ci.yml": "d8342bf184f0afa462cc6180a3b90d7acd230cafff973cbfd28654e16715d982",
+    "crates/ottrin-ui/src/lib.rs": "b77939809bd3c86d17a8f6d9450c860332f266910129267e2dc093b57b43cd28"
+  },
+  "prior_source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "scope": "Four UI source files and formatter CI gate; exact new package and native checks remain separate.",
+  "receipts": [
+    ".hermes/evidence/single-line-caption-current/SOURCE_CHECKS.json",
+    ".hermes/evidence/miller-footer-wake-current/SOURCE_CHECKS.json"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "status": "test precondition failed before app launch",
+  "error": "Readiness probe xprop missing from VM. Actor now explicitly installs x11-utils.",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_archive": {
+    "sha256": "b9895d9dc0b6cae946dcaf7409b96328b0d212f348b18aebb8eb3dce7ef13ac8",
+    "bytes": 2176
+  }
+}

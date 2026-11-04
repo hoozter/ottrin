@@ -1,0 +1,18 @@
+{
+  "status": "failed supplemental fixture, not accepted as a complete native run",
+  "finding": "First Dark100% scrolled card is visible and fills width before ellipsis; closing original main-window handle fails with xdotool status1. No root cause is inferred. Corrected fixture waits for main listing and closes Settings before rediscovering main.",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "original_capture_reviewed": "appearance-scrolled-dark-1.0.png",
+  "capture_sha256": "a6a6ceb6f3e8c1fd6083397458dda205183657469fe1e0b60c08bc853cc4cc0a",
+  "consumed_archive": {
+    "sha256": "48f127aaf5da81a8452a5936d428b922431a12edb774bdf275202a88e1140390",
+    "bytes": 91716
+  }
+}

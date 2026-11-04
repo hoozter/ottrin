@@ -1,0 +1,16 @@
+{
+  "status": "failed supplemental fixture, not accepted",
+  "finding": "After waiting for populated main listing, activating the Settings X window still failed. Window-manager startup/readiness is now checked explicitly; no app mutation/close success is inferred.",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_archive": {
+    "sha256": "6eb2ceb4c6bf2f99c9e1db034e62d381ff7c61dd0c66317b2d476c0173c29ccc",
+    "bytes": 91676
+  }
+}

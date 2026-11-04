@@ -1,0 +1,10 @@
+{
+  "goal": "active/incomplete",
+  "next": [
+    "Re-poll existing exact-source CI41929773433; Linux verification and both performance jobs pass; Windows Cargo test remains live. Do not cancel/restart it.",
+    "When all4 exact-source jobs pass, use current main and Appearance receipts plus SOURCE_SCOPE to prepare and perform guarded c4 four-format promotion. Update stable manifests/docs and retire superseded316 packages after consumer checks.",
+    "Continue Windows canonical administrator Copy registry caller binding and durable cleanup restart authority before enabling Copy; remaining full theme/picker/integration audit remains independently executable."
+  ],
+  "stable_deliverables": "Linux316 / Windows458; c4 AppImage e88e49e8 is staged, not delivered",
+  "owner_waits": "Personal helper OS authentication, signing/Store identity, unavailable physical hardware and final user acceptance stay parked."
+}

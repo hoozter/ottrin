@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "status": "fail",
+  "package_sha256": "ee4a47ff655b990b237bfcc70bb4a7fcc22b6ada28b9654a466b8646f6b2edb8",
+  "uuid": "d78849f5-008a-4579-be51-6224b84aa77b",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError(' <module>\\\\\\\\n    q.run(\\\\\\\\\\'xdotool\\\\\\\\\\',\\\\\\\\\\'windowactivate\\\\\\\\\\',\\\\\\\\\\'--sync\\\\\\\\\\',settings);q.run(\\\\\\\\\\'xdotool\\\\\\\\\\',\\\\\\\\\\'key\\\\\\\\\\',\\\\\\\\\\'--clearmodifiers\\\\\\\\\\',\\\\\\\\\\'alt+F4\\\\\\\\\\')\\\\\\\\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/home/ottrinqa/linux-desktop-qa.py\\\\\", line 43, in run\\\\\\\\n    return subprocess.run(\\\\\\\\n           ^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/usr/lib/python3.12/subprocess.py\\\\\", line 571, in run\\\\\\\\n    raise CalledProcessError(retcode, process.args,\\\\\\\\nsubprocess.CalledProcessError: Command \\\\\\\\\\'(\\\\\\\\\\'xdotool\\\\\\\\\\', \\\\\\\\\\'windowactivate\\\\\\\\\\', \\\\\\\\\\'--sync\\\\\\\\\\', \\\\\\\\\\'2097161\\\\\\\\\\')\\\\\\\\\\' returned non-zero exit status 1.\\\\\\\\n\\'})\",\\n  \"traceback\": \"Traceback (most recent call last):\\\\n  File \\\\\"/home/ottrinqa/actor.py\\\\\", line 35, in <module>\\\\n    assert worker[\\'status\\']==\\'pass\\',worker\\\\n           ^^^^^^^^^^^^^^^^^^^^^^^^\\\\nAssertionError: {\\'status\\': \\'fail\\', \\'startup_samples\\': [], \\'grid_cases\\': [], \\'picker_cases\\': [], \\'miller_cases\\': [], \\'list_cases\\': [], \\'appearance_cases\\': [{\\'theme\\': \\'Dark\\', \\'backend_scale\\': 1.0, \\'gui_sha256\\': \\'17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c\\', \\'capture\\': \\'appearance-scrolled-dark-1.0.png\\', \\'settings_geometry\\': \\'WINDOW=2097161\\\\\\\\nX=0\\\\\\\\nY=0\\\\\\\\nWIDTH=920\\\\\\\\nHEIGHT=640\\\\\\\\nSCREEN=0\\\\\\\\n\\'}], \\'error\\': \\\\\"CalledProcessError(1, (\\'xdotool\\', \\'windowactivate\\', \\'--sync\\', \\'2097161\\'))\\\\\", \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 45, in <module>\\\\\\\\n    q.run(\\\\\\\\\\'xdotool\\\\\\\\\\',\\\\\\\\\\'windowactivate\\\\\\\\\\',\\\\\\\\\\'--sync\\\\\\\\\\',settings);q.run(\\\\\\\\\\'xdotool\\\\\\\\\\',\\\\\\\\\\'key\\\\\\\\\\',\\\\\\\\\\'--clearmodifiers\\\\\\\\\\',\\\\\\\\\\'alt+F4\\\\\\\\\\')\\\\\\\\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/home/ottrinqa/linux-desktop-qa.py\\\\\", line 43, in run\\\\\\\\n    return subprocess.run(\\\\\\\\n           ^^^^^^^^^^^^^^^\\\\\\\\n  File \\\\\"/usr/lib/python3.12/subprocess.py\\\\\", line 571, in run\\\\\\\\n    raise CalledProcessError(retcode, process.args,\\\\\\\\nsubprocess.CalledProcessError: Command \\\\\\\\\\'(\\\\\\\\\\'xdotool\\\\\\\\\\', \\\\\\\\\\'windowactivate\\\\\\\\\\', \\\\\\\\\\'--sync\\\\\\\\\\', \\\\\\\\\\'2097161\\\\\\\\\\')\\\\\\\\\\' returned non-zero exit status 1.\\\\\\\\n\\'}\\\\n\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

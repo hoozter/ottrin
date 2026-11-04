@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "status": "fail",
+  "package_sha256": "ee4a47ff655b990b237bfcc70bb4a7fcc22b6ada28b9654a466b8646f6b2edb8",
+  "uuid": "a9ff45af-3942-452f-8653-42b4dcb9f56e",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('message}{suffix}\\\\\")\\\\nAssertionError: Timed out waiting for owned window manager EWMH ready before launching GUI: [Errno 2] No such file or directory: \\'xprop\\'\\\\n\"\\n  },\\n  \"error\": \"AssertionError({\\'status\\': \\'fail\\', \\'startup_samples\\': [], \\'grid_cases\\': [], \\'picker_cases\\': [], \\'miller_cases\\': [], \\'list_cases\\': [], \\'appearance_cases\\': [], \\'error\\': \\'AssertionError(\\\\\"Timed out waiting for owned window manager EWMH ready before launching GUI: [Errno 2] No such file or directory: \\\\\\\\\\'xprop\\\\\\\\\\'\\\\\")\\', \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 31, in <module>\\\\\\\\n    q.wait_for(wm_ready,\\\\\\\\\\'owned window manager EWMH ready before launching GUI\\\\\\\\\\',timeout=15)\\\\\\\\n  File \\\\\"/home/ottrinqa/linux-desktop-qa.py\\\\\", line 70, in wait_for\\\\\\\\n    raise AssertionError(f\\\\\"Timed out waiting for {message}{suffix}\\\\\")\\\\\\\\nAssertionError: Timed out waiting for owned window manager EWMH ready before launching GUI: [Errno 2] No such file or directory: \\\\\\\\\\'xprop\\\\\\\\\\'\\\\\\\\n\\'})\",\\n  \"traceback\": \"Traceback (most recent call last):\\\\n  File \\\\\"/home/ottrinqa/actor.py\\\\\", line 35, in <module>\\\\n    assert worker[\\'status\\']==\\'pass\\',worker\\\\n           ^^^^^^^^^^^^^^^^^^^^^^^^\\\\nAssertionError: {\\'status\\': \\'fail\\', \\'startup_samples\\': [], \\'grid_cases\\': [], \\'picker_cases\\': [], \\'miller_cases\\': [], \\'list_cases\\': [], \\'appearance_cases\\': [], \\'error\\': \\'AssertionError(\\\\\"Timed out waiting for owned window manager EWMH ready before launching GUI: [Errno 2] No such file or directory: \\\\\\\\\\'xprop\\\\\\\\\\'\\\\\")\\', \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 31, in <module>\\\\\\\\n    q.wait_for(wm_ready,\\\\\\\\\\'owned window manager EWMH ready before launching GUI\\\\\\\\\\',timeout=15)\\\\\\\\n  File \\\\\"/home/ottrinqa/linux-desktop-qa.py\\\\\", line 70, in wait_for\\\\\\\\n    raise AssertionError(f\\\\\"Timed out waiting for {message}{suffix}\\\\\")\\\\\\\\nAssertionError: Timed out waiting for owned window manager EWMH ready before launching GUI: [Errno 2] No such file or directory: \\\\\\\\\\'xprop\\\\\\\\\\'\\\\\\\\n\\'}\\\\n\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

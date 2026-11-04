@@ -1,0 +1,61 @@
+{
+  "status": "pass scoped saved-theme-name native visual and normal Settings/main close supplement",
+  "source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "artifact_sha256": "e88e49e876721b1c065addd2f79f83b508bb533b241b536eb0166ac4118cb634",
+  "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+  "cases": [
+    {
+      "theme": "Dark",
+      "backend_scale": 1.0,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "appearance-scrolled-dark-1.0.png",
+      "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n"
+    },
+    {
+      "theme": "Light",
+      "backend_scale": 1.0,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "appearance-scrolled-light-1.0.png",
+      "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n"
+    },
+    {
+      "theme": "Dark",
+      "backend_scale": 1.5,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "appearance-scrolled-dark-1.5.png",
+      "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n"
+    },
+    {
+      "theme": "Light",
+      "backend_scale": 1.5,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "appearance-scrolled-light-1.5.png",
+      "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n"
+    }
+  ],
+  "original_captures_directly_reviewed": {
+    "appearance-scrolled-dark-1.5.png": "ea0cac411657e979416996c51222810da3a99ce97d16f9f9d5bd8080ce13c6f3",
+    "appearance-scrolled-light-1.5.png": "e480a13087d9f53cfe6575287550758b82097970c5517d05b6e7ee51f5ba23de",
+    "appearance-scrolled-light-1.0.png": "f24f9c38508cd06e19126ddd11c7bc9b304a5ac2762a073318b19babff8a3f7c",
+    "appearance-scrolled-dark-1.0.png": "cdba58085d9fca329aeac65a9d288cf68b7d1d6d8e9567623c9a3eea8c440ac7"
+  },
+  "visual_review": "Long Owned-WWW theme name uses full card label width before ellipsis; pencil/remove remain clear in Dark/Light100/150. Normal close of Settings then current main window passes in all4 cases.",
+  "window_manager_readiness": "_NET_SUPPORTING_WM_CHECK(WINDOW): window id # 0x40011f\n",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_transport_removed": {
+    "bytes": 366133,
+    "sha256": "4a48b8baf728f0ee121fc0ff77c72aa39c3d27b4cd77a75143f2b554de767d49"
+  },
+  "limits": [
+    "Explicit software-X11 backend scale, not physical graphics/Wayland/Windows or full theme audit.",
+    "The raw worker inherited an unrelated cold_scope label from its template. That label is excluded: this supplement does not install/enable or accept warm-index startup; the separate main fixture provides that actual scope.",
+    "Three failed supplemental fixtures remain failures, with owned teardown and consumed transports recorded."
+  ]
+}

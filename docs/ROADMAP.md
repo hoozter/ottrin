@@ -2,7 +2,7 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-04. This is the single active queue. Historical sections and
+Updated 2026-11-05. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
@@ -526,29 +526,32 @@ the four Linux formats with this exact316 cohort, restarted the managed daemon
 to Ready and preserved startup/preferences/database identity. Windows458 is
 unchanged; superseded packages and consumed staging were removed.
 
-That native review also exposed a separate single-line Miller caption reducing a
-long hyphenated filename to `00-…` while leaving the row width unused. A production
-rendered regression reproduces it. One shared single-line layout helper now fixes
-file rows, theme-card names and sort headers;504 UI tests and strict Linux/Windows
-cross-target lint pass. `DEVELOPMENT.md` requires glyph-level width checks and the
-shared helper. A queued CI edit adds the required formatter gate with explicit
-rustfmt/clippy components. These follow-ups need native/package acceptance and
-were committed separately after source verification; the previous hosted run
-completed successfully, so they can now be pushed without cancellation.
+The subsequent single-line caption and footer fixes are committed in0c632b5d,
+pushed with delivery metadata atc4a7b46b and now packaged as one four-format
+cohort. One shared bounded single-line helper fixes file rows, theme-card names
+and sort headers. A rendered regression reproduces the previous `00-…` collapse;
+505 UI tests and strict Linux/Windows cross-target lint pass. `DEVELOPMENT.md`
+requires glyph-level width checks. The new explicit formatter CI gate has passed
+on both hosted platforms.
 
-The current316 native DEB reboot fixture again captures an early phase0 footer
-showing0 items beside populated rows; its installed-but-disabled warm-index phase
-shows1000 items without input at0/2/10/30s. The new rendered regression establishes
-the missing wakeup: synchronous Miller model population happened after footer
-layout and could leave the UI idle. Source now uses one status-caption function
-for painting and invalidation, requesting one corrected frame only when that
-caption changes. The regression proves correction without user input and return
-to idle. All505 UI tests and strict Linux/Windows cross-target lint pass. Native/
-package acceptance of this follow-up remains required; it is not in316 or the
-delivered316 image. All three current owned QA guests/nine volumes,
-credentials, consumed transports and extraction are removed. The111MiB immutable
-Grid stage was consumed by successful publication; five obsolete incremental sessions
-were removed (0.33GiB reported). No whole-interface or roadmap completion is implied.
+The installed-service/Ready-index no-input AppImage fixture shows1002 items in
+all four0/2/10/30s samples; the earliest sample is0.69s after the visible window.
+The separate rendered regression proves the missing one-shot Miller footer wakeup
+and return to idle, rather than asserting every native intervening frame. Actual
+Dark/Light100/150 Miller captions, List headers, Grid75/100/185 and cooperating
+picker cancellation pass their scoped review. A scrolled Dark/Light100/150 saved-
+theme supplement verifies the long custom-theme name and normal Settings/main
+close. All22 successful original captures were directly reviewed. Three failed
+supplement attempts remain recorded as failures; readiness provisioning was fixed
+before the accepted supplement. Five owned guests/15volumes, credentials,
+transports, displays and content extractions are removed. Debug compiler roots
+are unchanged; current release binaries and useful caches remain.
+
+Receipts are in `caption-footer-delivery-current/`. Its111MiB immutable candidate
+is retained only for exact-source CI41929773433 and guarded publication. Linux
+verification and both search-performance jobs pass; Windows workspace tests are
+still live. The delivered image remains316 and Windows remains458. No full theme,
+whole-interface, physical-platform or roadmap completion is implied.
 
 1. Package and verify the subsequent Windows transport and Grid source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.

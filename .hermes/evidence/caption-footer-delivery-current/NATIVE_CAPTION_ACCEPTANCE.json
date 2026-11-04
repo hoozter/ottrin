@@ -1,0 +1,134 @@
+{
+  "status": "pass scoped main AppImage caption/footer/Grid/picker checks; saved-theme card supplement separate",
+  "source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "cfa7feb657c27c27fc420003917265b44dbaeb64c9a5e427f549d561b618f408",
+    "Ottrin-0.1.0-x86_64.AppImage": "e88e49e876721b1c065addd2f79f83b508bb533b241b536eb0166ac4118cb634",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "0d17c4fcb7fee5e7f80ce41d1460c1ec948660303efd37a012fa806d12cde74c",
+    "ottrin_0.1.0_amd64.deb": "ee4a47ff655b990b237bfcc70bb4a7fcc22b6ada28b9654a466b8646f6b2edb8"
+  },
+  "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+  "original_captures": {
+    "grid-light-1.0.png": "2f92558a4aabb4c673985805092144a4d9d799b7951df65ae821d80f6bc4da30",
+    "grid-dark-1.85.png": "6e6743e6f2033c97354d98e08cf19262a2a4ee2f70f310f06a10a32404b70975",
+    "miller150-dark.png": "ebcba2c1793ab6f66ca1f578d2dd74839a5ca1b606235815b0d1c5a80cbf89a3",
+    "cold-10.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "cold-0.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "picker-grid-dark.png": "6955674e24d5ad352eafed68e323178ae4e61a7d6c15e81a126bad20f9e3407a",
+    "miller-light.png": "bab94771fd9b884683bfc941e330f72b2cd9b9d0857ed8ce68a39d2915078592",
+    "appearance-dark.png": "4ffe7f7077e74dc45fd6d01d3ea65906532e05fb59cc903f98db45c745e2af75",
+    "cold-30.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "cold-2.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "list-dark.png": "a1d2eec3583933ed5a203f77816f1fc0f060dae4844f138ee8b1d6a03c9104e9",
+    "appearance-light.png": "bcbfb74075584a40823ec1971376c516a6691569dfa16643f590a1bc36415ab6",
+    "grid-dark-1.0.png": "8e07aaf3186e7fa55519961a00691facc9187d9c30cbd5a7dfdd63966605da0a",
+    "picker-grid-light.png": "426c42a1ac124fb42963d76975bc30d1399ca6c61d348efd6a500b874c79b47a",
+    "miller150-light.png": "d7b272499791a10308ff8d7f3abd9f5e1d58632a85a20a15e687cdadf53a88c8",
+    "grid-dark-0.75.png": "5547da46778a62c9d7426d2ef1f0a28a434de519d5662ea73b63b4367d177b65",
+    "list-light.png": "ca62d6c53d05777f4e12d72bec3a7eb909f5191e5d3368e29bc0430826d91581",
+    "miller-dark.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512"
+  },
+  "notes": [
+    "All18 original complete-window captures directly viewed. Miller wide filename fills its available line before ellipsis in Dark/Light100% and controlled150% backend scaling.",
+    "No-input installed/enabled Ready-index startup footer shows1002 items at all four0/2/10/30s samples; captures agree with accessibility text.",
+    "Dark/Light List headers and complete filename, Grid75/100/185 and cooperating picker layout retain their stated scope; picker Escape returns accepted=false with no paths.",
+    "Appearance captures show built-in theme cards, but the long saved-theme card is below the fold. They do not accept that change; a scrolled native supplement is required."
+  ],
+  "warm_index": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 28672,
+    "wal_bytes": 0,
+    "freelist_pages": 0,
+    "freelist_bytes": 0,
+    "snapshot_revision": 1,
+    "detail": "Ready \u00b7 1002 indexed",
+    "indexed_items": 1002,
+    "last_completed_indexed_items": 1002,
+    "estimated_total_items": null,
+    "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1793833529,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1793833529,
+    "last_scan_completed_unix_secs": 1793833529,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1793833529,
+    "last_error": null
+  },
+  "no_input_footer_samples": [
+    {
+      "seconds_after_window": 0.6901728969999965,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 2.5689392859999884,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 10.651667920999998,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 30.672246555,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    }
+  ],
+  "miller_cases": [
+    {
+      "theme": "Dark",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller-dark.png"
+    },
+    {
+      "theme": "Light",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller-light.png"
+    },
+    {
+      "theme": "Dark",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller150-dark.png",
+      "physical_width": 1200,
+      "backend_scale": 1.5
+    },
+    {
+      "theme": "Light",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller150-light.png",
+      "physical_width": 1200,
+      "backend_scale": 1.5
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_transport_removed": {
+    "bytes": 1785510,
+    "sha256": "beb9d581616320e523494615d9e570d8014498450b45b93d38d826b0e5ee0975"
+  },
+  "limits": [
+    "Original Appearance captures do not show saved-theme card; not accepted by this receipt.",
+    "Controlled software X11, no physical/Wayland/Windows/full theme audit.",
+    "Earliest native count sample is0.69s after visible window, not every intervening frame; rendered regression supplies missing-wakeup/return-to-idle proof.",
+    "No new daemon CPU, helper/UAC, reboot or binary-replacement acceptance; inherited unchanged-source/hash scopes remain explicit."
+  ]
+}

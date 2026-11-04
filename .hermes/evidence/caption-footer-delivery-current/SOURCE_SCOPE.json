@@ -1,0 +1,25 @@
+{
+  "status": "pass source/hash binding; inherited receipts keep original scope",
+  "source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "prior_source_revision": "31616771f1e346d84c3b0bf5ab0fd29af1b6e89b",
+  "changed_crate_files": [
+    "crates/ottrin-ui/src/appearance_editor.rs",
+    "crates/ottrin-ui/src/file_row.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/widget_style.rs"
+  ],
+  "changes": "Shared bounded single-line captions for file rows/theme cards/sort headers; one-shot Miller footer repaint after a changed ready-model caption. No timer or daemon changes.",
+  "unchanged_runtime_sha256": {
+    "index_daemon": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "privileged_helper": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "source_checks": "SOURCE_CHECKS.json",
+  "retained_evidence": ".hermes/evidence/grid-caption-delivery-current",
+  "retained_original_native_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "limits": [
+    "Identical daemon/helper/HTML binaries retain original DAC scopes through prior316 SOURCE_SCOPE.json; no fresh resource/UAC/reboot/replacement matrix is inferred.",
+    "Grid renderer and theme palette source unchanged; new GUI must still pass its own native caption/footer checks.",
+    "Windows stays458; no full theme/interface or final roadmap acceptance."
+  ]
+}

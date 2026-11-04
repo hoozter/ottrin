@@ -1,0 +1,494 @@
+frame | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+push button | Manage administrator helper
+push button | Manage index service
+push button | Show hidden files
+push button | Show command bar
+label | 1002 items
+image | 
+label | fixtures
+unknown | 
+push button | New tab
+push button | Close window
+push button | Maximize or restore window
+push button | Minimize window
+push button | Back
+push button | Forward
+push button | Parent folder
+push button | Menu
+push button | Switch to List view
+push button | View Options
+push button | Open /
+label | ›
+push button | Open /home
+label | ›
+push button | Open /home/ottrinqa
+label | ›
+push button | Open /home/ottrinqa/fixtures
+unknown | 
+panel | 
+push button | Expand locations rail
+push button | Home · /home/ottrinqa
+push button | Root · /
+label | Sort
+combo box | 
+push button | A-Z
+push button | 
+label | 100%
+push button | Reset current view size
+unknown | 
+toggle button | bin.usr-is-merged
+toggle button | boot
+toggle button | dev
+toggle button | etc
+toggle button | home
+toggle button | lib.usr-is-merged
+toggle button | lost+found
+toggle button | media
+toggle button | mnt
+toggle button | opt
+toggle button | proc
+toggle button | root
+toggle button | run
+toggle button | sbin.usr-is-merged
+toggle button | snap
+toggle button | srv
+toggle button | sys
+toggle button | tmp
+toggle button | usr
+toggle button | var
+toggle button | bin
+toggle button | lib
+toggle button | lib64
+toggle button | sbin
+unknown | 
+toggle button | ottrinqa
+unknown | 
+toggle button | __pycache__
+toggle button | fixtures
+toggle button | results
+toggle button | actor.py
+toggle button | APPIMAGE_INPUT.json
+toggle button | candidate.deb
+toggle button | linux-desktop-qa.py
+toggle button | Ottrin-0.1.0-x86_64.AppImage
+toggle button | portable.tar.gz
+toggle button | portal-probe.py
+toggle button | worker.py
+unknown | 
+toggle button | 00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt
+toggle button | 01-iiiiiiiiiiiiiiiiiiii.txt
+toggle button | owned-0000.txt
+toggle button | owned-0001.txt
+toggle button | owned-0002.txt
+toggle button | owned-0003.txt
+toggle button | owned-0004.txt
+toggle button | owned-0005.txt
+toggle button | owned-0006.txt
+toggle button | owned-0007.txt
+toggle button | owned-0008.txt
+toggle button | owned-0009.txt
+toggle button | owned-0010.txt
+toggle button | owned-0011.txt
+toggle button | owned-0012.txt
+toggle button | owned-0013.txt
+toggle button | owned-0014.txt
+toggle button | owned-0015.txt
+toggle button | owned-0016.txt
+toggle button | owned-0017.txt
+toggle button | owned-0018.txt
+toggle button | owned-0019.txt
+toggle button | owned-0020.txt
+toggle button | owned-0021.txt
+toggle button | owned-0022.txt
+toggle button | owned-0023.txt
+toggle button | owned-0024.txt
+toggle button | owned-0025.txt
+toggle button | owned-0026.txt
+toggle button | owned-0027.txt
+toggle button | owned-0028.txt
+toggle button | owned-0029.txt
+toggle button | owned-0030.txt
+toggle button | owned-0031.txt
+toggle button | owned-0032.txt
+toggle button | owned-0033.txt
+toggle button | owned-0034.txt
+toggle button | owned-0035.txt
+toggle button | owned-0036.txt
+toggle button | owned-0037.txt
+toggle button | owned-0038.txt
+toggle button | owned-0039.txt
+toggle button | owned-0040.txt
+toggle button | owned-0041.txt
+toggle button | owned-0042.txt
+toggle button | owned-0043.txt
+toggle button | owned-0044.txt
+toggle button | owned-0045.txt
+toggle button | owned-0046.txt
+toggle button | owned-0047.txt
+toggle button | owned-0048.txt
+toggle button | owned-0049.txt
+toggle button | owned-0050.txt
+toggle button | owned-0051.txt
+toggle button | owned-0052.txt
+toggle button | owned-0053.txt
+toggle button | owned-0054.txt
+toggle button | owned-0055.txt
+toggle button | owned-0056.txt
+toggle button | owned-0057.txt
+toggle button | owned-0058.txt
+toggle button | owned-0059.txt
+toggle button | owned-0060.txt
+toggle button | owned-0061.txt
+toggle button | owned-0062.txt
+toggle button | owned-0063.txt
+toggle button | owned-0064.txt
+toggle button | owned-0065.txt
+toggle button | owned-0066.txt
+toggle button | owned-0067.txt
+toggle button | owned-0068.txt
+toggle button | owned-0069.txt
+toggle button | owned-0070.txt
+toggle button | owned-0071.txt
+toggle button | owned-0072.txt
+toggle button | owned-0073.txt
+toggle button | owned-0074.txt
+toggle button | owned-0075.txt
+toggle button | owned-0076.txt
+toggle button | owned-0077.txt
+toggle button | owned-0078.txt
+toggle button | owned-0079.txt
+toggle button | owned-0080.txt
+toggle button | owned-0081.txt
+toggle button | owned-0082.txt
+toggle button | owned-0083.txt
+toggle button | owned-0084.txt
+toggle button | owned-0085.txt
+toggle button | owned-0086.txt
+toggle button | owned-0087.txt
+toggle button | owned-0088.txt
+toggle button | owned-0089.txt
+toggle button | owned-0090.txt
+toggle button | owned-0091.txt
+toggle button | owned-0092.txt
+toggle button | owned-0093.txt
+toggle button | owned-0094.txt
+toggle button | owned-0095.txt
+toggle button | owned-0096.txt
+toggle button | owned-0097.txt
+toggle button | owned-0098.txt
+toggle button | owned-0099.txt
+toggle button | owned-0100.txt
+toggle button | owned-0101.txt
+toggle button | owned-0102.txt
+toggle button | owned-0103.txt
+toggle button | owned-0104.txt
+toggle button | owned-0105.txt
+toggle button | owned-0106.txt
+toggle button | owned-0107.txt
+toggle button | owned-0108.txt
+toggle button | owned-0109.txt
+toggle button | owned-0110.txt
+toggle button | owned-0111.txt
+toggle button | owned-0112.txt
+toggle button | owned-0113.txt
+toggle button | owned-0114.txt
+toggle button | owned-0115.txt
+toggle button | owned-0116.txt
+toggle button | owned-0117.txt
+toggle button | owned-0118.txt
+toggle button | owned-0119.txt
+toggle button | owned-0120.txt
+toggle button | owned-0121.txt
+toggle button | owned-0122.txt
+toggle button | owned-0123.txt
+toggle button | owned-0124.txt
+toggle button | owned-0125.txt
+toggle button | owned-0126.txt
+toggle button | owned-0127.txt
+toggle button | owned-0128.txt
+toggle button | owned-0129.txt
+toggle button | owned-0130.txt
+toggle button | owned-0131.txt
+toggle button | owned-0132.txt
+toggle button | owned-0133.txt
+toggle button | owned-0134.txt
+toggle button | owned-0135.txt
+toggle button | owned-0136.txt
+toggle button | owned-0137.txt
+toggle button | owned-0138.txt
+toggle button | owned-0139.txt
+toggle button | owned-0140.txt
+toggle button | owned-0141.txt
+toggle button | owned-0142.txt
+toggle button | owned-0143.txt
+toggle button | owned-0144.txt
+toggle button | owned-0145.txt
+toggle button | owned-0146.txt
+toggle button | owned-0147.txt
+toggle button | owned-0148.txt
+toggle button | owned-0149.txt
+toggle button | owned-0150.txt
+toggle button | owned-0151.txt
+toggle button | owned-0152.txt
+toggle button | owned-0153.txt
+toggle button | owned-0154.txt
+toggle button | owned-0155.txt
+toggle button | owned-0156.txt
+toggle button | owned-0157.txt
+toggle button | owned-0158.txt
+toggle button | owned-0159.txt
+toggle button | owned-0160.txt
+toggle button | owned-0161.txt
+toggle button | owned-0162.txt
+toggle button | owned-0163.txt
+toggle button | owned-0164.txt
+toggle button | owned-0165.txt
+toggle button | owned-0166.txt
+toggle button | owned-0167.txt
+toggle button | owned-0168.txt
+toggle button | owned-0169.txt
+toggle button | owned-0170.txt
+toggle button | owned-0171.txt
+toggle button | owned-0172.txt
+toggle button | owned-0173.txt
+toggle button | owned-0174.txt
+toggle button | owned-0175.txt
+toggle button | owned-0176.txt
+toggle button | owned-0177.txt
+toggle button | owned-0178.txt
+toggle button | owned-0179.txt
+toggle button | owned-0180.txt
+toggle button | owned-0181.txt
+toggle button | owned-0182.txt
+toggle button | owned-0183.txt
+toggle button | owned-0184.txt
+toggle button | owned-0185.txt
+toggle button | owned-0186.txt
+toggle button | owned-0187.txt
+toggle button | owned-0188.txt
+toggle button | owned-0189.txt
+toggle button | owned-0190.txt
+toggle button | owned-0191.txt
+toggle button | owned-0192.txt
+toggle button | owned-0193.txt
+toggle button | owned-0194.txt
+toggle button | owned-0195.txt
+toggle button | owned-0196.txt
+toggle button | owned-0197.txt
+toggle button | owned-0198.txt
+toggle button | owned-0199.txt
+toggle button | owned-0200.txt
+toggle button | owned-0201.txt
+toggle button | owned-0202.txt
+toggle button | owned-0203.txt
+toggle button | owned-0204.txt
+toggle button | owned-0205.txt
+toggle button | owned-0206.txt
+toggle button | owned-0207.txt
+toggle button | owned-0208.txt
+toggle button | owned-0209.txt
+toggle button | owned-0210.txt
+toggle button | owned-0211.txt
+toggle button | owned-0212.txt
+toggle button | owned-0213.txt
+toggle button | owned-0214.txt
+toggle button | owned-0215.txt
+toggle button | owned-0216.txt
+toggle button | owned-0217.txt
+toggle button | owned-0218.txt
+toggle button | owned-0219.txt
+toggle button | owned-0220.txt
+toggle button | owned-0221.txt
+toggle button | owned-0222.txt
+toggle button | owned-0223.txt
+toggle button | owned-0224.txt
+toggle button | owned-0225.txt
+toggle button | owned-0226.txt
+toggle button | owned-0227.txt
+toggle button | owned-0228.txt
+toggle button | owned-0229.txt
+toggle button | owned-0230.txt
+toggle button | owned-0231.txt
+toggle button | owned-0232.txt
+toggle button | owned-0233.txt
+toggle button | owned-0234.txt
+toggle button | owned-0235.txt
+toggle button | owned-0236.txt
+toggle button | owned-0237.txt
+toggle button | owned-0238.txt
+toggle button | owned-0239.txt
+toggle button | owned-0240.txt
+toggle button | owned-0241.txt
+toggle button | owned-0242.txt
+toggle button | owned-0243.txt
+toggle button | owned-0244.txt
+toggle button | owned-0245.txt
+toggle button | owned-0246.txt
+toggle button | owned-0247.txt
+toggle button | owned-0248.txt
+toggle button | owned-0249.txt
+toggle button | owned-0250.txt
+toggle button | owned-0251.txt
+toggle button | owned-0252.txt
+toggle button | owned-0253.txt
+toggle button | owned-0254.txt
+toggle button | owned-0255.txt
+toggle button | owned-0256.txt
+toggle button | owned-0257.txt
+toggle button | owned-0258.txt
+toggle button | owned-0259.txt
+toggle button | owned-0260.txt
+toggle button | owned-0261.txt
+toggle button | owned-0262.txt
+toggle button | owned-0263.txt
+toggle button | owned-0264.txt
+toggle button | owned-0265.txt
+toggle button | owned-0266.txt
+toggle button | owned-0267.txt
+toggle button | owned-0268.txt
+toggle button | owned-0269.txt
+toggle button | owned-0270.txt
+toggle button | owned-0271.txt
+toggle button | owned-0272.txt
+toggle button | owned-0273.txt
+toggle button | owned-0274.txt
+toggle button | owned-0275.txt
+toggle button | owned-0276.txt
+toggle button | owned-0277.txt
+toggle button | owned-0278.txt
+toggle button | owned-0279.txt
+toggle button | owned-0280.txt
+toggle button | owned-0281.txt
+toggle button | owned-0282.txt
+toggle button | owned-0283.txt
+toggle button | owned-0284.txt
+toggle button | owned-0285.txt
+toggle button | owned-0286.txt
+toggle button | owned-0287.txt
+toggle button | owned-0288.txt
+toggle button | owned-0289.txt
+toggle button | owned-0290.txt
+toggle button | owned-0291.txt
+toggle button | owned-0292.txt
+toggle button | owned-0293.txt
+toggle button | owned-0294.txt
+toggle button | owned-0295.txt
+toggle button | owned-0296.txt
+toggle button | owned-0297.txt
+toggle button | owned-0298.txt
+toggle button | owned-0299.txt
+toggle button | owned-0300.txt
+toggle button | owned-0301.txt
+toggle button | owned-0302.txt
+toggle button | owned-0303.txt
+toggle button | owned-0304.txt
+toggle button | owned-0305.txt
+toggle button | owned-0306.txt
+toggle button | owned-0307.txt
+toggle button | owned-0308.txt
+toggle button | owned-0309.txt
+toggle button | owned-0310.txt
+toggle button | owned-0311.txt
+toggle button | owned-0312.txt
+toggle button | owned-0313.txt
+toggle button | owned-0314.txt
+toggle button | owned-0315.txt
+toggle button | owned-0316.txt
+toggle button | owned-0317.txt
+toggle button | owned-0318.txt
+toggle button | owned-0319.txt
+toggle button | owned-0320.txt
+toggle button | owned-0321.txt
+toggle button | owned-0322.txt
+toggle button | owned-0323.txt
+toggle button | owned-0324.txt
+toggle button | owned-0325.txt
+toggle button | owned-0326.txt
+toggle button | owned-0327.txt
+toggle button | owned-0328.txt
+toggle button | owned-0329.txt
+toggle button | owned-0330.txt
+toggle button | owned-0331.txt
+toggle button | owned-0332.txt
+toggle button | owned-0333.txt
+toggle button | owned-0334.txt
+toggle button | owned-0335.txt
+toggle button | owned-0336.txt
+toggle button | owned-0337.txt
+toggle button | owned-0338.txt
+toggle button | owned-0339.txt
+toggle button | owned-0340.txt
+toggle button | owned-0341.txt
+toggle button | owned-0342.txt
+toggle button | owned-0343.txt
+toggle button | owned-0344.txt
+toggle button | owned-0345.txt
+toggle button | owned-0346.txt
+toggle button | owned-0347.txt
+toggle button | owned-0348.txt
+toggle button | owned-0349.txt
+toggle button | owned-0350.txt
+toggle button | owned-0351.txt
+toggle button | owned-0352.txt
+toggle button | owned-0353.txt
+toggle button | owned-0354.txt
+toggle button | owned-0355.txt
+toggle button | owned-0356.txt
+toggle button | owned-0357.txt
+toggle button | owned-0358.txt
+toggle button | owned-0359.txt
+toggle button | owned-0360.txt
+toggle button | owned-0361.txt
+toggle button | owned-0362.txt
+toggle button | owned-0363.txt
+toggle button | owned-0364.txt
+toggle button | owned-0365.txt
+toggle button | owned-0366.txt
+toggle button | owned-0367.txt
+toggle button | owned-0368.txt
+toggle button | owned-0369.txt
+toggle button | owned-0370.txt
+toggle button | owned-0371.txt
+toggle button | owned-0372.txt
+toggle button | owned-0373.txt
+toggle button | owned-0374.txt
+toggle button | owned-0375.txt
+toggle button | owned-0376.txt
+toggle button | owned-0377.txt
+toggle button | owned-0378.txt
+toggle button | owned-0379.txt
+toggle button | owned-0380.txt
+toggle button | owned-0381.txt
+toggle button | owned-0382.txt
+toggle button | owned-0383.txt
+toggle button | owned-0384.txt
+toggle button | owned-0385.txt
+toggle button | owned-0386.txt
+toggle button | owned-0387.txt
+toggle button | owned-0388.txt
+toggle button | owned-0389.txt
+toggle button | owned-0390.txt
+toggle button | owned-0391.txt
+toggle button | owned-0392.txt
+toggle button | owned-0393.txt
+toggle button | owned-0394.txt
+toggle button | owned-0395.txt
+toggle button | owned-0396.txt
+toggle button | owned-0397.txt
+toggle button | owned-0398.txt
+label | …
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+toggle button | Show or hide info panel
+toggle button | Show or hide drop-folder panel
+toggle button | Toggle Search
+toggle button | Show or hide Activity
+toggle button | Show or hide Trash

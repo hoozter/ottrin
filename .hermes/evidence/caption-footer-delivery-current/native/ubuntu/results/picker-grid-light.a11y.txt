@@ -1,0 +1,76 @@
+frame | 
+push button | Close window
+label | Owned Grid picker QA
+push button | Parent folder
+push button | Open /
+push button | Open /home
+push button | Open /home/ottrinqa
+push button | Open /home/ottrinqa/fixtures
+push button | Edit location
+entry | Filter this folder
+combo box | 
+label | 1002 items
+push button | Show read-only preview
+push button | Show hidden files
+push button | Grid view
+push button | List view
+label | Places
+push button | Home
+push button | Root
+push button | Desktop
+push button | Downloads
+push button | Documents
+toggle button | 00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt
+toggle button | 01-iiiiiiiiiiiiiiiiiiii.txt
+toggle button | owned-0000.txt
+toggle button | owned-0001.txt
+toggle button | owned-0002.txt
+toggle button | owned-0003.txt
+toggle button | owned-0004.txt
+toggle button | owned-0005.txt
+toggle button | owned-0006.txt
+toggle button | owned-0007.txt
+toggle button | owned-0008.txt
+toggle button | owned-0009.txt
+toggle button | owned-0010.txt
+toggle button | owned-0011.txt
+toggle button | owned-0012.txt
+toggle button | owned-0013.txt
+toggle button | owned-0014.txt
+toggle button | owned-0015.txt
+toggle button | owned-0016.txt
+toggle button | owned-0017.txt
+toggle button | owned-0018.txt
+toggle button | owned-0019.txt
+toggle button | owned-0020.txt
+toggle button | owned-0021.txt
+toggle button | owned-0022.txt
+toggle button | owned-0023.txt
+toggle button | owned-0024.txt
+toggle button | owned-0025.txt
+toggle button | owned-0026.txt
+toggle button | owned-0027.txt
+toggle button | owned-0028.txt
+toggle button | owned-0029.txt
+toggle button | owned-0030.txt
+toggle button | owned-0031.txt
+toggle button | owned-0032.txt
+toggle button | owned-0033.txt
+toggle button | owned-0034.txt
+toggle button | owned-0035.txt
+toggle button | owned-0036.txt
+toggle button | owned-0037.txt
+toggle button | owned-0038.txt
+toggle button | owned-0039.txt
+toggle button | owned-0040.txt
+toggle button | owned-0041.txt
+toggle button | owned-0042.txt
+toggle button | owned-0043.txt
+toggle button | owned-0044.txt
+toggle button | owned-0045.txt
+unknown | 
+unknown | 
+label | File name
+entry | File name
+push button | Open
+push button | Cancel

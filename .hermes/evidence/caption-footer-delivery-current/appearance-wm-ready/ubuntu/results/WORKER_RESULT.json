@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "startup_samples": [],
+  "grid_cases": [],
+  "picker_cases": [],
+  "miller_cases": [],
+  "list_cases": [],
+  "appearance_cases": [],
+  "error": "AssertionError(\"Timed out waiting for owned window manager EWMH ready before launching GUI: [Errno 2] No such file or directory: 'xprop'\")",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/ottrinqa/worker.py\", line 31, in <module>\n    q.wait_for(wm_ready,'owned window manager EWMH ready before launching GUI',timeout=15)\n  File \"/home/ottrinqa/linux-desktop-qa.py\", line 70, in wait_for\n    raise AssertionError(f\"Timed out waiting for {message}{suffix}\")\nAssertionError: Timed out waiting for owned window manager EWMH ready before launching GUI: [Errno 2] No such file or directory: 'xprop'\n"
+}

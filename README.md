@@ -62,10 +62,13 @@ and picker cancellation. All24 original captures were reviewed. The unchanged
 helper/service scopes above retain their original DAC acceptance; they were not
 freshly rerun. Evidence: `.hermes/evidence/grid-caption-delivery-current/`.
 
-The subsequent single-line caption and one-shot Miller footer wakeup fixes pass505
-UI tests and strict native/Windows cross-target lint. They still need native/package
-acceptance and are not in the delivered316 image. The captured initial0-item footer
-finding remains open until that verification.
+The subsequent single-line caption and one-shot Miller footer fixes pass505 UI
+tests, strict native/Windows cross-target lint, four-format package checks and
+scoped actual-AppImage review. Dark/Light100/150 Miller rows and saved-theme names
+use their label widths; an installed Ready index shows1002 items without input
+through30seconds. This c4 candidate remains staged pending its Windows CI job;
+it is not in the delivered316 image. Evidence:
+`.hermes/evidence/caption-footer-delivery-current/`.
 
 Windows direct-UAC pipe transport has focused native evidence at its original
 source scope and is not yet in Windows458. Windows administrator Copy recovery,

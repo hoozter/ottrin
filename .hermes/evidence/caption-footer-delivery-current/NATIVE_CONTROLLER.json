@@ -1,0 +1,7 @@
+{
+  "status": "native fixture passed; original captures require direct review",
+  "source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "artifact_sha256": "e88e49e876721b1c065addd2f79f83b508bb533b241b536eb0166ac4118cb634",
+  "child_exit": 0,
+  "no_host_input_alias_allocated": true
+}

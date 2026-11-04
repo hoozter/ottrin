@@ -1,0 +1,144 @@
+{
+  "status": "pass",
+  "startup_samples": [
+    {
+      "seconds_after_window": 0.6901728969999965,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 2.5689392859999884,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 10.651667920999998,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 30.672246555,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    }
+  ],
+  "grid_cases": [
+    {
+      "theme": "Dark",
+      "scale": 1.0,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "grid-dark-1.0.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.0,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "grid-light-1.0.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 0.75,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "grid-dark-0.75.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 1.85,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "grid-dark-1.85.png"
+    }
+  ],
+  "picker_cases": [
+    {
+      "theme": "Dark",
+      "capture": "picker-grid-dark.png",
+      "cancelled": true,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c"
+    },
+    {
+      "theme": "Light",
+      "capture": "picker-grid-light.png",
+      "cancelled": true,
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c"
+    }
+  ],
+  "miller_cases": [
+    {
+      "theme": "Dark",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller-dark.png"
+    },
+    {
+      "theme": "Light",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller-light.png"
+    },
+    {
+      "theme": "Dark",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller150-dark.png",
+      "physical_width": 1200,
+      "backend_scale": 1.5
+    },
+    {
+      "theme": "Light",
+      "gui_sha256": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
+      "capture": "miller150-light.png",
+      "physical_width": 1200,
+      "backend_scale": 1.5
+    }
+  ],
+  "list_cases": [
+    {
+      "theme": "Dark",
+      "capture": "list-dark.png"
+    },
+    {
+      "theme": "Light",
+      "capture": "list-light.png"
+    }
+  ],
+  "appearance_cases": [
+    {
+      "theme": "Dark",
+      "capture": "appearance-dark.png"
+    },
+    {
+      "theme": "Light",
+      "capture": "appearance-light.png"
+    }
+  ],
+  "service_install": "Ottrin index service configured; automatic startup is enabled.\n",
+  "pre_gui_warm_index": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 28672,
+    "wal_bytes": 0,
+    "freelist_pages": 0,
+    "freelist_bytes": 0,
+    "snapshot_revision": 1,
+    "detail": "Ready \u00b7 1002 indexed",
+    "indexed_items": 1002,
+    "last_completed_indexed_items": 1002,
+    "estimated_total_items": null,
+    "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1793833529,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1793833529,
+    "last_scan_completed_unix_secs": 1793833529,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1793833529,
+    "last_error": null
+  },
+  "cold_scope": "Fresh account with installed/enabled daemon confirmed Ready before first GUI; no input during footer samples. No raw systemctl-stop precondition."
+}
