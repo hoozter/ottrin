@@ -1,0 +1,17 @@
+{
+  "status": "pass local correction of environment-dependent rendered-test scope; hosted rerun and final cohort pending",
+  "failed_run": 41865529972,
+  "failed_job": 126698867164,
+  "failure_log": "CI_LINUX_FAILURE.log",
+  "root_cause": "Global absence assertion confused HTML sandbox Ready with administrator-helper status; CI installs Chromium, local host lacked it",
+  "correction": "Force HTML sandbox Ready in the regression; assert helper Update needed, update action and absence of helper Ready only inside its actual section; also require independent HTML Ready remains visible",
+  "checks": {
+    "ci-scope-ui-suite.log": "496 passed; 0 failed; 1 ignored",
+    "ci-scope-native-lint.log": "Finished `dev`",
+    "ci-scope-windows-lint.log": "Finished `dev`"
+  },
+  "ui_test_source_sha256": "c95a07205d477a177e422c55ac42061c6c7e60fd995da41d2a42f162fca686bf",
+  "production_prefix_unchanged_from": "41c09bebbc9c49022af8eb0d568813e668d1fe2d",
+  "proof": "Only UI test module changes; entire production prefix before the unique cfg(test) tests module matches41c byte-for-byte",
+  "package_scope": "41c staged packages retain exact native acceptance, but failed41c hosted verification is not a release pass. Keep candidate for current Linux login fixture; final delivery requires a verified corrected source cohort."
+}

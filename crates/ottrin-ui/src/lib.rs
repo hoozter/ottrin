@@ -27354,7 +27354,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn incompatible_installed_helper_shows_update_instead_of_ready_or_install() {
+    fn incompatible_installed_helper_shows_update_even_when_html_sandbox_is_ready() {
         let mut app = OttrinApp::default();
         app.privileged_availability = PrivilegedAvailability::UpdateRequired(
             "Update the administrator helper in Services.".into(),
@@ -27365,6 +27365,15 @@ mod tests {
             detail: "Not installed".into(),
         });
         let ctx = Context::default();
+        ctx.data_mut(|data| {
+            data.insert_temp(
+                egui::Id::new("html-sandbox-status"),
+                (
+                    std::time::Instant::now(),
+                    ottrin_preview::HtmlPreviewRuntimeStatus::Ready,
+                ),
+            );
+        });
         let output = ctx.run(
             egui::RawInput {
                 screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(1800.0))),
@@ -27380,11 +27389,35 @@ mod tests {
         let visible = |name: &str| {
             output.shapes.iter().any(|shape| matches!(&shape.shape,egui::Shape::Text(text) if text.galley.job.text==name))
         };
-        assert!(visible("Update needed"));
-        assert!(visible("Update / reinstall helper"));
-        assert!(visible("Update the administrator helper in Services."));
-        assert!(!visible("Installed and ready"));
-        assert!(!visible("Set up administrator helper"));
+        let heading_y = |name: &str| {
+            output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) if text.galley.job.text == name => Some(text.pos.y),
+                    _ => None,
+                })
+                .unwrap()
+        };
+        let helper_top = heading_y("Administrator helper");
+        let helper_bottom = heading_y("HTML preview sandbox");
+        assert!(helper_top < helper_bottom);
+        let helper_has = |name: &str| {
+            output.shapes.iter().any(|shape| {
+                matches!(&shape.shape,
+                egui::Shape::Text(text) if text.galley.job.text == name
+                    && text.pos.y > helper_top && text.pos.y < helper_bottom)
+            })
+        };
+        assert!(helper_has("Update needed"));
+        assert!(helper_has("Update / reinstall helper"));
+        assert!(helper_has("Update the administrator helper in Services."));
+        assert!(!helper_has("Installed and ready"));
+        assert!(!helper_has("Set up administrator helper"));
+        assert!(
+            visible("Installed and ready"),
+            "The independent HTML sandbox remains ready"
+        );
     }
 
     #[cfg(any(target_os = "linux", target_os = "windows"))]

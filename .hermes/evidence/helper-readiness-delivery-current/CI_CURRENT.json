@@ -329,12 +329,12 @@
       "url": "https://github.com/hoozter/ottrin/actions/runs/41865529972/job/126698867063"
     },
     {
-      "completedAt": "0001-01-01T00:00:00Z",
-      "conclusion": "",
+      "completedAt": "2026-11-04T16:24:14Z",
+      "conclusion": "failure",
       "databaseId": 126698867164,
       "name": "verify (ubuntu-latest)",
       "startedAt": "2026-11-04T16:16:41Z",
-      "status": "in_progress",
+      "status": "completed",
       "steps": [
         {
           "completedAt": "2026-11-04T16:16:43Z",

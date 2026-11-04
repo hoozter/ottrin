@@ -388,11 +388,24 @@ candidate's pending consumer are recorded in `CLEANUP_CURRENT.json`. A read-only
 unelevated probe confirms the personal installed helper rejects protocol1; updating
 that installation needs owner authentication and does not block software work.
 
+Hosted41c Linux verification exposed an environment-dependent assertion in the
+new Services regression: the unrelated HTML sandbox legitimately displayed
+Installed and ready when Chromium was installed. The corrected test explicitly
+forces that state, scopes helper assertions to the helper section and retains
+both positive and negative checks. All496 UI tests pass locally (one existing
+ignored), with strict native/Windows lint. Only the test module changes; the
+production UI prefix is byte-identical to41c. Failure and correction evidence is
+`helper-readiness-delivery-current/CI_SCOPE_FIX.json`. The failed41c hosted job is
+not counted as a release pass. Keep its accepted runtime as the input to the
+independent Linux login/reboot fixture; final delivery needs the corrected source
+checkpoint's hosted verification and coherent package provenance.
+
 Completed delivery: Linux47db and Windows458/MSIX17 are at their stable paths;
 exact native scopes, fresh/update/login MSIX gates, four hosted jobs and owned
 fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap completion.
 
-1. Publish the accepted41c helper compatibility cohort after hosted verification.
+1. Finish hosted verification and coherent packaging after the corrected Services
+   regression, then publish the helper compatibility cohort.
    Complete ordinary-user rediscovery of elevated Copy history after restarting
    and the Windows receipt/Undo/cleanup bridge. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted
