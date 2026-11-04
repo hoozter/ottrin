@@ -1,0 +1,5 @@
+{
+  "previous_turn": "progress: shared tab/window-control source checkpoint b929f0ea pushed",
+  "this_turn": "Shared production Miller rows with preview; corrected paint/hit rounding and measured label elision; rendered equality/selection test at three font scales; full 492 UI suite and strict native/Windows lint passed",
+  "remaining": "Native GUI acceptance, package refresh, status controls and wider roadmap remain active"
+}

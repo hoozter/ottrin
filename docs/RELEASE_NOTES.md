@@ -27,8 +27,11 @@ The source now shares production navigation/menu/view/breadcrumb/tab presentatio
 and window-control widgets with the theme editor, removing invented Sync, ASCII
 navigation and separately painted tab/window buttons. Rendered regressions compare
 real tab geometry/typography and controls at 100/150/200 percent text size; preview
-clicks select theme roles without operating windows. 491 UI tests and strict
-native/Windows UI lint pass. This is source-only work;
+clicks select theme roles without operating windows. Miller file rows now use the
+production renderer too, with exact painted/hit bounds and measured filename
+elision that reserves directory-chevron space. The new row regression compares
+real geometry, typography/color and accessible selection at the same three scales.
+492 UI tests and strict native/Windows UI lint pass. This is source-only work;
 current packages do not contain it and the full theme/role audit remains open.
 
 Owned VM/profile/bootstrap resources, extraction and superseded Linux packages

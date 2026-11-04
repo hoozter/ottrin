@@ -1,0 +1,62 @@
+{
+  "status": "pass source checks",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "d8790c9cc046fdf6ccb49ae877c809dd8dc23d1b98c9e80d324981e64f5c2953",
+    "crates/ottrin-ui/src/file_row.rs": "7f1e9e21349514d3e34e956626ca4f4907389cf5533f32f2a6586579bdc8c7c3"
+  },
+  "checks": [
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-ui",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-ui",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "scope": "Shared production/chooser/Miller-preview rows. Actual rendered dimensions, selected fill/hit bounds, label typography/color and accessible role selection at 100/150/200 percent text size. Pixel-rounded allocation now controls painting; measured elision reserves directory chevrons. No native visual or package acceptance."
+}

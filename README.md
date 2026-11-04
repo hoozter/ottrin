@@ -48,7 +48,9 @@ Windows retains its earlier9 settings cases,16 Services states/six startup toggl
 software fixtures, not sustained, physical or whole-interface acceptance.
 
 Source-only theme work now shares live toolbar/breadcrumb/tab and window-control
-widgets with the editor; 491 UI tests and strict Linux/Windows UI lint pass. It is not in the current packages.
+widgets and Miller file rows with the editor; 492 UI tests and strict Linux/Windows
+UI lint pass. File-row painting/hit bounds now match, and measured filename elision
+reserves directory-chevron space. It is not in the current packages.
 Full theme/role consistency, positive local-seat protected-file elevation,
 login/reboot, MSI rollback, physical coverage and final daily-driver acceptance
 remain open. See the roadmap and stable manifests for exact evidence and limits.

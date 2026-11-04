@@ -1,0 +1,28 @@
+{
+  "verified_at": "2026-11-04T09:45:59.825367+00:00",
+  "compiler_bytes_before": {
+    "target/debug/deps": 41729662886,
+    "target/debug/incremental": 24406289775,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336222515,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40305932019
+  },
+  "compiler_bytes_after": {
+    "target/debug/deps": 41729685017,
+    "target/debug/incremental": 24405659628,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336221938,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40305981201
+  },
+  "removed_obsolete_sessions": 5,
+  "fresh_candidates": 0,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-file-rows-current",
+      "purpose": "Source tests, compiler checks and cleanup receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc",
+      "purpose": "Current verified replacement test executable at existing compiler configuration/path"
+    }
+  ],
+  "scope": "No VM/display/extra target/staging allocated in source checks. scripts/test-workspace.py removed disposable HOME/XDG state. Current packages and user data preserved."
+}

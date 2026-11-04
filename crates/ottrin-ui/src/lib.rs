@@ -25306,13 +25306,6 @@ fn theme_tab_corners(c: Colors) -> egui::CornerRadius {
     }
 }
 
-fn theme_preview_row_rect(column: Rect, row: usize) -> Rect {
-    Rect::from_min_size(
-        egui::pos2(column.left() + 8.0, column.top() + 16.0 + row as f32 * 28.0),
-        Vec2::new(column.width() - 16.0, 20.0),
-    )
-}
-
 fn theme_editor_large_preview(
     ui: &mut egui::Ui,
     preview: Colors,
@@ -25379,14 +25372,9 @@ fn theme_editor_large_preview(
         egui::pos2(col2.right() + column_gap, columns_rect.top()),
         columns_rect.max,
     );
-    let selected_row = theme_preview_row_rect(col2, 1);
-    let text_band = Rect::from_min_max(
-        egui::pos2(col1.left() + 8.0, col1.top() + 8.0),
-        egui::pos2(
-            col3.right() - 8.0,
-            (col1.top() + 180.0).min(col3.bottom() - 8.0),
-        ),
-    );
+    let mut selected_row = Rect::NOTHING;
+    let mut row_clicked = None;
+    let mut text_band = Rect::NOTHING;
     let accent_badge = Rect::from_min_size(
         egui::pos2(status.right() - 124.0, status.center().y - 11.0),
         Vec2::new(96.0, 22.0),
@@ -25520,97 +25508,86 @@ fn theme_editor_large_preview(
                 Stroke::new(1.0, preview.border),
             );
         }
-        for row in 0..6 {
-            let row_rect = theme_preview_row_rect(col_rect, row);
-            let fill = if idx == 1 && row == 1 {
-                preview.selected_bg
-            } else if idx == 0 && row == 3 {
-                preview.hover
-            } else if row % 2 == 1 {
-                preview.row_alt
-            } else {
-                Color32::TRANSPARENT
-            };
-            p.rect_filled(row_rect, 0.0, fill);
-            if idx == 1 && row == 1 {
-                p.rect_stroke(
-                    row_rect.shrink(1.0),
-                    3.0,
-                    Stroke::new(1.0, preview.accent),
-                    egui::StrokeKind::Inside,
-                );
-            }
-            let samples = [
-                [
-                    ("Documents", true),
-                    ("Downloads", true),
-                    ("Pictures", true),
-                    ("Music", true),
-                    ("Videos", true),
-                    ("Projects", true),
-                ],
-                [
-                    ("src", true),
-                    ("assets", true),
-                    ("tests", true),
-                    ("Cargo.toml", false),
-                    ("README.md", false),
-                    ("notes.txt", false),
-                ],
-                [
-                    ("photo.png", false),
-                    ("movie.mp4", false),
-                    ("archive.zip", false),
-                    ("budget.xlsx", false),
-                    ("slides.pptx", false),
-                    ("settings.ini", false),
-                ],
-            ];
-            let (label, directory) = samples[idx][row];
-            let semantic = ottrin_core::classify_file(
-                Path::new(label),
-                if directory {
+        let samples = [
+            [
+                ("Documents", true),
+                ("Downloads", true),
+                ("Pictures", true),
+                ("Music", true),
+                ("Videos", true),
+                ("Projects", true),
+            ],
+            [
+                ("src", true),
+                ("assets", true),
+                ("tests", true),
+                ("Cargo.toml", false),
+                ("README.md", false),
+                ("notes.txt", false),
+            ],
+            [
+                ("photo.png", false),
+                ("movie.mp4", false),
+                ("archive.zip", false),
+                ("budget.xlsx", false),
+                ("slides.pptx", false),
+                ("settings.ini", false),
+            ],
+        ];
+        let config = AppConfig {
+            colorize_file_types: idx > 0,
+            colorize_folder_labels: idx > 0,
+            ..Default::default()
+        };
+        let mut column_ui = ui.new_child(
+            UiBuilder::new()
+                .id_salt(("theme_preview_column", idx))
+                .max_rect(col_rect)
+                .layout(Layout::top_down(Align::Min)),
+        );
+        column_ui.set_clip_rect(col_rect.intersect(ui.clip_rect()));
+        for (row, (label, directory)) in samples[idx].iter().enumerate() {
+            let entry = FileEntry {
+                name: (*label).into(),
+                path: PathBuf::from(label),
+                kind: if *directory {
                     EntryKind::Directory
                 } else {
                     EntryKind::File
                 },
-                false,
-                None,
-                ottrin_core::platform_case_mode_current(),
-            );
-            let palette = semantic_style::semantic_palette(&preview);
-            let style = semantic_style::style_for_semantic(
-                &semantic,
-                semantic_style::EntryVisualState::default(),
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: None,
+                modified_unix_secs: None,
+            };
+            let selected = idx == 1 && row == 1;
+            let response = file_row::render_file_row(
+                &mut column_ui,
+                &entry,
+                EntryVisualState {
+                    selected,
+                    focused: idx == 1,
+                    ..Default::default()
+                },
+                file_row::FileRowLayout {
+                    index: row,
+                    width: col_rect.width(),
+                    scale: 1.0,
+                },
                 &preview,
-                &palette,
-                idx > 0,
-                idx > 0,
+                &config,
             );
-            let row_painter = p.with_clip_rect(col_rect.intersect(rect));
-            row_painter.text(
-                egui::pos2(row_rect.left() + 8.0, row_rect.center().y),
-                Align2::CENTER_CENTER,
-                semantic_style::material_icon(style.icon),
-                FontId::proportional(13.0 * preview.font_scale),
-                style.icon_color,
-            );
-            let mut label_job = egui::text::LayoutJob::simple_singleline(
-                label.to_owned(),
-                FontId::proportional(9.6 * preview.font_scale),
-                style.text_color,
-            );
-            label_job.wrap.max_width = (row_rect.width() - 24.0).max(1.0);
-            label_job.wrap.max_rows = 1;
-            let galley = row_painter.layout_job(label_job);
-            row_painter.galley(
-                egui::pos2(
-                    row_rect.left() + 20.0,
-                    row_rect.center().y - galley.size().y / 2.0,
-                ),
-                galley,
-                style.text_color,
-            );
+            text_band = text_band.union(response.rect.intersect(col_rect));
+            if selected {
+                selected_row = response.rect;
+            }
+            if response.clicked() {
+                row_clicked = Some(if selected {
+                    ThemePreviewRegion::SelectedRow
+                } else {
+                    ThemePreviewRegion::ColumnText
+                });
+            }
         }
     }
 
@@ -25715,7 +25692,9 @@ fn theme_editor_large_preview(
     if hovered_region.is_some() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }
-    let clicked_region = if titlebar_clicked {
+    let clicked_region = if row_clicked.is_some() {
+        row_clicked
+    } else if titlebar_clicked {
         Some(ThemePreviewRegion::Titlebar)
     } else if navigation_clicked || tab_clicked {
         Some(ThemePreviewRegion::Navigation)
@@ -33330,6 +33309,128 @@ mod tests {
                 }));
                 assert_eq!(selected.get(), Some(expected));
             }
+        }
+    }
+
+    #[test]
+    fn theme_preview_file_rows_match_live_geometry_and_select_their_role() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+        for scale in [1.0, 1.5, 2.0] {
+            let mut app = OttrinApp::default();
+            app.colors.font_scale = scale;
+            app.state.config.colorize_folder_labels = true;
+            let colors = app.colors;
+            let input = |events| egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(1200.0, 800.0),
+                )),
+                events,
+                ..Default::default()
+            };
+            let preview_ctx = Context::default();
+            preview_ctx.enable_accesskit();
+            let selected = std::cell::Cell::new(None);
+            let preview_frame = |events| {
+                preview_ctx.run(input(events), |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        selected.set(
+                            theme_editor_large_preview(ui, colors, ThemePreviewRegion::Defaults).1,
+                        );
+                    });
+                })
+            };
+            let preview = preview_frame(vec![]);
+            let (node, bounds) = preview
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .find(|(_, node)| node.role() == Role::Button && node.label() == Some("assets"))
+                .map(|(id, node)| (*id, node.bounds().unwrap()))
+                .expect("Real file row in preview");
+            let sample_rect = Rect::from_min_max(
+                egui::pos2(bounds.x0 as f32, bounds.y0 as f32),
+                egui::pos2(bounds.x1 as f32, bounds.y1 as f32),
+            );
+            let live_ctx = Context::default();
+            let entry = FileEntry {
+                name: "assets".into(),
+                path: PathBuf::from("assets"),
+                kind: EntryKind::Directory,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: None,
+                modified_unix_secs: None,
+            };
+            let mut live_rect = Rect::NOTHING;
+            let live = live_ctx.run(input(vec![]), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    live_rect = app
+                        .render_file_row(
+                            ui,
+                            &entry,
+                            true,
+                            true,
+                            false,
+                            1,
+                            sample_rect.width(),
+                            &colors,
+                        )
+                        .rect;
+                });
+            });
+            assert_eq!(
+                live_rect.size(),
+                sample_rect.size(),
+                "Live row dimensions at {scale}"
+            );
+            let label_style = |output: &egui::FullOutput| {
+                output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == "assets" => Some((
+                            text.galley.size(),
+                            text.galley.job.sections[0].format.clone(),
+                        )),
+                        _ => None,
+                    })
+                    .unwrap()
+            };
+            assert_eq!(
+                label_style(&live),
+                label_style(&preview),
+                "Live file label typography and color at {scale}"
+            );
+            let painted_selection = |output: &egui::FullOutput| {
+                output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Rect(rect)
+                            if rect.fill == colors.selected_bg && rect.rect.width() > 100.0 =>
+                        {
+                            Some(rect.rect)
+                        }
+                        _ => None,
+                    })
+                    .unwrap()
+            };
+            assert_eq!(painted_selection(&live), live_rect);
+            assert_eq!(
+                painted_selection(&preview),
+                sample_rect,
+                "Painting and hit testing must use identical pixel-rounded bounds"
+            );
+            let _ = preview_frame(vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: node,
+                data: None,
+            })]);
+            assert_eq!(selected.get(), Some(ThemePreviewRegion::SelectedRow));
         }
     }
 

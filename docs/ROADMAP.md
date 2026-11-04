@@ -27,14 +27,20 @@ still turns red when stopped, and settled resize observation remains open.
 The source tree additionally shares real navigation/menu/view/breadcrumb and tab
 presenters with the theme preview, replacing ASCII arrows, the fake raised path,
 invented Sync button and separately painted tab/window buttons. Actual window
-controls and the New tab button now use the production widgets. 491 UI tests and
-strict native/Windows UI lint pass.
+controls and the New tab button now use the production widgets. Miller file rows
+also use the production renderer: actual typography/icons/chevrons, theme colors,
+selection and hit rectangles. Pixel-rounded painting now matches hit testing, and
+measured filename elision reserves the chevron space. 492 UI tests and strict
+native/Windows UI lint pass.
 This source-only theme work is not in the current 061 Linux or f463 Windows packages;
 full preview/interface audit, native visual checks and the next UI package batch
-remain required. Source scopes: `theme-presenters-current/IMPLEMENTATION.json` and
-`theme-chrome-current/SOURCE_CHECKS.json`. Rendered regressions compare actual tab
+remain required. Source scopes: `theme-presenters-current/IMPLEMENTATION.json`,
+`theme-chrome-current/SOURCE_CHECKS.json` and
+`theme-file-rows-current/SOURCE_CHECKS.json`. Rendered regressions compare actual tab
 size/corners/typography and window-control dimensions at 100/150/200 percent text
 size, and check that preview clicks select their theme role without window actions.
+File-row regressions compare production/preview row dimensions, painted selection,
+label typography/color and actual accessible selection at the same three scales.
 Native visual acceptance remains open.
 
 The preview retains off-thread storage discovery and changed-only index
@@ -199,9 +205,10 @@ Evidence: `.hermes/evidence/linux-stopped-delivery-current/`.
 2. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor; it is
    tested source work awaiting the next UI delivery. U08 remains unfinished:
-   tabs and window buttons now share production presenters in source; file rows/
-   status controls, miniature corner scaling and inspector role ownership still
-   need shared presenters. All affected controls need native visual verification.
+   tabs, window buttons and Miller file rows now share production presenters in
+   source. Status controls, List/Grid representation, miniature corner scaling and
+   inspector role ownership remain open. All affected controls need native visual
+   verification before the next package delivery is accepted.
    Include the main search indicator's stopped-state color and settled resize
    observation. Verify every supported control/role, text/icon alignment and
    window styling; field-map/test counts do not prove whole-interface consistency.

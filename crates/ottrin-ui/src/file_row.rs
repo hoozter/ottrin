@@ -1,7 +1,7 @@
 //! File rows shared by the real file manager and its chooser.
-use crate::{Colors, EntryVisualState, material_icon, style_for_entry, truncate_middle};
+use crate::{Colors, EntryVisualState, material_icon, style_for_entry};
 use egui::{Align2, Color32, FontId, Rect, Sense, Stroke, Vec2, WidgetInfo, WidgetType};
-use ottrin_core::{AppConfig, EntryKind, FileEntry, MillerColumnWidthMode};
+use ottrin_core::{AppConfig, EntryKind, FileEntry};
 
 #[derive(Clone, Copy)]
 pub(crate) struct FileRowLayout {
@@ -30,6 +30,11 @@ pub(crate) fn render_file_row(
     let icon_size = (16.0 * scale.sqrt()).max(14.0);
     let text_size = (13.0 * scale.sqrt()).max(11.0) * c.font_scale;
     let row_rect = Rect::from_min_size(ui.cursor().min, Vec2::new(row_width.max(1.0), row_h));
+
+    // egui rounds allocation bounds to its pixel grid. Paint those same bounds
+    // so selection backgrounds, hit testing and theme targets cannot drift.
+    let response = ui.allocate_rect(row_rect, Sense::click());
+    let row_rect = response.rect;
 
     // Alternating stripe (painted first, underneath everything else)
     if row_index % 2 == 1 && !selected {
@@ -60,7 +65,6 @@ pub(crate) fn render_file_row(
         );
     }
 
-    let response = ui.allocate_rect(row_rect, Sense::click());
     response.widget_info(|| {
         WidgetInfo::selected(WidgetType::Button, true, selected, entry.name.as_str())
     });
@@ -83,12 +87,6 @@ pub(crate) fn render_file_row(
         c,
         config,
     );
-    let mut label = entry.name.clone();
-    if config.miller_column_width_mode == MillerColumnWidthMode::Fixed {
-        let usable = (row_width - 64.0).max(64.0);
-        let max_chars = (usable / (text_size * 0.6)).floor() as usize;
-        label = truncate_middle(&label, max_chars.max(8));
-    }
     let icon_str = material_icon(style.icon);
     ui.painter().text(
         egui::Pos2::new(row_rect.min.x + 10.0, row_rect.center().y),
@@ -98,11 +96,23 @@ pub(crate) fn render_file_row(
         style.icon_color,
     );
 
-    ui.painter().text(
-        egui::Pos2::new(row_rect.min.x + 30.0, row_rect.center().y),
-        Align2::LEFT_CENTER,
-        &label,
+    // Use measured glyph layout instead of character-count estimates. Reserve
+    // the directory chevron so enlarged text never paints over that control.
+    let mut label_job = egui::text::LayoutJob::simple_singleline(
+        entry.name.clone(),
         FontId::proportional(text_size),
+        style.text_color,
+    );
+    label_job.wrap.max_width = (row_rect.width() - if is_dir { 56.0 } else { 40.0 }).max(1.0);
+    label_job.wrap.max_rows = 1;
+    let galley = ui.painter().layout_job(label_job);
+    let elided = galley.elided;
+    ui.painter().galley(
+        egui::pos2(
+            row_rect.left() + 30.0,
+            row_rect.center().y - galley.size().y / 2.0,
+        ),
+        galley,
         style.text_color,
     );
     // Arrow for directories — shows there are children
@@ -118,7 +128,7 @@ pub(crate) fn render_file_row(
 
     // NOTE: do NOT add_space here — allocate_rect already advanced the cursor.
     // Adding space here was the cause of double-row-height spacing.
-    if label != entry.name {
+    if elided {
         response.on_hover_text(entry.name.clone())
     } else {
         response
