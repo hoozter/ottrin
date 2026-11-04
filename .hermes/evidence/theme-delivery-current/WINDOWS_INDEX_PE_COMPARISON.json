@@ -1,0 +1,143 @@
+{
+  "status": "pass mapped-image identity",
+  "mapped_image_equal": true,
+  "versions": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+      "sha256": "6baad80d3577b219a1b5b25b7b3e54afb0c22bbdb257e03d34fea139725ede98",
+      "bytes": 5960767,
+      "coff_symbol_offset": 4971008,
+      "coff_symbol_count": 22094,
+      "coff_string_bytes": 592067
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+      "sha256": "7ecdef2b3c87386135a452f4909a66daf3b12c44d0579e8c27122bdc8a8ee34a",
+      "bytes": 5960780,
+      "coff_symbol_offset": 4971008,
+      "coff_symbol_count": 22094,
+      "coff_string_bytes": 592080
+    }
+  ],
+  "all_sections": [
+    {
+      ".text": {
+        "offset": 1024,
+        "bytes": 4042752,
+        "sha256": "d3f6ac9e5f5273c7e32436890b8c81b636bae007638259af3f1c3c8b4cd90ee9"
+      },
+      ".data": {
+        "offset": 4043776,
+        "bytes": 20992,
+        "sha256": "adb4ed7597a481488bc4808bd09f6f39a77af0a739ade28603e4d744ee1930a7"
+      },
+      ".rdata": {
+        "offset": 4064768,
+        "bytes": 702976,
+        "sha256": "284cf30d12004a4089a05dad512647ceacb71fbc02b1dbd52e7cec39a09dc4b8"
+      },
+      ".pdata": {
+        "offset": 4767744,
+        "bytes": 58368,
+        "sha256": "008defff6dd9694276891a4daf1ce2281a801bbabcda9cd8f10953b57cd69f5c"
+      },
+      ".xdata": {
+        "offset": 4826112,
+        "bytes": 90624,
+        "sha256": "f1db39c04c795a7bc1bceda51408006ddc94d9fccf7e3658461a317361548177"
+      },
+      ".bss": {
+        "offset": 0,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "offset": 4916736,
+        "bytes": 8704,
+        "sha256": "193eae2c542e108b5f43a9688158c39c21824697f0c274cb189fd4bc95ab1b7e"
+      },
+      ".CRT": {
+        "offset": 4925440,
+        "bytes": 512,
+        "sha256": "e6f8b1de713326f017dfff028b12b6009ac0f944e0981ecec6b4cc51e7da1702"
+      },
+      ".tls": {
+        "offset": 4925952,
+        "bytes": 512,
+        "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".rsrc": {
+        "offset": 4926464,
+        "bytes": 22016,
+        "sha256": "abb547ccab05a859adc93982db298d277a048d3723e3afb8ee28eeb74842d9d7"
+      },
+      ".reloc": {
+        "offset": 4948480,
+        "bytes": 22528,
+        "sha256": "d4df1dfa799e337a2f962c2e04c09920bbb950da54e71c774851b96637e058cd"
+      }
+    },
+    {
+      ".text": {
+        "offset": 1024,
+        "bytes": 4042752,
+        "sha256": "d3f6ac9e5f5273c7e32436890b8c81b636bae007638259af3f1c3c8b4cd90ee9"
+      },
+      ".data": {
+        "offset": 4043776,
+        "bytes": 20992,
+        "sha256": "adb4ed7597a481488bc4808bd09f6f39a77af0a739ade28603e4d744ee1930a7"
+      },
+      ".rdata": {
+        "offset": 4064768,
+        "bytes": 702976,
+        "sha256": "284cf30d12004a4089a05dad512647ceacb71fbc02b1dbd52e7cec39a09dc4b8"
+      },
+      ".pdata": {
+        "offset": 4767744,
+        "bytes": 58368,
+        "sha256": "008defff6dd9694276891a4daf1ce2281a801bbabcda9cd8f10953b57cd69f5c"
+      },
+      ".xdata": {
+        "offset": 4826112,
+        "bytes": 90624,
+        "sha256": "f1db39c04c795a7bc1bceda51408006ddc94d9fccf7e3658461a317361548177"
+      },
+      ".bss": {
+        "offset": 0,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".idata": {
+        "offset": 4916736,
+        "bytes": 8704,
+        "sha256": "193eae2c542e108b5f43a9688158c39c21824697f0c274cb189fd4bc95ab1b7e"
+      },
+      ".CRT": {
+        "offset": 4925440,
+        "bytes": 512,
+        "sha256": "e6f8b1de713326f017dfff028b12b6009ac0f944e0981ecec6b4cc51e7da1702"
+      },
+      ".tls": {
+        "offset": 4925952,
+        "bytes": 512,
+        "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+      },
+      ".rsrc": {
+        "offset": 4926464,
+        "bytes": 22016,
+        "sha256": "abb547ccab05a859adc93982db298d277a048d3723e3afb8ee28eeb74842d9d7"
+      },
+      ".reloc": {
+        "offset": 4948480,
+        "bytes": 22528,
+        "sha256": "d4df1dfa799e337a2f962c2e04c09920bbb950da54e71c774851b96637e058cd"
+      }
+    }
+  ],
+  "normalized_mapped_file_sha256": [
+    "87e225f7da37fdc694541a1013790ff9e1318d1a07229e8cd609b43f9d4e8608",
+    "87e225f7da37fdc694541a1013790ff9e1318d1a07229e8cd609b43f9d4e8608"
+  ],
+  "scope": "Complete section comparison, including code/data/resources/imports/unwind/relocation. No prior daemon runtime or CPU acceptance is carried forward from binary identity when mapped_image_equal is false."
+}

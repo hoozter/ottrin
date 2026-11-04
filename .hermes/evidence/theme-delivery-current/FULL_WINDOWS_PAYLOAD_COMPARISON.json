@@ -1,0 +1,39 @@
+{
+  "status": "pass complete58-file change inventory",
+  "previous_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "candidate_source": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "entries": 58,
+  "changed": {
+    "SOURCE_REVISION.txt": {
+      "previous_sha256": "f0b5d7975bd8c3a325c9a6737d19b7f1d6b774b9fe780165da9cb0e983470016",
+      "candidate_sha256": "ca6bb71d98b478c41a857fc94c99098ae2e5959ff16661f423fb48b134e14d58"
+    },
+    "README.md": {
+      "previous_sha256": "5bba2893be069c7daea71ddb1c64a60a742ffb9fc7ccde240d0abbab5bf556be",
+      "candidate_sha256": "d50b9bc35a602501bc9f4dd89d7b9f1a943a3df20fa08454621d2391be63a6ef"
+    },
+    "docs/USER_GUIDE.md": {
+      "previous_sha256": "0342d1322f8f85938a1bf7ccc8700d0324adbb67272fcb1272af85060f203875",
+      "candidate_sha256": "8c1d485108061df7fa429dd9513db8d944821d3758e738dc237dd76542900d88"
+    },
+    "docs/RELEASE_NOTES.md": {
+      "previous_sha256": "8622fd5b0b9d6c102f42fd65615a096f8577981fd8db168aa7076553edca0f28",
+      "candidate_sha256": "f69a928cb876d1b0545aec89bd12e44d1b958a44dd33b87baae17ef6d800ac52"
+    },
+    "docs/ROADMAP.md": {
+      "previous_sha256": "ac43fb40499739b2e41334ce312ef8ec73d0c385651f1434ecdf56f646f07a0a",
+      "candidate_sha256": "4831c676a600221251842e18d2ba539caa82b203e9c071ecbdeee12db7ca98ee"
+    },
+    "bin/ottrin-indexd.exe": {
+      "previous_sha256": "6baad80d3577b219a1b5b25b7b3e54afb0c22bbdb257e03d34fea139725ede98",
+      "candidate_sha256": "7ecdef2b3c87386135a452f4909a66daf3b12c44d0579e8c27122bdc8a8ee34a"
+    },
+    "bin/ottrin.exe": {
+      "previous_sha256": "7b5619fb6b45b989b7b335fb27efada2cca40e3615643dbd7ad4093be48ee4e7",
+      "candidate_sha256": "ef9f9e594b4f27e0438499845e2983e1a5fd3fb780b0aeb841e2370e2ec90796"
+    }
+  },
+  "unchanged_entries": 51,
+  "daemon_comparison": "WINDOWS_INDEX_PE_COMPARISON.json",
+  "scope": "GUI independently requires native acceptance; documentation/provenance changes expected. Daemon complete mapped-image identity/differences are recorded separately; reuse requires mapped_image_equal. All other helpers, libraries, fonts, icons and transaction payloads byte-identical."
+}

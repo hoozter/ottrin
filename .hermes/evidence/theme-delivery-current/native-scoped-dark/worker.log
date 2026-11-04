@@ -1,0 +1,9 @@
+
+(process:1781899): dbind-WARNING **: 10:54:15.446: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/native-scoped-dark/WORKER_SOURCE.py", line 46, in <module>
+    click(asset);q.wait_for(lambda:selected('Selected row'),'selected row inspector');capture('selected-row')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 70, in wait_for
+    raise AssertionError(f"Timed out waiting for {message}{suffix}")
+AssertionError: Timed out waiting for selected row inspector

@@ -1,0 +1,24 @@
+{
+  "status": "pass mapped-image identity",
+  "mapped_image_equal": true,
+  "whole_file_equal": true,
+  "same_load_layout": true,
+  "versions": [
+    {
+      "sha256": "49c90f5d5a66fa6e9503475a62f8aedfd9a58efa24dceb54a3b773e143d503ef",
+      "bytes": 5843080
+    },
+    {
+      "sha256": "49c90f5d5a66fa6e9503475a62f8aedfd9a58efa24dceb54a3b773e143d503ef",
+      "bytes": 5843080
+    }
+  ],
+  "different_loaded_byte_count": 0,
+  "different_loaded_offsets_first64": [],
+  "different_loaded_bytes_outside_metadata": 0,
+  "build_id_descriptor": {
+    "offset": 812,
+    "bytes": 20
+  },
+  "scope": "Complete load-segment comparison, including code/data/dynamic dependencies. Header/layout or mapped-byte differences mean no prior runtime/CPU acceptance is carried forward. Difference byte counts apply only when the complete load layout matches."
+}

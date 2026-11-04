@@ -1,0 +1,419 @@
+{
+  "status": "functional pass; original captures require review",
+  "mode": "Dark",
+  "cases": [
+    "Shared production rows visible",
+    "Actual assets row selects Selected row",
+    "Actual New tab selects Navigation & tabs",
+    "Actual preview Close selects Title bar without closing editor"
+  ],
+  "accessible_roots": [
+    {
+      "name": "",
+      "role": "frame"
+    },
+    {
+      "name": "",
+      "role": "frame"
+    },
+    {
+      "name": "",
+      "role": "frame"
+    }
+  ],
+  "asset_actions": [
+    "click"
+  ],
+  "inspector_after_row": [
+    {
+      "name": "Close window",
+      "role": "push button"
+    },
+    {
+      "name": "Edit Theme audit",
+      "role": "label"
+    },
+    {
+      "name": "Theme name",
+      "role": "label"
+    },
+    {
+      "name": "Theme name",
+      "role": "entry"
+    },
+    {
+      "name": "Light",
+      "role": "radio button"
+    },
+    {
+      "name": "Dark",
+      "role": "radio button"
+    },
+    {
+      "name": "Editing variant",
+      "role": "label"
+    },
+    {
+      "name": "workspace",
+      "role": "label"
+    },
+    {
+      "name": "New tab",
+      "role": "push button"
+    },
+    {
+      "name": "Close window",
+      "role": "push button"
+    },
+    {
+      "name": "Maximize or restore window",
+      "role": "push button"
+    },
+    {
+      "name": "Minimize window",
+      "role": "push button"
+    },
+    {
+      "name": "Back",
+      "role": "push button"
+    },
+    {
+      "name": "Forward",
+      "role": "push button"
+    },
+    {
+      "name": "Parent folder",
+      "role": "push button"
+    },
+    {
+      "name": "Menu",
+      "role": "push button"
+    },
+    {
+      "name": "Switch to List view",
+      "role": "push button"
+    },
+    {
+      "name": "View Options",
+      "role": "push button"
+    },
+    {
+      "name": "Open /",
+      "role": "push button"
+    },
+    {
+      "name": "\u203a",
+      "role": "label"
+    },
+    {
+      "name": "Open /home",
+      "role": "push button"
+    },
+    {
+      "name": "\u203a",
+      "role": "label"
+    },
+    {
+      "name": "Open /home/user",
+      "role": "push button"
+    },
+    {
+      "name": "\u203a",
+      "role": "label"
+    },
+    {
+      "name": "Open /home/user/projects",
+      "role": "push button"
+    },
+    {
+      "name": "\u203a",
+      "role": "label"
+    },
+    {
+      "name": "Open /home/user/projects/ottrin",
+      "role": "push button"
+    },
+    {
+      "name": "Documents",
+      "role": "toggle button"
+    },
+    {
+      "name": "Downloads",
+      "role": "toggle button"
+    },
+    {
+      "name": "Pictures",
+      "role": "toggle button"
+    },
+    {
+      "name": "Music",
+      "role": "toggle button"
+    },
+    {
+      "name": "Videos",
+      "role": "toggle button"
+    },
+    {
+      "name": "Projects",
+      "role": "toggle button"
+    },
+    {
+      "name": "src",
+      "role": "toggle button"
+    },
+    {
+      "name": "assets",
+      "role": "toggle button"
+    },
+    {
+      "name": "tests",
+      "role": "toggle button"
+    },
+    {
+      "name": "Cargo.toml",
+      "role": "toggle button"
+    },
+    {
+      "name": "README.md",
+      "role": "toggle button"
+    },
+    {
+      "name": "notes.txt",
+      "role": "toggle button"
+    },
+    {
+      "name": "photo.png",
+      "role": "toggle button"
+    },
+    {
+      "name": "movie.mp4",
+      "role": "toggle button"
+    },
+    {
+      "name": "archive.zip",
+      "role": "toggle button"
+    },
+    {
+      "name": "budget.xlsx",
+      "role": "toggle button"
+    },
+    {
+      "name": "slides.pptx",
+      "role": "toggle button"
+    },
+    {
+      "name": "settings.ini",
+      "role": "toggle button"
+    },
+    {
+      "name": "Show or hide info panel",
+      "role": "toggle button"
+    },
+    {
+      "name": "Show or hide drop-folder panel",
+      "role": "toggle button"
+    },
+    {
+      "name": "Toggle Search",
+      "role": "toggle button"
+    },
+    {
+      "name": "Show or hide Activity",
+      "role": "toggle button"
+    },
+    {
+      "name": "Show or hide Trash",
+      "role": "toggle button"
+    },
+    {
+      "name": "Selected file-row background, also used for text selection. Row fills are square; the focus outline uses the shared accent.",
+      "role": "label"
+    },
+    {
+      "name": "Component colors",
+      "role": "label"
+    },
+    {
+      "name": "Selection background",
+      "role": "label"
+    },
+    {
+      "name": "Selection background (hex)",
+      "role": "entry"
+    },
+    {
+      "name": "\ue8ba",
+      "role": "push button"
+    },
+    {
+      "name": "Reset component",
+      "role": "push button"
+    },
+    {
+      "name": "Shared colors",
+      "role": "label"
+    },
+    {
+      "name": "These values also affect other components. Reset component leaves them unchanged.",
+      "role": "label"
+    },
+    {
+      "name": "Active & focus accent",
+      "role": "label"
+    },
+    {
+      "name": "Active & focus accent (hex)",
+      "role": "entry"
+    },
+    {
+      "name": "\ue8ba",
+      "role": "push button"
+    },
+    {
+      "name": "Shared typography",
+      "role": "label"
+    },
+    {
+      "name": "Text size",
+      "role": "label"
+    },
+    {
+      "name": "Text size",
+      "role": "spin button"
+    },
+    {
+      "name": "Restore Text size",
+      "role": "push button"
+    },
+    {
+      "name": "More",
+      "role": "push button"
+    },
+    {
+      "name": "Save changes",
+      "role": "push button"
+    },
+    {
+      "name": "Save as new",
+      "role": "push button"
+    },
+    {
+      "name": "Cancel",
+      "role": "push button"
+    }
+  ],
+  "source_preserved": true,
+  "preview_close_keeps_editor_open": true,
+  "config_after": {
+    "theme": "Dark",
+    "theme_preset": "Ottrin",
+    "custom_themes": [
+      {
+        "name": "Theme audit",
+        "base_preset": "Nord",
+        "dark": {
+          "app_radius": 12,
+          "border_radius": 10,
+          "button_radius": 14
+        },
+        "light": {
+          "app_radius": 12,
+          "border_radius": 10,
+          "button_radius": 14
+        }
+      }
+    ],
+    "active_custom_theme": "Theme audit",
+    "default_view_mode": "Miller",
+    "colorize_file_types": true,
+    "colorize_folder_labels": false,
+    "list_columns": [
+      "Name",
+      "Kind",
+      "Size",
+      "Modified"
+    ],
+    "miller_view_scale": 1.0,
+    "list_view_scale": 1.0,
+    "grid_view_scale": 1.0,
+    "command_frame_always_visible": false,
+    "restore_session": false,
+    "show_hidden_files": false,
+    "list_show_thumbnails": false,
+    "grid_show_thumbnails": false,
+    "folder_list_thumbnails": {},
+    "folder_grid_thumbnails": {},
+    "target": {
+      "current": null,
+      "pinned": [],
+      "has_ever_set": false,
+      "recent": []
+    },
+    "last_session_dirs": [],
+    "bookmarks": [],
+    "search": {
+      "default_scope": "Global",
+      "include_hidden_system": false,
+      "include_roots": [
+        "/var/tmp/.ottrin-picker-qa-f3ib1a7h/home/Documents"
+      ],
+      "indexed_volumes": [],
+      "exclude_roots": [
+        "/proc",
+        "/sys",
+        "/dev",
+        "/run"
+      ],
+      "content_indexing_enabled": false,
+      "content_include_roots": [],
+      "content_exclude_roots": [],
+      "content_file_groups": [
+        "TextDocuments",
+        "SourceCode"
+      ],
+      "content_max_file_size_bytes": 524288,
+      "include_globs": [],
+      "exclude_globs": [
+        "*.swp",
+        "*.swo",
+        "*.tmp",
+        "*~",
+        ".git/**",
+        "**/.git/**",
+        ".svn/**",
+        "**/.svn/**",
+        ".hg/**",
+        "**/.hg/**",
+        "node_modules/**",
+        "**/node_modules/**",
+        "target/**",
+        "**/target/**",
+        "__pycache__/**",
+        "**/__pycache__/**",
+        "*.pyc",
+        "*.pyo",
+        ".Trash/**",
+        ".Trash-*/**"
+      ],
+      "default_sort": "Relevance",
+      "result_limit": 500,
+      "refresh_interval_hours": 0,
+      "use_system_locate": false,
+      "manage_locate_db": false,
+      "locate_update_hours": 6
+    },
+    "search_setup_completed": true,
+    "folder_column_widths": {},
+    "miller_column_width_mode": "Fixed",
+    "smart_panel_width": 420.0,
+    "window_size": [
+      1000,
+      700
+    ],
+    "thumbnail_cache_max_mb": 512,
+    "installed_office_previews_enabled": true,
+    "graphics_renderer": "Native",
+    "graphics_compatibility_notice_seen": true
+  },
+  "app_exit": -15
+}

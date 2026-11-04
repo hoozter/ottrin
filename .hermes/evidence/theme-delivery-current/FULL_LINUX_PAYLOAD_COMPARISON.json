@@ -1,0 +1,63 @@
+{
+  "status": "pass full AppImage file/symlink/mode change inventory",
+  "previous_source": "0613162ddee19361e02eb9a3cc315d8a4e643493",
+  "candidate_source": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "previous_artifact_sha256": "a4073e944502aa7ab3208ee1ae2da139f959d9a44eddc4ea5c7e75ea1b15855c",
+  "candidate_artifact_sha256": "4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58",
+  "entries": 113,
+  "changed": {
+    "usr/bin/ottrin": {
+      "previous": {
+        "sha256": "f57637d98bd88c73149b78d14eaf8771f02ae0fe24a16299a613e04d61a0dffd",
+        "mode": 493
+      },
+      "candidate": {
+        "sha256": "518672ef4ce56bcca7425d0b342cee557002fcd83a11c32796cf52ad73a7bc57",
+        "mode": 493
+      }
+    },
+    "usr/share/doc/ottrin/SOURCE_REVISION.txt": {
+      "previous": {
+        "sha256": "86b515a5b7d360298064f7cc6ef591661d3b6a555caffc01eef12dd77898762c",
+        "mode": 436
+      },
+      "candidate": {
+        "sha256": "ca6bb71d98b478c41a857fc94c99098ae2e5959ff16661f423fb48b134e14d58",
+        "mode": 436
+      }
+    },
+    "usr/share/doc/ottrin/README.md": {
+      "previous": {
+        "sha256": "331ce695ec7ccfe5f13a10fa804d55b5aacd2064c0064341840d4bfc3b2be368",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "d50b9bc35a602501bc9f4dd89d7b9f1a943a3df20fa08454621d2391be63a6ef",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/RELEASE_NOTES.md": {
+      "previous": {
+        "sha256": "258a42d60af2d72d25b3b6e65225b6a1d811f2e65dc927f85c500d2c884959fc",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "f69a928cb876d1b0545aec89bd12e44d1b958a44dd33b87baae17ef6d800ac52",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/ROADMAP.md": {
+      "previous": {
+        "sha256": "84e05a7ab3a52ed3be6dea1acd9061e06c24ea4608602a0dd9fe89b03fff0d31",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "4831c676a600221251842e18d2ba539caa82b203e9c071ecbdeee12db7ca98ee",
+        "mode": 420
+      }
+    }
+  },
+  "unchanged_entries": 108,
+  "scope": "Every runtime library, other helper, font, asset, launcher and policy unchanged. Daemon complete loaded-image identity/differences are recorded in LINUX_INDEX_ELF_COMPARISON.json; reuse requires mapped_image_equal. GUI separately checked in native captures; earlier functional receipts remain historical.",
+  "temporary_extractions_removed": true
+}

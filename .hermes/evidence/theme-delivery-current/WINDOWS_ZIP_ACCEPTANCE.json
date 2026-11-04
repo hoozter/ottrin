@@ -1,0 +1,7 @@
+{
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "status": "pass all 58 portable ZIP files equal staged payload",
+  "archive_sha256": "967a1e157356533bb151ad6463c5ebbc8f57d6f348e2238b91faac4c446d878b",
+  "payload_entries": 58,
+  "scope": "Archive/source/content identity only; NSIS native install and Windows GUI/lifecycle/MSIX acceptance remain pending."
+}

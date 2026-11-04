@@ -1,0 +1,69 @@
+{
+  "verified_at": "2026-11-04T10:05:23.271446+00:00",
+  "profiles": [
+    {
+      "path": "/var/tmp/.ottrin-picker-qa-f3ib1a7h",
+      "removed": true,
+      "receipt": "native-observed-dark/TEARDOWN.json"
+    },
+    {
+      "path": "/var/tmp/.ottrin-picker-qa-l1_06m8k",
+      "removed": true,
+      "receipt": "native-preset-dark/TEARDOWN.json"
+    },
+    {
+      "path": "/var/tmp/.ottrin-picker-qa-0iqz2syw",
+      "removed": true,
+      "receipt": "native-observed-light/TEARDOWN.json"
+    },
+    {
+      "path": "/var/tmp/.ottrin-picker-qa-u3s925o3",
+      "removed": true,
+      "receipt": "native-preset-light/TEARDOWN.json"
+    },
+    {
+      "path": "/var/tmp/.ottrin-picker-qa-4_x1jc1b",
+      "removed": true,
+      "receipt": "native-scoped-dark/TEARDOWN.json"
+    },
+    {
+      "path": "/var/tmp/.ottrin-picker-qa-psmvg2kj",
+      "removed": true,
+      "receipt": "native-dark/TEARDOWN.json"
+    }
+  ],
+  "extraction": "EXTRACTION_CLEANUP.json",
+  "extra_target_trees": false,
+  "incremental_candidates": 0,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Four exact458 Linux packages awaiting CI and stable promotion"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Exact458 Windows portable/NSIS and58-file payload awaiting native/MSIX acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current",
+      "purpose": "Compact build/content/runtime/native/diagnostic/cleanup evidence"
+    }
+  ],
+  "compiler_cache_note": "Existing target/Cargo/Rustup configurations reused; debug incremental inspection found zero obsolete candidates; release dependencies and current binaries retained.",
+  "compiler_bytes_before": {
+    "target/debug/deps": 41729685017,
+    "target/debug/incremental": 24405659628,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336221938,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40305981201,
+    "target/release/deps": 4445355018,
+    "target/x86_64-pc-windows-gnu/release/deps": 3996437967
+  },
+  "compiler_bytes_after": {
+    "target/debug/deps": 41729685017,
+    "target/debug/incremental": 24405659628,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336221938,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40305981201,
+    "target/release/deps": 4445339481,
+    "target/x86_64-pc-windows-gnu/release/deps": 3996422822
+  }
+}

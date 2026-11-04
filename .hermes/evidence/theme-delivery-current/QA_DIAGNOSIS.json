@@ -1,0 +1,12 @@
+{
+  "failed_diagnostics": {
+    "native-dark": "AT-SPI roots are unnamed; native title must not be assumed to equal accessible root name",
+    "native-scoped-dark": "Combo selected text is not exposed as the expected named child; actual row action worked, checked by visible role description and original capture"
+  },
+  "partial_theme_limits": {
+    "native-observed-dark": "Valid custom dark-palette action proof; not built-in Nord palette acceptance",
+    "native-observed-light": "Light mode selected but hand-written partial light variant inherited dark defaults; explicitly excluded from light-palette acceptance"
+  },
+  "correction": "Scope editor by its unique Save changes/Create theme action, verify visible selected-component description, and clone actual built-in Nord with Customize Nord. No product behavior or validation was relaxed.",
+  "accepted": "LINUX_THEME_NATIVE_ACCEPTANCE.json"
+}

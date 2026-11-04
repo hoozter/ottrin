@@ -1,0 +1,14 @@
+{
+  "previous_goal_turn": "progress:45830098 source checkpoint pushed and exact-source Linux build started",
+  "this_turn": "Four Linux packages built/content-verified; full113-file inventory and unchanged daemon identity checked; exact mounted AppImage Nord Dark150/Light100 selection/tab/window-control actions and8 original captures accepted; Windows ZIP/NSIS built,58-file ZIP/payload inventory and unchanged daemon mapped image checked",
+  "stable_promotion": false,
+  "remaining": [
+    "Complete live Windows hosted verification",
+    "Native Windows current-candidate GUI and lifecycle acceptance",
+    "Current MSIX assembly/runtime acceptance",
+    "Stable promotion with hashes and cleanup",
+    "Continue wider ordered roadmap"
+  ],
+  "cleanup": "CLEANUP_CURRENT.json",
+  "ci": "CI_CURRENT.json"
+}

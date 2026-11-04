@@ -1,0 +1,32 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-4_x1jc1b",
+  "owned_processes_reaped": [
+    {
+      "pid": 1781824,
+      "exit": 0
+    },
+    {
+      "pid": 1781827,
+      "exit": 0
+    },
+    {
+      "pid": 1781828,
+      "exit": 15
+    },
+    {
+      "pid": 1781899,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      1781905,
+      1781973
+    ],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "Native theme workflow failed; inspect FUNCTIONAL_RESULT.json and worker.log",
+  "profile_removed": true
+}

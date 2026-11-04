@@ -1,0 +1,11 @@
+{
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "status": "portable and NSIS build pass; staged for native GUI/lifecycle/MSIX acceptance; held MSI unchanged",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "967a1e157356533bb151ad6463c5ebbc8f57d6f348e2238b91faac4c446d878b",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "e5e99978b9d99cff7e1f8d1d7151163db6a08f51ff0beb77873198995d41b4a6"
+  },
+  "child_exit": 0,
+  "staging_retained_for_pending_acceptance": true
+}

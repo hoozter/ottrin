@@ -1,0 +1,13 @@
+{
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "scope": "Shared theme preview production widgets and pixel-aligned/measured Miller file rows. Existing Windows ZIP/NSIS/MSIX stable candidates preserved until native acceptance. Held MSI unchanged.",
+  "pending_consumers": [
+    "Native Windows GUI/lifecycle acceptance",
+    "MSIX assembly/runtime acceptance",
+    "Stable Windows promotion or safe retirement"
+  ],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/windows",
+  "cleanup_complete": false,
+  "delivery_status": "Built and content-verified; stable promotion remains pending"
+}

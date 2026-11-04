@@ -194,31 +194,68 @@ active local-console condition. The positive test must use a genuine local seat;
 no permission rule was relaxed. This remains independently executable software QA.
 Evidence: `.hermes/evidence/linux-stopped-delivery-current/`.
 
+### Staged shared-widget delivery, 2026-11-04
+
+Runtime source `45830098b6d58eeb8a08252f8d8b9c6fe35d9eef` now has four built
+Linux candidates and Windows portable/NSIS candidates. These are staged, not
+promoted: the stable paths/manifests above still identify the usable061/f463
+cohorts. Evidence: `.hermes/evidence/theme-delivery-current/`.
+
+Linux production content/dependency/policy/namespace gates pass. A complete113-file
+AppImage inventory shows only expected GUI/documentation changes; indexd is
+byte-identical to the current061 daemon. Fresh mounted-AppImage private software
+X11 checks pass through actual Customize Nord in Dark150 and Light100. Eight
+settled complete-window captures were directly reviewed: real row selection
+matches its outline, New tab selects Navigation & tabs, and preview Close selects
+Title bar without closing the editor. Source fixtures are preserved. This is
+scoped preview acceptance, not every setting/theme/scale or physical acceptance.
+Two failed selector fixtures and a partial-custom-theme palette mistake remain
+explicit diagnostic evidence; actual preset cloning supplies accepted light colors.
+
+Windows portable/NSIS build successfully. All58 portable ZIP files match the
+staged payload; the complete change inventory is limited to GUI/provenance/docs
+and daemon PE metadata. Indexd's mapped image is unchanged. Native Windows GUI/lifecycle checks and
+new MSIX assembly/runtime acceptance remain pending. Hosted41809847269 currently
+passes both performance jobs and Linux verification; Windows verification is
+still running. No failed/pending gate has been relabelled as a pass.
+
+All six private Linux desktop profiles/processes/mounts are removed, along with
+the consumed76551599-byte extraction and owned Python compile cache. Existing
+compiler caches/configurations, user data and stable deliverables are preserved;
+incremental inspection found zero obsolete candidates. The two staged candidate
+roots remain for native acceptance and promotion, with cleanup owners/pending
+consumers in BUILD_SOURCE.json and windows/BUILD_SOURCE.json.
+
 ### Ordered implementation and acceptance queue
 
-1. Complete positive protected-file elevation in a genuine local-seat Linux
+1. Finish the staged458 UI delivery: observe the live hosted Windows verification,
+   complete current-candidate native Windows/MSIX checks, promote verified Linux
+   and Windows artifacts at stable paths, and retire consumed staging. Scoped
+   Linux native preview acceptance and package-content checks above are complete.
+2. Complete positive protected-file elevation in a genuine local-seat Linux
    desktop fixture, then real login/reboot and remaining AppImage/portable binary
    replacement readiness. Background no-seat denial is diagnosed, not positive
    acceptance.061 package delivery, normal GUI-close retention, same-version DEB
    replacement, helper setup and native Services controls are scoped above and
    need not be repeated without changed inputs or a reproduced concern.
-2. Finish the theme/interface consistency audit and implementation. The source
+3. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor; it is
    tested source work awaiting the next UI delivery. U08 remains unfinished:
    tabs, window buttons and Miller file rows now share production presenters in
    source. Status controls, List/Grid representation, miniature corner scaling and
    inspector role ownership remain open. All affected controls need native visual
-   verification before the next package delivery is accepted.
+   verification. The staged458 Nord dark/light checks above cover preview row,
+   tab and window-control selection; they do not close the full consistency audit.
    Include the main search indicator's stopped-state color and settled resize
    observation. Verify every supported control/role, text/icon alignment and
    window styling; field-map/test counts do not prove whole-interface consistency.
-3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
+4. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
    Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
    DEB/RPM and cooperating Windows caller receipts retain their exact scopes.
    Verify the new MSIX startup checkbox in its installed-package context.
    Do not infer universal Windows dialog replacement or repeat fulfilled matrices
    without changed inputs or a reproduced defect.
-4. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
+5. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
    (54 roadmap bullets) and `release-audit-current/USER_REQUIREMENTS.json` (15
    overlapping user requirements), reconcile the release matrix/documents, and
    leave only actual [owner/external waits](#ownerexternal-waiting-list).

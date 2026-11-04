@@ -1,0 +1,21 @@
+{
+  "status": "failed",
+  "mode": "Dark",
+  "cases": [],
+  "accessible_roots": [
+    {
+      "name": "",
+      "role": "frame"
+    },
+    {
+      "name": "",
+      "role": "frame"
+    },
+    {
+      "name": "",
+      "role": "frame"
+    }
+  ],
+  "error": "AssertionError('Timed out waiting for selected row inspector')",
+  "app_exit": -15
+}

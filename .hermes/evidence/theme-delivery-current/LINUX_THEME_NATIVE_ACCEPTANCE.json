@@ -1,0 +1,64 @@
+{
+  "status": "pass scoped native AppImage theme checks",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "artifact_sha256": "4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58",
+  "cases": [
+    "Built-in Nord Dark, private Native/software X11 at150 percent display scale",
+    "Built-in Nord Light, private Native/software X11 at100 percent display scale"
+  ],
+  "actions": [
+    "Production assets row selects Selected row properties and its painted bounds",
+    "Production New tab selects Navigation & tabs without mutating tabs",
+    "Production preview Close selects Title bar without closing the editor"
+  ],
+  "original_captures": [
+    {
+      "path": "native-preset-dark/editor-overview.png",
+      "sha256": "4e68114bb4003548849c4afc4cd635af35896e0f1ebd43511976bf9993003130",
+      "directly_reviewed": true
+    },
+    {
+      "path": "native-preset-dark/selected-row.png",
+      "sha256": "8a7204980d2d14c83cce314d9da24b5bff4dffd811f7ea0ae4763baed88468cd",
+      "directly_reviewed": true
+    },
+    {
+      "path": "native-preset-dark/navigation-tabs.png",
+      "sha256": "27f778a263c57b708857e9e3371f9b8323ae8bd87aba17b9e5a60d7c11395401",
+      "directly_reviewed": true
+    },
+    {
+      "path": "native-preset-dark/titlebar-controls.png",
+      "sha256": "e7df416ca4a1f6af7992e4055e61b64d74686825ca3519f14ed6f3a502968d77",
+      "directly_reviewed": true
+    },
+    {
+      "path": "native-preset-light/editor-overview.png",
+      "sha256": "7261b07d7a318985b48373927e7c653d2c9d9e2d6bcb454b4c3bd9587fd6c17a",
+      "directly_reviewed": true
+    },
+    {
+      "path": "native-preset-light/selected-row.png",
+      "sha256": "0ba67eb0ded38c240538f3cbb14f1295cc6302967761f4235bcb86f77c2d549b",
+      "directly_reviewed": true
+    },
+    {
+      "path": "native-preset-light/navigation-tabs.png",
+      "sha256": "cfb249f7d196e35d457684b5e2b6f1dc4406fc14ff8327bedd3fbbc100926e28",
+      "directly_reviewed": true
+    },
+    {
+      "path": "native-preset-light/titlebar-controls.png",
+      "sha256": "40fbe64b58475531ac4303cbc8f1d03714cc54e8c32d1215eb4f6bf4125d7292",
+      "directly_reviewed": true
+    }
+  ],
+  "source_fixtures_preserved": true,
+  "private_profiles_removed": true,
+  "scope": "Eight directly reviewed settled complete-window images. The accepted palette comes from actual Customize Nord, not a handwritten partial saved theme. Native editor/shared-control acceptance only; no full-theme/all-role, physical/GPU, Windows, package installation or daily-driver acceptance.",
+  "remaining": [
+    "Breadcrumb fixture folder classification uses filesystem probes and currently displays file glyphs for nonexistent folder segments",
+    "Status preview controls remain separate painters",
+    "List/Grid preview representation, full role/field mapping and broader native theme/scale acceptance remain open"
+  ]
+}

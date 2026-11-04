@@ -1,0 +1,14 @@
+{
+  "exec_session_id": 7811,
+  "controller": {
+    "pid": 1771830,
+    "start_ticks": "43185170"
+  },
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "pending_consumers": [
+    "Stable promotion or safe retirement"
+  ],
+  "instruction": "Linux build7811 completed with exit0; Windows build10445 completed with exit0. Native Linux workflows are terminal and private profiles removed. Revalidate CI41809847269; Windows native/MSIX work remains.",
+  "status": "terminal success; consumed build session"
+}

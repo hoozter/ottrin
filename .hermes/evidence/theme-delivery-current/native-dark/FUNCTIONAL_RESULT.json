@@ -1,0 +1,7 @@
+{
+  "status": "failed",
+  "mode": "Dark",
+  "cases": [],
+  "error": "AssertionError('Timed out waiting for editor accessible frame')",
+  "app_exit": -15
+}

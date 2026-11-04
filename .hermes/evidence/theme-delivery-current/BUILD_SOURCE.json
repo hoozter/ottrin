@@ -1,0 +1,13 @@
+{
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "working_tree_at_build": "clean",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "scope": "Linux theme preview shared production navigation, tabs, window controls and Miller rows; pixel-rounded row painting and measured elision. Windows rebuild and native visual acceptance remain separate pending work.",
+  "pending_consumers": [
+    "Complete hosted verification",
+    "Stable Linux promotion or safe retirement"
+  ],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current",
+  "cleanup_complete": false,
+  "delivery_status": "Built and content-verified; stable promotion remains pending"
+}
