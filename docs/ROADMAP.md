@@ -459,7 +459,7 @@ source, captures and controls remain in
 
 The correction uses a typed completed-Undo result after fresh canonical admission
 and explicit history recovery states (available, undone, review required). A
-restored undone Copy now keeps green "Copy undone" status and its cleanup ownership;
+restored undone Copy now keeps normal completed-Undo styling and its cleanup ownership;
 changed retained objects still require review and refuse cleanup. Helper protocol3
 requires updating older helpers before mutations. All43 core,447 platform,11 helper
 and502 UI tests pass, with strict Linux/Windows lint. Rebuilt/native acceptance of

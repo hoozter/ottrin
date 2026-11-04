@@ -26,7 +26,7 @@
   "native_finding": "first-candidate/FINDING.json",
   "changes": [
     "Fresh fully validated batch admission returns CopyUndoComplete rather than a false platform limitation",
-    "History sends explicit UndoAvailable, Undone or NeedsReview state; UI maps Undone to a green completed Undo with retained cleanup ownership",
+    "History sends explicit UndoAvailable, Undone or NeedsReview state; UI maps Undone to normal completed-Undo styling with retained cleanup ownership",
     "Changed retained contents after Undo still refuse both Undo admission and destructive cleanup",
     "Exact helper protocol3 refuses older protocol2 helpers before mutations; no legacy response shim"
   ],

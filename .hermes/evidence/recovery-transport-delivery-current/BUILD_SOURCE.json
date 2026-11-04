@@ -1,0 +1,5 @@
+{
+  "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Corrected typed recovery states and protocol3; source follows native first-candidate rejection, with all current package/native gates required"
+}

@@ -1,5 +1,5 @@
 {
-  "binary_sha256": "4a9dc5d358f44a6541e22b4f8546185298c99d3a4962520a1a6293fc8f8b6abe",
+  "binary_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
   "cases": [
     {
       "case": "native-private-namespace",

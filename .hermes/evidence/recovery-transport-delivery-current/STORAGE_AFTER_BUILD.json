@@ -1,0 +1,10 @@
+{
+  "bytes": {
+    "target/debug/deps": 25230675719,
+    "target/debug/incremental": 25049028553,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28550133888,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42684069284,
+    "target/release": 4545244477,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/recovery-transport-delivery-current": 4234604
+  }
+}

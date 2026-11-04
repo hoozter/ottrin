@@ -47,7 +47,7 @@ signing/Store and final owner acceptance remain unfinished.
 
 A subsequent native run found that reloading an already-undone Copy showed a
 misleading platform error. The correction carries explicit recovery states through
-helper protocol3, preserving green completed Undo status and guarded cleanup.
+helper protocol3, preserving normal completed-Undo styling and guarded cleanup.
 Changed retained contents still require review. Source checks pass; its rebuilt
 package/native acceptance is pending. The rejected candidate was retired and did
 not replace the usable previews above.
