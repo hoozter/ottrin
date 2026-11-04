@@ -1,0 +1,31 @@
+{
+  "status": "pass scoped source/rendered regression and lint; native visual/package acceptance pending",
+  "verified_at": "2026-11-04T21:29:14.671293+00:00",
+  "source_sha256": {
+    "crates/ottrin-ui/src/file_grid.rs": "481b9282d82a618d69c4dcc4a75c805128a4509f82131c8b03d7109c9564ca4a",
+    "crates/ottrin-ui/src/lib.rs": "570bea8311cfa578ecdcb6964c9b4c029726a575074b606701580050914d5ac1"
+  },
+  "behavior": "Shared main-browser and picker Grid labels use measured tile width and at most two centered lines; only actual overflow elides and receives a full-name tooltip. Superseded character-count grid heuristic removed.",
+  "tests": {
+    "focused_grid_rendered": "2 passed",
+    "full_linux_ui": {
+      "passed": 503,
+      "failed": 0,
+      "ignored": 1
+    },
+    "strict_native_all_targets_lint": "pass",
+    "strict_windows_cross_target_all_targets_lint": "pass",
+    "format": "pass"
+  },
+  "cleanup": {
+    "isolated_test_profiles_and_owned_processes": "removed by scripts/test-workspace.py",
+    "obsolete_incremental_sessions_removed": 8,
+    "reported_space_recovered_gib": 0.41,
+    "current_test_executable": "target/debug/deps/ottrin_ui-c354643af000a7cc retained as current verified replacement; no distinct superseded test executable created"
+  },
+  "limits": [
+    "No native application screenshot or packaged acceptance for this Grid correction yet",
+    "Stable Linuxaa and Windows458 unchanged; immutable DAC Linux candidate retains its separate acceptance scope",
+    "Push queued until running DAC exact-source CI completes, to avoid cancellation churn"
+  ]
+}

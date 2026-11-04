@@ -7,7 +7,6 @@ pub(crate) struct GridMetrics {
     pub gap: f32,
     pub side_padding: f32,
     label_size: f32,
-    label_chars: usize,
     icon_gap: f32,
     scale: f32,
 }
@@ -16,7 +15,6 @@ impl GridMetrics {
         let scale = scale.clamp(0.75, 1.85);
         let icon_size = (48.0 * scale).round();
         let label_size = (11.0 * scale.sqrt()).max(9.0) * colors.font_scale;
-        let label_chars = ((item_chars_for_scale(scale) / colors.font_scale) as usize).max(6);
         let gap = (10.0 * scale).round().max(8.0);
         let icon_gap = (8.0 * scale.clamp(0.9, 1.35)).round();
         Self {
@@ -28,7 +26,6 @@ impl GridMetrics {
             gap,
             side_padding: (gap * 1.2).max(18.0),
             label_size,
-            label_chars,
             icon_gap,
             scale,
         }
@@ -103,18 +100,30 @@ pub(crate) fn render_file_grid_cell(
             paint_centered_image(ui, icon_rect, image);
         }
     }
-    let name = truncate_middle(&entry.name, metrics.label_chars);
-    ui.painter().text(
+    // Measure the actual font against the tile, using both reserved label lines.
+    // Character-count truncation hides distinguishing filename suffixes even when
+    // the complete name would fit, particularly with narrow glyphs.
+    let mut job = egui::text::LayoutJob::simple(
+        entry.name.clone(),
+        FontId::proportional(metrics.label_size),
+        style.text_color,
+        rect.width() - 12.0,
+    );
+    job.wrap.max_rows = 2;
+    job.wrap.break_anywhere = true;
+    job.halign = egui::Align::Center;
+    job.break_on_newline = false;
+    let label = ui.painter().layout_job(job);
+    let elided = label.elided;
+    ui.painter().galley(
         egui::pos2(
             rect.center().x,
             icon_y + metrics.icon_size + metrics.icon_gap,
         ),
-        Align2::CENTER_TOP,
-        &name,
-        FontId::proportional(metrics.label_size),
+        label,
         style.text_color,
     );
-    if name != entry.name {
+    if elided {
         response.on_hover_text(&entry.name)
     } else {
         response
@@ -124,6 +133,83 @@ pub(crate) fn render_file_grid_cell(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn filenames_use_two_measured_lines_without_escaping_the_tile() {
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        for scale in [0.75, 1.0, 1.85] {
+            for font_scale in [1.0, 1.5] {
+                for name in [
+                    "owned-0025.txt",
+                    "iiiiiiiiiiiiiiiiiiii.txt",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+                    "a filename with spaces and a very long description.txt",
+                ] {
+                    let mut colors = Colors::preset(ThemePreset::Ottrin, true);
+                    colors.font_scale = font_scale;
+                    let entry = FileEntry {
+                        name: name.into(),
+                        path: PathBuf::from(name),
+                        kind: EntryKind::File,
+                        is_executable: false,
+                        symlink_target_is_dir: None,
+                        size_bytes: None,
+                        modified_unix_secs: None,
+                    };
+                    let mut tile = Rect::NOTHING;
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::splat(500.0),
+                            )),
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                tile = render_file_grid_cell(
+                                    ui,
+                                    &entry,
+                                    false,
+                                    scale,
+                                    colors,
+                                    &AppConfig::default(),
+                                    GridThumbnail::Icon,
+                                )
+                                .rect;
+                            });
+                        },
+                    );
+                    let label = output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text) if text.galley.job.text == name => Some(text),
+                            _ => None,
+                        })
+                        .unwrap();
+                    assert!(label.galley.rows.len() <= 2);
+                    let bounds = label.galley.rect.translate(label.pos.to_vec2());
+                    assert!(
+                        tile.expand(0.5).contains_rect(bounds),
+                        "{name} {scale} {font_scale}: {bounds:?} outside {tile:?}"
+                    );
+                    assert!((bounds.center().x - tile.center().x).abs() < 0.5);
+                    if name == "owned-0025.txt" && font_scale == 1.0 {
+                        assert!(
+                            !label.galley.elided,
+                            "Distinct fixture names must remain readable: {scale}"
+                        );
+                    }
+                    if name.starts_with("WWWW") {
+                        assert!(label.galley.elided);
+                        assert_eq!(label.galley.rows.len(), 2);
+                    }
+                }
+            }
+        }
+    }
+
     #[test]
     fn grid_cells_render_separate_semantic_icon_and_label_colors_and_themed_corners() {
         let ctx = Context::default();

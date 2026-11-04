@@ -1,14 +1,12 @@
 {
-  "status": "corrected four-format build/content gates pass; fresh native and exact-source CI acceptance pending",
+  "status": "corrected four-format content, native helper/history/Undo/cleanup, daemon, login/reboot and binary replacement acceptance pass; exact-source CI pending",
   "source_checks": "SOURCE_CHECKS.json",
   "rejected_first_candidate": "first-candidate/FINDING.json",
   "candidate_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
   "preceding_pushed_ci": 41903425130,
   "preceding_ci_last_verified": "Windows release build live; other3jobs success",
   "pending_consumers": [
-    "fresh actual AppImage protocol2-to3 helper update/history-state/Undo/cleanup and daemon gates",
-    "native DEB login/reboot and four previous-to-current package replacement gates",
-    "exact-source CI and guarded promotion"
+    "exact-source CI41911407933 and guarded Linux publication"
   ],
   "stable_deliverables": "Linuxaa241633 and Windows458/MSIX17 unchanged",
   "goal": "active and incomplete",

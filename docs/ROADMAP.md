@@ -479,6 +479,16 @@ the replacement captures reproduce aggressive Grid label truncation, and one
 initial login frame has populated rows but a zero count; a delayed no-input
 observation is needed before calling that count defect persistent.
 
+The next Grid source correction replaces character-count truncation with measured,
+centered, at-most-two-line captions in the shared browser/picker renderer. Two
+rendered Grid regressions and the full503-pass UI suite (one existing ignore),
+strict Linux/Windows cross-target all-target lint and formatting pass. Eight
+superseded incremental sessions were removed (0.41GiB reported recovered), while
+current test binaries and useful compiler caches remain. This is source/rendered
+acceptance only; native visual inspection and packaging remain required. Evidence:
+`.hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json`. Its source push is
+queued behind the still-running DAC CI to avoid cancelling that accepted candidate.
+
 1. Package and verify the subsequent restored-history and Windows transport source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness

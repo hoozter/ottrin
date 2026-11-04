@@ -1,10 +1,9 @@
 {
-  "active_build": "build.py session78939; poll the existing handle or actual owned build process before any restart",
-  "source_revision": "ffaeb61e11e511895cce4721674305e7706d2769",
+  "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "delivery_gates": [
-    "Finish the live four-format build, verify exact contents/runtime closure and provenance",
-    "Run fresh owned Linux native restored-history status/refresh/ownership and daemon checks; preserve previous package acceptance scopes",
-    "Wait for pushed1afb CI41903425130 to finish before pushing ffa to avoid cancellation churn; then require exact ffa CI before promotion"
+    "Poll existing exact-source CI41911407933; three jobs pass, Windows Cargo test confirmed live",
+    "When all four pass, save CI_CURRENT.json and run guarded promote-linux.py; preserve personal state and Windows458",
+    "New Grid two-line source correction has local checks but still needs native visual/package acceptance; do not cancel the existing candidate CI to push it"
   ],
   "windows_next": {
     "source_facts": [

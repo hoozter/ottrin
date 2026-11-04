@@ -25206,11 +25206,6 @@ fn open_terminal_here(dir: &Path) {
     }
 }
 
-/// How many label chars to show in grid cells at a given scale factor.
-fn item_chars_for_scale(scale: f32) -> f32 {
-    (10.0 * scale).round().max(6.0)
-}
-
 fn paint_resize_separator(ui: &egui::Ui, rect: Rect, response: &egui::Response, c: &Colors) {
     let active = response.hovered() || response.dragged();
     if active {
