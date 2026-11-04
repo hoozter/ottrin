@@ -509,6 +509,7 @@ fn execute_system_locate_maintenance(
     operation: SystemLocateMaintenance,
 ) -> (String, bool) {
     let request = PrivilegedRequest {
+        protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
         command: PrivilegedCommand::SystemLocateMaintenance(operation),
         context: PrivilegedContext {
             reason: Some("Maintain the operating system filename database".to_string()),
@@ -10005,6 +10006,25 @@ impl OttrinApp {
         Some(link)
     }
 
+    fn execute_privileged_request(
+        &mut self,
+        request: &PrivilegedRequest,
+    ) -> Result<ottrin_core::PrivilegedResponse, String> {
+        self.platform.execute_privileged(request).map_err(|error| {
+            if let PlatformError::PrivilegedHelperUnavailable(message) = &error {
+                self.privileged_availability =
+                    PrivilegedAvailability::UpdateRequired(message.clone());
+            }
+            let message = error.to_string();
+            self.privileged_status = Some(PrivilegedUiStatus {
+                kind: PrivilegedUiKind::Error,
+                text: message.clone(),
+                since: Instant::now(),
+            });
+            message
+        })
+    }
+
     fn retry_list_with_privileges(&mut self, tab_id: u64, dir: PathBuf) -> Result<(), String> {
         self.reconcile_storage_location_availability(discover_storage_locations());
         if self.unavailable_locations.contains_key(&tab_id) {
@@ -10024,6 +10044,7 @@ impl OttrinApp {
             since: Instant::now(),
         });
         let req = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
             command: PrivilegedCommand::ListDirectory {
                 path: dir.clone(),
                 show_hidden: self.state.config.show_hidden_files,
@@ -10033,10 +10054,7 @@ impl OttrinApp {
                 cwd: Some(self.state.active_tab().current_dir.clone()),
             },
         };
-        let res = self
-            .platform
-            .execute_privileged(&req)
-            .map_err(|e| e.to_string())?;
+        let res = self.execute_privileged_request(&req)?;
         match res.status {
             PrivilegedStatus::Success => {
                 let entries = match res.payload {
@@ -11146,16 +11164,14 @@ impl OttrinApp {
         });
         let repair_cmd = cmd.clone();
         let req = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
             command: PrivilegedCommand::File(cmd),
             context: PrivilegedContext {
                 reason: Some("Retry denied filesystem operation".to_string()),
                 cwd: Some(self.state.active_tab().current_dir.clone()),
             },
         };
-        let res = self
-            .platform
-            .execute_privileged(&req)
-            .map_err(|e| e.to_string())?;
+        let res = self.execute_privileged_request(&req)?;
         #[cfg(target_os = "linux")]
         self.record_privileged_copy(&repair_cmd, &res, refresh_tab, retry_bindings)?;
         match res.status {
@@ -13965,6 +13981,9 @@ impl OttrinApp {
                                     bottom_text,
                                     "Integrated privilege management ready",
                                 ),
+                                PrivilegedAvailability::UpdateRequired(msg) => {
+                                    (MI_LOCK, c.accent, msg.as_str())
+                                }
                                 PrivilegedAvailability::Misconfigured(msg) => {
                                     (MI_LOCK, c.error, msg.as_str())
                                 }
@@ -21056,6 +21075,10 @@ impl OttrinApp {
             ui.label(RichText::new(if cfg!(target_os="windows"){"Administrator operations"}else{"Administrator helper"}).strong().color(c.text));
             match &self.privileged_availability {
                 PrivilegedAvailability::Ready => Self::render_service_status(ui, if cfg!(target_os="windows"){"Ready — Windows prompts when needed"}else{"Installed and ready"}, ready_color),
+                PrivilegedAvailability::UpdateRequired(message) => {
+                    Self::render_service_status(ui, "Update needed", c.accent);
+                    ui.label(message);
+                },
                 PrivilegedAvailability::Misconfigured(message) => Self::render_service_status(ui, if cfg!(target_os="windows"){message}else{"Setup needed"}, c.error),
                 PrivilegedAvailability::Unsupported(message) => Self::render_service_status(ui, message, c.text_muted),
             }
@@ -21063,7 +21086,7 @@ impl OttrinApp {
             #[cfg(target_os = "linux")]
             ui.label("Setup also installs the HTML preview sandbox from this package.");
             #[cfg(target_os = "linux")]
-            if ui.add(egui::Button::new(if matches!(self.privileged_availability, PrivilegedAvailability::Ready) { "Update / reinstall helper" } else { "Set up administrator helper" }).themed(&c)).clicked() {
+            if ui.add(egui::Button::new(if matches!(self.privileged_availability, PrivilegedAvailability::Ready | PrivilegedAvailability::UpdateRequired(_)) { "Update / reinstall helper" } else { "Set up administrator helper" }).themed(&c)).clicked() {
                 self.begin_service_action(ui.ctx(), ottrin_platform::install_privileged_helper);
             }
             ui.add_space(14.0);
@@ -27327,6 +27350,41 @@ mod tests {
                 detail: "Needs repair".into(),
             },
         );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn incompatible_installed_helper_shows_update_instead_of_ready_or_install() {
+        let mut app = OttrinApp::default();
+        app.privileged_availability = PrivilegedAvailability::UpdateRequired(
+            "Update the administrator helper in Services.".into(),
+        );
+        app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
+            source: "none".into(),
+            enabled: false,
+            detail: "Not installed".into(),
+        });
+        let ctx = Context::default();
+        let output = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(1800.0))),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let colors = app.colors;
+                    app.render_services_settings(ui, colors);
+                });
+            },
+        );
+        let visible = |name: &str| {
+            output.shapes.iter().any(|shape| matches!(&shape.shape,egui::Shape::Text(text) if text.galley.job.text==name))
+        };
+        assert!(visible("Update needed"));
+        assert!(visible("Update / reinstall helper"));
+        assert!(visible("Update the administrator helper in Services."));
+        assert!(!visible("Installed and ready"));
+        assert!(!visible("Set up administrator helper"));
     }
 
     #[cfg(any(target_os = "linux", target_os = "windows"))]

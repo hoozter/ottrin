@@ -1,0 +1,7 @@
+   Compiling glib-sys v0.20.10
+   Compiling gobject-sys v0.20.10
+   Compiling gio-sys v0.20.10
+   Compiling glib v0.20.12
+   Compiling gio v0.20.12
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 1m 10s

@@ -19,6 +19,9 @@ enum IoMode {
 mod setup;
 
 fn main() {
+    if let Some(exit_code) = protocol_check(&std::env::args().skip(1).collect::<Vec<_>>()) {
+        std::process::exit(exit_code);
+    }
     #[cfg(target_os = "linux")]
     if std::env::args().skip(1).eq(["--install"]) {
         match setup::install() {
@@ -104,43 +107,32 @@ fn main() {
     write_response(&mode, response);
 }
 
+/// Read-only feature negotiation. No stdin, privilege request or filesystem work.
+fn protocol_check(args: &[String]) -> Option<i32> {
+    if args.first().map(String::as_str) != Some("--check-protocol") {
+        return None;
+    }
+    if args.get(1).and_then(|value| value.parse::<u32>().ok())
+        != Some(ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION)
+    {
+        return Some(78);
+    }
+    if args[2..]
+        .iter()
+        .any(|feature| feature != "--copy-recovery" || !cfg!(target_os = "linux"))
+    {
+        return Some(69);
+    }
+    Some(0)
+}
+
 fn parse_mode(args: Vec<String>) -> Result<IoMode, String> {
-    if args.iter().any(|a| a == "--stdio-json") {
-        return Ok(IoMode::Stdio);
-    }
-    let mut req: Option<PathBuf> = None;
-    let mut res: Option<PathBuf> = None;
-    let mut i = 0usize;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--request-file" => {
-                i += 1;
-                if i >= args.len() {
-                    return Err("Missing path after --request-file".to_string());
-                }
-                req = Some(PathBuf::from(&args[i]));
-            }
-            "--response-file" => {
-                i += 1;
-                if i >= args.len() {
-                    return Err("Missing path after --response-file".to_string());
-                }
-                res = Some(PathBuf::from(&args[i]));
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-    if let (Some(request_file), Some(response_file)) = (req, res) {
-        Ok(IoMode::Files {
-            request_file,
-            response_file,
-        })
-    } else {
-        Err(
-            "Usage: ottrin-priv-helper --stdio-json OR --request-file <path> --response-file <path>"
-                .to_string(),
-        )
+    match args.as_slice() {
+        [mode] if mode == "--stdio-json" => Ok(IoMode::Stdio),
+        [request_flag, request, response_flag, response]
+            if request_flag == "--request-file" && response_flag == "--response-file" =>
+                Ok(IoMode::Files { request_file: request.into(), response_file: response.into() }),
+        _ => Err("Usage: ottrin-priv-helper --stdio-json OR --request-file <path> --response-file <path>".into()),
     }
 }
 
@@ -156,7 +148,10 @@ fn read_request(mode: &IoMode) -> Result<PrivilegedRequest, String> {
         IoMode::Files { request_file, .. } => std::fs::read(request_file)
             .map_err(|e| format!("Failed to read request file: {}", e))?,
     };
-    serde_json::from_slice(&input).map_err(|e| format!("Invalid request JSON: {}", e))
+    let request: PrivilegedRequest =
+        serde_json::from_slice(&input).map_err(|e| format!("Invalid request JSON: {}", e))?;
+    request.validate_protocol().map_err(str::to_owned)?;
+    Ok(request)
 }
 
 fn run_file_command(platform: &DefaultPlatform, cmd: &FileCommand) -> PrivilegedResponse {
@@ -168,6 +163,16 @@ fn run_file_command(platform: &DefaultPlatform, cmd: &FileCommand) -> Privileged
     } = cmd
     {
         return ottrin_platform::privileged_copy::copy(platform, sources, destination, *conflict);
+    }
+    #[cfg(not(target_os = "linux"))]
+    if matches!(cmd, FileCommand::Copy { .. }) {
+        return PrivilegedResponse {
+            status: PrivilegedStatus::Unsupported,
+            message: Some(
+                "Administrator Copy recovery is not implemented on this platform yet.".into(),
+            ),
+            payload: None,
+        };
     }
     match platform.execute_command(cmd) {
         Ok(_) => PrivilegedResponse {
@@ -463,6 +468,72 @@ fn detect_executable(meta: &std::fs::Metadata) -> bool {
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests {
+    #[test]
+    fn mutation_modes_refuse_unknown_flags_and_mixed_probe_arguments() {
+        for args in [
+            vec!["--stdio-json", "--check-protocol", "1"],
+            vec!["--stdio-json", "--unknown"],
+            vec!["--request-file", "input"],
+            vec![
+                "--stdio-json",
+                "--request-file",
+                "input",
+                "--response-file",
+                "output",
+            ],
+        ] {
+            assert!(parse_mode(args.into_iter().map(str::to_owned).collect()).is_err());
+        }
+        assert!(matches!(
+            parse_mode(vec!["--stdio-json".into()]),
+            Ok(IoMode::Stdio)
+        ));
+        assert!(matches!(
+            parse_mode(vec![
+                "--request-file".into(),
+                "input".into(),
+                "--response-file".into(),
+                "output".into()
+            ]),
+            Ok(IoMode::Files { .. })
+        ));
+    }
+
+    #[test]
+    fn protocol_probe_refuses_missing_malformed_future_and_unknown_feature_contracts() {
+        for args in [
+            vec!["--check-protocol"],
+            vec!["--check-protocol", "bad"],
+            vec!["--check-protocol", "2"],
+        ] {
+            assert_eq!(
+                protocol_check(&args.into_iter().map(str::to_owned).collect::<Vec<_>>()),
+                Some(78)
+            );
+        }
+        assert_eq!(
+            protocol_check(&["--check-protocol".into(), "1".into()]),
+            Some(0)
+        );
+        assert_eq!(
+            protocol_check(&[
+                "--check-protocol".into(),
+                "1".into(),
+                "--copy-recovery".into()
+            ]),
+            Some(0)
+        );
+        assert_eq!(
+            protocol_check(&[
+                "--check-protocol".into(),
+                "1".into(),
+                "--unknown-feature".into()
+            ]),
+            Some(69)
+        );
+        assert_eq!(protocol_check(&["--install".into()]), None);
+    }
+
     use super::*;
     use ottrin_core::SystemLocateMaintenance;
 

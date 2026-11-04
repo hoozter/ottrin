@@ -350,6 +350,19 @@ remain separate.
 
 ### Ordered implementation and acceptance queue
 
+The next source checkpoint adds a required helper protocol version and a bounded,
+unelevated capability probe. Incompatible helpers show **Update needed** with the
+existing reinstall action; malformed/version-mismatched requests are rejected
+before dispatch. Source verification: 496 UI tests pass (one existing ignored),
+11 helper tests and four probe tests pass, and strict native/Windows all-target
+lint passes. Actual debug-helper IPC verifies rejected requests leave files
+untouched and valid Copy/Undo/cleanup still works across fresh processes. Evidence:
+`.hermes/evidence/helper-protocol-current/`. This is not yet packaged acceptance:
+the stable Linux47db and Windows458 deliveries above are unchanged. Native upgrade
+from an older installed helper remains to be verified with the next packages.
+Windows elevated Copy remains unimplemented; it is now refused before dispatch
+rather than copying without returning recovery ownership.
+
 Completed delivery: Linux47db and Windows458/MSIX17 are at their stable paths;
 exact native scopes, fresh/update/login MSIX gates, four hosted jobs and owned
 fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap completion.

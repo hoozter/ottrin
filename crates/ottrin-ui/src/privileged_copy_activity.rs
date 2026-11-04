@@ -7,6 +7,7 @@ pub(super) fn execute_recovery(
     command: PrivilegedCommand,
 ) -> Result<(), PlatformError> {
     let response = platform.execute_privileged(&PrivilegedRequest {
+        protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
         command,
         context: PrivilegedContext {
             reason: Some("Manage the retained administrator Copy operation".into()),

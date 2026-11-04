@@ -1271,11 +1271,27 @@ pub struct PrivilegedContext {
     pub cwd: Option<PathBuf>,
 }
 
+/// Exact wire contract required by both the caller and elevated helper.
+pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 1;
+
 /// Request payload sent from unprivileged app process to elevated helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PrivilegedRequest {
+    pub protocol_version: u32,
     pub command: PrivilegedCommand,
     pub context: PrivilegedContext,
+}
+
+impl PrivilegedRequest {
+    pub fn validate_protocol(&self) -> Result<(), &'static str> {
+        if self.protocol_version == PRIVILEGED_HELPER_PROTOCOL_VERSION {
+            Ok(())
+        } else {
+            Err(
+                "Administrator helper protocol does not match Ottrin. Update the application and helper together.",
+            )
+        }
+    }
 }
 
 /// High-level result category returned by privileged execution.

@@ -1,0 +1,115 @@
+{
+  "status": "pass",
+  "scope": "Actual unprivileged debug helper; not packaged, elevated or native UI acceptance",
+  "helper_sha256": "0cf0825b8d63bc12d3214a35f433d4dcb8ad342881a55d6744f54d0845ef33dd",
+  "cases": [
+    {
+      "arguments": [
+        "--check-protocol",
+        "1"
+      ],
+      "exit": 0,
+      "no_mutation": true
+    },
+    {
+      "arguments": [
+        "--check-protocol",
+        "1",
+        "--copy-recovery"
+      ],
+      "exit": 0,
+      "no_mutation": true
+    },
+    {
+      "arguments": [
+        "--check-protocol",
+        "2"
+      ],
+      "exit": 78,
+      "no_mutation": true
+    },
+    {
+      "arguments": [
+        "--check-protocol"
+      ],
+      "exit": 78,
+      "no_mutation": true
+    },
+    {
+      "arguments": [
+        "--check-protocol",
+        "1",
+        "--unknown"
+      ],
+      "exit": 69,
+      "no_mutation": true
+    },
+    {
+      "invalid_version": null,
+      "response": {
+        "status": "Failed",
+        "message": "Invalid request JSON: missing field `protocol_version` at line 1 column 176",
+        "payload": null
+      },
+      "no_mutation": true
+    },
+    {
+      "invalid_version": 0,
+      "response": {
+        "status": "Failed",
+        "message": "Administrator helper protocol does not match Ottrin. Update the application and helper together.",
+        "payload": null
+      },
+      "no_mutation": true
+    },
+    {
+      "invalid_version": 2,
+      "response": {
+        "status": "Failed",
+        "message": "Administrator helper protocol does not match Ottrin. Update the application and helper together.",
+        "payload": null
+      },
+      "no_mutation": true
+    },
+    {
+      "invalid_version": "1",
+      "response": {
+        "status": "Failed",
+        "message": "Invalid request JSON: invalid type: string \"1\", expected u32 at line 1 column 200",
+        "payload": null
+      },
+      "no_mutation": true
+    },
+    {
+      "invalid_version": -1,
+      "response": {
+        "status": "Failed",
+        "message": "Invalid request JSON: invalid value: integer `-1`, expected u32 at line 1 column 199",
+        "payload": null
+      },
+      "no_mutation": true
+    },
+    {
+      "arguments": [
+        "--stdio-json",
+        "--check-protocol",
+        "1"
+      ],
+      "exit": 2,
+      "no_mutation": true
+    },
+    {
+      "arguments": [
+        "--stdio-json",
+        "--unknown"
+      ],
+      "exit": 2,
+      "no_mutation": true
+    },
+    {
+      "valid_version": 1,
+      "created_requested_file": true
+    }
+  ],
+  "owned_profile_removed": true
+}

@@ -1,5 +1,7 @@
 #[cfg(target_os = "linux")]
 mod file_uri;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+mod helper_protocol;
 #[cfg(target_os = "linux")]
 pub mod native_desktop;
 #[cfg(target_os = "linux")]
@@ -335,6 +337,8 @@ pub struct TrashItem {
 
 #[derive(Debug, Error)]
 pub enum PlatformError {
+    #[error("{0}")]
+    PrivilegedHelperUnavailable(String),
     #[error("operation is not available on this platform: {0}")]
     NotAvailable(&'static str),
     #[error("filesystem operation failed: {0}")]
@@ -966,6 +970,7 @@ mod storage_location_tests {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PrivilegedAvailability {
     Ready,
+    UpdateRequired(String),
     Misconfigured(String),
     Unsupported(String),
 }
@@ -2084,6 +2089,9 @@ impl PlatformOps for DefaultPlatform {
         &self,
         request: &PrivilegedRequest,
     ) -> Result<PrivilegedResponse, PlatformError> {
+        request
+            .validate_protocol()
+            .map_err(|error| PlatformError::Io(error.into()))?;
         #[cfg(target_os = "linux")]
         {
             execute_privileged_linux(request)
@@ -2131,7 +2139,10 @@ impl PlatformOps for DefaultPlatform {
             {
                 return PrivilegedAvailability::Misconfigured("Administrator helper needs its authentication policy. Open Services to repair setup.".to_string());
             }
-            PrivilegedAvailability::Ready
+            match helper_protocol::check(&helper, true) {
+                Ok(_) => PrivilegedAvailability::Ready,
+                Err(message) => PrivilegedAvailability::UpdateRequired(message),
+            }
         }
         #[cfg(target_os = "windows")]
         {
@@ -2145,7 +2156,10 @@ impl PlatformOps for DefaultPlatform {
             if !is_executable_available(&helper) {
                 return PrivilegedAvailability::Misconfigured("The administrator helper is missing from this package. Restore the complete portable package or reinstall Ottrin.".into());
             }
-            PrivilegedAvailability::Ready
+            match helper_protocol::check(&helper, false) {
+                Ok(_) => PrivilegedAvailability::Ready,
+                Err(message) => PrivilegedAvailability::UpdateRequired(message),
+            }
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
@@ -2692,7 +2706,8 @@ fn execute_privileged_linux(
     use std::io::Write as _;
     use std::process::{Command, Stdio};
 
-    let helper = resolve_helper_name("ottrin-priv-helper");
+    let helper = helper_protocol::check(&resolve_helper_name("ottrin-priv-helper"), true)
+        .map_err(PlatformError::PrivilegedHelperUnavailable)?;
     let mut child = Command::new("pkexec")
         .arg(helper)
         .arg("--stdio-json")
@@ -2738,7 +2753,17 @@ fn execute_privileged_windows(
     use std::process::Command;
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    let helper = resolve_helper_name("ottrin-priv-helper.exe");
+    let helper = helper_protocol::check(
+        &resolve_helper_name("ottrin-priv-helper.exe"),
+        matches!(
+            &request.command,
+            ottrin_core::PrivilegedCommand::File(FileCommand::Copy { .. })
+                | ottrin_core::PrivilegedCommand::UndoCopy { .. }
+                | ottrin_core::PrivilegedCommand::CleanupCopy { .. }
+        ),
+    )
+    .map_err(PlatformError::PrivilegedHelperUnavailable)?;
+    let helper = helper.to_string_lossy();
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_nanos())

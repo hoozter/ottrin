@@ -1,0 +1,37 @@
+{
+  "status": "pass source and actual unprivileged debug helper checks; packaging/native upgrade pending",
+  "base_commit": "dd64551a995bd63dd5c8f87cdb4fa5c894134238",
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "bbfef9410eaaca286ad67dd6754399eb01a8b842fe73079bdb0ea2240048809c",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "0342296ffe878f1e4bf283a81fcee63274682fe60a07cb5ba2f7b440ae402da2",
+    "crates/ottrin-platform/src/lib.rs": "0adc80f7abe7ab36317eb680495ebc235d0cc60781e900bfee794052cf71ac63",
+    "crates/ottrin-ui/src/lib.rs": "de95d3b6f5e163a3c0cd15180ed7ab4ec04c4ab66dc3b1ed70347acdac14fcb6",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "f5278b4c615ba7bc627121e29aecbc9bc8e87ceea9244f7a48b7f13987c7cb56",
+    "crates/ottrin-platform/src/helper_protocol.rs": "8047f6f9d47944a1491a565f597e4852a52595454841f8205c0a16ca9bf69b0b"
+  },
+  "checks": {
+    "ui-suite.log": "496 passed; 0 failed; 1 ignored",
+    "helper-tests.log": "11 passed; 0 failed",
+    "protocol-tests.log": "4 passed; 0 failed",
+    "native-lint.log": "Finished `dev`",
+    "windows-lint.log": "Finished `dev`"
+  },
+  "actual_process_receipts": [
+    "PROTOCOL_ACCEPTANCE.json",
+    "STDIO_ACCEPTANCE.json"
+  ],
+  "cleanup": {
+    "removed_obsolete_incremental_sessions": 31,
+    "recovered_GiB": 1.28,
+    "isolated_profiles_removed": true,
+    "remaining_task_storage": {
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/helper-protocol-current": "Compact acceptance receipts, logs and repeatable producers; retained for next package/native-upgrade acceptance",
+      "/home/campbell/Projects/Ottrin/target": "Current debug helper, test executables, dependencies and newest compiler sessions; shared build/next-package inputs"
+    }
+  },
+  "limits": [
+    "Stable Linux47db and Windows458 packages unchanged",
+    "No native installed-helper upgrade or elevated handshake acceptance yet",
+    "Windows privileged Copy bridge and elevated-account restart discovery remain open"
+  ]
+}
