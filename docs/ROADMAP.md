@@ -234,7 +234,13 @@ failed because the QA checkbox helper was scoped inside its Login branch. The
 helper now has a native parser/root-scope preflight. The next fixture reached
 ordinary login but timed out waiting for readiness while its console was blank;
 normal Return input revealed its desktop just before teardown. A fresh run uses
-a one-time uniformly-black-display wake guard, with no policy or product changes. None of these partial results waive Windows delivery gates.
+a one-time uniformly-black-display wake guard, with no policy or product changes. The wake-guard run reached the actual startup checkbox: disabling matched CLI
+status, but the immediate re-enable query still read disabled. That QA assertion
+ran before requiring the asynchronous completion message. Its failed results are
+retained in runtime17-wake; the next live run requires explicit action completion,
+settled checkbox state and independent CLI agreement. Product cause remains
+unproven (`MSIX_CHECKBOX_DIAGNOSIS.json`). None of these partial results waive
+Windows delivery gates.
 
 All seven private Linux desktop profiles/processes/mounts are removed, along with
 the consumed76551599-byte extraction and owned Python compile cache. Existing
@@ -257,8 +263,8 @@ Windows native clone has its own OWNER.json and teardown lease.
    replacement, helper setup and native Services controls are scoped above and
    need not be repeated without changed inputs or a reproduced concern.
 3. Finish the theme/interface consistency audit and implementation. The source
-   now reuses live navigation/menu/view/breadcrumb widgets in the editor; it is
-   tested source work awaiting the next UI delivery. U08 remains unfinished:
+   now reuses live navigation/menu/view/breadcrumb widgets in the editor, delivered
+   in Linux458 and staged for Windows native acceptance. U08 remains unfinished:
    tabs, window buttons and Miller file rows now share production presenters in
    source. Status controls, List/Grid representation, miniature corner scaling and
    inspector role ownership remain open. All affected controls need native visual

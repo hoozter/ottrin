@@ -1,6 +1,6 @@
 {
-  "previous_goal_turn": "Read-only package repository explanation; no roadmap state changed",
-  "this_turn": "Verified still-live MSIX fixture, recovered its blank console with ordinary Return input; directly reviewed Linux pointer captures; exported safe failed-MSIX results and retired consumed private transport/bootstrap",
+  "previous_goal_turn": "Read-only package repository explanation; roadmap resumed with concrete delivery checkpoint",
+  "this_turn": "Linux458 package promotion and bounded native pointer acceptance committed/pushed c4528db1; all four hosted jobs pass. Failed MSIX17 fixtures safely exported/retired; next exact-package run now waits for asynchronous action completion before checking backend status.",
   "stable_promotion": {
     "linux": true,
     "windows": false

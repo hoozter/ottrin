@@ -1,7 +1,7 @@
 """Export only reviewed result members; keep private bootstrap out of public evidence."""
 from pathlib import Path
 import argparse,hashlib,json,zipfile
-parser=argparse.ArgumentParser();parser.add_argument('case',choices=['runtime17','runtime17-scoped','native-observed-controls','native-toggle-pointer','native-pointer','native','services','registration-trace','services-launch-observation','services-refresh-ambiguity','services-reader-sharing']);args=parser.parse_args();e=Path(__file__).resolve().parent/args.case
+parser=argparse.ArgumentParser();parser.add_argument('case',choices=['runtime17-completion','runtime17-wake','runtime17','runtime17-scoped','native-observed-controls','native-toggle-pointer','native-pointer','native','services','registration-trace','services-launch-observation','services-refresh-ambiguity','services-reader-sharing']);args=parser.parse_args();e=Path(__file__).resolve().parent/args.case
 assert json.loads((e/'OWNER.json').read_text())['cleanup']['domain_removed']
 out=e/'results';out.mkdir(exist_ok=False);members=[]
 with zipfile.ZipFile(e/'RESULTS.zip') as z:

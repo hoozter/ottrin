@@ -142,8 +142,14 @@ function Exercise-StartupCheckbox($App,$Window){
    if(-not$checkbox.Current.IsEnabled){throw 'Actual package startup checkbox is unexpectedly disabled'}
    $checkbox.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Toggle()
    $deadline=[DateTime]::UtcNow.AddSeconds(45);$expected=if($enabled){[Windows.Automation.ToggleState]::On}else{[Windows.Automation.ToggleState]::Off}
-   do{$checkbox=UiNode $settings 'Start index automatically at sign-in' ([Windows.Automation.ControlType]::CheckBox);if($checkbox.Current.IsEnabled-and$checkbox.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState-eq$expected){break};Start-Sleep -Milliseconds 200}while([DateTime]::UtcNow-lt$deadline)
-   if(-not$checkbox.Current.IsEnabled-or$checkbox.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState-ne$expected){throw 'Packaged checkbox did not settle at requested state'}
+   $completion='Automatic startup at sign-in '+$(if($enabled){'enabled'}else{'disabled'})+'. Current indexing is unchanged.'
+   do{
+    $checkbox=UiNode $settings 'Start index automatically at sign-in' ([Windows.Automation.ControlType]::CheckBox)
+    $completed=@(UiNodes $settings $completion|Where-Object {-not$_.Current.IsOffscreen}).Count-eq1
+    if($completed-and$checkbox.Current.IsEnabled-and$checkbox.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState-eq$expected){break}
+    Start-Sleep -Milliseconds 200
+   }while([DateTime]::UtcNow-lt$deadline)
+   if(-not$completed-or-not$checkbox.Current.IsEnabled-or$checkbox.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState-ne$expected){throw 'Packaged startup action did not complete and settle at requested state'}
    $label=if($enabled){'enabled'}else{'disabled'}
    $process=Invoke-OwnCLI @('index','service-status') ('checkbox-'+$label+'.stdout') ('checkbox-'+$label+'.stderr')
    $text=Get-Content (Join-Path $Root ('results\checkbox-'+$label+'.stdout')) -Raw
@@ -154,6 +160,8 @@ function Exercise-StartupCheckbox($App,$Window){
    $proof+=@{enabled=$enabled;daemon_pids_before=$before;daemon_pids_after=$after;backend=$text}
   }
   $result.msix_startup_checkbox=@{status='pass actual installed-package checkbox';actions=$proof;package_identity=$result.actual_process_package};Save $ActorStateName $result
+ }catch{
+  [PickerNative]::Shot($settings,(Join-Path $Root 'results\msix-startup-failure.png'));throw
  }finally{
   if($settings-ne[IntPtr]::Zero){[PackageIdentityQA]::PostMessageW($settings,0x10,[IntPtr]::Zero,[IntPtr]::Zero)|Out-Null;Start-Sleep -Milliseconds 300}
  }

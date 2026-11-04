@@ -1,0 +1,13 @@
+{
+  "status": "failed diagnostic, not acceptance",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "case": "runtime17-wake",
+  "observed": [
+    "Ordinary packaged runtime reached the startup checkbox",
+    "Disabled checkbox backend confirmed source=Windows Startup apps and enabled=false",
+    "Re-enable test queried CLI immediately after the visual toggle and still observed enabled=false"
+  ],
+  "next_check": "Wait for explicit asynchronous completion message before checking checkbox state, then independently require CLI agreement; preserve failure and capture any failure UI",
+  "product_root_cause": "not yet established",
+  "cleanup": "runtime17-wake/RETIRED_INPUTS.json"
+}

@@ -170,10 +170,24 @@
         "base_still_off": true,
         "retained_pending_volume": null
       }
+    },
+    {
+      "case": "runtime17-wake",
+      "uuid": "637f79aa-52a5-4d41-8b73-b29a7d00265b",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
     }
   ],
   "live_owned_case": {
-    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/runtime17-wake",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/runtime17-completion",
     "purpose": "Installed MSIX17 ordinary GUI startup checkbox, real login and removal acceptance",
     "teardown_owner": "native-driver.py ExitStack registered before VM allocation"
   }
