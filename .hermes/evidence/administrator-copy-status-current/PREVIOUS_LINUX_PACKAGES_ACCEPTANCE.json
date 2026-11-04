@@ -1,0 +1,40 @@
+{
+  "status": "pass scoped Linux helper compatibility, native login/reboot and binary replacement delivery; full roadmap incomplete",
+  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "30467e8baaa3ca2e23b61fc2062013b3b73997c9427bf074c57f8dd02c1682c4",
+    "Ottrin-0.1.0-x86_64.AppImage": "d220b9c38252c2e83e916124b3b6124fcf849e3ed9bd4f12551d954453a1699e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "225032c7039f56d00a680a7aa76e2d0b3e845a1303005b7bb9b85f1e79f72130",
+    "ottrin_0.1.0_amd64.deb": "fbd39a5c6080ebeb158572e155182f21812b4ea13abea429e87a0e50770c59ae"
+  },
+  "evidence": ".hermes/evidence/helper-readiness-final-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "hosted_source": {
+    "run": 41871666761,
+    "tested_source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+    "all_four_jobs_success": true
+  },
+  "native_privileged_copy": ".hermes/evidence/helper-readiness-final-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/helper-readiness-final-current/LINUX_DAEMON_RUNTIME.json",
+  "payload_comparison": ".hermes/evidence/helper-readiness-final-current/PAYLOAD_COMPARISON.json",
+  "native_login": ".hermes/evidence/helper-readiness-final-current/login/ACCEPTANCE.json",
+  "binary_replacement": ".hermes/evidence/helper-readiness-final-current/REPLACEMENT_ACCEPTANCE.json",
+  "historical_service_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
+  "limits": [
+    "Current helper/Copy uses actual AppImage/FUSE; login/reboot uses native DEB; four-format contents/closure and namespace gates have their explicit scopes",
+    "Actual47db-to-f8 AppImage/portable replacement preserves enabled/disabled startup and Grid preference; future unknown schema/version transitions are not inferred",
+    "Ordinary-user elevated Copy restart discovery and Windows privileged Copy remain unfinished",
+    "Whole U08/theme audit, settled startup status, physical graphics, Wayland and final daily-driver acceptance remain open",
+    "Private1000-file idle sample is not a personal-index or large-corpus resource measurement",
+    "Personal helper installation requires owner authentication; no automatic privileged installation was performed",
+    "Windows remains458/MSIX17; no signing, public release or Store submission",
+    "Packaged development manuals are build-time snapshots atf8; repository delivery receipts are authoritative for subsequent acceptance/publication"
+  ]
+}

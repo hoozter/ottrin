@@ -1,0 +1,26 @@
+{
+  "status": "pass local corrected cohort; exact-source hosted verification and delivery pending",
+  "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "a7dab83effb902ea2670fe86ca334e75bfcb8fd9b525231cb1bdeee845fab39e",
+    "Ottrin-0.1.0-x86_64.AppImage": "76eb72ecf9627a597c49e0c5c3f30bd6b69221ae5d75d4ef5b0240ee62a37dd0",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "9cfa92afe668be53690999d226fb5f873860bca4c8b8c67371077809ee9806e9",
+    "ottrin_0.1.0_amd64.deb": "565481dc46acb9cd35528c87ff97bc61746332e770fd81579c65775a39d8612f"
+  },
+  "receipts": [
+    "SOURCE_CHECKS.json",
+    "PACKAGE_CONTENT_ACCEPTANCE.json",
+    "LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+    "LINUX_DAEMON_RUNTIME.json",
+    "login/ACCEPTANCE.json",
+    "REPLACEMENT_ACCEPTANCE.json",
+    "NATIVE_CLEANUP_CURRENT.json"
+  ],
+  "stable_linux": "f8db06a1",
+  "stable_windows": "45830098/MSIX17",
+  "ci_run_id": 41894809859,
+  "limitations": [
+    "Linux Ubuntu24 software-X11 controlled fixtures; full U08/physical/daily-driver acceptance remains open",
+    "Windows privileged Copy remains unimplemented; current Linux history bridge is accepted at the stated scope"
+  ]
+}

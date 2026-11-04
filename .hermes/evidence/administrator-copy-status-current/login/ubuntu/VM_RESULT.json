@@ -1,0 +1,36 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+  "status": "pass within actor scope",
+  "package_sha256": "565481dc46acb9cd35528c87ff97bc61746332e770fd81579c65775a39d8612f",
+  "uuid": "f57c0d1a-5d7f-4a88-99c3-4590a8331377",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "consumed_result_transports": [
+    {
+      "sha256": "27f0f2015f71991f6875addd81dba72af76c806807948d00600bf208eb8d5015",
+      "bytes": 118500
+    },
+    {
+      "sha256": "1654a348ea80f1620d1bafd08d57f3114ca443cf0d23673ff5ee4ef2eefb2630",
+      "bytes": 452258
+    },
+    {
+      "sha256": "c7ba8d0f5b9778681a1da4feb058d743be5d3f0464d4c7908e683d580cb96fcd",
+      "bytes": 571685
+    }
+  ],
+  "boot_ids": [
+    "7529a24b-3ae0-4dea-b45c-c8cb42b4a60b",
+    "d20324dc-b590-4fb0-a6ad-5048674e6bc8",
+    "3f9af7a4-252c-4261-bd6d-ec4981e4cbf3"
+  ],
+  "temporary_seed_and_ssh_keys_removed": true
+}

@@ -1,0 +1,18 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "portable-enabled-old.png": "30f3eeefca981f312835174e6d4ca3c47e2d91f1286ef6859fbd68762829f3e2",
+    "portable-enabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "portable-disabled-old.png": "dd336c07f9c0c6fef7f2bc81c36f1c745ee6e99544d6b19f4109de9d0e8f0561",
+    "portable-disabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-enabled-old.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-enabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-disabled-old.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-disabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6"
+  },
+  "notes": [
+    "All eight complete-window captures show Grid mode before and after the actual old/new payload replacement",
+    "Actual old/current Grid labels truncate similar owned-NNNN.txt names heavily; filename legibility remains an existing U08 issue, not accepted by this update gate",
+    "Replacement scope covers preference/startup/daemon/database preservation, not full interface consistency"
+  ]
+}

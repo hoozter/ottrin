@@ -1,0 +1,54 @@
+{
+  "status": "owned local verification cleanup complete; one coherent candidate retained for exact-source CI/publication",
+  "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+  "owned_vm_allocations_removed": [
+    {
+      "fixture": "native-upgrade",
+      "uuid": "d37ffe1e-652d-4685-ab98-a4b0a3c945bf",
+      "volumes_removed": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ]
+    },
+    {
+      "fixture": "login",
+      "uuid": "f57c0d1a-5d7f-4a88-99c3-4590a8331377",
+      "volumes_removed": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ]
+    },
+    {
+      "fixture": "replacement",
+      "uuid": "d5e3ddfb-f758-4c2d-8597-e9c6be8b5ff7",
+      "volumes_removed": [
+        "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+        "ottrin-native-ubuntu-desktop-qa-seed.iso"
+      ]
+    }
+  ],
+  "removed_volume_allocations": 9,
+  "credentials_input_aliases_transport_archives_content_extraction_profiles_and_fuse_mounts_removed": true,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Current four-format corrected candidate; pending CI41894809859 and atomic publication",
+      "pending_consumer": "/home/campbell/Projects/Ottrin/.hermes/evidence/administrator-copy-status-current/promote-linux.py"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/administrator-copy-status-current",
+      "purpose": "Compact source/content/native/capture/cleanup receipts and repeatable producers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/administrator-copy-history-current",
+      "purpose": "Historical functional native proof and visual defect controls; its superseded candidate was retired"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current binaries/dependencies and useful shared compiler caches"
+    }
+  ]
+}

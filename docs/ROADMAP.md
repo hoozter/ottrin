@@ -385,23 +385,34 @@ acceptance receipts remain. This is scoped delivery, not full roadmap or U08
 acceptance. Whole-interface findings include settled startup item-count/search
 status, automatic-startup wording and Grid filename legibility.
 
-Source work after the delivered f8 cohort adds an opt-in **Load administrator Copy
-history** action in Activity. Its authenticated helper scan reads canonical journals
-and returns presentation references; fresh Undo/cleanup still reopens and validates
-them. Protocol 2 deliberately rejects older helpers. Debug-helper fresh-process IPC
-and source tests cover batch discovery, changed publications and interrupted cleanup.
-The exact 1388 candidate passes actual LightDM/polkit authentication, normal GUI
-restart, cancelled history loading, authenticated rediscovery, Undo and confirmed
-cleanup. Its packaged daemon watcher/query/restart/shutdown checks pass with 0.03%
-one-core CPU over a private 30-second sample. All sixteen selected original captures
-were directly reviewed. Review caught raw cancellation wording and a stale record
-count after cleanup; source corrections remove the duplicated count and distinguish
-pkexec cancellation from missing-agent failures. The candidate is not published;
-corrected source/native validation and coherent packaging remain required. Windows privileged
-Copy is still refused before mutation until its canonical receipt bridge is finished.
+Candidate `aa241633` adds **Activity > Load administrator Copy history**. Its
+explicit authenticated scan reads canonical journals without changing files;
+subsequent Undo/cleanup reopens and validates them. Protocol 2 rejects older helpers.
+500 UI, 446 platform and 43 core tests pass, with strict native/Windows lint. Actual
+AppImage/FUSE acceptance covers helper update/cancellation, protected Copy, normal
+GUI restart, cancelled and authenticated history loading, fresh authenticated Undo
+and confirmed cleanup. Sixteen current complete-window captures were reviewed.
+The earlier 1388 candidate exposed raw cancellation wording and a stale record count;
+those are corrected and verified in the new native run. Its packages were retired.
 
-1. Complete ordinary-user rediscovery of elevated Copy history after restarting
-   and the Windows receipt/Undo/cleanup bridge. Versioned helper feature/readiness
+The current candidate also passes native DEB login/lifetime checks with two real
+reboots, and four f8-to-aa AppImage/portable replacement cases preserving startup
+choice, Grid preference and database identity. Four login and eight old/new
+replacement captures were reviewed. The current mounted daemon passes watcher,
+query, restart and two-shutdown checks; its private 1000-file 30-second sample
+measures 0.07% of one core, not a personal/large-corpus guarantee. Current receipts:
+`.hermes/evidence/administrator-copy-status-current/`. All owned test environments,
+credentials, input aliases, transports, profiles and content extractions are removed.
+One candidate stage remains for hosted verification/publication. Linux f8 and
+Windows458 remain the usable deliveries until that gate completes. The prior1388
+source passes all four hosted jobs; exact aa run41894809859 currently has Linux and
+both performance jobs green, with Windows verification in progress. Neither this
+checkpoint nor the capture count closes U08 or daily-driver acceptance.
+
+1. Publish the locally accepted aa cohort after its exact-source hosted gates pass.
+   Finish administrator Copy recovery, including the Windows canonical
+   receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
+   Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted
    at the exact delivered scope above. Linux same-session helper and actual application retry/Activity workflow
    are delivered and accepted above. The personal helper update needs the owner's

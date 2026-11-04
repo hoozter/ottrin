@@ -1,0 +1,248 @@
+{
+  "status": "pass scoped native DEB actual desktop login, two real reboots and GUI-close index lifetime",
+  "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+  "package_sha256": "565481dc46acb9cd35528c87ff97bc61746332e770fd81579c65775a39d8612f",
+  "boot_ids": [
+    "7529a24b-3ae0-4dea-b45c-c8cb42b4a60b",
+    "d20324dc-b590-4fb0-a6ad-5048674e6bc8",
+    "3f9af7a4-252c-4261-bd6d-ec4981e4cbf3"
+  ],
+  "phases": [
+    {
+      "status": "pass",
+      "phase": 0,
+      "boot_id": "7529a24b-3ae0-4dea-b45c-c8cb42b4a60b",
+      "session_id": "c1",
+      "gui_attempts": 1,
+      "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nActive=yes\n",
+      "install": "Ottrin index service configured; automatic startup is enabled.\n",
+      "before_gui_ready": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 28672,
+        "wal_bytes": 0,
+        "freelist_pages": 0,
+        "freelist_bytes": 0,
+        "snapshot_revision": 1,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793818726,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 1,
+        "last_scan_started_unix_secs": 1793818726,
+        "last_scan_completed_unix_secs": 1793818726,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793818726,
+        "last_error": null
+      },
+      "before_gui_unit": {
+        "MainPID": "4699",
+        "ActiveState": "active"
+      },
+      "after_gui_ready": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 28672,
+        "wal_bytes": 0,
+        "freelist_pages": 0,
+        "freelist_bytes": 0,
+        "snapshot_revision": 1,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793818726,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 1,
+        "last_scan_started_unix_secs": 1793818726,
+        "last_scan_completed_unix_secs": 1793818726,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793818726,
+        "last_error": null
+      },
+      "after_gui_unit": {
+        "MainPID": "4699",
+        "ActiveState": "active"
+      },
+      "after_normal_gui_close_unit": {
+        "MainPID": "4699",
+        "ActiveState": "active"
+      },
+      "database_inode": 279556,
+      "source_and_preferences_preserved": true,
+      "startup_enabled": true
+    },
+    {
+      "status": "pass",
+      "phase": 1,
+      "boot_id": "d20324dc-b590-4fb0-a6ad-5048674e6bc8",
+      "session_id": "c1",
+      "gui_attempts": 1,
+      "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nActive=yes\n",
+      "before_gui_auto_started_unit": {
+        "MainPID": "896",
+        "ActiveState": "active"
+      },
+      "before_gui_ready": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 700416,
+        "wal_bytes": 4152,
+        "freelist_pages": 0,
+        "freelist_bytes": 0,
+        "snapshot_revision": 2,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793818744,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 1,
+        "last_scan_started_unix_secs": 1793818744,
+        "last_scan_completed_unix_secs": 1793818744,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793818744,
+        "last_error": null
+      },
+      "before_gui_unit": {
+        "MainPID": "896",
+        "ActiveState": "active"
+      },
+      "after_gui_ready": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 700416,
+        "wal_bytes": 4152,
+        "freelist_pages": 0,
+        "freelist_bytes": 0,
+        "snapshot_revision": 2,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793818744,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 1,
+        "last_scan_started_unix_secs": 1793818744,
+        "last_scan_completed_unix_secs": 1793818744,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793818744,
+        "last_error": null
+      },
+      "after_gui_unit": {
+        "MainPID": "896",
+        "ActiveState": "active"
+      },
+      "after_normal_gui_close_unit": {
+        "MainPID": "896",
+        "ActiveState": "active"
+      },
+      "database_inode": 279556,
+      "source_and_preferences_preserved": true,
+      "startup_enabled": false
+    },
+    {
+      "status": "pass",
+      "phase": 2,
+      "boot_id": "3f9af7a4-252c-4261-bd6d-ec4981e4cbf3",
+      "session_id": "c1",
+      "gui_attempts": 1,
+      "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nActive=yes\n",
+      "disabled_before_gui_no_daemon": true,
+      "after_gui_ready": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 905216,
+        "wal_bytes": 4152,
+        "freelist_pages": 49,
+        "freelist_bytes": 200704,
+        "snapshot_revision": 1,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": null,
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793818767,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 0,
+        "last_scan_started_unix_secs": null,
+        "last_scan_completed_unix_secs": 1793818767,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793818767,
+        "last_error": null
+      },
+      "after_gui_unit": {
+        "MainPID": "1184",
+        "ActiveState": "active"
+      },
+      "after_normal_gui_close_unit": {
+        "MainPID": "1184",
+        "ActiveState": "active"
+      },
+      "database_inode": 279556,
+      "source_and_preferences_preserved": true,
+      "startup_enabled": false
+    }
+  ],
+  "daemon_sha256": "4a9dc5d358f44a6541e22b4f8546185298c99d3a4962520a1a6293fc8f8b6abe",
+  "control_account_separate_from_desktop_user": true,
+  "database_inode_preserved": true,
+  "selected_preferences_and1000_source_files_preserved": true,
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/administrator-copy-status-current/login/ubuntu/results/main-phase0.png": "8650e0bf2a29dd91bea03c632d104ede33ee42638d8c3c858eb31de8541cda19",
+    ".hermes/evidence/administrator-copy-status-current/login/ubuntu/results/disabled-login-running-index.png": "a1ae156be484e1aa0b3815731b2d1bdf5fc19cf2b8cd74b1001c9ef316104c3d",
+    ".hermes/evidence/administrator-copy-status-current/login/ubuntu/results/main-phase1.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    ".hermes/evidence/administrator-copy-status-current/login/ubuntu/results/main-phase2.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a"
+  },
+  "capture_notes": [
+    "All three current main-window captures show Miller view, actual fixture rows and1000items; this does not isolate every initial frame or close general startup consistency acceptance",
+    "Disabled startup checkbox with green Running/indexready matches the actual unit; Automaticstartup:Runningbutdisabled wording remains an existing U08 clarity issue",
+    "Full theme/physical graphics acceptance is outside the login/lifetime gate"
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "failed_trial_cleanup_verified": 0,
+  "worker_host_source_sha256_at_assessment": "c8b3489532088864c0c3b0d9bf054b6dc4aa6d8a2ec6383a6362d978559b5eb7",
+  "limits": [
+    "Ubuntu24 LightDM/Openbox software X11, native DEB and private1000-file fixture only",
+    "Does not cover AppImage/portable binary-version replacement, Wayland/physical graphics, Windows, large-corpus resource usage or full theme/UI audit",
+    "Native acceptance is separate from current hosted verification; do not infer a hosted release pass"
+  ]
+}

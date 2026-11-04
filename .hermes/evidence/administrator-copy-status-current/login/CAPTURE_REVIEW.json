@@ -1,0 +1,14 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "main-phase0.png": "8650e0bf2a29dd91bea03c632d104ede33ee42638d8c3c858eb31de8541cda19",
+    "disabled-login-running-index.png": "a1ae156be484e1aa0b3815731b2d1bdf5fc19cf2b8cd74b1001c9ef316104c3d",
+    "main-phase1.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    "main-phase2.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a"
+  },
+  "notes": [
+    "All three current main-window captures show Miller view, actual fixture rows and1000items; this does not isolate every initial frame or close general startup consistency acceptance",
+    "Disabled startup checkbox with green Running/indexready matches the actual unit; Automaticstartup:Runningbutdisabled wording remains an existing U08 clarity issue",
+    "Full theme/physical graphics acceptance is outside the login/lifetime gate"
+  ]
+}

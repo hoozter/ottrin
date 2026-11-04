@@ -1,0 +1,28 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "old-helper-update-needed.png": "31b33978efaa0cd7b824710ad317d2c65ad9d7324000bdb2e35c1a2f5d74cd46",
+    "update-cancel-prompt.png": "e2868c505900f4684bcba0b1204abfae63cf45402457afcbe7a774ef941abbfd",
+    "update-cancelled.png": "847039490b2d5aa608d4fe4b3801378adf4b432dadea39edd6b673e047236d9a",
+    "update-prompt.png": "612583c5ea4c1caf10d00f0121d63bc49d1e530756553d1aaef32bed5112e3af",
+    "updated-helper-ready.png": "d64760e6f26b29b9a71ca9cfe750cb773e0728d7d78b67147765558de5cb2381",
+    "gui-copy-denied.png": "6e43509e2ee2d803b6bba3892a0c088a9dbfe4a817b8a8f2dbd6b312a05df571",
+    "gui-copy-prompt.png": "dcbe7658197b0e6a6dc77f861eb0ff5ae2f38accc74fe16f89ef1b6ef6f2e3a1",
+    "gui-copy-activity.png": "9c9549f87d43d76452cdeabccd19ed8d4a28800d07b9ae0761c1d570a67b2380",
+    "history-cancel-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    "history-cancelled.png": "1b26804ec972a6743b3cdbf47a9689c3caa27518146eaa6f5b56c27d0b81a294",
+    "history-load-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    "history-restored.png": "3fdc6c9d16e2a33943908180444d37ec03fcefb6b4444993f4b1aea2e9c261fe",
+    "gui-undo-prompt.png": "b9472fc1982f4bc6ab886dd3e95eaaf395b51e5cc06214fbe8902540cc4b2b54",
+    "gui-undo-completed.png": "6e8ca034069ea34cc718fb6d2ed1a93df3cd598242da20e31c53ec16ee12bbdd",
+    "gui-cleanup-prompt.png": "4b6bb485186bc56abd0e1009b269ce57e0a249866dc8733c9ae73512a42b7b99",
+    "gui-copy-cleanup-completed.png": "9bd7e0a2db19f2ffffdba93d53e7bc160dece8097ee262bdbd61f82db4648066"
+  },
+  "findings": [
+    "Actual authorization prompt is visible; cancellation now shows the clear cancelled-permission message",
+    "Restored history card exposes Undo and retained-data clearing; long location and controls fit the tested panel",
+    "After Undo/cleanup, the empty Activity panel shows0recorded without stale Found1 text",
+    "Settings helper update/cancel/Ready and protected Copy/Undo/cleanup are visible at the bounded tested Ubuntu software-X11 scope",
+    "No full U08, physical graphics or complete theme audit acceptance implied"
+  ]
+}

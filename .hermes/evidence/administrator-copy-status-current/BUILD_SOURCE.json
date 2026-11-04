@@ -1,0 +1,5 @@
+{
+  "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Correct cancellation and live Activity status; coherent documented protocol2 cohort for native AppImage acceptance"
+}
