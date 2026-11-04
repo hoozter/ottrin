@@ -1,0 +1,27 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "old-helper-update-needed.png": "31b33978efaa0cd7b824710ad317d2c65ad9d7324000bdb2e35c1a2f5d74cd46",
+    "update-cancel-prompt.png": "f9879da6e0429418b33c34ce032ef982ad87dbe44198d5ac5a1d2989835facbf",
+    "update-cancelled.png": "847039490b2d5aa608d4fe4b3801378adf4b432dadea39edd6b673e047236d9a",
+    "update-prompt.png": "07b4d6083b1a9742a468423097733da3236f35421e55ed51c8ba9b9f96bc9192",
+    "updated-helper-ready.png": "d64760e6f26b29b9a71ca9cfe750cb773e0728d7d78b67147765558de5cb2381",
+    "gui-copy-denied.png": "6e43509e2ee2d803b6bba3892a0c088a9dbfe4a817b8a8f2dbd6b312a05df571",
+    "gui-copy-prompt.png": "dcbe7658197b0e6a6dc77f861eb0ff5ae2f38accc74fe16f89ef1b6ef6f2e3a1",
+    "gui-copy-activity.png": "9c9549f87d43d76452cdeabccd19ed8d4a28800d07b9ae0761c1d570a67b2380",
+    "history-cancel-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    "history-cancelled.png": "0a8df594d152186d76b30553e13405f33ff05bdaa5ad77793de2eb7865c9336a",
+    "history-load-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    "history-restored.png": "1709ee22621b2f931a04fd79364dcc87a4818b027a0403f76702edee5c8648ac",
+    "gui-undo-prompt.png": "7eacc04f4b062b40d1bf378ba0b0878921aa7accfe0008753cb3a0dc14e23bf8",
+    "gui-undo-completed.png": "5025a13bded4afa4aebb0abcff6458d3bc6627f880ef1e40271f454e260bda06",
+    "gui-cleanup-prompt.png": "4bed61f6bc3268b4d150f12558903758080db89bbd5c2dc67958509fb6ab6911",
+    "gui-copy-cleanup-completed.png": "24a448f982c7fc30e64dad30deb9526e1e810568576dd5b44692d12e30440046"
+  },
+  "findings": [
+    "Functional controls, prompt visibility, helper Ready state and restored history card are visible at their bounded scope",
+    "History cancellation exposes raw pkexec/system error; correct the transport status at its source before publishing",
+    "Found1 status persists after last history card is cleared; remove the duplicated record count before publishing",
+    "Whole-interface U08 review remains incomplete; do not treat these recovery captures as full theme acceptance"
+  ]
+}

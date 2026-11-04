@@ -1,0 +1,17 @@
+{
+  "status": "read-only source findings; U08 remains incomplete",
+  "findings": [
+    {
+      "observed": "Grid captions truncate similar names despite available tile width",
+      "source": "crates/ottrin-ui/src/file_grid.rs",
+      "cause": "Caption uses truncate_middle with character count from item_chars_for_scale, then paints without measuring pixel width; cell reserves over two lines but label is one line",
+      "next": "Use actual tile geometry and font measurement for readable bounded captions, share with chooser, validate narrow/wide glyphs, scaling and real captures"
+    },
+    {
+      "observed": "Miller startup can show 0 items while rows are visible",
+      "source": "crates/ottrin-ui/src/lib.rs status bar",
+      "candidate_cause": "Status count reads main.entries while Miller can display synchronously populated columns; trace active listing ownership before changing",
+      "next": "Derive count and selection from the authoritative displayed listing, show loading if not settled; verify one-launch native startup"
+    }
+  ]
+}

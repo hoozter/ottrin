@@ -95,12 +95,8 @@ impl OttrinApp {
             if let Some(result) = result {
                 self.privileged_copy_history.message = Some(match result {
                     Ok(Ok(history)) => {
-                        let count = history.len();
                         self.merge_privileged_copy_history(history);
-                        format!(
-                            "Found {count} administrator Copy record{}. Undo and clearing retained data may request authentication again.",
-                            plural_s(count)
-                        )
+                        "Administrator Copy history loaded. Undo and clearing retained data may request authentication again.".into()
                     }
                     Ok(Err(error)) => error,
                     Err(error) => error.into(),
@@ -295,6 +291,66 @@ impl OttrinApp {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn rendered_loaded_message_does_not_keep_a_second_stale_record_count_after_cleanup() {
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        let Some(PrivilegedPayload::Copy(reference)) =
+            response(PrivilegedStatus::Success, 1).payload
+        else {
+            unreachable!()
+        };
+        let mut loader = RetainedActivityLoader::spawn_with(move || {
+            Ok(vec![ottrin_core::PrivilegedCopyHistoryEntry {
+                reference: reference.clone(),
+                undo_unavailable_reason: None,
+            }])
+        });
+        loader.request().unwrap();
+        app.privileged_copy_history.loader = Some(loader);
+        let ctx = Context::default();
+        let frame = |app: &mut OttrinApp| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(480.0, 300.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default()
+                        .show(ctx, |ui| app.render_privileged_copy_history(ui));
+                },
+            )
+        };
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app.operation_history.is_empty() {
+            frame(&mut app);
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(app.operation_history.len(), 1);
+        // Successful cleanup releases the last card. The informational load
+        // outcome must not contradict the authoritative live Activity count.
+        app.operation_history.clear();
+        let output = frame(&mut app);
+        assert!(
+            output
+                .shapes
+                .iter()
+                .any(|shape| matches!(&shape.shape, egui::Shape::Text(text)
+            if text.galley.job.text.starts_with("Administrator Copy history loaded.")))
+        );
+        assert!(
+            !output
+                .shapes
+                .iter()
+                .any(|shape| matches!(&shape.shape, egui::Shape::Text(text)
+            if text.galley.job.text.contains("Found 1")))
+        );
+    }
+
     #[test]
     fn rendered_history_control_is_opt_in_and_cancelled_loading_preserves_activity() {
         let mut app = OttrinApp::default();

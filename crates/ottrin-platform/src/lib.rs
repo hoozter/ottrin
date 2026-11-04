@@ -2728,22 +2728,7 @@ fn execute_privileged_linux(
     let out = child
         .wait_with_output()
         .map_err(|e| PlatformError::Io(e.to_string()))?;
-    if out.stdout.is_empty() {
-        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-        if !out.status.success() {
-            return Err(PlatformError::Io(if stderr.is_empty() {
-                "privileged helper failed".to_string()
-            } else {
-                stderr
-            }));
-        }
-        return Err(PlatformError::Io(
-            "privileged helper returned no data".to_string(),
-        ));
-    }
-
-    serde_json::from_slice::<PrivilegedResponse>(&out.stdout)
-        .map_err(|e| PlatformError::Io(format!("decode response failed: {}", e)))
+    helper_protocol::decode_linux_response(out)
 }
 
 #[cfg(target_os = "windows")]

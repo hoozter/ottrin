@@ -1,0 +1,19 @@
+{
+  "status": "owned native/content/runtime cleanup complete",
+  "owned_vms_removed": 1,
+  "owned_volumes_removed": 3,
+  "input_aliases_credentials_transport_archives_content_extractions_and_private_runtime_profiles_removed": true,
+  "owned_fuse_mounts_removed": true,
+  "candidate_stage_retired": true,
+  "superseded_candidate_bytes_removed": 115817888,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/administrator-copy-history-current",
+      "purpose": "Compact source/content/native/runtime receipts, screenshots and repeatable producers; no packages or credentials retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Shared compiler caches and current binaries; next corrected source build"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+[main 1388fc2e] Recover administrator Copy history through authenticated discovery
+ 31 files changed, 2467 insertions(+), 8 deletions(-)
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/CLEANUP_CURRENT.json
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/PROCESS_REVIEW.json
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/SOURCE_CHECKS.json
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/STDIO_ACCEPTANCE.json
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/STORAGE_AFTER.txt
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/STORAGE_BEFORE.txt
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/TEST_OUTPUT_CLEANUP.json
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/check-stdio.py
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/helper-build.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/helper-tests.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/incremental-cleanup.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/incremental-final-cleanup.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/incremental-final-inspection.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/incremental-finished.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/incremental-inspection.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/library-suites.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/native-lint-final.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/native-lint.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/platform-tests.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/stdio.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/ui-suite-final.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/ui-tests.log
+ create mode 100644 .hermes/evidence/administrator-copy-history-current/windows-lint.log

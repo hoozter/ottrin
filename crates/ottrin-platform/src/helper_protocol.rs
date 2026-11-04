@@ -1,8 +1,41 @@
 //! A helper is probed without elevation before any mutation or authorization.
-//! Output is discarded, so a broken helper cannot fill a pipe or retain readers.
+//! Probe output is discarded, so a broken helper cannot fill a pipe or retain readers.
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
+
+/// pkexec 126 means the user dismissed authorization before the helper ran.
+/// Other failures retain their diagnostics; never call a missing agent a cancel.
+#[cfg(target_os = "linux")]
+pub(super) fn decode_linux_response(
+    out: std::process::Output,
+) -> Result<ottrin_core::PrivilegedResponse, crate::PlatformError> {
+    use crate::PlatformError;
+    use ottrin_core::{PrivilegedResponse, PrivilegedStatus};
+    if out.stdout.is_empty() && out.status.code() == Some(126) {
+        return Ok(PrivilegedResponse {
+            status: PrivilegedStatus::Denied,
+            message: Some("Administrator permission request was cancelled.".into()),
+            payload: None,
+        });
+    }
+    if out.stdout.is_empty() {
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+        if !out.status.success() {
+            return Err(PlatformError::Io(if stderr.is_empty() {
+                "privileged helper failed".to_string()
+            } else {
+                stderr
+            }));
+        }
+        return Err(PlatformError::Io(
+            "privileged helper returned no data".to_string(),
+        ));
+    }
+
+    serde_json::from_slice::<PrivilegedResponse>(&out.stdout)
+        .map_err(|e| PlatformError::Io(format!("decode response failed: {}", e)))
+}
 
 fn guidance() -> &'static str {
     if cfg!(target_os = "linux") {
@@ -118,6 +151,33 @@ fn check_with_timeout(
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn dismissed_authorization_is_distinct_from_missing_agent_and_invalid_helper_output() {
+        use std::os::unix::process::ExitStatusExt;
+        let output = |code, stdout: &[u8], stderr: &[u8]| std::process::Output {
+            status: std::process::ExitStatus::from_raw(code << 8),
+            stdout: stdout.to_vec(),
+            stderr: stderr.to_vec(),
+        };
+        let cancelled = decode_linux_response(output(126, b"", b"Request dismissed")).unwrap();
+        assert_eq!(cancelled.status, ottrin_core::PrivilegedStatus::Denied);
+        assert_eq!(
+            cancelled.message.as_deref(),
+            Some("Administrator permission request was cancelled.")
+        );
+        assert!(cancelled.payload.is_none());
+        let missing_agent =
+            decode_linux_response(output(127, b"", b"No authentication agent found")).unwrap_err();
+        assert!(
+            missing_agent
+                .to_string()
+                .contains("No authentication agent found")
+        );
+        assert!(decode_linux_response(output(0, b"not JSON", b"")).is_err());
+        assert!(decode_linux_response(output(0, b"", b"")).is_err());
+    }
     use std::os::unix::fs::PermissionsExt;
     fn helper(dir: &Path, body: &str) -> PathBuf {
         let path = dir.join("helper with spaces");

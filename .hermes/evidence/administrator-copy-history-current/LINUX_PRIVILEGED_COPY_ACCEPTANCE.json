@@ -1,0 +1,104 @@
+{
+  "status": "pass exact AppImage/FUSE helper upgrade, authenticated administrator history after GUI restart, Undo and cleanup",
+  "source_revision": "1388fc2e4979149e874ea456a6f8f3e30417347f",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "artifact_sha256": "8a4dc92b1273ca77b47648c0939d4b6b59743a6de8ec85d6ef75268008cc7aaa",
+  "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nClass=user\nActive=yes\nState=active\n",
+  "old_helper_sha256": "3e8f04b59ec41d3950ef412625901a94cebb43d6125197532c1adb6b9a45c558",
+  "updated_helper_sha256": "39d442b881a1692a00665a1472b5cb1ad797931c62354275d70d98c4e4f72dce",
+  "helper_cases": [
+    "old installed helper shows Update needed; cancel preserves exact old helper and unavailable status",
+    "authenticated update replaces old helper with protocol-compatible root-owned helper; actual Ready status",
+    "actual reinstall authenticated and completed"
+  ],
+  "protected_helper": {
+    "ordinary_write_denied": true,
+    "cancel_exit": 126,
+    "authenticated_response": {
+      "status": "Success",
+      "message": null,
+      "payload": {
+        "Copy": {
+          "completed_sources": 1,
+          "transactions": [
+            "6e090dd480621f81d7ed59d4a901732f"
+          ],
+          "paths": [
+            [
+              "/var/lib/ottrin-owned-protected-qa/.ottrin-txn-6e090dd480621f81d7ed59d4a901732f/candidate",
+              "/var/lib/ottrin-owned-protected-qa/preserve.txt"
+            ]
+          ]
+        }
+      }
+    },
+    "undo_and_cleanup": "Success through fresh authenticated helper processes"
+  },
+  "actual_application": "Actual cp denied, authenticated retry copied exact root-owned bytes; normal GUI restart lost live receipts; explicit history cancellation preserved journals, authenticated discovery restored Activity; fresh authenticated Undo and confirmed cleanup completed",
+  "history_restart": {
+    "normal_gui_close": true,
+    "new_process": true,
+    "cancel_preserved_recovery": true,
+    "authenticated_discovery": true
+  },
+  "independent_root_proofs": {
+    "helper_copy_root_verification": {
+      "phase": "HELPER_COPY",
+      "root_owned": true,
+      "exact_source_bytes": true,
+      "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+    },
+    "gui_copy_root_verification": {
+      "phase": "GUI_COPY",
+      "root_owned": true,
+      "exact_source_bytes": true,
+      "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+    }
+  },
+  "root_final_state": {
+    "root_owned_copies_match_source": [
+      "GUI_COPY",
+      "HELPER_COPY"
+    ],
+    "undo_removed_publications": true,
+    "explicit_cleanup_removed_stages": true,
+    "cancelled_destination_absent": true
+  },
+  "source_preserved": true,
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/old-helper-update-needed.png": "31b33978efaa0cd7b824710ad317d2c65ad9d7324000bdb2e35c1a2f5d74cd46",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/update-cancel-prompt.png": "f9879da6e0429418b33c34ce032ef982ad87dbe44198d5ac5a1d2989835facbf",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/update-cancelled.png": "847039490b2d5aa608d4fe4b3801378adf4b432dadea39edd6b673e047236d9a",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/update-prompt.png": "07b4d6083b1a9742a468423097733da3236f35421e55ed51c8ba9b9f96bc9192",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/updated-helper-ready.png": "d64760e6f26b29b9a71ca9cfe750cb773e0728d7d78b67147765558de5cb2381",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/gui-copy-denied.png": "6e43509e2ee2d803b6bba3892a0c088a9dbfe4a817b8a8f2dbd6b312a05df571",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/gui-copy-prompt.png": "dcbe7658197b0e6a6dc77f861eb0ff5ae2f38accc74fe16f89ef1b6ef6f2e3a1",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/gui-copy-activity.png": "9c9549f87d43d76452cdeabccd19ed8d4a28800d07b9ae0761c1d570a67b2380",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/history-cancel-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/history-cancelled.png": "0a8df594d152186d76b30553e13405f33ff05bdaa5ad77793de2eb7865c9336a",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/history-load-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/history-restored.png": "1709ee22621b2f931a04fd79364dcc87a4818b027a0403f76702edee5c8648ac",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/gui-undo-prompt.png": "7eacc04f4b062b40d1bf378ba0b0878921aa7accfe0008753cb3a0dc14e23bf8",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/gui-undo-completed.png": "5025a13bded4afa4aebb0abcff6458d3bc6627f880ef1e40271f454e260bda06",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/gui-cleanup-prompt.png": "4bed61f6bc3268b4d150f12558903758080db89bbd5c2dc67958509fb6ab6911",
+    ".hermes/evidence/administrator-copy-history-current/native-upgrade/ubuntu/results/gui-copy-cleanup-completed.png": "24a448f982c7fc30e64dad30deb9526e1e810568576dd5b44692d12e30440046"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "fixture_environment": "Ubuntu24 actual LightDM seat0, Openbox, stock GNOME polkit agent, software virtual graphics; explicit desktop dependencies without unrelated desktop recommendations",
+  "limits": [
+    "Linux Copy after ordinary GUI restart and root-owned disposable destination only; source-level changed-object/refusal/partial/interrupted-cleanup tests have separate scopes",
+    "Windows privileged Copy remains open; native Linux history discovery covers the tested complete publication, cancellation, Undo and cleanup path",
+    "No real Linux reboot/login, full upgrade matrix, physical graphics, complete theme audit or daily-driver acceptance"
+  ],
+  "consumed_transport_retired": {
+    "sha256": "7686e7dbd1ef483ad5562411aa660fe7750731edb8527a77de9532f73eea9f21",
+    "bytes": 3266274
+  }
+}

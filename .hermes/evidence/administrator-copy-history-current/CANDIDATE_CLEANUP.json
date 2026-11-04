@@ -1,0 +1,15 @@
+{
+  "status": "retired functional candidate after native review found two UI communication defects",
+  "source_revision": "1388fc2e4979149e874ea456a6f8f3e30417347f",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "19c1778a121df5ead00350991a654bdd3e3d2726b9e3de1211677af10cf3b59b",
+    "Ottrin-0.1.0-x86_64.AppImage": "8a4dc92b1273ca77b47648c0939d4b6b59743a6de8ec85d6ef75268008cc7aaa",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "e61daf1f836ac5b7190ef8e68a5dfc01fa1294f55717049fac99d28c87edf930",
+    "ottrin_0.1.0_amd64.deb": "4b760959c01062f93f398b7120e78625f5d71e2858e1a305b5e446773f40289d"
+  },
+  "bytes_removed": 115817888,
+  "stage_removed": true,
+  "stable_linux_and_windows_unchanged": true,
+  "retained_evidence": "Compact source/content/native/daemon receipts and complete-window captures; no candidate packages retained",
+  "remaining_consumer": "Source corrections and new coherent candidate verification"
+}

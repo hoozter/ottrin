@@ -1,0 +1,16 @@
+{
+  "status": "removed superseded focused platform executable after full-suite replacement with matching compiler configuration",
+  "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-427c4429453f8cd3",
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-5a95d0376980cc28",
+      "bytes": 63724896
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_platform-5a95d0376980cc28.d",
+      "bytes": 4193
+    }
+  ],
+  "fingerprint_removed": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-platform-5a95d0376980cc28",
+  "consumer_check": "no fuser consumers; hard-link count1"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "functional native administrator history recovery passed; candidate retired after visual review found communication defects",
+  "source_revision": "1388fc2e4979149e874ea456a6f8f3e30417347f",
+  "native_receipt": "LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "daemon_receipt": "LINUX_DAEMON_RUNTIME.json",
+  "candidate_retirement": "CANDIDATE_CLEANUP.json",
+  "corrected_source_work": ".hermes/evidence/administrator-copy-status-current",
+  "goal": "active and incomplete; Windows bridge, U08, picker/caller gaps and full requirements audit remain"
+}

@@ -1,0 +1,20 @@
+{
+  "status": "source investigation; implementation and native validation pending",
+  "findings": [
+    {
+      "requirement": "Separate effective administrator and ordinary-user journal ownership without weakening existing private-root checks",
+      "evidence": [
+        "crates/ottrin-platform/src/windows_fs/identity.rs: current_owner uses TokenOwner",
+        "crates/ottrin-platform/src/copy_transaction/windows/registry.rs: configured_path is LOCALAPPDATA/Ottrin/State/copies; anchored root validates current_owner equals creator"
+      ],
+      "next_action": "Use authoritative effective-token elevation identity to select a separate administrator-owned registry parent; verify split-token and separate-account UAC cases natively before enabling bridge"
+    },
+    {
+      "requirement": "Retain recovery across helper exit after final control removal",
+      "evidence": [
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs: requires_retained_retry explicitly warns losing proof may lose finish authority"
+      ],
+      "next_action": "Inspect canonical cleanup-group terminal proof and persist/finish through its authoritative lifecycle; do not serialize client-supplied paths or silently abandon retained retry authority"
+    }
+  ]
+}

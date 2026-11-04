@@ -1,0 +1,22 @@
+
+(polkit-gnome-authentication-agent-1:5403): GLib-CRITICAL **: 18:30:21.736: g_variant_new_string: assertion 'string != NULL' failed
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:21.736: Failed to register client: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.gnome.SessionManager was not provided by any .service files
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:27.394: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:27.636: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:29.099: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:29.820: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:32.589: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:36.697: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:37.427: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:38.613: No icon for themed icon with name 'system-file-manager'
+
+(polkit-gnome-authentication-agent-1:5403): polkit-gnome-1-WARNING **: 18:30:40.225: No icon for themed icon with name 'system-file-manager'

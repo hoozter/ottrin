@@ -390,8 +390,14 @@ history** action in Activity. Its authenticated helper scan reads canonical jour
 and returns presentation references; fresh Undo/cleanup still reopens and validates
 them. Protocol 2 deliberately rejects older helpers. Debug-helper fresh-process IPC
 and source tests cover batch discovery, changed publications and interrupted cleanup.
-This work is not yet included in the stable packages: native authentication/restart,
-rendered control acceptance and coherent packaging remain required. Windows privileged
+The exact 1388 candidate passes actual LightDM/polkit authentication, normal GUI
+restart, cancelled history loading, authenticated rediscovery, Undo and confirmed
+cleanup. Its packaged daemon watcher/query/restart/shutdown checks pass with 0.03%
+one-core CPU over a private 30-second sample. All sixteen selected original captures
+were directly reviewed. Review caught raw cancellation wording and a stale record
+count after cleanup; source corrections remove the duplicated count and distinguish
+pkexec cancellation from missing-agent failures. The candidate is not published;
+corrected source/native validation and coherent packaging remain required. Windows privileged
 Copy is still refused before mutation until its canonical receipt bridge is finished.
 
 1. Complete ordinary-user rediscovery of elevated Copy history after restarting

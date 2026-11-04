@@ -1,0 +1,31 @@
+{
+  "status": "pass source regressions and strict native/Windows lint; corrected runtime packaging/native checks pending",
+  "source_sha256": {
+    "crates/ottrin-platform/src/helper_protocol.rs": "2315e71c8c410ca6202522a3ee9a4acd64e3363063827219715fa2d0c7a681d3",
+    "crates/ottrin-platform/src/lib.rs": "4bc072a557e2516dc719d3f26abf9cfa28357991205971d81724ada01b0c7a0e",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "3dfc41f193ae58f27ed83ace3d3fcf395670632731538438ac60933f47aa9511"
+  },
+  "checks": {
+    "library-suites.log": [
+      "43 passed; 0 failed",
+      "446 passed; 0 failed",
+      "500 passed; 0 failed"
+    ],
+    "native-lint.log": [
+      "Finished `dev`"
+    ],
+    "windows-lint.log": [
+      "Finished `dev`"
+    ]
+  },
+  "native_findings_source": ".hermes/evidence/administrator-copy-history-current/CAPTURE_REVIEW.json",
+  "changes": [
+    "Linux transport distinguishes pkexec126 cancellation from missing-agent/error diagnostics",
+    "History load outcome no longer duplicates the live Activity record count",
+    "User guide explains opt-in restart history loading and guarded authenticated actions"
+  ],
+  "limits": [
+    "Native accepted1388 proves functional recovery; corrected UI runtime needs fresh native verification",
+    "Stable Linuxf8/Windows458 packages remain unchanged"
+  ]
+}

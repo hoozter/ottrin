@@ -1,0 +1,17 @@
+{
+  "status": "source-check cleanup complete; corrected candidate build pending",
+  "obsolete_incremental_sessions_removed": 16,
+  "obsolete_incremental_sessions_remaining": 0,
+  "superseded_test_binaries_removed": 1,
+  "owned_vms_or_staging_created_for_this_source_check": false,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/administrator-copy-status-current",
+      "purpose": "Source regressions, strict lint and cleanup receipts; pending build/native acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current binaries/dependencies and newest shared compiler caches"
+    }
+  ]
+}
