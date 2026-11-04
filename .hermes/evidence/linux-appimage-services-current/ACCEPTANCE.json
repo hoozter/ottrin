@@ -1,0 +1,148 @@
+{
+  "status": "AppImage FUSE helper setup and service actions pass; stopped-state visual acceptance fails",
+  "runtime_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "appimage": {
+    "name": "Ottrin-0.1.0-x86_64.AppImage",
+    "sha256": "b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02"
+  },
+  "helper_cases": [
+    "actual setup prompt cancelled; helper absent; cancellation visible",
+    "actual setup authenticated; root-owned helper and policy; ready UI",
+    "actual reinstall authenticated and completed"
+  ],
+  "fuse_mount": {
+    "executable": "/tmp/.mount_Ottrinao87DK/usr/bin/ottrin",
+    "mountinfo": "62 29 0:44 / /tmp/.mount_Ottrinao87DK ro,nosuid,nodev,relatime shared:209 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000"
+  },
+  "native_service_states": [
+    {
+      "action": "install",
+      "state": {
+        "pid": 5243,
+        "enabled": "enabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "startup False while running",
+      "state": {
+        "pid": 5243,
+        "enabled": "disabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "startup True while running",
+      "state": {
+        "pid": 5243,
+        "enabled": "enabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "startup False while stopped",
+      "state": {
+        "pid": 0,
+        "enabled": "disabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "startup True while stopped",
+      "state": {
+        "pid": 0,
+        "enabled": "enabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "startup False while stopped",
+      "state": {
+        "pid": 0,
+        "enabled": "disabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "repair disabled stopped service",
+      "state": {
+        "pid": 0,
+        "enabled": "disabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "explicit restart",
+      "state": {
+        "pid": 5416,
+        "enabled": "disabled",
+        "installed": true
+      }
+    },
+    {
+      "action": "uninstall",
+      "state": {
+        "pid": 0,
+        "enabled": "not-found",
+        "installed": false
+      }
+    }
+  ],
+  "original_captures_directly_reviewed": {
+    "setup-needed": {
+      "sha256": "29fdb722f69640bfbcd6f8155ba7d27624a102eecd058c1e4044dff7490920ba",
+      "review": "Setup-needed state and direct setup action visible."
+    },
+    "cancel-prompt": {
+      "sha256": "68ebc22f54dba3f32519d9be0245aec73bbf52073d79ff09a232ac76de9f91d9",
+      "review": "Real graphical administrator prompt for staged helper from the mounted image."
+    },
+    "setup-cancelled": {
+      "sha256": "6c59b22d13667951a615ad8f402902517248511a19d6ea6c3ec6883908ec58c2",
+      "review": "Cancellation is visible; setup-needed state remains."
+    },
+    "setup-prompt": {
+      "sha256": "19b2e5694ecf4e49a24566f36705acfd11082ecd141ff2351f6ef34cdf2bc721",
+      "review": "Retry opens a new real administrator prompt."
+    },
+    "setup-ready": {
+      "sha256": "e37b3bb3aaac538a4e947e2ebf6548f1c354df9af3b5cc13b8a044eaab3b673f",
+      "review": "Green helper-ready state after authenticated setup."
+    },
+    "reinstall-prompt": {
+      "sha256": "cf271788d4adc147e269fdc354f9b78e1fef6c2a6018320600ec501d7d408630",
+      "review": "Reinstall prompts again after revoking temporary authorization."
+    },
+    "reinstall-ready": {
+      "sha256": "e37b3bb3aaac538a4e947e2ebf6548f1c354df9af3b5cc13b8a044eaab3b673f",
+      "review": "Reinstall completes with helper-ready status."
+    },
+    "index-running-startup-on": {
+      "sha256": "6f00b709f7ab267abe253c2b27ec69be2be96458735cdc4c075e2fb3f561b826",
+      "review": "Managed service running; startup checked; update and uninstall actions replace install."
+    },
+    "index-stopped-startup-off": {
+      "sha256": "198e0f6532bd2c050e293c17ac3d9e4098a062a7dcc0cd684b1f8d724971bfa8",
+      "review": "VISUAL FAILURE: service is disabled/stopped but red Needs attention and connection-refused text are displayed."
+    },
+    "index-uninstalled": {
+      "sha256": "eb8a75a4d869a35909d7c946be80c501738089d223ca7b86f38bcb34d88e8019",
+      "review": "VISUAL FAILURE: uninstall succeeds but stale socket makes the stopped index appear broken."
+    }
+  },
+  "source_fix": {
+    "scope": "Nonblocking Linux endpoint-presence probe distinguishes live/busy listener, refused stale socket and invalid files; Services uses it for stopped-state presentation",
+    "delivery": "Source correction requires new Linux packages and native stopped/uninstalled screenshots before acceptance"
+  },
+  "limits": [
+    "Ubuntu24 private software X11 with stock GNOME polkit agent only",
+    "No protected-file elevation, normal GUI-close retention, real login/reboot or binary-version upgrade acceptance",
+    "No browser installed; HTML rendering acceptance is separate"
+  ],
+  "cleanup": {
+    "owned_vm_and_three_volumes_removed": true,
+    "private_password_keys_seeds_and_transport_archive_removed": true,
+    "retained_path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-appimage-services-current",
+    "purpose": "Original captures, frozen producers/configuration, exact package/input hashes, source-check logs and explicit visual failure; no packages or VM disks"
+  }
+}

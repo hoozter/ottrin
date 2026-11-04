@@ -393,6 +393,64 @@ impl SearchDaemonClient {
         self.identity.open_process(stream.peer_pid())
     }
 
+    /// A stopped Unix daemon can leave a socket pathname after SIGTERM.
+    /// Check the listener without waiting for a busy backlog or sending a command.
+    #[cfg(target_os = "linux")]
+    pub fn endpoint_present(&self) -> Result<bool, String> {
+        use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+        use std::os::unix::{ffi::OsStrExt, fs::FileTypeExt};
+
+        match std::fs::symlink_metadata(&self.socket_path) {
+            Ok(metadata) if !metadata.file_type().is_socket() => {
+                return Err("Index daemon endpoint is not a socket".into());
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => return Err(format!("Cannot inspect index daemon endpoint: {error}")),
+            Ok(_) => {}
+        }
+        // SAFETY: zero is a valid initial value for the Linux sockaddr structure.
+        let mut address: libc::sockaddr_un = unsafe { std::mem::zeroed() };
+        let bytes = self.socket_path.as_os_str().as_bytes();
+        if bytes.len() >= address.sun_path.len() || bytes.contains(&0) {
+            return Err("Invalid index daemon socket path".into());
+        }
+        address.sun_family = libc::AF_UNIX as libc::sa_family_t;
+        for (target, byte) in address.sun_path.iter_mut().zip(bytes) {
+            *target = *byte as libc::c_char;
+        }
+        // SAFETY: socket has no pointer arguments; NONBLOCK bounds the connect below.
+        let descriptor = unsafe {
+            libc::socket(
+                libc::AF_UNIX,
+                libc::SOCK_STREAM | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC,
+                0,
+            )
+        };
+        if descriptor < 0 {
+            return Err(std::io::Error::last_os_error().to_string());
+        }
+        // SAFETY: socket returned a new descriptor, exclusively owned by this guard.
+        let descriptor = unsafe { OwnedFd::from_raw_fd(descriptor) };
+        let length = std::mem::offset_of!(libc::sockaddr_un, sun_path) + bytes.len() + 1;
+        // SAFETY: address is initialized and length includes the terminating NUL.
+        if unsafe {
+            libc::connect(
+                descriptor.as_raw_fd(),
+                (&address as *const libc::sockaddr_un).cast(),
+                length as libc::socklen_t,
+            )
+        } == 0
+        {
+            return Ok(true);
+        }
+        let error = std::io::Error::last_os_error();
+        match error.raw_os_error() {
+            Some(libc::ENOENT | libc::ECONNREFUSED) => Ok(false),
+            Some(libc::EAGAIN | libc::EINPROGRESS) => Ok(true),
+            _ => Err(format!("Cannot inspect index daemon endpoint: {error}")),
+        }
+    }
+
     /// A nonblocking endpoint-presence check for stopped-state presentation.
     /// Presence alone does not authenticate a daemon; commands still verify its peer.
     #[cfg(target_os = "windows")]
@@ -542,6 +600,55 @@ mod query_lifetime_tests {
     use super::*;
     use ottrin_core::{SearchIndexStatus, SearchResponse, SearchScope, SearchSort};
     use std::time::Instant;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn endpoint_presence_distinguishes_stopped_socket_from_listener_and_invalid_file() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("index.sock");
+        let client = SearchDaemonClient::new(path.clone());
+        assert_eq!(client.endpoint_present(), Ok(false));
+        let listener = std::os::unix::net::UnixListener::bind(&path).unwrap();
+        assert_eq!(client.endpoint_present(), Ok(true));
+        drop(listener);
+        assert!(
+            path.exists(),
+            "Reproduce the socket left behind after daemon exit"
+        );
+        assert_eq!(client.endpoint_present(), Ok(false));
+        std::fs::remove_file(&path).unwrap();
+        std::fs::write(&path, "foreign file must remain visible as an error").unwrap();
+        assert!(client.endpoint_present().is_err());
+        assert_eq!(
+            std::fs::read_to_string(path).unwrap(),
+            "foreign file must remain visible as an error"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn endpoint_presence_does_not_wait_for_a_full_listener_backlog() {
+        use std::os::fd::AsRawFd;
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("busy.sock");
+        let listener = std::os::unix::net::UnixListener::bind(&path).unwrap();
+        // SAFETY: the listener owns a valid socket; zero permits one pending connection.
+        assert_eq!(unsafe { libc::listen(listener.as_raw_fd(), 0) }, 0);
+        let pending = UnixStream::connect(&path).unwrap();
+        let (tx, rx) = std::sync::mpsc::channel();
+        let probe = std::thread::spawn(move || {
+            let _ = tx.send(SearchDaemonClient::new(path).endpoint_present());
+        });
+        let result = rx.recv_timeout(Duration::from_secs(1));
+        // Unblock an incorrectly blocking probe before reporting failure.
+        drop(listener);
+        drop(pending);
+        probe.join().unwrap();
+        assert_eq!(
+            result.expect("Presence inspection must not wait for a busy daemon"),
+            Ok(true)
+        );
+    }
 
     #[cfg(target_os = "linux")]
     #[test]

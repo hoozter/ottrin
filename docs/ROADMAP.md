@@ -17,6 +17,13 @@ The AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
+Known current Linux preview issue: an intentionally stopped/uninstalled index
+can display red "Needs attention" when SIGTERM leaves a socket pathname behind.
+The mounted AppImage's setup and service actions work; the stopped-state display
+fails visual acceptance. The source correction passes two real-socket regressions,
+489 UI tests and strict Linux/Windows lint. New Linux packages and fresh rendered
+verification are still pending; the current f463 packages do not contain that fix.
+
 The preview retains off-thread storage discovery and changed-only index
 observations. The earlier47a Linux/Windows Native/OpenGL GUI idle measurements
 remain historical evidence in `gui-idle-refresh-current/`; their exact numeric
@@ -110,15 +117,47 @@ Both task VMs/six volumes, temporary credentials/seeds and transport archives
 were removed. Only compact frozen producers, logs and original images remain
 in the evidence directory. Runtime and all seven deliverables are unchanged.
 
+### Mounted AppImage and native Services checks, 2026-11-04
+
+The published f463 AppImage runs from an actual user-owned FUSE mount in the
+Ubuntu24 software-X11/PAM fixture. Its actual lock/Services/helper setup path
+opens stock polkit prompts, supports cancellation without installing the helper,
+and installs/reinstalls the root-owned helper and policy after authentication.
+The native index controls pass nine observed states, including five startup
+checkbox actions: two preserve the running PID, three leave a stopped daemon
+stopped. Repair preserves disabled/stopped state; explicit restart and uninstall
+work. The original source fixture is retained.
+
+All ten original captures were directly reviewed. Two reveal the stopped-state
+visual failure described above; they are retained as failed visual evidence,
+not converted to accepted UI results. Evidence and frozen producers:
+`.hermes/evidence/linux-appimage-services-current/ACCEPTANCE.json`.
+The source fix probes the Linux listener without waiting on a full backlog;
+missing/refused stale sockets report absent while foreign files and real errors
+remain errors. Services uses this probe instead of socket-file existence.
+`SOURCE_CHECKS.json` records two endpoint regressions,489 UI tests/one existing
+ignored test and strict native/Windows lint/format success. Packaged visual
+acceptance remains pending. No protected-file elevation, normal GUI-close,
+login/reboot, binary-version upgrade, browser rendering or physical QA is implied.
+
+Cleanup: the task VM/three volumes, temporary password/SSH keys/seed and result
+transport archive are removed;30 superseded/unpublished incremental sessions
+were removed with the canonical locked helper, retaining the latest per compiler
+configuration. No candidates remain. Current binaries/caches and all seven
+stable deliverables are retained. Exact paths/purposes and before/after sizes
+are in `linux-appimage-services-current/CLEANUP.json`.
+
 ### Ordered implementation and acceptance queue
 
-1. Complete remaining Linux integration acceptance: AppImage/FUSE administrator
-   setup, protected-file elevation, native managed-index startup-checkbox and
-   login/runtime states, and actual binary-version upgrade readiness in an owned
-   full-system environment. Published portable graphical setup/cancel/reinstall
-   and DEB/RPM CLI service states with seven-second delayed startup are accepted
-   only within the scopes above. Remaining checks are independently executable
-   software QA, not owner waits. Reuse cached bases and preserve personal services.
+1. Build and verify new Linux packages containing the stopped-state source fix;
+   require fresh stopped/uninstalled screenshots before accepting that UI result.
+   Keep the current f463 artifacts identified as unchanged until promotion.
+   Then complete protected-file elevation, normal GUI-close daemon retention,
+   login/reboot and actual binary-version upgrade readiness in an owned full-system
+   environment. Published portable/AppImage graphical helper setup/cancel/reinstall,
+   AppImage native startup-control actions and DEB/RPM CLI service states with
+   delayed startup are scoped above. Remaining software checks are independently
+   executable, not owner waits. Reuse cached bases and preserve personal services.
 2. Finish the theme/interface consistency audit and implementation. U08 remains
    unfulfilled: preview navigation and Sync are invented, address fill differs
    from the production breadcrumb frame, and miniatures apply full-size corners

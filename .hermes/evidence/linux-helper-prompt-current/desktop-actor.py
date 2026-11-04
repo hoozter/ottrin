@@ -13,9 +13,21 @@ try:
  password=secrets.token_urlsafe(24)
  subprocess.run(['chpasswd'],input='ottrinqa:'+password+'\n',text=True,check=True)
  secret=base/'.qa-password';secret.write_text(password);secret.chmod(0o600);os.chown(secret,uid,account.pw_gid)
- portable=base/'portable';portable.mkdir()
- with tarfile.open(base/'portable.tar.gz') as archive:archive.extractall(portable,filter='data')
- for p in [portable,*portable.rglob('*'),out]:os.chown(p,uid,account.pw_gid,follow_symlinks=False)
+ image_input=base/'QA_APPIMAGE_INPUT.json'
+ if image_input.exists():
+  image_config=json.loads(image_input.read_text());assert pathlib.Path(image_config['name']).name==image_config['name']
+  image=base/image_config['name'];assert hashlib.sha256(image.read_bytes()).hexdigest()==image_config['sha256']
+  image.chmod(0o755);os.chown(image,uid,account.pw_gid)
+  fuse=subprocess.run(['env','DEBIAN_FRONTEND=noninteractive','apt-get','-y','install','libfuse2t64'],capture_output=True,text=True,timeout=180)
+  (out/'fuse-install.log').write_text(fuse.stdout+fuse.stderr);assert fuse.returncode==0
+  subprocess.run(['modprobe','fuse'],check=True);assert pathlib.Path('/dev/fuse').exists()
+  report['launch_kind']='AppImage/FUSE'
+ else:
+  portable=base/'portable';portable.mkdir()
+  with tarfile.open(base/'portable.tar.gz') as archive:archive.extractall(portable,filter='data')
+  for p in [portable,*portable.rglob('*')]:os.chown(p,uid,account.pw_gid,follow_symlinks=False)
+  report['launch_kind']='portable'
+ os.chown(out,uid,account.pw_gid)
  fixture=base/'fixtures';fixture.mkdir();(fixture/'preserve.txt').write_text('Original owned fixture.\n')
  pref=base/'.config/ottrin/config.json';pref.parent.mkdir(parents=True,exist_ok=True)
  pref.write_text(json.dumps({'theme':'Dark','list_columns':['Name','Kind','Size','Modified'],'command_frame_always_visible':False,'show_hidden_files':False,'target':{'current':None,'pinned':[],'has_ever_set':False,'recent':[]},'default_view_mode':'Miller','search_setup_completed':True,'window_size':[1100,800],'search':{'include_roots':[str(fixture)],'content_indexing_enabled':False}}))
@@ -26,7 +38,7 @@ try:
  subprocess.run(['loginctl','enable-linger','ottrinqa'],check=True)
  subprocess.run(['systemctl','start',f'user@{uid}.service'],check=True)
  env=['DISPLAY=:77','XDG_RUNTIME_DIR=/run/user/'+str(uid),'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/'+str(uid)+'/bus','HOME='+str(base),'USER=ottrinqa','PATH=/usr/sbin:/usr/bin:/sbin:/bin','LIBGL_ALWAYS_SOFTWARE=1','XDG_SESSION_TYPE=x11','XDG_CURRENT_DESKTOP=OttrinQA','GTK_MODULES=gail:atk-bridge','NO_AT_BRIDGE=0']
- result=subprocess.run(['systemd-run','--wait','--pipe','--collect','--unit=ottrin-qa-desktop','--uid=ottrinqa','--property=PAMName=login','/usr/bin/env',*env,'/usr/bin/python3',str(base/'prompt-worker.py')],capture_output=True,text=True,timeout=240)
+ result=subprocess.run(['systemd-run','--wait','--pipe','--collect','--unit=ottrin-qa-desktop','--uid=ottrinqa','--property=PAMName=login','/usr/bin/env',*env,'/usr/bin/python3',str(base/'prompt-worker.py')],capture_output=True,text=True,timeout=360)
  (out/'desktop-worker.log').write_text(result.stdout+result.stderr)
  report['worker_exit']=result.returncode
  if (out/'WORKER_RESULT.json').exists():report['worker']=json.loads((out/'WORKER_RESULT.json').read_text())

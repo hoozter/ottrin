@@ -1,0 +1,40 @@
+{
+  "evidence": ".hermes/evidence/service-wake-current/cohort",
+  "source_scope": ".hermes/evidence/service-wake-current/cohort/SOURCE_SCOPE.json",
+  "hosted_source": {
+    "run": 41779769053,
+    "tested_source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+    "all_four_jobs_success": true
+  },
+  "limits": [
+    "Current private software-renderer settings and service actions only; previous47a GUI idle scope retains its original source/artifact, no fresh GUI CPU or physical acceptance",
+    "Published DEB/RPM CLI service states pass on Ubuntu/Fedora, and portable graphical helper setup/cancel/reinstall passes on Ubuntu; AppImage/FUSE helper setup, native Linux startup-checkbox, login/upgrade and new MSIX startup-checkbox coverage remain separate",
+    "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
+  ],
+  "status": "pass scoped current Linux settings-preservation preview; full roadmap incomplete",
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "62b0e7a04fe86b72ae8a6ea077caed09e42b9e009d080c94cac142d1bf36872a",
+    "Ottrin-0.1.0-x86_64.AppImage": "b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "74e647a024b5ab7a73c68cf3cf0fef1ad0791d4425e653fdec93b0c14e7085de",
+    "ottrin_0.1.0_amd64.deb": "ffb2b7566c83b38aed615eefd615c457fc0d3b0927068c5a7cba96febc6dbd85"
+  },
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "current_native_fields": ".hermes/evidence/service-wake-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
+  "full_payload_comparison": ".hermes/evidence/service-wake-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "daemon_runtime": ".hermes/evidence/service-wake-current/cohort/LINUX_DAEMON_RUNTIME.json",
+  "unchanged_responsibility_basis": {
+    "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+    "previous_receipt": ".hermes/evidence/service-wake-current/cohort/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    "scope": "Reject malformed/unreadable configuration without replacement; checked atomic settings saves and retained theme draft on error; actionable Windows startup failure reporting; truthful backend/login Search health. Independent future-login controls preserve current daemon state, with Linux disabled-startup repair retention and existing MSIX policy/collision guards. All Windows scheduler bodies use a single UTF16LE encoded input/UTF8 direct-error transport. Services progress/status views use worker completion wakes instead of continuous animation/polling."
+  },
+  "linux_managed_cli_acceptance": ".hermes/evidence/linux-service-acceptance-current/ACCEPTANCE.json",
+  "linux_graphical_helper_acceptance": ".hermes/evidence/linux-helper-prompt-current/ACCEPTANCE.json"
+}

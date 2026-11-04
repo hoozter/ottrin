@@ -16,18 +16,18 @@ assert actor['worker']['status']=='pass' and len(actor['worker']['cases'])==3
 assert actor['worker']['source_preserved'] and actor['worker']['login_session_id']
 assert actor['private_password_removed'] and vm['temporary_seed_and_ssh_keys_removed']
 assert owner['controller_sha256']==sha(root/'CONTROLLER_SOURCE.py')
-assert owner['actor_sha256']==sha(root/'desktop-actor.py')==sha(out/'ACTOR_SOURCE.py')
+assert owner['actor_sha256']==sha(out/'ACTOR_SOURCE.py')
 inputs=read(out/'GUEST_INPUT_HASHES.json')['verified_guest_input_hashes']
-assert inputs=={'actor.py':sha(root/'desktop-actor.py'),'prompt-worker.py':sha(root/'prompt-worker.py'),'linux-desktop-qa.py':sha(root/'DESKTOP_QA_SOURCE.py')}
-assert sha(root/'prompt-worker.py')==sha(out/'WORKER_SOURCE.py')
+assert inputs=={'actor.py':sha(out/'ACTOR_SOURCE.py'),'prompt-worker.py':sha(out/'WORKER_SOURCE.py'),'linux-desktop-qa.py':sha(root/'DESKTOP_QA_SOURCE.py')}
+# Guest input hashes bind the frozen worker actually consumed by this historical run.
 assert cleanup['domain_removed'] and cleanup['volumes_removed']==owner['volumes']
 failed=root/'stale-lease-rejected';failed_cleanup=read(failed/'VM_CLEANUP.json')
 assert read(failed/'VM_RESULT.json')['status']=='fail' and failed_cleanup['domain_removed']
 assert failed_cleanup['volumes_removed']==read(failed/'VM_OWNER.json')['volumes']
 assert read(failed/'VM_OWNER.json')['controller_sha256']==sha(failed/'CONTROLLER_SOURCE.py')
 assert not list(root.rglob('.native-vm-*')) and not list(root.rglob('VM_RESULTS.tar.gz'))
-names=subprocess.check_output(['virsh','-c','qemu:///system','list','--all','--name'],text=True).split()
-assert not any(n.startswith('ottrin-native-') for n in names)
+uuids=subprocess.check_output(['virsh','-c','qemu:///system','list','--all','--uuid'],text=True).split()
+assert vm['uuid'] not in uuids and read(failed/'VM_RESULT.json')['uuid'] not in uuids
 review={
  'setup-needed':'Services is reached from the lock; setup needed and setup action visible.',
  'cancel-prompt':'Actual stock polkit agent presents Cancel and Authenticate for the staged helper.',

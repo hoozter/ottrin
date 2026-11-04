@@ -1,0 +1,7 @@
+{
+  "previous_goal_turn": "progress: real portable graphical helper setup/cancellation/reinstall accepted",
+  "status": "progress: mounted AppImage helper and native service actions verified; actual visual defect reproduced and source corrected/tested",
+  "next": "Build fresh Linux packages at the source checkpoint, verify stopped/uninstalled UI from the new AppImage, then promote stable paths; continue remaining ordered roadmap",
+  "runtime_delivery": "All seven current packages remain f463; source correction not yet in those builds",
+  "cleanup": "CLEANUP.json"
+}

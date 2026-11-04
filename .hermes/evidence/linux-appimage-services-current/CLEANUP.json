@@ -1,0 +1,32 @@
+{
+  "owned_vm_and_three_volumes_removed": true,
+  "credentials_seed_and_transport_archive_removed": true,
+  "obsolete_incremental_sessions_removed": 30,
+  "incremental_candidates_remaining": 0,
+  "baseline": {
+    "target/debug/deps": 41726605035,
+    "target/debug/incremental": 24280782034,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33305582628,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40082785447
+  },
+  "after": {
+    "target/debug/deps": 41727121588,
+    "target/debug/incremental": 24281214480,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33305582739,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40082690647
+  },
+  "current_test_executables": {
+    "ENDPOINT_TESTS.log": [
+      "target/debug/deps/ottrin_search-ea268e832702de9b"
+    ],
+    "UI_TESTS.log": [
+      "target/debug/deps/ottrin_ui-c354643af000a7cc"
+    ]
+  },
+  "retained_paths": {
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-appimage-services-current": "Compact original screenshots, frozen producers, source and package checks, visual-defect and cleanup receipts; required for fresh-package verification",
+    "/home/campbell/Projects/Ottrin/target/": "Existing current compiler outputs and useful shared caches; no extra target tree or build configuration created"
+  },
+  "pending_disposable_staging": null,
+  "packages": "Existing dist deliverables retained unchanged; source status correction not yet packaged"
+}

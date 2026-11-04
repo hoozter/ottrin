@@ -1,0 +1,51 @@
+[
+  {
+    "name": "native-lint",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "ottrin-search",
+      "-p",
+      "ottrin-ui",
+      "-p",
+      "ottrin-app",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "windows-lint",
+    "command": [
+      "cargo",
+      "clippy",
+      "--target",
+      "x86_64-pc-windows-gnu",
+      "-p",
+      "ottrin-search",
+      "-p",
+      "ottrin-ui",
+      "-p",
+      "ottrin-app",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0
+  }
+]

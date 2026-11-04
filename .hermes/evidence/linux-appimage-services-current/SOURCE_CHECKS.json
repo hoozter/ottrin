@@ -1,0 +1,66 @@
+{
+  "status": "source correction tested; Linux packaging and fresh rendered stopped-state acceptance pending",
+  "source_sha256": {
+    "crates/ottrin-search/src/daemon_client.rs": "913c9d7007f7e6860ecd28b29b6cfd9bae002d68ee29f052c2c65f80861de15a",
+    "crates/ottrin-ui/src/lib.rs": "6ab1356e09e728c00a71a34c77eb67e64bb426c53e1fccbf1c3c329ebea3720e"
+  },
+  "endpoint_regressions": {
+    "passed": 2,
+    "scope": "actual missing/stale/listening socket, foreign regular file retained as error, full backlog nonblocking behavior"
+  },
+  "ui_suite": {
+    "passed": 489,
+    "ignored": 1
+  },
+  "lint_and_format": [
+    {
+      "name": "native-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-search",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ]
+}

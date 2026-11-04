@@ -21233,7 +21233,9 @@ impl OttrinApp {
             let installed = status.source != "none";
             let package_managed = status.package_managed();
             let diag = self.search_service.diagnostics();
-            #[cfg(unix)]
+            #[cfg(target_os = "linux")]
+            let stopped = diag.status == SearchIndexStatus::Unavailable && ottrin_search::SearchDaemonClient::connect_default().is_ok_and(|client| client.endpoint_present() == Ok(false));
+            #[cfg(all(unix, not(target_os = "linux")))]
             let stopped = ottrin_search::default_daemon_socket_path().is_ok_and(|path| !path.exists());
             #[cfg(all(target_os = "windows", not(test)))]
             let stopped = diag.status == SearchIndexStatus::Unavailable && SearchDaemonClient::connect_default().is_ok_and(|client| client.endpoint_present() == Ok(false));

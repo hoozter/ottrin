@@ -30,11 +30,19 @@ try:
  agentlog=(out/'authentication-agent.log').open('w')
  agent=subprocess.Popen(['/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1'],stdout=agentlog,stderr=agentlog);children.append(agent)
  time.sleep(1);assert agent.poll() is None,'Graphical authentication agent exited'
- executable=next((base/'portable').glob('*/bin/ottrin'))
+ image_input=base/'QA_APPIMAGE_INPUT.json'
+ image_config=json.loads(image_input.read_text()) if image_input.exists() else None
+ executable=base/image_config['name'] if image_config else next((base/'portable').glob('*/bin/ottrin'))
  fixture=base/'fixtures/preserve.txt';original=hashlib.sha256(fixture.read_bytes()).hexdigest()
  with (out/'app.log').open('w') as log:
   app=subprocess.Popen([str(executable),str(fixture.parent)],stdout=log,stderr=log);children.append(app);q.target_process_id=app.pid
   q.wait_for(q.ottrin_app,'owned Ottrin accessibility tree',timeout=30)
+  if image_config:
+   assert not os.environ.get('APPIMAGE_EXTRACT_AND_RUN')
+   mapped=Path('/proc/'+str(app.pid)+'/exe').resolve()
+   mount=next((line for line in Path('/proc/self/mountinfo').read_text().splitlines() if ' - fuse.' in line and str(mapped).startswith(line.split()[4]+'/')),None)
+   assert mount,'Application is not running from a FUSE-mounted image'
+   report['fuse_mount']={'executable':str(mapped),'mountinfo':mount}
   # The toolbar lock must provide the direct route to Services.
   q.click_accessible_name('Manage administrator helper','push button')
   q.wait_for(lambda:visible('Set up administrator helper'),'helper setup in Services')
@@ -56,6 +64,47 @@ try:
   q.wait_for(lambda:visible('Update / reinstall helper') and not visible('Working…'),'reinstall completion',timeout=45)
   assert helper.is_file() and helper.stat().st_uid==0
   capture('reinstall-ready');report['cases'].append('actual reinstall authenticated and completed')
+  if image_config:
+   settings=q.wait_for(lambda:q.run('xdotool','search','--onlyvisible','--name','^Ottrin Settings$',capture=True,check=False).stdout.strip(),'settings window')
+   assert len(settings.split())==1
+   q.run('xdotool','windowsize','--sync',settings,'1200','960')
+   unit=base/'.config/systemd/user/ottrin-index.service'
+   def service_state():
+    pid=int(subprocess.check_output(['systemctl','--user','show','ottrin-index.service','--property=MainPID','--value'],text=True).strip() or 0)
+    enabled=subprocess.run(['systemctl','--user','is-enabled','ottrin-index.service'],capture_output=True,text=True).stdout.strip()
+    return {'pid':pid,'enabled':enabled,'installed':unit.exists()}
+   def settled(enabled,running):
+    value=service_state()
+    return value if value['installed'] and (value['enabled']=='enabled')==enabled and (value['pid']>0)==running and not visible('Working…') else None
+   report['service_states']=[]
+   q.click_accessible_name('Enable automatic startup','push button')
+   initial=q.wait_for(lambda:settled(True,True),'managed AppImage service installed',timeout=45)
+   report['service_states'].append({'action':'install','state':initial})
+   assert 'ottrin-index-appimage' in unit.read_text()
+   for enabled in [False,True]:
+    q.click_accessible_name('Start index automatically at sign-in','check box')
+    state=q.wait_for(lambda:settled(enabled,True),'native startup checkbox persisted',timeout=30)
+    assert state['pid']==initial['pid'],'Startup checkbox restarted the running daemon'
+    report['service_states'].append({'action':'startup '+str(enabled)+' while running','state':state})
+   capture('index-running-startup-on')
+   q.click_accessible_name('Stop indexing','push button')
+   q.wait_for(lambda:settled(True,False),'index stopped',timeout=30)
+   for enabled in [False,True,False]:
+    q.click_accessible_name('Start index automatically at sign-in','check box')
+    state=q.wait_for(lambda:settled(enabled,False),'stopped service startup choice persisted',timeout=30)
+    report['service_states'].append({'action':'startup '+str(enabled)+' while stopped','state':state})
+   q.click_accessible_name('Update / reinstall service','push button')
+   state=q.wait_for(lambda:settled(False,False),'repair preserves stopped disabled index',timeout=45)
+   report['service_states'].append({'action':'repair disabled stopped service','state':state})
+   capture('index-stopped-startup-off')
+   q.click_accessible_name('Start / restart','push button')
+   state=q.wait_for(lambda:settled(False,True),'explicit index restart',timeout=45)
+   report['service_states'].append({'action':'explicit restart','state':state})
+   q.click_accessible_name('Uninstall service','push button')
+   q.wait_for(lambda:not unit.exists() and not visible('Working…'),'service uninstall',timeout=45)
+   assert service_state()['pid']==0
+   report['service_states'].append({'action':'uninstall','state':service_state()})
+   capture('index-uninstalled')
   assert hashlib.sha256(fixture.read_bytes()).hexdigest()==original
   report['source_preserved']=True;report['status']='pass'
 except BaseException as error:

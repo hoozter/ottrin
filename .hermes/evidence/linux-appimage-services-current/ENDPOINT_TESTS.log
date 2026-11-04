@@ -1,0 +1,10 @@
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Finished `test` profile [optimized + debuginfo] target(s) in 7.59s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_search-ea268e832702de9b)
+
+running 2 tests
+test daemon_client::query_lifetime_tests::endpoint_presence_distinguishes_stopped_socket_from_listener_and_invalid_file ... ok
+test daemon_client::query_lifetime_tests::endpoint_presence_does_not_wait_for_a_full_listener_backlog ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 249 filtered out; finished in 0.00s
+

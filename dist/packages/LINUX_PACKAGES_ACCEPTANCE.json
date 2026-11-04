@@ -8,7 +8,7 @@
   },
   "limits": [
     "Current private software-renderer settings and service actions only; previous47a GUI idle scope retains its original source/artifact, no fresh GUI CPU or physical acceptance",
-    "Published DEB/RPM CLI service states pass on Ubuntu/Fedora, and portable graphical helper setup/cancel/reinstall passes on Ubuntu; AppImage/FUSE helper setup, native Linux startup-checkbox, login/upgrade and new MSIX startup-checkbox coverage remain separate",
+    "Published DEB/RPM CLI service states and portable/AppImage graphical helper setup pass within their recorded scopes. AppImage native service actions pass, but intentional stop/uninstall can show a false red error from a stale socket; source fix tested, fresh Linux packages/rendered acceptance pending. Login/upgrade and MSIX startup-checkbox acceptance remain separate.",
     "Local unsigned preview; full roadmap, MSI rollback, signing/Store and final owner acceptance remain open"
   ],
   "status": "pass scoped current Linux settings-preservation preview; full roadmap incomplete",
@@ -36,5 +36,7 @@
     "scope": "Reject malformed/unreadable configuration without replacement; checked atomic settings saves and retained theme draft on error; actionable Windows startup failure reporting; truthful backend/login Search health. Independent future-login controls preserve current daemon state, with Linux disabled-startup repair retention and existing MSIX policy/collision guards. All Windows scheduler bodies use a single UTF16LE encoded input/UTF8 direct-error transport. Services progress/status views use worker completion wakes instead of continuous animation/polling."
   },
   "linux_managed_cli_acceptance": ".hermes/evidence/linux-service-acceptance-current/ACCEPTANCE.json",
-  "linux_graphical_helper_acceptance": ".hermes/evidence/linux-helper-prompt-current/ACCEPTANCE.json"
+  "linux_graphical_helper_acceptance": ".hermes/evidence/linux-helper-prompt-current/ACCEPTANCE.json",
+  "linux_appimage_services_observations": ".hermes/evidence/linux-appimage-services-current/ACCEPTANCE.json",
+  "pending_source_fix": ".hermes/evidence/linux-appimage-services-current/SOURCE_CHECKS.json"
 }
