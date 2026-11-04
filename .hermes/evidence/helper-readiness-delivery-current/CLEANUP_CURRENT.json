@@ -1,0 +1,33 @@
+{
+  "status": "owned QA cleanup pass; accepted candidate retained for pending hosted gate and publication",
+  "protected_domains": {
+    "win11ltsc": "shut off",
+    "ottrin-qa-20261011": "shut off",
+    "ottrin-copy-cleanup-qa": "shut off",
+    "ottrin-index-qa": "shut off"
+  },
+  "removed": [
+    "Owned native VM and3volumes",
+    "Private password, seed and SSH key",
+    "Native transport archive after consuming exact receipts",
+    "Host old-helper input",
+    "77267723-byte content extraction",
+    "Private daemon profile and both daemon processes"
+  ],
+  "obsolete_incremental_sessions_remaining": 0,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "bytes": 115705257,
+      "purpose": "Four accepted Linux packages/provenance; awaiting exact41c source CI before publication and retirement of old stable packages"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/helper-readiness-delivery-current",
+      "purpose": "Compact producers, native screenshots and scoped acceptance receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Existing/current binaries, dependencies and newest compiler state shared with subsequent roadmap work"
+    }
+  ]
+}

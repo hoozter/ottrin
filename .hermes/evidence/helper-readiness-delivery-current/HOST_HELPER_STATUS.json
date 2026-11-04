@@ -1,0 +1,10 @@
+{
+  "scope": "Read-only unelevated protocol probe of personal installed helper; no setup, authentication or file operation",
+  "path": "/usr/libexec/ottrin/ottrin-priv-helper",
+  "sha256": "24d6b3ce65a8e585d3c7ce23812115de61982a82b17050c4f964bcfa1a1cbb58",
+  "exit": 2,
+  "stdout": "",
+  "stderr": "Usage: ottrin-priv-helper --stdio-json OR --request-file <path> --response-file <path>\n",
+  "compatible": false,
+  "next_action": "If incompatible, owner can use Services > Update / reinstall helper and authenticate with OS administrator credentials; software work continues independently"
+}

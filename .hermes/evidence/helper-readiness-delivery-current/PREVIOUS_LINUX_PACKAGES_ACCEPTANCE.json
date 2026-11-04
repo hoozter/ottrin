@@ -1,0 +1,36 @@
+{
+  "status": "pass scoped Linux privileged Copy delivery; full roadmap incomplete",
+  "source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "d117ac60d8346ba2168f5c3caf5bbd847067080c1c86938fd00fc53e21492a1f",
+    "Ottrin-0.1.0-x86_64.AppImage": "6600ab5a17b675f0d521eb73053638a08a27dec86aee04078f9f843b35ae215e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "21e3934752770bd37206a92865293bcafddd09dc1df8c4306eb9ee5e80e3d6ce",
+    "ottrin_0.1.0_amd64.deb": "e002a98e2bc83d513ebc53639997fc49d0bb0a5ed130549a5fea3faa8744c671"
+  },
+  "evidence": ".hermes/evidence/privileged-copy-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "hosted_source": {
+    "run": 41846558115,
+    "tested_source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+    "all_four_jobs_success": true
+  },
+  "native_privileged_copy": ".hermes/evidence/privileged-copy-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/privileged-copy-current/LINUX_DAEMON_RUNTIME.json",
+  "payload_comparison": ".hermes/evidence/privileged-copy-current/PAYLOAD_COMPARISON.json",
+  "historical_service_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
+  "limits": [
+    "Same-session Linux Copy and root-owned disposable destination only; source-level changed-object/refusal/partial/interrupted-cleanup tests have separate scopes",
+    "Windows privileged Copy and ordinary-user elevated-account Copy discovery after application restart remain open",
+    "No real Linux reboot/login, full upgrade matrix, physical graphics, complete theme audit or daily-driver acceptance",
+    "Four-format content verification; current GUI protected Copy uses actual mounted AppImage. Prior native update/Services matrices retain original hashes/scopes",
+    "Installed portable/AppImage helper requires Update / reinstall helper to receive its new binary; no automatic privileged installation",
+    "Windows remains458/MSIX17; no signing, public release, Store submission or full-roadmap completion"
+  ]
+}

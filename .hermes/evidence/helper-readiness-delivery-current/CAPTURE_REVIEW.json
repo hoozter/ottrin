@@ -1,0 +1,23 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "old-helper-update-needed.png": "31b33978efaa0cd7b824710ad317d2c65ad9d7324000bdb2e35c1a2f5d74cd46",
+    "update-cancel-prompt.png": "da0987464be08dfddb07b74a1ce6327cbeee200c476f8b4e5802cca3f3914e64",
+    "update-cancelled.png": "847039490b2d5aa608d4fe4b3801378adf4b432dadea39edd6b673e047236d9a",
+    "update-prompt.png": "228cddf238593a8da274614d19f46fb4f704b4aeef8d37c80a08092a35cc0649",
+    "updated-helper-ready.png": "d64760e6f26b29b9a71ca9cfe750cb773e0728d7d78b67147765558de5cb2381",
+    "gui-copy-denied.png": "6e43509e2ee2d803b6bba3892a0c088a9dbfe4a817b8a8f2dbd6b312a05df571",
+    "gui-copy-prompt.png": "dcbe7658197b0e6a6dc77f861eb0ff5ae2f38accc74fe16f89ef1b6ef6f2e3a1",
+    "gui-copy-activity.png": "8c49c30ce04d2fd76b14a0890347492e93d3db452a972a4de607f4e5db35cc79",
+    "gui-undo-prompt.png": "37df024c9f427a83f0003257a8c0459042d3682ebfb4e7ed81315b112d49e067",
+    "gui-undo-completed.png": "17b10682c2eab4ab5f452c861330bf355d28d080375216bf4d13d2189b2ac202",
+    "gui-cleanup-prompt.png": "3d7b5409eb2f50dac3027f239c20faaa90a0c21d282cf6cb7e736412b885bd7a",
+    "gui-copy-cleanup-completed.png": "56a96faafc2115f806ccc15e0e23842ada40b6205cc7d42a7dd82ab60d164a94"
+  },
+  "findings": [
+    "Corrected full update guidance displays without the missing arrow glyph",
+    "Update-needed status persists after cancellation; successful authentication displays green Installed and ready",
+    "Actual denied Copy, authentication, Activity Undo and cleanup controls match their recorded states",
+    "Broader U08 layout, grouping and pending-state contrast remain outside this functional acceptance"
+  ]
+}

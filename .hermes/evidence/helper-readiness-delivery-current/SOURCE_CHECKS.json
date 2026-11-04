@@ -1,0 +1,28 @@
+{
+  "status": "pass scoped source checks and exact unchanged-code comparison; current package/native acceptance separate",
+  "source_revision": "41c09bebbc9c49022af8eb0d568813e668d1fe2d",
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "bbfef9410eaaca286ad67dd6754399eb01a8b842fe73079bdb0ea2240048809c",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "0342296ffe878f1e4bf283a81fcee63274682fe60a07cb5ba2f7b440ae402da2",
+    "crates/ottrin-platform/src/lib.rs": "0adc80f7abe7ab36317eb680495ebc235d0cc60781e900bfee794052cf71ac63",
+    "crates/ottrin-ui/src/lib.rs": "de95d3b6f5e163a3c0cd15180ed7ab4ec04c4ab66dc3b1ed70347acdac14fcb6",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "f5278b4c615ba7bc627121e29aecbc9bc8e87ceea9244f7a48b7f13987c7cb56",
+    "crates/ottrin-platform/src/helper_protocol.rs": "da6c25498d9e43431a4d269a6d36175ceb50481b86da8cbda65b8baafb7ed631"
+  },
+  "baseline_source": "3b35dab536918af69c472ca68521278bcc4d147b",
+  "unchanged_protocol_body_proof": "Only runtime source delta is the exact guidance string replacement, verified against git object3b35dab5; every other source hash in baseline matches current bytes",
+  "baseline_receipt": ".hermes/evidence/helper-protocol-current/SOURCE_CHECKS.json",
+  "baseline_scope": "496 UI tests,11 helper tests,4 probe tests and actual debug-helper protocol/Copy IPC belong to3b baseline, not a newly repeated full suite",
+  "current_checks": {
+    "wording-protocol-tests.log": "4 passed; 0 failed",
+    "wording-ui-test.log": "1 passed; 0 failed",
+    "wording-native-lint.log": "Finished `dev`",
+    "wording-windows-lint.log": "Finished `dev`"
+  },
+  "current_check_root": ".hermes/evidence/helper-protocol-current",
+  "current_scope": "Four helper protocol tests, one rendered Services update-state test, strict native/Windows all-target lint and formatting after wording correction",
+  "limits": [
+    "Current exact packages require native old-helper replacement, correct wording and protected Copy/Undo/cleanup acceptance",
+    "Full U08, Windows privileged Copy and elevated-account restart discovery remain open"
+  ]
+}

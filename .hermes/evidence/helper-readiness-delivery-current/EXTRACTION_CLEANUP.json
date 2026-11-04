@@ -1,0 +1,11 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "removed": true,
+  "bytes": 77267723,
+  "completed_consumers": [
+    "production contents/runtime closure verification",
+    "exact updated native-helper SHA comparison"
+  ],
+  "current_candidate_retained": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "pending_consumer": "Publish accepted cohort after exact-source GitHub checks pass"
+}

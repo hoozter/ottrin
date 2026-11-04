@@ -1,0 +1,7 @@
+{
+  "status": "native upgrade controller passed; captures and detailed receipts require assessment",
+  "input_directory": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.helper-protocol-input",
+  "source_revision": "41c09bebbc9c49022af8eb0d568813e668d1fe2d",
+  "child_exit": 0,
+  "owned_host_input_removed": true
+}

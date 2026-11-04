@@ -366,7 +366,7 @@ query, restart and two-stop checks at 0.10% one core over30seconds without clien
 in a private1000-file fixture. This is not a personal-service CPU measurement.
 Screenshot review caught a missing arrow glyph in the new guidance; the source now
 uses plain wording. The3b candidate packages and extraction were retired before
-delivery; corrected packages and their native wording check remain pending. The
+delivery; the corrected cohort is described below. The
 stable Linux47db and Windows458 deliveries above are unchanged. Twelve original
 captures were directly reviewed; this does not close U08 or whole-interface
 acceptance. The owned VM, three volumes, credentials, transport and host input
@@ -374,14 +374,29 @@ were removed; compact receipts remain in the evidence root.
 Windows elevated Copy remains unimplemented; it is now refused before dispatch
 rather than copying without returning recovery ownership.
 
+Corrected runtime41c09beb passes four-format contents/runtime closure, matching
+payloads and the actual AppImage/FUSE old-helper update, cancellation, Ready state
+and protected Copy/Undo/cleanup workflow. Twelve fresh complete-window captures
+were reviewed; the corrected guidance displays without the missing glyph. Fresh
+private1000-file daemon watcher/query/restart/two-stop acceptance passes at0.13%
+one core over30seconds without clients. Exact receipts are in
+`.hermes/evidence/helper-readiness-delivery-current/`. Its accepted packages remain
+in `.hermes/packaging-tmp/.linux-native-desktop-stage/` pending exact-source hosted
+verification and publication. The owned VM/three volumes, credentials, host input,
+transport and content extraction are removed. The retained compact receipts and
+candidate's pending consumer are recorded in `CLEANUP_CURRENT.json`. A read-only,
+unelevated probe confirms the personal installed helper rejects protocol1; updating
+that installation needs owner authentication and does not block software work.
+
 Completed delivery: Linux47db and Windows458/MSIX17 are at their stable paths;
 exact native scopes, fresh/update/login MSIX gates, four hosted jobs and owned
 fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap completion.
 
-1. Complete privileged Copy integration: ordinary-user rediscovery of elevated
-   Copy history after restarting; versioned helper feature/readiness checks before
-   issuing unsupported commands or displaying Ready; Windows receipt/Undo/cleanup
-   bridge. Linux same-session helper and actual application retry/Activity workflow
+1. Publish the accepted41c helper compatibility cohort after hosted verification.
+   Complete ordinary-user rediscovery of elevated Copy history after restarting
+   and the Windows receipt/Undo/cleanup bridge. Versioned helper feature/readiness
+   checks and their native old-helper upgrade workflow are implemented and accepted
+   at the exact candidate scope above. Linux same-session helper and actual application retry/Activity workflow
    are delivered and accepted above. The personal helper update needs the owner's
    OS authentication; that does not stall these software changes.
 2. Finish remaining Linux real login/reboot and AppImage/portable binary-version
