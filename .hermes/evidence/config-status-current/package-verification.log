@@ -1,0 +1,93 @@
+ottrin-0.1.0-1.x86_64.rpm: OK
+Ottrin-0.1.0-x86_64.AppImage: OK
+Ottrin-0.1.0-linux-x86_64-portable.tar.gz: OK
+ottrin_0.1.0_amd64.deb: OK
+/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract/squashfs-root/usr/libexec/ottrin/rg: OK
+portable: packaged helper and policy path PASS
+appimage: packaged helper and policy path PASS
+deb: packaged helper and policy path PASS
+rpm: packaged helper and policy path PASS
+{
+  "binary_sha256": "2a0713997c2eae3879a44f236b0e2342550e27d5f7c8ab51434967d49a66dfe4",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": false,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd (deleted)",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    }
+  ],
+  "status": "pass"
+}
+{
+  "binary_sha256": "5383208b1e1730cc4069e45958ab15eb41913c247a3973b48ba5ce65d325f15e",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd",
+      "same_installed_entry": false,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "pass",
+      "peer_executable": "/usr/bin/ottrin-indexd (deleted)",
+      "same_installed_entry": true,
+      "cleanup_exit": 0,
+      "process_reaped": true
+    }
+  ],
+  "status": "pass"
+}
+{
+  "status": "pass",
+  "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+  "qa_fixture_sha256": "dd7f85ebdb8645d615c8056bbd68b20c4de68a79faa6f4b5ebc8ae6fd64450c6",
+  "verification_head": "2fced0b5cb378d81edfec2e88492d1c2e7e68d92",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "e10dd7ddc1e5b39e0c5d95729595e0a45b1a3db2348f9510ed3921f8484566d4",
+    "Ottrin-0.1.0-x86_64.AppImage": "dae02dbbb98b1195c9186f09a410b4d99798803527c392175d852d37b3fffeb6",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "370da5853232899d4a5567c86cff52ff2b9d38f990bc4df6406bf5975fd2bff2",
+    "ottrin_0.1.0_amd64.deb": "72e4b00a76b3363da60497a540bc26a7f7353b4a1449b06444e98ea37deb7b65"
+  },
+  "verifier_sha256": "33b60ba8802056bee6c466454e1e69fc53bab4d69472dc4413e72990b5b731cc",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "scope": "package contents and scoped native namespace checks; GUI, resource and actual distribution installation remain separate",
+  "extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "pending_consumer": "native GUI; remove remaining extraction afterwards"
+}

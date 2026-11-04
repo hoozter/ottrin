@@ -114,9 +114,24 @@ Continue in this order:
    service status/error details. All487 UI tests pass (one existing ignored),
    including10 configuration tests and an actual theme-draft failure/repair/retry
    regression; strict native/Windows UI/app all-target lint and format pass.
-   Evidence: `config-status-current/`. Native packaged behavior, hosted source gates
-   and replacement packages are still required. All seven stable packages above
-   remain47a; this source checkpoint is not delivered-package acceptance.
+   Exact a3db AppImage acceptance passed all7 settings-error/theme-save/Search
+   workflows and3 reviewed originals. Fresh private1000-file daemon watcher,
+   query, restart and two shutdowns passed with0.033% one core over30seconds.
+   The canonical namespace test had generated an invalid partial AppConfig;
+   its corrected required fields now pass actual AppImage/RPM namespace gates.
+   The Windows fixture then used the wrong native startup-dialog title and was
+   stopped/cleaned after two passing malformed-config CLI/daemon refusals.
+   Source inspection also found that the dialog hid the actionable error behind
+   a log path. Its reporter now displays the actual summary/details, plus the
+   log path or explicit logging failure. Only that Windows reporter changed after
+   the487-pass UI checkpoint; native/Windows app lint and formatting pass.
+   Evidence and frozen attempts: `config-status-current/`, including
+   `ATTEMPT_A3DB.json`, `linux-a3db/` and `native-dialog-title-failure/`.
+   Superseded candidate stages and the unused source archive were retired;
+   no current deliverable or personal service/settings/data was changed.
+   Rebuild coherent packages and repeat current native gates with the corrected
+   fixture. All seven stable packages above remain47a; no Windows/package
+   acceptance or full roadmap completion is inferred from the source checks.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them

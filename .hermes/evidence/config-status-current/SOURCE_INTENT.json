@@ -81,5 +81,13 @@
     "Exercise actual invalid-config rejection and theme save failure/retry; review native Search health",
     "All four exact-source CI gates",
     "Publish seven-format cohort with development MSIX15, truthful scope and owned cleanup"
+  ],
+  "native_discovery": "Windows fixture title corrected to Ottrin startup error; source reporter now shows actual summary/details plus log location or logging error. Only reporter changed since a3db; UI/Search/Core/indexd source retains the487-pass checkpoint. Failed native attempt is terminal/cleaned, and superseded stages/archive retired.",
+  "pending_acceptance": "Rebuild coherent clean source; repeat required current package/native gates; no source change is declared delivered.",
+  "required_next": [
+    "Rebuild clean current runtime packages",
+    "Repeat exact Linux/Windows native settings error/save-retry and Search status with corrected dialog-title fixture",
+    "Current-source CI, fresh current daemon probes and MSIX15 native assembly",
+    "Publish seven-format cohort and finish owned cleanup"
   ]
 }

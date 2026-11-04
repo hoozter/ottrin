@@ -1,0 +1,24 @@
+{
+  "binary_sha256": "2a0713997c2eae3879a44f236b0e2342550e27d5f7c8ab51434967d49a66dfe4",
+  "cases": [
+    {
+      "case": "native-private-namespace",
+      "status": "fail",
+      "process_reaped": true,
+      "error": "Private daemon did not start: ottrin index daemon: Could not load Ottrin settings /tmp/ottrin-owner-ajemzd2m/config/ottrin/config.json: missing field `theme` at line 1 column 137. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n"
+    },
+    {
+      "case": "foreign-private-namespace",
+      "status": "fail",
+      "process_reaped": true,
+      "error": "Private daemon did not start: ottrin index daemon: Could not load Ottrin settings /tmp/ottrin-owner-a9m6cax8/config/ottrin/config.json: missing field `theme` at line 1 column 137. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n"
+    },
+    {
+      "case": "native-deleted-executable",
+      "status": "fail",
+      "process_reaped": true,
+      "error": "Private daemon did not start: ottrin index daemon: Could not load Ottrin settings /tmp/ottrin-owner-sl0kx8y5/config/ottrin/config.json: missing field `theme` at line 1 column 137. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n"
+    }
+  ],
+  "status": "fail"
+}

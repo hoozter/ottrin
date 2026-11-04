@@ -1,0 +1,48 @@
+{
+  "status": "pass exact Windows-only source correction; native package acceptance pending",
+  "unchanged_ui_test_source": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+  "scope": "Only existing Windows startup reporter now shows actual summary/details and log path or logging failure; Ui/Search/Core/indexd source unchanged from487-pass checkpoint. Actual native error dialog still requires packaged acceptance.",
+  "checks": [
+    {
+      "name": "dialog-native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "dialog-windows-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "dialog-format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ]
+}

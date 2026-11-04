@@ -1,0 +1,40 @@
+{
+  "namespace_content_gate_pending_at_launch": true,
+  "status": "functional pass; original captures require review",
+  "case": "candidate",
+  "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+  "artifact_sha256": "dae02dbbb98b1195c9186f09a410b4d99798803527c392175d852d37b3fffeb6",
+  "scope": "Private software X11 Dark150; actual startup rejection, settings preservation/theme save failure/retry and Search backend/login labels. Full platform/physical acceptance separate.",
+  "worker_sha256": "374304ada4f65326f0752277c737d779107c38344a1a6b22c27f847ab7647991",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-bd9w6gp2",
+    "owned_processes_reaped": [
+      {
+        "pid": 1488061,
+        "exit": 0
+      },
+      {
+        "pid": 1488066,
+        "exit": 0
+      },
+      {
+        "pid": 1488067,
+        "exit": 15
+      },
+      {
+        "pid": 1488132,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1488168,
+        1488239
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

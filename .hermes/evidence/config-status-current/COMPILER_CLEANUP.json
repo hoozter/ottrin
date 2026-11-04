@@ -1,5 +1,5 @@
 {
-  "status": "pass source checkpoint cleanup; compiler caches/current binary retained for packaging",
+  "status": "pass source and superseded-attempt cleanup; current caches/test executable retained for new package builds",
   "baseline": {
     "target/debug/deps": 41674751911,
     "target/debug/incremental": 23504670533,
@@ -10,23 +10,22 @@
   },
   "current": {
     "target/debug/deps": 41676689681,
-    "target/debug/incremental": 23610947101,
+    "target/debug/incremental": 23610891800,
     "target/x86_64-pc-windows-gnu/debug/deps": 33300491605,
-    "target/x86_64-pc-windows-gnu/debug/incremental": 39791933593,
-    "target/release/deps": 4379982616,
-    "target/x86_64-pc-windows-gnu/release/deps": 3853141750
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39791904328,
+    "target/release/deps": 4445313593,
+    "target/x86_64-pc-windows-gnu/release/deps": 3921047500
   },
   "delta": {
     "target/debug/deps": 1937770,
-    "target/debug/incremental": 106276568,
+    "target/debug/incremental": 106221267,
     "target/x86_64-pc-windows-gnu/debug/deps": 1834891,
-    "target/x86_64-pc-windows-gnu/debug/incremental": 113840357,
-    "target/release/deps": 0,
-    "target/x86_64-pc-windows-gnu/release/deps": 0
+    "target/x86_64-pc-windows-gnu/debug/incremental": 113811092,
+    "target/release/deps": 65330977,
+    "target/x86_64-pc-windows-gnu/release/deps": 67905750
   },
-  "obsolete_incremental_sessions_removed": 19,
+  "obsolete_incremental_sessions_removed": 23,
   "all_reviewed_candidates_absent": true,
-  "all_recorded_newest_sessions_retained": true,
   "final_obsolete_incremental_candidates": 0,
   "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc rebuilt in place with unchanged compiler/profile/features;487UI tests pass,1existing ignored. No extra superseded test executable.",
   "remaining_task_created_storage": [
@@ -39,5 +38,16 @@
     "Clean-source package build/content gates",
     "Native Linux/Windows settings error/save/retry and Search status acceptance",
     "Hosted exact-source gates and stable publication"
-  ]
+  ],
+  "source_validation_sizes": {
+    "target/debug/deps": 41676689681,
+    "target/debug/incremental": 23610947101,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33300491605,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39791933593,
+    "target/release/deps": 4379982616,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853141750
+  },
+  "newest_finalized_sessions_retained_at_each_cleanup": true,
+  "latest_dialog_source_retained_sessions_present": true,
+  "superseded_candidate_cleanup": "ATTEMPT_A3DB.json records551238200bytes of finished obsolete Linux/Windows candidate staging and unused source archive retired after their native consumers terminated; failed VM and owned volumes/profile removed. Stable47a deliverables untouched."
 }

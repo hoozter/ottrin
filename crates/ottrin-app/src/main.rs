@@ -899,15 +899,15 @@ fn write_startup_failure_log_in(
 fn report_windows_startup_failure(summary: &str, details: &str) {
     #[cfg(target_os = "windows")]
     {
-        let log_path =
-            write_startup_failure_log_in(&startup_failure_log_directory(), summary, details).ok();
-        let location = log_path.as_deref().map_or_else(
-            || "the local Ottrin data directory".to_string(),
-            |path| path.display().to_string(),
-        );
-        show_windows_startup_failure_dialog(&format!(
-            "Ottrin could not start. Details were saved to:\n{location}"
-        ));
+        let log_detail = match write_startup_failure_log_in(
+            &startup_failure_log_directory(),
+            summary,
+            details,
+        ) {
+            Ok(path) => format!("Diagnostic log:\n{}", path.display()),
+            Err(error) => format!("Could not save the diagnostic log: {error}"),
+        };
+        show_windows_startup_failure_dialog(&format!("{summary}\n\n{details}\n\n{log_detail}"));
     }
     #[cfg(not(target_os = "windows"))]
     let _ = (summary, details);

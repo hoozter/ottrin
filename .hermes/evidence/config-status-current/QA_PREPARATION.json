@@ -1,0 +1,14 @@
+{
+  "status": "native producer prepared; not yet exercised",
+  "scope": "Actual AppImage invalid settings rejection on main/properties/Inspector/index status; native theme save refusal and repaired retry; Search status labels. No acceptance inferred until actual result/captures/teardown are reviewed.",
+  "removed_disposable_pycache": [
+    "__pycache__/linux-native.cpython-312.pyc",
+    "__pycache__/linux-settings-worker.cpython-312.pyc"
+  ],
+  "pending_consumers": [
+    "Linux package build/content verification then private native workflow",
+    "Windows package build and ordinary-user native workflow",
+    "MSIX15 assembly and exact-source hosted gates",
+    "Promotion and owned staging/evidence cleanup"
+  ]
+}

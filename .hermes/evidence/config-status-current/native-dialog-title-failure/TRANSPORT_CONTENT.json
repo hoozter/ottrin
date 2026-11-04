@@ -1,0 +1,65 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 161,
+      "sha256": "38bfa1df88e8330aba85225174169bd316149a5daee4a52e0ac3b1165d307cec",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "693e357fe40deebc37f8c6348c7d64dea3510641836206217d60ee8407693cb5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 97,
+      "sha256": "b181d5888ab0ab6544e3408b21f8e288938ea80010ddacc7ed9aab3d356a66d8",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-cli-process.json",
+      "bytes": 321,
+      "sha256": "bb1a0256c43a68a332c83372bd517ded078654bb594332e22d1f347c9f91885f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-daemon-process.json",
+      "bytes": 334,
+      "sha256": "16b22652e805446018348f3214e4b53856894af5b30489e8d631f80ae17aa412",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "a0692e3efb6c891129586c95e764ab216c79a44df016b2556e24fa51bdc05436",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 3757,
+      "sha256": "31c4ae25176ae68766ce42029ea3ccb6e81b03ab90cfbd5859c5674114da5aef",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 235623,
+      "sha256": "b3c9a705d0ce59d237699dbe990b9916a76fdb416d576ce6203720858f58839e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 138631,
+      "sha256": "0bb669c0ec441a4d08f58f5970e62a8ae4d3841b38bd071477732c6b9dfcac0b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "dd7b2ca9aea31573cef77c97016cc33e83a6195e5272901e78aab2c6526a4840",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

@@ -1,0 +1,20 @@
+--- a/packaging/tests/verify-linux-native-daemon-ownership.py
++++ b/packaging/tests/verify-linux-native-daemon-ownership.py
+@@ -61,8 +61,15 @@
+                 source = root / "fixtures/source.txt"
+                 source.write_text("Preserved original\n")
+                 config = root / "config/ottrin/config.json"
+-                config.write_text(json.dumps({"search_setup_completed": True, "search": {
+-                    "include_roots": [str(root / "fixtures")], "content_indexing_enabled": False}}))
++                # AppConfig's required UI fields are part of the on-disk schema.
++                # A partial object used to be silently discarded by load_config.
++                config.write_text(json.dumps({
++                    "theme": "System", "default_view_mode": "List",
++                    "list_columns": ["Name", "Kind", "Size", "Modified"],
++                    "command_frame_always_visible": False, "show_hidden_files": False,
++                    "target": {"current": None}, "search_setup_completed": True,
++                    "search": {"include_roots": [str(root / "fixtures")],
++                               "content_indexing_enabled": False}}))
+                 original_config = config.read_bytes()
+                 for target in [native / "ottrin-indexd", foreign / "ottrin-indexd"]:
+                     shutil.copy2(binary, target)

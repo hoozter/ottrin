@@ -1,0 +1,672 @@
+{
+  "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+  "reason": "Native fixture expected incorrect startup-dialog title. Source inspection also showed the generic dialog omitted actionable error details; runtime correction now pending.",
+  "receipts": {
+    "BUILD_SOURCE.json": {
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "working_tree_at_build": "clean",
+      "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "scope": "Source-validated config/status candidate; stable source47a packages retained until actual native error/preservation/save-retry and hosted gates pass. No inherited fresh-runtime claim.",
+      "pending_consumers": [
+        "production package content/namespace checks",
+        "native Linux/Windows invalid settings and save/retry checks",
+        "exact-source hosted gates",
+        "MSIX15 native assembly; seven-format promotion and owned cleanup"
+      ],
+      "cleanup_owner": "config-status-current"
+    },
+    "BUILD_RESULT.json": {
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "status": "four-format build pass; staged for content and GUI acceptance",
+      "artifacts": {
+        "ottrin-0.1.0-1.x86_64.rpm": "e10dd7ddc1e5b39e0c5d95729595e0a45b1a3db2348f9510ed3921f8484566d4",
+        "Ottrin-0.1.0-x86_64.AppImage": "dae02dbbb98b1195c9186f09a410b4d99798803527c392175d852d37b3fffeb6",
+        "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "370da5853232899d4a5567c86cff52ff2b9d38f990bc4df6406bf5975fd2bff2",
+        "ottrin_0.1.0_amd64.deb": "72e4b00a76b3363da60497a540bc26a7f7353b4a1449b06444e98ea37deb7b65"
+      },
+      "child_exit": 0,
+      "temporary_tool_wrappers_removed": true,
+      "staging_retained_for_pending_acceptance": true
+    },
+    "PACKAGE_CONTENT_ACCEPTANCE.json": {
+      "status": "pass",
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "qa_fixture_sha256": "dd7f85ebdb8645d615c8056bbd68b20c4de68a79faa6f4b5ebc8ae6fd64450c6",
+      "verification_head": "2fced0b5cb378d81edfec2e88492d1c2e7e68d92",
+      "artifacts": {
+        "ottrin-0.1.0-1.x86_64.rpm": "e10dd7ddc1e5b39e0c5d95729595e0a45b1a3db2348f9510ed3921f8484566d4",
+        "Ottrin-0.1.0-x86_64.AppImage": "dae02dbbb98b1195c9186f09a410b4d99798803527c392175d852d37b3fffeb6",
+        "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "370da5853232899d4a5567c86cff52ff2b9d38f990bc4df6406bf5975fd2bff2",
+        "ottrin_0.1.0_amd64.deb": "72e4b00a76b3363da60497a540bc26a7f7353b4a1449b06444e98ea37deb7b65"
+      },
+      "verifier_sha256": "33b60ba8802056bee6c466454e1e69fc53bab4d69472dc4413e72990b5b731cc",
+      "checks": [
+        "production portable/AppImage runtime closure and playback checks",
+        "production native payload, dependencies, policy, hooks and code identity blocks",
+        "exact bundled-font notice in all four formats",
+        "seven matching portable/AppImage runtime payloads including the HTML helper",
+        "exact current documentation and clean source notes",
+        "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+      ],
+      "scope": "package contents and scoped native namespace checks; GUI, resource and actual distribution installation remain separate",
+      "extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+      "pending_consumer": "native GUI; remove remaining extraction afterwards"
+    },
+    "EXTRACTION_FAILURE.json": {
+      "status": "failed",
+      "error": "CalledProcessError(1, ['python3', 'packaging/tests/verify-linux-native-daemon-ownership.py', '--binary', '/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract/squashfs-root/usr/bin/ottrin-indexd', '--output', '/home/campbell/Projects/Ottrin/.hermes/evidence/config-status-current/PACKAGED_NAMESPACE_APPIMAGE.json'])",
+      "extraction_owned": true,
+      "owned_extraction_removed": true
+    },
+    "HOST_PAYLOAD.json": {
+      "status": "pass within host archive/content scope",
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "payload_files": 58,
+      "artifacts": {
+        "Ottrin-0.1.0-windows-x64-portable.zip": "07d916c27f33a0a3f253837eefb77a1814dd312c9f917ff6fdfddc58f7259818",
+        "Ottrin-0.1.0-windows-x64-setup.exe": "a31086fdb022bae299a4cfa7e654963c57b987a8e4b407f40e2f35bf97735857"
+      },
+      "portable_nsis_payloads_identical": true,
+      "uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+      "index_controller_matches_daemon": true,
+      "transaction_script_matches_source": true,
+      "owned_extraction_removed": true,
+      "scope_limit": "Host archive/content verification; native lifecycle/rendered scopes have separate receipts"
+    },
+    "PAYLOAD.json": {
+      "SOURCE_REVISION.txt": "d4ed80c13a7c4fbf421954b4721ead6940e9a442725758c785b06e40dcf48910",
+      "README.md": "5bba2893be069c7daea71ddb1c64a60a742ffb9fc7ccde240d0abbab5bf556be",
+      "RUNNING.md": "1a961da86973822997576f49f3e5fbb6ed0d563deb73baaae9028de5dafb2697",
+      "LICENSE": "2a92e02a6add5bb40115751ebd78bbcdce35ba40d629136b2cd1f8f3884e80bb",
+      "docs/DEVELOPMENT.md": "a58dcd28158578f65d4b7095b38a7c0e34e5f00fe2f786dd4a510a6166741ef9",
+      "docs/USER_GUIDE.md": "a37a84022c940b842865f936c35e1cb41eae15f48466c5f841589d9ea62da08e",
+      "docs/RELEASE_NOTES.md": "8622fd5b0b9d6c102f42fd65615a096f8577981fd8db168aa7076553edca0f28",
+      "docs/RELEASE_CHECKLIST.md": "c9fe917fd774f328a8fe4a351b4af6dc1e964381f71f6f07eab9d8f9823790cd",
+      "docs/ROADMAP.md": "d3de2e60ff75737e5f05cef209ccbe9cb160364af80e50987cbf00aa68246b19",
+      "bin/libEGL.dll": "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b",
+      "bin/ottrin-priv-helper.exe": "3c7cccd92df60cfb8e79fbdf5a2ad180851ea1bd22bba2aeb699593236652598",
+      "bin/ottrin-office-render.exe": "6da15e0f01584fdab6381468b7a31322245997593cdb92617f41608e65fb6116",
+      "bin/ottrin-indexd.exe": "82de5d11b84896e031715e7bbb847b52da8debab73c2f5a9fb274b881b205549",
+      "bin/opengl32.dll": "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e",
+      "bin/rg.exe": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680",
+      "bin/dxil.dll": "cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df",
+      "bin/libgallium_wgl.dll": "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b",
+      "bin/ottrin.exe": "dedff7c9c6966d28426e22339a44634d3e4da911c67efddb8417a011cae44751",
+      "bin/libGLESv2.dll": "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6",
+      "bin/ottrin-legacy-doc-render.exe": "f8b2a704b879141f485769a2070ac46751b9445d7c61c7b54cc0ad03e2a613ad",
+      "assets/icon.svg": "33746e843fde043387c7ae1f1d2a13c7cab94e9b6bf136cc4144d99f911c94ce",
+      "assets/icon.png": "5d4198a3a9b1acb860e57b3b761e340b2f0c3c2f28a7b9fa5b7cbd830381af04",
+      "assets/logo.svg": "f674b933a13c2a506e617774966b635d74f0ffbb01eb808105063b4b1189ff57",
+      "assets/icon.ico": "3db24c16886d05b2ac588e8c0639ddfa440f7778083544c16806a4c088a9dd42",
+      "third-party-notices/pal1000-LICENSE.txt": "9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc",
+      "third-party-notices/Microsoft-DXC-LICENSE-MS.txt": "734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963",
+      "third-party-notices/MANIFEST.txt": "1789c9fe8d6cdf1f8f351fec9ad49216b9d883c919753b47efc6640bb1994a97",
+      "third-party-notices/BUNDLED_FONTS.md": "1a571bfe17cd21d6acc3a7a0c66f03b85a1ad6da062bd06c7e4861a51df468cd",
+      "bin/pdfium/pdfium.dll": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4",
+      "bin/pdfium/LICENSE": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b",
+      "bin/pdfium/licenses/icu.txt": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a",
+      "bin/pdfium/licenses/libopenjpeg.txt": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+      "bin/pdfium/licenses/libtiff.txt": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+      "bin/pdfium/licenses/abseil.txt": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603",
+      "bin/pdfium/licenses/libpng.txt": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511",
+      "bin/pdfium/licenses/libjpeg_turbo.md": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95",
+      "bin/pdfium/licenses/zlib.txt": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+      "bin/pdfium/licenses/lcms.txt": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+      "bin/pdfium/licenses/fast_float.txt": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b",
+      "bin/pdfium/licenses/freetype.txt": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+      "bin/pdfium/licenses/libjpeg_turbo.ijg": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704",
+      "bin/pdfium/licenses/pdfium.txt": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
+      "bin/pdfium/licenses/llvm-libc.txt": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383",
+      "bin/pdfium/licenses/agg23.txt": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+      "bin/pdfium/licenses/simdutf.txt": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719",
+      "third-party-notices/ripgrep/PCRE2-10.45-LICENCE.md": "9cf7ac6976099a1d856826d3ef1b093bd6b84489dc6100628ac79e740cf9885a",
+      "third-party-notices/ripgrep/MANIFEST.txt": "d19f5761aabe865dcc34da2bccdaf3f75edf704e26d650b4b2ffdb2335b51bc6",
+      "third-party-notices/ripgrep/LICENSE-MIT": "970813655a1bf777d2ead189cef71ab73ab92ce04dc864027d61a45de03e6728",
+      "third-party-notices/ripgrep/UNLICENSE": "640514163b17f977adc997cb16f51871122cfb0555ebad1a3f01e167b7ba8857",
+      "third-party-notices/ripgrep/COPYING": "dfe7d0a6134a17d3de7409762e08dc02133303912875cab40a74ba07a390f85a",
+      "third-party-notices/mesa3d-26.1.3/docs/license.rst": "0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615",
+      "third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later": "8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4",
+      "third-party-notices/mesa3d-26.1.3/licenses/GPL-2.0-only": "6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5",
+      "third-party-notices/mesa3d-26.1.3/licenses/SGI-B-2.0": "686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7",
+      "third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0": "9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d",
+      "third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0": "7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12",
+      "third-party-notices/mesa3d-26.1.3/licenses/MIT": "323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f",
+      "third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note": "9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f"
+    },
+    "SOURCE_INPUT.json": {
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+      "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/config-status-current/source.zip",
+      "status": "prepared",
+      "sha256": "243eebe367f854126ed62643e49495fc760302c20dd61d4da23542b9575087a4",
+      "archive_bytes": 199858677,
+      "temporary_clone_removed": true
+    },
+    "SOURCE_SCOPE.json": {
+      "status": "pass exact runtime source scope; native/platform acceptance separate",
+      "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+      "candidate_source": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "qa_fixture_commit": "2fced0b5cb378d81edfec2e88492d1c2e7e68d92",
+      "changed_files": [
+        "crates/ottrin-app/src/bin/ottrin-indexd.rs",
+        "crates/ottrin-app/src/main.rs",
+        "crates/ottrin-search/src/lib.rs",
+        "crates/ottrin-ui/Cargo.toml",
+        "crates/ottrin-ui/src/appearance_editor.rs",
+        "crates/ottrin-ui/src/config.rs",
+        "crates/ottrin-ui/src/internal_picker.rs",
+        "crates/ottrin-ui/src/lib.rs",
+        "crates/ottrin-ui/src/picker.rs",
+        "crates/ottrin-ui/src/properties.rs"
+      ],
+      "shipping_behavior": "Malformed/unreadable main settings propagate explicit errors through GUI/CLI/daemon callers instead of silently becoming defaults. Main saves atomically publish in a same-directory temporary file, preserve linked targets and ordinary file modes, refuse read-only targets and report failures. Theme commits update the saved model and close only after successful persistence; failed drafts remain editable. Search health reads its actual daemon/local backend, preserves login-service diagnostics and treats unconfigured automatic startup as optional. Existing tempfile dependency is moved from test-only to production use; no version upgrade.",
+      "unchanged_responsibilities": [
+        "Storage/index background observation and change-only repaint logic from47a (no fresh GUI idle-CPU claim inferred)",
+        "Theme palette/component mapping, layout/native geometry, preview/editing file publication, picker protocols/folder integration",
+        "Privileged helper, service registration/installer transactions and payload assets"
+      ],
+      "limits": "Daemon loaded images differ; fresh scoped runtime probes are required. Current Linux packaged main/Properties/Inspector/index error and real theme save/retry pass; Windows native remains pending. Earlier numerical/window geometry/idle/resource/caller acceptance retains exact original source/artifact scope."
+    },
+    "FULL_LINUX_PAYLOAD_COMPARISON.json": {
+      "status": "pass full AppImage file/symlink/mode change inventory",
+      "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+      "candidate_source": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "previous_artifact_sha256": "6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5",
+      "candidate_artifact_sha256": "dae02dbbb98b1195c9186f09a410b4d99798803527c392175d852d37b3fffeb6",
+      "entries": 113,
+      "changed": {
+        "usr/bin/ottrin-indexd": {
+          "previous": {
+            "sha256": "90c6e4544dfd328fc543bc44b51a2a3d8bf82fd34840b42f20daeee72fb72e32",
+            "mode": 493
+          },
+          "candidate": {
+            "sha256": "2a0713997c2eae3879a44f236b0e2342550e27d5f7c8ab51434967d49a66dfe4",
+            "mode": 493
+          }
+        },
+        "usr/bin/ottrin": {
+          "previous": {
+            "sha256": "8cfa859af91cbe0b1f0242fb3b15dd0decf088de0121079132f3f924d8ccafad",
+            "mode": 493
+          },
+          "candidate": {
+            "sha256": "f7fc8a7d9446bcb09f030346c5ec4de870e5e52f82ee33276ab3d830d5f0f87d",
+            "mode": 493
+          }
+        },
+        "usr/share/doc/ottrin/SOURCE_REVISION.txt": {
+          "previous": {
+            "sha256": "037ff16d50676c64b304159748e06dd6abd6b99e2de4f4feed5c9af2f842602f",
+            "mode": 436
+          },
+          "candidate": {
+            "sha256": "d4ed80c13a7c4fbf421954b4721ead6940e9a442725758c785b06e40dcf48910",
+            "mode": 436
+          }
+        },
+        "usr/share/doc/ottrin/README.md": {
+          "previous": {
+            "sha256": "43c19075679030cb609345dbb119ee446a6ad833f61c4941da9667fd2b076e00",
+            "mode": 420
+          },
+          "candidate": {
+            "sha256": "5bba2893be069c7daea71ddb1c64a60a742ffb9fc7ccde240d0abbab5bf556be",
+            "mode": 420
+          }
+        },
+        "usr/share/doc/ottrin/USER_GUIDE.md": {
+          "previous": {
+            "sha256": "b309d7482ab8e49db2c377c27bb89d01afcf9845a94039917a1f4d9570c892f6",
+            "mode": 420
+          },
+          "candidate": {
+            "sha256": "a37a84022c940b842865f936c35e1cb41eae15f48466c5f841589d9ea62da08e",
+            "mode": 420
+          }
+        },
+        "usr/share/doc/ottrin/RELEASE_NOTES.md": {
+          "previous": {
+            "sha256": "81fee6a2c000a5679e03034e38398db1bd21805722570d57fe97979a301f58a1",
+            "mode": 420
+          },
+          "candidate": {
+            "sha256": "8622fd5b0b9d6c102f42fd65615a096f8577981fd8db168aa7076553edca0f28",
+            "mode": 420
+          }
+        },
+        "usr/share/doc/ottrin/ROADMAP.md": {
+          "previous": {
+            "sha256": "99310268f43158da5b76e972136e6ae39bf4b891e1d337444183a9d191881c94",
+            "mode": 420
+          },
+          "candidate": {
+            "sha256": "d3de2e60ff75737e5f05cef209ccbe9cb160364af80e50987cbf00aa68246b19",
+            "mode": 420
+          }
+        }
+      },
+      "unchanged_entries": 106,
+      "scope": "Every runtime library, other helper, font, asset, launcher and policy unchanged. Daemon complete loaded-image identity/differences are recorded in LINUX_INDEX_ELF_COMPARISON.json; reuse requires mapped_image_equal. GUI separately checked in native captures; earlier functional receipts remain historical.",
+      "temporary_extractions_removed": true
+    },
+    "FULL_WINDOWS_PAYLOAD_COMPARISON.json": {
+      "status": "pass complete58-file change inventory",
+      "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+      "candidate_source": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "entries": 58,
+      "changed": {
+        "SOURCE_REVISION.txt": {
+          "previous_sha256": "037ff16d50676c64b304159748e06dd6abd6b99e2de4f4feed5c9af2f842602f",
+          "candidate_sha256": "d4ed80c13a7c4fbf421954b4721ead6940e9a442725758c785b06e40dcf48910"
+        },
+        "README.md": {
+          "previous_sha256": "43c19075679030cb609345dbb119ee446a6ad833f61c4941da9667fd2b076e00",
+          "candidate_sha256": "5bba2893be069c7daea71ddb1c64a60a742ffb9fc7ccde240d0abbab5bf556be"
+        },
+        "docs/USER_GUIDE.md": {
+          "previous_sha256": "b309d7482ab8e49db2c377c27bb89d01afcf9845a94039917a1f4d9570c892f6",
+          "candidate_sha256": "a37a84022c940b842865f936c35e1cb41eae15f48466c5f841589d9ea62da08e"
+        },
+        "docs/RELEASE_NOTES.md": {
+          "previous_sha256": "81fee6a2c000a5679e03034e38398db1bd21805722570d57fe97979a301f58a1",
+          "candidate_sha256": "8622fd5b0b9d6c102f42fd65615a096f8577981fd8db168aa7076553edca0f28"
+        },
+        "docs/ROADMAP.md": {
+          "previous_sha256": "99310268f43158da5b76e972136e6ae39bf4b891e1d337444183a9d191881c94",
+          "candidate_sha256": "d3de2e60ff75737e5f05cef209ccbe9cb160364af80e50987cbf00aa68246b19"
+        },
+        "bin/ottrin-indexd.exe": {
+          "previous_sha256": "51a3003d4a7baaea94da52136810b1d7c8048e4976c124169b50c6b1144988c9",
+          "candidate_sha256": "82de5d11b84896e031715e7bbb847b52da8debab73c2f5a9fb274b881b205549"
+        },
+        "bin/ottrin.exe": {
+          "previous_sha256": "f95c2d1d2a6dedab862e7b5d5ddc8ba1f26a6a0e9781b27e062dc26dadf32469",
+          "candidate_sha256": "dedff7c9c6966d28426e22339a44634d3e4da911c67efddb8417a011cae44751"
+        }
+      },
+      "unchanged_entries": 51,
+      "daemon_comparison": "WINDOWS_INDEX_PE_COMPARISON.json",
+      "scope": "GUI independently requires native acceptance; documentation/provenance changes expected. Daemon complete mapped-image identity/differences are recorded separately; reuse requires mapped_image_equal. All other helpers, libraries, fonts, icons and transaction payloads byte-identical."
+    },
+    "LINUX_INDEX_ELF_COMPARISON.json": {
+      "status": "different mapped image: fresh runtime verification required",
+      "mapped_image_equal": false,
+      "whole_file_equal": false,
+      "same_load_layout": false,
+      "versions": [
+        {
+          "sha256": "90c6e4544dfd328fc543bc44b51a2a3d8bf82fd34840b42f20daeee72fb72e32",
+          "bytes": 5842168
+        },
+        {
+          "sha256": "2a0713997c2eae3879a44f236b0e2342550e27d5f7c8ab51434967d49a66dfe4",
+          "bytes": 5843080
+        }
+      ],
+      "different_loaded_byte_count": null,
+      "different_loaded_offsets_first64": [
+        24,
+        25,
+        40,
+        41,
+        208,
+        209,
+        216,
+        217,
+        240,
+        241,
+        248,
+        249,
+        256,
+        257,
+        264,
+        265,
+        272,
+        273,
+        296,
+        297,
+        304,
+        305,
+        312,
+        313,
+        328,
+        329,
+        352,
+        353,
+        360,
+        361,
+        368,
+        369,
+        408,
+        409,
+        416,
+        417,
+        424,
+        425,
+        464,
+        465,
+        472,
+        473,
+        480,
+        481,
+        520,
+        521,
+        528,
+        529,
+        536,
+        537,
+        552,
+        553,
+        577,
+        585,
+        593,
+        600,
+        608,
+        812,
+        813,
+        814,
+        815,
+        816,
+        817,
+        818
+      ],
+      "different_loaded_bytes_outside_metadata": null,
+      "build_id_descriptor": {
+        "offset": 812,
+        "bytes": 20
+      },
+      "scope": "Complete load-segment comparison, including code/data/dynamic dependencies. Header/layout or mapped-byte differences mean no prior runtime/CPU acceptance is carried forward. Difference byte counts apply only when the complete load layout matches."
+    },
+    "WINDOWS_INDEX_PE_COMPARISON.json": {
+      "status": "different mapped image: fresh runtime verification required",
+      "mapped_image_equal": false,
+      "versions": [
+        {
+          "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+          "sha256": "51a3003d4a7baaea94da52136810b1d7c8048e4976c124169b50c6b1144988c9",
+          "bytes": 5954065,
+          "coff_symbol_offset": 4964864,
+          "coff_symbol_count": 22082,
+          "coff_string_bytes": 591725
+        },
+        {
+          "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/windows-payload/Ottrin-0.1.0-windows-x64/bin/ottrin-indexd.exe",
+          "sha256": "82de5d11b84896e031715e7bbb847b52da8debab73c2f5a9fb274b881b205549",
+          "bytes": 5954577,
+          "coff_symbol_offset": 4965376,
+          "coff_symbol_count": 22082,
+          "coff_string_bytes": 591725
+        }
+      ],
+      "all_sections": [
+        {
+          ".text": {
+            "offset": 1024,
+            "bytes": 4038656,
+            "sha256": "e78f3e0640bf3ba6e2b0ab2dc29e9b4c1dcd60c76b0c72b59292fbcaed5e9ed9"
+          },
+          ".data": {
+            "offset": 4039680,
+            "bytes": 20992,
+            "sha256": "de80dde513ceffd53065851d1e4092628eb4949bcf6678696bf049fb3d6cd2ab"
+          },
+          ".rdata": {
+            "offset": 4060672,
+            "bytes": 701440,
+            "sha256": "e5949601f01273408e3f91ddddad7cca4e30d3255e1359d0581876eb2684d478"
+          },
+          ".pdata": {
+            "offset": 4762112,
+            "bytes": 58368,
+            "sha256": "3dbdc026bf03008d3782e6f041d3f3f1a4016ba7f1b299bad1d0b9dd0ab326b4"
+          },
+          ".xdata": {
+            "offset": 4820480,
+            "bytes": 90112,
+            "sha256": "ad3072035d61009e9a9b620434e2e3bafbacdb425dfec46690901f6d995b1dd1"
+          },
+          ".bss": {
+            "offset": 0,
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          ".idata": {
+            "offset": 4910592,
+            "bytes": 8704,
+            "sha256": "bf78b39cecab20e1c55fc3f04fa1bfa8e1310de9a4bc84c5181f3f68589c5e73"
+          },
+          ".CRT": {
+            "offset": 4919296,
+            "bytes": 512,
+            "sha256": "141ae0a9919f66c3dd7119bb6a36408bcdf2dd20c007a19ba1e535fbdc0c0c8c"
+          },
+          ".tls": {
+            "offset": 4919808,
+            "bytes": 512,
+            "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+          },
+          ".rsrc": {
+            "offset": 4920320,
+            "bytes": 22016,
+            "sha256": "657bb4f8458ea959350c773425ea3e2c381ace6b40c433030badfb74d17f1067"
+          },
+          ".reloc": {
+            "offset": 4942336,
+            "bytes": 22528,
+            "sha256": "53cd12a7915ef726b436ae9592dfb2c303209d7a80acbf84e470b824af750472"
+          }
+        },
+        {
+          ".text": {
+            "offset": 1024,
+            "bytes": 4039168,
+            "sha256": "7350ff5f685a939ffcc3e949827d9717f17a951ef6ee1fc67ba4869fa129a4a1"
+          },
+          ".data": {
+            "offset": 4040192,
+            "bytes": 20992,
+            "sha256": "ce7309cdc3f54f92c982fcac02fb7b4f15e800fe27fb82b2f082464935388465"
+          },
+          ".rdata": {
+            "offset": 4061184,
+            "bytes": 701440,
+            "sha256": "d5af03a20cf7453d9dd755915c2355495ed593623a6bc14b73f2e7a8e54d77a3"
+          },
+          ".pdata": {
+            "offset": 4762624,
+            "bytes": 58368,
+            "sha256": "27d1cce8605c58909547e77bceb9072e0bbcd06804faf76c0c8782868bded1fa"
+          },
+          ".xdata": {
+            "offset": 4820992,
+            "bytes": 90112,
+            "sha256": "2b8b12cc78b9b67f0063c1fd3173e75f5743658551293ae6d2b7dd05e25fd970"
+          },
+          ".bss": {
+            "offset": 0,
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          ".idata": {
+            "offset": 4911104,
+            "bytes": 8704,
+            "sha256": "6e058d744a99e6f1febe4801ccde89c31bb247a0a493b376cd284cdfe5aae359"
+          },
+          ".CRT": {
+            "offset": 4919808,
+            "bytes": 512,
+            "sha256": "fb5ac122d5701241f40b717f90f3c8e4b228dca13374046a14653be7c4ee15e4"
+          },
+          ".tls": {
+            "offset": 4920320,
+            "bytes": 512,
+            "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+          },
+          ".rsrc": {
+            "offset": 4920832,
+            "bytes": 22016,
+            "sha256": "85ffa48520cf5e683faaf64e12a7b7af71a42669c11d7021f54e101352f413f2"
+          },
+          ".reloc": {
+            "offset": 4942848,
+            "bytes": 22528,
+            "sha256": "a3d23f049269fd1bb348c4978758c05ec3c65f81af82a664bcf33b8151b578df"
+          }
+        }
+      ],
+      "normalized_mapped_file_sha256": [
+        "045d4e573b87b7b906f25b8d8f5645cce48ce9c52685191b0954c4c247e8fae0",
+        "3bd57bc2e8b3ab32d603d4289d6df27a172f93b1d313caba4b7c97eaa9edf648"
+      ],
+      "scope": "Complete section comparison, including code/data/resources/imports/unwind/relocation. No prior daemon runtime or CPU acceptance is carried forward from binary identity when mapped_image_equal is false."
+    },
+    "LINUX_DAEMON_RUNTIME.json": {
+      "status": "pass scoped packaged daemon runtime and idle sample",
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "archive_sha256": "370da5853232899d4a5567c86cff52ff2b9d38f990bc4df6406bf5975fd2bff2",
+      "scope": "Exact portable daemon, private1000-file root, content indexing disabled; real filesystem watcher create/rename/delete, queries, persistence/restart, idle CPU and protocol shutdown. No personal service, distro installation, large corpus or GUI performance claim.",
+      "binary_sha256": "2a0713997c2eae3879a44f236b0e2342550e27d5f7c8ab51434967d49a66dfe4",
+      "initial_ready": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 28672,
+        "wal_bytes": 0,
+        "freelist_pages": 0,
+        "freelist_bytes": 0,
+        "snapshot_revision": 1,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": "/tmp/ot-daemon-glwgxm3i/home/Documents/original-0000.txt",
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793758798,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 1,
+        "last_scan_started_unix_secs": 1793758798,
+        "last_scan_completed_unix_secs": 1793758798,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793758798,
+        "last_error": null
+      },
+      "watcher_mutations": [
+        "create",
+        "rename",
+        "delete"
+      ],
+      "idle": {
+        "seconds": 30.000079024990555,
+        "cpu_one_core_percent": 0.03333324552801956,
+        "criterion_below_one_percent": true,
+        "no_clients_during_sample": true
+      },
+      "before_shutdown": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 1048576,
+        "wal_bytes": 45352,
+        "freelist_pages": 0,
+        "freelist_bytes": 0,
+        "snapshot_revision": 4,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": "/tmp/ot-daemon-glwgxm3i/home/Documents/original-0000.txt",
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793758798,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 1,
+        "last_scan_started_unix_secs": 1793758798,
+        "last_scan_completed_unix_secs": 1793758800,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793758800,
+        "last_error": null
+      },
+      "restart_ready": {
+        "status": "Ready",
+        "loading_saved_snapshot": false,
+        "database_bytes": 1048576,
+        "wal_bytes": 4152,
+        "freelist_pages": 0,
+        "freelist_bytes": 0,
+        "snapshot_revision": 2,
+        "detail": "Ready \u00b7 1000 indexed",
+        "indexed_items": 1000,
+        "last_completed_indexed_items": 1000,
+        "estimated_total_items": null,
+        "last_indexed_path": "/tmp/ot-daemon-glwgxm3i/home/Documents/original-0000.txt",
+        "configured_root_count": 1,
+        "watched_root_count": 1,
+        "watcher_ready": true,
+        "watcher_last_setup_unix_secs": 1793758833,
+        "watcher_last_error": null,
+        "active_root": null,
+        "active_root_index": 0,
+        "total_roots": 1,
+        "last_scan_started_unix_secs": 1793758833,
+        "last_scan_completed_unix_secs": 1793758833,
+        "last_scan_duration_ms": null,
+        "last_progress_unix_secs": 1793758833,
+        "last_error": null
+      },
+      "source_and_preferences_preserved": true,
+      "protocol_shutdowns": 2,
+      "owned_daemon_exited": true,
+      "private_profile_removed": true
+    },
+    "windows/BUILD_SOURCE.json": {
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "working_tree_at_build": "clean",
+      "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "scope": "Source-validated config/status candidate; stable source47a packages retained until actual native error/preservation/save-retry and hosted gates pass. No inherited fresh-runtime claim.",
+      "pending_consumers": [
+        "production package content/namespace checks",
+        "native Linux/Windows invalid settings and save/retry checks",
+        "exact-source hosted gates",
+        "MSIX15 native assembly; seven-format promotion and owned cleanup"
+      ],
+      "cleanup_owner": "config-status-current"
+    },
+    "windows/BUILD_RESULT.json": {
+      "source_revision": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+      "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "status": "portable and NSIS build pass; staged for native GUI/lifecycle/MSIX acceptance; held MSI unchanged",
+      "artifacts": {
+        "Ottrin-0.1.0-windows-x64-portable.zip": "07d916c27f33a0a3f253837eefb77a1814dd312c9f917ff6fdfddc58f7259818",
+        "Ottrin-0.1.0-windows-x64-setup.exe": "a31086fdb022bae299a4cfa7e654963c57b987a8e4b407f40e2f35bf97735857"
+      },
+      "child_exit": 0,
+      "staging_retained_for_pending_acceptance": true
+    }
+  },
+  "removed_superseded_inputs": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "bytes": 114643024,
+      "purpose": "Superseded candidate only; compact SHA/source/native results retained. Stable47a deliverables untouched."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "bytes": 236736499,
+      "purpose": "Superseded candidate only; compact SHA/source/native results retained. Stable47a deliverables untouched."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/config-status-current/source.zip",
+      "bytes": 199858677,
+      "sha256": "243eebe367f854126ed62643e49495fc760302c20dd61d4da23542b9575087a4"
+    }
+  ],
+  "stable_linux": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "stable_windows": "47a772af0a15c353922aa9a78d14afdaa13ced1a"
+}

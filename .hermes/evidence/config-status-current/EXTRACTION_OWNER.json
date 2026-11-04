@@ -1,0 +1,8 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "source": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+  "pending_consumers": [],
+  "cleanup": "Production content/namespace verification and hash-bound native settings workflow complete; exact GUI ELF checked against target/release/ottrin-app; extraction removed",
+  "removed": true,
+  "removed_logical_bytes": 76551905
+}

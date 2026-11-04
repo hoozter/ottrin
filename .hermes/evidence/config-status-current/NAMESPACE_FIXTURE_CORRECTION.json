@@ -1,0 +1,12 @@
+{
+  "status": "fixed canonical QA producer; direct and actual AppImage/RPM namespace gates pass",
+  "failure": "Strict current load_config rejects the test producer partial AppConfig: missing required theme field. All three owned children were reaped and extraction removed.",
+  "production_behavior": "Retain explicit malformed-settings refusal; do not restore silent defaults.",
+  "runtime_source": "a3db57fea33f81a4441fa3751c7b690c3279b68b",
+  "patch": "namespace-fixture.patch",
+  "required_next": "Commit QA-only producer correction, verify no runtime/package-authoring differences from recorded clean source, rerun unchanged exact-package namespace gates.",
+  "qa_commit": "2fced0b5cb378d81edfec2e88492d1c2e7e68d92",
+  "fixture_sha256": "dd7f85ebdb8645d615c8056bbd68b20c4de68a79faa6f4b5ebc8ae6fd64450c6",
+  "runtime_source_unchanged": true,
+  "scope": "Only canonical QA fixture configuration changed after clean runtime build. Verification explicitly compares every other tracked runtime/packaging/doc input with a3db57fe; built package provenance remains a3db57fe. The QA-only commit skips redundant CI, preserving the already-running exact-runtime jobs; the corrected namespace test itself ran on exact-package bytes and both extracted packaged daemons."
+}

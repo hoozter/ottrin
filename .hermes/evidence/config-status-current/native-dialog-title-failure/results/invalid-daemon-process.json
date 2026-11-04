@@ -1,0 +1,6 @@
+{
+    "stdout":  "",
+    "stderr":  "ottrin index daemon: Could not load Ottrin settings C:\\Users\\OTMSIe51481588a9b\\AppData\\Roaming\\ottrin\\config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n",
+    "seconds":  0.0324784,
+    "exit":  1
+}
