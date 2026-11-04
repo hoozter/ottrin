@@ -1,0 +1,10 @@
+{
+  "status": "consumed assembly bootstrap retired after actual package/daemon result and owned VM teardown",
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/assembly/controller.ps1",
+      "bytes": 6844,
+      "sha256": "0a84d4ce5b0a5f53749440631977e2b702afb408963e0b0a01df5443eb90541f"
+    }
+  ]
+}

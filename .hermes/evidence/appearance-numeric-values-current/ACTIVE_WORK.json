@@ -1,5 +1,5 @@
 {
-  "observed_at": "2026-11-04T00:15:10.292162+00:00",
+  "observed_at": "2026-11-04T00:38:49.972864+00:00",
   "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
   "source_pushed": true,
   "source_checks": "SOURCE_CHECKS.json:476 UI tests/27 appearance, one existing ignored; strict native/Windows lint and formatting pass",
@@ -10,36 +10,43 @@
   "ci_run": 41740616987,
   "stable_deliverables": "Unchanged0aac cohort; unpublished84ea candidates retired after metadata defect",
   "next_actions": [
-    "Finish exact native63935; export original capture archive and review all22 required captures; never accept a partial/failing result",
-    "Native MSIX13 assembly with fresh scoped portable daemon runtime/idle sample in disposable noninteractive account; ordinary-user lifecycle remains separate",
-    "Current hosted CI41740616987:3success, Windows verify/Cargo test still in progress at last live check",
-    "Promote7only after exact-source/content/native/daemon gates. Update docs and clean owned fixtures/stages/cache outputs, commit/push checkpoint",
-    "Continue unresolved GUI CPU and Services/full54+15audit; keep owner/external waits separate"
+    "Commit/push exact current delivery/cleanup/native acceptance checkpoint; current source/runtime748ae91a is published in7localformats",
+    "Implement and verify the actual GUI idle CPU repair using GUI_IDLE_INVESTIGATION.json and the current same-driver/DPI baseline; preserve actual filesystem/volume updates while the GUI otherwise sleeps",
+    "Continue full54+15requirement audit, Services helper/prompt/state/action acceptance and remaining dependency-ready Linux/Windows outcomes. Keep only genuine owner/credential/hardware/Store/final acceptance in waiting list."
   ],
   "retained_owned_storage": [
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-      "purpose": "Live four-format Linux package build; pending content/native/promotion consumer"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "Live Windows ZIP/NSIS build; pending content/native/MSIX13/promotion consumers"
-    },
-    {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current",
-      "purpose": "Current compact source/correction/build evidence and registered producers"
+      "purpose": "Compact acceptance receipts, frozen producers, original functional captures and raw diagnostic logs; current evidence retained"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-display-driver",
-      "purpose": "Small reusable signed driver input for pending isolated Windows native DPI acceptance"
+      "purpose": "Small reusable signed display-driver input for current and future isolated native DPI acceptance; useful cache retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Four current usable Linux deliverables and acceptance manifest"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current ZIP/NSIS/MSIX13 and58-file payload for delivery/identity consumers"
     }
   ],
-  "cleanup_completed": "Old84ea:5VMs/10volumes/6profiles, source/archive/private transports/extractions and408MB unpublished packages/payload removed. New source validation:exact805MB old test plus dep-info/fingerprint and16obsolete incremental sessions removed; newest per-configuration caches/current test retained.",
-  "native_exec_session": 38149,
+  "cleanup_completed": "DELIVERY_VERIFICATION.json/CLEANUP_FINAL.json:7artifacts+sidecars+58payloads verified;4VMs/8volumes/5desktop profiles, source archive, consumed transport/extractions, staging and superseded packages removed. Fresh daemon private state removed on both platforms;6unused bytecode files removed.16earlier obsolete incremental sessions/test executable cleaned; final exact-root inspection0obsolete candidates; latest useful shared compiler configurations retained.",
+  "native_exec_session": null,
   "linux_content_and_native": "pass: all4formats;6AT-SPI actions/4directly reviewed captures; consumed76.5MB extraction retired",
   "fresh_linux_daemon": "LINUX_DAEMON_RUNTIME.json:1000files, watcher create/rename/delete, restart,2protocol stops,30sec0.0667percent onecore; private profile removed",
   "daemon_identity": "Both mapped images differ after pinned dependency source change. Full payload inventories pass; no old binary-equivalence or performance acceptance carried forward.",
   "windows_native_previous": "Two terminal attempts:11/10 native region observations; each4 typed commits; owner focus failures after asynchronous close. Exact results/captures retained under native-focus-failure and native-cancel-focus-failure. Both VMs/4volumes/2profiles and consumed private transports removed.",
-  "gui_cpu": "Current Native144DPI software:67.032percent and66.543percent onecore/30seconds, same package/driver, index ready before/after both. Criterion failed; no performance fix or matched cross-source comparison claimed.",
-  "native_next": "Registered38149: same current package; AwaitClosed checks actual editor Cancel and Settings/Inspector Close viewport disappearance before owner focus. Exact liveUUID is authority."
+  "gui_cpu": "Current source748a signed VirtIO Dark144DPI software GUI baseline:Native73.0623percent andOpenGL7.7582percent onecore/30seconds; index ready before/after. Both strict criteria failed. Earlier Native attempts67.032/66.543retain their exact scopes. No performance fix or cross-source comparison claimed.",
+  "native_next": "Complete:34cases/8numeric commits/22directly reviewed original captures; normal close/uninstall, source/preferences preserved, all native-owned resources and consumed inputs removed.",
+  "verified_checkpoint": "1189a54b8ed9cbf45727f9ce6828c8cbf3cfe5e3 committed and pushed; production/package source remains748ae91a",
+  "continuation_check": "Previous informational package-update turn did not advance the roadmap. This continuation revalidated the actual terminal/live jobs, completed fresh Linux runtime/native acceptance and owned cleanup, and committed/pushed verified evidence.",
+  "assembly_exec_session": null,
+  "windows_native_current": "WINDOWS_NATIVE_ACCEPTANCE.json:34complete native144DPI observations/8focus-acknowledged numeric commits/22directly reviewed original captures; source/preferences preserved, normal close and supported uninstall,0owned processes. VM/2volumes/private console and9.38MB consumed transport/bootstrap removed.",
+  "ci_run_status": "41740616987:completed success, all4exact-source jobs",
+  "linux_delivery": "Four stable Linux artifacts promoted to748ae91a; all hashes/sidecars verified, superseded stable output replaced and stage removed. Windows stable0aac remains until current assembly/daemon gate.",
+  "current_delivery": "All7stable artifacts now source748ae91a, all hashes/sidecars and58Windows payloads independently verified. Windows MSIX13 native assembly and private SYSTEM daemon runtime/idle gate passed; no fresh MSIX runtime/update/login or ordinary-user service scope inferred.",
+  "windows_daemon": "WINDOWS_DAEMON_RUNTIME.json:private1000-file watcher create/rename/delete, queries, restart and2protocol stops;30second0.2083percent onecore; SYSTEM assembly account only. Ordinary-user GUI daemon readiness separately observed.",
+  "pending_disposable_consumers": []
 }

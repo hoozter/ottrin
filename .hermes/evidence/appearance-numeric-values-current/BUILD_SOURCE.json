@@ -1,0 +1,9 @@
+{
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Pinned egui final committed numeric value/step-action metadata correction; stable0aac deliverables preserved until exact content/native/hosted acceptance",
+  "cleanup_owner": "appearance-numeric-values-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "delivery_status": "Verified named-control Linux cohort published; staging removed"
+}

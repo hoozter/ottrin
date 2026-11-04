@@ -1,0 +1,227 @@
+{
+  "members": [
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "5d34f8bfad5cac078bb1f907cfabca2f3b56d6e55bf039fcbb022797dbee9361",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "idle-index-Native-1-process.json",
+      "bytes": 803,
+      "sha256": "19726fdca0c1d361ad7c04fe97d29fc7199224023dc9fce5034256bb22302400",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-Native-2-process.json",
+      "bytes": 849,
+      "sha256": "57a26cfc0e2564e7f94bbbf1c161f30389bfd4600a9a1085a86d7a966c1dfeab",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-Native-3-process.json",
+      "bytes": 790,
+      "sha256": "04b12e597adf9d223d61b4313f44553c3234af063239f66bf5747c864ff39572",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-Native-after-process.json",
+      "bytes": 781,
+      "sha256": "35ea2470f555d9e0b217f18cb02ef3ff165cdaf8f9988442d148d4be05ed9192",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-OpenGL-1-process.json",
+      "bytes": 791,
+      "sha256": "b32ba1a42d10da0e0e5aeed28a4d11cb0fca868e58af1db2181cf466d8123838",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-OpenGL-after-process.json",
+      "bytes": 781,
+      "sha256": "63272207834692117f9f38b3918ac443d10ebd0f0ebc24e543648ed484d0bc2f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "1cf4814a15b3b962bfae37a0a975619e77b6e5338ea4978dc7d24a966012e5c4",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 90,
+      "sha256": "4c323db3fa545b879ada08e7826cb153220d1b5c954ce655745b7534cd1c977b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-after-restore-0.png",
+      "bytes": 174247,
+      "sha256": "a3a8a007703e10457c9844befffe8706c19d768dddf1845c4cc4b258ae3fcf92",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-before-cancel-24.png",
+      "bytes": 185249,
+      "sha256": "7f7a29f50eb12b9f27ec7aadfc187c4dd0840bd0603a0cf4681c82c68a9b3693",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-live-0.png",
+      "bytes": 173574,
+      "sha256": "a7e57e97de2a619ac5043659d496f03b3651655f8643b1afc596b0c2ca1636f3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-live-24.png",
+      "bytes": 181580,
+      "sha256": "b44d09717de3d1abfa705f6dc2802b4edae1b651c104f4217bfb32bf759d804d",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-inspector-scaled-24.png",
+      "bytes": 32074,
+      "sha256": "f2945e989095d84fa0bc3aaf89f5097ee29e818bb291c704204f123fefbb137e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-after-cancel-0.png",
+      "bytes": 50806,
+      "sha256": "2e30be9f0e590f774e498c07df8273b133afa9a49228beaf9cb77707c388464e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-main-saved-startup-24.png",
+      "bytes": 57114,
+      "sha256": "e0997669e54be01c03a2d06f6a56b92733d83570d55a841c8fefd0b7a9960fa5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-picker-scaled-24.png",
+      "bytes": 63145,
+      "sha256": "52748d9281d097ad6637e8166bcb9ce28e9d949a45fefc98925929ef6ec823b9",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-properties-scaled-24.png",
+      "bytes": 66662,
+      "sha256": "727232ac2d3be4af02496c9d3b153d5c7e324759545dde51b88ffae699339bea",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-settings-after-cancel-0.png",
+      "bytes": 87453,
+      "sha256": "3dc5b88838f6798cc82800b9bb4327463a28f0e4a2fd2b7ee46be683c9a2775a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-settings-saved-startup-24.png",
+      "bytes": 97472,
+      "sha256": "32b6ff1805068af76f88c86c17de713419a39f55911542af18a4b43fed3ee046",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-editor-after-restore-0.png",
+      "bytes": 183664,
+      "sha256": "3a4fd516f5b0fadadf3651543b4d4396b6e38045ab2308cf842622ada11c329c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-editor-before-cancel-24.png",
+      "bytes": 193839,
+      "sha256": "19369331596d4f02cf61f5ef8ef8b0a5e1d95e171490ab567f212acc4ec11a02",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-editor-live-0.png",
+      "bytes": 183004,
+      "sha256": "bcc9086fb841f2b5cac7db7447cf24a23d703cec08ae8130f18614dc8d5c33e3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-editor-live-24.png",
+      "bytes": 193839,
+      "sha256": "19369331596d4f02cf61f5ef8ef8b0a5e1d95e171490ab567f212acc4ec11a02",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-inspector-scaled-24.png",
+      "bytes": 37733,
+      "sha256": "f69e93c49d2684c6fd472d4a8e3ddd1540b0fce93b0deb735434bea7714a657c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-main-after-cancel-0.png",
+      "bytes": 50324,
+      "sha256": "035e0f8bcbd5f8d04ff2e7e2f4793e7de12615fb95cbc98b3d29535c06df9b8e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-main-saved-startup-24.png",
+      "bytes": 56658,
+      "sha256": "1088bf80b2cb309f7a391b037152db0f8101afb794602869b522c5f045bbcd9f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-picker-scaled-24.png",
+      "bytes": 65707,
+      "sha256": "a3ad1138179fce0ecccc70efce4157687b2f5752a086fe7bd7af9991c964d12b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-properties-scaled-24.png",
+      "bytes": 67076,
+      "sha256": "d7fd42835e04c4834a343cd557c6e5927d8d4dff35c7f9b69e6367dedfaa74bf",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-settings-after-cancel-0.png",
+      "bytes": 88007,
+      "sha256": "af1c62f78270868df590d86a1242585fc5dcdc2274ef52f2827ba7ce824ad017",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-settings-saved-startup-24.png",
+      "bytes": 101996,
+      "sha256": "a0502e3314cf001354e6fe1ef2fcce21e2e9eccbd084f75f2e1e42ebd4c16e68",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "98408ee8b067fcfd0afc7813eeaa79f1715b6f440374fc651a8dc457ade8f4d3",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 52376,
+      "sha256": "7ab0467a442e32b25447b1dde576076d17f74e677ca31d23118dba23436b7d55",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "uninstall-process.json",
+      "bytes": 97,
+      "sha256": "315c9e19de3a26b683e75a4a4a5b9bfaa6802f905ddb462b2a142b7859ff606d",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 123852,
+      "sha256": "a7dc66834f6e8f6e9452c6cdab410b607e8e51bd442360454a59efd992d3b4aa",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 148240,
+      "sha256": "c7afac7d52f5e8d027823f9d3611f18133c039d8c79ac398573fe06764eab4b9",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "981f89469b0e99b59427906a783bd67881b018231eb8cb40301b7a180e614c19",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

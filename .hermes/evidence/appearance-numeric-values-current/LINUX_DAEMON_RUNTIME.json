@@ -99,5 +99,6 @@
   "source_and_preferences_preserved": true,
   "protocol_shutdowns": 2,
   "owned_daemon_exited": true,
-  "private_profile_removed": true
+  "private_profile_removed": true,
+  "private_profile": "/tmp/ot-daemon-boh97syg"
 }

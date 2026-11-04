@@ -10,41 +10,45 @@ actual runtime source, and the repository's stable acceptance manifests record
 later delivery acceptance.
 
 All seven current local packages use runtime source
-`0aac86f98a6411b690ede891f48438d02a9701ea`: four Linux formats at
-`dist/packages/`, plus ZIP/NSIS/development MSIX 0.1.0.11 at
-`dist/windows-candidate/`. The stable AppImage is
-`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`510096524216f60b92b803b7cdbb31b57c4cc01ea98204beb7a0b9be3bc5cce6`.
-Exact scopes/hashes are in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`748ae91aba51eb35f23e716ba7d4799623e082b6`: four Linux formats at `dist/packages/`, plus
+ZIP/NSIS/development MSIX 0.1.0.13 at `dist/windows-candidate/`.
+The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb`. Exact source, artifact hashes and acceptance scopes are in
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. This is a local functional preview;
-strict GUI idle CPU, full roadmap and final acceptance remain open. No public
-release, signing or Store submission is implied. The failed MSI remains held.
+full roadmap, GUI performance and final owner acceptance remain open.
+No public release, signing or Store submission is implied. MSI remains held.
 
 | Current work | Verified state |
 | --- | --- |
-| Source | Committed/pushed 0aac: shared Windows native viewport regions, rectangular maximized frames, theme-radius-aware resize on visible arcs, and exclusive resize/titlebar drag ownership. Search changes only a deterministic lock/recovery test. |
-| Source checks | 473 UI tests pass, one existing ignored; strict native/Windows UI/app all-target lint and formatting pass. |
-| Linux delivery | All four formats built and content-checked. Exact AppImage passes 8 native mouse gestures in Dark100/Light150 at 0/24 radius: mainSE and SettingsNW. All 8 originals reviewed; normal close preserves source, both private profiles removed. |
-| Windows delivery | ZIP/NSIS complete 58-file payload equality; exact installer6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d. Installed Native/OpenGL pass 8 real pointer gestures plus 18 live-editor/Cancel native-region checks. All 26 originals reviewed with explicit taskbar/screen-clipping limits. Source/preferences survive normal close and supported uninstall. Native 36 region/geometry checks across six window types retain source 30ba1 with exact unchanged backend proof. MSIX 11 passes actual MakeAppx/unpack and 58-file equality, not a fresh update/login lifecycle. |
-| Hosted gates | CI 41708636305: all four exact 0aac Linux/Windows verification and isolated release performance jobs succeed. These benchmark jobs do not cover static GUI idle CPU. |
-| GUI performance | Strict below 2% one-core software-VM criterion fails: Native 33.54%, OpenGL 3.70%. Unchanged CBC Native baseline 34.21%. Native region round-trips match; root cause remains unproven. This is GUI CPU, not daemon CPU, and remains a release hold. |
+| Source | Committed/pushed `748ae91a`: pinned egui DragValue now publishes its final committed value and correct boundary actions. Named appearance controls preserve roles/ranges and match the live model in the input frame. Layout, palette, geometry, daemon and service implementations are unchanged. |
+| Source checks | 27 appearance tests and 476 UI tests pass; one existing ignored. Strict native/Windows UI/app all-target lint and formatting pass. |
+| Linux delivery | All four formats pass package-content checks. Exact AppImage passes six native typing/Restore/Cancel cases in Dark100/Light150; all four original captures reviewed. Normal close and fixture source/saved-theme preservation pass. |
+| Windows delivery | ZIP/NSIS have identical 58-file payloads; installer SHA256 `1844a2e984e4edecb5756cda82edd0666cd2b606a767d022eb160f0787d6f029`. Installed Native/OpenGL pass 34 complete native-region/DPI/work-area observations and eight focus-acknowledged numeric commits. Named Restore, Cancel, normal Close and supported uninstall preserve source/preferences. All 22 unobscured full-window captures reviewed. Background owners have region observations while editor input is active; separate captures cover all six window types. MSIX13 passes native MakeAppx/unpack and exact 58-file equality; no fresh MSIX runtime/update/login claim. |
+| Hosted gates | CI 41740616987: all four exact-source Linux/Windows verification and isolated release performance jobs pass. These jobs do not establish static GUI idle CPU acceptance. |
+| GUI performance | Fresh 144 DPI software fixture: Native: 73.062% one core/30.07s; OpenGL: 7.758% one core/30.01s. Earlier default-DPI samples retain their original scope. The unresolved strict idle failure remains a release hold, separate from daemon CPU; no performance fix or matched cross-source improvement is claimed. |
 
-Current evidence/registered producers: `.hermes/evidence/windows-rounded-resize-current/`.
-`DELIVERY_VERIFICATION.json` rehashes all seven stable artifacts/sidecars and all 58
-Windows payload files. Three owned VMs/six volumes, four private desktops/profiles,
-source archive, consumed extractions/transports and candidate stages are removed;
-superseded stable package output is retired. 21 obsolete compiler sessions were
-removed earlier; the final exact-root inspection identifies 0 more candidates.
-Current packages, compact original evidence, newest useful compiler sessions,
-user data and protected Windows bases remain. See `CLEANUP_FINAL.json` for scope.
+Current evidence and registered producers:
+`.hermes/evidence/appearance-numeric-values-current/`.
+`DELIVERY_VERIFICATION.json` rehashes all seven stable artifacts/sidecars and all
+58 Windows payload files. `CLEANUP_FINAL.json` records 4 owned VMs/8 volumes,
+5 private profiles, source archive, consumed transports/extractions and candidate
+stages removed; superseded stable output retired. Sixteen obsolete incremental
+sessions were removed, newest per-configuration sessions retained; final inspection
+finds zero obsolete candidates. Current packages, compact evidence, useful shared
+caches, user data and protected bases remain. The small signed display-driver cache
+is retained for future isolated DPI acceptance.
 
-Full Linux daemon load segments match CBC except its GNU build-ID and the ELF
-section-header-table offset; all Windows executable sections match, with header
-timestamp/checksum and nonloaded COFF symbol metadata differences. Whole-file
-identity is not claimed. This is an executable identity comparison, not a new
-sustained daemon benchmark. The earlier CBC read-only 30-second personal-daemon
-sample remains historical: 0.267% one core/about 26 MB RSS, no restart/config
-change. Personal services, settings and data were untouched by this delivery.
+Both rebuilt daemon mapped images differ from0aac, and no earlier binary-equivalence
+acceptance is inherited. Fresh private 1,000-file checks pass watcher create/rename/
+delete, queries, persistence/restart and two protocol shutdowns on each platform.
+Quiet30-second samples use0.067% one core on Linux and0.208%
+in the noninteractive Windows assembly account; ordinary-user native daemon readiness
+is separately observed by the GUI fixture. These bounded samples do not establish
+sustained, large-corpus, personal-service or GUI CPU acceptance. The earlier personal
+daemon observation retains its historical exact binary scope. Personal services/settings/data were
+not changed by this task. Earlier pointer, native-region, preview, picker, folder,
+service and media receipts retain their exact original source/artifact scopes.
 
 The earlier `9c914bd6` and `4b0f64a4` candidates were superseded before publication.
 The first correction fixed closed text-editor focus, but native Windows selection
@@ -55,8 +59,8 @@ and frozen actors remain; all twelve unpublished packages, unused source archive
 owned desktops/VMs/volumes and consumed transports from those cohorts are removed.
 No earlier Linux pass is used to override an installed Windows failure.
 
-The 100-run GitHub audit snapshot contains 30 failures, 18 cancellations and
-52 successes after the current exact-source run completed. Representative raw logs establish the earlier
+The historical 100-run GitHub audit snapshot recorded 30 failures, 18 cancellations
+and 52 successes at its original 0aac checkpoint; these are not current rolling counts. Representative raw logs establish the earlier
 Windows debug benchmark timing and HTML startup-filter failures; subsequent fixes
 retain strict isolated release budgets and every renderer security sample. A
 Windows watcher polling test previously unwrapped transient SQLite DatabaseBusy.
@@ -72,57 +76,31 @@ artifacts. Current directory/index launch ownership is byte-identical in all nin
 inspected modules; no new timing claim is made. Runtime36 folder integration now
 has actual Linux FileManager1 methods/default restoration/Dolphin preservation and
 all five native Windows menu/default dispatches, repair and supported uninstall
-preservation evidence. Current appearance mapping/draft/preview functions and
-semantic roles remain byte-identical to the original 39-control Linux acceptance.
+preservation evidence. The original 39-control Linux appearance acceptance retains its source/artifact
+scope; current numeric naming and actions have additional native checks above.
 The historical native Windows comparison confirmed opaque outside corners.
 That defect is now source-fixed and delivered with actual native-region evidence
 on all six window types, pointer gestures and live editor/Cancel propagation as
-scoped above. Nondefault Windows DPI, physical graphics and full-window visual
-layout remain separate acceptance gaps. Remaining service states/prompt acceptance and whole-interface
+scoped above. Current Dark Windows144DPI complete-window captures now pass in
+both software renderers; other scales/themes, physical graphics and whole-interface
+coverage remain separate acceptance gaps. Remaining service states/prompt acceptance and whole-interface
 scope still require explicit audit. No universal
 Windows system-picker interception or full roadmap completion is claimed.
 
 Continue in this order:
 
-1. Deliver the corrected native numeric metadata, then continue Windows
-   appearance/performance acceptance. The unpublished `84ea8742` seven-format
-   candidate passed content checks, six Linux control cases and all four hosted
-   jobs. Installed Windows eventually completed34 native region/DPI observations
-   and supported uninstall, but a further run exposed visible/model24 versus native
-   RangeValue2. The actual rendered core regression independently fails committed2
-   versus native0. The pinned egui0.33.3 DragValue published its pre-edit local value;
-   its authoritative source now reads the final getter before numeric/step-action
-   metadata. The focused Light/Dark150% separate-character regression passes.
-   No dependency versions changed; all103 upstream source/manifest/README files were
-   compared with the lock-hash-verified crate archive, with only that widget changed.
-   All476 UI tests pass (one existing ignored), along with strict native/Windows
-   UI/app all-target lint and formatting. Replacement source `748ae91a` now has
-   all four Linux formats and Windows ZIP/NSIS built and content-verified. The
-   exact AppImage passes six named numeric/Restore/Cancel cases in Dark100 and
-   Light150, with four original captures reviewed and both desktops removed.
-   Both rebuilt daemon mapped images differ; full file inventories pass, but
-   earlier binary-equivalence acceptance is not inherited. The actual Linux
-   portable daemon passes a private1000-file watcher create/rename/delete,
-   query, persistence/restart and two protocol-shutdown checks. Its quiet30-second
-   sample uses0.067percent of one core; no personal-service or large-corpus claim.
-   A Windows native attempt passed11 region observations/four typed commits but
-   failed to focus the main owner after asynchronous Settings close. Its native
-   GUI idle sample uses67.032percent of one core at144DPI with the index ready;
-   the performance criterion fails. The next registered native run waits for the
-   actual Settings viewport to disappear before owner focus. Complete34-case/
-   22-capture acceptance, native MSIX13 assembly, fresh scoped Windows daemon
-   checks and the remaining exact-source hosted Windows verification gate are
-   pending under `.hermes/evidence/appearance-numeric-values-current/`.
-   The original `84ea` candidate is superseded before delivery: all seven packages,
-   its58-file payload, five owned VMs/ten volumes/six profiles, private transports,
-   source archive and content extraction are removed. Stable packages remain0aac.
-   Evidence: `.hermes/evidence/appearance-numeric-names-current/` retains exact
-   negative/partial/functional scopes and cleanup; no failed metadata or missing
-   original captures are counted as accepted native UI delivery.
-   Continue the unresolved strict GUI idle CPU investigation, including unconditional
-   frame refresh, with a controlled same-driver comparison. Keep GUI and daemon CPU
-   separate. Broader appearance/control/platform and service-prompt/action acceptance
-   remain open; earlier pointer/native geometry/picker/media scopes keep original hashes.
+1. Investigate and fix the unresolved strict GUI idle CPU failure, including
+   unconditional frame refresh, using a controlled same-driver baseline/current
+   comparison. Keep GUI CPU separate from index daemon CPU. Named numeric controls,
+   actual Windows144DPI native regions, Restore/Cancel, full-window capture delivery
+   and this exact seven-format publication are complete at the scopes above.
+   Do not repeat fulfilled matrices without changed inputs or a reproduced defect.
+   The archive producer now retains the same guest process through known transient
+   observation failures and transfers a size/hash-verified archive in offset-addressed
+   chunks; earlier partial/failed capture-delivery cases are explicitly retained.
+   Continue broader appearance/control/platform acceptance; this is not a full
+   Windows39-control or physical/human assistive acceptance. Watcher polling retains
+   its deterministic lock/recovery/error/hit scope; current source CI is green.
    Evidence/prose-only pushes skip redundant CI; shipping-source changes retain gates.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete

@@ -5,38 +5,28 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 ## Current local candidate
 
 The current Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development
-MSIX 0.1.0.11 use runtime `0aac86f98a6411b690ede891f48438d02a9701ea`.
-All seven stable artifacts/sidecars and 58Windows payload files are rehashed;
-exact source/hashes/scopes are in the stable acceptance manifests. All four
-exact-source CI 41708636305 jobs pass. 473 UI tests pass, one existing ignored;
-strict native/Windows lint and formatting pass.
+MSIX0.1.0.13 use runtime `748ae91aba51eb35f23e716ba7d4799623e082b6`. All seven artifacts/sidecars
+and 58 Windows payload files are independently rehashed at stable paths.
+Exact-source CI41740616987 passes all four jobs. Source checks pass 27 appearance
+and 476 UI tests (one existing ignored), native/Windows strict lint and formatting.
 
-Windows now applies theme corners to the actual native window region in both
-renderers. Shared resize targets follow the visible arc, and titlebars yield
-edge presses to resizing. Exact-package Linux Dark100/Light150 and installed
-Windows Native/OpenGL pass 16 actual mouse gestures. Windows also passes 18 live
-Window corners edits/Cancel region checks. All 34 current originals are reviewed,
-with screen/taskbar-clipping limits explicitly recorded. Earlier 36 native-region
-checks across six window types retain source 30ba1 and exact backend identity.
-Normal Close and supported Windows uninstall preserve source/preferences.
+Native numeric metadata now describes the committed model value, replacing its
+pre-edit snapshot. Appearance numeric fields retain visible names and property-specific
+Restore actions. Native typing, Restore and Cancel pass on the exact Linux AppImage
+in Dark100/Light150. Installed Windows Native/OpenGL pass 34 complete native-region,
+actual 144 DPI and work-area observations; all22 unobscured full-window captures were
+reviewed. Live background owners have region observations, with separate full
+captures for every window type. Normal close and supported NSIS uninstall preserve
+source/preferences. Earlier pointer, preview, picker, folder, service and media
+acceptance retains its original source/artifact scope.
 
-MSIX 11 passes actual native MakeAppx assembly/unpack and 58-file equality; no
-fresh MSIX 11 deployment/update/login acceptance is implied. Full daemon executable
-contents match CBC aside from specified build-ID/header/nonloaded symbol metadata;
-whole-file identity and new CPU benchmarks are not claimed. Earlier lifecycle,
-picker, Office/media and broader workflow evidence retains original artifact scope.
-
-The strict software GUI idle CPU gate remains failed: Native 33.54% of one
-core and OpenGL 3.70%; unchanged CBC Native baseline 34.21%. Root cause,
-nondefault Windows DPI, fully visible layout and whole-roadmap acceptance remain
-open. This is GUI CPU, not index CPU. MSI registration rollback remains held.
-No public release, Store submission or personal service/settings change occurred.
-
-Owned VMs/media/profiles/stages, superseded packages, consumed archives/extractions
-and obsolete compiler sessions are removed. Current stable packages, compact
-original evidence, useful caches, user data and protected bases remain. Packaged
-manuals are build-time snapshots; repository manifests/documents record later
-acceptance. The roadmap goal remains active.
+MSIX13 passes production MakeAppx assembly/unpack and complete58-file equality;
+deployment/update/login acceptance is historical. Prior strict GUI idle CPU failure,
+required MSI rollback, full roadmap/platform coverage, signing/Store and final
+owner acceptance remain open. No public release or personal service/settings
+change is claimed. Owned fixtures, consumed archives/extractions, superseded
+packages and obsolete compiler sessions are removed. Packaged manuals are build-time
+snapshots; repository manifests/documents record later acceptance.
 
 ## Highlights
 

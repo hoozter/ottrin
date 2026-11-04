@@ -1,0 +1,50 @@
+{
+  "status": "pass exact stable publication and scoped ownership cleanup",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "artifacts": {
+    "dist/packages/ottrin-0.1.0-1.x86_64.rpm": {
+      "sha256": "36f9b9f82086e2dd866bdf835c0786944cd105dcc84571415ac069fca5f3494b",
+      "bytes": 27932155,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-x86_64.AppImage": {
+      "sha256": "ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb",
+      "bytes": 32740544,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "sha256": "333cdba3051a5290197e738ae3a4fe02d8e07cfe2a313236ebeafeb46e0f5de8",
+      "bytes": 32364287,
+      "sidecar_matches": true
+    },
+    "dist/packages/ottrin_0.1.0_amd64.deb": {
+      "sha256": "a917d81ca0f01b4eb6d4cd205b49e3c3548ba3fcf5fd14d6ae78453673bacec3",
+      "bytes": 21546840,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip": {
+      "sha256": "c213c35805edf59b2a59e937ab996a2c236bbc8e696ff831b37fc47537cc6b27",
+      "bytes": 55485461,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe": {
+      "sha256": "1844a2e984e4edecb5756cda82edd0666cd2b606a767d022eb160f0787d6f029",
+      "bytes": 39804585,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix": {
+      "sha256": "bb3a4d51c8e5b8b152071bee2bd7a99b08974779f0044d767e02d25714a60d9b",
+      "bytes": 57000011,
+      "sidecar_matches": true
+    }
+  },
+  "windows_payload_files": 58,
+  "windows_payload_hashes_match": true,
+  "held_msi_preserved_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "limits": [
+    "Functional local preview; full roadmap remains open",
+    "Strict software GUI idle CPU gate failed; no waiver",
+    "Windows Dark144DPI software native scope verified; other scale/theme combinations and physical graphics remain unverified",
+    "MSIX13 assembly only; prior lifecycle retains original scope"
+  ]
+}

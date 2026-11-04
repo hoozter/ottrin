@@ -36,15 +36,15 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The current seven local artifacts use clean runtime `0aac86f9`. All four
-exact-source hosted jobs pass. 473 UI tests pass with one existing ignored test.
-The exact AppImage passes 8 native resize gestures in Dark100/Light150; installed
-Windows Native/OpenGL pass 8 gestures and 18 live radius/Cancel region checks.
-Native 36 full-region checks retain their original 30ba1 scope with unchanged
-backend identity. Development MSIX 0.1.0.11 passes native assembly/unpack and 58-file
-payload equality; its update/login lifecycle is not freshly claimed. The strict
-software GUI idle CPU gate still fails; Windows DPI, full-interface, daily-driver
-and final owner acceptance remain open. See the roadmap for exact limits.
+The current seven local artifacts use clean runtime `748ae91a`.
+All four exact-source CI jobs pass; 476 UI tests pass with one existing ignored.
+The exact AppImage passes named numeric typing/Restore/Cancel checks in Dark100
+and Light150. Installed Windows Native/OpenGL pass 34 native window/DPI observations
+and 22 reviewed complete-window captures at actual 144 DPI. Normal Close and supported
+uninstall preserve fixture source/preferences. Development MSIX0.1.0.13 passes
+native assembly/unpack and 58-file equality; no fresh MSIX update/login claim.
+Prior GUI idle CPU failure, full-interface/platform and final daily-driver acceptance
+remain open. See the roadmap and stable acceptance manifests for exact scopes.
 
 ### Linux
 

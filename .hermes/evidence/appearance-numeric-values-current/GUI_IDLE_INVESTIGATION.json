@@ -1,0 +1,17 @@
+{
+  "status": "source observations and failed baseline; cause/fix not yet proved",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "baseline": "WINDOWS_NATIVE_ACCEPTANCE.json gui_idle_baseline:Native73.0623/OpenGL7.7582percent onecore/30seconds at144DPI, one-file root ready/watcher ready",
+  "observed_source": [
+    {
+      "path": "crates/ottrin-ui/src/lib.rs",
+      "facts": "schedule_storage_location_refresh unconditionally requests a root repaint every2seconds; render_bookmarks_row calls synchronous discover_storage_locations every render."
+    },
+    {
+      "path": "crates/ottrin-ui/src/remote_index.rs",
+      "facts": "Ready diagnostics stop worker self-polling; GUI diagnostics() asks for refresh after2seconds; every fetched diagnostic wakes the GUI, including unchanged results."
+    }
+  ],
+  "next_controlled_work": "After this exact package publication, move idle storage observation off the GUI and wake only for actual roots/status changes; keep mutation-time fresh storage guards. Let the remote index worker poll Ready status without GUI-driven frames and publish/wake only semantic diagnostic changes. Verify actual ready filesystem updates and volume availability still reach an otherwise idle GUI, then repeat the same driver/DPI/package CPU experiment in both renderers. This is a candidate investigation, not a proven explanation of all CPU cost.",
+  "scope": "No production code change, performance fix or large-corpus/physical GPU acceptance is claimed."
+}

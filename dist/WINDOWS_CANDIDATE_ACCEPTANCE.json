@@ -1,43 +1,180 @@
 {
-  "status": "pass current scoped local Windows rounded-window shape/resize preview; required MSI release held separately",
-  "source_commit": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "status": "pass scoped current Windows named-control and native144DPI preview; required MSI release held separately",
+  "source_commit": "748ae91aba51eb35f23e716ba7d4799623e082b6",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "0f3a64d65974cdc59ae97c99e64d271b64d71f7a8732a42a1725fd589c45ab26",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "6f9327654e9775040d90dfff2bb4746b40319575ab79ed4c0204d47e9773a06d",
-    "Ottrin-0.1.0-windows-x64-development.msix": "c6fcf2f43d7431223beacd35cbd71d8c9e6be135536e767bcaeab6f45556ca38"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "c213c35805edf59b2a59e937ab996a2c236bbc8e696ff831b37fc47537cc6b27",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "1844a2e984e4edecb5756cda82edd0666cd2b606a767d022eb160f0787d6f029",
+    "Ottrin-0.1.0-windows-x64-development.msix": "bb3a4d51c8e5b8b152071bee2bd7a99b08974779f0044d767e02d25714a60d9b"
   },
   "payload_files": 58,
-  "evidence_directory": ".hermes/evidence/windows-rounded-resize-current",
+  "evidence_directory": ".hermes/evidence/appearance-numeric-values-current",
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/windows-rounded-resize-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+  "current_native_fields": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_NATIVE_ACCEPTANCE.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-rounded-resize-current/ASSEMBLY_ACCEPTANCE.json",
-    "historical_lifecycle": {
-      "current_assembly": ".hermes/evidence/file-row-focus-current/ASSEMBLY_ACCEPTANCE.json",
-      "historical_lifecycle": {
-        "current_assembly": ".hermes/evidence/editable-fields-current/ASSEMBLY_ACCEPTANCE.json",
-        "historical_lifecycle": {
-          "upgrade-enabled": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/ACCEPTANCE.json"
-        },
-        "historical_source": "d6ebd918ed62660a346e51508bdef4b8c91f9c97",
-        "limit": "No fresh MSIX revision 9 deployment/update/login/removal run; earlier MSIX revision 8 runtime gate keeps exact source/artifact scope. Shipping installation/startup/daemon source unchanged, all 58 assembled payload bytes match current native-checked NSIS/ZIP."
-      },
-      "historical_source": "36e2df9ec289e79d5871b2a8e6e0d4517dc3b4e7",
-      "limit": "No fresh MSIX revision 10 deployment/update/login/removal run; earlier MSIX revision 8 runtime gate keeps exact source/artifact scope. Shipping installation/startup/daemon source unchanged, all 58 assembled payload bytes match current native-checked NSIS/ZIP."
-    },
-    "historical_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
-    "limit": "No fresh MSIX revision 11 deployment/update/login/removal run; earlier MSIX revision 8 runtime gate keeps exact source/artifact scope. Shipping installation/startup/daemon source unchanged, all 58 assembled payload bytes match current native-checked NSIS/ZIP."
+    "current_assembly": ".hermes/evidence/appearance-numeric-values-current/ASSEMBLY_ACCEPTANCE.json",
+    "historical_lifecycle_receipt": ".hermes/evidence/appearance-numeric-values-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "historical_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+    "limit": "MSIX13 assembly/unpack only; no fresh deployment/update/login/removal acceptance. Historical MSIX lifecycle keeps exact original source/artifact scope."
   },
-  "source_scope": ".hermes/evidence/windows-rounded-resize-current/SOURCE_SCOPE.json",
-  "full_payload_comparison": ".hermes/evidence/windows-rounded-resize-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
-  "native_live_radius": ".hermes/evidence/windows-rounded-resize-current/WINDOWS_LIVE_RADIUS_ACCEPTANCE.json",
-  "daemon_pe_identity": ".hermes/evidence/windows-rounded-resize-current/WINDOWS_INDEX_PE_COMPARISON.json",
+  "source_scope": ".hermes/evidence/appearance-numeric-values-current/SOURCE_SCOPE.json",
+  "full_payload_comparison": ".hermes/evidence/appearance-numeric-values-current/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
+  "native_controls_and_dpi": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_DAEMON_RUNTIME.json",
+  "gui_idle_baseline": [
+    {
+      "seconds": 30.0685222,
+      "cpu_one_core_percent": 73.06228704515448,
+      "rss_before": 73306112,
+      "renderer": "Native",
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "index_after": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4640768,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793755376,
+        "last_scan_completed_unix_secs": 1793755376,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793755366,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_after": 21,
+      "rss_after": 70828032,
+      "status": "failed current-scope criterion",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "dpi": 144,
+      "scope": "Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.",
+      "criterion": "StaticGUIbelow2percentonecore",
+      "index_before": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4640768,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793755376,
+        "last_scan_completed_unix_secs": 1793755376,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793755366,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_before": 21
+    },
+    {
+      "seconds": 30.0086703,
+      "cpu_one_core_percent": 7.758174476661167,
+      "rss_before": 89100288,
+      "renderer": "OpenGL",
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "index_after": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4640768,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793755376,
+        "last_scan_completed_unix_secs": 1793755376,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793755366,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_after": 26,
+      "rss_after": 73490432,
+      "status": "failed current-scope criterion",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "dpi": 144,
+      "scope": "Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.",
+      "criterion": "StaticGUIbelow2percentonecore",
+      "index_before": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4640768,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793755376,
+        "last_scan_completed_unix_secs": 1793755376,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793755366,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_before": 26
+    }
+  ],
+  "daemon_pe_comparison": ".hermes/evidence/appearance-numeric-values-current/WINDOWS_INDEX_PE_COMPARISON.json",
   "unchanged_responsibility_basis": {
-    "previous_source": "cbc7cd7ca8c1994b7b80d6a26dd6549369c7096a",
-    "previous_receipt": ".hermes/evidence/windows-rounded-resize-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
-    "scope": "Shared Windows native-region clipping, maximized rectangular frame, visible-arc resize and exclusive titlebar input change shipping GUI behavior. Search source changes only an existing test. Full payload comparisons prove all other helper/library/asset bytes match. Daemon loaded code/data match with explicitly identified build metadata differences; whole-file identity and new CPU acceptance are not claimed. Earlier workflow/lifecycle/picker/media/index scopes retain original hashes."
+    "previous_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+    "previous_receipt": ".hermes/evidence/appearance-numeric-values-current/PREVIOUS_WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "scope": "Existing appearance number_row exposes numeric/property-specific restore names. Pinned egui0.33.3 DragValue now reads its final getter before numeric widget/accessibility metadata and range-step actions; visible/model/native values agree in the committed input frame. No duplicate state or caller override; no dependency version upgrades. Earlier receipts retain exact source/artifact scope. Changed daemon has fresh private1000-file watcher/query/restart/idle checks in the noninteractive assembly account; no ordinary-user service or full-roadmap acceptance."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
@@ -45,18 +182,17 @@
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
   "hosted_source": {
-    "run": 41708636305,
-    "tested_source_revision": "0aac86f98a6411b690ede891f48438d02a9701ea",
+    "run": 41740616987,
+    "tested_source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
     "exact_source_all_four_jobs_success": true
   },
   "public_release_published": false,
   "limits": [
-    "Pre-existing strict software GUI CPU gate failed: Native33.54 and OpenGL3.70 percent one core, stable Native baseline34.21; cause unresolved",
-    "Live Windows DPI remains unverified",
-    "Local unsigned preview; no public release or Store submission",
-    "Software VM/default DPI; no physical graphics/human assistive or final owner acceptance",
-    "Whole roadmap and numeric/color-picker accessibility remain unaccepted",
-    "Current rounded-window native scope and MSIX revision 11 assembly only; historical lifecycle scopes are explicitly linked"
+    "Dark144DPI software VM; other scale/theme combinations, physical graphics and human usability remain separate",
+    "Prior strict software GUI idle CPU failure remains open; Fresh daemon CPU scope is separately recorded; strict GUI idle failure remains open",
+    "MSIX13 assembly only; historical lifecycle keeps original hashes",
+    "Required MSI rollback remains held",
+    "All remaining roadmap requirements, full appearance/color-picker controls, signing/Store and final owner acceptance remain unaccepted"
   ],
-  "cleanup": "Both native VMs/media/private console removed; stage and superseded candidate retired after consumers; current58-file payload and compact evidence retained."
+  "cleanup": "All native fixture attempts and assembly VM/media/private console removed; exact stage and superseded candidate retired after consumers; current58-file payload and compact evidence retained."
 }

@@ -1,0 +1,366 @@
+{
+  "status": "complete for current named-control and native DPI task resources",
+  "owned_vms": [
+    {
+      "label": "native-focus-failure",
+      "uuid": "94437c6b-1425-4644-b429-0d702be6e396",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "label": "native-cancel-focus-failure",
+      "uuid": "e4e8deaf-fb15-4939-b114-11c77b34d296",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "label": "native",
+      "uuid": "8bffe826-ff35-4a80-a15a-bdbc50b63dc4",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "label": "assembly",
+      "uuid": "f171f52a-e35f-4cd2-87fa-7b1c3c7b3c25",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "removed_private_profiles": [
+    "/var/tmp/.ottrin-picker-qa-bcxocnwl",
+    "/var/tmp/.ottrin-picker-qa-md7_j22t",
+    "/var/tmp/.ottrin-picker-qa-5b5mh4x_",
+    "/var/tmp/.ottrin-picker-qa-h0_a2p4h",
+    "/var/tmp/.ottrin-picker-qa-20_oc5fe"
+  ],
+  "removed_stages_extractions_archives": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-msix-source",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/source.zip"
+  ],
+  "consumed_input_batches": {
+    "native_cases": {
+      "native-focus-failure": {
+        "batches": [
+          {
+            "removed": [
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/RESULTS.zip",
+                "bytes": 1032049,
+                "sha256": "b25b377aac532ec7bbe499db11264cd9b7b65d863e0e10f873e43597f604919e"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/controller.ps1",
+                "bytes": 4866,
+                "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/GUEST_PREPARATION.json",
+                "bytes": 883,
+                "sha256": "418b4f9f8ca237690aeeed226e7ccf58cc6dde8e7511dc7b28b3da3ed483960e"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/CONTROLLER_PROCESS.json",
+                "bytes": 1940,
+                "sha256": "419d61d45c1907ba21222dd589ca58e09923ef7b0749cb16374845ad000fb762"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/readiness.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/privacy-accepted-0.png",
+                "bytes": 3739345,
+                "sha256": "b4257d55743044a3fa7c46841a0437cc7ddaf292b6329bc070e98f0aa9fa2509"
+              }
+            ],
+            "bytes": 4779083
+          }
+        ],
+        "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+      },
+      "native-cancel-focus-failure": {
+        "batches": [
+          {
+            "removed": [
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/RESULTS.zip",
+                "bytes": 889024,
+                "sha256": "fb6e77054bf5a0644ce88c2c2b674309db4383cd64c1e875374734a9c0925931"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/controller.ps1",
+                "bytes": 4866,
+                "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/GUEST_PREPARATION.json",
+                "bytes": 883,
+                "sha256": "d821292dfd4a720702c59f82b6c019ea9e8d606c0224db89118c7b31ad6b3169"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/CONTROLLER_PROCESS.json",
+                "bytes": 1940,
+                "sha256": "419d61d45c1907ba21222dd589ca58e09923ef7b0749cb16374845ad000fb762"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/DESKTOP_SIGNAL.json",
+                "bytes": 255,
+                "sha256": "bc01ae072c3194eefd24eeabead9e1d5cc682b4024726e59b15b1581f32f1bfc"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/readiness.log",
+                "bytes": 1117,
+                "sha256": "8ff6d354a110d375db0f88e9de7f8e2f67f2a3d155380409e6db976ba25f11d3"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/desktop-ready.png",
+                "bytes": 943120,
+                "sha256": "dcba52ab33012644276b06cdb8ee30aeee0603a130ca1b267a852667818c0cf4"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/PRIVACY_STEPS.json",
+                "bytes": 282,
+                "sha256": "2e4dd4d42a6c92f144d432a2d0a427837cfeb7338a811224629db3fa7816116a"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/privacy-accepted-0.png",
+                "bytes": 932922,
+                "sha256": "bf9bb4a80344f1bd5ea38654b37bcab4bfd20c1124fb8779303dbe0e5d288ca3"
+              }
+            ],
+            "bytes": 2774409
+          }
+        ],
+        "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+      },
+      "native": {
+        "batches": [
+          {
+            "removed": [
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/RESULTS.zip",
+                "bytes": 2293055,
+                "sha256": "4a1388c8a69f15ea24bbfbfee87d1aa596ff5910ada176cf82bc8417cbcfb1de"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/controller.ps1",
+                "bytes": 4866,
+                "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/GUEST_PREPARATION.json",
+                "bytes": 883,
+                "sha256": "8956358470928671d5592a11edfa359c8222d1a6132b56d4c1c261612f03ad9b"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/CONTROLLER_PROCESS.json",
+                "bytes": 1940,
+                "sha256": "419d61d45c1907ba21222dd589ca58e09923ef7b0749cb16374845ad000fb762"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/DESKTOP_SIGNAL.json",
+                "bytes": 255,
+                "sha256": "cc625a14b2d62d608043c9129e8303ba0f47fae3936bd07ccdfda83e6ec33c89"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/readiness.log",
+                "bytes": 1117,
+                "sha256": "14885e538f15f88d84d8acc09e8d6d2aac213597bd7c8c2f0fe726b79c80235a"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/desktop-ready.png",
+                "bytes": 2079145,
+                "sha256": "5fceed5392637c39e32ce98c1ef3f7bd0e3c44226cd4d37f9afdc6c9d902d297"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/PRIVACY_STEPS.json",
+                "bytes": 282,
+                "sha256": "d1f5bbc4b81936b0de8868a78592b4540ac77f4d202955d11164f918a16336ed"
+              },
+              {
+                "path": ".hermes/evidence/appearance-numeric-values-current/native/privacy-accepted-0.png",
+                "bytes": 4996961,
+                "sha256": "dc48db75a7121be73e8f8e30dd9910dc44a6ca49c351f77954f4200f11a956f0"
+              }
+            ],
+            "bytes": 9378504
+          }
+        ],
+        "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+      }
+    },
+    "assembly": {
+      "status": "consumed assembly bootstrap retired after actual package/daemon result and owned VM teardown",
+      "removed": [
+        {
+          "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/assembly/controller.ps1",
+          "bytes": 6844,
+          "sha256": "0a84d4ce5b0a5f53749440631977e2b702afb408963e0b0a01df5443eb90541f"
+        }
+      ]
+    },
+    "source_archive": {
+      "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+      "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+      "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/source.zip",
+      "status": "consumed by native MSIX13 assembly; owned source archive retired",
+      "sha256": "7419c2e29802bb768f9e688c8d383bfe70a16ec76c22ccb8747abbf0544fa6ef",
+      "archive_bytes": 195843447,
+      "temporary_clone_removed": true,
+      "archive_retired": true,
+      "cleanup_consumer": "assembly/ASSEMBLY.json"
+    },
+    "linux_extraction": {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+      "source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+      "pending_consumers": [],
+      "cleanup": "remove native/portable copies after content gate; remove remaining AppImage after GUI and resource checks",
+      "status": "consumed and retired after content gate and both native desktops",
+      "removed_bytes": 76516051,
+      "removed": true
+    }
+  },
+  "superseded_windows": {
+    "files_removed": 66,
+    "logical_bytes": 293680979
+  },
+  "superseded_linux": "Replaced at stable paths through production artifact lifecycle after hash/link/open-consumer checks; no versioned duplicate retained",
+  "compiler_storage_comparison": {
+    "status": "pass owned task output cleanup; latest package binaries, current tested executable and useful shared compiler configurations retained",
+    "baseline": {
+      "target/debug/deps": 41441028723,
+      "target/debug/incremental": 22658806852,
+      "target/x86_64-pc-windows-gnu/debug/deps": 33292041736,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 39438874790,
+      "target/release/deps": 4290362413,
+      "target/x86_64-pc-windows-gnu/release/deps": 3764574013
+    },
+    "current": {
+      "target/debug/deps": 41674554097,
+      "target/debug/incremental": 23497764042,
+      "target/x86_64-pc-windows-gnu/debug/deps": 33298645234,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 39676099440,
+      "target/release/deps": 4290362413,
+      "target/x86_64-pc-windows-gnu/release/deps": 3764574013
+    },
+    "delta": {
+      "target/debug/deps": 233525374,
+      "target/debug/incremental": 838957190,
+      "target/x86_64-pc-windows-gnu/debug/deps": 6603498,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 237224650,
+      "target/release/deps": 0,
+      "target/x86_64-pc-windows-gnu/release/deps": 0
+    },
+    "obsolete_incremental_sessions_removed": 16,
+    "all_reviewed_candidates_absent": true,
+    "all_recorded_newest_sessions_retained": true,
+    "final_obsolete_incremental_candidates": 0,
+    "obsolete_test_executable_dep_info_and_fingerprint_removed": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-11a85ca5198af5b6",
+        "kind": "build-cache",
+        "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+        "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-11a85ca5198af5b6.d",
+        "kind": "build-cache",
+        "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+        "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-11a85ca5198af5b6",
+        "kind": "build-cache",
+        "reason": "Superseded completed native UI test executable and its exact obsolete Cargo sidecars/fingerprint",
+        "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc passes476 UI tests with one existing ignored; exact Rust compiler, feature, profile, target, rustflags/config/compile_kind match. Only dependency source identity changes for the pinned egui fix. No current production/QA script references or active task consumes this old test; library/dependency caches and current executable retained."
+      }
+    ],
+    "replacement_test_executable": "target/debug/deps/ottrin_ui-c354643af000a7cc",
+    "replacement_validation": "476 passed,0failed,1existing ignored; exact compiler/profile/features/flags/config settings match recorded original",
+    "initial_refusal": "Ephemeral unreadable PID1351061 exited; no new process exception added. First pass removed12sessions, retry completed remaining4. Existing two system process identities freshly revalidated.",
+    "scope": "No extra target tree/configuration or blanket clean; native/Windows debug/release dependencies remain useful shared caches for pending new-source packaging/native comparisons",
+    "after_package_current": {
+      "target/debug/deps": 41674554097,
+      "target/debug/incremental": 23497764042,
+      "target/x86_64-pc-windows-gnu/debug/deps": 33298645234,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 39676099440,
+      "target/release/deps": 4379884555,
+      "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+    },
+    "after_package_delta_from_baseline": {
+      "target/debug/deps": 233525374,
+      "target/debug/incremental": 838957190,
+      "target/x86_64-pc-windows-gnu/debug/deps": 6603498,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 237224650,
+      "target/release/deps": 89522142,
+      "target/x86_64-pc-windows-gnu/release/deps": 88447618
+    },
+    "after_package_observed_at": "2026-11-04T00:36:36.141096+00:00",
+    "after_package_incremental_review": "POST_PACKAGE_INCREMENTAL_REVIEW.json:canonical exact native/Windows roots inspected, zero obsolete sessions; no deletion needed"
+  },
+  "obsolete_incremental_sessions_removed_earlier": 16,
+  "final_obsolete_incremental_candidates": 0,
+  "protected_domains_retained": [
+    "ottrin-copy-cleanup-qa",
+    "ottrin-index-qa",
+    "ottrin-qa-20261011",
+    "win11ltsc"
+  ],
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current",
+      "purpose": "Compact acceptance receipts, frozen producers, original functional captures and raw diagnostic logs; current evidence retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-display-driver",
+      "purpose": "Small reusable signed display-driver input for current and future isolated native DPI acceptance; useful cache retained"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Four current usable Linux deliverables and acceptance manifest"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current ZIP/NSIS/MSIX13 and58-file payload for delivery/identity consumers"
+    }
+  ],
+  "pending_disposable_consumers": [],
+  "scope": "Personal settings/data/services and shared useful compiler caches retained; original strict CPU failure remains recorded separately."
+}

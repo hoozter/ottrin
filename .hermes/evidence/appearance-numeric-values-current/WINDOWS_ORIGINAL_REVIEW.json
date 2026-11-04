@@ -1,0 +1,37 @@
+{
+  "directly_reviewed_originals": 22,
+  "captures": {
+    "Native-editor-live-24.png": "b44d09717de3d1abfa705f6dc2802b4edae1b651c104f4217bfb32bf759d804d",
+    "Native-editor-live-0.png": "a7e57e97de2a619ac5043659d496f03b3651655f8643b1afc596b0c2ca1636f3",
+    "Native-editor-after-restore-0.png": "a3a8a007703e10457c9844befffe8706c19d768dddf1845c4cc4b258ae3fcf92",
+    "Native-editor-before-cancel-24.png": "7f7a29f50eb12b9f27ec7aadfc187c4dd0840bd0603a0cf4681c82c68a9b3693",
+    "Native-settings-after-cancel-0.png": "3dc5b88838f6798cc82800b9bb4327463a28f0e4a2fd2b7ee46be683c9a2775a",
+    "Native-main-after-cancel-0.png": "2e30be9f0e590f774e498c07df8273b133afa9a49228beaf9cb77707c388464e",
+    "OpenGL-editor-live-24.png": "19369331596d4f02cf61f5ef8ef8b0a5e1d95e171490ab567f212acc4ec11a02",
+    "OpenGL-editor-live-0.png": "bcc9086fb841f2b5cac7db7447cf24a23d703cec08ae8130f18614dc8d5c33e3",
+    "OpenGL-editor-after-restore-0.png": "3a4fd516f5b0fadadf3651543b4d4396b6e38045ab2308cf842622ada11c329c",
+    "OpenGL-editor-before-cancel-24.png": "19369331596d4f02cf61f5ef8ef8b0a5e1d95e171490ab567f212acc4ec11a02",
+    "OpenGL-settings-after-cancel-0.png": "af1c62f78270868df590d86a1242585fc5dcdc2274ef52f2827ba7ce824ad017",
+    "OpenGL-main-after-cancel-0.png": "035e0f8bcbd5f8d04ff2e7e2f4793e7de12615fb95cbc98b3d29535c06df9b8e",
+    "Native-main-saved-startup-24.png": "e0997669e54be01c03a2d06f6a56b92733d83570d55a841c8fefd0b7a9960fa5",
+    "Native-settings-saved-startup-24.png": "32b6ff1805068af76f88c86c17de713419a39f55911542af18a4b43fed3ee046",
+    "Native-inspector-scaled-24.png": "f2945e989095d84fa0bc3aaf89f5097ee29e818bb291c704204f123fefbb137e",
+    "Native-picker-scaled-24.png": "52748d9281d097ad6637e8166bcb9ce28e9d949a45fefc98925929ef6ec823b9",
+    "Native-properties-scaled-24.png": "727232ac2d3be4af02496c9d3b153d5c7e324759545dde51b88ffae699339bea",
+    "OpenGL-main-saved-startup-24.png": "1088bf80b2cb309f7a391b037152db0f8101afb794602869b522c5f045bbcd9f",
+    "OpenGL-settings-saved-startup-24.png": "a0502e3314cf001354e6fe1ef2fcce21e2e9eccbd084f75f2e1e42ebd4c16e68",
+    "OpenGL-inspector-scaled-24.png": "f69e93c49d2684c6fd472d4a8e3ddd1540b0fce93b0deb735434bea7714a657c",
+    "OpenGL-picker-scaled-24.png": "a3ad1138179fce0ecccc70efce4157687b2f5752a086fe7bd7af9991c964d12b",
+    "OpenGL-properties-scaled-24.png": "d7fd42835e04c4834a343cd557c6e5927d8d4dff35c7f9b69e6367dedfaa74bf"
+  },
+  "scope": "Each original full-window PNG directly reviewed; Dark144DPI signed VirtIO software fixture, Native/OpenGL. Native regions remain independently verified for34observations; no all-settings, physical GPU or human acceptance claim.",
+  "observed": [
+    "Typed24 and0/restored0 visibly match numeric fields, preview outline and actual editor corners",
+    "Cancel yields square Settings/main; saved-startup24 yields rounded main/Settings",
+    "Inspector/picker/Properties use matching themed title bars and complete rounded frames; key controls and footers remain visible",
+    "All six window types have unobscured complete native captures in each renderer"
+  ],
+  "notes": [
+    "Some title hover tooltips are visible because the actor parks the cursor in the title bar; no critical numeric or footer control is covered. The inspector contains only the owned original fixture text."
+  ]
+}

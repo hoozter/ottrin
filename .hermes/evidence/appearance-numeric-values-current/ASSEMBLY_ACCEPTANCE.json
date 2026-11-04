@@ -1,0 +1,24 @@
+{
+  "status": "pass native MSIX13 assembly and58-file equality; runtime/update/login not freshly exercised; prior MSIX8 lifecycle scope retains original hashes",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "artifact": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "bb3a4d51c8e5b8b152071bee2bd7a99b08974779f0044d767e02d25714a60d9b",
+  "version": "0.1.0.13",
+  "native_payload_files": 58,
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "Actual clean Git source/production MakeAppx assembly, then native unpack and independent host ZIP comparison; no Store/signing/runtime acceptance",
+  "assembled_artifact_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix"
+}

@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/RESULTS.zip",
+          "bytes": 2293055,
+          "sha256": "4a1388c8a69f15ea24bbfbfee87d1aa596ff5910ada176cf82bc8417cbcfb1de"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "8956358470928671d5592a11edfa359c8222d1a6132b56d4c1c261612f03ad9b"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/CONTROLLER_PROCESS.json",
+          "bytes": 1940,
+          "sha256": "419d61d45c1907ba21222dd589ca58e09923ef7b0749cb16374845ad000fb762"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "cc625a14b2d62d608043c9129e8303ba0f47fae3936bd07ccdfda83e6ec33c89"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/readiness.log",
+          "bytes": 1117,
+          "sha256": "14885e538f15f88d84d8acc09e8d6d2aac213597bd7c8c2f0fe726b79c80235a"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/desktop-ready.png",
+          "bytes": 2079145,
+          "sha256": "5fceed5392637c39e32ce98c1ef3f7bd0e3c44226cd4d37f9afdc6c9d902d297"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "d1f5bbc4b81936b0de8868a78592b4540ac77f4d202955d11164f918a16336ed"
+        },
+        {
+          "path": ".hermes/evidence/appearance-numeric-values-current/native/privacy-accepted-0.png",
+          "bytes": 4996961,
+          "sha256": "dc48db75a7121be73e8f8e30dd9910dc44a6ca49c351f77954f4200f11a956f0"
+        }
+      ],
+      "bytes": 9378504
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}
