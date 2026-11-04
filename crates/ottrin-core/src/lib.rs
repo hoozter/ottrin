@@ -1250,6 +1250,7 @@ pub enum FileCommand {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PrivilegedCommand {
     File(FileCommand),
+    DiscoverCopyHistory,
     UndoCopy { transactions: Vec<String> },
     CleanupCopy { transactions: Vec<String> },
     ListDirectory { path: PathBuf, show_hidden: bool },
@@ -1272,7 +1273,7 @@ pub struct PrivilegedContext {
 }
 
 /// Exact wire contract required by both the caller and elevated helper.
-pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 1;
+pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 2;
 
 /// Request payload sent from unprivileged app process to elevated helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1316,6 +1317,15 @@ pub struct PrivilegedResponse {
 pub enum PrivilegedPayload {
     Entries(Vec<FileEntry>),
     Copy(PrivilegedCopyReceipt),
+    CopyHistory(Vec<PrivilegedCopyHistoryEntry>),
+}
+
+/// Read-only presentation of administrator journals. These lookup references
+/// never grant filesystem authority; every action must reopen the journals.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PrivilegedCopyHistoryEntry {
+    pub reference: PrivilegedCopyReceipt,
+    pub undo_unavailable_reason: Option<String>,
 }
 
 /// Presentation and lookup references only. The elevated helper must reopen and

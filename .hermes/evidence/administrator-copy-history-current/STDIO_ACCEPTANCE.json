@@ -1,0 +1,14 @@
+{
+  "status": "pass fresh-process Copy history discovery and guarded lifecycle",
+  "helper_sha256": "fddd143986e67d3ec97781cfc6a380e7f8a59585be8800dae725d268606534b8",
+  "scope": "Actual current debug helper stdio JSON under ordinary user and disposable HOME/XDG; not pkexec or packaged/local-seat acceptance",
+  "cases": [
+    "Read-only fresh-process history discovers the complete batch without changing file contents or names",
+    "Fresh helper processes: exact Copy JSON returns durable references, Undo restores overwritten original/removes new publication, explicit cleanup removes stages",
+    "Changed publication refuses Undo without mutation",
+    "Explicit cleanup preserves changed publication",
+    "Malformed, empty and unknown references refused across both IPC actions"
+  ],
+  "source_preserved": true,
+  "owned_profile_removed": true
+}

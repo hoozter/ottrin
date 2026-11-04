@@ -1,0 +1,38 @@
+[
+  {
+    "old": "f7ccf5036735c2fd",
+    "replacement": "c354643af000a7cc",
+    "crate": "ottrin-ui",
+    "matching_compiler_configuration": true,
+    "no_fuser_consumer": true,
+    "removed": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f7ccf5036735c2fd",
+        "bytes": 805615720
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-f7ccf5036735c2fd.d",
+        "bytes": 5041
+      }
+    ],
+    "fingerprint_removed": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-ui-f7ccf5036735c2fd"
+  },
+  {
+    "old": "b646676bf4cf13fc",
+    "replacement": "1b0b20a6b8da358b",
+    "crate": "ottrin-core",
+    "matching_compiler_configuration": true,
+    "no_fuser_consumer": true,
+    "removed": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_core-b646676bf4cf13fc",
+        "bytes": 17117680
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_core-b646676bf4cf13fc.d",
+        "bytes": 468
+      }
+    ],
+    "fingerprint_removed": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-core-b646676bf4cf13fc"
+  }
+]

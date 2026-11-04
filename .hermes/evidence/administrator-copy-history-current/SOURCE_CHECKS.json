@@ -1,0 +1,39 @@
+{
+  "status": "pass source tests, real fresh-process helper IPC and native/Windows lint; not delivered or native-authentication accepted",
+  "protocol_version": 2,
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "c551c5d7c0d16a7a9071019046411dd729579adbbd07d344216b4388c8ce3d78",
+    "crates/ottrin-platform/src/lib.rs": "b90c025c2ab0661b310fe8d8d67c9b5a877f732724e3049337fa329d15bbd37b",
+    "crates/ottrin-platform/src/privileged_copy.rs": "8f1088b0a88210d60479650313ad60e62db922b535f0d1a3f6cc086fa896e208",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "f67abfff4550a07e84cf76b62f8af96010abdef1a93dcee91a7fe75b743dd484",
+    "crates/ottrin-platform/src/helper_protocol.rs": "c2b45380d578b8bc380f70bf68c7e76c50c1b8012680c8a358c8eba28f8d266e",
+    "crates/ottrin-ui/src/lib.rs": "06014fcced873e7c262d7356260327feba6fcbc8edc1f5c1d28250ea87559994",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "985dd86a65276200018a5453e362c8ba79d2e29f8f787020c8d28423da2ee718"
+  },
+  "checks": {
+    "library-suites.log": [
+      "43 passed; 0 failed",
+      "445 passed; 0 failed",
+      "498 passed; 0 failed"
+    ],
+    "ui-suite-final.log": [
+      "499 passed; 0 failed"
+    ],
+    "helper-tests.log": [
+      "11 passed; 0 failed"
+    ],
+    "native-lint-final.log": [
+      "Finished `dev`"
+    ],
+    "windows-lint.log": [
+      "Finished `dev`"
+    ]
+  },
+  "limits": [
+    "Windows lint is cross-target compilation, not native UAC acceptance",
+    "Debug helper runs as ordinary user with disposable state; not polkit/native GUI acceptance",
+    "Stable Linux f8 and Windows458 packages remain unchanged",
+    "Native authenticated load after GUI restart, cancellation, Undo and cleanup, coherent package contents and delivery remain required",
+    "Windows canonical privileged Copy receipt bridge is still unimplemented and refused before mutation"
+  ]
+}

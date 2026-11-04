@@ -4,7 +4,7 @@ use crate::{DefaultPlatform, PlatformError, PlatformOps};
 use ottrin_core::{
     ConflictAction, PrivilegedCopyReceipt, PrivilegedPayload, PrivilegedResponse, PrivilegedStatus,
 };
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 pub fn copy(
@@ -86,6 +86,80 @@ pub fn undo(ids: &[String]) -> Result<(), PlatformError> {
         plan.undo_next()?;
     }
     Ok(())
+}
+
+/// Discover only the elevated account's canonical registry. A successful scan
+/// does not retain descriptors or mutation plans across the IPC boundary.
+pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>, PlatformError> {
+    use ottrin_core::PrivilegedCopyHistoryEntry;
+    let finalizations = crate::discover_retained_copy_finalizations()?;
+    let finalized_ids = finalizations
+        .iter()
+        .flat_map(|plan| plan.transaction_ids().into_iter().map(str::to_owned))
+        .collect::<BTreeSet<_>>();
+    let mut groups = BTreeMap::<String, Vec<crate::RetainedCopyStatus>>::new();
+    for entry in crate::discover_retained_copy_transactions()? {
+        if finalized_ids.contains(&entry.transaction_id) {
+            continue;
+        }
+        let key = entry
+            .operation
+            .as_ref()
+            .map(|operation| operation.id.clone())
+            .unwrap_or_else(|| entry.transaction_id.clone());
+        groups.entry(key).or_default().push(entry);
+    }
+    let mut history = Vec::new();
+    for mut entries in groups.into_values() {
+        entries.sort_by_key(|entry| {
+            entry
+                .operation
+                .as_ref()
+                .map(|operation| operation.item_index)
+        });
+        let undo_unavailable_reason = match crate::restore_retained_copy_undo_plan(&entries) {
+            Ok(plan) if plan.remaining() > 0 => None,
+            Ok(_) => {
+                Some("Already undone. Retained data can be cleared after confirmation.".into())
+            }
+            Err(error) => Some(error.to_string()),
+        };
+        let paths = entries
+            .iter()
+            .filter_map(|entry| Some((entry.source.clone()?, entry.publication.clone()?)))
+            .collect();
+        history.push(PrivilegedCopyHistoryEntry {
+            reference: PrivilegedCopyReceipt {
+                // Discovery cannot establish how many originally requested
+                // sources completed: skipped/failed items may have no journal.
+                completed_sources: 0,
+                transactions: entries
+                    .into_iter()
+                    .map(|entry| entry.transaction_id)
+                    .collect(),
+                paths,
+            },
+            undo_unavailable_reason,
+        });
+    }
+    for plan in finalizations {
+        history.push(PrivilegedCopyHistoryEntry {
+            reference: PrivilegedCopyReceipt {
+                completed_sources: 0,
+                transactions: plan
+                    .transaction_ids()
+                    .into_iter()
+                    .map(str::to_owned)
+                    .collect(),
+                paths: Vec::new(),
+            },
+            undo_unavailable_reason: Some(
+                "Copy cleanup was interrupted. Undo is revoked; finish clearing retained data."
+                    .into(),
+            ),
+        });
+    }
+    Ok(history)
 }
 
 pub fn cleanup(ids: &[String]) -> Result<(), PlatformError> {
@@ -184,10 +258,18 @@ mod tests {
             crate::discover_retained_copy_transactions().unwrap().len(),
             2
         );
+        let history = discover_history().unwrap();
+        assert_eq!(history.len(), 1);
+        assert_eq!(history[0].reference.transactions, reference.transactions);
+        assert!(history[0].undo_unavailable_reason.is_none());
+        assert_eq!(std::fs::read(f.path("output/a")).unwrap(), b"new a");
         // References survive the loss of live receipts and use canonical journals.
-        undo(&reference.transactions).unwrap();
+        undo(&history[0].reference.transactions).unwrap();
         assert_eq!(std::fs::read(f.path("output/a")).unwrap(), b"old a");
         assert!(!f.path("output/b").exists());
+        let undone = discover_history().unwrap();
+        assert_eq!(undone.len(), 1);
+        assert!(undone[0].undo_unavailable_reason.is_some());
         cleanup(&reference.transactions).unwrap();
         assert!(
             crate::discover_retained_copy_transactions()
@@ -196,6 +278,7 @@ mod tests {
         );
         assert_eq!(std::fs::read(f.path("input/a")).unwrap(), b"new a");
         assert_eq!(std::fs::read_dir(f.path("output")).unwrap().count(), 1);
+        assert!(discover_history().unwrap().is_empty());
     }
 
     #[test]
@@ -207,6 +290,9 @@ mod tests {
         assert!(undo(&reference.transactions[..1]).is_err());
         assert!(cleanup(&reference.transactions[..1]).is_err());
         std::fs::write(f.path("output/a"), "user edited").unwrap();
+        let history = discover_history().unwrap();
+        assert_eq!(history.len(), 1);
+        assert!(history[0].undo_unavailable_reason.is_some());
         assert!(undo(&reference.transactions).is_err());
         assert_eq!(std::fs::read(f.path("output/a")).unwrap(), b"user edited");
         // Explicit discard validates retained data and never deletes the publication.
@@ -242,6 +328,10 @@ mod tests {
         assert_eq!(response.status, PrivilegedStatus::Failed);
         assert_eq!(reference.completed_sources, 1);
         assert_eq!(reference.transactions.len(), 1);
+        let history = discover_history().unwrap();
+        assert_eq!(history.len(), 1);
+        assert_eq!(history[0].reference.transactions, reference.transactions);
+        assert!(history[0].undo_unavailable_reason.is_none());
         assert_eq!(std::fs::read(f.path("output/a")).unwrap(), b"a");
         assert!(!f.path("output/b").exists());
         undo(&reference.transactions).unwrap();
@@ -261,6 +351,11 @@ mod tests {
         let id = original.id().to_owned();
         drop(original);
         drop(plan);
+        let history = discover_history().unwrap();
+        assert_eq!(history.len(), 1);
+        assert_eq!(history[0].reference.transactions, reference.transactions);
+        assert!(history[0].reference.paths.is_empty());
+        assert!(history[0].undo_unavailable_reason.is_some());
         assert!(
             crate::discover_retained_copy_finalizations()
                 .unwrap()

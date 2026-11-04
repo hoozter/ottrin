@@ -1,0 +1,23 @@
+{
+  "status": "owned cleanup complete for source checkpoint",
+  "obsolete_incremental_sessions_removed": 36,
+  "obsolete_incremental_sessions_remaining": 0,
+  "superseded_test_binaries_removed": 2,
+  "test_output_details": "TEST_OUTPUT_CLEANUP.json",
+  "disposable_profiles": "Removed by scripts/test-workspace.py and check-stdio.py; STDIO_ACCEPTANCE.json confirms IPC profile removal",
+  "vms_credentials_mounts_staging_created": false,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/administrator-copy-history-current",
+      "purpose": "Compact source-test and IPC receipts; pending native authentication and package acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current source debug helper, test replacements, shared compiler caches; pending native/package work"
+    }
+  ],
+  "stable_deliverables_preserved": [
+    "dist/packages",
+    "dist/windows-candidate"
+  ]
+}

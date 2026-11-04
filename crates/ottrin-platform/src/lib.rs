@@ -2758,6 +2758,7 @@ fn execute_privileged_windows(
         matches!(
             &request.command,
             ottrin_core::PrivilegedCommand::File(FileCommand::Copy { .. })
+                | ottrin_core::PrivilegedCommand::DiscoverCopyHistory
                 | ottrin_core::PrivilegedCommand::UndoCopy { .. }
                 | ottrin_core::PrivilegedCommand::CleanupCopy { .. }
         ),

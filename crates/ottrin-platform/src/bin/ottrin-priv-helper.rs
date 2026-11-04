@@ -93,6 +93,7 @@ fn main() {
     let platform = DefaultPlatform;
     let response = match req.command {
         PrivilegedCommand::File(cmd) => run_file_command(&platform, &cmd),
+        PrivilegedCommand::DiscoverCopyHistory => discover_copy_history(),
         PrivilegedCommand::UndoCopy { transactions } => copy_recovery_command(&transactions, false),
         PrivilegedCommand::CleanupCopy { transactions } => {
             copy_recovery_command(&transactions, true)
@@ -181,6 +182,25 @@ fn run_file_command(platform: &DefaultPlatform, cmd: &FileCommand) -> Privileged
             payload: None,
         },
         Err(e) => map_platform_error(e.to_string()),
+    }
+}
+
+fn discover_copy_history() -> PrivilegedResponse {
+    #[cfg(target_os = "linux")]
+    let result = ottrin_platform::privileged_copy::discover_history();
+    #[cfg(not(target_os = "linux"))]
+    let result = Err::<Vec<ottrin_core::PrivilegedCopyHistoryEntry>, _>(
+        ottrin_platform::PlatformError::NotAvailable(
+            "Administrator Copy history is unavailable on this platform",
+        ),
+    );
+    match result {
+        Ok(history) => PrivilegedResponse {
+            status: PrivilegedStatus::Success,
+            message: None,
+            payload: Some(PrivilegedPayload::CopyHistory(history)),
+        },
+        Err(error) => map_platform_error(error.to_string()),
     }
 }
 
@@ -504,7 +524,8 @@ mod tests {
         for args in [
             vec!["--check-protocol"],
             vec!["--check-protocol", "bad"],
-            vec!["--check-protocol", "2"],
+            vec!["--check-protocol", "1"],
+            vec!["--check-protocol", "3"],
         ] {
             assert_eq!(
                 protocol_check(&args.into_iter().map(str::to_owned).collect::<Vec<_>>()),
@@ -512,13 +533,16 @@ mod tests {
             );
         }
         assert_eq!(
-            protocol_check(&["--check-protocol".into(), "1".into()]),
+            protocol_check(&[
+                "--check-protocol".into(),
+                ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION.to_string()
+            ]),
             Some(0)
         );
         assert_eq!(
             protocol_check(&[
                 "--check-protocol".into(),
-                "1".into(),
+                ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION.to_string(),
                 "--copy-recovery".into()
             ]),
             Some(0)
@@ -526,7 +550,7 @@ mod tests {
         assert_eq!(
             protocol_check(&[
                 "--check-protocol".into(),
-                "1".into(),
+                ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION.to_string(),
                 "--unknown-feature".into()
             ]),
             Some(69)

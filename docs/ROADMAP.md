@@ -385,6 +385,15 @@ acceptance receipts remain. This is scoped delivery, not full roadmap or U08
 acceptance. Whole-interface findings include settled startup item-count/search
 status, automatic-startup wording and Grid filename legibility.
 
+Source work after the delivered f8 cohort adds an opt-in **Load administrator Copy
+history** action in Activity. Its authenticated helper scan reads canonical journals
+and returns presentation references; fresh Undo/cleanup still reopens and validates
+them. Protocol 2 deliberately rejects older helpers. Debug-helper fresh-process IPC
+and source tests cover batch discovery, changed publications and interrupted cleanup.
+This work is not yet included in the stable packages: native authentication/restart,
+rendered control acceptance and coherent packaging remain required. Windows privileged
+Copy is still refused before mutation until its canonical receipt bridge is finished.
+
 1. Complete ordinary-user rediscovery of elevated Copy history after restarting
    and the Windows receipt/Undo/cleanup bridge. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted

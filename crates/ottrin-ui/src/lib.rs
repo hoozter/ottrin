@@ -3916,6 +3916,8 @@ pub struct OttrinApp {
     retained_copy_activity_loader: RetainedActivityLoader<RetainedCopySnapshot>,
     retained_copy_activity_error: Option<String>,
     pending_retained_copy_activity: Option<Vec<RestoredCopyActivity>>,
+    #[cfg(target_os = "linux")]
+    privileged_copy_history: privileged_copy_activity::HistoryUi,
     copy_cleanup: copy_activity_cleanup::CopyCleanupUi,
     #[cfg(target_os = "windows")]
     copy_recovery: copy_activity_recovery::CopyRecoveryUi,
@@ -4223,6 +4225,8 @@ impl OttrinApp {
             retained_copy_activity_loader,
             retained_copy_activity_error,
             pending_retained_copy_activity: None,
+            #[cfg(target_os = "linux")]
+            privileged_copy_history: Default::default(),
             copy_cleanup: Default::default(),
             #[cfg(target_os = "windows")]
             copy_recovery: Default::default(),
@@ -14570,6 +14574,8 @@ impl OttrinApp {
     fn render_activity_sidebar(&mut self, ui: &mut egui::Ui) {
         let c = self.colors;
         smart_panel_header(ui, &c, MI_HISTORY, "Activity");
+        #[cfg(target_os = "linux")]
+        self.render_privileged_copy_history(ui);
         ui.horizontal_wrapped(|ui| {
             if ui.add_enabled(
                 !self.retained_move_activity_loader.pending && !self.retained_copy_activity_loader.pending && !self.copy_cleanup.running(),
