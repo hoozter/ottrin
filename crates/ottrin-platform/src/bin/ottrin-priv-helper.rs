@@ -90,6 +90,10 @@ fn main() {
     let platform = DefaultPlatform;
     let response = match req.command {
         PrivilegedCommand::File(cmd) => run_file_command(&platform, &cmd),
+        PrivilegedCommand::UndoCopy { transactions } => copy_recovery_command(&transactions, false),
+        PrivilegedCommand::CleanupCopy { transactions } => {
+            copy_recovery_command(&transactions, true)
+        }
         PrivilegedCommand::ListDirectory { path, show_hidden } => {
             run_list_directory(&path, show_hidden)
         }
@@ -156,6 +160,15 @@ fn read_request(mode: &IoMode) -> Result<PrivilegedRequest, String> {
 }
 
 fn run_file_command(platform: &DefaultPlatform, cmd: &FileCommand) -> PrivilegedResponse {
+    #[cfg(target_os = "linux")]
+    if let FileCommand::Copy {
+        sources,
+        destination,
+        conflict,
+    } = cmd
+    {
+        return ottrin_platform::privileged_copy::copy(platform, sources, destination, *conflict);
+    }
     match platform.execute_command(cmd) {
         Ok(_) => PrivilegedResponse {
             status: PrivilegedStatus::Success,
@@ -163,6 +176,30 @@ fn run_file_command(platform: &DefaultPlatform, cmd: &FileCommand) -> Privileged
             payload: None,
         },
         Err(e) => map_platform_error(e.to_string()),
+    }
+}
+
+fn copy_recovery_command(transactions: &[String], cleanup: bool) -> PrivilegedResponse {
+    #[cfg(target_os = "linux")]
+    let result = if cleanup {
+        ottrin_platform::privileged_copy::cleanup(transactions)
+    } else {
+        ottrin_platform::privileged_copy::undo(transactions)
+    };
+    #[cfg(not(target_os = "linux"))]
+    let result = {
+        let _ = (transactions, cleanup);
+        Err(ottrin_platform::PlatformError::NotAvailable(
+            "Privileged Copy recovery is not implemented on this platform",
+        ))
+    };
+    match result {
+        Ok(()) => PrivilegedResponse {
+            status: PrivilegedStatus::Success,
+            message: None,
+            payload: None,
+        },
+        Err(error) => map_platform_error(error.to_string()),
     }
 }
 

@@ -1,0 +1,42 @@
+{
+  "status": "pass source checks and actual ordinary-user helper stdio lifecycle; not packaged/elevated acceptance",
+  "base_commit": "412609e1",
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "2c002a72be24ef65e604e407dda4ca7964c4f2dc2dc3e8f290eaa5fb0b85c065",
+    "crates/ottrin-platform/src/lib.rs": "d00d62d8ce10a782f72bb409d0145554d2abb82e7963d113a4fe3afa9ce39862",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "75288db92a0d4bc1580343edd7338a393af474fb3a07dc0f982e58bea678d364",
+    "crates/ottrin-platform/src/privileged_copy.rs": "1e0168ce6c63c2b3141a9092f290bd8a8acca67993ddbb32d56e9a21321a4d10",
+    "crates/ottrin-ui/src/lib.rs": "a1b3750da5759a4aab8cfa4459bbcc936dfe514995eae3c3ed3a35c33434dc3d",
+    "crates/ottrin-ui/src/copy_activity_cleanup.rs": "770a0749ff8314979b67110d8147e736625f31c66b63e6905180ec08330290f6",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "89e59a3cba36f92d9ff611849cddf765da47b046fb101f3d1535bddf3d9269aa"
+  },
+  "checks": {
+    "platform-tests.log": "5 passed; 0 failed",
+    "ui-suite.log": "495 passed; 0 failed; 1 ignored",
+    "helper-tests.log": "9 passed; 0 failed",
+    "native-lint.log": "Finished `dev`",
+    "windows-lint.log": "Finished `dev`"
+  },
+  "stdio": "STDIO_ACCEPTANCE.json",
+  "scope": "Linux helper now retains canonical durable Copy references and returns completed receipts even after partial failure. Activity retains ownership, supports guarded helper Undo and explicit cleanup, and refuses missing or inconsistent successful payloads. Same journal/Undo/cleanup implementations; no policy changes or silent recovery deletion.",
+  "limits": [
+    "Current Linux458/Windows458 stable packages remain unchanged pending a coherent replacement",
+    "Real pkexec/local-seat helper and actual application retry/Activity acceptance must run against newly packaged code",
+    "Windows privileged Copy still uses the generic receiptless command path; native Windows implementation/acceptance remains open",
+    "After ordinary UI restart, elevated-account recovery discovery still needs a direct supported user workflow; durable journals retained under elevated account"
+  ],
+  "cleanup": {
+    "incremental_sessions_removed": 20,
+    "recovered_GiB": 0.76,
+    "method": "Mandated rust_incremental.py with exact existing process identities revalidated and exclusive per-session locks",
+    "private_test_profiles_removed": true,
+    "retained": [
+      "Existing target binaries/dependencies/newest compiler state",
+      "Compact producers, source hashes, check logs and lifecycle receipt in /home/campbell/Projects/Ottrin/.hermes/evidence/privileged-copy-current"
+    ]
+  },
+  "fixture_corrections": [
+    "First attempted script invocation passed cargo/test twice; corrected to documented wrapper arguments",
+    "A FIFO fixture was rejected during whole-batch preflight before any copy, so it did not exercise partial completion. Replaced with an owned source removal at the progress boundary after first publication; actual batch response/undo/cleanup then passes."
+  ]
+}

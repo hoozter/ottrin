@@ -1,0 +1,13 @@
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 3.60s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-5a95d0376980cc28)
+
+running 5 tests
+test privileged_copy::tests::privileged_copy_rejects_unknown_duplicate_and_malformed_references ... ok
+test privileged_copy::tests::privileged_copy_keeps_completed_receipts_when_a_later_item_fails ... ok
+test privileged_copy::tests::privileged_copy_cleanup_resumes_original_finalization_after_helper_exit ... ok
+test privileged_copy::tests::privileged_copy_refuses_changed_publication_and_incomplete_selection ... ok
+test privileged_copy::tests::privileged_copy_returns_durable_batch_references_for_guarded_undo_and_cleanup ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 440 filtered out; finished in 0.05s
+

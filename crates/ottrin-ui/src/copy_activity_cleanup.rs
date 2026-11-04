@@ -6,6 +6,8 @@ use super::*;
 struct Selection {
     transactions: Vec<String>,
     #[cfg(target_os = "linux")]
+    privileged: bool,
+    #[cfg(target_os = "linux")]
     finalization: Option<String>,
 }
 
@@ -146,11 +148,28 @@ pub(super) fn can_cleanup(record: &OperationRecord) -> bool {
 }
 
 #[cfg(target_os = "linux")]
-fn run(selections: &[Selection], progress: &mut impl FnMut(String)) -> Outcome {
+fn run(
+    selections: &[Selection],
+    platform: &dyn PlatformOps,
+    progress: &mut impl FnMut(String),
+) -> Outcome {
     let mut outcome = Outcome::default();
     let result = (|| -> Result<(), PlatformError> {
+        for selection in selections.iter().filter(|selection| selection.privileged) {
+            progress("Requesting administrator permission to clear retained Copy data…".into());
+            privileged_copy_activity::execute_recovery(
+                platform,
+                PrivilegedCommand::CleanupCopy {
+                    transactions: selection.transactions.clone(),
+                },
+            )?;
+            outcome
+                .completed
+                .extend(selection.transactions.iter().cloned());
+        }
         let finalizations = selections
             .iter()
+            .filter(|selection| !selection.privileged)
             .filter_map(|selection| selection.finalization.clone())
             .collect::<std::collections::BTreeSet<_>>();
         for id in finalizations {
@@ -368,6 +387,8 @@ impl OttrinApp {
             .map(|record| Selection {
                 transactions: transactions(record),
                 #[cfg(target_os = "linux")]
+                privileged: privileged_copy_activity::is_privileged(record),
+                #[cfg(target_os = "linux")]
                 finalization: record
                     .retained_copy
                     .as_ref()
@@ -457,6 +478,8 @@ impl OttrinApp {
         let (tx, rx) = mpsc::channel();
         let active = selected.clone();
         let repaint = self.result_repaint.clone();
+        #[cfg(target_os = "linux")]
+        let platform = Arc::clone(&self.platform);
         let spawn = std::thread::Builder::new()
             .name("ottrin-copy-cleanup".into())
             .spawn(move || {
@@ -477,6 +500,8 @@ impl OttrinApp {
                     };
                 let outcome = run(
                     &selected,
+                    #[cfg(target_os = "linux")]
+                    platform.as_ref(),
                     #[cfg(target_os = "windows")]
                     &windows_plan,
                     #[cfg(target_os = "windows")]

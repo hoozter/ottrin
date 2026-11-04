@@ -325,7 +325,14 @@ fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap complet
    but returns Failed because the helper uses generic execute_command without a
    caller capable of retaining Copy Undo receipts; its transaction stage remains.
    Root verification of destination bytes/ownership was not reached, so this is a
-   failed operation gate, not positive Copy acceptance. Evidence:
+   failed operation gate, not positive Copy acceptance. Linux source now returns
+   canonical durable Copy references through the helper and records their Activity
+   Undo/cleanup ownership, including partial failures. Five recovery tests,495 UI
+   tests, nine helper tests, strict Linux/Windows lint and actual ordinary-user
+   stdio Copy/Undo/cleanup pass; this is not newly packaged/elevated acceptance.
+   `privileged-copy-current/SOURCE_CHECKS.json` records exact source scope.
+   Windows privileged Copy and ordinary-user rediscovery of elevated-account Copy
+   activity after restarting remain open. Evidence:
    `linux-local-seat-current/ASSESSMENT.json`. Carry guarded receipt/recovery/cleanup
    ownership across the privileged boundary; do not suppress the error or silently
    discard Undo. Then verify real application retry, actual login/reboot and remaining

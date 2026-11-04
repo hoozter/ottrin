@@ -1,0 +1,13 @@
+{
+  "status": "pass actual helper stdio Copy/Undo/cleanup lifecycle",
+  "helper_sha256": "c82c5d226a82fe4e52f67a83df7f9b3946fd48bad3f364a41c6d403ee3a7f68d",
+  "scope": "Actual current debug helper stdio JSON under ordinary user and disposable HOME/XDG; not pkexec or packaged/local-seat acceptance",
+  "cases": [
+    "Fresh helper processes: exact Copy JSON returns durable references, Undo restores overwritten original/removes new publication, explicit cleanup removes stages",
+    "Changed publication refuses Undo without mutation",
+    "Explicit cleanup preserves changed publication",
+    "Malformed, empty and unknown references refused across both IPC actions"
+  ],
+  "source_preserved": true,
+  "owned_profile_removed": true
+}

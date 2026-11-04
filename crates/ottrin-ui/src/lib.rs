@@ -1,4 +1,6 @@
 #[cfg(target_os = "linux")]
+mod privileged_copy_activity;
+#[cfg(target_os = "linux")]
 mod startup_notification;
 #[cfg(target_os = "linux")]
 use ottrin_platform::LinuxMoveRecoveryPlan as NativeMoveRecoveryPlan;
@@ -1083,6 +1085,11 @@ struct TextEditUndoReceipt {
 
 #[derive(Debug, Clone)]
 enum CopyBatchUndoReceipt {
+    #[cfg(target_os = "linux")]
+    Privileged {
+        reference: ottrin_core::PrivilegedCopyReceipt,
+        pending: bool,
+    },
     // Completed session receipts retain their transaction ownership after a stop.
     Session {
         receipts: Vec<PathMoveUndoReceipt>,
@@ -1095,6 +1102,8 @@ enum CopyBatchUndoReceipt {
 impl CopyBatchUndoReceipt {
     fn remaining(&self) -> usize {
         match self {
+            #[cfg(target_os = "linux")]
+            Self::Privileged { pending, .. } => usize::from(*pending),
             Self::Session { remaining, .. } => *remaining,
             #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Retained(plan) => plan.remaining(),
@@ -1102,6 +1111,12 @@ impl CopyBatchUndoReceipt {
     }
     fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         match self {
+            #[cfg(target_os = "linux")]
+            Self::Privileged { reference, .. } => reference
+                .paths
+                .iter()
+                .map(|(before, after)| (before.as_path(), after.as_path()))
+                .collect(),
             Self::Session { receipts, .. } => receipts
                 .iter()
                 .flat_map(PathMoveUndoReceipt::path_pairs)
@@ -1117,6 +1132,17 @@ impl CopyBatchUndoReceipt {
     ) -> Result<(), PlatformError> {
         progress(0)?;
         match self {
+            #[cfg(target_os = "linux")]
+            Self::Privileged { reference, pending } => {
+                privileged_copy_activity::execute_recovery(
+                    platform,
+                    PrivilegedCommand::UndoCopy {
+                        transactions: reference.transactions.clone(),
+                    },
+                )?;
+                *pending = false;
+                Ok(())
+            }
             Self::Session {
                 receipts,
                 remaining,
@@ -2000,6 +2026,10 @@ fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
             .collect();
     }
     match &token.receipt {
+        #[cfg(target_os = "linux")]
+        OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Privileged { reference, .. }) => {
+            reference.transactions.clone()
+        }
         OperationUndoReceipt::PathMove(receipt) => receipt
             .copy_transaction_id()
             .map(str::to_owned)
@@ -11098,8 +11128,10 @@ impl OttrinApp {
         let PendingPrivilegedRetry {
             cmd,
             tab_id: refresh_tab,
-            ..
+            bindings: retry_bindings,
         } = retry;
+        #[cfg(not(target_os = "linux"))]
+        let _ = &retry_bindings;
         if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
             self.pending_privileged_retry = None;
             self.reject_unavailable_location_operation(&cmd, &location);
@@ -11124,6 +11156,8 @@ impl OttrinApp {
             .platform
             .execute_privileged(&req)
             .map_err(|e| e.to_string())?;
+        #[cfg(target_os = "linux")]
+        self.record_privileged_copy(&repair_cmd, &res, refresh_tab, retry_bindings)?;
         match res.status {
             PrivilegedStatus::Success => {
                 if let FileCommand::Delete { targets, .. } = &repair_cmd {

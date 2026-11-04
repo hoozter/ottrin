@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling glib-sys v0.20.10
+   Compiling gobject-sys v0.20.10
+   Compiling gio-sys v0.20.10
+   Compiling glib v0.20.12
+   Compiling gio v0.20.12
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 1m 02s
+     Running unittests src/bin/ottrin-priv-helper.rs (target/debug/deps/ottrin_priv_helper-54132b059e6f738d)
+
+running 9 tests
+test setup::tests::refuses_symlink_and_writable_namespaces ... ok
+test tests::install_system_locate_maintenance_refuses_a_symlink_job_path ... ok
+test tests::install_system_locate_maintenance_creates_owned_executable_job ... ok
+test tests::update_system_locate_database_runs_the_fixed_updater_operation ... ok
+test tests::remove_system_locate_maintenance_deletes_only_the_owned_job ... ok
+test setup::tests::modified_portal_definition_is_preserved_before_any_helper_replacement ... ok
+test setup::tests::shared_portal_definition_lifetime_preserves_modified_and_foreign_files ... ok
+test setup::tests::refuses_symlink_target_without_touching_destination ... ok
+test setup::tests::install_and_update_preserve_other_files_and_set_permissions ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

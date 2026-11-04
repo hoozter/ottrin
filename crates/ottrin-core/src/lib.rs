@@ -1250,6 +1250,8 @@ pub enum FileCommand {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PrivilegedCommand {
     File(FileCommand),
+    UndoCopy { transactions: Vec<String> },
+    CleanupCopy { transactions: Vec<String> },
     ListDirectory { path: PathBuf, show_hidden: bool },
     SystemLocateMaintenance(SystemLocateMaintenance),
 }
@@ -1297,6 +1299,16 @@ pub struct PrivilegedResponse {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PrivilegedPayload {
     Entries(Vec<FileEntry>),
+    Copy(PrivilegedCopyReceipt),
+}
+
+/// Presentation and lookup references only. The elevated helper must reopen and
+/// validate its durable journals before Undo or cleanup; paths grant no authority.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PrivilegedCopyReceipt {
+    pub completed_sources: usize,
+    pub transactions: Vec<String>,
+    pub paths: Vec<(PathBuf, PathBuf)>,
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
