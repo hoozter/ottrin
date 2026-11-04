@@ -43,17 +43,23 @@ impl IndexRpc for SearchDaemonClient {
         Ok(bytes)
     }
 }
-struct Snapshot {
-    refreshed: Instant,
-    diagnostics: SearchIndexDiagnostics,
-}
 struct Shared {
-    snapshot: Mutex<Snapshot>,
+    snapshot: Mutex<SearchIndexDiagnostics>,
     refresh_queued: AtomicBool,
     stopped: AtomicBool,
     maintenance_active: AtomicBool,
     active_query: Mutex<Option<Arc<AtomicBool>>>,
     repaint: ResultRepaint,
+}
+impl Shared {
+    fn publish(&self, diagnostics: SearchIndexDiagnostics) {
+        let mut snapshot = self.snapshot.lock().expect("index snapshot");
+        if *snapshot != diagnostics {
+            *snapshot = diagnostics;
+            drop(snapshot);
+            self.repaint.wake();
+        }
+    }
 }
 enum Command {
     Configure(SearchConfig),
@@ -132,10 +138,7 @@ impl RemoteIndex {
             SearchIndexDiagnostics::unavailable("Connecting to the index service");
         diagnostics.status = SearchIndexStatus::Loading;
         let shared = Arc::new(Shared {
-            snapshot: Mutex::new(Snapshot {
-                refreshed: Instant::now(),
-                diagnostics,
-            }),
+            snapshot: Mutex::new(diagnostics),
             refresh_queued: AtomicBool::new(false),
             stopped: AtomicBool::new(false),
             maintenance_active: AtomicBool::new(false),
@@ -151,20 +154,14 @@ impl RemoteIndex {
                 let mut client: Option<Arc<dyn IndexRpc>> = None;
                 let mut config = config;
                 let mut needs_configuration = true;
-                let mut poll_at = Some(Instant::now());
+                let mut poll_at = Instant::now();
                 loop {
-                    let command = match poll_at {
-                        Some(at) => match commands
-                            .recv_timeout(at.saturating_duration_since(Instant::now()))
-                        {
-                            Ok(command) => command,
-                            Err(mpsc::RecvTimeoutError::Timeout) => Command::Refresh,
-                            Err(mpsc::RecvTimeoutError::Disconnected) => break,
-                        },
-                        None => match commands.recv() {
-                            Ok(command) => command,
-                            Err(_) => break,
-                        },
+                    let command = match commands
+                        .recv_timeout(poll_at.saturating_duration_since(Instant::now()))
+                    {
+                        Ok(command) => command,
+                        Err(mpsc::RecvTimeoutError::Timeout) => Command::Refresh,
+                        Err(mpsc::RecvTimeoutError::Disconnected) => break,
                     };
                     if state.stopped.load(Ordering::Acquire) || matches!(command, Command::Stop) {
                         break;
@@ -259,51 +256,39 @@ impl RemoteIndex {
                     }
                     match operation {
                         Ok(Some(diagnostics)) => {
-                            poll_at = match diagnostics.status {
-                                SearchIndexStatus::Ready
-                                    if !state.maintenance_active.load(Ordering::Acquire) =>
-                                {
-                                    None
-                                }
-                                SearchIndexStatus::Ready => {
-                                    Some(Instant::now() + Duration::from_millis(250))
-                                }
-                                SearchIndexStatus::Loading | SearchIndexStatus::Indexing => {
-                                    Some(Instant::now() + Duration::from_millis(250))
-                                }
-                                SearchIndexStatus::Unavailable => {
-                                    Some(Instant::now() + Duration::from_secs(2))
-                                }
-                            };
-                            *state.snapshot.lock().expect("index snapshot") = Snapshot {
-                                refreshed: Instant::now(),
-                                diagnostics,
-                            };
-                            state.repaint.wake();
+                            poll_at = Instant::now()
+                                + match diagnostics.status {
+                                    SearchIndexStatus::Ready
+                                        if !state.maintenance_active.load(Ordering::Acquire) =>
+                                    {
+                                        Duration::from_secs(2)
+                                    }
+                                    SearchIndexStatus::Ready => Duration::from_millis(250),
+                                    SearchIndexStatus::Loading | SearchIndexStatus::Indexing => {
+                                        Duration::from_millis(250)
+                                    }
+                                    SearchIndexStatus::Unavailable => Duration::from_secs(2),
+                                };
+                            state.publish(diagnostics);
                         }
                         Ok(None) => {
                             if !is_query {
-                                poll_at = Some(Instant::now());
+                                poll_at = Instant::now();
                             }
                         }
                         Err(error) => {
                             client = None;
                             needs_configuration = true;
-                            *state.snapshot.lock().expect("index snapshot") = Snapshot {
-                                refreshed: Instant::now(),
-                                diagnostics: SearchIndexDiagnostics::unavailable(error),
-                            };
-                            state.repaint.wake();
-                            poll_at = Some(Instant::now() + Duration::from_secs(2));
+                            state.publish(SearchIndexDiagnostics::unavailable(error));
+                            poll_at = Instant::now() + Duration::from_secs(2);
                         }
                     }
                 }
             });
         if let Err(error) = worker {
-            shared.snapshot.lock().expect("index snapshot").diagnostics =
-                SearchIndexDiagnostics::unavailable(format!(
-                    "Cannot start index connection worker: {error}"
-                ));
+            *shared.snapshot.lock().expect("index snapshot") = SearchIndexDiagnostics::unavailable(
+                format!("Cannot start index connection worker: {error}"),
+            );
         }
         Self {
             handle: Handle { sender, shared },
@@ -313,14 +298,12 @@ impl RemoteIndex {
         self.handle.clone()
     }
     pub(crate) fn diagnostics(&self) -> SearchIndexDiagnostics {
-        let snapshot = self.handle.shared.snapshot.lock().expect("index snapshot");
-        let stale = snapshot.refreshed.elapsed() >= Duration::from_secs(2);
-        let diagnostics = snapshot.diagnostics.clone();
-        drop(snapshot);
-        if stale {
-            self.refresh();
-        }
-        diagnostics
+        self.handle
+            .shared
+            .snapshot
+            .lock()
+            .expect("index snapshot")
+            .clone()
     }
     pub(crate) fn refresh(&self) {
         if !self
@@ -354,11 +337,9 @@ impl RemoteIndex {
             .map_err(|_| "Index connection worker stopped".to_string())?
     }
     fn record_error(&self, error: String) {
-        *self.handle.shared.snapshot.lock().expect("index snapshot") = Snapshot {
-            refreshed: Instant::now(),
-            diagnostics: SearchIndexDiagnostics::unavailable(error),
-        };
-        self.handle.shared.repaint.wake();
+        self.handle
+            .shared
+            .publish(SearchIndexDiagnostics::unavailable(error));
     }
 }
 struct MaintenanceCompletion {
@@ -457,6 +438,7 @@ mod tests {
     struct Trace {
         events: Mutex<Vec<String>>,
         diagnostics: AtomicUsize,
+        indexed_items: AtomicUsize,
         hold_query: AtomicBool,
         fail_rebuild: AtomicBool,
         hold_maintenance: AtomicBool,
@@ -501,6 +483,7 @@ mod tests {
             let mut diagnostics = SearchIndexDiagnostics::unavailable("");
             diagnostics.status = SearchIndexStatus::Ready;
             diagnostics.last_error = None;
+            diagnostics.indexed_items = self.trace.indexed_items.load(Ordering::Acquire);
             Ok(diagnostics)
         }
         fn query(
@@ -694,7 +677,7 @@ mod tests {
         assert!(trace.events.lock().unwrap()[0].contains("latest-root"));
     }
     #[test]
-    fn ready_connections_have_no_periodic_idle_rpc() {
+    fn ready_snapshot_reads_do_not_enqueue_rpc() {
         let trace = Arc::new(Trace::default());
         let state = trace.clone();
         let remote = RemoteIndex::with_factory(
@@ -709,6 +692,50 @@ mod tests {
             remote.diagnostics();
         }
         assert_eq!(trace.diagnostics.load(Ordering::Acquire), before);
+    }
+    #[test]
+    fn ready_changes_reach_a_sleeping_gui_without_repainting_unchanged_polls() {
+        let trace = Arc::new(Trace::default());
+        let state = trace.clone();
+        let repaint = ResultRepaint::default();
+        let remote =
+            RemoteIndex::with_factory(SearchConfig::default(), repaint.clone(), move || {
+                Ok(Arc::new(Fake::new(state.clone())))
+            });
+        wait_for(|| remote.diagnostics().status == SearchIndexStatus::Ready);
+        let ctx = egui::Context::default();
+        let (wake, wakes) = mpsc::channel();
+        ctx.set_request_repaint_callback(move |info| {
+            let _ = wake.send(info.delay);
+        });
+        repaint.bind(&ctx);
+        // No UI snapshot reads or explicit refresh commands drive these polls.
+        let deadline = Instant::now() + Duration::from_secs(6);
+        while trace.diagnostics.load(Ordering::Acquire) < 3 {
+            assert!(
+                Instant::now() < deadline,
+                "Ready worker stopped observing the daemon"
+            );
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        assert!(
+            wakes.try_recv().is_err(),
+            "Unchanged status repainted the GUI"
+        );
+        trace.indexed_items.store(1, Ordering::Release);
+        assert_eq!(
+            wakes.recv_timeout(Duration::from_secs(4)).unwrap(),
+            Duration::ZERO
+        );
+        assert_eq!(
+            remote.diagnostics().indexed_items,
+            1,
+            "Snapshot must precede wake"
+        );
+        let (dropped, gone) = mpsc::channel();
+        *trace.dropped.lock().unwrap() = Some(dropped);
+        drop(remote);
+        gone.recv_timeout(Duration::from_secs(2)).unwrap();
     }
     #[test]
     fn long_maintenance_does_not_hold_the_status_and_query_worker() {

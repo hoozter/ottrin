@@ -1,0 +1,62 @@
+{
+  "status": "pass source UI tests/native and Windows strict lint/format; native GUI and packaging separate",
+  "scope": "Change-driven storage/index GUI observation: no unchanged idle repaint, background changes remain observable, fresh mutation guards and bounded close preserved; full UI/native and Windows strict lint/format. Package and actual idle CPU effect remain separate.",
+  "checks": [
+    {
+      "name": "full-ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-ui",
+        "-p",
+        "ottrin-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ]
+}

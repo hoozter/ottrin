@@ -1,0 +1,18 @@
+{
+  "source_head": "767a076cde24f4587177dca2d36ae3c7880cf627",
+  "observed_at": "2026-11-04T00:41:51.067915+00:00",
+  "compiler_roots": {
+    "target/debug/deps": 41674554097,
+    "target/debug/incremental": 23497764042,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33298645234,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39676099440,
+    "target/release/deps": 4379884555,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+  },
+  "staging_roots": {
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": false,
+    ".hermes/packaging-tmp/.windows-picker-stage": false
+  },
+  "purpose": "Remove unchanged idle GUI refreshes while preserving storage/index observation and fresh mutation guards; baseline packages remain source748a until new package/native checks pass",
+  "cleanup_owner": "gui-idle-refresh-current"
+}

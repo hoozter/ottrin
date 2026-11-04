@@ -162,7 +162,7 @@ impl Default for IndexState {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SearchIndexDiagnostics {
     pub status: SearchIndexStatus,
     /// True only while SQLite is deserializing a matching completed snapshot;

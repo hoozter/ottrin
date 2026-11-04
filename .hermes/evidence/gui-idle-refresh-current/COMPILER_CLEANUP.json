@@ -1,0 +1,33 @@
+{
+  "status": "pass source-validation cleanup; latest tested binary and useful compiler caches retained for package builds",
+  "baseline": {
+    "target/debug/deps": 41674554097,
+    "target/debug/incremental": 23497764042,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33298645234,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39676099440,
+    "target/release/deps": 4379884555,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+  },
+  "current": {
+    "target/debug/deps": 41674751911,
+    "target/debug/incremental": 23504670533,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33298656714,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39678093236,
+    "target/release/deps": 4379884555,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853021631
+  },
+  "delta": {
+    "target/debug/deps": 197814,
+    "target/debug/incremental": 6906491,
+    "target/x86_64-pc-windows-gnu/debug/deps": 11480,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 1993796,
+    "target/release/deps": 0,
+    "target/x86_64-pc-windows-gnu/release/deps": 0
+  },
+  "obsolete_incremental_sessions_removed": 25,
+  "all_reviewed_candidates_absent": true,
+  "all_recorded_newest_sessions_retained": true,
+  "final_obsolete_incremental_candidates": 0,
+  "refusals": "Transient unreadable processes1420230/1420467 exited before retry; later unrelated cargo1420640 also exited. No new identity exceptions or validation bypass. Canonical helper removed9sessions before interruptions and16on completion.",
+  "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc replaced in place with the same compiler/profile/features;481UI tests pass,1existing ignored. No extra obsolete test executable was produced."
+}

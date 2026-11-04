@@ -98,6 +98,18 @@ Continue in this order:
    The archive producer now retains the same guest process through known transient
    observation failures and transfers a size/hash-verified archive in offset-addressed
    chunks; earlier partial/failed capture-delivery cases are explicitly retained.
+   Current source removes the unconditional storage repaint timer. A background
+   storage observer publishes only changed roots, rejects results older than a
+   fresh file-operation guard and does not block app close on an OS drive query.
+   It starts only when the locations rail is used. The remote index worker now
+   observes Ready status independently of GUI frames and wakes the GUI only for
+   changed diagnostics. The initial unknown storage snapshot does not clear a
+   user's selected indexed volumes. All481 UI tests pass (one existing ignored),
+   including actual background observation/wakeup and removal/reconnect checks;
+   strict native/Windows UI/app lint and formatting pass. New packages, hosted
+   source gates and the controlled native CPU measurement remain pending under
+   `.hermes/evidence/gui-idle-refresh-current/`; the seven published packages and
+   failed CPU baseline above remain authoritative until actual candidate acceptance.
    Continue broader appearance/control/platform acceptance; this is not a full
    Windows39-control or physical/human assistive acceptance. Watcher polling retains
    its deterministic lock/recovery/error/hit scope; current source CI is green.

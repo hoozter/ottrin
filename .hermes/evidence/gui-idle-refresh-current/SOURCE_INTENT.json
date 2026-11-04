@@ -1,0 +1,12 @@
+{
+  "baseline_runtime_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "production_changes": [
+    "crates/ottrin-ui/src/storage_observer.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/remote_index.rs",
+    "crates/ottrin-search/src/lib.rs"
+  ],
+  "purpose": "Avoid unchanged idle GUI frames without losing background storage/index observations or fresh file-operation guards. No implementation or dependency version change to native window geometry, themes, previews, helper/picker/folder integration or index daemon itself; diagnostics only adds Eq for shared publication comparison.",
+  "source_checks": "SOURCE_CHECKS.json:481 UI tests pass,1existing ignored; native/Windows strict UI/app all-target lint and formatting pass",
+  "performance_scope": "Unproved until actual staged package measurements. Baseline source748a:Native73.062/OpenGL7.758percent onecore/30sec, signed VirtIO144DPI one-file root ready before/after. Preserve old stable packages until actual candidate gates pass."
+}

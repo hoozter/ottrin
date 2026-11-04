@@ -82,6 +82,7 @@ mod config;
 mod operation_paths;
 #[cfg(any(unix, target_os = "windows"))]
 mod remote_index;
+mod storage_observer;
 mod transfer_probe;
 use operation_paths::{OperationPath, OperationPathIndex};
 mod copy_activity_cleanup;
@@ -158,7 +159,6 @@ use thumbnail_cache::{
 };
 use window_chrome::{WmBtn, render_custom_titlebar, wm_btn};
 
-const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 const FILE_NAME_INPUT_HEIGHT: f32 = 38.0;
 const CREATION_MODAL_ACTION_SIZE: Vec2 = Vec2::new(84.0, 32.0);
 
@@ -193,10 +193,6 @@ fn creation_action_label(action: &str, enabled: bool, colors: &Colors) -> RichTe
         mix_color(colors.text_muted, colors.panel_raised, 0.18)
     };
     RichText::new(action).color(color)
-}
-
-fn schedule_storage_location_refresh(ctx: &Context) {
-    ctx.request_repaint_after(STORAGE_LOCATION_REFRESH_INTERVAL);
 }
 
 fn rubber_band_may_start(cells: &[(PathBuf, Rect)], pointer: egui::Pos2) -> bool {
@@ -3664,6 +3660,7 @@ pub struct OttrinApp {
     /// Last discovery snapshot. Roots are deliberately independent even when a
     /// backend reports the same identity at multiple mount points.
     known_storage_locations: Vec<StorageLocation>,
+    storage_observer: storage_observer::StorageObserver,
     /// Tabs isolated because their selected discovered root is no longer present.
     unavailable_locations: HashMap<u64, UnavailableLocation>,
     /// Retained provenance for stale clipboard/deferred/trash references after
@@ -3981,6 +3978,7 @@ impl OttrinApp {
             #[cfg(target_os = "windows")]
             copy_work: Default::default(),
             known_storage_locations: Vec::new(),
+            storage_observer: storage_observer::StorageObserver::new(result_repaint.clone()),
             unavailable_locations: HashMap::new(),
             unavailable_root_tombstones: Vec::new(),
             next_request_id: 1,
@@ -7811,6 +7809,11 @@ impl OttrinApp {
     /// `discover_storage_locations`; unsupported platforms return no roots and
     /// must not be represented as protected by this feature.
     fn reconcile_storage_location_availability(&mut self, locations: Vec<StorageLocation>) {
+        self.storage_observer.record_current(locations.clone());
+        self.apply_storage_location_availability(locations);
+    }
+
+    fn apply_storage_location_availability(&mut self, locations: Vec<StorageLocation>) {
         let previous = std::mem::replace(&mut self.known_storage_locations, locations);
         let current = &self.known_storage_locations;
         let mut refreshes = Vec::new();
@@ -12647,12 +12650,23 @@ impl OttrinApp {
     fn render_bookmarks_row(&mut self, ctx: &Context) -> LocationsRailLayout {
         let c = self.colors;
         let home = default_home_dir();
-        let storage_roots = discover_storage_locations();
-        self.reconcile_storage_location_availability(storage_roots.clone());
-        if reconcile_indexed_volume_roots(&mut self.state.config.search, &storage_roots) {
-            self.search_service
-                .update_config(self.state.config.search.clone());
+        // Inspector-only launches never need a storage observation worker.
+        #[cfg(not(test))]
+        self.storage_observer.start();
+        if let Some(locations) = self.storage_observer.snapshot() {
+            if locations != self.known_storage_locations {
+                self.apply_storage_location_availability(locations);
+            }
+            // Absence of the first observation is unknown, not an empty machine.
+            if reconcile_indexed_volume_roots(
+                &mut self.state.config.search,
+                &self.known_storage_locations,
+            ) {
+                self.search_service
+                    .update_config(self.state.config.search.clone());
+            }
         }
+        let storage_roots = self.known_storage_locations.clone();
 
         // Ensure default bookmarks exist on first run
         if self.state.config.bookmarks.is_empty() {
@@ -23349,10 +23363,6 @@ impl eframe::App for OttrinApp {
             return;
         }
         self.sync_search_scope_root();
-        // The locations rail reconciles direct-navigation roots while rendering.
-        // Wake an otherwise idle UI so mount, removal, and mapping changes become visible.
-        schedule_storage_location_refresh(ctx);
-
         let search_indexing = self.search_started
             && matches!(
                 self.search_service.diagnostics().status,
@@ -34369,23 +34379,51 @@ mod tests {
     }
 
     #[test]
-    fn storage_location_refresh_wakes_an_idle_ui_within_the_bound() {
+    fn an_initial_storage_observation_pending_is_not_a_missing_indexed_volume() {
+        let root = tempfile::tempdir().unwrap();
+        let mut app = OttrinApp::default();
+        app.state.config.search.indexed_volumes = vec![IndexedVolumeLocation {
+            identity: "selected-volume".into(),
+            last_known_path: root.path().to_path_buf(),
+        }];
+        app.state.config.search.active_indexed_volume_roots = vec![root.path().to_path_buf()];
+        let search = app.state.config.search.clone();
+        assert!(app.storage_observer.snapshot().is_none());
         let ctx = Context::default();
-        let delays = Arc::new(std::sync::Mutex::new(Vec::new()));
-        let captured_delays = Arc::clone(&delays);
-        ctx.set_request_repaint_callback(move |info| {
-            captured_delays.lock().unwrap().push(info.delay);
+        let _ = ctx.run(Default::default(), |ctx| {
+            app.render_bookmarks_row(ctx);
         });
+        assert_eq!(app.state.config.search, search);
+    }
 
-        schedule_storage_location_refresh(&ctx);
-
-        assert!(
-            delays
-                .lock()
-                .unwrap()
-                .iter()
-                .any(|delay| *delay <= STORAGE_LOCATION_REFRESH_INTERVAL)
-        );
+    #[test]
+    fn storage_observations_reconcile_removal_and_reconnect_without_gui_discovery() {
+        let root = tempfile::tempdir().unwrap();
+        let location = StorageLocation {
+            path: root.path().to_path_buf(),
+            identity: "test-slot".into(),
+            stable_identity: Some("test-volume".into()),
+            kind: StorageLocationKind::Removable,
+            display_name: Some("Observed volume".into()),
+        };
+        let mut app = OttrinApp::default();
+        let search = app.state.config.search.clone();
+        let tab = app.state.active_tab().id;
+        app.state.active_tab_mut().current_dir = root.path().to_path_buf();
+        let ctx = Context::default();
+        for roots in [vec![location.clone()], vec![], vec![location]] {
+            let missing = roots.is_empty();
+            app.storage_observer.record_current(roots.clone());
+            let _ = ctx.run(Default::default(), |ctx| {
+                app.render_bookmarks_row(ctx);
+            });
+            assert_eq!(app.known_storage_locations, roots);
+            assert_eq!(app.unavailable_locations.contains_key(&tab), missing);
+            assert_eq!(
+                app.state.config.search, search,
+                "Discovered storage is not an indexing opt-in"
+            );
+        }
     }
 
     #[test]
