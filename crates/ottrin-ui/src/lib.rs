@@ -2802,6 +2802,17 @@ struct UiSearchService {
 }
 
 impl UiSearchService {
+    fn uses_index_daemon(&self) -> bool {
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
+        {
+            self.remote.is_some()
+        }
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
+        {
+            false
+        }
+    }
+
     fn new(config: SearchConfig, repaint: ResultRepaint) -> Self {
         #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
@@ -3739,36 +3750,23 @@ impl Drop for OttrinApp {
 }
 
 impl OttrinApp {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        egui_extras::install_image_loaders(&cc.egui_ctx);
-
-        // Register Material Icons as a fallback font.
-        // PUA codepoints (U+E000–U+F8FF) used by Material icons are not in
-        // NotoSans, so egui automatically falls back to this font for them.
-        install_application_fonts(&cc.egui_ctx);
-
-        let config = load_config();
-        let mut app =
-            Self::new_with_config_and_graphics_status(config, GraphicsRuntimeStatus::default());
-        app.result_repaint.bind(&cc.egui_ctx);
-        app.system_appearance = system_appearance::SystemAppearance::start(cc.egui_ctx.clone());
-        app.reapply_theme(&cc.egui_ctx);
-        app
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Result<Self, String> {
+        Self::new_with_graphics_status(cc, GraphicsRuntimeStatus::default())
     }
 
     pub fn new_with_graphics_status(
         cc: &eframe::CreationContext<'_>,
         graphics_runtime: GraphicsRuntimeStatus,
-    ) -> Self {
+    ) -> Result<Self, String> {
         egui_extras::install_image_loaders(&cc.egui_ctx);
         install_application_fonts(&cc.egui_ctx);
 
-        let config = load_config();
+        let config = load_config()?;
         let mut app = Self::new_with_config_and_graphics_status(config, graphics_runtime);
         app.result_repaint.bind(&cc.egui_ctx);
         app.system_appearance = system_appearance::SystemAppearance::start(cc.egui_ctx.clone());
         app.reapply_theme(&cc.egui_ctx);
-        app
+        Ok(app)
     }
 
     /// Open the active tab at a directory supplied by the launcher.
@@ -4117,9 +4115,14 @@ impl OttrinApp {
         self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
     }
 
-    fn persist_config(&self) {
+    fn persist_config(&mut self) -> bool {
         // Editor previews live in ThemeEditorState, never in the persisted configuration.
-        save_config(&self.state.config);
+        if let Err(error) = save_config(&self.state.config) {
+            eprintln!("ottrin: {error}");
+            self.set_status_message(error, false, 12);
+            return false;
+        }
+        true
     }
 
     fn effective_colors(&self, system_theme: Option<egui::Theme>) -> Colors {
@@ -5308,17 +5311,12 @@ impl OttrinApp {
                 return;
             }
             let draft = self.theme_editor_draft(name.clone());
-            if let Some(saved) = self.state.config.custom_themes.get_mut(idx) {
+            let mut config = self.state.config.clone();
+            if let Some(saved) = config.custom_themes.get_mut(idx) {
                 *saved = draft;
-                self.state.config.active_custom_theme = Some(name);
+                config.active_custom_theme = Some(name);
             }
-            self.theme_status = Some((
-                "Custom theme updated".to_string(),
-                true,
-                Instant::now() + Duration::from_secs(3),
-            ));
-            self.theme_editor.open = false;
-            self.reapply_theme(ctx);
+            self.commit_theme_editor(ctx, config, "Custom theme updated".into());
         } else {
             // Editing a built-in preset: save as a new custom theme instead
             // of overwriting the built-in.
@@ -5331,11 +5329,6 @@ impl OttrinApp {
     }
 
     fn save_theme_editor_as_inner(&mut self, ctx: &Context) {
-        self.do_save_theme_as();
-        self.reapply_theme(ctx);
-    }
-
-    fn do_save_theme_as(&mut self) {
         let name = self.theme_editor.save_as_name.trim().to_string();
         if name.is_empty() {
             self.theme_status = Some((
@@ -5348,14 +5341,22 @@ impl OttrinApp {
         // Creating a theme or a copy never replaces another saved theme.
         let name = self.generate_save_as_name(&name);
         let saved = self.theme_editor_draft(name.clone());
-        self.state.config.custom_themes.push(saved);
-        self.state.config.active_custom_theme = Some(name.clone());
+        let mut config = self.state.config.clone();
+        config.custom_themes.push(saved);
+        config.active_custom_theme = Some(name.clone());
+        self.commit_theme_editor(ctx, config, format!("Saved \"{name}\""));
+    }
+
+    fn commit_theme_editor(&mut self, ctx: &Context, config: AppConfig, message: String) {
+        if let Err(error) = save_config(&config) {
+            eprintln!("ottrin: {error}");
+            self.theme_status = Some((error, false, Instant::now() + Duration::from_secs(12)));
+            return;
+        }
+        self.state.config = config;
         self.theme_editor.open = false;
-        self.theme_status = Some((
-            format!("Saved \"{}\"", name),
-            true,
-            Instant::now() + Duration::from_secs(3),
-        ));
+        self.theme_status = Some((message, true, Instant::now() + Duration::from_secs(3)));
+        self.reapply_theme(ctx);
     }
 
     fn export_theme_editor_json(&mut self, ctx: &Context) {
@@ -21543,16 +21544,18 @@ impl OttrinApp {
                                             let check = if selected { MI_CHECK } else { "  " };
                                             if ui.add(aligned_menu_button(check, "", label, &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                                 self.state.config.graphics_renderer = preference;
-                                                self.persist_config();
-                                                self.set_status_message("Graphics preference saved. Restart Ottrin to apply it.", true, 8);
+                                                if self.persist_config() {
+ self.set_status_message("Graphics preference saved. Restart Ottrin to apply it.", true, 8);
+}
                                             }
                                         }
                                         if self.state.config.graphics_renderer != GraphicsRendererPreference::Automatic
                                             && ui.add(egui::Button::new("Reset to Automatic").themed(&c)).clicked()
                                         {
                                             self.state.config.graphics_renderer = GraphicsRendererPreference::Automatic;
-                                            self.persist_config();
-                                            self.set_status_message("Graphics preference reset. Restart Ottrin to apply it.", true, 8);
+                                            if self.persist_config() {
+ self.set_status_message("Graphics preference reset. Restart Ottrin to apply it.", true, 8);
+}
                                         }
                                         ui.add_space(14.0);
                                         ui.separator();
@@ -21998,8 +22001,9 @@ impl OttrinApp {
                                                 ).color(c.text_muted).size(10.5 * c.font_scale).italics());
                                                 if ui.add(egui::Button::new("Finish search setup").themed(&c)).clicked() {
                                                     self.state.config.search_setup_completed = true;
-                                                    self.persist_config();
-                                                    self.set_status_message("Search setup saved.", true, 5);
+                                                    if self.persist_config() {
+ self.set_status_message("Search setup saved.", true, 5);
+}
                                                 }
                                             });
                                         ui.add_space(12.0);
@@ -22667,7 +22671,7 @@ impl OttrinApp {
 
                                     ui.add_space(12.0);
                                     settings_section_icon(ui, c, MI_STORAGE, "Indexing & performance", "Recommended setup and startup fallbacks.", |ui| {
-                                        let persistent_index_daemon = cfg!(target_os = "linux");
+                                        let index_daemon_backend = self.search_service.uses_index_daemon();
                                         let (locate_ok, updatedb_ok) = if platform_capabilities.system_locate_controls_visible {
                                             (
                                                 ottrin_search::SearchService::system_locate_available(),
@@ -22723,10 +22727,10 @@ impl OttrinApp {
                                                     if diag.configured_root_count == 0 {
                                                         "idle; no filename or content folders selected"
                                                     } else if diag.watcher_ready {
-                                                        if persistent_index_daemon {
-                                                            "active in the per-user index daemon"
+                                                        if index_daemon_backend {
+                                                            "active in the index daemon"
                                                         } else {
-                                                            "active while Ottrin is running"
+                                                            "active in this window’s local index"
                                                         }
                                                     } else if let Some(error) = diag.watcher_last_error.as_deref() {
                                                         error
@@ -22736,17 +22740,11 @@ impl OttrinApp {
                                                         diag.watcher_last_error.as_deref().unwrap_or("Selected folders are unavailable; Ottrin retries automatically.")
                                                     },
                                                 );
-                                                let sqlite_schedule_detail = if sqlite_sched.enabled {
-                                                    format!("{} ({})", sqlite_sched.source, sqlite_sched.detail)
-                                                } else if persistent_index_daemon {
-                                                    "not enabled across logins; Ottrin still starts it for this session".to_string()
-                                                } else {
-                                                    "not configured; changes made while Ottrin is closed need a later refresh".to_string()
-                                                };
+                                                let sqlite_schedule_detail = format!("{} ({})", sqlite_sched.source, sqlite_sched.detail);
                                                 health_row(
                                                     ui,
-                                                    Some(sqlite_sched.enabled),
-                                                    if persistent_index_daemon { "Persistent index daemon" } else { "Background SQLite update" },
+                                                    sqlite_sched.enabled.then_some(true),
+                                                    "Start index at login",
                                                     &sqlite_schedule_detail,
                                                 );
                                                 if platform_capabilities.system_locate_controls_visible {
@@ -22795,10 +22793,10 @@ impl OttrinApp {
                                             });
                                         ui.add_space(12.0);
                                         ui.label(RichText::new("Recommended setup").color(c.text_dim).size(11.5 * c.font_scale).strong());
-                                        ui.label(RichText::new(if persistent_index_daemon {
-                                            "Use Ottrin's SQLite index for rich metadata in selected folders. The per-user daemon keeps it current independently of GUI windows. System filename search can independently cover broader paths."
+                                        ui.label(RichText::new(if index_daemon_backend {
+                                            "Use Ottrin's SQLite index for rich metadata in selected folders. The index daemon keeps it current independently of GUI windows. Automatic startup is separate from its current running state."
                                         } else {
-                                            "Use Ottrin's SQLite index for rich metadata in selected folders. The watcher keeps it current while Ottrin is open. System filename search can independently cover broader paths."
+                                            "Use Ottrin's SQLite index for rich metadata in selected folders. This local index runs only while its window is open."
                                         })
                                             .color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(6.0);
@@ -37381,7 +37379,7 @@ mod tests {
         for view in [ViewMode::List, ViewMode::Miller, ViewMode::Grid] {
             app.set_tab_view_mode(tab_id, view);
             let reopened = OttrinApp::new_with_config_and_graphics_status(
-                load_config(),
+                load_config().expect("valid private test config"),
                 GraphicsRuntimeStatus::default(),
             );
             assert_eq!(reopened.state.active_tab().view_mode, view);

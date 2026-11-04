@@ -74,16 +74,27 @@ fn default_config() -> AppConfig {
     AppConfig::default()
 }
 
-pub fn load_config() -> AppConfig {
+pub fn load_config() -> Result<AppConfig, String> {
     let path = match config_path() {
         Some(p) => p,
-        None => return default_config(),
+        None => return Err("Ottrin could not locate your settings directory.".into()),
     };
     let bytes = match std::fs::read(&path) {
         Ok(b) => b,
-        Err(_) => return default_config(),
+        Err(error)
+            if error.kind() == std::io::ErrorKind::NotFound
+                && std::fs::symlink_metadata(&path).is_err() =>
+        {
+            return Ok(default_config());
+        }
+        Err(error) => {
+            return Err(format!(
+                "Could not read Ottrin settings {}: {error}. The file has been preserved.",
+                path.display()
+            ));
+        }
     };
-    serde_json::from_slice(&bytes).unwrap_or_else(|_| default_config())
+    serde_json::from_slice(&bytes).map_err(|error| format!("Could not load Ottrin settings {}: {error}. Correct the file or move it aside to start with defaults; Ottrin has preserved it.", path.display()))
 }
 
 pub fn remove_config_file() -> Result<u64, String> {
@@ -95,17 +106,48 @@ pub fn remove_config_file() -> Result<u64, String> {
     Ok(removed + remove_file_counting_bytes(&picker)?)
 }
 
-pub(crate) fn save_config(config: &AppConfig) {
-    let path = match config_path() {
-        Some(p) => p,
-        None => return,
+pub(crate) fn save_config(config: &AppConfig) -> Result<(), String> {
+    use std::io::Write;
+    let path = config_path().ok_or("Ottrin could not locate your settings directory.")?;
+    // A file changed or made unreadable since startup must not be replaced by
+    // this process's in-memory settings. Only an absent file uses defaults.
+    load_config()?;
+    // Preserve a user's linked settings file rather than replacing the link.
+    let path = match std::fs::canonicalize(&path) {
+        Ok(target) => target,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => path,
+        Err(error) => {
+            return Err(format!(
+                "Could not resolve Ottrin settings {}: {error}",
+                path.display()
+            ));
+        }
     };
-    if let Some(parent) = path.parent() {
-        let _ = std::fs::create_dir_all(parent);
-    }
-    if let Ok(json) = serde_json::to_string_pretty(config) {
-        let _ = std::fs::write(path, json);
-    }
+    let parent = path
+        .parent()
+        .ok_or("Ottrin settings path has no parent directory.")?;
+    let result = (|| -> Result<(), Box<dyn std::error::Error>> {
+        std::fs::create_dir_all(parent)?;
+        let json = serde_json::to_vec_pretty(config)?;
+        let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
+        temporary.write_all(&json)?;
+        match std::fs::metadata(&path) {
+            Ok(metadata) => {
+                if metadata.permissions().readonly() {
+                    return Err("The settings file is read-only; it has been preserved.".into());
+                }
+                temporary
+                    .as_file()
+                    .set_permissions(metadata.permissions())?;
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+        temporary.as_file().sync_all()?;
+        temporary.persist(&path)?;
+        Ok(())
+    })();
+    result.map_err(|error| format!("Could not save Ottrin settings {}: {error}", path.display()))
 }
 
 fn remove_file_counting_bytes(path: &Path) -> Result<u64, String> {
@@ -126,6 +168,104 @@ mod tests {
     use super::*;
 
     #[test]
+    fn invalid_existing_settings_are_reported_and_never_replaced_by_defaults() {
+        let path = config_path().unwrap();
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        for original in [
+            b"{ broken settings".as_slice(),
+            br#"{"custom_themes":[{"name":"missing base preset"}]}"#,
+        ] {
+            std::fs::write(&path, original).unwrap();
+            let error = load_config().unwrap_err();
+            assert!(error.contains(&path.display().to_string()));
+            assert!(error.contains("preserved"));
+            assert!(save_config(&AppConfig::default()).is_err());
+            assert_eq!(std::fs::read(&path).unwrap(), original);
+            assert_eq!(
+                std::fs::read_dir(path.parent().unwrap()).unwrap().count(),
+                1
+            );
+        }
+    }
+
+    #[test]
+    fn unreadable_settings_location_is_an_error_instead_of_new_defaults() {
+        let path = config_path().unwrap();
+        std::fs::create_dir_all(&path).unwrap();
+        assert!(load_config().is_err());
+        assert!(save_config(&AppConfig::default()).is_err());
+        assert!(path.is_dir());
+    }
+
+    #[test]
+    fn missing_settings_use_defaults_and_atomic_saves_leave_no_staging() {
+        let path = config_path().unwrap();
+        assert!(!path.exists());
+        let mut config = load_config().unwrap();
+        config.default_view_mode = ottrin_core::ViewMode::Grid;
+        save_config(&config).unwrap();
+        config.default_view_mode = ottrin_core::ViewMode::Miller;
+        save_config(&config).unwrap();
+        assert_eq!(
+            load_config().unwrap().default_view_mode,
+            ottrin_core::ViewMode::Miller
+        );
+        assert_eq!(
+            std::fs::read_dir(path.parent().unwrap()).unwrap().count(),
+            1
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn atomic_saves_preserve_linked_config_target_and_permissions() {
+        use std::os::unix::fs::{PermissionsExt, symlink};
+        let path = config_path().unwrap();
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let target = path.with_file_name("linked-settings.json");
+        std::fs::write(&target, serde_json::to_vec(&AppConfig::default()).unwrap()).unwrap();
+        std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o640)).unwrap();
+        symlink(&target, &path).unwrap();
+        let config = AppConfig {
+            default_view_mode: ottrin_core::ViewMode::Grid,
+            ..AppConfig::default()
+        };
+        save_config(&config).unwrap();
+        assert!(std::fs::symlink_metadata(&path).unwrap().is_symlink());
+        assert_eq!(
+            std::fs::metadata(&target).unwrap().permissions().mode() & 0o777,
+            0o640
+        );
+        assert_eq!(
+            load_config().unwrap().default_view_mode,
+            ottrin_core::ViewMode::Grid
+        );
+        std::fs::remove_file(&target).unwrap();
+        assert!(load_config().is_err());
+        assert!(save_config(&config).is_err());
+        assert!(std::fs::symlink_metadata(&path).unwrap().is_symlink());
+    }
+
+    #[test]
+    fn refused_atomic_save_preserves_original_and_retires_temporary_file() {
+        let path = config_path().unwrap();
+        let config = AppConfig::default();
+        save_config(&config).unwrap();
+        let original = std::fs::read(&path).unwrap();
+        let permissions = std::fs::metadata(&path).unwrap().permissions();
+        let mut protected = permissions.clone();
+        protected.set_readonly(true);
+        std::fs::set_permissions(&path, protected).unwrap();
+        assert!(save_config(&config).unwrap_err().contains("read-only"));
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        assert_eq!(
+            std::fs::read_dir(path.parent().unwrap()).unwrap().count(),
+            1
+        );
+        std::fs::set_permissions(&path, permissions).unwrap();
+    }
+
+    #[test]
     fn test_profiles_are_private_to_each_test_thread() {
         let here = config_path().expect("test config path");
         let other = std::thread::spawn(|| config_path().expect("other test config path"))
@@ -140,9 +280,11 @@ mod tests {
             default_view_mode: ottrin_core::ViewMode::Miller,
             ..AppConfig::default()
         };
-        save_config(&config);
+        save_config(&config).expect("save private test config");
         assert_eq!(
-            load_config().default_view_mode,
+            load_config()
+                .expect("load private test config")
+                .default_view_mode,
             ottrin_core::ViewMode::Miller
         );
         let other_path = std::thread::spawn(|| {
@@ -150,20 +292,32 @@ mod tests {
                 default_view_mode: ottrin_core::ViewMode::List,
                 ..AppConfig::default()
             };
-            save_config(&config);
-            assert_eq!(load_config().default_view_mode, ottrin_core::ViewMode::List);
+            save_config(&config).expect("save private test config");
+            assert_eq!(
+                load_config()
+                    .expect("load private test config")
+                    .default_view_mode,
+                ottrin_core::ViewMode::List
+            );
             config_path().expect("other profile")
         })
         .join()
         .expect("other test thread");
         assert!(!other_path.exists(), "test profiles are cleaned up on exit");
         assert_eq!(
-            load_config().default_view_mode,
+            load_config()
+                .expect("load private test config")
+                .default_view_mode,
             ottrin_core::ViewMode::Miller
         );
         config.default_view_mode = ottrin_core::ViewMode::Grid;
-        save_config(&config);
-        assert_eq!(load_config().default_view_mode, ottrin_core::ViewMode::Grid);
+        save_config(&config).expect("save private test config");
+        assert_eq!(
+            load_config()
+                .expect("load private test config")
+                .default_view_mode,
+            ottrin_core::ViewMode::Grid
+        );
     }
 
     #[cfg(unix)]

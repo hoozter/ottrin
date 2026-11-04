@@ -1,0 +1,18 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 8.96s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 10 tests
+test config::tests::administrator_config_path_ignores_preserved_user_environment ... ok
+test config::tests::new_administrator_profile_has_no_implicitly_selected_index_roots ... ok
+test config::tests::invalid_existing_settings_are_reported_and_never_replaced_by_defaults ... ok
+test config::tests::removing_preferences_clears_main_and_picker_files_and_preserves_other_data ... ok
+test config::tests::refused_atomic_save_preserves_original_and_retires_temporary_file ... ok
+test config::tests::unreadable_settings_location_is_an_error_instead_of_new_defaults ... ok
+test config::tests::test_profiles_are_private_to_each_test_thread ... ok
+test config::tests::missing_settings_use_defaults_and_atomic_saves_leave_no_staging ... ok
+test config::tests::atomic_saves_preserve_linked_config_target_and_permissions ... ok
+test config::tests::saved_view_round_trips_without_crossing_test_profiles ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 478 filtered out; finished in 0.00s
+

@@ -262,6 +262,13 @@ Ottrin stores user configuration in the platform config directory:
 | Linux | `${XDG_CONFIG_HOME:-~/.config}/ottrin/config.json` |
 | Windows | `%APPDATA%\Ottrin\config.json` |
 
+A missing settings file starts a new profile. An existing file that cannot be
+read or parsed is preserved and reported as an error; Ottrin does not silently
+replace it with defaults. The error identifies the file. Correct it, or move it
+aside if you deliberately want a new profile. Settings saves use atomic replacement
+and report failures. If saving a theme fails, its draft stays open so you can fix
+the cause and retry; Save and close does not discard an unsaved draft.
+
 Thumbnail cache files are disposable. If previews look stale after an upgrade, clear the cache from Settings -> Cache.
 
 View Options in the navigation bar controls the active view: Column/List/Grid mode, image thumbnails in List/Grid, hidden files, sorting, and List columns. View mode is remembered as the global default for future launches. Thumbnail toggles are saved for the current folder so an image-heavy folder can show thumbnails without forcing every folder into thumbnail mode. Use Global View Settings from that menu to change saved defaults in Settings. Generated thumbnail cards cover supported text/code, PDF, font, SQLite, mesh, camera-RAW, and bounded Affinity previews; folders use a bounded direct-child collage. Windows can additionally show one Media Foundation still for a video format/codec supported by that Windows installation. Ottrin does not bundle, invoke, download, install, or recommend an external video decoder or codec pack. Office visual previews are available only in Quick Inspector. Common web/desktop images such as PNG, JPEG, GIF, BMP, TIFF, WebP, ICO, and safely rasterized SVG appear directly. Unsupported, malformed, or oversized inputs fall back to metadata rather than raw document or media bytes.

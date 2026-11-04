@@ -414,10 +414,10 @@ impl OttrinApp {
                     });
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                         if ui.add(egui::Button::new(RichText::new(if creating { "Create theme" } else { "Save changes" }).strong()).stroke(Stroke::new(1.0, c.accent)).themed(&c)) .clicked() {
-                            self.save_theme_editor(ctx); self.persist_config();
+                            self.save_theme_editor(ctx);
                         }
                         if !creating && ui.add(egui::Button::new("Save as new").themed(&c)).clicked() {
-                            self.save_theme_editor_as_inner(ctx); self.persist_config();
+                            self.save_theme_editor_as_inner(ctx);
                         }
                         if ui.add(egui::Button::new("Cancel").themed(&c)).on_hover_text("Discard this session and restore the previously active theme.").clicked() { self.cancel_theme_editor(ctx); }
                     });
@@ -454,7 +454,6 @@ impl OttrinApp {
                         {
                             self.save_theme_editor(ctx);
                             if !self.theme_editor.open {
-                                self.persist_config();
                                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                             }
                         }
@@ -2088,6 +2087,57 @@ mod tests {
     }
 
     #[test]
+    fn theme_save_failure_keeps_the_draft_open_and_never_claims_success() {
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        let path = crate::config::config_path().unwrap();
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let malformed = b"{ invalid external settings";
+        std::fs::write(&path, malformed).unwrap();
+        let before = serde_json::to_value(&app.state.config).unwrap();
+        app.open_theme_editor_for_preset(ThemePreset::Breeze, &ctx);
+        app.theme_editor.save_as_name = "Retained draft".into();
+        app.theme_editor.custom.button_radius = 13.0;
+        app.save_theme_editor(&ctx);
+        assert!(app.theme_editor.open);
+        assert_eq!(app.theme_editor.custom.button_radius, 13.0);
+        assert_eq!(serde_json::to_value(&app.state.config).unwrap(), before);
+        assert!(!app.theme_status.as_ref().unwrap().1);
+        assert_eq!(std::fs::read(&path).unwrap(), malformed);
+
+        // Simulate an explicit user repair, then retry the retained draft.
+        std::fs::remove_file(&path).unwrap();
+        app.save_theme_editor(&ctx);
+        assert!(!app.theme_editor.open);
+        assert!(app.theme_status.as_ref().unwrap().1);
+        assert_eq!(
+            load_config().unwrap().custom_themes[0].name,
+            "Retained draft"
+        );
+
+        app.open_theme_editor_for_saved(0, &ctx);
+        app.theme_editor.custom.button_radius = 9.0;
+        let original = std::fs::read(&path).unwrap();
+        let permissions = std::fs::metadata(&path).unwrap().permissions();
+        let mut readonly = permissions.clone();
+        readonly.set_readonly(true);
+        std::fs::set_permissions(&path, readonly).unwrap();
+        app.save_theme_editor(&ctx);
+        assert!(app.theme_editor.open);
+        assert_eq!(app.theme_editor.custom.button_radius, 9.0);
+        assert!(!app.theme_status.as_ref().unwrap().1);
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        std::fs::set_permissions(&path, permissions).unwrap();
+        app.save_theme_editor(&ctx);
+        assert!(!app.theme_editor.open);
+        assert!(app.theme_status.as_ref().unwrap().1);
+        assert_eq!(
+            Colors::for_config(&load_config().unwrap(), None).button_radius,
+            9
+        );
+    }
+
+    #[test]
     fn appearance_cancel_restores_full_theme_and_does_not_save_preview() {
         let ctx = Context::default();
         let mut app = OttrinApp::default();
@@ -2100,7 +2150,7 @@ mod tests {
         app.apply_theme_editor_live_preview(&ctx);
         assert_eq!(app.colors.button_radius, 13);
         app.persist_config();
-        let persisted = load_config();
+        let persisted = load_config().expect("valid private test config");
         assert_eq!(persisted.theme_preset, original.theme_preset);
         assert_eq!(persisted.custom_themes, original.custom_themes);
         app.cancel_theme_editor(&ctx);
@@ -2124,7 +2174,7 @@ mod tests {
         app.apply_theme_editor_live_preview(&ctx);
         app.save_theme_editor(&ctx);
         app.persist_config();
-        let reopened = load_config();
+        let reopened = load_config().expect("valid private test config");
         assert_eq!(
             reopened.active_custom_theme.as_deref(),
             Some("Appearance persistence fixture")
@@ -2146,7 +2196,11 @@ mod tests {
         app.apply_theme_editor_live_preview(&ctx);
         app.save_theme_editor(&ctx);
         app.persist_config();
-        assert_eq!(Colors::for_config(&load_config(), None).button_radius, 3);
+        assert_eq!(
+            Colors::for_config(&load_config().expect("valid private test config"), None)
+                .button_radius,
+            3
+        );
         assert_eq!(
             app.state.config.custom_themes[index].dark.button_radius,
             3.0
@@ -2174,7 +2228,7 @@ mod tests {
         assert_eq!(app.state.config.custom_themes[1].dark.button_radius, 13.0);
         assert_eq!(app.theme_editor.source, ThemeEditorSource::Saved(0));
         app.persist_config();
-        let reopened = load_config();
+        let reopened = load_config().expect("valid private test config");
         assert_eq!(reopened.custom_themes.len(), 2);
         assert_eq!(
             reopened.custom_themes[0].dark.button_radius,

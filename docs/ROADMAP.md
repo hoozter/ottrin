@@ -102,6 +102,21 @@ Continue in this order:
    `gui-idle-refresh-current/LINUX_FIXTURE_FAILURES.json`. These are software work,
    not owner waits. Native/physical/sustained/human acceptance retains its explicit
    scope. Evidence/prose-only pushes skip redundant CI; shipping changes retain gates.
+   Source checkpoint: settings load now fails explicitly on malformed/unreadable
+   configuration instead of silently starting with defaults. Main GUI, Inspector,
+   Properties, picker, CLI and daemon callers propagate that error. Saves use an
+   atomic temporary file, retain a linked target and existing ordinary file modes,
+   refuse read-only targets, and preserve invalid files changed after startup.
+   Theme Save/Create/Save as new keep the editable draft and original configuration
+   on failure; success/close follows successful persistence. General settings saves
+   report failures instead of claiming success. Search health chooses wording from
+   its actual backend, separates login startup from daemon runtime and preserves
+   service status/error details. All487 UI tests pass (one existing ignored),
+   including10 configuration tests and an actual theme-draft failure/repair/retry
+   regression; strict native/Windows UI/app all-target lint and format pass.
+   Evidence: `config-status-current/`. Native packaged behavior, hosted source gates
+   and replacement packages are still required. All seven stable packages above
+   remain47a; this source checkpoint is not delivered-package acceptance.
 2. Complete the concentrated requirement-by-requirement Linux/Windows audit.
    `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` retains 54 complete
    roadmap bullets; `release-audit-current/USER_REQUIREMENTS.json` supplements them

@@ -50,7 +50,7 @@ impl PropertiesApp {
             return Err("Properties needs at least one item".into());
         }
         crate::install_application_fonts(&cc.egui_ctx);
-        let config = crate::load_config();
+        let config = crate::load_config()?;
         let colors = Colors::for_config(&config, cc.egui_ctx.system_theme());
         crate::theme_colors::apply_to_context(&cc.egui_ctx, &colors);
         let stopped = Arc::new(AtomicBool::new(false));

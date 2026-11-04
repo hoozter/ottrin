@@ -172,7 +172,7 @@ impl OttrinApp {
                 }
                 self.search_service
                     .update_config(self.state.config.search.clone());
-                save_config(&self.state.config);
+                self.persist_config();
             }
         }
     }

@@ -520,7 +520,7 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
         }
     };
 
-    let config = load_config();
+    let config = load_config().map_err(|error| eframe::Error::AppCreation(error.into()))?;
     let graphics_runtime = graphics_runtime_status(renderer_override.is_some(), &config);
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
@@ -545,7 +545,7 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>, cli: CliArguments) -> eframe::Re
         &window_title,
         options,
         Box::new(move |cc| {
-            let mut app = OttrinApp::new_with_graphics_status(cc, graphics_runtime);
+            let mut app = OttrinApp::new_with_graphics_status(cc, graphics_runtime)?;
             #[cfg(any(unix, target_os = "windows"))]
             {
                 #[cfg(unix)]
@@ -777,7 +777,7 @@ fn run_properties_gui(paths: Vec<PathBuf>, cli: CliArguments) -> Result<(), Stri
         return Err("--properties needs at least one entry path".into());
     }
     let renderer = graphics_renderer_override(cli.renderer_override.as_deref())?;
-    let config = load_config();
+    let config = load_config()?;
     let runtime = graphics_runtime_status(renderer.is_some(), &config);
     let title = format!(
         "{} — {}",
@@ -816,7 +816,7 @@ fn run_picker_gui(
     #[cfg(target_os = "linux")]
     let startup = cli.startup;
     let renderer_override = graphics_renderer_override(cli.renderer_override.as_deref())?;
-    let config = load_config();
+    let config = load_config()?;
     let runtime = graphics_runtime_status(renderer_override.is_some(), &config);
     let title = format!(
         "{} — {}",
@@ -1369,8 +1369,8 @@ fn parse_index_action(args: &[String]) -> HeadlessAction {
     }
 }
 
-fn configured_search_config() -> ottrin_core::SearchConfig {
-    load_config().search
+fn configured_search_config() -> Result<ottrin_core::SearchConfig, String> {
+    Ok(load_config()?.search)
 }
 
 #[cfg(unix)]
@@ -1465,7 +1465,7 @@ fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
             .is_err_and(|error| error.starts_with("index daemon protocol mismatch:"))
     {
         if unit_path.is_file() {
-            ottrin_search::SearchService::install_sqlite_schedule(&configured_search_config())?;
+            ottrin_search::SearchService::install_sqlite_schedule(&configured_search_config()?)?;
         } else {
             client.retire_incompatible_daemon()?;
         }
@@ -1479,7 +1479,7 @@ fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
         if unit_path.is_file() {
             // Use the existing installer to prepare, stop and update the service
             // before starting it. A plain start can race an exiting active unit.
-            ottrin_search::SearchService::install_sqlite_schedule(&configured_search_config())?;
+            ottrin_search::SearchService::install_sqlite_schedule(&configured_search_config()?)?;
         } else {
             client.prepare_upgrade_and_wait()?;
         }
@@ -1651,7 +1651,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             return Ok(());
         }
         HeadlessAction::DropStatus => {
-            print_drop_status(&load_config().target);
+            print_drop_status(&load_config()?.target);
             return Ok(());
         }
         HeadlessAction::DropCopy(sources) => return run_drop_copy(sources),
@@ -1691,7 +1691,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                 return print_index_diagnostics(&client.diagnostics()?, json);
             }
             let snapshot =
-                ottrin_search::SearchService::load_persisted_default(configured_search_config())?;
+                ottrin_search::SearchService::load_persisted_default(configured_search_config()?)?;
             print_index_diagnostics(&snapshot.diagnostics(), json)
         }
         HeadlessAction::Search {
@@ -1701,7 +1701,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             limit,
             offset,
         } => {
-            let config = configured_search_config();
+            let config = configured_search_config()?;
             if content
                 && (!config.content_indexing_enabled || config.content_include_roots.is_empty())
             {
@@ -1736,7 +1736,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         HeadlessAction::IndexUpdate { json } => run_index_writer(json, false),
         HeadlessAction::IndexRebuild { json } => run_index_writer(json, true),
         HeadlessAction::IndexServiceInstall => {
-            let config = configured_search_config();
+            let config = configured_search_config()?;
             println!(
                 "{}",
                 ottrin_search::SearchService::install_sqlite_schedule(&config)?
@@ -1782,7 +1782,7 @@ fn run_index_writer(json: bool, rebuild: bool) -> Result<(), String> {
     #[cfg(any(unix, target_os = "windows"))]
     {
         let client = ensure_index_daemon()?;
-        client.update_config(configured_search_config())?;
+        client.update_config(configured_search_config()?)?;
         if rebuild {
             client.rebuild()?;
         } else {
@@ -1792,7 +1792,7 @@ fn run_index_writer(json: bool, rebuild: bool) -> Result<(), String> {
     }
     #[cfg(not(any(unix, target_os = "windows")))]
     {
-        let diagnostics = ottrin_search::SearchService::new(configured_search_config())
+        let diagnostics = ottrin_search::SearchService::new(configured_search_config()?)
             .run_single_update(rebuild)?;
         print_index_diagnostics(&diagnostics, json)
     }
@@ -1821,7 +1821,7 @@ fn run_drop_copy(sources: Vec<PathBuf>) -> Result<(), String> {
         return Err("--drop copy requires at least one source path".to_string());
     }
 
-    let destination = load_config()
+    let destination = load_config()?
         .target
         .current
         .ok_or_else(|| "no Drop Folder is configured".to_string())?;

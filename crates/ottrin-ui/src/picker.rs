@@ -1479,7 +1479,7 @@ impl PickerApp {
     ) -> Result<Self, String> {
         crate::install_application_fonts(&cc.egui_ctx);
         egui_extras::install_image_loaders(&cc.egui_ctx);
-        let config = crate::load_config();
+        let config = crate::load_config()?;
         let colors = Colors::for_config(&config, cc.egui_ctx.system_theme());
         crate::theme_colors::apply_to_context(&cc.egui_ctx, &colors);
         let parent = crate::picker_parent::PickerParent::attach(cc, &request.parent_window)?;

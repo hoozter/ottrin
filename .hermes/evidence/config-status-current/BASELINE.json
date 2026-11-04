@@ -1,0 +1,18 @@
+{
+  "source_head": "235f325da3ffd51cd29b58b24f4ec98ddd83c332",
+  "observed_at": "2026-11-04T01:52:18.030460+00:00",
+  "compiler_roots": {
+    "target/debug/deps": 41674751911,
+    "target/debug/incremental": 23504670533,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33298656714,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39678093236,
+    "target/release/deps": 4379982616,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853141750
+  },
+  "purpose": "Fail explicitly on malformed/unreadable main settings, preserve existing bytes and publish settings atomically; truthful independent-daemon/login status. Stable source47a packages remain until new acceptance.",
+  "cleanup_owner": "config-status-current",
+  "staging_roots": {
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": false,
+    ".hermes/packaging-tmp/.windows-picker-stage": false
+  }
+}

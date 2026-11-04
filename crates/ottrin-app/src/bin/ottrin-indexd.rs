@@ -72,7 +72,12 @@ fn main() {
                 std::process::exit(1);
             })
     } else {
-        ottrin_ui::load_config().search
+        ottrin_ui::load_config()
+            .unwrap_or_else(|error| {
+                eprintln!("ottrin index daemon: {error}");
+                std::process::exit(1);
+            })
+            .search
     };
     if let Err(error) = ottrin_search::run_search_daemon(config, launch.store, launch.socket) {
         eprintln!("ottrin index daemon: {error}");
@@ -112,10 +117,12 @@ fn main() {
         std::process::exit(2);
     });
     let result = match launch {
-        WindowsLaunch::Serve => ottrin_search::run_windows_search_daemon(
-            ottrin_ui::load_config().search,
-            ottrin_search::SearchService::search_db_path(),
-        ),
+        WindowsLaunch::Serve => ottrin_ui::load_config().and_then(|config| {
+            ottrin_search::run_windows_search_daemon(
+                config.search,
+                ottrin_search::SearchService::search_db_path(),
+            )
+        }),
         WindowsLaunch::Stop => ottrin_search::SearchService::stop_sqlite_schedule().map(|_| ()),
         WindowsLaunch::Transaction(phase, snapshot) => {
             ottrin_search::run_windows_index_installer_transaction(phase, &snapshot)

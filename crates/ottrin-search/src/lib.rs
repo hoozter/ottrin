@@ -2030,7 +2030,7 @@ fn sqlite_systemd_status_with(
         return LocateScheduleStatus {
             source: "none".to_string(),
             enabled: false,
-            detail: "No persistent Ottrin index daemon detected".to_string(),
+            detail: "No login service is installed".to_string(),
         };
     }
     let unavailable = |error: String| LocateScheduleStatus {
@@ -2122,7 +2122,7 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
         LocateScheduleStatus {
             source: "none".to_string(),
             enabled: false,
-            detail: "No persistent Ottrin index daemon detected".to_string(),
+            detail: "No login service is installed".to_string(),
         }
     }
 }

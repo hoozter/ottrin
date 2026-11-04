@@ -1,0 +1,85 @@
+{
+  "status": "source validated; package/native acceptance pending",
+  "scope": "Explicit configuration load errors and preserving atomic save/theme transaction, plus truthful independent-daemon/login Search health. No compatibility conversion or automatic preference reset.",
+  "source_checks": {
+    "status": "pass source UI tests/native and Windows strict lint/format; native GUI and packaging separate",
+    "scope": "Settings load errors are propagated to GUI/CLI/daemon; no replacement of malformed/unreadable settings. Atomic saves preserve linked target/permissions, retain originals on refusal and remove temporary files. Search health uses the actual backend and preserves login diagnostics. Full UI/native and Windows strict lint/format; package/native behavior remain separate.",
+    "checks": [
+      {
+        "name": "config-tests",
+        "command": [
+          "python3",
+          "scripts/test-workspace.py",
+          "-p",
+          "ottrin-ui",
+          "--lib",
+          "config::tests"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "full-ui-tests",
+        "command": [
+          "python3",
+          "scripts/test-workspace.py",
+          "-p",
+          "ottrin-ui",
+          "--lib"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "-p",
+          "ottrin-ui",
+          "-p",
+          "ottrin-app",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "windows-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--target",
+          "x86_64-pc-windows-gnu",
+          "-p",
+          "ottrin-ui",
+          "-p",
+          "ottrin-app",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit": 0
+      }
+    ]
+  },
+  "current_deliverables_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "next_required": [
+    "Build current Linux/Windows packages with unchanged caches/features",
+    "Exercise actual invalid-config rejection and theme save failure/retry; review native Search health",
+    "All four exact-source CI gates",
+    "Publish seven-format cohort with development MSIX15, truthful scope and owned cleanup"
+  ]
+}

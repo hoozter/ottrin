@@ -1,0 +1,43 @@
+{
+  "status": "pass source checkpoint cleanup; compiler caches/current binary retained for packaging",
+  "baseline": {
+    "target/debug/deps": 41674751911,
+    "target/debug/incremental": 23504670533,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33298656714,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39678093236,
+    "target/release/deps": 4379982616,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853141750
+  },
+  "current": {
+    "target/debug/deps": 41676689681,
+    "target/debug/incremental": 23610947101,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33300491605,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 39791933593,
+    "target/release/deps": 4379982616,
+    "target/x86_64-pc-windows-gnu/release/deps": 3853141750
+  },
+  "delta": {
+    "target/debug/deps": 1937770,
+    "target/debug/incremental": 106276568,
+    "target/x86_64-pc-windows-gnu/debug/deps": 1834891,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 113840357,
+    "target/release/deps": 0,
+    "target/x86_64-pc-windows-gnu/release/deps": 0
+  },
+  "obsolete_incremental_sessions_removed": 19,
+  "all_reviewed_candidates_absent": true,
+  "all_recorded_newest_sessions_retained": true,
+  "final_obsolete_incremental_candidates": 0,
+  "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc rebuilt in place with unchanged compiler/profile/features;487UI tests pass,1existing ignored. No extra superseded test executable.",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/config-status-current",
+      "purpose": "Compact source-check producers/results and regression evidence; current evidence retained"
+    }
+  ],
+  "pending_consumers": [
+    "Clean-source package build/content gates",
+    "Native Linux/Windows settings error/save/retry and Search status acceptance",
+    "Hosted exact-source gates and stable publication"
+  ]
+}
