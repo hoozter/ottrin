@@ -1,7 +1,7 @@
 """Read a small atomic progress receipt from the exact live owned guest."""
 from pathlib import Path
 import argparse,json,importlib.util,subprocess
-parser=argparse.ArgumentParser();parser.add_argument('--case',choices=['native-observed-controls','native-toggle-pointer','native-pointer','native','services','registration-trace','services-launch-observation','services-refresh-ambiguity','services-reader-sharing'],default='native');args=parser.parse_args();r=Path.cwd();e=Path(__file__).resolve().parent/args.case;owner=json.loads((e/'OWNER.json').read_text())
+parser=argparse.ArgumentParser();parser.add_argument('--case',choices=['native-sendinput','native-pointer-trace','native-observed-controls','native-toggle-pointer','native-pointer','native','services','registration-trace','services-launch-observation','services-refresh-ambiguity','services-reader-sharing'],default='native');args=parser.parse_args();r=Path.cwd();e=Path(__file__).resolve().parent/args.case;owner=json.loads((e/'OWNER.json').read_text())
 identity=subprocess.run(['virsh','-c','qemu:///system','domuuid',owner['domain']],capture_output=True,text=True)
 if identity.returncode or identity.stdout.strip()!=owner['uuid']:
  assert owner.get('cleanup',{}).get('domain_removed'), 'Owned guest is unavailable or identity differs; inspect the producer handle before deciding its state'

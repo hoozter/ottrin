@@ -1,7 +1,7 @@
 """Observe the exact owned live MSIX fixture without restarting its actor."""
 from pathlib import Path
 import argparse,importlib.util,json,subprocess
-parser=argparse.ArgumentParser();parser.add_argument('case',choices=['runtime17-reader','runtime17-trace','runtime17-completion','runtime17-wake']);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('case',choices=['runtime17-upgrade-disabled','runtime17-upgrade-space','runtime17-upgrade-enabled','runtime17-upgrade','runtime17-reader','runtime17-trace','runtime17-completion','runtime17-wake']);args=parser.parse_args()
 e=Path(__file__).resolve().parent/args.case;o=json.loads((e/'OWNER.json').read_text())
 identity=subprocess.run(['virsh','-c','qemu:///system','domuuid',o['domain']],text=True,capture_output=True)
 if identity.returncode or identity.stdout.strip()!=o['uuid']:

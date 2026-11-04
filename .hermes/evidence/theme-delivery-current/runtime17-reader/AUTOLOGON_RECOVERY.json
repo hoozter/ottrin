@@ -1,0 +1,6 @@
+{
+  "status": "Owned fixture automatic login restored before additional real reboot",
+  "domain_uuid": "7f912981-49bd-45e0-8a7b-65589e0931cc",
+  "source_fix": "runtime.ps1 Prepare explicitly sets AutoLogonCount=3 instead of inheriting the stock image one-use count",
+  "scope": "Only generated disposable account credential and its preexisting automatic-login setup; no Ottrin CLI invoked; no security policy changes; secret retained only in owned guest until teardown"
+}

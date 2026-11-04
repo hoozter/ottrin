@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-syxpzgvn",
+  "owned_processes_reaped": [
+    {
+      "pid": 1871774,
+      "exit": 0
+    },
+    {
+      "pid": 1871777,
+      "exit": 0
+    },
+    {
+      "pid": 1871778,
+      "exit": 15
+    },
+    {
+      "pid": 1871828,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "143 34 0:70 / /var/tmp/.ottrin-picker-qa-syxpzgvn/runtime/doc rw,nosuid,nodev,relatime shared:161 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "Native MSIX interactive test did not finish",
+  "profile_removed": true
+}

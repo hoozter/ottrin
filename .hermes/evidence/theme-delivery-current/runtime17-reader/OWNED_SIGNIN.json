@@ -1,0 +1,7 @@
+{
+  "status": "normal credential submitted to observed owned account",
+  "domain_uuid": "7f912981-49bd-45e0-8a7b-65589e0931cc",
+  "account": "OTMSIXe0453ae87db8",
+  "observed_frame_sha256": "c1d748defa13c185f0a2be5cde8425f76b9097c51cb5adfadf5d8d2e6ada077a",
+  "scope": "Disposable account only; temporary credential reset and standard sign-in; no Ottrin CLI launch, no security policy changes, no host password retained"
+}

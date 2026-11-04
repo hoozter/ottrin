@@ -1,0 +1,9 @@
+{
+  "before_boot_ticks": 639293930785000000,
+  "command": "shutdown.exe /r /t 15",
+  "scope": "Owned disposable guest only; no forced power reset",
+  "status": "normal reboot verified",
+  "request_exit": 0,
+  "request_stderr": "",
+  "after_boot_ticks": 639293931645000000
+}

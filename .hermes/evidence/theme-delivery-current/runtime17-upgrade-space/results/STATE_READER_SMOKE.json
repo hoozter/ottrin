@@ -1,0 +1,6 @@
+{
+    "transient_milliseconds":  491.05100000000004,
+    "status":  "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed":  true,
+    "persistent_lock_seconds":  2.0043308
+}

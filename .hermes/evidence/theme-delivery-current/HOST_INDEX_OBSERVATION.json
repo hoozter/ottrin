@@ -1,0 +1,12 @@
+{
+  "scope": "Read-only30-second observation of existing host-user index daemon during project/QA work; no restart/configuration or index change; not a sustained workload guarantee",
+  "processes": [
+    {
+      "pid": 885280,
+      "executable": "/tmp/.mount_OttrinEkwNia/usr/bin/ottrin-indexd",
+      "binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+      "seconds": 30.000126216968056,
+      "cpu_one_core_percent": 0.8666630204140413
+    }
+  ]
+}

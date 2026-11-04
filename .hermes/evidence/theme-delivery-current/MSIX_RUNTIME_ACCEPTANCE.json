@@ -1,0 +1,101 @@
+{
+  "status": "pass exact MSIX17 fresh installed runtime, real reboot/login and removal scope",
+  "package": {
+    "runtime_script_sha256": "4869c32ba011116effecaab791791b439fe8ce0bca2514442ecaf1c8a6c5135d",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9",
+    "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "version": "0.1.0.17",
+    "startup_enabled": true
+  },
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "runtime_result": ".hermes/evidence/theme-delivery-current/runtime17-reader/RUNTIME_RESULT.json",
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          648
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          648
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          648
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          648
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr"
+  },
+  "real_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8432,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXe0453ae87db8\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B4D0000000000000000"
+    },
+    "boot_ticks": 639293945405000000,
+    "administrator": false
+  },
+  "removal": {
+    "package_removed": true,
+    "package_processes_removed": true,
+    "fixture_preserved": true,
+    "preferences_preserved": true,
+    "remaining_index_tasks": []
+  },
+  "state_reader_native_smoke": {
+    "transient_milliseconds": 274.0458,
+    "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed": true,
+    "persistent_lock_seconds": 2.0118134
+  },
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/theme-delivery-current/runtime17-reader/results/main.png": "e3fca1e5d8fc5a07a510116b33bce68528345dc7e8e82c1292776893e6ef67d3",
+    ".hermes/evidence/theme-delivery-current/runtime17-reader/results/msix-startup-disabled.png": "6e1b296f57f7d60f47a17b52ba437f045db56072bbc65929028cc968e13d320b",
+    ".hermes/evidence/theme-delivery-current/runtime17-reader/results/msix-startup-enabled.png": "a1b10dda7f0df33605769c424b1896b386cfbe751ec9ce1678d37ca81c66ddad"
+  },
+  "fixture_recovery": {
+    "receipt": "runtime17-reader/AUTOLOGON_RECOVERY.json",
+    "scope": "First real reboot stopped at sign-in after the stock image one-use auto-login expired. Reset only generated account credential/auto-login and performed an additional real reboot; no Ottrin CLI started its daemon. Actual different boot and ordinary Windows-started process are verified above."
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Fresh MSIX17 only; no MSIX16-to-17 upgrade acceptance",
+    "Unsigned development deployment in disposable software desktop; no signing, Store or physical hardware acceptance",
+    "Windows native preview pointer check and full theme audit remain open",
+    "Current stable Windows artifacts remain f463 until cohort acceptance/promotion"
+  ]
+}

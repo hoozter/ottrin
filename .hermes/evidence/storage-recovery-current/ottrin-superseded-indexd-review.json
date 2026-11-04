@@ -1,0 +1,534 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-2c9df3fd5e6e974a",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-2c9df3fd5e6e974a",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-2c9df3fd5e6e974a.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 826625216
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-b69af9989fe7138f",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-b69af9989fe7138f",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-b69af9989fe7138f.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 820784368
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-85df6066dbbcffc9",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-85df6066dbbcffc9",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-85df6066dbbcffc9.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 820956624
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-d3900840e866d64d",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-d3900840e866d64d",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-d3900840e866d64d.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 750636848
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6523b2a86d31f1d8",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-6523b2a86d31f1d8",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6523b2a86d31f1d8.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 793702920
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-02acc4094c40c6f3",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-02acc4094c40c6f3",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-02acc4094c40c6f3.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 723921360
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-79805ef9e0f22d37",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-79805ef9e0f22d37",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-79805ef9e0f22d37.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 723830368
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-9adc0dafef5dcf41",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-9adc0dafef5dcf41",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-9adc0dafef5dcf41.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 723827696
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-d80da736c2003c17",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-d80da736c2003c17",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-d80da736c2003c17.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 792588616
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-fba836acae6671a9",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-fba836acae6671a9",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-fba836acae6671a9.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 788367000
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-289234cd33a1910d",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-289234cd33a1910d",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-289234cd33a1910d.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 721634336
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-505a9814dad2d32b",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-505a9814dad2d32b",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-505a9814dad2d32b.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 788367000
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-9ade446a4c7054e1",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-9ade446a4c7054e1",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-9ade446a4c7054e1.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 721634184
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-7016aa1a8559a645",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-7016aa1a8559a645",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-7016aa1a8559a645.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 787161408
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-f658d0dd3ded8fe6",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-f658d0dd3ded8fe6",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-f658d0dd3ded8fe6.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 721541184
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6a7f2662038170b1",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-6a7f2662038170b1",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6a7f2662038170b1.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 797095664
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-beac484c66747dee",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-beac484c66747dee",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-beac484c66747dee.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 733579672
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-207b98960921dcb8",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-207b98960921dcb8",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-207b98960921dcb8.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 732306528
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-f0d0a94640bd3892",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-f0d0a94640bd3892",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-f0d0a94640bd3892.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 775883064
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-60373c4135c3d27f",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-60373c4135c3d27f",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-60373c4135c3d27f.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 772491536
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-02a357b14c8c11bd",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-02a357b14c8c11bd",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-02a357b14c8c11bd.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226/bin-ottrin-indexd",
+    "bytes": 765549864
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-4becf446d7a83c92.exe",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-4becf446d7a83c92",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-4becf446d7a83c92.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-7b0e5cc6ddb58d99.exe",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-7b0e5cc6ddb58d99/bin-ottrin-indexd",
+    "bytes": 747686950
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-fbf0992a843c2931.exe",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-fbf0992a843c2931",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-fbf0992a843c2931.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-7b0e5cc6ddb58d99.exe",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-7b0e5cc6ddb58d99/bin-ottrin-indexd",
+    "bytes": 747383369
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-aa2250844c25eac7.exe",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-aa2250844c25eac7",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-aa2250844c25eac7.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-7b0e5cc6ddb58d99.exe",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-7b0e5cc6ddb58d99/bin-ottrin-indexd",
+    "bytes": 747361332
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-f5d9f39ed4f1d401.exe",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-f5d9f39ed4f1d401",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-f5d9f39ed4f1d401.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-7b0e5cc6ddb58d99.exe",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-7b0e5cc6ddb58d99/bin-ottrin-indexd",
+    "bytes": 746799574
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-5b43fcefd2a4e405.exe",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-5b43fcefd2a4e405",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-5b43fcefd2a4e405.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-7b0e5cc6ddb58d99.exe",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-7b0e5cc6ddb58d99/bin-ottrin-indexd",
+    "bytes": 745844832
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-b6f897e9190934f6.exe",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-b6f897e9190934f6",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-b6f897e9190934f6.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-7b0e5cc6ddb58d99.exe",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-7b0e5cc6ddb58d99/bin-ottrin-indexd",
+    "bytes": 771555601
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-c4cb3a9c4124022b.exe",
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-c4cb3a9c4124022b",
+    "dep_info": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-c4cb3a9c4124022b.d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-7b0e5cc6ddb58d99.exe",
+    "settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 6367705407909804931,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    },
+    "newer_complete_fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-app-7b0e5cc6ddb58d99/bin-ottrin-indexd",
+    "bytes": 769635309
+  }
+]

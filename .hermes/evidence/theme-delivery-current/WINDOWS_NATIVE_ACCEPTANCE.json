@@ -1,0 +1,159 @@
+{
+  "status": "pass bounded exact NSIS native Windows UI/lifecycle scope",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "artifact_sha256": "e5e99978b9d99cff7e1f8d1d7151163db6a08f51ff0beb77873198995d41b4a6",
+  "payload_files": 58,
+  "case_count": 9,
+  "preview_action_count": 8,
+  "cases": [
+    {
+      "case": "invalid-cli",
+      "original_bytes_preserved": true,
+      "exit": 1
+    },
+    {
+      "case": "invalid-daemon",
+      "original_bytes_preserved": true,
+      "exit": 1
+    },
+    {
+      "case": "native invalid-settings startup dialog",
+      "visible_error": "Ottrin could not start\n\napp creation error: Could not load Ottrin settings C:\\Users\\OTMSI2e8337f1ae43\\AppData\\Roaming\\ottrin\\config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n\nDiagnostic log:\nC:\\Users\\OTMSI2e8337f1ae43\\AppData\\Local\\Ottrin\\startup.log",
+      "original_bytes_preserved": true,
+      "exit": 1
+    },
+    {
+      "radius": 24,
+      "error": "Could not save Ottrin settings \\\\?\\C:\\Users\\OTMSI2e8337f1ae43\\AppData\\Roaming\\ottrin\\config.json: The settings file is read-only; it has been preserved.",
+      "case": "native failed theme save retains draft",
+      "original_bytes_preserved": true,
+      "renderer": "Native"
+    },
+    {
+      "light_radius": 0,
+      "case": "native repaired save retry persisted",
+      "dark_radius": 24,
+      "renderer": "Native"
+    },
+    {
+      "dpi": 144,
+      "case": "native Search separates daemon runtime and login",
+      "renderer": "Native"
+    },
+    {
+      "radius": 24,
+      "error": "Could not save Ottrin settings \\\\?\\C:\\Users\\OTMSI2e8337f1ae43\\AppData\\Roaming\\ottrin\\config.json: The settings file is read-only; it has been preserved.",
+      "case": "native failed theme save retains draft",
+      "original_bytes_preserved": true,
+      "renderer": "OpenGL"
+    },
+    {
+      "light_radius": 0,
+      "case": "native repaired save retry persisted",
+      "dark_radius": 24,
+      "renderer": "OpenGL"
+    },
+    {
+      "dpi": 144,
+      "case": "native Search separates daemon runtime and login",
+      "renderer": "OpenGL"
+    }
+  ],
+  "preview_controls": [
+    {
+      "renderer": "Native",
+      "action": "Actual advertised Toggle pattern selects Selected row"
+    },
+    {
+      "renderer": "Native",
+      "action": "Production New tab selects Navigation & tabs"
+    },
+    {
+      "renderer": "Native",
+      "action": "Observed pointer click selects Selected row"
+    },
+    {
+      "renderer": "Native",
+      "action": "Preview Close selects Title bar and keeps editor open"
+    },
+    {
+      "renderer": "OpenGL",
+      "action": "Actual advertised Toggle pattern selects Selected row"
+    },
+    {
+      "renderer": "OpenGL",
+      "action": "Production New tab selects Navigation & tabs"
+    },
+    {
+      "renderer": "OpenGL",
+      "action": "Observed pointer click selects Selected row"
+    },
+    {
+      "renderer": "OpenGL",
+      "action": "Preview Close selects Title bar and keeps editor open"
+    }
+  ],
+  "pointer_input_method": "Native SendInput absolute movement,100ms settling, native button edges",
+  "pointer_target": {
+    "expected_root": 262854,
+    "point": [
+      514,
+      364
+    ],
+    "uia_bounds": [
+      381,
+      346,
+      266,
+      37
+    ],
+    "native_window": [
+      0,
+      0,
+      1770,
+      1170
+    ],
+    "dpi": 144,
+    "root_under_point": 262854
+  },
+  "pointer_input_trace": [
+    956,
+    746,
+    514,
+    364,
+    514,
+    364,
+    514,
+    364
+  ],
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/Native-preview-pointer-row.png": "220bc19a9ac3e415d1472682a0421494f3670c3acf54ad56ad1583af82915b29",
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/OpenGL-preview-pointer-row.png": "bb9c672631d4871d07190fdfce8281855ddb0e6682ea9321344aa03e052a3a1c",
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/Native-preview-tabs.png": "f510bb053df8c7d295f696b28a3f2e5c1f0cef4c451339853435f94d44c4f495",
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/OpenGL-preview-titlebar.png": "ffd69802474f99df3751f3dcdd9f2f4541def8dd7ba215b8ed6978e682b4d8e0",
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/Native-save-refused.png": "4c91e77160978e2ce446fdc62014ca92513f350f695d5e05ad78159c29f55397",
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/OpenGL-save-retried.png": "34af8366a9d8f362c277b1d2eea77c730077d5ec863b16fb118947a25d8463bf",
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/Native-search-health.png": "c49402cff5ee37fef1b7407aa1b8169f14ec1159cd8ad2f660313e9c545373f3",
+    ".hermes/evidence/theme-delivery-current/native-sendinput/results/OpenGL-search-health.png": "6d78612acbd40b10f934d6e9529a46b0430fd3273d94329507e9cce12084a93a"
+  },
+  "preservation": {
+    "source_preserved": true,
+    "preferences_preserved": true,
+    "remaining_owned_installed_processes": 0
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "diagnostic_resolution": "Earlier separate Cursor.Position/legacy button injection failed despite stable OS coordinates. Normal SendInput movement with settling and button edges passes identical row assertions in both renderers. No product code changed to satisfy pointer QA; precise distinction between motion API and settling timing is not claimed.",
+  "limits": [
+    "Dark custom test theme at144DPI, software Native/OpenGL desktop only; not every field/theme/scale or physical acceptance",
+    "MSIX16-to-17 upgrade and cohort promotion remain pending",
+    "Full theme audit including shared status controls, List/Grid preview and role ownership remains open"
+  ]
+}

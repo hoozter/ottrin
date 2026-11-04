@@ -1,0 +1,43 @@
+{
+  "status": "pass actual managed-service update, preserved preferences/index identity/startup choice, ready and sampled CPU",
+  "before": {
+    "unit": {
+      "MainPID": "885280",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "startup_enabled": "enabled",
+    "preferences_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+    "store_identity": {
+      "device": 66306,
+      "inode": 8651420
+    },
+    "appimage_sha256": "4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58",
+    "running_binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+    "source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958"
+  },
+  "update_exit": 0,
+  "update_message": "Ottrin index service configured; automatic startup is enabled.",
+  "update_error": "",
+  "after_unit": {
+    "MainPID": "1914856",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "after_binary_sha256": "49c90f5d5a66fa6e9503475a62f8aedfd9a58efa24dceb54a3b773e143d503ef",
+  "preferences_preserved": true,
+  "startup_choice_preserved": true,
+  "store_identity_after": {
+    "device": 66306,
+    "inode": 8651420
+  },
+  "store_identity_preserved": true,
+  "readiness": {
+    "status": "ready"
+  },
+  "cpu_observation": {
+    "seconds": 30.00007532001473,
+    "one_core_percent": 0.866664490760593,
+    "scope": "Existing personal index after public service update; no forced workload or user data/config changes.30-second sample only."
+  }
+}

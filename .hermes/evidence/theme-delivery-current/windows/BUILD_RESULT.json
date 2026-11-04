@@ -7,5 +7,6 @@
     "Ottrin-0.1.0-windows-x64-setup.exe": "e5e99978b9d99cff7e1f8d1d7151163db6a08f51ff0beb77873198995d41b4a6"
   },
   "child_exit": 0,
-  "staging_retained_for_pending_acceptance": true
+  "staging_retained_for_pending_acceptance": false,
+  "delivery_followup": "../WINDOWS_PROMOTION.json"
 }

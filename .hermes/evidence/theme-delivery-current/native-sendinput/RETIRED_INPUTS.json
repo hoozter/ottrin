@@ -1,0 +1,45 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-sendinput/RESULTS.zip",
+          "bytes": 2797200,
+          "sha256": "91b8052412936978783dfb487e774a5e83450fd84a0972640fb3cb19397aab87"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-sendinput/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-sendinput/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "b427e345d5db4bcb820b9887a489c10ba2e6863341822e8db52b68a592cf18ac"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-sendinput/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-sendinput/readiness.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-sendinput/privacy-accepted-0.png",
+          "bytes": 14139,
+          "sha256": "a118b662174fdb53925bd615b73974376d005d7f22a26f422a4cbf9c2676d473"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-sendinput/privacy-accepted-1.png",
+          "bytes": 5850198,
+          "sha256": "a86d59d43cc3ed54fc4c47c1fc32b04dffbc59a2aa12dd31e0370b626a2ec09d"
+        }
+      ],
+      "bytes": 8669224
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

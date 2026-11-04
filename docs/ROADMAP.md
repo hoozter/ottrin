@@ -10,8 +10,8 @@ not complete a broader native, platform or user-acceptance requirement.
 
 The four Linux formats in `dist/packages/` now use runtime
 `45830098b6d58eeb8a08252f8d8b9c6fe35d9eef`. Windows ZIP/NSIS/development
-MSIX0.1.0.16 remain the accepted `f463ff268f1c0850360fb3d1d81da18a3d3240ec`
-cohort in `dist/windows-candidate/`; the new Windows UI cohort remains staged.
+MSIX0.1.0.17 now use that same accepted runtime in `dist/windows-candidate/`.
+Source50a breadcrumb directory classification is tested but not yet packaged.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
 `4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
@@ -32,9 +32,9 @@ also use the production renderer: actual typography/icons/chevrons, theme colors
 selection and hit rectangles. Pixel-rounded painting now matches hit testing, and
 measured filename elision reserves the chevron space. 492 UI tests and strict
 native/Windows UI lint pass.
-These shared-widget changes are delivered in all four Linux458 packages. Windows
-stable packages remain f463; the Windows458/MSIX17 cohort is staged for further
-native acceptance. The full preview/interface audit remains required. Source scopes: `theme-presenters-current/IMPLEMENTATION.json`,
+These shared-widget changes are delivered in all seven stable Linux/Windows458
+packages, including development MSIX17. Exact Windows native settings/preview,
+fresh MSIX runtime and enabled/disabled16-to17 upgrade scopes pass. The full preview/interface audit remains required. Source scopes: `theme-presenters-current/IMPLEMENTATION.json`,
 `theme-chrome-current/SOURCE_CHECKS.json` and
 `theme-file-rows-current/SOURCE_CHECKS.json`. Rendered regressions compare actual tab
 size/corners/typography and window-control dimensions at 100/150/200 percent text
@@ -262,43 +262,86 @@ pass (`theme-breadcrumb-current/`). This source correction is not yet packaged.
 MSIX17's actual ordinary-user startup checkbox now passes off/on transitions,
 independent CLI agreement and unchanged daemon PID. Native main-window close,
 package identities and index readiness also pass in that actor. The lifecycle
-controller then failed a transient sharing violation while reading the atomically
-replaced ACTOR.json; full reboot/login/removal acceptance remains open. A fresh
-controller narrowly retries sharing/lock violations and exercises native transient
-lock recovery, a bounded persistent lock, malformed JSON and missing-file refusal
-before creating its temporary user. See `MSIX_CHECKBOX_ACCEPTANCE.json` for the
-bounded positive scope; earlier failed attempts remain diagnostic evidence.
+controller initially failed a transient sharing violation while reading the atomically
+replaced ACTOR.json. Its bounded sharing/lock retry now passes native transient
+lock recovery, persistent-lock timeout, malformed JSON and missing-file refusal.
+The exact MSIX17 fresh runtime then passes real reboot/sign-in: Windows starts an
+ordinary package-identity daemon before any Ottrin CLI; saved store identity and
+preferences survive. Package removal preserves the source/preferences and leaves
+no package process or index task. The first reboot stopped at sign-in because the
+stock image's one-use auto-login expired; only the generated fixture account's
+credential/auto-login was restored before another real reboot. No Ottrin CLI
+started the observed daemon. That VM/two volumes/profile/bootstrap are removed.
+`MSIX_RUNTIME_ACCEPTANCE.json` records this exact fresh scope. Subsequent
+upgrade and Windows pointer acceptance are recorded below; the full audit remains open. Earlier failed attempts
+remain diagnostic evidence.
+
+Windows458 exact NSIS acceptance now passes nine settings-preservation/save-retry
+cases and eight preview actions in Native and OpenGL at144DPI. Normal Windows
+SendInput movement/button events select the observed row in both renderers;
+the earlier separate cursor-position/legacy-button diagnostics remain failed
+records. Eight original captures are directly reviewed. No product source changed
+for the pointer correction; motion API and settling timing were not isolated as
+separate causes. `WINDOWS_NATIVE_ACCEPTANCE.json` records the bounded scope.
+Those native clones are removed. Fresh MSIX17 runtime/login/removal and subsequent
+enabled/disabled16-to17 upgrades pass. The initial missing-input admission refusal
+remains diagnostic evidence; no VM was allocated for that refusal.
+
+The enabled16-to17 upgrade encountered host disk exhaustion: libvirt paused its
+owned disk with `sda: no space`; the lifecycle deadline expired and teardown
+removed that clone/volumes. This is an environment failure, not upgrade acceptance.
+Guarded cleanup removed28 superseded normal index-daemon executables and their
+fingerprint/dep-info companions after exact compiler/configuration, newer current
+replacement, link, caller and process checks (about19.89GiB). Current targets,
+source, dependencies, packages and protected VMs remain. The wider free-space gain
+also includes the expired fixture disk teardown. The producer now requires24GiB
+free before allocation and records owned-volume allocation at cleanup. A new
+exact upgrade subsequently passed, as did a separate disabled-startup upgrade.
+Both retain saved-index identity/preferences and remove the old package processes.
+Actual reboot/login starts the enabled17 daemon before any Ottrin CLI; the disabled
+case stays stopped throughout180seconds. All owned VMs/volumes/profiles/bootstrap
+inputs are removed. `MSIX_UPGRADE_ACCEPTANCE.json` binds both exact artifacts.
+`WINDOWS_PROMOTION.json` records promotion of all three accepted Windows packages
+and retirement of superseded16 packages/payload and consumed staging.
+
+The personal Linux service was explicitly updated through the current AppImage
+public service-install command. Its running daemon hash matches the delivered458
+binary. Startup remains enabled, preferences are byte-identical and the saved
+index retains its filesystem identity. Ready-state CPU was0.87% of one core over
+30seconds before and after; no reduction or sustained-load acceptance is claimed.
+`HOST_INDEX_UPDATE.json` records this real host scope. Current managed indexing
+is intentionally left running; it is not a disposable test process.
 
 ### Ordered implementation and acceptance queue
 
-1. Finish Windows458/MSIX17 delivery: resolve native preview action/pointer checks,
-   complete installed-package startup-checkbox and remaining runtime acceptance,
-   promote verified Windows artifacts and retire consumed staging. Linux458
-   promotion, scoped native preview checks and all four hosted jobs are complete.
-2. Complete positive protected-file elevation in a genuine local-seat Linux
+Completed delivery: Linux458 and Windows458/MSIX17 are at their stable paths;
+exact native scopes, fresh/update/login MSIX gates, four hosted jobs and owned
+fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap completion.
+
+1. Complete positive protected-file elevation in a genuine local-seat Linux
    desktop fixture, then real login/reboot and remaining AppImage/portable binary
    replacement readiness. Background no-seat denial is diagnosed, not positive
    acceptance.061 package delivery, normal GUI-close retention, same-version DEB
    replacement, helper setup and native Services controls are scoped above and
    need not be repeated without changed inputs or a reproduced concern.
-3. Finish the theme/interface consistency audit and implementation. The source
+2. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor, delivered
-   in Linux458 and staged for Windows native acceptance. U08 remains unfinished:
+   in Linux/Windows458 with bounded native acceptance. U08 remains unfinished:
    tabs, window buttons and Miller file rows now share production presenters in
    source. Status controls, List/Grid representation, miniature corner scaling and
    inspector role ownership remain open. All affected controls need native visual
-   verification. The staged458 Nord dark/light checks above cover preview row,
+   verification. The exact458 Nord dark/light checks above cover preview row,
    tab and window-control selection; they do not close the full consistency audit.
    Include the main search indicator's stopped-state color and settled resize
    observation. Verify every supported control/role, text/icon alignment and
    window styling; field-map/test counts do not prove whole-interface consistency.
-4. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
+3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
    Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
    DEB/RPM and cooperating Windows caller receipts retain their exact scopes.
-   Verify the new MSIX startup checkbox in its installed-package context.
+   MSIX17 startup-checkbox installed-package off/on and unchanged-daemon checks pass.
    Do not infer universal Windows dialog replacement or repeat fulfilled matrices
    without changed inputs or a reproduced defect.
-5. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
+4. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
    (54 roadmap bullets) and `release-audit-current/USER_REQUIREMENTS.json` (15
    overlapping user requirements), reconcile the release matrix/documents, and
    leave only actual [owner/external waits](#ownerexternal-waiting-list).

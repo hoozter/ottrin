@@ -1,0 +1,487 @@
+[
+    {
+        "name":  "Settings",
+        "bounds":  "1020,1,188,32",
+        "type":  "ControlType.Window"
+    },
+    {
+        "name":  "System",
+        "bounds":  "Empty",
+        "type":  "ControlType.MenuBar"
+    },
+    {
+        "name":  "System",
+        "bounds":  "Empty",
+        "type":  "ControlType.MenuItem"
+    },
+    {
+        "name":  "Minimize Settings",
+        "bounds":  "1070,1,46,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Maximize Settings",
+        "bounds":  "1116,1,46,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Close Settings",
+        "bounds":  "1162,1,46,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Settings",
+        "bounds":  "8,1,1200,932",
+        "type":  "ControlType.Window"
+    },
+    {
+        "name":  "Settings",
+        "bounds":  "58,17,962,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Search box, Find a setting",
+        "bounds":  "350,9,516,32",
+        "type":  "ControlType.Edit"
+    },
+    {
+        "name":  "",
+        "bounds":  "8,1,1200,932",
+        "type":  "ControlType.Custom"
+    },
+    {
+        "name":  "Back",
+        "bounds":  "12,7,40,36",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "",
+        "bounds":  "8,1,300,932",
+        "type":  "ControlType.Window"
+    },
+    {
+        "name":  "OTMSId677c54a0fa3 Local Account",
+        "bounds":  "13,50,290,75",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "User profile picture",
+        "bounds":  "24,58,60,60",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "OTMSId677c54a0fa3",
+        "bounds":  "96,71,131,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Local Account",
+        "bounds":  "96,90,131,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "",
+        "bounds":  "8,142,300,783",
+        "type":  "ControlType.Pane"
+    },
+    {
+        "name":  "",
+        "bounds":  "24,144,280,476",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Home",
+        "bounds":  "24,144,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,152,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "System",
+        "bounds":  "24,184,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,192,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Bluetooth \u0026 devices",
+        "bounds":  "24,224,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,232,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Network \u0026 internet",
+        "bounds":  "24,264,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,272,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Personalization",
+        "bounds":  "24,304,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,312,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Apps",
+        "bounds":  "24,344,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,352,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Accounts",
+        "bounds":  "24,384,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,392,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Time \u0026 language",
+        "bounds":  "24,424,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,432,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Gaming",
+        "bounds":  "24,464,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,472,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Accessibility",
+        "bounds":  "24,504,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,512,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Privacy \u0026 security",
+        "bounds":  "24,544,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,552,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "Windows Update",
+        "bounds":  "24,584,280,36",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "",
+        "bounds":  "34,592,20,20",
+        "type":  "ControlType.Image"
+    },
+    {
+        "name":  "",
+        "bounds":  "332,52,228,44",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "System",
+        "bounds":  "332,52,134,44",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "System",
+        "bounds":  "333,55,92,38",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Display",
+        "bounds":  "467,55,93,38",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Display",
+        "bounds":  "467,55,93,38",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "",
+        "bounds":  "334,107,874,826",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "",
+        "bounds":  "334,107,874,826",
+        "type":  "ControlType.Pane"
+    },
+    {
+        "name":  "Brightness \u0026 color",
+        "bounds":  "334,112,850,241",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Brightness \u0026 color",
+        "bounds":  "334,112,850,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Night light",
+        "bounds":  "334,139,850,70",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Night light",
+        "bounds":  "393,157,67,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Use warmer colors to help block blue light",
+        "bounds":  "393,176,229,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Night light",
+        "bounds":  "1067,154,72,40",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Night light",
+        "bounds":  "1143,158,32,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Color profile",
+        "bounds":  "334,212,850,69",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Color profile",
+        "bounds":  "393,229,77,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Determine how colors appear on your screen",
+        "bounds":  "393,248,244,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Color profile",
+        "bounds":  "1143,231,32,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "HDR",
+        "bounds":  "334,284,850,69",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "HDR",
+        "bounds":  "393,301,726,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "More about HDR ",
+        "bounds":  "393,320,726,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "More about HDR",
+        "bounds":  "393,320,94,15",
+        "type":  "ControlType.Hyperlink"
+    },
+    {
+        "name":  "HDR",
+        "bounds":  "1143,303,32,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Scale \u0026 layout",
+        "bounds":  "334,385,850,312",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Scale \u0026 layout",
+        "bounds":  "334,385,850,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Scale",
+        "bounds":  "334,412,850,69",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Scale",
+        "bounds":  "393,429,32,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Change the size of text, apps, and other items",
+        "bounds":  "393,448,538,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Scale",
+        "bounds":  "947,427,196,40",
+        "type":  "ControlType.ComboBox"
+    },
+    {
+        "name":  "100% (Recommended)",
+        "bounds":  "963,437,138,19",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "Scale",
+        "bounds":  "1143,431,32,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Display resolution",
+        "bounds":  "393,501,111,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Adjust the resolution to fit your connected display",
+        "bounds":  "393,520,272,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Display resolution",
+        "bounds":  "1033,499,138,40",
+        "type":  "ControlType.ComboBox"
+    },
+    {
+        "name":  "1920 × 1440",
+        "bounds":  "1049,509,80,19",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "Display orientation",
+        "bounds":  "393,581,117,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Display orientation",
+        "bounds":  "1033,571,138,40",
+        "type":  "ControlType.ComboBox"
+    },
+    {
+        "name":  "Landscape",
+        "bounds":  "1049,581,80,19",
+        "type":  "ControlType.ListItem"
+    },
+    {
+        "name":  "Multiple displays",
+        "bounds":  "334,628,850,69",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Multiple displays",
+        "bounds":  "393,645,104,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Choose the presentation mode for your displays",
+        "bounds":  "393,664,261,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Show more settings",
+        "bounds":  "1143,647,32,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Related settings",
+        "bounds":  "334,729,850,204",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Related settings",
+        "bounds":  "334,729,850,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Advanced display",
+        "bounds":  "334,756,850,69",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Advanced display",
+        "bounds":  "393,773,108,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Display information, refresh rate",
+        "bounds":  "393,792,175,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Advanced display",
+        "bounds":  "1143,775,32,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Graphics",
+        "bounds":  "334,828,850,69",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Graphics",
+        "bounds":  "393,853,54,19",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Graphics",
+        "bounds":  "1143,847,32,32",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "Screen tint",
+        "bounds":  "334,900,850,33",
+        "type":  "ControlType.Group"
+    },
+    {
+        "name":  "Screen tint",
+        "bounds":  "393,917,66,16",
+        "type":  "ControlType.Text"
+    },
+    {
+        "name":  "Screen tint",
+        "bounds":  "1143,919,32,14",
+        "type":  "ControlType.Button"
+    },
+    {
+        "name":  "",
+        "bounds":  "8,33,1200,900",
+        "type":  "ControlType.Pane"
+    }
+]

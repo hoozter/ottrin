@@ -1,0 +1,28 @@
+{
+  "conclusion": "success",
+  "headSha": "50a78015b8e23b6da558a12cc5d8536ce538e1d2",
+  "jobs": [
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "status": "completed",
+  "run_id": 41825003010
+}

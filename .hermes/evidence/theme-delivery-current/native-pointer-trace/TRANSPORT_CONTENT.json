@@ -1,0 +1,101 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 162,
+      "sha256": "851f5aef44807e83f9fd3bf3dac30c2ce0f0cf8a86d621584be63d4c94cbdbf2",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "failure-editor.png",
+      "bytes": 203329,
+      "sha256": "63a8f99cf7bccca709b9ea31c26eb05a8e6a7a29ba74b39b198ede635b2ac512",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "failure-settings.png",
+      "bytes": 152299,
+      "sha256": "0ff39d3e0fc313bf61daef15af9dfbdfd608f8fc612e14abcd35b33a494e9ebd",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "a512b9f218295307178853a0fb55a4067567a7bb93f5e5f7881a71661ed2c418",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 90,
+      "sha256": "848a38dc8f6491a7ec0a96bd445a7cff858af64db317dffa54a7e5e1023ff6cb",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-cli-process.json",
+      "bytes": 321,
+      "sha256": "28491758b52c0928d947e803b02c5a69423bef4bca72e3360f9bdc2ff1166d7c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-daemon-process.json",
+      "bytes": 334,
+      "sha256": "db29338008f6f79351dd5086134e5f44c10b607bd130df639691f646f9664552",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-settings-native.png",
+      "bytes": 80279,
+      "sha256": "f1048702f779353f5943a202d42f833a6ed5cc3f0b091b7cc663331ac9cc87ed",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-after-pointer-action.png",
+      "bytes": 202602,
+      "sha256": "f510bb053df8c7d295f696b28a3f2e5c1f0cef4c451339853435f94d44c4f495",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-preview-selected-row.png",
+      "bytes": 176378,
+      "sha256": "f52bbf3ce47081ca1048f88a74aa2da15b9bcb116adddbf086ee48490edd6bff",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-preview-tabs.png",
+      "bytes": 202602,
+      "sha256": "f510bb053df8c7d295f696b28a3f2e5c1f0cef4c451339853435f94d44c4f495",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "beb057f70112a6e79932033d762b59e2e20ce3d84a51ae9140642829b8f3d229",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 54675,
+      "sha256": "6910e834ea690b03350b386635a1ba3e22a2eb6f8045614bac2f7eca22bfd9f5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 240885,
+      "sha256": "e0e9e8ca8bf0f0aa8363b930d8160653c0b05c01b7c0f2d3b7dfb70c66c9133c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 149126,
+      "sha256": "a966c8b7d6de96ce017942a9a8d1cacbec07a729f3a476a29af57b885dda1704",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "c5583d98d4fd03a4971b128f9004a6c67c77133d618d34a72967ce5928954690",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

@@ -1,0 +1,45 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-pointer-trace/RESULTS.zip",
+          "bytes": 1254741,
+          "sha256": "e8a4656a1364241ed0a4b3070d538cf3c77394ab21f5a5c59cc3711f387b6b16"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-pointer-trace/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-pointer-trace/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "ed2f19916385b2c988b7e0a794f85b8346e677a05ee76afea5e11d2b8bf50688"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-pointer-trace/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-pointer-trace/readiness.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-pointer-trace/privacy-accepted-0.png",
+          "bytes": 14139,
+          "sha256": "a118b662174fdb53925bd615b73974376d005d7f22a26f422a4cbf9c2676d473"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-pointer-trace/privacy-accepted-1.png",
+          "bytes": 5849850,
+          "sha256": "e5d172af37901cbd7cff2679fae6135853f8382786bb92211f5d0b09b2fb3648"
+        }
+      ],
+      "bytes": 7126417
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

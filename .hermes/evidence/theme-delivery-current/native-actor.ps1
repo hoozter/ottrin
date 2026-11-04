@@ -54,6 +54,11 @@ public static class DpiDesktop {
  [DllImport("user32.dll")]static extern IntPtr MonitorFromWindow(IntPtr window,uint flags);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern bool GetMonitorInfoW(IntPtr monitor,ref MonitorInfo info);
  [DllImport("user32.dll")]static extern void mouse_event(uint flags,uint x,uint y,uint data,UIntPtr extra);
+ [StructLayout(LayoutKind.Sequential)]struct MouseData {public int x,y;public uint data,flags,time;public UIntPtr extra;}
+ [StructLayout(LayoutKind.Sequential)]struct MouseInput {public uint type;public MouseData mouse;}
+ [DllImport("user32.dll",SetLastError=true)]static extern uint SendInput(uint count,MouseInput[] inputs,int size);
+ static void Input(uint flags,int x=0,int y=0){var input=new MouseInput();input.mouse.flags=flags;input.mouse.x=x;input.mouse.y=y;int size=Marshal.SizeOf(typeof(MouseInput));if(size!=40)throw new Exception("Unexpected native x64 INPUT layout");if(SendInput(1,new[]{input},size)!=1)throw new System.ComponentModel.Win32Exception();}
+
  public static string[] Modes(){var modes=new List<string>();for(int i=0;i<1024;i++){Mode m=new Mode();m.size=220;if(!EnumDisplaySettingsW(null,i,ref m))break;string v=m.width+"x"+m.height+"x"+m.bits;if(!modes.Contains(v))modes.Add(v);}return modes.ToArray();}
  public static string LargeMode(){
   if(Marshal.SizeOf(typeof(Mode))!=220)throw new Exception("Unexpected native DEVMODEW size");
@@ -72,7 +77,17 @@ public static class DpiDesktop {
  [DllImport("user32.dll")]static extern IntPtr WindowFromPoint(Point point);
  [DllImport("user32.dll")]static extern IntPtr GetAncestor(IntPtr window,uint kind);
  public static long RootAt(int x,int y){return GetAncestor(WindowFromPoint(new Point(x,y)),2).ToInt64();}
- public static int[] ClickAt(int x,int y){var before=Cursor.Position;Cursor.Position=new Point(x,y);var placed=Cursor.Position;if(placed.X!=x||placed.Y!=y)throw new Exception("Pointer target is outside the owned display");mouse_event(2,0,0,0,UIntPtr.Zero);Thread.Sleep(60);var release=Cursor.Position;mouse_event(4,0,0,0,UIntPtr.Zero);Thread.Sleep(200);var after=Cursor.Position;return new int[]{before.X,before.Y,placed.X,placed.Y,release.X,release.Y,after.X,after.Y};}
+ public static int[] ClickAt(int x,int y){
+  var before=Cursor.Position;var desktop=SystemInformation.VirtualScreen;
+  if(!desktop.Contains(x,y))throw new Exception("Pointer target is outside the owned display");
+  // Drive movement and button edges through one native input path, rather
+  // than setting cursor coordinates separately from the injected buttons.
+  int nx=(int)Math.Round((x-desktop.Left+0.5)*65535/desktop.Width),ny=(int)Math.Round((y-desktop.Top+0.5)*65535/desktop.Height);
+  Input(0xC001,nx,ny);Thread.Sleep(100);var placed=Cursor.Position;
+  if(Math.Abs(placed.X-x)>1||Math.Abs(placed.Y-y)>1)throw new Exception("Native input did not reach the observed target");
+  Input(2);Thread.Sleep(60);var release=Cursor.Position;Input(4);Thread.Sleep(200);var after=Cursor.Position;
+  return new int[]{before.X,before.Y,placed.X,placed.Y,release.X,release.Y,after.X,after.Y};
+ }
  public static void WheelAt(int x,int y,int delta){Cursor.Position=new Point(x,y);mouse_event(0x800,0,0,unchecked((uint)delta),UIntPtr.Zero);Thread.Sleep(200);}
 }
 
@@ -134,7 +149,7 @@ public static class DpiDesktop {
   Require (-not$node.Current.IsOffscreen-and$node.Current.IsEnabled-and$x-ge$b[0]-and$x-lt$b[0]+$b[2]-and$y-ge$b[1]-and$y-lt$b[1]+$b[3]) 'Observed row target must be inside the owned viewport'
   $report.pointer_target=@{native_window=$b;uia_bounds=@($r.Left,$r.Top,$r.Width,$r.Height);point=@($x,$y);root_under_point=[DpiDesktop]::RootAt($x,$y);expected_root=$editor.ToInt64();dpi=[DpiDesktop]::GetDpiForWindow($editor)};Save
   Require ([DpiDesktop]::RootAt($x,$y)-eq$editor.ToInt64()) 'Pointer target must resolve to the actual editor window'
-  $report.pointer_input_trace=[DpiDesktop]::ClickAt($x,$y);Save;Pump
+  $report.pointer_input_method='Native SendInput absolute movement,100ms settling, native button edges';$report.pointer_input_trace=[DpiDesktop]::ClickAt($x,$y);Save;Pump
   [PickerNative]::Shot($editor,(Join-Path $out ($renderer+'-after-pointer-action.png')))
  }
  function PreviewControls($editor){

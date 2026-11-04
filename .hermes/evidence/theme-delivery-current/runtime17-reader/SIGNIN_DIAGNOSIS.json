@@ -1,0 +1,29 @@
+{
+  "scope": "Generated disposable account only; no user secrets or host credentials",
+  "first_reboot": "Observed lock screen, console user absent, AutoAdminLogon=0 and no password entry; no package daemon startup can be inferred without sign-in",
+  "normal_input_attempt": "Observed owned account; temporary password reset and native input did not authenticate. No acceptance claimed for it.",
+  "recovery": "Re-established only owned account automatic-login values and count=3, reset its temporary credential and requested another actual reboot. Guest agent disappeared during dispatch; no duplicate reboot sent. Final native LOGIN.json proves a later boot, ordinary user process and Windows-started package daemon before CLI.",
+  "final_cleanup": "Domain, two owned volumes, console/profile and fixture removed; guest-only password/registry discarded with owned disk",
+  "superseded_frames_removed": [
+    {
+      "path": ".hermes/evidence/theme-delivery-current/runtime17-reader/owned-signin-observed.png",
+      "bytes": 472197,
+      "sha256": "548f5847769cfcc74430013aa4b2a363c8809ffa9884fa24d6d5efd45d52a159"
+    },
+    {
+      "path": ".hermes/evidence/theme-delivery-current/runtime17-reader/owned-signin-ready.png",
+      "bytes": 485864,
+      "sha256": "2090ca2ff56d8cb79d2fc7bf181a1c545daa29ba6ea8e69142b9ebb5a2d37319"
+    },
+    {
+      "path": ".hermes/evidence/theme-delivery-current/runtime17-reader/owned-signin-sas.png",
+      "bytes": 484289,
+      "sha256": "68415b261dfef3502cf6fd209cc4f5012627a564c1b3e91ec92685cf9b379436"
+    },
+    {
+      "path": ".hermes/evidence/theme-delivery-current/runtime17-reader/owned-signin-direct-key.png",
+      "bytes": 483292,
+      "sha256": "c82619bb63db835bd92eb9f0726de355df6e9754249f6448003b87b938233ccb"
+    }
+  ]
+}

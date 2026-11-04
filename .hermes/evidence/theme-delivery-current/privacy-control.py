@@ -29,12 +29,16 @@ elif action in ['finish-msix','finish-application']:
  while True:
   filename='privacy-accepted-'+str(len(steps))+'.png';own('shot',filename)
   # A powered-off guest display is uniformly black inside viewer chrome.
-  # Wake once with ordinary input; never repeat input on an unknown page.
+  # Focus the guest canvas and wake once; activating GTK chrome alone does
+  # not ensure keyboard input reaches the reconnected guest. Never repeat
+  # input on an unknown page.
   with Image.open(r/filename) as frame:
    center=frame.crop((frame.width//4,frame.height//4,frame.width*3//4,frame.height*3//4)).convert('RGB')
    blank=max(ImageStat.Stat(center).extrema[channel][1] for channel in range(3))<4
   if blank and not woke_blank:
-   woke_blank=True;own('key','Return');steps.append({'heading':'blank console','observed_sha256':hashlib.sha256((r/filename).read_bytes()).hexdigest(),'input':'one Return to wake display','selection':None});continue
+   woke_blank=True
+   with Image.open(r/filename) as frame:point=[frame.width//2,frame.height//2]
+   own('click',*point);steps.append({'heading':'blank console','observed_sha256':hashlib.sha256((r/filename).read_bytes()).hexdigest(),'input':{'one_click_to_focus_and_wake_guest':point},'selection':None});continue
   text=subprocess.check_output(['tesseract',str(r/filename),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=10).casefold()
   if 'recycle bin' in text or all(label in text for label in ['pinned','recommended','file explorer']):break
   matched=[heading for heading in allowed if heading in text]

@@ -1,0 +1,30 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-enabled/PREPARATION.json",
+          "bytes": 318,
+          "sha256": "6092c72999de54335f9c648c9bd0910022b0e57b72e0ba45638c4aba8ea81c8b"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-enabled/readiness.log",
+          "bytes": 473,
+          "sha256": "9e2dae26455cb61a852ad3b22aee23462ddd119e3f3484a63ad9e8750c0aae52"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-enabled/privacy-accepted-0.png",
+          "bytes": 9384,
+          "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-enabled/privacy-accepted-1.png",
+          "bytes": 1212659,
+          "sha256": "033d4c752a86b4b62b637d20e54a4ab4ae621bccf85b2422473c6c23f2b07bf9"
+        }
+      ],
+      "bytes": 1222834
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

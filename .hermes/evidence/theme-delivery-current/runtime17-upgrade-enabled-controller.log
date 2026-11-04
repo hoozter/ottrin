@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/native-driver.py", line 492, in <module>
+    assert time.monotonic()<deadline,'Native MSIX interactive test did not finish'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Native MSIX interactive test did not finish

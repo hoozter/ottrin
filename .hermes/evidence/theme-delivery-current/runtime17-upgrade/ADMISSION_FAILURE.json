@@ -1,0 +1,28 @@
+{
+  "status": "Stopped before VM allocation; previous-package acceptance receipt missing",
+  "resolution": "PREVIOUS_PACKAGE.json now binds exact current stable MSIX16 hash/version/source and existing stable path before a new run",
+  "owned_resource_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "consumed_source_inputs_removed": [
+    {
+      "name": "DRIVER_SOURCE.py",
+      "bytes": 76003,
+      "sha256": "4a2775e451b2423da749268a428dbe7bcde6e7ba41e899fc78d4202473aa183d"
+    },
+    {
+      "name": "RUNTIME_SOURCE.ps1",
+      "bytes": 42192,
+      "sha256": "50a87ecf0049f79928be41f7384a0e1e6e759d409c5ac609acc692c2fa6ff1d0"
+    },
+    {
+      "name": "NATIVE_CONTROLS_SOURCE.ps1",
+      "bytes": 5902,
+      "sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700"
+    }
+  ]
+}

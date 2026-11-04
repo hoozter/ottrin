@@ -91,7 +91,10 @@ if args.use_stock_base:
  backing=prepared_base['disk'];assert backing=='/var/lib/libvirt/images/ottrin-stock-client.qcow2' and prepared_base['backing_image'] is None
  base_xml=E.fromstring(virsh('vol-dumpxml','--pool','default','ottrin-stock-client.qcow2'));assert not base_xml.findtext('./backingStore/path')
  for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
+available_vm_storage=shutil.disk_usage('/var/lib/libvirt/images').free
+assert available_vm_storage>=24*1024**3, f'Owned Windows QA requires24GiB free headroom before allocation; available {available_vm_storage} bytes. Retire verified disposable output before retrying.'
 state={'domain':name,'uuid':uid,'base_domain':'ottrin-copy-cleanup-qa' if args.office_installed else None if args.use_stock_base else 'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.native_test or args.msix_runtime or args.native_msi_builder or application_case or args.native_transport_probe else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+state['storage_at_start']={'available_bytes':available_vm_storage,'minimum_headroom_bytes':24*1024**3,'path':'/var/lib/libvirt/images'}
 save('OWNER.json',state)
 def backing_chain(path):
  chain=[]
@@ -121,6 +124,7 @@ def cleanup():
    files=set(backing_chain('/var/lib/libvirt/images/'+v));assert files.issubset(owned_paths|set(backing_chain(state['base_disk'])))
    chains.append({'owned_volume':v,'files':sorted(files)})
   state['checked_backing_chains']=chains
+  state['owned_volume_allocations_before_removal']=[{'volume':v,'allocated_bytes':int(E.fromstring(virsh('vol-dumpxml','--pool','default',v)).findtext('allocation')),'virtual_capacity_bytes':int(E.fromstring(virsh('vol-dumpxml','--pool','default',v)).findtext('capacity'))} for v in state['volumes']]
   removed=[]
   for v in reversed(state['volumes']):
    if v==state.get('retained_pending_volume'):continue
@@ -401,6 +405,8 @@ with ExitStack() as stack:
  xml=fixture/'domain.xml';E.ElementTree(root).write(xml,encoding='unicode');virsh('define',str(xml));virsh('start',name);state['status']='booting';save('OWNER.json',state)
  spec=importlib.util.spec_from_file_location('guest',r/'.hermes/evidence/windows-20261011/guest_exec.py');g=importlib.util.module_from_spec(spec);spec.loader.exec_module(g);g.DOMAIN=name
  if interactive_case:
+  privacy_control=e/'PRIVACY_CONTROL_SOURCE.py';shutil.copy2(e.parent/'privacy-control.py',privacy_control)
+  state['privacy_control_sha256']=hashlib.sha256(privacy_control.read_bytes()).hexdigest();save('OWNER.json',state)
   desktop_spec=importlib.util.spec_from_file_location('desktop',r/'scripts/linux-desktop-qa/session.py');desktop=importlib.util.module_from_spec(desktop_spec);desktop_spec.loader.exec_module(desktop)
   private_console=stack.enter_context(desktop.OwnedDesktop(e/'viewer'))
   viewer=private_console.spawn(['virt-viewer','--connect','qemu:///system','--attach','--domain-name','--reconnect','--auto-resize=never','--spice-disable-audio','--spice-disable-usbredir',name],'viewer.log')
@@ -476,7 +482,7 @@ with ExitStack() as stack:
   code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$disc=@(Get-CimInstance Win32_LogicalDisk|Where-Object {$_.VolumeName-eq'OTMSICONTROL'});$d=$disc[0].DeviceID+'\\';$script=Join-Path $d 'runtime.ps1';$errors=$null;$tokens=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$errors);if($errors.Count){throw ($errors|Out-String)};$helpers=@($ast.FindAll({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Exercise-StartupCheckbox'},$true));if($helpers.Count -ne 1){throw 'Expected one startup checkbox helper'};$parent=$helpers[0].Parent;while($parent){if($parent -is [Management.Automation.Language.IfStatementAst] -or $parent -is [Management.Automation.Language.LoopStatementAst] -or $parent -is [Management.Automation.Language.FunctionDefinitionAst]){throw 'Startup checkbox helper must be defined at unconditional script scope'};$parent=$parent.Parent}; & ([ScriptBlock]::Create([IO.File]::ReadAllText($script))) -Mode Prepare -Disc $d"
   result=ps(code,90);save('PREPARATION.json',{'process_exit':result.get('exitcode'),'stdout':base64.b64decode(result.get('out-data','')).decode('utf-8-sig'),'stderr':base64.b64decode(result.get('err-data','')).decode('utf-8',errors='replace')});assert result['exitcode']==0
   reboot_owned_guest();time.sleep(8);deadline=time.monotonic()+1200;state['status']='waiting for owned interactive MSIX deployment/runtime actor';save('OWNER.json',state)
-  observer_log=stack.enter_context((e/'readiness.log').open('w'));observer=subprocess.Popen([sys.executable,str(e.parent/'privacy-control.py'),str(e),'finish-msix'],stdout=observer_log,stderr=subprocess.STDOUT,start_new_session=True);stack.callback(desktop.workspace.stop_tests,observer);state['desktop_observer_pid']=observer.pid;save('OWNER.json',state)
+  observer_log=stack.enter_context((e/'readiness.log').open('w'));observer=subprocess.Popen([sys.executable,str(privacy_control),str(e),'finish-msix'],stdout=observer_log,stderr=subprocess.STDOUT,start_new_session=True);stack.callback(desktop.workspace.stop_tests,observer);state['desktop_observer_pid']=observer.pid;save('OWNER.json',state)
   while True:
    try:
     result=ps("$p='C:\\OttrinOwnedMsixRuntime\\results\\RESULT.json';if(Test-Path $p){$s=[IO.File]::Open($p,'Open','Read',([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete));$r=[IO.StreamReader]::new($s);try{$r.ReadToEnd()}finally{$r.Dispose()}}else{'{}'}",20)
@@ -561,7 +567,7 @@ with ExitStack() as stack:
   # Observe the fresh owned desktop promptly; actor ownership/nonce checks stay
   # unchanged. Register cancellation before the observer can allocate work.
   observer_log=stack.enter_context((e/'readiness.log').open('w'))
-  observer=subprocess.Popen([sys.executable,str(e.parent/'privacy-control.py'),str(e),'finish-application'],stdout=observer_log,stderr=subprocess.STDOUT,start_new_session=True)
+  observer=subprocess.Popen([sys.executable,str(privacy_control),str(e),'finish-application'],stdout=observer_log,stderr=subprocess.STDOUT,start_new_session=True)
   stack.callback(desktop.workspace.stop_tests,observer)
   state['desktop_observer_pid']=observer.pid;save('OWNER.json',state)
  if args.office_installed:

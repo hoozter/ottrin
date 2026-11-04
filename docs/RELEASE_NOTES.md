@@ -4,8 +4,8 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM use runtime `45830098`; Windows ZIP/NSIS/MSIX16
-retain the accepted `f463ff26` cohort. The Linux-only Services correction now
+Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/MSIX17 now use runtime
+`45830098` at their stable local paths. The Linux-only Services correction now
 shows gray Stopped after intentional stop/uninstall even when a socket pathname
 remains. All four exact-source CI jobs41809847269 pass.
 
@@ -35,12 +35,16 @@ elision that reserves directory-chevron space. The new row regression compares
 real geometry, typography/color and accessible selection at the same three scales.
 492 UI tests and strict native/Windows UI lint pass. These changes are delivered
 in all four Linux458 packages; mounted AppImage Nord Dark150/Light100 preview
-selection checks and eight directly reviewed original captures pass. Windows458/
-MSIX17 remain staged for native acceptance. The full theme/role audit remains open.
+selection checks and eight directly reviewed original captures pass. Windows458/MSIX17 also pass nine settings cases/eight preview actions in
+Native/OpenGL, fresh installed runtime and real reboot/login/removal, and
+16-to17 upgrades with startup enabled and disabled. All58 payload files match.
+Source50a breadcrumb directory classification is tested but not packaged. The full theme/role audit remains open.
 
-Completed fixture VM/profile/bootstrap resources, extraction and superseded Linux
-packages are removed. The current MSIX runtime fixture retains its own teardown
-lease until its test finishes. Current Windows packages and personal services/data were preserved.
+Completed fixture VM/profile/bootstrap resources, extraction, consumed staging
+and superseded Linux/Windows packages are removed. The personal Linux service
+now runs the delivered daemon; startup choice, preference bytes and saved-index
+identity are preserved. Its short ready-state sample is0.87% of one core over
+30seconds; no sustained-performance or CPU-reduction claim is made.
 Login/reboot, broader caller/visual/physical acceptance, MSI rollback, signing/Store
 and final owner acceptance remain open. Packaged manuals are build-time snapshots;
 repository manifests/docs record later delivery. No public release is implied.

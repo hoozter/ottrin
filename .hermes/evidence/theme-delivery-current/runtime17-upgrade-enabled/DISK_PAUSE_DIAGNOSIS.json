@@ -1,0 +1,19 @@
+{
+  "status": "Fixture host-storage failure; no upgrade acceptance",
+  "observed_domain_state": "paused (I/O error)",
+  "observed_block_error": "sda: no space",
+  "host_filesystem": "/dev/nvme0n1p2,469GiB,100percent used,0 available",
+  "terminal": "Controller1200-second lifecycle deadline expired while host storage was recovered; registered teardown removed the paused domain, both owned volumes and profile/fixture",
+  "recovery": "storage-recovery-current/RESULT.json:28 superseded same-configuration indexd executables plus fingerprint/dep-info retired through guarded helper, about19.89GiB. Wider free-space change also includes this expired fixture disk teardown.",
+  "producer_prevention": "native-driver.py now requires24GiB allocatable headroom on the libvirt image filesystem before allocation and records actual owned-volume allocation at cleanup",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-bgk71vz3",
+  "owned_processes_reaped": [
+    {
+      "pid": 1890980,
+      "exit": 0
+    },
+    {
+      "pid": 1890998,
+      "exit": 0
+    },
+    {
+      "pid": 1890999,
+      "exit": 15
+    },
+    {
+      "pid": 1891100,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

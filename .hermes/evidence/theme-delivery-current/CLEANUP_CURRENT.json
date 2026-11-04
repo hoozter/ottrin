@@ -1,5 +1,5 @@
 {
-  "verified_at": "2026-11-04T11:26:11.221037+00:00",
+  "verified_at": "2026-11-04T13:45:56.660675+00:00",
   "profiles": [
     {
       "path": "/var/tmp/.ottrin-picker-qa-f3ib1a7h",
@@ -43,15 +43,15 @@
   "retained": [
     {
       "path": "/home/campbell/Projects/Ottrin/dist/packages",
-      "purpose": "Current four Linux458 stable deliverables and their acceptance receipts"
+      "purpose": "Current four Linux458 deliverables"
     },
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "Windows458 ZIP/NSIS/MSIX17 and58-file payload awaiting native preview/runtime acceptance and promotion"
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Current Windows458 ZIP/NSIS/MSIX17 and58-file payload"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current",
-      "purpose": "Compact source, build, native and cleanup evidence"
+      "purpose": "Compact frozen producers, scoped acceptance, original captures and diagnostic receipts"
     }
   ],
   "compiler_cache_note": "Existing target/Cargo/Rustup configurations reused; debug incremental inspection found zero obsolete candidates; release dependencies and current binaries retained.",
@@ -212,12 +212,74 @@
         "base_still_off": true,
         "retained_pending_volume": null
       }
+    },
+    {
+      "case": "runtime17-reader",
+      "uuid": "7f912981-49bd-45e0-8a7b-65589e0931cc",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-pointer-trace",
+      "uuid": "6728dd2a-2978-4968-b740-5947050d0be7",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-sendinput",
+      "uuid": "2f6c9a6b-9f77-4061-88fb-989ca05e9839",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "runtime17-upgrade-enabled",
+      "uuid": "670d2db0-b7c2-4c0b-b055-60367defd5a3",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
     }
   ],
   "live_owned_case": {
-    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/runtime17-reader",
-    "purpose": "MSIX17 installed ordinary runtime, actual login/reboot and removal acceptance after native state-reader smoke",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/runtime17-upgrade-space",
+    "purpose": "Exact16-to17 enabled startup upgrade, with24GiB headroom guard; unchanged current stable16 input and staged17 candidate",
     "teardown_owner": "native-driver.py ExitStack registered before VM allocation"
   },
-  "breadcrumb_build_cleanup": "../theme-breadcrumb-current/CLEANUP.json"
+  "breadcrumb_build_cleanup": "../theme-breadcrumb-current/CLEANUP.json",
+  "preallocation_guard_cleanup": "runtime17-upgrade/ADMISSION_FAILURE.json",
+  "storage_recovery": ".hermes/evidence/storage-recovery-current/RESULT.json",
+  "windows_stage_and_superseded_packages_retired": true,
+  "windows_promotion": "WINDOWS_PROMOTION.json",
+  "incremental_cleanup": ".hermes/evidence/theme-breadcrumb-current/CLEANUP.json",
+  "personal_managed_index": "Intentionally running current delivered daemon; not a QA resource"
 }

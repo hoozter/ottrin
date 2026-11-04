@@ -1,15 +1,14 @@
 {
-  "previous_goal_turn": "progress: Linux458 shared-widget packages delivered; c4528db1 and 5eba147b checkpoints pushed; current Windows candidates held for native acceptance",
-  "this_turn": "MSIX17 actual installed checkbox, ordinary non-elevated runtime, stable daemon identity and off/on startup backend agreement pass; reader-sharing controller failure fixed with native refusal/recovery smoke. Breadcrumb directory glyph correction passes 492 UI tests and strict native/Windows UI lint; five superseded incremental sessions removed. Fresh real-login/lifecycle run remains live.",
+  "previous_goal_turn": "Informational repository-update question answered; no implementation progress. Prior substantial Windows acceptance revalidated from actual files before promotion.",
+  "this_turn": "Promoted exact Windows458 ZIP/NSIS/MSIX17 after verified NSIS settings/preview, fresh MSIX and enabled/disabled16-to17 upgrade acceptance. Consumed stage and old packages/payload removed. Stable Linux artifacts preserved. Roadmap and delivery documents reconciled.",
   "stable_promotion": {
     "linux": true,
-    "windows": false
+    "windows": true
   },
   "remaining": [
-    "Finish installed MSIX17 startup checkbox and actual login/runtime acceptance",
-    "Resolve Windows native preview pointer observation",
-    "Promote verified Windows artifacts and remove consumed stage",
-    "Continue wider ordered roadmap"
+    "Positive Linux local-seat protected-file elevation and login/replacement gates",
+    "Full U08 interface/theme audit and implementation",
+    "Remaining picker/folder caller gates and requirement audit"
   ],
   "cleanup": "CLEANUP_CURRENT.json",
   "ci": "CI_CURRENT.json"

@@ -1,0 +1,61 @@
+{
+  "status": "Resolved within normal Windows SendInput pointer QA scope",
+  "case": "native-pointer-trace",
+  "observed_target": {
+    "expected_root": 131806,
+    "point": [
+      514,
+      364
+    ],
+    "uia_bounds": [
+      381,
+      346,
+      266,
+      37
+    ],
+    "native_window": [
+      0,
+      0,
+      1770,
+      1170
+    ],
+    "dpi": 144,
+    "root_under_point": 131806
+  },
+  "cursor_trace": [
+    766,
+    556,
+    514,
+    364,
+    514,
+    364,
+    514,
+    364
+  ],
+  "trace_order": [
+    "before",
+    "placed",
+    "before_release",
+    "after_release"
+  ],
+  "actual_result": {
+    "phase": "Native production preview row pointer selection",
+    "error": "Native preview inspector did not select Selected file-row background",
+    "preview_controls": [
+      {
+        "renderer": "Native",
+        "action": "Actual advertised Toggle pattern selects Selected row"
+      },
+      {
+        "renderer": "Native",
+        "action": "Production New tab selects Navigation & tabs"
+      }
+    ]
+  },
+  "capture": "native-pointer-trace/results/Native-after-pointer-action.png",
+  "next_check": "Replace separate Cursor.Position and legacy mouse_event with SendInput absolute movement,100ms settling and button edges. Preserve identical row selection assertions; all earlier failures retained.",
+  "root_cause_limit": "Changing the movement API and adding settling produces correct normal input; the precise contribution of each is not separately established.",
+  "cleanup": "native-pointer-trace/RETIRED_INPUTS.json",
+  "resolution": "native-sendinput passes all9 settings cases and8 preview actions at144DPI Native/OpenGL, including both actual pointer row selections; no product source changed for this correction",
+  "acceptance": "WINDOWS_NATIVE_ACCEPTANCE.json"
+}

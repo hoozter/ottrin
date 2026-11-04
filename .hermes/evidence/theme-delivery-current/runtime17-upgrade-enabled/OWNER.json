@@ -1,0 +1,90 @@
+{
+  "domain": "ottrin-msix-runtime",
+  "uuid": "670d2db0-b7c2-4c0b-b055-60367defd5a3",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-runtime-fixture.iso",
+    "ottrin-msix-runtime.qcow2"
+  ],
+  "status": "failed or interrupted; see retained scope and error",
+  "public_compiler_cache": null,
+  "scope": "Actual same-identity development MSIX upgrade, ordinary runtime, retained configuration/index and real login/removal for the declared startup choice; Store acceptance remains separate",
+  "producer_sha256": "4a2775e451b2423da749268a428dbe7bcde6e7ba41e899fc78d4202473aa183d",
+  "uploaded_host_iso_removed_bytes": 115001344,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "absolute_pointer": "Clone-only virtual tablet present at boot; no host device passthrough",
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "privacy_control_sha256": "2a08955007542b9abafc532e7c125c1079e8c314d57f4dd5697022b8f8111440",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 1871828,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-syxpzgvn/home"
+  },
+  "guest_pid": 3368,
+  "guest_observation_interruption": {
+    "pid": 1504,
+    "error": "guest-exec-status failed for ottrin-msix-runtime: error: Guest agent is not responding: QEMU guest agent is not connected",
+    "process_restarted": false
+  },
+  "desktop_observer_pid": 1872726,
+  "error": "AssertionError('Native MSIX interactive test did not finish')",
+  "checked_backing_chains": [
+    {
+      "retained_domain": "ottrin-copy-cleanup-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-index-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-qa-20261011",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "win11ltsc",
+      "files": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-msix-runtime-fixture.iso",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-msix-runtime-fixture.iso"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-msix-runtime.qcow2",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-msix-runtime.qcow2",
+        "/var/lib/libvirt/images/ottrin-stock-client.qcow2"
+      ]
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

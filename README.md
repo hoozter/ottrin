@@ -36,23 +36,28 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages use runtime `45830098`; Windows ZIP/NSIS/MSIX16 retain
-accepted runtime `f463ff26`. CI41809847269 passes all four exact-source jobs for
+All seven Linux/Windows preview packages use runtime `45830098`, including
+unsigned development MSIX0.1.0.17. CI41809847269 passes all four exact-source jobs for
 the shared-widget UI delivery. Earlier061 AppImage evidence verifies gray Stopped in Services,
 nine service states/five startup toggles, real helper setup/cancel/reinstall and
 normal GUI close/reopen with the managed PID retained. Three real same-version
 DEB replacement states preserve source, preferences and the startup choice. These
 receipts keep their original artifact scopes; the Linux458 daemon is byte-identical.
 The earlier061 Linux1000-file daemon probe measures0.067% of one core over30seconds.
-Windows retains its earlier9 settings cases,16 Services states/six startup toggles,
-58-file payload/MSIX16 assembly and scoped daemon acceptance. These are bounded
+Windows458 passes nine settings cases/eight preview actions in Native/OpenGL,
+fresh MSIX17 runtime/login/removal and16-to17 updates with startup enabled and
+disabled. All58 payload files match; earlier full Services matrices retain their
+original source scope. These are bounded
 software fixtures, not sustained, physical or whole-interface acceptance.
 
 The Linux458 packages share live toolbar/breadcrumb/tab, window-control widgets
 and Miller file rows with the editor; 492 UI tests and strict Linux/Windows UI lint
 pass. File-row painting/hit bounds match, and measured filename elision reserves
 directory-chevron space. Exact AppImage Nord Dark150/Light100 preview checks pass.
-Windows458/MSIX17 candidates remain staged for native acceptance.
+Windows458/MSIX17 are delivered at their stable paths; consumed staging and
+superseded packages are removed. Source50a breadcrumb classification is tested
+but not packaged. The personal Linux daemon now matches the delivered binary
+with startup, preferences and saved-index identity preserved.
 Full theme/role consistency, positive local-seat protected-file elevation,
 login/reboot, MSI rollback, physical coverage and final daily-driver acceptance
 remain open. See the roadmap and stable manifests for exact evidence and limits.

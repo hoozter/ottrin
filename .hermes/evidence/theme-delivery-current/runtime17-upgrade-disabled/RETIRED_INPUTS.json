@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/RESULTS.zip",
+          "bytes": 294660,
+          "sha256": "a4436f9976ab015f1a8684e10c636e382f8097077f84117a92fcf73e541d0be9"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/RESULT_EXPORT_PROCESS.json",
+          "bytes": 523926,
+          "sha256": "93005680ae23f3e6f12a8b3980f58e9d983fc32f22b428d31b90172df68119b8"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/PREPARATION.json",
+          "bytes": 318,
+          "sha256": "536af20da7fe7c1795f5da8a72971ece0b9615a8627911be464f05667bc06a5e"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "ec777ba4e5ceeddce70f05bae3dd7a18f3bab6323b3631cfcc4f689c315968bf"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/readiness.log",
+          "bytes": 1117,
+          "sha256": "e90dafc2c7132ea904849a0f517ebb44debfced60dd53db53515d44326253313"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/desktop-ready.png",
+          "bytes": 963796,
+          "sha256": "d4bb044e4dde928437f77c0794d380f1670cc44842adb60681f9a0b3927a5ac5"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/PRIVACY_STEPS.json",
+          "bytes": 560,
+          "sha256": "a645465cca7805a2f46fdaaf4dbddcf9de2135c7e917d7d736340fb6aabe6a11"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/privacy-accepted-0.png",
+          "bytes": 9384,
+          "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-upgrade-disabled/privacy-accepted-1.png",
+          "bytes": 481455,
+          "sha256": "70b01564d6e4de03fba5de7ea5d65cdf6ba128af651e21a5879da410caf2a2ef"
+        }
+      ],
+      "bytes": 2275471
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

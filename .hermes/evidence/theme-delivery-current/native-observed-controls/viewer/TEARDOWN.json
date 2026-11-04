@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-ng2k2dmx",
+  "owned_processes_reaped": [
+    {
+      "pid": 1807736,
+      "exit": 0
+    },
+    {
+      "pid": 1807739,
+      "exit": 0
+    },
+    {
+      "pid": 1807740,
+      "exit": 15
+    },
+    {
+      "pid": 1807790,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

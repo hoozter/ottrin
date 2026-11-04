@@ -81,6 +81,8 @@ if($Mode-eq'Prepare'){
   }
   $key='HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
   foreach($pair in @(@('AutoAdminLogon','1'),@('DefaultUserName',$name),@('DefaultDomainName',$env:COMPUTERNAME),@('DefaultPassword',$secret))){Set-ItemProperty $key -Name $pair[0] -Value $pair[1]}
+  # Replace the stock image's one-use count so the actual reboot can sign in.
+  Set-ItemProperty $key -Name AutoLogonCount -Type DWord -Value 3
   @{status='prepared';account=$name;sid=$user.SID.Value;scope=$owner.scope}|ConvertTo-Json -Compress
  }finally{$secret=$null;$password.Dispose()}
  exit 0

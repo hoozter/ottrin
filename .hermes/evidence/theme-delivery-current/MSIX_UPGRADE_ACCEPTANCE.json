@@ -1,0 +1,169 @@
+{
+  "status": "pass exact same-identity MSIX16-to17 updates with enabled and disabled startup, real reboot/login, preserved index/preferences and removal",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "artifact_sha256": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9",
+  "previous": {
+    "retained_input": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
+    "sha256": "2987d5de5a229246978a6294c02607b25c7809a2d3daa5aaf8f54ab828069121",
+    "version": "0.1.0.16",
+    "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+    "authority": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+    "scope": "Current stable MSIX16 retained at its existing stable path solely as real17 upgrade input; no duplicate package copy"
+  },
+  "cases": [
+    {
+      "case": "runtime17-upgrade-space",
+      "startup_enabled": true,
+      "runtime_input": {
+        "runtime_script_sha256": "50a87ecf0049f79928be41f7384a0e1e6e759d409c5ac609acc692c2fa6ff1d0",
+        "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+        "sha256": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9",
+        "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+        "version": "0.1.0.17",
+        "startup_enabled": true,
+        "previous": {
+          "sha256": "2987d5de5a229246978a6294c02607b25c7809a2d3daa5aaf8f54ab828069121",
+          "version": "0.1.0.16",
+          "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec"
+        }
+      },
+      "update": {
+        "old_pids": [
+          5416
+        ],
+        "startup_enabled": true,
+        "previous_daemon_count": 1,
+        "old_processes_removed": true,
+        "family": "Ottrin.Development_vs01n017nxmbr",
+        "after": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr",
+        "before": "Ottrin.Development_0.1.0.16_x64__vs01n017nxmbr"
+      },
+      "real_login": {
+        "index_ready": "ready",
+        "phase": "login-index-status.json",
+        "observed_before_any_ottrin_cli": {
+          "pid": 8584,
+          "administrator": false,
+          "session": 1,
+          "package": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr"
+        },
+        "cli_exits": {
+          "login-service-status.stdout": 0,
+          "login-index-status.json": 0
+        },
+        "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+        "preferences_preserved": true,
+        "status": "pass",
+        "store": {
+          "path": "C:\\Users\\OTMSIXa7d2a10264de\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+          "bytes": 28672,
+          "identity": "FA402E6A402E2E37:0003000000024B500000000000000000"
+        },
+        "boot_ticks": 639293981825000000,
+        "administrator": false
+      },
+      "store_identity_preserved": true,
+      "preferences_preserved": true,
+      "normal_close_exit": 0,
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "volume_allocations": [
+        {
+          "volume": "ottrin-msix-runtime-fixture.iso",
+          "allocated_bytes": 115007488,
+          "virtual_capacity_bytes": 115001344
+        },
+        {
+          "volume": "ottrin-msix-runtime.qcow2",
+          "allocated_bytes": 9205747712,
+          "virtual_capacity_bytes": 68719476736
+        }
+      ]
+    },
+    {
+      "case": "runtime17-upgrade-disabled",
+      "startup_enabled": false,
+      "runtime_input": {
+        "runtime_script_sha256": "50a87ecf0049f79928be41f7384a0e1e6e759d409c5ac609acc692c2fa6ff1d0",
+        "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+        "sha256": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9",
+        "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+        "version": "0.1.0.17",
+        "startup_enabled": false,
+        "previous": {
+          "sha256": "2987d5de5a229246978a6294c02607b25c7809a2d3daa5aaf8f54ab828069121",
+          "version": "0.1.0.16",
+          "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec"
+        }
+      },
+      "update": {
+        "old_pids": [],
+        "startup_enabled": false,
+        "previous_daemon_count": 0,
+        "old_processes_removed": true,
+        "family": "Ottrin.Development_vs01n017nxmbr",
+        "after": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr",
+        "before": "Ottrin.Development_0.1.0.16_x64__vs01n017nxmbr"
+      },
+      "real_login": {
+        "phase": "login-service-status.stdout",
+        "observed_before_any_ottrin_cli": {
+          "daemon_count": 0,
+          "observation_seconds": 180.0043395,
+          "startup_enabled": false
+        },
+        "index_state": "stopped as configured",
+        "cli_exits": {
+          "login-service-status.stdout": 0
+        },
+        "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+        "preferences_preserved": true,
+        "status": "pass",
+        "store": {
+          "path": "C:\\Users\\OTMSIX44189d96dc39\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+          "bytes": 28672,
+          "identity": "FA402E6A402E2E37:0003000000024B430000000000000000"
+        },
+        "boot_ticks": 639293988085000000,
+        "administrator": false
+      },
+      "store_identity_preserved": true,
+      "preferences_preserved": true,
+      "normal_close_exit": 0,
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "volume_allocations": [
+        {
+          "volume": "ottrin-msix-runtime-fixture.iso",
+          "allocated_bytes": 115007488,
+          "virtual_capacity_bytes": 115001344
+        },
+        {
+          "volume": "ottrin-msix-runtime.qcow2",
+          "allocated_bytes": 9595568128,
+          "virtual_capacity_bytes": 68719476736
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Unsigned development identity in owned software desktops; no Store/signing or physical acceptance",
+    "Broader theme/role audit remains open"
+  ]
+}
