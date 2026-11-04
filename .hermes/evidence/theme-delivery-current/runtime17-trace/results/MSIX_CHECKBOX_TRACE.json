@@ -1,0 +1,80 @@
+{
+    "fields":  [
+                   {
+                       "key":  "msix_startup_checkbox",
+                       "type":  "System.Collections.Hashtable"
+                   },
+                   {
+                       "key":  "gui_focus_and_capture",
+                       "type":  "System.String"
+                   },
+                   {
+                       "key":  "scope",
+                       "type":  "System.String"
+                   },
+                   {
+                       "key":  "session_id",
+                       "type":  "System.Int32"
+                   },
+                   {
+                       "key":  "phase",
+                       "type":  "System.String"
+                   },
+                   {
+                       "key":  "actual_process_package",
+                       "type":  "System.String"
+                   },
+                   {
+                       "key":  "service_status_exit",
+                       "type":  "System.Int32"
+                   },
+                   {
+                       "key":  "actual_process_elevated",
+                       "type":  "System.Boolean"
+                   },
+                   {
+                       "key":  "main",
+                       "type":  "System.Collections.Hashtable"
+                   },
+                   {
+                       "key":  "cli_exits",
+                       "type":  "System.Collections.Hashtable"
+                   },
+                   {
+                       "key":  "administrator",
+                       "type":  "System.Boolean"
+                   },
+                   {
+                       "key":  "input_desktop",
+                       "type":  "System.String"
+                   },
+                   {
+                       "key":  "service_install_exit",
+                       "type":  "System.Int32"
+                   },
+                   {
+                       "key":  "status",
+                       "type":  "System.String"
+                   },
+                   {
+                       "key":  "window_diagnostics",
+                       "type":  "System.Collections.Hashtable"
+                   },
+                   {
+                       "key":  "normal_close_exit",
+                       "type":  "System.Int32"
+                   }
+               ],
+    "before_types":  [
+                         "System.Int32"
+                     ],
+    "stage":  "after result serialization",
+    "proof_count":  2,
+    "proof_types":  [
+                        "System.Collections.Hashtable",
+                        "System.Collections.Hashtable"
+                    ],
+    "after_types":  [
+                        "System.Int32"
+                    ]
+}

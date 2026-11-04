@@ -184,11 +184,40 @@
         "base_still_off": true,
         "retained_pending_volume": null
       }
+    },
+    {
+      "case": "runtime17-completion",
+      "uuid": "3668ad62-5b71-45bb-a149-628b807e0e08",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "runtime17-trace",
+      "uuid": "73bd6c40-a5bc-42e8-a8f0-4b7e60e3db43",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
     }
   ],
   "live_owned_case": {
-    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/runtime17-completion",
-    "purpose": "Installed MSIX17 ordinary GUI startup checkbox, real login and removal acceptance",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/runtime17-reader",
+    "purpose": "MSIX17 installed ordinary runtime, actual login/reboot and removal acceptance after native state-reader smoke",
     "teardown_owner": "native-driver.py ExitStack registered before VM allocation"
-  }
+  },
+  "breadcrumb_build_cleanup": "../theme-breadcrumb-current/CLEANUP.json"
 }

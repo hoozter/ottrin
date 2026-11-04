@@ -8,9 +8,52 @@ function Save($Name,$Value){
  }finally{if([IO.File]::Exists($temporary)){[IO.File]::Delete($temporary)}}
 }
 function Read-State([string]$Path){
- $stream=[IO.File]::Open($Path,[IO.FileMode]::Open,[IO.FileAccess]::Read,([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete))
- $reader=[IO.StreamReader]::new($stream)
- try{return ($reader.ReadToEnd()|ConvertFrom-Json)}finally{$reader.Dispose()}
+ # Atomic File.Replace briefly takes an exclusive destination handle on Windows.
+ # Retry only sharing/lock violations; malformed state and other IO failures fail.
+ $readDeadline=[DateTime]::UtcNow.AddSeconds(2)
+ while($true){
+  try{
+   $stream=[IO.File]::Open($Path,[IO.FileMode]::Open,[IO.FileAccess]::Read,([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete))
+   $reader=[IO.StreamReader]::new($stream)
+   try{return ($reader.ReadToEnd()|ConvertFrom-Json)}finally{$reader.Dispose()}
+  }catch{
+   $failure=$_.Exception.GetBaseException();$code=$failure.HResult-band0xffff
+   if($failure-isnot[IO.IOException]-or$code-notin@(32,33)-or[DateTime]::UtcNow-ge$readDeadline){throw}
+   Start-Sleep -Milliseconds 10
+  }
+ }
+}
+function Test-OwnedStateReader{
+ Add-Type -TypeDefinition @'
+using System;using System.Threading;
+public static class OwnedStateLockQA {
+ public static Thread ReleaseAfter(IDisposable handle,int milliseconds){var thread=new Thread(()=>{Thread.Sleep(milliseconds);handle.Dispose();});thread.Start();return thread;}
+}
+'@
+ $dir=Join-Path $Root 'state-reader-smoke';$null=New-Item -ItemType Directory $dir
+ $file=Join-Path $dir 'state.json';$lock=$null;$release=$null
+ try{
+  [IO.File]::WriteAllText($file,'{"version":17}',[Text.UTF8Encoding]::new($false))
+  $lock=[IO.File]::Open($file,'Open','ReadWrite','None');$release=[OwnedStateLockQA]::ReleaseAfter($lock,150)
+  $clock=[Diagnostics.Stopwatch]::StartNew();$value=Read-State $file;$release.Join();$release=$null;$lock=$null
+  if($value.version-ne17-or$clock.Elapsed.TotalMilliseconds-lt50){throw 'State reader did not survive the controlled exclusive lock'}
+  $transientMilliseconds=$clock.Elapsed.TotalMilliseconds
+  [IO.File]::WriteAllText($file,'{broken',[Text.UTF8Encoding]::new($false));$malformedRejected=$false
+  try{$null=Read-State $file}catch{$malformedRejected=$true}
+  if(-not$malformedRejected){throw 'State reader hid malformed JSON'}
+  $missingRejected=$false;try{$null=Read-State (Join-Path $dir 'missing.json')}catch{$missingRejected=$true}
+  if(-not$missingRejected){throw 'State reader hid a missing file'}
+  [IO.File]::WriteAllText($file,'{"version":17}',[Text.UTF8Encoding]::new($false))
+  $lock=[IO.File]::Open($file,'Open','ReadWrite','None');$clock.Restart();$lockedRejected=$false
+  try{$null=Read-State $file}catch{$lockedRejected=$true}
+  if(-not$lockedRejected-or$clock.Elapsed.TotalSeconds-gt3){throw 'State reader did not fail within its bounded lock deadline'}
+  $lock.Dispose();$lock=$null
+  $persistentSeconds=$clock.Elapsed.TotalSeconds
+ }finally{
+  if($release){$release.Join()};if($lock){$lock.Dispose()}
+  Remove-Item $dir -Recurse -Force
+ }
+ Save 'STATE_READER_SMOKE' @{status='pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal';transient_milliseconds=$transientMilliseconds;persistent_lock_seconds=$persistentSeconds;private_fixture_removed=(-not(Test-Path $dir))}
 }
 if($Mode-eq'Prepare'){
  if(Test-Path $Root){throw 'Existing runtime fixture retained'}
@@ -19,6 +62,7 @@ if($Mode-eq'Prepare'){
  if($packageInput.startup_enabled-isnot[bool]){throw 'Explicit expected startup choice required'}
  if($packageInput.previous-and(Get-FileHash (Join-Path $Disc 'Previous.msix')).Hash.ToLowerInvariant()-ne$packageInput.previous.sha256){throw 'Previous runtime package input mismatch'}
  New-Item -ItemType Directory $Root,(Join-Path $Root 'results')|Out-Null
+ Test-OwnedStateReader
  $nonce=[Guid]::NewGuid().ToString('N');$name='OTMSIX'+$nonce.Substring(0,12);$secret=[Guid]::NewGuid().ToString('N')+'aA1!';$password=ConvertTo-SecureString $secret -AsPlainText -Force
  try {
   $user=New-LocalUser -Name $name -Password $password -Description ('Owned MSIX QA '+$nonce) -PasswordNeverExpires
@@ -137,6 +181,10 @@ function Exercise-StartupCheckbox($App,$Window){
   if(-not$checkbox){throw 'Actual MSIX startup checkbox is not visible'}
   if($checkbox.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState-ne[Windows.Automation.ToggleState]::On){throw 'Initial MSIX startup choice must be enabled'}
   $proof=@()
+  function CheckboxTrace($Stage){
+   $fields=@();foreach($key in $result.Keys){$value=$result[$key];$fields+=@{key=[string]$key;type=$(if($null-eq$value){'null'}else{$value.GetType().FullName})}}
+   Save 'MSIX_CHECKBOX_TRACE' @{stage=[string]$Stage;fields=$fields;proof_count=[int]$proof.Count;proof_types=@($proof|ForEach-Object {$_.GetType().FullName});before_types=@($before|ForEach-Object {$_.GetType().FullName});after_types=@($after|ForEach-Object {$_.GetType().FullName})}
+  }
   foreach($enabled in @($false,$true)){
    $checkbox=UiNode $settings 'Start index automatically at sign-in' ([Windows.Automation.ControlType]::CheckBox)
    if(-not$checkbox.Current.IsEnabled){throw 'Actual package startup checkbox is unexpectedly disabled'}
@@ -157,9 +205,15 @@ function Exercise-StartupCheckbox($App,$Window){
    $after=@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonPath}|ForEach-Object {$_.Id}|Sort-Object)
    if(($before-join',')-ne($after-join',')){throw 'Startup checkbox changed the running daemon'}
    [PickerNative]::Shot($settings,(Join-Path $Root ('results\msix-startup-'+$label+'.png')))
-   $proof+=@{enabled=$enabled;daemon_pids_before=$before;daemon_pids_after=$after;backend=$text}
+   CheckboxTrace ('before proof '+$label)
+   $proof+=@{enabled=[bool]$enabled;daemon_pids_before=[int[]]$before;daemon_pids_after=[int[]]$after;backend=[string]$text}
+   CheckboxTrace ('after proof '+$label)
   }
-  $result.msix_startup_checkbox=@{status='pass actual installed-package checkbox';actions=$proof;package_identity=$result.actual_process_package};Save $ActorStateName $result
+  CheckboxTrace 'before result assignment'
+  $result.msix_startup_checkbox=@{status='pass actual installed-package checkbox';actions=$proof;package_identity=[string]$result.actual_process_package}
+  CheckboxTrace 'before result serialization'
+  Save $ActorStateName $result
+  CheckboxTrace 'after result serialization'
  }catch{
   [PickerNative]::Shot($settings,(Join-Path $Root 'results\msix-startup-failure.png'));throw
  }finally{

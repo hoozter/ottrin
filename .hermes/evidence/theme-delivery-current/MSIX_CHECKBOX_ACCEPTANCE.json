@@ -1,0 +1,60 @@
+{
+  "status": "pass installed MSIX17 checkbox and ordinary runtime scope; full lifecycle remains failed",
+  "package_input": {
+    "runtime_script_sha256": "34f207a85aff485490bd30e3eaebf4bca251fc0b22f920e61683344ee2dfa62b",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9",
+    "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "version": "0.1.0.17",
+    "startup_enabled": true
+  },
+  "actor": {
+    "status": "pass",
+    "actual_process_package": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr",
+    "actual_process_elevated": false,
+    "normal_close_exit": 0,
+    "daemon": {
+      "pid": 9068,
+      "administrator": false,
+      "package": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr"
+    },
+    "index_ready": "ready",
+    "disable_reenable": "pass"
+  },
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          9068
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          9068
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          9068
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          9068
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr"
+  },
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/theme-delivery-current/runtime17-trace/results/msix-startup-disabled.png": "92d9da85efbb742b65bfe0c4a8b1156067f9bd0c11678311edc6559db829028b",
+    ".hermes/evidence/theme-delivery-current/runtime17-trace/results/msix-startup-enabled.png": "ae5878323b96508142c83021e44c0a92429102c065a6e49ef4c52ef366914a7a"
+  },
+  "remaining": [
+    "Controller failed on transient ACTOR.json sharing violation before requesting real reboot/login",
+    "Fresh lifecycle controller uses bounded retry for sharing/lock failures only",
+    "Windows preview pointer and full theme audit remain open"
+  ],
+  "cleanup": "runtime17-trace/RETIRED_INPUTS.json"
+}

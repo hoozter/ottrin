@@ -143,8 +143,8 @@ use preview_render::{
     specialized_preview_body_action, split_preview_extracted_text,
 };
 use semantic_style::{
-    EntryVisualState, file_icon_for_path, material_icon, semantic_for_path, semantic_palette,
-    style_for_entry, style_for_search_item, style_for_semantic,
+    EntryVisualState, file_icon_for_path, material_icon, semantic_palette, style_for_entry,
+    style_for_search_item, style_for_semantic,
 };
 use theme_colors::{Colors, mix_color, parse_hex_rgb};
 use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_name_from_path};
@@ -715,7 +715,16 @@ fn breadcrumb_bar(
                         let icon = if crumb.is_root {
                             MI_STORAGE
                         } else {
-                            let semantic = semantic_for_path(&crumb.target);
+                            // Breadcrumbs are directory destinations, including the theme
+                            // sample and a current folder that has since disappeared.
+                            // Their icons must not depend on host filesystem contents.
+                            let semantic = ottrin_core::classify_file(
+                                &crumb.target,
+                                EntryKind::Directory,
+                                false,
+                                None,
+                                ottrin_core::platform_case_mode_current(),
+                            );
                             let style = style_for_semantic(
                                 &semantic,
                                 EntryVisualState::default(),
@@ -33152,6 +33161,15 @@ mod tests {
             assert!(
                 (actual.height() - sample.height()).abs() < 0.1,
                 "{name}: height"
+            );
+        }
+        for label in ["projects", "ottrin"] {
+            let expected = format!("{MI_FOLDER} {label}");
+            assert!(
+                preview.shapes.iter().any(|shape| matches!(
+                    &shape.shape, egui::Shape::Text(text) if text.galley.job.text == expected
+                )),
+                "The sample breadcrumb must paint a folder glyph for {label}, even when its path does not exist"
             );
         }
         assert!(!preview.shapes.iter().any(|shape| matches!(&shape.shape,egui::Shape::Text(text) if ["Sync","<-","->","^"].contains(&text.galley.job.text.as_str()))));

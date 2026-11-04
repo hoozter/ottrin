@@ -1,0 +1,26 @@
+{
+  "before": {
+    "utc": "2026-11-04T11:49:34.394900+00:00",
+    "bytes": {
+      "target/debug/deps": 41729685017,
+      "target/debug/incremental": 24405659628,
+      "target/x86_64-pc-windows-gnu/debug/deps": 33336221938,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 40305981201
+    },
+    "scope": "Existing compiler flags/features and target roots reused; no extra target tree"
+  },
+  "after_bytes": {
+    "target/debug/deps": 41729686915,
+    "target/debug/incremental": 24406871493,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336221592,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40306366842
+  },
+  "incremental_cleanup": "INCREMENTAL_CLEANUP_RESULT.json",
+  "scope": "Five exact superseded UI sessions retired through mandated locked helper; current same-configuration finalized sessions, final binaries, dependency libraries and current caches retained; disposable test HOME/XDG owned by scripts/test-workspace.py and removed on exit",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-breadcrumb-current",
+      "purpose": "Compact source/test/cleanup receipts; no package staging or additional target tree allocated"
+    }
+  ]
+}

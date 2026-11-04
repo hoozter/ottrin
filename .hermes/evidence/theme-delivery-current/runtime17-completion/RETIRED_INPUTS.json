@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/RESULTS.zip",
+          "bytes": 274592,
+          "sha256": "836799bfe7e0fe0943b44cbe097c02b2f6cd457c995cdb83c99ea5193b084711"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/RESULT_EXPORT_PROCESS.json",
+          "bytes": 488250,
+          "sha256": "ade4d3eb3686b552fe203245abd737cb7410a4a3e9d144bdcbc187df8b82345c"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/PREPARATION.json",
+          "bytes": 318,
+          "sha256": "d4a00c99035f5c75b6c977a5f8335813bf94382930711c848260fcdea2e06c9e"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "d9019b5fd9a5b948a50272b4ebc7016fe235c99b1cb6e779c37e0eb21bd8d5ba"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/readiness.log",
+          "bytes": 1117,
+          "sha256": "86fd277089d4cf36ee7e0b7e19e7285d92fffd43bcf81bb6220df3164eaf67fc"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/desktop-ready.png",
+          "bytes": 1694812,
+          "sha256": "b7e4c93a773ac09c4759c471636678f58d64bbaf51ee4db097dbd0b3195aae07"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/PRIVACY_STEPS.json",
+          "bytes": 493,
+          "sha256": "d775ba818b8f7c0e7a8ee5564e0fcde5e6494cae8d82fdea9fd3cc6abf748fb7"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/privacy-accepted-0.png",
+          "bytes": 9384,
+          "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-completion/privacy-accepted-1.png",
+          "bytes": 1082307,
+          "sha256": "4d7dc6eacd72fec6c7c6bc2277a783d0193f3a690f2d313fe84c5a6b557e5a0b"
+        }
+      ],
+      "bytes": 3551528
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

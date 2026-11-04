@@ -1,0 +1,101 @@
+{
+  "members": [
+    {
+      "name": "ACTOR.json",
+      "bytes": 1563,
+      "sha256": "5963aaa7574d07f5e24a27852c6317518a183b37a16e445836cccf41fd4d01aa",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-disabled.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-disabled.stdout",
+      "bytes": 67,
+      "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-enabled.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-enabled.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DEPLOYMENT.json",
+      "bytes": 681,
+      "sha256": "abe9f5e302f6f17718e87bb61d672a93bf69b9e02b0c1aa62c37a05f3add7a74",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "217a009c072bda85eb789a17a57efc43a5b76ad8e990d81c113776397423edf7",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "DESKTOP_WAITING.json",
+      "bytes": 303,
+      "sha256": "7f891627b63e1acdf824464dbf33ab05a904c7ad3a50b1f7a9db87350d8e23e0",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "main.png",
+      "bytes": 57159,
+      "sha256": "98acf40a33cd5b1163bd90e0bb1f60c05c7202539a1671b9b4712d02fc9aa704",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "msix-startup-disabled.png",
+      "bytes": 116045,
+      "sha256": "73275c15a7e4aa369ac55e805350cd000e49c3ab0353d259a8189d41dd2468c1",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "msix-startup-enabled.png",
+      "bytes": 115971,
+      "sha256": "62a463013bfa4c719215a8b8867bb0b80e445bce4f7df6e5f116e8c50137dde4",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 888,
+      "sha256": "fff7dc2e907a2399bce2c8cc2e55286f340b409581fa54751ac61c1025f86e56",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-install.stdout",
+      "bytes": 93,
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

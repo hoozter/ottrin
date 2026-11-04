@@ -1,6 +1,6 @@
 {
-  "previous_goal_turn": "Read-only package repository explanation; roadmap resumed with concrete delivery checkpoint",
-  "this_turn": "Linux458 package promotion and bounded native pointer acceptance committed/pushed c4528db1; all four hosted jobs pass. Failed MSIX17 fixtures safely exported/retired; next exact-package run now waits for asynchronous action completion before checking backend status.",
+  "previous_goal_turn": "progress: Linux458 shared-widget packages delivered; c4528db1 and 5eba147b checkpoints pushed; current Windows candidates held for native acceptance",
+  "this_turn": "MSIX17 actual installed checkbox, ordinary non-elevated runtime, stable daemon identity and off/on startup backend agreement pass; reader-sharing controller failure fixed with native refusal/recovery smoke. Breadcrumb directory glyph correction passes 492 UI tests and strict native/Windows UI lint; five superseded incremental sessions removed. Fresh real-login/lifecycle run remains live.",
   "stable_promotion": {
     "linux": true,
     "windows": false

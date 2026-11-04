@@ -1,0 +1,14 @@
+{
+    "scope":  "Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes",
+    "actor_sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "error":  "Exception calling \"Open\" with \"4\" argument(s): \"The process cannot access the file \u0027C:\\OttrinOwnedMsixRuntime\\results\\ACTOR.json\u0027 because it is being used by another process.\"",
+    "source_revision":  "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "stack":  "at Read-State, \u003cNo file\u003e: line 11\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 247\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1",
+    "status":  "failed native MSIX lifecycle",
+    "deployment":  {
+                       "full_name":  "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr",
+                       "family":  "Ottrin.Development_vs01n017nxmbr",
+                       "location":  "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr",
+                       "version":  "0.1.0.17"
+                   }
+}

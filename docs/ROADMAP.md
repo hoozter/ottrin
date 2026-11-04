@@ -250,6 +250,25 @@ consumer checks. Only the Windows candidate stage remains for native acceptance
 and promotion, with its owner/consumers in windows/BUILD_SOURCE.json. The current
 Windows native clone has its own OWNER.json and teardown lease.
 
+### Source work after the delivered Linux458 cohort
+
+The shared breadcrumb presenter now classifies every crumb as a directory
+navigation destination instead of querying host filesystem metadata. This fixes
+file glyphs in the editor's nonexistent example path and preserves folder semantics
+when a displayed directory disappears. The existing rendered toolbar regression
+now requires actual folder glyphs;492 UI tests and strict native/Windows UI lint
+pass (`theme-breadcrumb-current/`). This source correction is not yet packaged.
+
+MSIX17's actual ordinary-user startup checkbox now passes off/on transitions,
+independent CLI agreement and unchanged daemon PID. Native main-window close,
+package identities and index readiness also pass in that actor. The lifecycle
+controller then failed a transient sharing violation while reading the atomically
+replaced ACTOR.json; full reboot/login/removal acceptance remains open. A fresh
+controller narrowly retries sharing/lock violations and exercises native transient
+lock recovery, a bounded persistent lock, malformed JSON and missing-file refusal
+before creating its temporary user. See `MSIX_CHECKBOX_ACCEPTANCE.json` for the
+bounded positive scope; earlier failed attempts remain diagnostic evidence.
+
 ### Ordered implementation and acceptance queue
 
 1. Finish Windows458/MSIX17 delivery: resolve native preview action/pointer checks,

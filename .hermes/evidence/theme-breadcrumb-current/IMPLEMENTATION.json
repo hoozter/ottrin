@@ -1,0 +1,13 @@
+{
+  "status": "pass source UI suite and strict native/Windows UI lint; not packaged",
+  "base_revision": "5eba147b9b5532aeaa860a45397b6ee7049a9515",
+  "source_sha256": "35e871ab23db74058fc45d0d54a6d266c285b63fb61fc6d12b55df7fa05b0362",
+  "scope": "Shared production/theme-preview breadcrumb icons use known directory semantics instead of probing the host filesystem; existing rendered toolbar contract now requires folder glyphs for projects and ottrin",
+  "tests": "492 UI tests pass; one existing ignored test; existing shared-cache compiler settings",
+  "checks": [
+    "ui-tests.log",
+    "native-lint.log",
+    "windows-lint.log"
+  ],
+  "packages": "Existing Linux458 and Windowsf463 stable artifacts unchanged; new source waits for next coherent UI package cohort"
+}

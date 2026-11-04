@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/RESULTS.zip",
+          "bytes": 256448,
+          "sha256": "bd64155b682d17a6014232f4b17e41b679963fe2832392020b10aac1281d173b"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/RESULT_EXPORT_PROCESS.json",
+          "bytes": 455994,
+          "sha256": "40c886dd645e39e2f8bcfd3aeac460ed55600afbca0ade535028f41987129dfc"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/PREPARATION.json",
+          "bytes": 318,
+          "sha256": "337a18c9cd0de2aeb71e0b1d61774df312afc744f4cfe528cdfed0af3c8ab74b"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "5275380e53aecdeb84d81ad626ceabdec65190712bfad47adfb53580dddc6a3a"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/readiness.log",
+          "bytes": 1117,
+          "sha256": "74193c149c40a7dce68f635a0b8e68eaf8beeab96c20c9ea0dc4ad9d6995d2b7"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/desktop-ready.png",
+          "bytes": 962655,
+          "sha256": "fb0a3cf1d8babd9fb85c6b46216a005ba90475aca0a8f9a736d1170421b131d2"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/PRIVACY_STEPS.json",
+          "bytes": 493,
+          "sha256": "a7396126a469f5e247e76420a2b17aa3661b221e3b0e5c8336f0908c94f9a672"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/privacy-accepted-0.png",
+          "bytes": 9384,
+          "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17-trace/privacy-accepted-1.png",
+          "bytes": 478207,
+          "sha256": "23f341cfc17f0f6d17f49b901c66cb39c0eabc6a719685bee51b84c9ec9ab3ae"
+        }
+      ],
+      "bytes": 2164871
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

@@ -1,7 +1,7 @@
 """Retire consumed private transport/bootstrap after safe export and exact teardown."""
 from pathlib import Path
 import argparse,hashlib,json,subprocess
-parser=argparse.ArgumentParser();parser.add_argument('case',choices=['runtime17-completion','runtime17-wake','runtime17','runtime17-scoped','native-observed-controls','native-toggle-pointer','native-pointer','native','services','assembly','registration-trace','services-launch-observation','services-refresh-ambiguity','services-reader-sharing']);args=parser.parse_args();r=Path.cwd();e=Path(__file__).resolve().parent;f=e/args.case
+parser=argparse.ArgumentParser();parser.add_argument('case',choices=['runtime17-reader','runtime17-trace','runtime17-completion','runtime17-wake','runtime17','runtime17-scoped','native-observed-controls','native-toggle-pointer','native-pointer','native','services','assembly','registration-trace','services-launch-observation','services-refresh-ambiguity','services-reader-sharing']);args=parser.parse_args();r=Path.cwd();e=Path(__file__).resolve().parent;f=e/args.case
 read=lambda p:json.loads(p.read_text())
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 o=read(f/'OWNER.json');assert o['cleanup']['domain_removed'] and o['cleanup']['fixture_removed'] and len(o['cleanup']['owned_volumes_removed'])==2
