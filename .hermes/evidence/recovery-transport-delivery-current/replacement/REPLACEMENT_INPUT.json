@@ -1,0 +1,17 @@
+{
+  "portable_root": "Ottrin-0.1.0-linux-x86_64",
+  "old": {
+    "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+    "portable_sha256": "9cfa92afe668be53690999d226fb5f873860bca4c8b8c67371077809ee9806e9",
+    "appimage_sha256": "76eb72ecf9627a597c49e0c5c3f30bd6b69221ae5d75d4ef5b0240ee62a37dd0",
+    "gui_sha256": "96ff24fb97bfae67f0aad5bf0bb5735ef04e21c86b9b5563a0c490cc17b1ec95",
+    "daemon_sha256": "4a9dc5d358f44a6541e22b4f8546185298c99d3a4962520a1a6293fc8f8b6abe"
+  },
+  "new": {
+    "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+    "portable_sha256": "609b62660c4556c3fb249408c9bb0fa73df2b97b4e4f9f0859f39659203b2ed9",
+    "appimage_sha256": "d85465b902055bb40f39a873e1eeb52fa975e4d3a26ea39eb6cf33977f6024e2",
+    "gui_sha256": "8569a35a2e182c504abd2171a2773316443a8356cea213f4fe60e4c406fcfa42",
+    "daemon_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2"
+  }
+}

@@ -462,8 +462,22 @@ and explicit history recovery states (available, undone, review required). A
 restored undone Copy now keeps normal completed-Undo styling and its cleanup ownership;
 changed retained objects still require review and refuse cleanup. Helper protocol3
 requires updating older helpers before mutations. All43 core,447 platform,11 helper
-and502 UI tests pass, with strict Linux/Windows lint. Rebuilt/native acceptance of
-this correction is pending; current delivered Linuxaa/Windows458 are unchanged.
+and502 UI tests pass, with strict Linux/Windows lint. The corrected dacedd8d four-format
+candidate now passes content/closure checks, actual AppImage helper update and
+administrator Copy/restart/history/Undo/cleanup, DEB login with two real reboots,
+and four aa-to-dac AppImage/portable replacement cases. Twenty administrator,
+four login and eight replacement original complete-window captures were reviewed.
+The private 1000-file mounted-daemon sample measured 0.0333% of one core over30s;
+this is not a personal-index or large-corpus guarantee. All owned native guests,
+three volumes per guest, credentials, inputs, consumed transports and content
+extractions are removed. Compact receipts/captures remain in
+`.hermes/evidence/recovery-transport-delivery-current/`; the111MiB immutable stage
+is retained solely for guarded publication after exact-source run41911407933.
+At this checkpoint three hosted jobs pass and Windows verification is still in
+Cargo test. Current delivered Linuxaa/Windows458 are unchanged. U08 remains open:
+the replacement captures reproduce aggressive Grid label truncation, and one
+initial login frame has populated rows but a zero count; a delayed no-input
+observation is needed before calling that count defect persistent.
 
 1. Package and verify the subsequent restored-history and Windows transport source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.

@@ -1,0 +1,55 @@
+{
+  "status": "pass",
+  "phase": 2,
+  "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "control_account": "ottrincontrol",
+  "desktop_account": "ottrinqa",
+  "worker": {
+    "status": "pass",
+    "phase": 2,
+    "boot_id": "55e868c9-05d7-4137-8f1d-bdefe3c83b77",
+    "session_id": "c1",
+    "gui_attempts": 1,
+    "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nActive=yes\n",
+    "disabled_before_gui_no_daemon": true,
+    "after_gui_ready": {
+      "status": "Ready",
+      "loading_saved_snapshot": false,
+      "database_bytes": 905216,
+      "wal_bytes": 4152,
+      "freelist_pages": 49,
+      "freelist_bytes": 200704,
+      "snapshot_revision": 1,
+      "detail": "Ready \u00b7 1000 indexed",
+      "indexed_items": 1000,
+      "last_completed_indexed_items": 1000,
+      "estimated_total_items": null,
+      "last_indexed_path": null,
+      "configured_root_count": 1,
+      "watched_root_count": 1,
+      "watcher_ready": true,
+      "watcher_last_setup_unix_secs": 1793826725,
+      "watcher_last_error": null,
+      "active_root": null,
+      "active_root_index": 0,
+      "total_roots": 0,
+      "last_scan_started_unix_secs": null,
+      "last_scan_completed_unix_secs": 1793826725,
+      "last_scan_duration_ms": null,
+      "last_progress_unix_secs": 1793826725,
+      "last_error": null
+    },
+    "after_gui_unit": {
+      "MainPID": "1186",
+      "ActiveState": "active"
+    },
+    "after_normal_gui_close_unit": {
+      "MainPID": "1186",
+      "ActiveState": "active"
+    },
+    "database_inode": 279556,
+    "source_and_preferences_preserved": true,
+    "startup_enabled": false
+  },
+  "daemon_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2"
+}

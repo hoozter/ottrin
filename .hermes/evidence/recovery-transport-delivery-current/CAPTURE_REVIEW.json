@@ -1,0 +1,31 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "old-helper-update-needed.png": "31b33978efaa0cd7b824710ad317d2c65ad9d7324000bdb2e35c1a2f5d74cd46",
+    "update-cancel-prompt.png": "189c80aedf73052460fe1f3a68176ea093aba6fdd77142e2a5f5993e245c01c7",
+    "update-cancelled.png": "847039490b2d5aa608d4fe4b3801378adf4b432dadea39edd6b673e047236d9a",
+    "update-prompt.png": "4112071474cdcd7564420e3bc32f90b30e26b789a26faf09051e53f8e0a240ce",
+    "updated-helper-ready.png": "d64760e6f26b29b9a71ca9cfe750cb773e0728d7d78b67147765558de5cb2381",
+    "gui-copy-denied.png": "6e43509e2ee2d803b6bba3892a0c088a9dbfe4a817b8a8f2dbd6b312a05df571",
+    "gui-copy-prompt.png": "dcbe7658197b0e6a6dc77f861eb0ff5ae2f38accc74fe16f89ef1b6ef6f2e3a1",
+    "gui-copy-activity.png": "9c9549f87d43d76452cdeabccd19ed8d4a28800d07b9ae0761c1d570a67b2380",
+    "history-live-prompt.png": "e1e24697c1c1801bae2645a7376019693edaf398ffb32da2395b15426bdd1a5c",
+    "history-live-preserved.png": "85f6f7c74b6745da1d71f9efaafd96a3d01ea04ded6bfc2b43b05f5c3d566ec0",
+    "history-cancel-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    "history-cancelled.png": "1b26804ec972a6743b3cdbf47a9689c3caa27518146eaa6f5b56c27d0b81a294",
+    "history-load-prompt.png": "2fa8e056c5f98dd8cba1e96fa0870e911dea10a3b980942fcb4d2dd6a89a97ed",
+    "history-restored.png": "e90cd5590330bbd66864232b84283ed5b3e3d27f652a083bfc61742c762c6abd",
+    "history-refresh-prompt.png": "4bafe80f84b9b7ea08eca58071c995830090af0ee7f72766023895755485ce0f",
+    "history-refreshed.png": "408efb20ccf9276eaa95f9dc307a4e4657d7bed4df473021d87527ed6b1ebbdf",
+    "gui-undo-prompt.png": "acd73693e36aee61bd183159373dea3882438b0d1aab13fb08355e899341267a",
+    "gui-undo-completed.png": "408efb20ccf9276eaa95f9dc307a4e4657d7bed4df473021d87527ed6b1ebbdf",
+    "gui-cleanup-prompt.png": "4b6bb485186bc56abd0e1009b269ce57e0a249866dc8733c9ae73512a42b7b99",
+    "gui-copy-cleanup-completed.png": "9bd7e0a2db19f2ffffdba93d53e7bc160dece8097ee262bdbd61f82db4648066"
+  },
+  "notes": [
+    "All20 selected complete captures directly viewed; actual protocol2-to3 update prompt/cancel/Ready, protected Copy, live receipt, restart discovery, completed Undo refresh and cleanup states are visible",
+    "Undone recovery keeps the normal themed accent and has no Needs review error or Undo action; exactly one restored card remains until cleanup",
+    "Known U08 scope remains: helper setup banner mentions HTML sandbox while a browser is missing; successful retry leaves the prior failed attempt counted separately; this is not whole-interface acceptance",
+    "System authentication dialogs are stock GNOME polkit/Openbox; captures are taken before entering passwords"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "portable-enabled-old.png": "37cbe5ec4acac1acb6066f7b322964adaf9b5447061f3e600e4fccc84189a76e",
+    "portable-enabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "portable-disabled-old.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "portable-disabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-enabled-old.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-enabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-disabled-old.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6",
+    "appimage-disabled-new.png": "a6184659745fcfbddf6dd29445ed5639cc0e3886854a7a6c5c881e2f6c8fe1e6"
+  },
+  "notes": [
+    "All eight original windows show Grid view and 100 items before and after stable-path replacement.",
+    "Grid labels truncate aggressively and make distinct filenames look identical; this remains an open U08 issue, not whole-interface acceptance.",
+    "Helper is not installed in these replacement fixtures; red helper status is expected."
+  ]
+}

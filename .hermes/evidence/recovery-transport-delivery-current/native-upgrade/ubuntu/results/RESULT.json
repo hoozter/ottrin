@@ -1,0 +1,102 @@
+{
+  "status": "pass",
+  "source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "scope": "Real old-helper upgrade/cancel/reinstall and Copy recovery in disposable Ubuntu login session",
+  "old_helper_sha256": "39d442b881a1692a00665a1472b5cb1ad797931c62354275d70d98c4e4f72dce",
+  "launch_kind": "AppImage/FUSE",
+  "worker_exit": 0,
+  "worker": {
+    "status": "pass",
+    "cases": [
+      "old installed helper shows Update needed; cancel preserves exact old helper and unavailable status",
+      "authenticated update replaces old helper with protocol-compatible root-owned helper; actual Ready status",
+      "actual reinstall authenticated and completed"
+    ],
+    "login_session_id": "c1",
+    "fuse_mount": {
+      "executable": "/tmp/.mount_Ottrin5EJYSh/usr/bin/ottrin",
+      "mountinfo": "54 30 0:45 / /tmp/.mount_Ottrin5EJYSh ro,nosuid,nodev,relatime shared:209 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000"
+    },
+    "update_guidance": "Administrator helper needs an update. Open Services and choose Update / reinstall helper.",
+    "updated_helper_sha256": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
+    "session_properties": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nClass=user\nActive=yes\nState=active\n",
+    "helper_policy": "org.ottrin.filesystem.privileged:\n  description:       Run privileged operations for Ottrin\n  message:           Authentication is required to perform this privileged operation in Ottrin.\n  vendor:            Ottrin\n  vendor_url:        https://github.com/hoozter/ottrin\n  icon:              system-file-manager\n  implicit any:      no\n  implicit inactive: no\n  implicit active:   auth_admin_keep\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\n\n",
+    "temporary_authorizations_after_revoke": "",
+    "helper_copy_root_verification": {
+      "phase": "HELPER_COPY",
+      "root_owned": true,
+      "exact_source_bytes": true,
+      "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+    },
+    "protected_helper": {
+      "ordinary_write_denied": true,
+      "cancel_exit": 126,
+      "authenticated_response": {
+        "status": "Success",
+        "message": null,
+        "payload": {
+          "Copy": {
+            "completed_sources": 1,
+            "transactions": [
+              "61d44b00ff66da9afde2709443e82782"
+            ],
+            "paths": [
+              [
+                "/var/lib/ottrin-owned-protected-qa/.ottrin-txn-61d44b00ff66da9afde2709443e82782/candidate",
+                "/var/lib/ottrin-owned-protected-qa/preserve.txt"
+              ]
+            ]
+          }
+        }
+      },
+      "undo_and_cleanup": "Success through fresh authenticated helper processes"
+    },
+    "gui_copy_root_verification": {
+      "phase": "GUI_COPY",
+      "root_owned": true,
+      "exact_source_bytes": true,
+      "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+    },
+    "activity_controls": [
+      {
+        "name": "Show or hide Activity",
+        "role": "toggle button"
+      }
+    ],
+    "history_live_receipt_preserved": true,
+    "history_restart": {
+      "normal_gui_close": true,
+      "new_process": true,
+      "cancel_preserved_recovery": true,
+      "authenticated_discovery": true
+    },
+    "history_refresh": {
+      "recovered_status_instead_of_done": true,
+      "canonical_state_refreshed": true,
+      "no_duplicate_card": true,
+      "no_undo_action_after_undo": true,
+      "undone_is_not_review_error": true
+    },
+    "history_status_consistency": {
+      "friendly_cancel_message": true,
+      "no_stale_record_count_after_cleanup": true
+    },
+    "gui_privileged_copy": "Actual cp denied, authenticated retry copied exact root-owned bytes; normal GUI restart lost live receipts; explicit history cancellation preserved journals, authenticated discovery restored Activity; fresh authenticated Undo and confirmed cleanup completed",
+    "source_preserved": true
+  },
+  "protected_copy": {
+    "root_owned_copies_match_source": [
+      "GUI_COPY",
+      "HELPER_COPY"
+    ],
+    "undo_removed_publications": true,
+    "explicit_cleanup_removed_stages": true,
+    "cancelled_destination_absent": true
+  },
+  "protected_outputs_before_cleanup": {
+    "cancel_copy_exists": false,
+    "authenticated_copy_exists": false
+  },
+  "owned_protected_directory_removed": true,
+  "private_password_removed": true
+}

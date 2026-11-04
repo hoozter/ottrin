@@ -1,0 +1,15 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "main-phase0.png": "8650e0bf2a29dd91bea03c632d104ede33ee42638d8c3c858eb31de8541cda19",
+    "disabled-login-running-index.png": "a1ae156be484e1aa0b3815731b2d1bdf5fc19cf2b8cd74b1001c9ef316104c3d",
+    "main-phase1.png": "0d4069c192501047b7d22100f63e8136a2f6a5c64a9ce215cc9cfcf7b5af2e5a",
+    "main-phase2.png": "3a7985be2df05f2886691c3c41b686ee864c73abaa3b2e8d513839e525842877"
+  },
+  "notes": [
+    "All4 complete original captures directly viewed; same owned desktop account and current native DEB",
+    "Initial and first-reboot windows show1000items. Second-reboot window shows0items despite populated visible rows and backend1000items/Ready; known U08 initial count/status synchronization remains open",
+    "Automatic startup still reads Running but disabled while the runtime has its separate green Ready row; keep this wording on the active UI audit",
+    "These captures validate scoped startup/lifetime controls; no full UI/status/theme acceptance"
+  ]
+}

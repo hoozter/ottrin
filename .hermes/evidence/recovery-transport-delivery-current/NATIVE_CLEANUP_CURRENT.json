@@ -1,0 +1,42 @@
+{
+  "status": "pass owned native fixtures and transport cleanup; candidate retained for exact-source hosted CI and publication",
+  "baseline": {
+    "target/debug/deps": 25230675719,
+    "target/debug/incremental": 25049028553,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28550133888,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42684069284,
+    "target/release": 4545244477,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/recovery-transport-delivery-current": 4234604
+  },
+  "current_bytes": {
+    "target/debug/deps": 25230675719,
+    "target/debug/incremental": 25049028553,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28550133888,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42684069284,
+    "target/release": 4545244477,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/recovery-transport-delivery-current": 9807656
+  },
+  "retained_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/recovery-transport-delivery-current",
+      "purpose": "Compact acceptance receipts, original reviewed captures and reproducible fixture producers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Immutable protocol3 Linux candidate awaiting exact-source Windows CI and guarded publication"
+    }
+  ],
+  "owned_disposable_vms_removed": [
+    "native-upgrade",
+    "login",
+    "replacement"
+  ],
+  "owned_credentials_inputs_and_transport_archives_removed": true,
+  "incremental_cleanup": "INCREMENTAL_CLEANUP.json; guarded obsolete sessions removed; useful shared compiler caches retained",
+  "protected_vm_definitions_preserved": [
+    "ottrin-copy-cleanup-qa",
+    "ottrin-index-qa",
+    "ottrin-qa-20261011",
+    "win11ltsc"
+  ]
+}

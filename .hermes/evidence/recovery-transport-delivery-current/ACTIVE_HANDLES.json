@@ -1,0 +1,35 @@
+{
+  "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "native_helper": {
+    "status": "pass;20original captures directly reviewed",
+    "acceptance": "LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+    "controller_terminal_exit": 0,
+    "domain_and3volumes_removed": true,
+    "credentials_input_and_consumed_archive_removed": true
+  },
+  "native_login": {
+    "status": "pass; two real reboots,3boot IDs,4complete captures directly reviewed",
+    "acceptance": "login/ACCEPTANCE.json",
+    "controller_terminal_exit": 0,
+    "domain_and3volumes_removed": true
+  },
+  "ci": {
+    "run_id": 41911407933,
+    "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+    "status": "in_progress at last poll"
+  },
+  "pending": [
+    "four AppImage/portable binary replacement cases",
+    "exact-source CI and guarded publication"
+  ],
+  "retained_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "safety": "Do not stage the evidence tree recursively while a VM controller is live: its disposable hidden runtime contains SSH credentials. Wait for registered teardown and verify removal first.",
+  "native_replacement": {
+    "tool_session": 85199,
+    "producer": "run-replacement.py",
+    "domain": "ottrin-native-ubuntu-desktop-qa",
+    "owner_record": "replacement/ubuntu/VM_OWNER.json",
+    "status": "running after correcting pre-allocation build-manifest omission",
+    "bootstrap_failure": "replacement/BOOTSTRAP_FAILURE.json"
+  }
+}
