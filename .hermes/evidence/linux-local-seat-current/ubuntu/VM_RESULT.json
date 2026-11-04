@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "status": "fail",
+  "package_sha256": "7ba87eb75a5392a22c01642c19d58163eeece176e427096f80c065d482fdee1a",
+  "uuid": "a70a54b4-6ae8-4db3-908d-3a1e086d4f2b",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('4e62bf7b3423d1e4a79dec264: copy completed; the caller did not retain its Undo receipts and their private transaction stages remain\\', \\'payload\\': None})\"\\n  },\\n  \"error\": \"AssertionError({\\'status\\': \\'fail\\', \\'cases\\': [\\'actual setup prompt cancelled; helper absent; cancellation visible\\', \\'actual setup authenticated; root-owned helper and policy; ready UI\\', \\'actual reinstall authenticated and completed\\'], \\'login_session_id\\': \\'c1\\', \\'fuse_mount\\': {\\'executable\\': \\'/tmp/.mount_OttrinqkRYPC/usr/bin/ottrin\\', \\'mountinfo\\': \\'94 30 0:51 / /tmp/.mount_OttrinqkRYPC ro,nosuid,nodev,relatime shared:390 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000\\'}, \\'session_properties\\': \\'Seat=seat0\\\\\\\\nRemote=no\\\\\\\\nService=lightdm-autologin\\\\\\\\nType=x11\\\\\\\\nClass=user\\\\\\\\nActive=yes\\\\\\\\nState=active\\\\\\\\n\\', \\'helper_policy\\': \\'org.ottrin.filesystem.privileged:\\\\\\\\n  description:       Run privileged operations for Ottrin\\\\\\\\n  message:           Authentication is required to perform this privileged operation in Ottrin.\\\\\\\\n  vendor:            Ottrin\\\\\\\\n  vendor_url:        https://github.com/hoozter/ottrin\\\\\\\\n  icon:              system-file-manager\\\\\\\\n  implicit any:      no\\\\\\\\n  implicit inactive: no\\\\\\\\n  implicit active:   auth_admin_keep\\\\\\\\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\\\\\\\\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\\\\\\\\n\\\\\\\\n\\', \\'temporary_authorizations_after_revoke\\': \\'\\', \\'error\\': \\\\\"AssertionError({\\'status\\': \\'Failed\\', \\'message\\': \\'filesystem operation committed, but cleanup is pending at /var/lib/ottrin-owned-protected-qa/.ottrin-txn-d4ad3354e62bf7b3423d1e4a79dec264: copy completed; the caller did not retain its Undo receipts and their private transaction stages remain\\', \\'payload\\': None})\\\\\"})\",\\n  \"protected_outputs_before_cleanup\": {\\n    \"cancel_copy_exists\": false,\\n    \"authenticated_copy_exists\": true\\n  },\\n  \"owned_protected_directory_removed\": true,\\n  \"private_password_removed\": true\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

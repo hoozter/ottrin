@@ -1,0 +1,6 @@
+{
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "purpose": "Positive protected-file helper transport in actual local-seat graphical login; no policy relaxation",
+  "owned_cleanup": "controller.py finally/ExitStack removes owned VM and three volumes plus temporary credentials/seeds; actor stops LightDM and removes protected fixture/password",
+  "protected_resources": "Existing operator desktop, four retained VMs and personal index untouched"
+}

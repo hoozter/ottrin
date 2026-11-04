@@ -1,12 +1,12 @@
 {
   "previous_goal_turn": "Informational repository-update question answered; no implementation progress. Prior substantial Windows acceptance revalidated from actual files before promotion.",
-  "this_turn": "Promoted exact Windows458 ZIP/NSIS/MSIX17 after verified NSIS settings/preview, fresh MSIX and enabled/disabled16-to17 upgrade acceptance. Consumed stage and old packages/payload removed. Stable Linux artifacts preserved. Roadmap and delivery documents reconciled.",
+  "this_turn": "Promoted exact Windows458 ZIP/NSIS/MSIX17 after verified NSIS settings/preview, fresh MSIX and enabled/disabled16-to17 upgrade acceptance. Consumed stage and old packages/payload removed. Stable Linux artifacts preserved. Roadmap and delivery documents reconciled. New exact Linux458 local-seat authentication reproduced a privileged Copy receipt integration defect; source cause confirmed, failed result retained and all owned resources removed.",
   "stable_promotion": {
     "linux": true,
     "windows": true
   },
   "remaining": [
-    "Positive Linux local-seat protected-file elevation and login/replacement gates",
+    "Privileged Copy receipt/recovery/cleanup integration, then Linux local-seat application retry and login/replacement gates",
     "Full U08 interface/theme audit and implementation",
     "Remaining picker/folder caller gates and requirement audit"
   ],

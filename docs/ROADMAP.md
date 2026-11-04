@@ -318,12 +318,21 @@ Completed delivery: Linux458 and Windows458/MSIX17 are at their stable paths;
 exact native scopes, fresh/update/login MSIX gates, four hosted jobs and owned
 fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap completion.
 
-1. Complete positive protected-file elevation in a genuine local-seat Linux
-   desktop fixture, then real login/reboot and remaining AppImage/portable binary
-   replacement readiness. Background no-seat denial is diagnosed, not positive
-   acceptance.061 package delivery, normal GUI-close retention, same-version DEB
-   replacement, helper setup and native Services controls are scoped above and
-   need not be repeated without changed inputs or a reproduced concern.
+1. Fix privileged Copy receipt ownership before repeating protected-file acceptance.
+   The delivered458 AppImage now reaches real setup/cancel/reinstall and protected
+   Copy password prompts in an actual LightDM seat0 active user session with stock
+   polkit policy. Cancel leaves no destination. Authenticated Copy creates an output
+   but returns Failed because the helper uses generic execute_command without a
+   caller capable of retaining Copy Undo receipts; its transaction stage remains.
+   Root verification of destination bytes/ownership was not reached, so this is a
+   failed operation gate, not positive Copy acceptance. Evidence:
+   `linux-local-seat-current/ASSESSMENT.json`. Carry guarded receipt/recovery/cleanup
+   ownership across the privileged boundary; do not suppress the error or silently
+   discard Undo. Then verify real application retry, actual login/reboot and remaining
+   AppImage/portable binary replacement readiness. The fixture's VM/three volumes,
+   password, keys, protected directory and consumed result archive are removed.
+   Earlier helper setup, Services, normal GUI-close and DEB replacement scopes
+   remain valid; do not repeat unchanged independent matrices.
 2. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor, delivered
    in Linux/Windows458 with bounded native acceptance. U08 remains unfinished:

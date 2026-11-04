@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-local-seat-current/controller.py", line 112, in <module>
+    assert result.returncode==0,result.stdout[-2000:]+result.stderr[-1000:]
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: 4e62bf7b3423d1e4a79dec264: copy completed; the caller did not retain its Undo receipts and their private transaction stages remain', 'payload': None})"
+  },
+  "error": "AssertionError({'status': 'fail', 'cases': ['actual setup prompt cancelled; helper absent; cancellation visible', 'actual setup authenticated; root-owned helper and policy; ready UI', 'actual reinstall authenticated and completed'], 'login_session_id': 'c1', 'fuse_mount': {'executable': '/tmp/.mount_OttrinqkRYPC/usr/bin/ottrin', 'mountinfo': '94 30 0:51 / /tmp/.mount_OttrinqkRYPC ro,nosuid,nodev,relatime shared:390 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000'}, 'session_properties': 'Seat=seat0\\nRemote=no\\nService=lightdm-autologin\\nType=x11\\nClass=user\\nActive=yes\\nState=active\\n', 'helper_policy': 'org.ottrin.filesystem.privileged:\\n  description:       Run privileged operations for Ottrin\\n  message:           Authentication is required to perform this privileged operation in Ottrin.\\n  vendor:            Ottrin\\n  vendor_url:        https://github.com/hoozter/ottrin\\n  icon:              system-file-manager\\n  implicit any:      no\\n  implicit inactive: no\\n  implicit active:   auth_admin_keep\\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\\n\\n', 'temporary_authorizations_after_revoke': '', 'error': \"AssertionError({'status': 'Failed', 'message': 'filesystem operation committed, but cleanup is pending at /var/lib/ottrin-owned-protected-qa/.ottrin-txn-d4ad3354e62bf7b3423d1e4a79dec264: copy completed; the caller did not retain its Undo receipts and their private transaction stages remain', 'payload': None})\"})",
+  "protected_outputs_before_cleanup": {
+    "cancel_copy_exists": false,
+    "authenticated_copy_exists": true
+  },
+  "owned_protected_directory_removed": true,
+  "private_password_removed": true
+}
+

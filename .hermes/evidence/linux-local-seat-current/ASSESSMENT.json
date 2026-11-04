@@ -1,0 +1,56 @@
+{
+  "status": "fail protected Copy completion; real local-seat prompt/setup/cancellation reached",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "appimage": {
+    "name": "Ottrin-0.1.0-x86_64.AppImage",
+    "sha256": "4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58"
+  },
+  "actual_session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nClass=user\nActive=yes\nState=active\n",
+  "helper_policy": "org.ottrin.filesystem.privileged:\n  description:       Run privileged operations for Ottrin\n  message:           Authentication is required to perform this privileged operation in Ottrin.\n  vendor:            Ottrin\n  vendor_url:        https://github.com/hoozter/ottrin\n  icon:              system-file-manager\n  implicit any:      no\n  implicit inactive: no\n  implicit active:   auth_admin_keep\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\n\n",
+  "setup_cases": [
+    "actual setup prompt cancelled; helper absent; cancellation visible",
+    "actual setup authenticated; root-owned helper and policy; ready UI",
+    "actual reinstall authenticated and completed"
+  ],
+  "copy_observation": {
+    "cancelled_destination_absent": true,
+    "authenticated_destination_exists": true,
+    "response": "Failed: committed copy with retained transaction cleanup pending",
+    "destination_content_and_root_ownership": "Not reached by root verifier because worker correctly rejected Failed; not claimed"
+  },
+  "source_diagnosis": {
+    "helper": "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs run_file_command invokes PlatformOps::execute_command",
+    "copy": "crates/ottrin-platform/src/lib.rs execute_command Copy returns CommittedCleanupPending when undo_receipts are not empty",
+    "request": "Exact production File(Copy) stdio protocol; no missing optional request field. Root cause is product integration, not fixture protocol.",
+    "next": "Carry Copy receipt ownership across the privileged boundary and provide coherent guarded Undo/recovery/cleanup, then repeat exact packaged local-seat and application retry acceptance. Do not suppress Failed, discard retained recovery data silently, or treat existing output as completed acceptance."
+  },
+  "reviewed_original_captures": {
+    "setup-ready.png": "3e64fe56555bc9d1b6189288339910c8302d420662435e5eb7bab98d8c9afda8",
+    "protected-copy-cancel-prompt.png": "e4485aa04a3d8b262c404d2dda79453e04cd15ffea3209c46fa580369460813c",
+    "protected-copy-prompt.png": "a758ffc81724a74ebdc0b032c4674577e87dadef3ea066938ccf637e56f88f8c"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "private_password_removed": true,
+  "transport_removed": {
+    "path": ".hermes/evidence/linux-local-seat-current/ubuntu/VM_RESULTS.tar.gz",
+    "sha256": "edc0ff120d01b1601a6921f39f2b43bfd2e36de6872751d8dd6c9b4350fd4fb7",
+    "bytes": 1682171,
+    "reason": "Safe result members already extracted; fixture terminal and all owned volumes removed"
+  },
+  "retained": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/linux-local-seat-current",
+    "purpose": "Frozen local-seat QA producers, original screenshots, failed operation evidence, logs and cleanup receipts; no package copy, fixture, private key, password or VM disk"
+  },
+  "limits": [
+    "Copy body was authenticated but Failed; no full protected-file acceptance",
+    "Direct helper transport only, not main file-manager retry or Undo UI",
+    "Software virtual GPU and LightDM seat0; no physical hardware acceptance"
+  ]
+}

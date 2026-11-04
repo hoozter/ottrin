@@ -1,0 +1,6 @@
+Nov 04 13:54:11 ottrin-native-ubuntu-desktop-qa systemd[1]: Starting lightdm.service - Light Display Manager...
+Nov 04 13:54:11 ottrin-native-ubuntu-desktop-qa systemd[1]: Started lightdm.service - Light Display Manager.
+Nov 04 13:54:12 ottrin-native-ubuntu-desktop-qa lightdm[12201]: pam_unix(lightdm-autologin:session): session opened for user ottrinqa(uid=1000) by (uid=0)
+Nov 04 13:54:19 ottrin-native-ubuntu-desktop-qa systemd[1]: Stopping lightdm.service - Light Display Manager...
+Nov 04 13:54:19 ottrin-native-ubuntu-desktop-qa systemd[1]: lightdm.service: Deactivated successfully.
+Nov 04 13:54:19 ottrin-native-ubuntu-desktop-qa systemd[1]: Stopped lightdm.service - Light Display Manager.
