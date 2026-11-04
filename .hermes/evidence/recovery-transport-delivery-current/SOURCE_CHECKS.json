@@ -1,0 +1,38 @@
+{
+  "status": "pass source checks; typed history state and helper protocol3 need rebuilt/native package acceptance",
+  "source_sha256": {
+    "crates/ottrin-core/src/lib.rs": "d81f5fd9d5371ac1143b1d71cbdb7e8039ccb47b050fa06bf7794aefce901c63",
+    "crates/ottrin-platform/src/lib.rs": "7144ea3f11058e88ba01486e57d5011891ae3e1f2ad419c145dd9bb8d90df4e0",
+    "crates/ottrin-platform/src/copy_recovery.rs": "c9dc32f2798aa97740d0ad66ed66f54412113ab451d1bb8a82f67d3cf9946dac",
+    "crates/ottrin-platform/src/privileged_copy.rs": "5f3c1cee76df4643edb83c8b3d15c3c64f0ab6b4c724be50cddf99e1f2d0ceb0",
+    "crates/ottrin-platform/src/helper_protocol.rs": "b60769f61a4e4a1d0ea3d81ef1edf23fe6e5827ea40fa31f743d924d34547710",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "a5a46267d725231f2562da59b260cf226f1cd70ee721972f3647d627d3c17dd9",
+    "crates/ottrin-ui/src/lib.rs": "d6ca4c0619807b2581b6646c6bb7ce034154bb6c51d7690cdcf81a611315c4ca",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "1e7aecaff0d0228f3a083a21eccfd7bc064801a975dd2e8cdac3a29f213dde19"
+  },
+  "tests": {
+    "core": 43,
+    "platform": 447,
+    "helper": 11,
+    "ui": 502,
+    "failed": 0,
+    "existing_ignored_platform": 4,
+    "existing_ignored_ui": 1
+  },
+  "lint": [
+    "native-lint.log",
+    "windows-lint.log"
+  ],
+  "native_finding": "first-candidate/FINDING.json",
+  "changes": [
+    "Fresh fully validated batch admission returns CopyUndoComplete rather than a false platform limitation",
+    "History sends explicit UndoAvailable, Undone or NeedsReview state; UI maps Undone to a green completed Undo with retained cleanup ownership",
+    "Changed retained contents after Undo still refuse both Undo admission and destructive cleanup",
+    "Exact helper protocol3 refuses older protocol2 helpers before mutations; no legacy response shim"
+  ],
+  "limits": [
+    "First ffa package passed content/runtime and recovered/live history but native GUI acceptance rejected its already-undone error status",
+    "Current corrected source has not yet been packaged or native-desktop accepted",
+    "Windows transport native consent scope remains the ffa checkpoint; current protocol3 Windows package acceptance is pending"
+  ]
+}

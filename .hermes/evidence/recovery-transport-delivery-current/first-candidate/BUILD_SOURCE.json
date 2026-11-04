@@ -1,0 +1,5 @@
+{
+  "source_revision": "ffaeb61e11e511895cce4721674305e7706d2769",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "purpose": "Deliver restored-history provenance/refresh and coherent current helper source; exact package contents and native GUI/daemon/upgrade acceptance remain required"
+}

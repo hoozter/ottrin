@@ -91,7 +91,7 @@ pub fn undo(ids: &[String]) -> Result<(), PlatformError> {
 /// Discover only the elevated account's canonical registry. A successful scan
 /// does not retain descriptors or mutation plans across the IPC boundary.
 pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>, PlatformError> {
-    use ottrin_core::PrivilegedCopyHistoryEntry;
+    use ottrin_core::{PrivilegedCopyHistoryEntry, PrivilegedCopyHistoryState};
     let finalizations = crate::discover_retained_copy_finalizations()?;
     let finalized_ids = finalizations
         .iter()
@@ -117,12 +117,12 @@ pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>
                 .as_ref()
                 .map(|operation| operation.item_index)
         });
-        let undo_unavailable_reason = match crate::restore_retained_copy_undo_plan(&entries) {
-            Ok(plan) if plan.remaining() > 0 => None,
-            Ok(_) => {
-                Some("Already undone. Retained data can be cleared after confirmation.".into())
-            }
-            Err(error) => Some(error.to_string()),
+        let recovery = match crate::restore_retained_copy_undo_plan(&entries) {
+            Ok(_) => PrivilegedCopyHistoryState::UndoAvailable,
+            Err(PlatformError::CopyUndoComplete) => PrivilegedCopyHistoryState::Undone,
+            Err(error) => PrivilegedCopyHistoryState::NeedsReview {
+                reason: error.to_string(),
+            },
         };
         let paths = entries
             .iter()
@@ -139,7 +139,7 @@ pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>
                     .collect(),
                 paths,
             },
-            undo_unavailable_reason,
+            recovery,
         });
     }
     for plan in finalizations {
@@ -153,10 +153,11 @@ pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>
                     .collect(),
                 paths: Vec::new(),
             },
-            undo_unavailable_reason: Some(
-                "Copy cleanup was interrupted. Undo is revoked; finish clearing retained data."
-                    .into(),
-            ),
+            recovery: PrivilegedCopyHistoryState::NeedsReview {
+                reason:
+                    "Copy cleanup was interrupted. Undo is revoked; finish clearing retained data."
+                        .into(),
+            },
         });
     }
     Ok(history)
@@ -261,7 +262,10 @@ mod tests {
         let history = discover_history().unwrap();
         assert_eq!(history.len(), 1);
         assert_eq!(history[0].reference.transactions, reference.transactions);
-        assert!(history[0].undo_unavailable_reason.is_none());
+        assert_eq!(
+            history[0].recovery,
+            ottrin_core::PrivilegedCopyHistoryState::UndoAvailable
+        );
         assert_eq!(std::fs::read(f.path("output/a")).unwrap(), b"new a");
         // References survive the loss of live receipts and use canonical journals.
         undo(&history[0].reference.transactions).unwrap();
@@ -269,7 +273,16 @@ mod tests {
         assert!(!f.path("output/b").exists());
         let undone = discover_history().unwrap();
         assert_eq!(undone.len(), 1);
-        assert!(undone[0].undo_unavailable_reason.is_some());
+        assert_eq!(
+            undone[0].recovery,
+            ottrin_core::PrivilegedCopyHistoryState::Undone
+        );
+        assert!(matches!(
+            crate::restore_retained_copy_undo_plan(
+                &crate::discover_retained_copy_transactions().unwrap()
+            ),
+            Err(PlatformError::CopyUndoComplete)
+        ));
         cleanup(&reference.transactions).unwrap();
         assert!(
             crate::discover_retained_copy_transactions()
@@ -279,6 +292,25 @@ mod tests {
         assert_eq!(std::fs::read(f.path("input/a")).unwrap(), b"new a");
         assert_eq!(std::fs::read_dir(f.path("output")).unwrap().count(), 1);
         assert!(discover_history().unwrap().is_empty());
+    }
+
+    #[test]
+    fn undone_history_still_refuses_changed_retained_contents() {
+        let f = Fixture::new();
+        std::fs::write(f.path("input/a"), "copied a").unwrap();
+        let (_, reference) = f.copy(&["input/a"]);
+        undo(&reference.transactions).unwrap();
+        let retained = &reference.paths[0].0;
+        std::fs::write(retained, "changed after Undo").unwrap();
+        let history = discover_history().unwrap();
+        assert_eq!(history.len(), 1);
+        assert!(matches!(
+            history[0].recovery,
+            ottrin_core::PrivilegedCopyHistoryState::NeedsReview { .. }
+        ));
+        assert!(cleanup(&reference.transactions).is_err());
+        assert_eq!(std::fs::read(retained).unwrap(), b"changed after Undo");
+        assert!(!f.path("output/a").exists());
     }
 
     #[test]
@@ -292,7 +324,10 @@ mod tests {
         std::fs::write(f.path("output/a"), "user edited").unwrap();
         let history = discover_history().unwrap();
         assert_eq!(history.len(), 1);
-        assert!(history[0].undo_unavailable_reason.is_some());
+        assert!(matches!(
+            history[0].recovery,
+            ottrin_core::PrivilegedCopyHistoryState::NeedsReview { .. }
+        ));
         assert!(undo(&reference.transactions).is_err());
         assert_eq!(std::fs::read(f.path("output/a")).unwrap(), b"user edited");
         // Explicit discard validates retained data and never deletes the publication.
@@ -331,7 +366,10 @@ mod tests {
         let history = discover_history().unwrap();
         assert_eq!(history.len(), 1);
         assert_eq!(history[0].reference.transactions, reference.transactions);
-        assert!(history[0].undo_unavailable_reason.is_none());
+        assert_eq!(
+            history[0].recovery,
+            ottrin_core::PrivilegedCopyHistoryState::UndoAvailable
+        );
         assert_eq!(std::fs::read(f.path("output/a")).unwrap(), b"a");
         assert!(!f.path("output/b").exists());
         undo(&reference.transactions).unwrap();
@@ -355,7 +393,10 @@ mod tests {
         assert_eq!(history.len(), 1);
         assert_eq!(history[0].reference.transactions, reference.transactions);
         assert!(history[0].reference.paths.is_empty());
-        assert!(history[0].undo_unavailable_reason.is_some());
+        assert!(matches!(
+            history[0].recovery,
+            ottrin_core::PrivilegedCopyHistoryState::NeedsReview { .. }
+        ));
         assert!(
             crate::discover_retained_copy_finalizations()
                 .unwrap()

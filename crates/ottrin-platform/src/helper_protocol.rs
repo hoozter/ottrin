@@ -192,7 +192,10 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = helper(
             dir.path(),
-            "test \"$1\" = --check-protocol || exit 3\ntest \"$2\" = 2 || exit 4\ntest \"$3\" = --copy-recovery || exit 5\nif read -r value; then exit 6; fi\nexit 0",
+            &format!(
+                "test \"$1\" = --check-protocol || exit 3\ntest \"$2\" = {} || exit 4\ntest \"$3\" = --copy-recovery || exit 5\nif read -r value; then exit 6; fi\nexit 0",
+                ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION
+            ),
         );
         assert_eq!(check(path.to_str().unwrap(), true).unwrap(), path);
         assert!(check(path.to_str().unwrap(), false).is_err());

@@ -1,0 +1,23 @@
+{
+  "active_build": "build.py session78939; poll the existing handle or actual owned build process before any restart",
+  "source_revision": "ffaeb61e11e511895cce4721674305e7706d2769",
+  "delivery_gates": [
+    "Finish the live four-format build, verify exact contents/runtime closure and provenance",
+    "Run fresh owned Linux native restored-history status/refresh/ownership and daemon checks; preserve previous package acceptance scopes",
+    "Wait for pushed1afb CI41903425130 to finish before pushing ffa to avoid cancellation churn; then require exact ffa CI before promotion"
+  ],
+  "windows_next": {
+    "source_facts": [
+      "registry::configured_path uses LOCALAPPDATA/Ottrin/State/copies",
+      "windows_fs identity uses effective TokenOwner, which differs across split-token elevation",
+      "cleanup_group pending_metadata/pending_unlink can require an opaque retained retry plan after uncertain metadata deletion"
+    ],
+    "required_outcome": [
+      "Separate ordinary and administrator canonical registry authority without weakening owner/anchor validation",
+      "Bind any elevated recovery scope to the actual authenticated caller; never trust a client-supplied SID/path as authority",
+      "Durably recover cleanup finalization after helper hard exit before enabling privileged Copy"
+    ],
+    "design_risk_inference": "A registry chosen solely from elevated LOCALAPPDATA can change with the account entered into a credential UAC prompt. Test distinct-account elevation and caller-bound history discovery instead of assuming same-user split-token acceptance covers it."
+  },
+  "goal": "active; full Windows bridge/U08/integration/requirement acceptance remains"
+}

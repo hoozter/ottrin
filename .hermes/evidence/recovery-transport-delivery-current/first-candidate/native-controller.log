@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/recovery-transport-delivery-current/run-native-upgrade.py", line 31, in <module>
+    code=child.wait();assert code==0,code
+                             ^^^^^^^
+AssertionError: 1

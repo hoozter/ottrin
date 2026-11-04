@@ -1,0 +1,23 @@
+{
+  "status": "native candidate rejected; stable AA delivery unchanged",
+  "source_revision": "ffaeb61e11e511895cce4721674305e7706d2769",
+  "cause": "Canonical completed batch admission used NotAvailable; history treated the already-undone cohort as a review error with a misleading platform prefix",
+  "fresh_state_refresh_worked": true,
+  "live_receipt_preserved": true,
+  "gui_restart_recovery_passed": true,
+  "failure_capture_directly_reviewed": "native-upgrade/ubuntu/results/failure.png",
+  "consumed_result_archive": {
+    "sha256": "2b95bd282287725eba04ddf264530649b071b1568cf7d8aac28cd15cc89c747e",
+    "bytes": 3499506,
+    "removed": true
+  },
+  "vm_and_three_volumes_removed": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "host_helper_input_removed": true
+}

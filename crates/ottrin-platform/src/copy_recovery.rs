@@ -788,9 +788,7 @@ impl RetainedCopyUndoPlan {
             .get(
                 self.remaining
                     .checked_sub(1)
-                    .ok_or(PlatformError::NotAvailable(
-                        "Copy batch Undo is already complete",
-                    ))?,
+                    .ok_or(PlatformError::CopyUndoComplete)?,
             )
             .expect("remaining Copy plan entry");
         if self.inflight.is_none() {
@@ -936,9 +934,7 @@ pub(super) fn restore_plan(
         }
     }
     if entries.is_empty() {
-        return Err(PlatformError::NotAvailable(
-            "Copy batch Undo is already complete",
-        ));
+        return Err(PlatformError::CopyUndoComplete);
     }
     Ok(RetainedCopyUndoPlan {
         remaining: entries.len(),

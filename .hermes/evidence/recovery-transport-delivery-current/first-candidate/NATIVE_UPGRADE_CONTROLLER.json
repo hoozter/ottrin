@@ -1,0 +1,8 @@
+{
+  "status": "failed",
+  "input_directory": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.helper-protocol-input",
+  "source_revision": "ffaeb61e11e511895cce4721674305e7706d2769",
+  "error": "AssertionError(1)",
+  "child_exit": 1,
+  "owned_host_input_removed": true
+}

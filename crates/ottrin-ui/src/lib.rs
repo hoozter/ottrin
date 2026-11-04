@@ -26385,7 +26385,7 @@ mod tests {
         }
     }
 
-    #[cfg(target_os = "windows")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     fn activity_frame(
         app: &mut OttrinApp,
         ctx: &Context,
@@ -26403,12 +26403,13 @@ mod tests {
             |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
                 app.render_copy_cleanup_confirmation(ctx);
+                #[cfg(target_os = "windows")]
                 app.render_copy_abort_confirmation(ctx);
             },
         )
     }
 
-    #[cfg(target_os = "windows")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     pub(super) fn activity_text(app: &mut OttrinApp, ctx: &Context) -> Vec<String> {
         activity_frame(app, ctx, Vec::new());
         activity_frame(app, ctx, Vec::new())

@@ -1,0 +1,16 @@
+{
+  "status": "corrected source checks pass; rebuilt/native/exact-source CI acceptance pending",
+  "source_checks": "SOURCE_CHECKS.json",
+  "rejected_first_candidate": "first-candidate/FINDING.json",
+  "candidate_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "preceding_pushed_ci": 41903425130,
+  "preceding_ci_last_verified": "Windows release build live; other3jobs success",
+  "pending_consumers": [
+    "four-format corrected-source build",
+    "exact package content/closure checks",
+    "fresh actual AppImage helper update/history-state/Undo/cleanup and daemon gates",
+    "exact-source CI and guarded promotion"
+  ],
+  "stable_deliverables": "Linuxaa241633 and Windows458/MSIX17 unchanged",
+  "goal": "active and incomplete"
+}

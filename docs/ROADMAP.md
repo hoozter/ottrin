@@ -449,6 +449,22 @@ overlay, transfer staging and test task/processes are removed; two superseded te
 executables/fingerprints/dep-info and33 obsolete incremental sessions are retired.
 These source changes are not included in the current aa/Windows458 packages.
 
+Fresh four-format ffa content and actual mounted-daemon checks passed, but the
+native GUI run rejected a history status after Undo: a fully undone cohort became
+"Needs review" with an incorrect platform-unavailable message. Live-receipt
+preservation, normal restart and authenticated discovery worked. The owned VM,
+three volumes, credentials/input and rejected packages are removed. Exact failed
+source, captures and controls remain in
+`.hermes/evidence/recovery-transport-delivery-current/first-candidate/`.
+
+The correction uses a typed completed-Undo result after fresh canonical admission
+and explicit history recovery states (available, undone, review required). A
+restored undone Copy now keeps green "Copy undone" status and its cleanup ownership;
+changed retained objects still require review and refuse cleanup. Helper protocol3
+requires updating older helpers before mutations. All43 core,447 platform,11 helper
+and502 UI tests pass, with strict Linux/Windows lint. Rebuilt/native acceptance of
+this correction is pending; current delivered Linuxaa/Windows458 are unchanged.
+
 1. Package and verify the subsequent restored-history and Windows transport source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness

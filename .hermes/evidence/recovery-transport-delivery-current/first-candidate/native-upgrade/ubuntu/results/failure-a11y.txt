@@ -1,0 +1,113 @@
+frame | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+push button | Manage administrator helper
+push button | Manage index service
+push button | Show hidden files
+push button | Show command bar
+label | 2 items
+image | 
+label | fixtures
+unknown | 
+push button | New tab
+push button | Close window
+push button | Maximize or restore window
+push button | Minimize window
+push button | Back
+push button | Forward
+push button | Parent folder
+push button | Menu
+push button | Switch to List view
+push button | View Options
+push button | Open /
+label | ›
+push button | Open /home
+label | ›
+push button | Open /home/ottrinqa
+label | ›
+push button | Open /home/ottrinqa/fixtures
+unknown | 
+panel | 
+push button | Expand locations rail
+push button | Home · /home/ottrinqa
+push button | Root · /
+label | Sort
+combo box | 
+push button | A-Z
+push button | 
+label | 100%
+push button | Reset current view size
+unknown | 
+toggle button | bin.usr-is-merged
+toggle button | boot
+toggle button | dev
+toggle button | etc
+toggle button | home
+toggle button | lib.usr-is-merged
+toggle button | lost+found
+toggle button | media
+toggle button | mnt
+toggle button | opt
+toggle button | proc
+toggle button | root
+toggle button | run
+toggle button | sbin.usr-is-merged
+toggle button | snap
+toggle button | srv
+toggle button | sys
+toggle button | tmp
+toggle button | usr
+toggle button | var
+toggle button | bin
+toggle button | lib
+toggle button | lib64
+toggle button | sbin
+unknown | 
+unknown | 
+unknown | 
+toggle button | ottrinqa
+unknown | 
+toggle button | __pycache__
+toggle button | fixtures
+toggle button | results
+toggle button | actor.py
+toggle button | candidate.deb
+toggle button | linux-desktop-qa.py
+toggle button | old-helper
+toggle button | Ottrin-0.1.0-x86_64.AppImage
+toggle button | portable.tar.gz
+toggle button | portal-probe.py
+toggle button | prompt-worker.py
+toggle button | QA_APPIMAGE_INPUT.json
+toggle button | QA_OLD_HELPER_INPUT.json
+toggle button | QA_PROTECTED_INPUT.json
+unknown | 
+toggle button | cancel-copy.txt
+toggle button | preserve.txt
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+toggle button | Show or hide info panel
+toggle button | Show or hide drop-folder panel
+toggle button | Toggle Search
+toggle button | Show or hide Activity
+toggle button | Show or hide Trash
+unknown | 
+label | 
+label | Activity
+push button | Load administrator Copy history
+label | Administrator Copy history loaded. Undo and clearing retained data may request authentication again.
+push button | Refresh
+label | 1 recorded
+push button | Clear finished
+label | 
+label | Administrator Copy from previous session
+label | /var/lib/ottrin-owned-protected-qa/preserve.txt
+label | Needs review
+label | Undo unavailable: operation is not available on this platform: Copy batch Undo is already complete
+push button | Clear retained Copy data…
+label | Duration unavailable

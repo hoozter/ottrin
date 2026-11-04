@@ -1,6 +1,7 @@
 //! Activity retains references to elevated Copy journals. Only the helper can
 //! reopen their filesystem authority; the ordinary UI never reads root journals.
 use super::*;
+use ottrin_core::PrivilegedCopyHistoryState;
 
 type HistoryResult = Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>, String>;
 
@@ -48,7 +49,7 @@ fn validate_history(history: &[ottrin_core::PrivilegedCopyHistoryEntry]) -> Resu
                 .paths
                 .iter()
                 .any(|(source, target)| !source.is_absolute() || !target.is_absolute())
-            || (entry.undo_unavailable_reason.is_none()
+            || (matches!(&entry.recovery, PrivilegedCopyHistoryState::UndoAvailable)
                 && reference.paths.len() != reference.transactions.len())
         {
             return Err("Administrator helper returned inconsistent Copy history. Retained data is unchanged.".into());
@@ -162,13 +163,16 @@ impl OttrinApp {
                     OperationRecoverability::Restorable,
                 )
             });
-            let available = entry.undo_unavailable_reason.is_none();
+            let available = matches!(&entry.recovery, PrivilegedCopyHistoryState::UndoAvailable);
             self.finish_operation_record(
                 id,
-                if available {
-                    OperationStatus::Completed
-                } else {
+                if matches!(
+                    &entry.recovery,
+                    PrivilegedCopyHistoryState::NeedsReview { .. }
+                ) {
                     OperationStatus::NeedsReview
+                } else {
+                    OperationStatus::Completed
                 },
                 None,
             );
@@ -186,9 +190,12 @@ impl OttrinApp {
                 .collect();
             record.finished_at = None; // Original operation timing is not in the snapshot.
             record.undo_kind = Some(PathMoveUndoKind::Copy);
-            record.path_move_undo = Some(match entry.undo_unavailable_reason {
-                Some(reason) => PathMoveUndoState::Unavailable { reason },
-                None => PathMoveUndoState::Available,
+            record.path_move_undo = Some(match entry.recovery {
+                PrivilegedCopyHistoryState::UndoAvailable => PathMoveUndoState::Available,
+                PrivilegedCopyHistoryState::Undone => PathMoveUndoState::Undone,
+                PrivilegedCopyHistoryState::NeedsReview { reason } => {
+                    PathMoveUndoState::Unavailable { reason }
+                }
             });
             record.path_move_undo_token = Some(PathMoveUndoToken {
                 origin_tab_id: None,
@@ -337,7 +344,7 @@ mod tests {
         let mut loader = RetainedActivityLoader::spawn_with(move || {
             Ok(vec![ottrin_core::PrivilegedCopyHistoryEntry {
                 reference: reference.clone(),
-                undo_unavailable_reason: None,
+                recovery: PrivilegedCopyHistoryState::UndoAvailable,
             }])
         });
         loader.request().unwrap();
@@ -451,7 +458,7 @@ mod tests {
         };
         let history = vec![ottrin_core::PrivilegedCopyHistoryEntry {
             reference,
-            undo_unavailable_reason: None,
+            recovery: PrivilegedCopyHistoryState::UndoAvailable,
         }];
         validate_history(&history).unwrap();
         app.merge_privileged_copy_history(history.clone());
@@ -484,34 +491,12 @@ mod tests {
         };
         let mut entry = ottrin_core::PrivilegedCopyHistoryEntry {
             reference,
-            undo_unavailable_reason: None,
+            recovery: PrivilegedCopyHistoryState::UndoAvailable,
         };
         app.merge_privileged_copy_history(vec![entry.clone()]);
         let id = app.operation_history.front().unwrap().id;
         let ctx = Context::default();
-        let mut text = Vec::new();
-        for _ in 0..2 {
-            let output = ctx.run(
-                egui::RawInput {
-                    screen_rect: Some(Rect::from_min_size(
-                        egui::Pos2::ZERO,
-                        Vec2::new(900.0, 1000.0),
-                    )),
-                    ..Default::default()
-                },
-                |ctx| {
-                    egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
-                },
-            );
-            text = output
-                .shapes
-                .into_iter()
-                .filter_map(|shape| match shape.shape {
-                    egui::Shape::Text(text) => Some(text.galley.job.text.clone()),
-                    _ => None,
-                })
-                .collect::<Vec<_>>();
-        }
+        let text = crate::tests::activity_text(&mut app, &ctx);
         assert!(
             text.iter().any(|label| label == "Recovered history"),
             "{text:?}"
@@ -521,7 +506,9 @@ mod tests {
             app.operation_history[0].status,
             app.operation_history[0].path_move_undo.as_ref()
         ));
-        entry.undo_unavailable_reason = Some("Published file changed".into());
+        entry.recovery = PrivilegedCopyHistoryState::NeedsReview {
+            reason: "Published file changed".into(),
+        };
         app.merge_privileged_copy_history(vec![entry.clone()]);
         assert_eq!(app.operation_history.len(), 1);
         assert_eq!(app.operation_history[0].id, id);
@@ -532,11 +519,30 @@ mod tests {
         assert!(
             matches!(&app.operation_history[0].path_move_undo, Some(PathMoveUndoState::Unavailable { reason }) if reason == "Published file changed")
         );
-        entry.undo_unavailable_reason = None;
-        app.merge_privileged_copy_history(vec![entry]);
+        entry.recovery = PrivilegedCopyHistoryState::UndoAvailable;
+        app.merge_privileged_copy_history(vec![entry.clone()]);
         assert!(matches!(
             app.operation_history[0].path_move_undo,
             Some(PathMoveUndoState::Available)
+        ));
+        entry.recovery = PrivilegedCopyHistoryState::Undone;
+        app.merge_privileged_copy_history(vec![entry]);
+        assert_eq!(app.operation_history[0].id, id);
+        assert_eq!(app.operation_history[0].status, OperationStatus::Completed);
+        assert!(matches!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        let text = crate::tests::activity_text(&mut app, &ctx);
+        assert!(text.iter().any(|label| label == "Copy undone"), "{text:?}");
+        assert!(
+            !text
+                .iter()
+                .any(|label| label == "Needs review" || label == "Undo copy" || label == "Done"),
+            "{text:?}"
+        );
+        assert!(copy_activity_cleanup::can_cleanup(
+            &app.operation_history[0]
         ));
     }
 
@@ -558,7 +564,9 @@ mod tests {
         };
         let mut entry = ottrin_core::PrivilegedCopyHistoryEntry {
             reference,
-            undo_unavailable_reason: Some("Changed".into()),
+            recovery: PrivilegedCopyHistoryState::NeedsReview {
+                reason: "Changed".into(),
+            },
         };
         app.merge_privileged_copy_history(vec![entry.clone()]);
         assert_eq!(app.operation_history.len(), 1);
@@ -573,10 +581,12 @@ mod tests {
             Some(7)
         );
         app.operation_history.clear();
-        entry.undo_unavailable_reason = None;
+        entry.recovery = PrivilegedCopyHistoryState::UndoAvailable;
         app.merge_privileged_copy_history(vec![entry.clone()]);
         entry.reference.transactions.push("b".repeat(32));
-        entry.undo_unavailable_reason = Some("Cohort changed".into());
+        entry.recovery = PrivilegedCopyHistoryState::NeedsReview {
+            reason: "Cohort changed".into(),
+        };
         app.merge_privileged_copy_history(vec![entry]);
         assert_eq!(app.operation_history.len(), 1);
         assert_eq!(
@@ -598,12 +608,14 @@ mod tests {
         };
         let mut entry = ottrin_core::PrivilegedCopyHistoryEntry {
             reference,
-            undo_unavailable_reason: None,
+            recovery: PrivilegedCopyHistoryState::UndoAvailable,
         };
         assert!(validate_history(&[entry.clone(), entry.clone()]).is_err());
         entry.reference.paths.clear();
         assert!(validate_history(&[entry.clone()]).is_err());
-        entry.undo_unavailable_reason = Some("Cleanup interrupted".into());
+        entry.recovery = PrivilegedCopyHistoryState::NeedsReview {
+            reason: "Cleanup interrupted".into(),
+        };
         validate_history(&[entry.clone()]).unwrap();
         let mut app = OttrinApp::default();
         app.operation_history.clear();

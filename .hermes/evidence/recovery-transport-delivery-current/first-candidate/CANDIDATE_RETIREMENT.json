@@ -1,0 +1,51 @@
+{
+  "status": "pass rejected package cohort retired after native defect identified",
+  "files": [
+    {
+      "name": "Ottrin-0.1.0-x86_64.AppImage.sha256",
+      "bytes": 95,
+      "sha256": "5146e0800a358cdd5499b732e88ea614546991958bc7ef7f96a796642c1489fa"
+    },
+    {
+      "name": "ottrin-0.1.0-1.x86_64.rpm",
+      "bytes": 28261713,
+      "sha256": "46262ad4f4a014d90e7d030c2fd2596fb603321d8dc45f5f40620beecad2703d"
+    },
+    {
+      "name": "Ottrin-0.1.0-x86_64.AppImage",
+      "bytes": 33068224,
+      "sha256": "c48c3ec9f23c86e68d5448318670b079bce892f2150df28d401176e876d5d612"
+    },
+    {
+      "name": "Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256",
+      "bytes": 108,
+      "sha256": "8a7415dfc8dcb86934b359adb69b1894b154be38ed8c09d742e67e60eda4e685"
+    },
+    {
+      "name": "ottrin-0.1.0-1.x86_64.rpm.sha256",
+      "bytes": 92,
+      "sha256": "285cad5b3c6d44f076977875217d15872fb5a9b94815289798bb61d39e9100e8"
+    },
+    {
+      "name": "Ottrin-0.1.0-linux-x86_64-portable.tar.gz",
+      "bytes": 32692351,
+      "sha256": "919a5f5aee4736714d642123958b058b23563c5fc5a64f84f0244e50b08edfc1"
+    },
+    {
+      "name": "ottrin_0.1.0_amd64.deb.sha256",
+      "bytes": 89,
+      "sha256": "e5498d9a4bed147f2c84e72fb4c55492d49fc93122a5c7610ad01a598cab0f78"
+    },
+    {
+      "name": "ottrin_0.1.0_amd64.deb",
+      "bytes": 21802308,
+      "sha256": "f0981ae823432ee8f9c7ff4c5e2b19e933b8ec8e4516379f014a5ecf83cfb179"
+    },
+    {
+      "name": "Ottrin-0.1.0-x86_64.AppImage.provenance.json",
+      "bytes": 230,
+      "sha256": "447d1d37e0fc6bafde6f15d09b5ce57cc8ae6c137c9f96ac923ce6ef7d562a5c"
+    }
+  ],
+  "current_stable_packages_preserved": true
+}

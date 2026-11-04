@@ -1273,7 +1273,7 @@ pub struct PrivilegedContext {
 }
 
 /// Exact wire contract required by both the caller and elevated helper.
-pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 2;
+pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 3;
 
 /// Request payload sent from unprivileged app process to elevated helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1325,7 +1325,16 @@ pub enum PrivilegedPayload {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PrivilegedCopyHistoryEntry {
     pub reference: PrivilegedCopyReceipt,
-    pub undo_unavailable_reason: Option<String>,
+    pub recovery: PrivilegedCopyHistoryState,
+}
+
+/// Canonical recovery state; an undone Copy is not a failed or unknown admission.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "state", rename_all = "kebab-case", deny_unknown_fields)]
+pub enum PrivilegedCopyHistoryState {
+    UndoAvailable,
+    Undone,
+    NeedsReview { reason: String },
 }
 
 /// Presentation and lookup references only. The elevated helper must reopen and

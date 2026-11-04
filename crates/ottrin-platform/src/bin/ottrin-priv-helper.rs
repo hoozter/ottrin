@@ -547,13 +547,20 @@ mod tests {
             vec!["--check-protocol"],
             vec!["--check-protocol", "bad"],
             vec!["--check-protocol", "1"],
-            vec!["--check-protocol", "3"],
+            vec!["--check-protocol", "2"],
         ] {
             assert_eq!(
                 protocol_check(&args.into_iter().map(str::to_owned).collect::<Vec<_>>()),
                 Some(78)
             );
         }
+        assert_eq!(
+            protocol_check(&[
+                "--check-protocol".into(),
+                (ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION + 1).to_string()
+            ]),
+            Some(78)
+        );
         assert_eq!(
             protocol_check(&[
                 "--check-protocol".into(),

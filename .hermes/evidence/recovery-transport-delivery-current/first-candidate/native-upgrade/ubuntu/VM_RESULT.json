@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "ffaeb61e11e511895cce4721674305e7706d2769",
+  "status": "fail",
+  "package_sha256": "f0981ae823432ee8f9c7ff4c5e2b19e933b8ec8e4516379f014a5ecf83cfb179",
+  "uuid": "90512cac-57e2-49ee-91ce-0bac71f84508",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('tation:        org.freedesktop.policykit.exec.allow_gui -> true\\\\\\\\n\\\\\\\\n\\', \\'temporary_authorizations_after_revoke\\': \\'\\', \\'helper_copy_root_verification\\': {\\'phase\\': \\'HELPER_COPY\\', \\'root_owned\\': True, \\'exact_source_bytes\\': True, \\'sha256\\': \\'4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e\\'}, \\'protected_helper\\': {\\'ordinary_write_denied\\': True, \\'cancel_exit\\': 126, \\'authenticated_response\\': {\\'status\\': \\'Success\\', \\'message\\': None, \\'payload\\': {\\'Copy\\': {\\'completed_sources\\': 1, \\'transactions\\': [\\'9b199a0f14fd901417ec9d8382752bf7\\'], \\'paths\\': [[\\'/var/lib/ottrin-owned-protected-qa/.ottrin-txn-9b199a0f14fd901417ec9d8382752bf7/candidate\\', \\'/var/lib/ottrin-owned-protected-qa/preserve.txt\\']]}}}, \\'undo_and_cleanup\\': \\'Success through fresh authenticated helper processes\\'}, \\'gui_copy_root_verification\\': {\\'phase\\': \\'GUI_COPY\\', \\'root_owned\\': True, \\'exact_source_bytes\\': True, \\'sha256\\': \\'4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e\\'}, \\'activity_controls\\': [{\\'name\\': \\'Show or hide Activity\\', \\'role\\': \\'toggle button\\'}], \\'history_live_receipt_preserved\\': True, \\'history_restart\\': {\\'normal_gui_close\\': True, \\'new_process\\': True, \\'cancel_preserved_recovery\\': True, \\'authenticated_discovery\\': True}, \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/prompt-worker.py\\\\\", line 189, in <module>\\\\\\\\n    q.wait_for(lambda:visible(reason),\\\\\\\\\\'fresh canonical Undo state in the existing history card\\\\\\\\\\',timeout=30)\\\\\\\\n  File \\\\\"/home/ottrinqa/linux-desktop-qa.py\\\\\", line 70, in wait_for\\\\\\\\n    raise AssertionError(f\\\\\"Timed out waiting for {message}{suffix}\\\\\")\\\\\\\\nAssertionError: Timed out waiting for fresh canonical Undo state in the existing history card\\\\\\\\n\\', \\'error\\': \\\\\"AssertionError(\\'Timed out waiting for fresh canonical Undo state in the existing history card\\')\\\\\"})\",\\n  \"protected_outputs_before_cleanup\": {\\n    \"cancel_copy_exists\": false,\\n    \"authenticated_copy_exists\": false\\n  },\\n  \"owned_protected_directory_removed\": true,\\n  \"private_password_removed\": true\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

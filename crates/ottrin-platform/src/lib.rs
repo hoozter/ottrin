@@ -345,6 +345,10 @@ pub enum PlatformError {
     PrivilegedHelperUnavailable(String),
     #[error("operation is not available on this platform: {0}")]
     NotAvailable(&'static str),
+    /// A fresh Copy batch admission verified that every retained item is undone.
+    #[cfg(target_os = "linux")]
+    #[error("Copy Undo is already complete")]
+    CopyUndoComplete,
     #[error("filesystem operation failed: {0}")]
     Io(String),
     #[error("invalid source path: {0}")]
