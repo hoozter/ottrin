@@ -1,0 +1,9 @@
+{
+  "bytes": {
+    "target/debug/deps": 25018349010,
+    "target/debug/incremental": 24863958622,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28090574605,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40594046607,
+    ".hermes/evidence/administrator-copy-refresh-current": 0
+  }
+}

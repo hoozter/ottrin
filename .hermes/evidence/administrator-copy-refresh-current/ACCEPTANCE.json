@@ -1,0 +1,29 @@
+{
+  "status": "pass source and rendered egui regression checks; not packaged or native desktop accepted",
+  "base_revision": "95feb423d231aece773239c916b837c7352800e3",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "d9cecca05bd4cd2006c58aa2d1cda9c69d3e76ecf9286b1c96ba50b62be808cb",
+    "crates/ottrin-ui/src/privileged_copy_activity.rs": "eb86e001445e230834769be71d9f6307086a922eef0c27ca047341f8bc410faa"
+  },
+  "ui_suite": {
+    "passed": 502,
+    "failed": 0,
+    "ignored": 1,
+    "log": "ui-suite.log"
+  },
+  "strict_lint": [
+    "native-lint.log",
+    "windows-lint.log"
+  ],
+  "behavior": [
+    "Explicit restored provenance distinguishes recovered history from a known completed session operation",
+    "Authenticated reload refreshes exact restored transaction cohorts while preserving stable Activity identity",
+    "Current-session receipts, active work, changed cohorts and cleanup ownership are preserved"
+  ],
+  "limits": [
+    "No new package or host daemon replacement in this checkpoint",
+    "Windows cross-target lint is not native Windows recovery acceptance",
+    "No full theme or daily-driver acceptance"
+  ],
+  "cleanup": "CLEANUP.json"
+}

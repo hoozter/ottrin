@@ -140,44 +140,44 @@
           "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T19:56:06Z",
+          "conclusion": "success",
           "name": "Cargo test",
           "number": 17,
           "startedAt": "2026-11-04T19:24:52Z",
-          "status": "in_progress"
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T19:56:06Z",
+          "conclusion": "skipped",
           "name": "Verify production Linux desktop integration",
           "number": 18,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T19:56:06Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T19:56:06Z",
+          "conclusion": "skipped",
           "name": "Upload Linux portal evidence",
           "number": 19,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T19:56:06Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T19:56:34Z",
+          "conclusion": "success",
           "name": "Cargo clippy",
           "number": 20,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T19:56:06Z",
+          "status": "completed"
         },
         {
           "completedAt": "0001-01-01T00:00:00Z",
           "conclusion": "",
           "name": "Release build",
           "number": 21,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T19:56:34Z",
+          "status": "in_progress"
         },
         {
           "completedAt": "0001-01-01T00:00:00Z",

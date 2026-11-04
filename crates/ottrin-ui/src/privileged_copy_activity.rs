@@ -113,20 +113,37 @@ impl OttrinApp {
         history: Vec<ottrin_core::PrivilegedCopyHistoryEntry>,
     ) {
         for entry in history {
-            // Preserve live receipts and their progress rather than replacing
-            // them with a possibly older read-only discovery observation.
-            if self
+            // Only refresh an exact restored cohort. Live receipts and cleanup
+            // workers retain their own progress and must never lose ownership.
+            let overlapping = self
                 .operation_history
                 .iter()
-                .filter(|record| is_privileged(record))
-                .any(|record| {
-                    copy_receipt_transaction_ids(record)
-                        .iter()
-                        .any(|id| entry.reference.transactions.contains(id))
+                .filter(|record| {
+                    is_privileged(record)
+                        && copy_receipt_transaction_ids(record)
+                            .iter()
+                            .any(|id| entry.reference.transactions.contains(id))
                 })
-            {
-                continue;
-            }
+                .collect::<Vec<_>>();
+            let existing = match overlapping.as_slice() {
+                [] => None,
+                [record]
+                    if is_restored(record)
+                        && record.retained_copy.is_none()
+                        && !matches!(
+                            record.path_move_undo,
+                            Some(PathMoveUndoState::UndoQueued)
+                        )
+                        && record.status != OperationStatus::Queued
+                        && copy_receipt_transaction_ids(record)
+                            .iter()
+                            .collect::<HashSet<_>>()
+                            == entry.reference.transactions.iter().collect::<HashSet<_>>() =>
+                {
+                    Some(record.id)
+                }
+                _ => continue,
+            };
             let detail = if entry.reference.paths.is_empty() {
                 "Retained administrator Copy bookkeeping".to_owned()
             } else {
@@ -138,11 +155,13 @@ impl OttrinApp {
                     .collect::<Vec<_>>()
                     .join(" · ")
             };
-            let id = self.queue_activity_record_with_recoverability(
-                "Administrator Copy from previous session",
-                detail,
-                OperationRecoverability::Restorable,
-            );
+            let id = existing.unwrap_or_else(|| {
+                self.queue_activity_record_with_recoverability(
+                    "Administrator Copy from previous session",
+                    detail.clone(),
+                    OperationRecoverability::Restorable,
+                )
+            });
             let available = entry.undo_unavailable_reason.is_none();
             self.finish_operation_record(
                 id,
@@ -158,6 +177,7 @@ impl OttrinApp {
                 .iter_mut()
                 .find(|record| record.id == id)
                 .unwrap();
+            record.detail = detail;
             record.operation_paths = entry
                 .reference
                 .paths
@@ -176,6 +196,7 @@ impl OttrinApp {
                 receipt: OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Privileged {
                     reference: entry.reference,
                     pending: available,
+                    restored: true,
                 }),
             });
         }
@@ -201,6 +222,18 @@ pub(super) fn execute_recovery(
             "Administrator Copy recovery was refused; retained data is preserved.".into()
         })))
     }
+}
+
+pub(super) fn is_restored(record: &OperationRecord) -> bool {
+    matches!(
+        record
+            .path_move_undo_token
+            .as_ref()
+            .map(|token| &token.receipt),
+        Some(OperationUndoReceipt::CopyBatch(
+            CopyBatchUndoReceipt::Privileged { restored: true, .. }
+        ))
+    )
 }
 
 pub(super) fn is_privileged(record: &OperationRecord) -> bool {
@@ -281,6 +314,7 @@ impl OttrinApp {
                 receipt: OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Privileged {
                     reference: reference.clone(),
                     pending: true,
+                    restored: false,
                 }),
             });
         }
@@ -437,6 +471,122 @@ mod tests {
             1,
             "Clear must retain administrator recovery ownership"
         );
+    }
+
+    #[test]
+    fn restored_history_refreshes_without_claiming_original_copy_completed() {
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        let Some(PrivilegedPayload::Copy(reference)) =
+            response(PrivilegedStatus::Success, 1).payload
+        else {
+            unreachable!()
+        };
+        let mut entry = ottrin_core::PrivilegedCopyHistoryEntry {
+            reference,
+            undo_unavailable_reason: None,
+        };
+        app.merge_privileged_copy_history(vec![entry.clone()]);
+        let id = app.operation_history.front().unwrap().id;
+        let ctx = Context::default();
+        let mut text = Vec::new();
+        for _ in 0..2 {
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(900.0, 1000.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_activity_sidebar(ui));
+                },
+            );
+            text = output
+                .shapes
+                .into_iter()
+                .filter_map(|shape| match shape.shape {
+                    egui::Shape::Text(text) => Some(text.galley.job.text.clone()),
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+        }
+        assert!(
+            text.iter().any(|label| label == "Recovered history"),
+            "{text:?}"
+        );
+        assert!(!text.iter().any(|label| label == "Done"), "{text:?}");
+        assert!(path_move_undo_action_is_available(
+            app.operation_history[0].status,
+            app.operation_history[0].path_move_undo.as_ref()
+        ));
+        entry.undo_unavailable_reason = Some("Published file changed".into());
+        app.merge_privileged_copy_history(vec![entry.clone()]);
+        assert_eq!(app.operation_history.len(), 1);
+        assert_eq!(app.operation_history[0].id, id);
+        assert_eq!(
+            app.operation_history[0].status,
+            OperationStatus::NeedsReview
+        );
+        assert!(
+            matches!(&app.operation_history[0].path_move_undo, Some(PathMoveUndoState::Unavailable { reason }) if reason == "Published file changed")
+        );
+        entry.undo_unavailable_reason = None;
+        app.merge_privileged_copy_history(vec![entry]);
+        assert!(matches!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+    }
+
+    #[test]
+    fn discovery_preserves_live_receipts_and_refuses_changed_cohort_refresh() {
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        app.record_privileged_copy(
+            &command(),
+            &response(PrivilegedStatus::Failed, 1),
+            Some(7),
+            Vec::new(),
+        )
+        .unwrap();
+        let Some(PrivilegedPayload::Copy(reference)) =
+            response(PrivilegedStatus::Success, 1).payload
+        else {
+            unreachable!()
+        };
+        let mut entry = ottrin_core::PrivilegedCopyHistoryEntry {
+            reference,
+            undo_unavailable_reason: Some("Changed".into()),
+        };
+        app.merge_privileged_copy_history(vec![entry.clone()]);
+        assert_eq!(app.operation_history.len(), 1);
+        assert_eq!(app.operation_history[0].status, OperationStatus::Stopped);
+        assert!(!is_restored(&app.operation_history[0]));
+        assert_eq!(
+            app.operation_history[0]
+                .path_move_undo_token
+                .as_ref()
+                .unwrap()
+                .origin_tab_id,
+            Some(7)
+        );
+        app.operation_history.clear();
+        entry.undo_unavailable_reason = None;
+        app.merge_privileged_copy_history(vec![entry.clone()]);
+        entry.reference.transactions.push("b".repeat(32));
+        entry.undo_unavailable_reason = Some("Cohort changed".into());
+        app.merge_privileged_copy_history(vec![entry]);
+        assert_eq!(app.operation_history.len(), 1);
+        assert_eq!(
+            copy_receipt_transaction_ids(&app.operation_history[0]),
+            vec!["a".repeat(32)]
+        );
+        assert!(matches!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
     }
 
     #[test]

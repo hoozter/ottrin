@@ -1,0 +1,17 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 10.63s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 9 tests
+test privileged_copy_activity::tests::history_rejects_duplicate_ids_and_does_not_offer_undo_for_cleanup_only_records ... ok
+test privileged_copy_activity::tests::previous_session_administrator_history_keeps_recovery_ownership_without_duplicate_rows ... ok
+test privileged_copy_activity::tests::administrator_copy_denial_creates_no_fictitious_completed_activity ... ok
+test privileged_copy_activity::tests::administrator_copy_rejects_missing_or_inconsistent_success_payload ... ok
+test privileged_copy_activity::tests::discovery_preserves_live_receipts_and_refuses_changed_cohort_refresh ... ok
+test privileged_copy_activity::tests::restored_history_refreshes_without_claiming_original_copy_completed ... ok
+test privileged_copy_activity::tests::rendered_loaded_message_does_not_keep_a_second_stale_record_count_after_cleanup ... ok
+test privileged_copy_activity::tests::rendered_history_control_is_opt_in_and_cancelled_loading_preserves_activity ... ok
+test privileged_copy_activity::tests::administrator_copy_activity_retains_undo_and_cleanup_ownership_after_success_or_partial_failure ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.02s
+

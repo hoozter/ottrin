@@ -1090,6 +1090,7 @@ enum CopyBatchUndoReceipt {
     Privileged {
         reference: ottrin_core::PrivilegedCopyReceipt,
         pending: bool,
+        restored: bool,
     },
     // Completed session receipts retain their transaction ownership after a stop.
     Session {
@@ -1134,7 +1135,9 @@ impl CopyBatchUndoReceipt {
         progress(0)?;
         match self {
             #[cfg(target_os = "linux")]
-            Self::Privileged { reference, pending } => {
+            Self::Privileged {
+                reference, pending, ..
+            } => {
                 privileged_copy_activity::execute_recovery(
                     platform,
                     PrivilegedCommand::UndoCopy {
@@ -14821,6 +14824,11 @@ impl OttrinApp {
                 let forward_copy = record.status == OperationStatus::Queued && self.copy_work.running(record.id);
                 #[cfg(not(target_os = "windows"))]
                 let forward_copy = false;
+                #[cfg(target_os = "linux")]
+                let restored_history = privileged_copy_activity::is_restored(record)
+                    && record.status == OperationStatus::Completed;
+                #[cfg(not(target_os = "linux"))]
+                let restored_history = false;
                 let (status_text, status_color, status_icon) = if forward_copy {
                     #[cfg(target_os = "windows")]
                     let label = if self.copy_work.stopping(record.id) { "Stopping" } else { "Copying" };
@@ -14839,7 +14847,9 @@ impl OttrinApp {
                     }
                     else { (if name_release_pending { "Ready to release name" } else if ending_attempt { "Incomplete copy" } else { "Ready to resume" }, c.accent, MI_HISTORY) }
                 } else if name_release_pending { ("Name release needs review", c.error, MI_HISTORY) }
-                else { match record.status {
+                else if restored_history {
+                    ("Recovered history", c.accent, MI_HISTORY)
+                } else { match record.status {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
                     OperationStatus::Completed => ("Done", c.accent, MI_CHECK),
                     OperationStatus::Stopped => ("Stopped", c.accent_dim, MI_CLEAR),

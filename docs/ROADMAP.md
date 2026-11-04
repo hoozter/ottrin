@@ -409,6 +409,18 @@ source passes all four hosted jobs; exact aa run41894809859 currently has Linux 
 both performance jobs green, with Windows verification in progress. Neither this
 checkpoint nor the capture count closes U08 or daily-driver acceptance.
 
+A subsequent source checkpoint adds explicit restored administrator receipt
+provenance. Activity labels these records **Recovered history**, without claiming
+the unknown original batch completed. Another authenticated load refreshes an
+exact restored cohort's current Undo availability while preserving its card ID;
+live-session receipts, active work and cleanup ownership are preserved. All 502 UI
+tests pass (one existing ignore), including rendered status and refresh/ownership
+regressions; strict Linux and Windows cross-target all-target lint passes. Evidence:
+`.hermes/evidence/administrator-copy-refresh-current/`. This checkpoint is not yet
+packaged or accepted on a native desktop. Eight obsolete incremental sessions were
+removed; current binaries and compiler caches remain. Windows transport and its
+canonical privileged recovery bridge still need implementation and native testing.
+
 1. Publish the locally accepted aa cohort after its exact-source hosted gates pass.
    Finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
