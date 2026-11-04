@@ -1856,7 +1856,14 @@ fn index_powershell_command(script: &str) -> std::process::Command {
 
     // Windows PowerShell parses a command string again after CreateProcess
     // argument quoting. Send the exact multiline script as UTF-16LE instead.
-    let script = format!("[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n{script}");
+    let script = format!(
+        "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n\
+         $ErrorActionPreference = 'Stop'\n\
+         $ProgressPreference = 'SilentlyContinue'\n\
+         try {{\n{script}\n}} catch {{\n\
+         [Console]::Error.Write($_.Exception.GetBaseException().Message)\n\
+         exit 1\n}}"
+    );
     let bytes: Vec<_> = script.encode_utf16().flat_map(u16::to_le_bytes).collect();
     let encoded = base64::engine::general_purpose::STANDARD.encode(bytes);
     let mut command = internal_command("powershell.exe");

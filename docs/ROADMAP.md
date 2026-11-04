@@ -88,6 +88,24 @@ coverage remain separate acceptance gaps. Remaining service states/prompt accept
 scope still require explicit audit. No universal
 Windows system-picker interception or full roadmap completion is claimed.
 
+Current service follow-up (2026-11-04): source `6f0a58e9` has fresh Linux
+package/content, seven native settings cases and a private daemon probe, but is
+not promoted. The ordinary-user Windows Services matrix still fails setup.
+A captured app child was querying XML/owner at64.96 seconds; that query completed
+and a registration child was observed at131.32 seconds, before the180-second
+UI timeout. This establishes multiple slow calls, not a proven single hung
+statement. The clone, two volumes, private console and consumed bootstrap are
+removed; safe originals and decoded scripts remain in
+`service-startup-current/cohort/services-launch-observation/`.
+CI41773667747 passes Linux verification and both performance jobs; full Windows
+Search tests fail the readable-error transport assertion because a thrown error
+arrives as CLIXML, despite the earlier focused transport step passing. The shared
+transport now catches terminating errors and writes their messages directly to
+stderr; formatting and Windows Search all-target strict Clippy pass. The existing
+native regression assertion remains unchanged and native CI must verify this
+correction. Neither this error-format fix nor the diagnostic resolves service
+responsiveness. Stable packages remain runtime47a above.
+
 Continue in this order:
 
 1. Build and verify fresh settings/service packages with the encoded Windows
