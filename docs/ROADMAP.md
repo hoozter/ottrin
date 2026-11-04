@@ -9,11 +9,12 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` now use runtime
-`45830098b6d58eeb8a08252f8d8b9c6fe35d9eef`. Windows ZIP/NSIS/development
-MSIX0.1.0.17 now use that same accepted runtime in `dist/windows-candidate/`.
-Source50a breadcrumb directory classification is tested but not yet packaged.
+`47db1f97e909ffb0ce634868221b34a96974022a`. Windows ZIP/NSIS/development
+MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
+Source50a breadcrumb directory classification is delivered in Linux47db; it is
+not included in Windows458.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58`.
+`6600ab5a17b675f0d521eb73053638a08a27dec86aee04078f9f843b35ae215e`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
@@ -30,10 +31,10 @@ invented Sync button and separately painted tab/window buttons. Actual window
 controls and the New tab button now use the production widgets. Miller file rows
 also use the production renderer: actual typography/icons/chevrons, theme colors,
 selection and hit rectangles. Pixel-rounded painting now matches hit testing, and
-measured filename elision reserves the chevron space. 492 UI tests and strict
+measured filename elision reserves the chevron space. 495 UI tests and strict
 native/Windows UI lint pass.
-These shared-widget changes are delivered in all seven stable Linux/Windows458
-packages, including development MSIX17. Exact Windows native settings/preview,
+The shared-widget changes first shipped in Linux/Windows458, including MSIX17.
+Linux47db includes them; Windows458 remains current. Exact Windows settings/preview,
 fresh MSIX runtime and enabled/disabled16-to17 upgrade scopes pass. The full preview/interface audit remains required. Source scopes: `theme-presenters-current/IMPLEMENTATION.json`,
 `theme-chrome-current/SOURCE_CHECKS.json` and
 `theme-file-rows-current/SOURCE_CHECKS.json`. Rendered regressions compare actual tab
@@ -312,37 +313,60 @@ index retains its filesystem identity. Ready-state CPU was0.87% of one core over
 `HOST_INDEX_UPDATE.json` records this real host scope. Current managed indexing
 is intentionally left running; it is not a disposable test process.
 
+### Linux privileged Copy delivery, 2026-11-04
+
+All four Linux47db formats are promoted after production content verification,
+495 UI tests/five recovery tests/nine helper tests, strict native/Windows lint and
+all four exact-source hosted jobs41846558115. The helper returns canonical durable
+Copy references, including completed entries after a partial failure; Activity
+retains their Undo/cleanup ownership. No duplicate journal or policy relaxation.
+
+The exact FUSE-mounted AppImage passes real active LightDM seat0 authentication,
+protected Copy cancel/authenticate, actual application cp denial/admin retry,
+Activity authenticated Undo and confirmed/authenticated cleanup. Independent root
+observations verify byte-identical root-owned copies, then no publication or
+transaction stage. Seven original captures reviewed. Two earlier GUI observations
+failed on producer selector assumptions (xdotool OR matching, push-button versus
+actual toggle role); their failures remain separate. The corrected producer uses
+an explicit minimal desktop dependency closure and the advertised control action.
+`privileged-copy-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json` binds the exact scope.
+
+The rebuilt daemon changed bytes, so prior CPU acceptance was not carried forward.
+Its fresh private1000-file watcher/query/restart/two-stop sample is0.067% of one
+core over30seconds. The personal managed service was quiesced only for package
+replacement, restarted from the new AppImage and observed Ready. Startup choice,
+preference bytes and saved-index device/inode are preserved. No new personal CPU
+sample is claimed. The personal installed helper differs from the tested bundle;
+its replacement requires owner authentication, recorded on the waiting list.
+
+Three owned VMs/nine volumes, credentials/seeds/private profiles, result archives,
+77MB content extraction, consumed stage and superseded Linux packages are removed.
+Twenty obsolete compiler incremental sessions were removed by the locked helper
+(0.76GiB). Current packages, useful caches, protected VMs and user data remain.
+Evidence/producers: `.hermes/evidence/privileged-copy-current/`; `PROMOTION.json`
+and `CLEANUP_CURRENT.json` are the delivery and resource authorities. Full roadmap
+completion, restart discovery, Windows bridge and broader native/physical gates
+remain separate.
+
 ### Ordered implementation and acceptance queue
 
-Completed delivery: Linux458 and Windows458/MSIX17 are at their stable paths;
+Completed delivery: Linux47db and Windows458/MSIX17 are at their stable paths;
 exact native scopes, fresh/update/login MSIX gates, four hosted jobs and owned
 fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap completion.
 
-1. Fix privileged Copy receipt ownership before repeating protected-file acceptance.
-   The delivered458 AppImage now reaches real setup/cancel/reinstall and protected
-   Copy password prompts in an actual LightDM seat0 active user session with stock
-   polkit policy. Cancel leaves no destination. Authenticated Copy creates an output
-   but returns Failed because the helper uses generic execute_command without a
-   caller capable of retaining Copy Undo receipts; its transaction stage remains.
-   Root verification of destination bytes/ownership was not reached, so this is a
-   failed operation gate, not positive Copy acceptance. Linux source now returns
-   canonical durable Copy references through the helper and records their Activity
-   Undo/cleanup ownership, including partial failures. Five recovery tests,495 UI
-   tests, nine helper tests, strict Linux/Windows lint and actual ordinary-user
-   stdio Copy/Undo/cleanup pass; this is not newly packaged/elevated acceptance.
-   `privileged-copy-current/SOURCE_CHECKS.json` records exact source scope.
-   Windows privileged Copy and ordinary-user rediscovery of elevated-account Copy
-   activity after restarting remain open. Evidence:
-   `linux-local-seat-current/ASSESSMENT.json`. Carry guarded receipt/recovery/cleanup
-   ownership across the privileged boundary; do not suppress the error or silently
-   discard Undo. Then verify real application retry, actual login/reboot and remaining
-   AppImage/portable binary replacement readiness. The fixture's VM/three volumes,
-   password, keys, protected directory and consumed result archive are removed.
-   Earlier helper setup, Services, normal GUI-close and DEB replacement scopes
-   remain valid; do not repeat unchanged independent matrices.
-2. Finish the theme/interface consistency audit and implementation. The source
+1. Complete privileged Copy integration: ordinary-user rediscovery of elevated
+   Copy history after restarting; versioned helper feature/readiness checks before
+   issuing unsupported commands or displaying Ready; Windows receipt/Undo/cleanup
+   bridge. Linux same-session helper and actual application retry/Activity workflow
+   are delivered and accepted above. The personal helper update needs the owner's
+   OS authentication; that does not stall these software changes.
+2. Finish remaining Linux real login/reboot and AppImage/portable binary-version
+   replacement readiness. Earlier scoped Services, normal GUI-close and same-version
+   DEB replacement receipts retain their exact inputs; do not repeat unchanged
+   matrices without changed inputs or a reproduced concern.
+3. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor, delivered
-   in Linux/Windows458 with bounded native acceptance. U08 remains unfinished:
+   first in Linux/Windows458, retained in Linux47db, with bounded native acceptance. U08 remains unfinished:
    tabs, window buttons and Miller file rows now share production presenters in
    source. Status controls, List/Grid representation, miniature corner scaling and
    inspector role ownership remain open. All affected controls need native visual
@@ -351,13 +375,13 @@ fixture/staging cleanup pass. This is a delivery checkpoint, not roadmap complet
    Include the main search indicator's stopped-state color and settled resize
    observation. Verify every supported control/role, text/icon alignment and
    window styling; field-map/test counts do not prove whole-interface consistency.
-3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
+4. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
    Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
    DEB/RPM and cooperating Windows caller receipts retain their exact scopes.
    MSIX17 startup-checkbox installed-package off/on and unchanged-daemon checks pass.
    Do not infer universal Windows dialog replacement or repeat fulfilled matrices
    without changed inputs or a reproduced defect.
-4. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
+5. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
    (54 roadmap bullets) and `release-audit-current/USER_REQUIREMENTS.json` (15
    overlapping user requirements), reconcile the release matrix/documents, and
    leave only actual [owner/external waits](#ownerexternal-waiting-list).
@@ -1668,6 +1692,7 @@ Do not move a fixable implementation or test failure onto this list.
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
 | Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
+| Personal administrator helper update | Settings → Services → Update / reinstall helper, then complete OS administrator authentication. Installed binary differs from the delivered tested helper; no privileged host file was silently replaced. Exact hashes: `privileged-copy-current/HOST_HELPER_STATUS.json`. | All implementation/package work, including versioned capability/readiness reporting, elevated Copy restart discovery and Windows bridge. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
 | Windows Installer ordinary-user MSI rollback | A supported correction for the native per-user registration undo boundary, or an explicitly approved change to the MSI installation contract. Exact held MSI fails on both26300/.9444 and26100/.9711; independent native controls also fail. Role-only elevation restores state but is diagnostic only. No supported application-source correction is established. Evidence: `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json` and `windows-msi-security-context-current/COMPARISON.json`. Keep MSI release held; revisit a new supported solution rather than waive the gate. | Current ZIP/NSIS/development-MSIX payload, runtime, update/removal and other software gates continue independently. No production elevation, registry/ACL compensation or silent format withdrawal. |

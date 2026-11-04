@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/privileged-copy-current/native-gui/controller.py", line 112, in <module>
+    assert result.returncode==0,result.stdout[-2000:]+result.stderr[-1000:]
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: y:      no\\n  implicit inactive: no\\n  implicit active:   auth_admin_keep\\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\\n\\n', 'temporary_authorizations_after_revoke': '', 'helper_copy_root_verification': {'phase': 'HELPER_COPY', 'root_owned': True, 'exact_source_bytes': True, 'sha256': '4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e'}, 'protected_helper': {'ordinary_write_denied': True, 'cancel_exit': 126, 'authenticated_response': {'status': 'Success', 'message': None, 'payload': {'Copy': {'completed_sources': 1, 'transactions': ['05930bfeff98a4bc37c661d2da1a7701'], 'paths': [['/var/lib/ottrin-owned-protected-qa/.ottrin-txn-05930bfeff98a4bc37c661d2da1a7701/candidate', '/var/lib/ottrin-owned-protected-qa/preserve.txt']]}}}, 'undo_and_cleanup': 'Success through fresh authenticated helper processes'}, 'gui_copy_root_verification': {'phase': 'GUI_COPY', 'root_owned': True, 'exact_source_bytes': True, 'sha256': '4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e'}, 'traceback': 'Traceback (most recent call last):\\n  File \"/home/ottrinqa/prompt-worker.py\", line 132, in <module>\\n    q.click_accessible_name(\\'Show or hide Activity\\',\\'push button\\')\\n  File \"/home/ottrinqa/linux-desktop-qa.py\", line 131, in click_accessible_name\\n    node = wait_for(\\n           ^^^^^^^^^\\n  File \"/home/ottrinqa/linux-desktop-qa.py\", line 70, in wait_for\\n    raise AssertionError(f\"Timed out waiting for {message}{suffix}\")\\nAssertionError: Timed out waiting for accessible control \\'Show or hide Activity\\'\\n', 'error': 'AssertionError(\"Timed out waiting for accessible control \\'Show or hide Activity\\'\")'})",
+  "protected_outputs_before_cleanup": {
+    "cancel_copy_exists": false,
+    "authenticated_copy_exists": true
+  },
+  "owned_protected_directory_removed": true,
+  "private_password_removed": true
+}
+

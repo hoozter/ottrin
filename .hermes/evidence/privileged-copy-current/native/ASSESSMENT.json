@@ -1,0 +1,19 @@
+{
+  "status": "failed GUI observation; exact helper authenticated lifecycle passed within failed broader fixture",
+  "cause": "xdotool search default OR semantics combines --pid and --name; Settings selector matched both same-process main and Settings before its one-window assertion. No product source change.",
+  "next": "Use --all and explicit selector/traceback diagnostics in a fresh GUI run",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "private_seed_keys_password_removed": true,
+  "consumed_archive": {
+    "sha256": "bac6baef6f1ecd477e076131ad4415afbaad48459bcf4d07e9b7865a047a48b0",
+    "bytes": 2204831
+  },
+  "limits": "No actual main-window retry/Activity acceptance claimed from this failed GUI run"
+}

@@ -1,0 +1,10 @@
+Nov 04 14:43:54 ottrin-native-ubuntu-desktop-qa systemd[1]: Starting lightdm.service - Light Display Manager...
+Nov 04 14:43:54 ottrin-native-ubuntu-desktop-qa systemd[1]: Started lightdm.service - Light Display Manager.
+Nov 04 14:43:54 ottrin-native-ubuntu-desktop-qa lightdm[12091]: pam_unix(lightdm-autologin:session): session opened for user ottrinqa(uid=1000) by (uid=0)
+Nov 04 14:44:17 ottrin-native-ubuntu-desktop-qa lightdm[12520]: pam_unix(lightdm-greeter:session): session opened for user lightdm(uid=111) by (uid=0)
+Nov 04 14:44:18 ottrin-native-ubuntu-desktop-qa lightdm[12520]: gkr-pam: couldn't unlock the login keyring.
+Nov 04 14:44:18 ottrin-native-ubuntu-desktop-qa systemd[1]: Stopping lightdm.service - Light Display Manager...
+Nov 04 14:44:18 ottrin-native-ubuntu-desktop-qa lightdm[12520]: pam_unix(lightdm-greeter:session): session closed for user lightdm
+Nov 04 14:44:18 ottrin-native-ubuntu-desktop-qa systemd[1]: lightdm.service: Deactivated successfully.
+Nov 04 14:44:18 ottrin-native-ubuntu-desktop-qa systemd[1]: Stopped lightdm.service - Light Display Manager.
+Nov 04 14:44:18 ottrin-native-ubuntu-desktop-qa systemd[1]: lightdm.service: Consumed 1.095s CPU time.

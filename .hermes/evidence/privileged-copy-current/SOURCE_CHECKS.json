@@ -38,5 +38,7 @@
   "fixture_corrections": [
     "First attempted script invocation passed cargo/test twice; corrected to documented wrapper arguments",
     "A FIFO fixture was rejected during whole-batch preflight before any copy, so it did not exercise partial completion. Replaced with an owned source removal at the progress boundary after first publication; actual batch response/undo/cleanup then passes."
-  ]
+  ],
+  "delivery_followup": "PROMOTION.json",
+  "snapshot_context": "Source checks were recorded before packaging; final native/package/delivery proofs are separate scoped receipts."
 }

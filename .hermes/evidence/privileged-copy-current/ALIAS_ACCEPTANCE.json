@@ -1,0 +1,18 @@
+{
+  "status": "pass actual helper reference spellings for symlink and dot-component destinations",
+  "helper_sha256": "c82c5d226a82fe4e52f67a83df7f9b3946fd48bad3f364a41c6d403ee3a7f68d",
+  "scope": "Actual debug helper ordinary-user stdio destination symlink/dot-component spellings; not additional native elevation acceptance",
+  "cases": [
+    {
+      "destination_spelling": "alias",
+      "reference_parent_matches_request": true,
+      "undo_and_cleanup": "Success"
+    },
+    {
+      "destination_spelling": "destination/../destination",
+      "reference_parent_matches_request": true,
+      "undo_and_cleanup": "Success"
+    }
+  ],
+  "private_profile_removed": true
+}

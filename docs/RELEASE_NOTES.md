@@ -4,50 +4,47 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/MSIX17 now use runtime
-`45830098` at their stable local paths. The Linux-only Services correction now
-shows gray Stopped after intentional stop/uninstall even when a socket pathname
-remains. All four exact-source CI jobs41809847269 pass.
+Linux AppImage/portable/DEB/RPM now use runtime `47db1f97`; Windows ZIP/NSIS and
+unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
+CI41846558115 passes all four Linux/Windows verification/performance jobs.
 
-The earlier061 mounted AppImage verifies real helper setup/cancel/reinstall, nine
-service states/five independent startup toggles, and normal GUI close/reopen with
-the same managed daemon PID and disabled startup choice retained. Actual
-same-version f463-to-061 DEB replacement passes enabled/running,
-disabled/running and disabled/stopped cases; first ensure succeeds and1000 source
-files/preferences are unchanged. That061 Linux daemon probe passes watcher,
-query, persistence/restart and two shutdowns at0.067% of one core over30seconds.
-Linux458 retains that exact daemon binary; those earlier GUI/update receipts
-retain their original artifact scopes.
+Linux administrator Copy uses the existing durable Copy registry and guarded
+Undo/cleanup APIs. Completed references reach Activity even after a later batch
+failure. The actual mounted AppImage passes active LightDM seat0 authentication,
+protected Copy cancellation, authenticated Copy and real application denied-Copy
+retry, then Activity Undo and confirmed/authenticated cleanup. Independent root
+checks verify copied bytes/ownership and absence of the publication/stage after
+Undo/cleanup. Seven original full-window captures are directly reviewed.
+Five recovery tests,495 UI tests and nine helper tests pass; strict Linux/Windows
+lint and actual ordinary-user helper JSON lifecycle/alias checks pass separately.
 
-Earlier f463 configuration-preservation/theme-save, Windows Native/OpenGL,
-Windows16-state service management and MSIX16 assembly evidence retains its exact
-scope. The main search indicator's stopped color and settled resize observation
-remain in the consistency audit. A protected-copy probe was denied in a no-seat
-background session; positive local-console elevation remains unverified.
+For an existing AppImage/portable installation, use Settings → Services → Update /
+reinstall helper and complete administrator authentication to install the tested
+helper. This delivery does not silently change the personal system helper.
+Ordinary-user rediscovery of administrator Copy history after restarting and the
+Windows privileged Copy bridge remain unfinished software work.
 
-The source now shares production navigation/menu/view/breadcrumb/tab presentation
-and window-control widgets with the theme editor, removing invented Sync, ASCII
-navigation and separately painted tab/window buttons. Rendered regressions compare
-real tab geometry/typography and controls at 100/150/200 percent text size; preview
-clicks select theme roles without operating windows. Miller file rows now use the
-production renderer too, with exact painted/hit bounds and measured filename
-elision that reserves directory-chevron space. The new row regression compares
-real geometry, typography/color and accessible selection at the same three scales.
-492 UI tests and strict native/Windows UI lint pass. These changes are delivered
-in all four Linux458 packages; mounted AppImage Nord Dark150/Light100 preview
-selection checks and eight directly reviewed original captures pass. Windows458/MSIX17 also pass nine settings cases/eight preview actions in
-Native/OpenGL, fresh installed runtime and real reboot/login/removal, and
-16-to17 upgrades with startup enabled and disabled. All58 payload files match.
-Source50a breadcrumb directory classification is tested but not packaged. The full theme/role audit remains open.
+All four package contents pass production checks. The rebuilt daemon passes a
+fresh private1000-file watcher/create/rename/delete/query/restart/two-shutdown
+probe at0.067% of one core over30seconds without clients. Earlier daemon samples
+retain their original hashes/scopes. The personal managed service now runs the
+current binary and reports Ready, preserving startup choice, preference bytes and
+saved-index filesystem identity. No new personal CPU measurement is claimed.
 
-Completed fixture VM/profile/bootstrap resources, extraction, consumed staging
-and superseded Linux/Windows packages are removed. The personal Linux service
-now runs the delivered daemon; startup choice, preference bytes and saved-index
-identity are preserved. Its short ready-state sample is0.87% of one core over
-30seconds; no sustained-performance or CPU-reduction claim is made.
-Login/reboot, broader caller/visual/physical acceptance, MSI rollback, signing/Store
-and final owner acceptance remain open. Packaged manuals are build-time snapshots;
-repository manifests/docs record later delivery. No public release is implied.
+The source50a breadcrumb classification fix is included in Linux47db. Earlier
+Linux458 Nord Dark150/Light100 preview checks and Windows458 Native/OpenGL144DPI
+settings/preview/MSIX17 update checks retain their original exact scopes. The full
+theme/role/interface audit, remaining Linux login/binary-replacement and caller
+integration gates, MSI rollback, physical graphics, signing/Store and final owner
+acceptance remain open.
+
+Three completed fixture VMs/nine volumes, temporary credentials/profiles/seeds,
+transport archives,77MB content extraction, consumed staging and superseded Linux
+packages are removed. Twenty obsolete incremental sessions were retired through
+the guarded compiler-cache helper (0.76GiB); current binaries/dependencies/newest
+compiler state remain. Windows stable artifacts and protected VMs are unchanged.
+Packaged manuals are build-time snapshots; repository manifests and roadmap record
+later acceptance. These are local previews, not a public release.
 
 ## Highlights
 

@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "status": "fail",
+  "package_sha256": "e002a98e2bc83d513ebc53639997fc49d0bb0a5ed130549a5fea3faa8744c671",
+  "uuid": "68125932-a4f6-4ae8-aa5a-db855ec26ea6",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('nstall authenticated and completed\\'], \\'login_session_id\\': \\'c1\\', \\'fuse_mount\\': {\\'executable\\': \\'/tmp/.mount_OttrinW3alRx/usr/bin/ottrin\\', \\'mountinfo\\': \\'314 30 0:51 / /tmp/.mount_OttrinW3alRx ro,nosuid,nodev,relatime shared:390 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000\\'}, \\'session_properties\\': \\'Seat=seat0\\\\\\\\nRemote=no\\\\\\\\nService=lightdm-autologin\\\\\\\\nType=x11\\\\\\\\nClass=user\\\\\\\\nActive=yes\\\\\\\\nState=active\\\\\\\\n\\', \\'helper_policy\\': \\'org.ottrin.filesystem.privileged:\\\\\\\\n  description:       Run privileged operations for Ottrin\\\\\\\\n  message:           Authentication is required to perform this privileged operation in Ottrin.\\\\\\\\n  vendor:            Ottrin\\\\\\\\n  vendor_url:        https://github.com/hoozter/ottrin\\\\\\\\n  icon:              system-file-manager\\\\\\\\n  implicit any:      no\\\\\\\\n  implicit inactive: no\\\\\\\\n  implicit active:   auth_admin_keep\\\\\\\\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\\\\\\\\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\\\\\\\\n\\\\\\\\n\\', \\'temporary_authorizations_after_revoke\\': \\'\\', \\'helper_copy_root_verification\\': {\\'phase\\': \\'HELPER_COPY\\', \\'root_owned\\': True, \\'exact_source_bytes\\': True, \\'sha256\\': \\'4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e\\'}, \\'protected_helper\\': {\\'ordinary_write_denied\\': True, \\'cancel_exit\\': 126, \\'authenticated_response\\': {\\'status\\': \\'Success\\', \\'message\\': None, \\'payload\\': {\\'Copy\\': {\\'completed_sources\\': 1, \\'transactions\\': [\\'dcfab67c95ba2558bc304d8d0b3fe098\\'], \\'paths\\': [[\\'/var/lib/ottrin-owned-protected-qa/.ottrin-txn-dcfab67c95ba2558bc304d8d0b3fe098/candidate\\', \\'/var/lib/ottrin-owned-protected-qa/preserve.txt\\']]}}}, \\'undo_and_cleanup\\': \\'Success through fresh authenticated helper processes\\'}, \\'error\\': \\'AssertionError()\\'})\",\\n  \"protected_outputs_before_cleanup\": {\\n    \"cancel_copy_exists\": false,\\n    \"authenticated_copy_exists\": false\\n  },\\n  \"owned_protected_directory_removed\": true,\\n  \"private_password_removed\": true\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

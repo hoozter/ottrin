@@ -1,0 +1,7 @@
+{
+  "status": "pass consumed content extraction removed",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "bytes": 77252478,
+  "removed": true,
+  "reason": "Package contents/namespace checks finished. Native QA uses actual AppImage/FUSE in owned VM; fresh daemon probe owns its own disposable extraction. No consumer for this host extraction remains."
+}

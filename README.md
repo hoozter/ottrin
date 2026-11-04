@@ -36,31 +36,32 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-All seven Linux/Windows preview packages use runtime `45830098`, including
-unsigned development MSIX0.1.0.17. CI41809847269 passes all four exact-source jobs for
-the shared-widget UI delivery. Earlier061 AppImage evidence verifies gray Stopped in Services,
-nine service states/five startup toggles, real helper setup/cancel/reinstall and
-normal GUI close/reopen with the managed PID retained. Three real same-version
-DEB replacement states preserve source, preferences and the startup choice. These
-receipts keep their original artifact scopes; the Linux458 daemon is byte-identical.
-The earlier061 Linux1000-file daemon probe measures0.067% of one core over30seconds.
-Windows458 passes nine settings cases/eight preview actions in Native/OpenGL,
-fresh MSIX17 runtime/login/removal and16-to17 updates with startup enabled and
-disabled. All58 payload files match; earlier full Services matrices retain their
-original source scope. These are bounded
-software fixtures, not sustained, physical or whole-interface acceptance.
+The four Linux packages use runtime `47db1f97`; Windows ZIP/NSIS and unsigned
+development MSIX0.1.0.17 remain on accepted runtime `45830098`. All four exact-source
+CI jobs41846558115 pass for47db. See the stable acceptance manifests for hashes.
 
-The Linux458 packages share live toolbar/breadcrumb/tab, window-control widgets
-and Miller file rows with the editor; 492 UI tests and strict Linux/Windows UI lint
-pass. File-row painting/hit bounds match, and measured filename elision reserves
-directory-chevron space. Exact AppImage Nord Dark150/Light100 preview checks pass.
-Windows458/MSIX17 are delivered at their stable paths; consumed staging and
-superseded packages are removed. Source50a breadcrumb classification is tested
-but not packaged. The personal Linux daemon now matches the delivered binary
-with startup, preferences and saved-index identity preserved.
-Full theme/role consistency, positive local-seat protected-file elevation,
-login/reboot, MSI rollback, physical coverage and final daily-driver acceptance
-remain open. See the roadmap and stable manifests for exact evidence and limits.
+Linux privileged Copy now returns durable recovery references to Activity instead
+of committing a copy and reporting failure because its Undo receipt was lost.
+The actual mounted AppImage passes real local-seat authentication, denied Copy →
+administrator retry → Activity Undo → confirmed cleanup. Independent root checks
+verify exact source bytes/ownership, removal by Undo and reclaimed transaction
+stages. Five recovery tests,495 UI tests and nine helper tests pass; strict
+Linux/Windows lint passes. Existing AppImage/portable installations must update
+the separately installed helper through Settings → Services → Update / reinstall
+helper and authenticate to use this exact tested helper binary.
+
+The rebuilt Linux daemon passes fresh1000-file watcher/query/restart/shutdown
+checks at0.067% of one core over30seconds without clients. That is a private test,
+not a personal-service CPU measurement. The personal managed daemon now matches
+the new delivery; startup choice, preferences and saved-index identity are preserved.
+
+Shared production toolbar/tab/window/Miller presenters remain delivered on both
+platforms. Linux47db also includes the breadcrumb directory-classification fix;
+Windows458 retains its original scoped preview/native and MSIX update acceptance.
+Full theme consistency, elevated Copy restart discovery, Windows privileged Copy,
+remaining login/replacement and integration gates, MSI rollback, physical coverage
+and final daily-driver acceptance remain open. Completed QA fixtures, consumed
+staging/extraction and superseded packages are removed; useful compiler state remains.
 
 ### Linux
 

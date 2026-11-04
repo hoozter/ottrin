@@ -1,0 +1,38 @@
+{
+  "status": "pass scoped shared-widget Linux delivery; full roadmap incomplete",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "927c3462c3fab9c214ccb77136f6ce498596b80648f8e7a43b6cae5ea4f4a850",
+    "Ottrin-0.1.0-x86_64.AppImage": "4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "372654ffb359ff89782f7bf85449693a038bfbeaa39a6cb03ba514dbe82f7246",
+    "ottrin_0.1.0_amd64.deb": "7ba87eb75a5392a22c01642c19d58163eeece176e427096f80c065d482fdee1a"
+  },
+  "evidence": ".hermes/evidence/theme-delivery-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "hosted_source": {
+    "run": 41809847269,
+    "tested_source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "all_four_jobs_success": true
+  },
+  "native_theme": ".hermes/evidence/theme-delivery-current/LINUX_THEME_NATIVE_ACCEPTANCE.json",
+  "payload_comparison": ".hermes/evidence/theme-delivery-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
+  "unchanged_daemon_identity": ".hermes/evidence/theme-delivery-current/LINUX_INDEX_ELF_COMPARISON.json",
+  "unchanged_daemon_runtime_basis": ".hermes/evidence/linux-stopped-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "historical_service_and_update_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
+  "limits": [
+    "Breadcrumb fixture folder classification uses filesystem probes and currently displays file glyphs for nonexistent folder segments",
+    "Status preview controls remain separate painters",
+    "List/Grid preview representation, full role/field mapping and broader native theme/scale acceptance remain open",
+    "Fresh native GUI acceptance covers Nord Dark150/Light100 preview control selection only; not all roles/settings/themes, physical hardware or daily-driver acceptance",
+    "Prior Services, helper and DEB update receipts retain their original scopes; no fresh matrices implied",
+    "Windows stable packages remain f463 while native preview/MSIX acceptance continues",
+    "No signing, Store submission, public release or whole-roadmap completion"
+  ]
+}

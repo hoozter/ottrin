@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped shared-widget Linux delivery; full roadmap incomplete",
-  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "status": "pass scoped Linux privileged Copy delivery; full roadmap incomplete",
+  "source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "927c3462c3fab9c214ccb77136f6ce498596b80648f8e7a43b6cae5ea4f4a850",
-    "Ottrin-0.1.0-x86_64.AppImage": "4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "372654ffb359ff89782f7bf85449693a038bfbeaa39a6cb03ba514dbe82f7246",
-    "ottrin_0.1.0_amd64.deb": "7ba87eb75a5392a22c01642c19d58163eeece176e427096f80c065d482fdee1a"
+    "ottrin-0.1.0-1.x86_64.rpm": "d117ac60d8346ba2168f5c3caf5bbd847067080c1c86938fd00fc53e21492a1f",
+    "Ottrin-0.1.0-x86_64.AppImage": "6600ab5a17b675f0d521eb73053638a08a27dec86aee04078f9f843b35ae215e",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "21e3934752770bd37206a92865293bcafddd09dc1df8c4306eb9ee5e80e3d6ce",
+    "ottrin_0.1.0_amd64.deb": "e002a98e2bc83d513ebc53639997fc49d0bb0a5ed130549a5fea3faa8744c671"
   },
-  "evidence": ".hermes/evidence/theme-delivery-current",
+  "evidence": ".hermes/evidence/privileged-copy-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,22 +17,20 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "hosted_source": {
-    "run": 41809847269,
-    "tested_source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "run": 41846558115,
+    "tested_source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
     "all_four_jobs_success": true
   },
-  "native_theme": ".hermes/evidence/theme-delivery-current/LINUX_THEME_NATIVE_ACCEPTANCE.json",
-  "payload_comparison": ".hermes/evidence/theme-delivery-current/FULL_LINUX_PAYLOAD_COMPARISON.json",
-  "unchanged_daemon_identity": ".hermes/evidence/theme-delivery-current/LINUX_INDEX_ELF_COMPARISON.json",
-  "unchanged_daemon_runtime_basis": ".hermes/evidence/linux-stopped-delivery-current/LINUX_DAEMON_RUNTIME.json",
-  "historical_service_and_update_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
+  "native_privileged_copy": ".hermes/evidence/privileged-copy-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/privileged-copy-current/LINUX_DAEMON_RUNTIME.json",
+  "payload_comparison": ".hermes/evidence/privileged-copy-current/PAYLOAD_COMPARISON.json",
+  "historical_service_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
   "limits": [
-    "Breadcrumb fixture folder classification uses filesystem probes and currently displays file glyphs for nonexistent folder segments",
-    "Status preview controls remain separate painters",
-    "List/Grid preview representation, full role/field mapping and broader native theme/scale acceptance remain open",
-    "Fresh native GUI acceptance covers Nord Dark150/Light100 preview control selection only; not all roles/settings/themes, physical hardware or daily-driver acceptance",
-    "Prior Services, helper and DEB update receipts retain their original scopes; no fresh matrices implied",
-    "Windows stable packages remain f463 while native preview/MSIX acceptance continues",
-    "No signing, Store submission, public release or whole-roadmap completion"
+    "Same-session Linux Copy and root-owned disposable destination only; source-level changed-object/refusal/partial/interrupted-cleanup tests have separate scopes",
+    "Windows privileged Copy and ordinary-user elevated-account Copy discovery after application restart remain open",
+    "No real Linux reboot/login, full upgrade matrix, physical graphics, complete theme audit or daily-driver acceptance",
+    "Four-format content verification; current GUI protected Copy uses actual mounted AppImage. Prior native update/Services matrices retain original hashes/scopes",
+    "Installed portable/AppImage helper requires Update / reinstall helper to receive its new binary; no automatic privileged installation",
+    "Windows remains458/MSIX17; no signing, public release, Store submission or full-roadmap completion"
   ]
 }

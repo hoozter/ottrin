@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "status": "fail",
+  "package_sha256": "e002a98e2bc83d513ebc53639997fc49d0bb0a5ed130549a5fea3faa8744c671",
+  "uuid": "d6442f13-32c6-4ea9-b5a9-4aa26348c442",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError('y:      no\\\\\\\\n  implicit inactive: no\\\\\\\\n  implicit active:   auth_admin_keep\\\\\\\\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\\\\\\\\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\\\\\\\\n\\\\\\\\n\\', \\'temporary_authorizations_after_revoke\\': \\'\\', \\'helper_copy_root_verification\\': {\\'phase\\': \\'HELPER_COPY\\', \\'root_owned\\': True, \\'exact_source_bytes\\': True, \\'sha256\\': \\'4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e\\'}, \\'protected_helper\\': {\\'ordinary_write_denied\\': True, \\'cancel_exit\\': 126, \\'authenticated_response\\': {\\'status\\': \\'Success\\', \\'message\\': None, \\'payload\\': {\\'Copy\\': {\\'completed_sources\\': 1, \\'transactions\\': [\\'05930bfeff98a4bc37c661d2da1a7701\\'], \\'paths\\': [[\\'/var/lib/ottrin-owned-protected-qa/.ottrin-txn-05930bfeff98a4bc37c661d2da1a7701/candidate\\', \\'/var/lib/ottrin-owned-protected-qa/preserve.txt\\']]}}}, \\'undo_and_cleanup\\': \\'Success through fresh authenticated helper processes\\'}, \\'gui_copy_root_verification\\': {\\'phase\\': \\'GUI_COPY\\', \\'root_owned\\': True, \\'exact_source_bytes\\': True, \\'sha256\\': \\'4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e\\'}, \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/prompt-worker.py\\\\\", line 132, in <module>\\\\\\\\n    q.click_accessible_name(\\\\\\\\\\'Show or hide Activity\\\\\\\\\\',\\\\\\\\\\'push button\\\\\\\\\\')\\\\\\\\n  File \\\\\"/home/ottrinqa/linux-desktop-qa.py\\\\\", line 131, in click_accessible_name\\\\\\\\n    node = wait_for(\\\\\\\\n           ^^^^^^^^^\\\\\\\\n  File \\\\\"/home/ottrinqa/linux-desktop-qa.py\\\\\", line 70, in wait_for\\\\\\\\n    raise AssertionError(f\\\\\"Timed out waiting for {message}{suffix}\\\\\")\\\\\\\\nAssertionError: Timed out waiting for accessible control \\\\\\\\\\'Show or hide Activity\\\\\\\\\\'\\\\\\\\n\\', \\'error\\': \\'AssertionError(\\\\\"Timed out waiting for accessible control \\\\\\\\\\'Show or hide Activity\\\\\\\\\\'\\\\\")\\'})\",\\n  \"protected_outputs_before_cleanup\": {\\n    \"cancel_copy_exists\": false,\\n    \"authenticated_copy_exists\": true\\n  },\\n  \"owned_protected_directory_removed\": true,\\n  \"private_password_removed\": true\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}

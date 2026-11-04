@@ -1,0 +1,12 @@
+Nov 04 14:50:10 ottrin-native-ubuntu-desktop-qa systemd[1]: Starting lightdm.service - Light Display Manager...
+Nov 04 14:50:10 ottrin-native-ubuntu-desktop-qa lightdm[5192]: Error getting user list from org.freedesktop.Accounts: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Accounts was not provided by any .service files
+Nov 04 14:50:10 ottrin-native-ubuntu-desktop-qa systemd[1]: Started lightdm.service - Light Display Manager.
+Nov 04 14:50:11 ottrin-native-ubuntu-desktop-qa lightdm[5214]: Error getting user list from org.freedesktop.Accounts: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Accounts was not provided by any .service files
+Nov 04 14:50:11 ottrin-native-ubuntu-desktop-qa lightdm[5214]: pam_unix(lightdm-autologin:session): session opened for user ottrinqa(uid=1000) by (uid=0)
+Nov 04 14:50:26 ottrin-native-ubuntu-desktop-qa lightdm[5563]: Error getting user list from org.freedesktop.Accounts: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Accounts was not provided by any .service files
+Nov 04 14:50:26 ottrin-native-ubuntu-desktop-qa lightdm[5563]: pam_unix(lightdm-greeter:session): session opened for user lightdm(uid=109) by (uid=0)
+Nov 04 14:50:26 ottrin-native-ubuntu-desktop-qa systemd[1]: Stopping lightdm.service - Light Display Manager...
+Nov 04 14:50:26 ottrin-native-ubuntu-desktop-qa lightdm[5563]: pam_unix(lightdm-greeter:session): session closed for user lightdm
+Nov 04 14:50:26 ottrin-native-ubuntu-desktop-qa systemd[1]: lightdm.service: Deactivated successfully.
+Nov 04 14:50:26 ottrin-native-ubuntu-desktop-qa systemd[1]: Stopped lightdm.service - Light Display Manager.
+Nov 04 14:50:26 ottrin-native-ubuntu-desktop-qa systemd[1]: lightdm.service: Consumed 1.142s CPU time.

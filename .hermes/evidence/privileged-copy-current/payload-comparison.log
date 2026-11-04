@@ -1,0 +1,40 @@
+{
+  "status": "pass exact portable payload comparison",
+  "source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "previous_source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "payload_files": 110,
+  "changes": {
+    "SOURCE_REVISION.txt": {
+      "previous": "ca6bb71d98b478c41a857fc94c99098ae2e5959ff16661f423fb48b134e14d58",
+      "current": "ac007a0403ab5eed2de45ceb64994504a7f01110844148ddd64750f93c438453"
+    },
+    "libexec/ottrin/ottrin-indexd": {
+      "previous": "49c90f5d5a66fa6e9503475a62f8aedfd9a58efa24dceb54a3b773e143d503ef",
+      "current": "58a7f46a1adfff199fb844bb0f7b84a4bf3f644a6cb7ffc270ff8b10a69de2c2"
+    },
+    "libexec/ottrin/ottrin": {
+      "previous": "518672ef4ce56bcca7425d0b342cee557002fcd83a11c32796cf52ad73a7bc57",
+      "current": "3279f75e4ced16d32c3780b72e7f1f2010f29d71e6fbaf9d2098b6a496113c8a"
+    },
+    "libexec/ottrin/ottrin-priv-helper": {
+      "previous": "041770a6db79578a7271eab56f8bd5127a0a155f5b9ed1bb185420da7cf6c41d",
+      "current": "a4a4b97b92408c5f3820c37c9657f605cba8a551e9451e7b62b243e8e45ee7c3"
+    },
+    "docs/RELEASE_NOTES.md": {
+      "previous": "f69a928cb876d1b0545aec89bd12e44d1b958a44dd33b87baae17ef6d800ac52",
+      "current": "7b1d9796fb7074ebe9ced447d7ae4c80eea22f17a52c4a914b65dddb9dbf1087"
+    },
+    "docs/ROADMAP.md": {
+      "previous": "4831c676a600221251842e18d2ba539caa82b203e9c071ecbdeee12db7ca98ee",
+      "current": "67fce4665d7c809517058c2b19dfb0f65365444a9b10686b83272aaa6170ed90"
+    },
+    "README.md": {
+      "previous": "d50b9bc35a602501bc9f4dd89d7b9f1a943a3df20fa08454621d2391be63a6ef",
+      "current": "0d23324fd250b94233403698001d93f4891e47b3eaa92f8c59b29344351af4ce"
+    }
+  },
+  "daemon_byte_identical": false,
+  "daemon_sha256": "58a7f46a1adfff199fb844bb0f7b84a4bf3f644a6cb7ffc270ff8b10a69de2c2",
+  "scope": "Only GUI, privileged helper, rebuilt daemon, provenance and manual snapshots change. Media/preview helpers and dependencies remain byte-identical. Changed daemon requires fresh runtime evidence; no prior CPU sample is carried forward.",
+  "fresh_daemon_runtime_required": true
+}

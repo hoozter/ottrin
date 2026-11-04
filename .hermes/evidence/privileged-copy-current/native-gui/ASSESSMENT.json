@@ -1,0 +1,24 @@
+{
+  "status": "failed Activity selector; actual authenticated application Copy retry and protected output passed",
+  "scope": "Exact47db AppImage/FUSE, real seat0; helper Copy/Undo/cleanup and actual cp failure/admin retry reached. Full Activity lifecycle unaccepted.",
+  "error": "AssertionError(\"Timed out waiting for accessible control 'Show or hide Activity'\")",
+  "gui_copy_proof": {
+    "phase": "GUI_COPY",
+    "root_owned": true,
+    "exact_source_bytes": true,
+    "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+  },
+  "next": "Select the advertised named Activity control without assuming push-button role; record actual role/tree. No product source changed.",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_archive": {
+    "sha256": "c74b53a473b25ec4e4b19893fa0168b919d8c445c4f6c321c6ac4b96d7da9f9e",
+    "bytes": 2335373
+  }
+}

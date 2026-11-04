@@ -1,0 +1,11 @@
+{
+  "source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "scope": "Linux privileged Copy durable ownership/Activity bridge; current7 stable deliverables preserved until exact acceptance",
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/privileged-copy-current",
+  "pending_consumers": [],
+  "cleanup_complete": true,
+  "stage_retired": true,
+  "stable_manifest": "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+  "delivery": "PROMOTION.json"
+}

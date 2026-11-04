@@ -1,0 +1,14 @@
+{
+  "previous_goal_turn": "progress: Windows458/MSIX17 promoted and source412609e1 local-seat fixture exposed the privileged Copy receipt defect",
+  "this_turn": "47db1f97 Linux Copy receipt bridge committed/pushed,5 recovery tests/495 UI tests/9 helper tests and strict native/Windows lint pass. Actual helper stdio and real local-seat AppImage cp/admin retry/Activity Undo/cleanup pass. All4 exact-source CI jobs pass. All4 Linux packages promoted; managed personal index restarted from new binary with preferences/startup/index identity preserved. Owned cleanup complete.",
+  "goal_status": "active; full scope unchanged and incomplete",
+  "source": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "next": [
+    "Versioned helper feature/readiness detection; elevated-account restart discovery; Windows privileged Copy receipt bridge",
+    "Remaining Linux real login and binary replacement gates",
+    "U08 full consistency/theme audit and remaining picker/folder integration",
+    "Full54+15 requirement audit before claiming completion"
+  ],
+  "owner_wait": "Apply current tested helper through Services with administrator authentication; current personal helper remains unchanged",
+  "cleanup": "CLEANUP_CURRENT.json"
+}

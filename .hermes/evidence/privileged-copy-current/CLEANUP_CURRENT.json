@@ -1,0 +1,43 @@
+{
+  "status": "pass owned fixture, stage, extraction and superseded-package cleanup",
+  "three_vm_fixtures_and_nine_volumes_removed": true,
+  "private_passwords_keys_seeds_transport_archives_removed": true,
+  "content_extraction_removed": {
+    "status": "pass consumed content extraction removed",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+    "bytes": 77252478,
+    "removed": true,
+    "reason": "Package contents/namespace checks finished. Native QA uses actual AppImage/FUSE in owned VM; fresh daemon probe owns its own disposable extraction. No consumer for this host extraction remains."
+  },
+  "superseded_linux_package_bytes_retired": 114643788,
+  "consumed_stage_removed": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "incremental": {
+    "obsolete_sessions_removed": 20,
+    "GiB_recovered": 0.76,
+    "final_obsolete_candidates": 0,
+    "guarded_helper": "/home/campbell/.codex/skills/computer-cleanup/scripts/rust_incremental.py",
+    "exact_nondumpable_process_identity_review": "PROCESS_REVIEW.json"
+  },
+  "compiler_sizes_before": "STORAGE_BEFORE.txt",
+  "compiler_sizes_after": "STORAGE_FINAL.txt",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/privileged-copy-current",
+      "purpose": "Compact frozen producers, failed selector diagnostics, original native captures and source/build/delivery/cleanup receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Latest four usable Linux47db deliverables and their scoped acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Existing shared compiler cache/current binaries, with newest finalized sessions retained; no extra target tree"
+    }
+  ],
+  "personal_index": {
+    "purpose": "Intentionally running current delivered managed daemon; not disposable QA",
+    "PID": "1999472"
+  },
+  "protected_vms": "Existing four protected environments remain off and unchanged",
+  "host_privileged_helper": "Unchanged; owner authentication is queued separately"
+}

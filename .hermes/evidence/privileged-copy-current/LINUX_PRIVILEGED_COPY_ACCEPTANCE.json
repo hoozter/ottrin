@@ -1,0 +1,87 @@
+{
+  "status": "pass exact AppImage/FUSE local-seat helper and application Copy retry/Activity Undo/cleanup scope",
+  "source_revision": "47db1f97e909ffb0ce634868221b34a96974022a",
+  "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+  "artifact_sha256": "6600ab5a17b675f0d521eb73053638a08a27dec86aee04078f9f843b35ae215e",
+  "session": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nClass=user\nActive=yes\nState=active\n",
+  "helper_cases": [
+    "actual setup prompt cancelled; helper absent; cancellation visible",
+    "actual setup authenticated; root-owned helper and policy; ready UI",
+    "actual reinstall authenticated and completed"
+  ],
+  "protected_helper": {
+    "ordinary_write_denied": true,
+    "cancel_exit": 126,
+    "authenticated_response": {
+      "status": "Success",
+      "message": null,
+      "payload": {
+        "Copy": {
+          "completed_sources": 1,
+          "transactions": [
+            "008de1d85ee1d14b6683fe9152735c3e"
+          ],
+          "paths": [
+            [
+              "/var/lib/ottrin-owned-protected-qa/.ottrin-txn-008de1d85ee1d14b6683fe9152735c3e/candidate",
+              "/var/lib/ottrin-owned-protected-qa/preserve.txt"
+            ]
+          ]
+        }
+      }
+    },
+    "undo_and_cleanup": "Success through fresh authenticated helper processes"
+  },
+  "actual_application": "Actual cp command denied, authenticated app retry created exact root-owned output; Activity authenticated Undo and confirmed/authenticated cleanup completed",
+  "independent_root_proofs": {
+    "helper_copy_root_verification": {
+      "phase": "HELPER_COPY",
+      "root_owned": true,
+      "exact_source_bytes": true,
+      "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+    },
+    "gui_copy_root_verification": {
+      "phase": "GUI_COPY",
+      "root_owned": true,
+      "exact_source_bytes": true,
+      "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+    }
+  },
+  "root_final_state": {
+    "root_owned_copies_match_source": [
+      "GUI_COPY",
+      "HELPER_COPY"
+    ],
+    "undo_removed_publications": true,
+    "explicit_cleanup_removed_stages": true,
+    "cancelled_destination_absent": true
+  },
+  "source_preserved": true,
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/privileged-copy-current/native-activity/ubuntu/results/gui-copy-denied.png": "973ccf9c72eed5c8853777c21a8181c92d7b7ae81fc0ae2e2145068c43f3af0d",
+    ".hermes/evidence/privileged-copy-current/native-activity/ubuntu/results/gui-copy-prompt.png": "066292b7df28f6808dcb0f5a05baf6e7d1a9fb162a412b775ec1a97c7f60ece4",
+    ".hermes/evidence/privileged-copy-current/native-activity/ubuntu/results/gui-copy-activity.png": "6d74aa471824ba5cd90a4a6459447b51ff235ca064e3a90bbf0bd5f7cf8f2080",
+    ".hermes/evidence/privileged-copy-current/native-activity/ubuntu/results/gui-undo-prompt.png": "58220cf79ffdef7973dd14add906723216a2e2e543dc7dc6dd0d76b878f4b1ad",
+    ".hermes/evidence/privileged-copy-current/native-activity/ubuntu/results/gui-undo-completed.png": "c829ef346e952069ddcfb8a8512b566a579a981ce136fa6e7f3e15473d320a3c",
+    ".hermes/evidence/privileged-copy-current/native-activity/ubuntu/results/gui-cleanup-prompt.png": "3f2ae26cbb41ac32773891ae689749fb5d1aac5ca006efbfcf9da47cecc5f388",
+    ".hermes/evidence/privileged-copy-current/native-activity/ubuntu/results/gui-copy-cleanup-completed.png": "b59a9277bee86a0180f79140c64235425fe69571a534599689f384da873e3cb7"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "fixture_environment": "Ubuntu24 actual LightDM seat0, Openbox, stock GNOME polkit agent, software virtual graphics; explicit desktop dependencies without unrelated desktop recommendations",
+  "limits": [
+    "Same-session Linux Copy and root-owned disposable destination only; source-level changed-object/refusal/partial/interrupted-cleanup tests have separate scopes",
+    "Windows privileged Copy and ordinary-user elevated-account Copy discovery after application restart remain open",
+    "No real Linux reboot/login, full upgrade matrix, physical graphics, complete theme audit or daily-driver acceptance"
+  ],
+  "consumed_transport_retired": {
+    "sha256": "7b056f9eed9b9bed2d9206b7b9ace195bfb12b58344a6b04194d41575b5cc856",
+    "bytes": 2806716
+  }
+}
