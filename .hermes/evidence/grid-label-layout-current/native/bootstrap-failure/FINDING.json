@@ -1,0 +1,6 @@
+{
+  "status": "fixture setup failure before GUI, not application acceptance",
+  "cause": "Generated config omitted required AppConfig fields; Ottrin refused malformed settings and preserved the file.",
+  "cleanup": "VM, three owned volumes, credentials and executable input removed; consumed transport retired",
+  "corrective_action": "Use complete required config shape from the existing native login fixture; keep immutable source proof during metadata audit edits."
+}

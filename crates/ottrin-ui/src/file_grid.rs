@@ -110,7 +110,8 @@ pub(crate) fn render_file_grid_cell(
         rect.width() - 12.0,
     );
     job.wrap.max_rows = 2;
-    job.wrap.break_anywhere = true;
+    // Prefer filename separators over splitting a short extension mid-word.
+    job.wrap.break_anywhere = false;
     job.halign = egui::Align::Center;
     job.break_on_newline = false;
     let label = ui.painter().layout_job(job);
@@ -199,6 +200,12 @@ mod tests {
                         assert!(
                             !label.galley.elided,
                             "Distinct fixture names must remain readable: {scale}"
+                        );
+                    }
+                    if name == "owned-0025.txt" && !label.galley.elided {
+                        assert!(
+                            label.galley.rows.last().unwrap().text().ends_with(".txt"),
+                            "Keep the short extension together: {scale} {font_scale}"
                         );
                     }
                     if name.starts_with("WWWW") {

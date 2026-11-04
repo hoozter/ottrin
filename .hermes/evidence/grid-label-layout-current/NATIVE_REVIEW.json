@@ -1,0 +1,94 @@
+{
+  "status": "reviewed native runtime and startup evidence; Grid visual refinement required before acceptance",
+  "gui_source": "7fefe191c65a3313d38025126a8530f59d37a174",
+  "gui_sha256": "211ef9b2cb7b8366f8acd839b1004bd15db982a88118cce08a8e5948e4227bad",
+  "package_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "captures_directly_reviewed": {
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/cold-0.png": "3ab3148eb2f0843aa0c8feb0b4df3d104fb87b22453aa0c6f1d65e24bcef01f9",
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/cold-2.png": "3ab3148eb2f0843aa0c8feb0b4df3d104fb87b22453aa0c6f1d65e24bcef01f9",
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/cold-10.png": "3ab3148eb2f0843aa0c8feb0b4df3d104fb87b22453aa0c6f1d65e24bcef01f9",
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/cold-30.png": "3ab3148eb2f0843aa0c8feb0b4df3d104fb87b22453aa0c6f1d65e24bcef01f9",
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/grid-dark-1.0.png": "d264184ed0706dc021afefcccd00ad19882a7f8f0722331df27bfed5f8b1d244",
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/grid-light-1.0.png": "7545ba98866af4c28c2aea2fa9bf04a6e871e5f329b41206e26e1cc04a3e1f3d",
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/grid-dark-0.75.png": "7d8c231f390e7974535cee620f381f3d43e6137c426843b83060a772461b2bf0",
+    ".hermes/evidence/grid-label-layout-current/native/ubuntu/results/grid-dark-1.85.png": "60c235cb3c719a80e7d562b0e34cd81afb223975a60b23dfc7898dabc81d1e3e"
+  },
+  "startup": [
+    {
+      "seconds_after_window": 0.614279721999992,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 2.5162820710000062,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 10.517868553999989,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    },
+    {
+      "seconds_after_window": 30.591351154999984,
+      "item_labels": [
+        "label | 1002 items"
+      ]
+    }
+  ],
+  "startup_scope": "Fresh account, no automatic-startup registration; first GUI launches its session daemon. No raw systemctl-stop precondition.",
+  "grid_cases": [
+    {
+      "theme": "Dark",
+      "scale": 1.0,
+      "gui_sha256": "211ef9b2cb7b8366f8acd839b1004bd15db982a88118cce08a8e5948e4227bad",
+      "capture": "grid-dark-1.0.png"
+    },
+    {
+      "theme": "Light",
+      "scale": 1.0,
+      "gui_sha256": "211ef9b2cb7b8366f8acd839b1004bd15db982a88118cce08a8e5948e4227bad",
+      "capture": "grid-light-1.0.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 0.75,
+      "gui_sha256": "211ef9b2cb7b8366f8acd839b1004bd15db982a88118cce08a8e5948e4227bad",
+      "capture": "grid-dark-0.75.png"
+    },
+    {
+      "theme": "Dark",
+      "scale": 1.85,
+      "gui_sha256": "211ef9b2cb7b8366f8acd839b1004bd15db982a88118cce08a8e5948e4227bad",
+      "capture": "grid-dark-1.85.png"
+    }
+  ],
+  "visual_finding": "Distinct full names are visible; normal/large Grid captions split .txt inside the extension. Refine line-breaking before accepting the appearance.",
+  "limits": [
+    "Not a complete new package: release GUI7fefe ran beside identified DAC native package/service.",
+    "Fresh-account no-input count remains1002 through30seconds. The earlier disabled-service initial0-count frame is not reproduced or closed by this different setup.",
+    "Software X11 only; no physical GPU, Wayland, Windows or whole theme audit."
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_transport_removed": {
+    "bytes": 934690,
+    "sha256": "570fc3daaa2c068a8e4cdd872fc2a13574f74f23362443d8f8aeaf14424f6ca9"
+  },
+  "private_input_removed": true,
+  "test_configuration_failures": [
+    "native/bootstrap-failure/FINDING.json",
+    "native/cold-precondition-failure/FINDING.json"
+  ],
+  "startup_observation": "pass within fresh-account scope",
+  "native_runtime": "pass within release-GUI7fefe/native-packageDAC scope"
+}

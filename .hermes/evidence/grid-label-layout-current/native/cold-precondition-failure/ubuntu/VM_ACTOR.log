@@ -1,0 +1,13 @@
+{
+  "status": "fail",
+  "package_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "worker": {
+    "status": "fail",
+    "startup_samples": [],
+    "grid_cases": [],
+    "error": "AssertionError()",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/ottrinqa/worker.py\", line 26, in <module>\n    assert not (Path(os.environ['XDG_RUNTIME_DIR'])/'ottrin/index-v1.sock').exists()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+  },
+  "error": "AssertionError({'status': 'fail', 'startup_samples': [], 'grid_cases': [], 'error': 'AssertionError()', 'traceback': 'Traceback (most recent call last):\\n  File \"/home/ottrinqa/worker.py\", line 26, in <module>\\n    assert not (Path(os.environ[\\'XDG_RUNTIME_DIR\\'])/\\'ottrin/index-v1.sock\\').exists()\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\nAssertionError\\n'})",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/ottrinqa/actor.py\", line 31, in <module>\n    assert worker['status']=='pass',worker\n           ^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'status': 'fail', 'startup_samples': [], 'grid_cases': [], 'error': 'AssertionError()', 'traceback': 'Traceback (most recent call last):\\n  File \"/home/ottrinqa/worker.py\", line 26, in <module>\\n    assert not (Path(os.environ[\\'XDG_RUNTIME_DIR\\'])/\\'ottrin/index-v1.sock\\').exists()\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\nAssertionError\\n'}\n"
+}

@@ -1,0 +1,17 @@
+{
+  "status": "pass scoped source correction; refined native/package acceptance remains pending",
+  "source_sha256": {
+    "crates/ottrin-ui/src/file_grid.rs": "2511e3848d038f7462c2b9da779cf7af3cc0ffbc1cb4c3ca0251c0022cb6ded8",
+    "crates/ottrin-ui/src/lib.rs": "570bea8311cfa578ecdcb6964c9b4c029726a575074b606701580050914d5ac1"
+  },
+  "finding": "Native original captures show .txt split into .t / xt at normal and large Grid sizes.",
+  "correction": "Prefer standard filename word/separator wrapping while retaining measured width, two-row bounds and true-overflow tooltips.",
+  "red_regression": "wrap-red.log: short extension assertion fails at scale1/font1",
+  "green_regression": "wrap-green.log:503 UI passed,0 failed,1 existing ignored",
+  "strict_native_all_targets_lint": "wrap-native-lint.log: pass",
+  "strict_windows_cross_target_all_targets_lint": "wrap-windows-lint.log: pass",
+  "limits": [
+    "Native capture evidence remains tied to earlier7fefe GUI; it does not visually accept this refinement.",
+    "Whole-interface theme audit and packaging remain open."
+  ]
+}

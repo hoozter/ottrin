@@ -489,6 +489,19 @@ acceptance only; native visual inspection and packaging remain required. Evidenc
 `.hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json`. Its source push is
 queued behind the still-running DAC CI to avoid cancelling that accepted candidate.
 
+A subsequent native review ran the exact7fefe release GUI beside the separately
+identified DAC native package in an owned Ubuntu software-X11 desktop. Dark/Light
+and75/100/185% Grid captures make filenames distinct, but normal/large captions
+split short extensions untidily; this visual result requires correction rather
+than full acceptance. Standard separator wrapping now fixes the reproduced
+rendered regression;503 UI tests and strict Linux/Windows cross-target lint pass.
+The refined bytes still require native/package acceptance. Fresh-account cold
+Miller samples show1002 items without input at0/2/10/30s; this does not close the
+earlier disabled-service initial0-count finding. All eight original captures were
+reviewed. Three owned attempts (including two fixture precondition failures),
+nine volumes, credentials, executable aliases and consumed transports are removed.
+Compact controls/captures remain in `.hermes/evidence/grid-label-layout-current/`.
+
 1. Package and verify the subsequent restored-history and Windows transport source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness

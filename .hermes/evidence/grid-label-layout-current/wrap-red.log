@@ -1,0 +1,23 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 9.27s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 2 tests
+test file_grid::tests::grid_cells_render_separate_semantic_icon_and_label_colors_and_themed_corners ... ok
+test file_grid::tests::filenames_use_two_measured_lines_without_escaping_the_tile ... FAILED
+
+failures:
+
+---- file_grid::tests::filenames_use_two_measured_lines_without_escaping_the_tile stdout ----
+
+thread 'file_grid::tests::filenames_use_two_measured_lines_without_escaping_the_tile' (2361854) panicked at crates/ottrin-ui/src/file_grid.rs:205:25:
+Keep the short extension together: 1 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    file_grid::tests::filenames_use_two_measured_lines_without_escaping_the_tile
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 502 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

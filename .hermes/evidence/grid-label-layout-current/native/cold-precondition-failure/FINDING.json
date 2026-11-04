@@ -1,0 +1,6 @@
+{
+  "status": "fixture precondition failed before GUI; not a demonstrated application defect",
+  "cause": "The producer assumed raw systemctl stop removes the endpoint pathname. That does not establish whether the endpoint is live.",
+  "cleanup": "Owned VM/three volumes, credentials and executable input removed; result transport consumed and retired",
+  "corrective_action": "Observe an actual first GUI launch in a fresh account with no service registration or endpoint, instead of constructing cold startup through raw systemctl."
+}

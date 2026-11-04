@@ -1,0 +1,33 @@
+{
+  "status": "pass owned native QA teardown; compact evidence and current release GUI retained",
+  "owned_vm_domains_removed": 3,
+  "owned_volumes_removed": 9,
+  "owned_private_inputs_credentials_and_transport_archives_removed": true,
+  "owned_input_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.grid-native-input",
+  "retained_evidence_path": "/home/campbell/Projects/Ottrin/.hermes/evidence/grid-label-layout-current",
+  "current_release_gui": {
+    "path": "/home/campbell/Projects/Ottrin/target/release/ottrin-app",
+    "source": "7fefe191c65a3313d38025126a8530f59d37a174",
+    "purpose": "Latest actual native-tested release GUI; shared release output reused by subsequent packaging, not a new stable package."
+  },
+  "before": {
+    "target/debug/deps": 25230687744,
+    "target/debug/incremental": 25048858998,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28549830136,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42683889735,
+    "target/release": 4545244477,
+    ".hermes/evidence/grid-label-layout-current": 1587
+  },
+  "after_bytes": {
+    "target/debug/deps": 25230690432,
+    "target/debug/incremental": 25048746537,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28549830143,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42683677017,
+    "target/release": 4555719415,
+    ".hermes/evidence/grid-label-layout-current": 1532894
+  },
+  "superseded_test_executable": "Same configured test executable/fingerprints overwritten by verified replacement; current binary and useful shared caches retained.",
+  "incremental_cleanup": "wrap-incremental-cleanup.log; guarded exact-root removal after no compiler consumers and exact process identities revalidated.",
+  "obsolete_incremental_sessions_removed": 5,
+  "reported_space_recovered_gib": 0.31
+}

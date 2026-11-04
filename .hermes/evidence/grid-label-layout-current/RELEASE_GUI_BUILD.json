@@ -1,0 +1,9 @@
+{
+  "status": "pass release GUI build only; native acceptance pending",
+  "source_revision": "7fefe191c65a3313d38025126a8530f59d37a174",
+  "gui_sha256": "211ef9b2cb7b8366f8acd839b1004bd15db982a88118cce08a8e5948e4227bad",
+  "command": "CARGO_BUILD_JOBS=1 cargo build --release -p ottrin-app --bin ottrin-app",
+  "exit": 0,
+  "elapsed": "5m32s",
+  "log": "native-build.log"
+}

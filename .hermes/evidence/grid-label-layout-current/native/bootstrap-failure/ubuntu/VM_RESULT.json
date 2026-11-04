@@ -1,0 +1,18 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "status": "fail",
+  "package_sha256": "401ad35265d4dc80b85c68ef076c78cf780435f57b41a03f054b13bfc8297cc8",
+  "uuid": "1e7cbea6-7efe-4c79-a9fe-c0860d49be79",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "error": "AssertionError(' line 1 column 201. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\\\\\\\\\\\\\\\\n\\'))\\\\\", \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 24, in <module>\\\\\\\\n    run(\\\\\\\\\\'/usr/bin/ottrin\\\\\\\\\\',\\\\\\\\\\'index\\\\\\\\\\',\\\\\\\\\\'service-install\\\\\\\\\\')\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 9, in run\\\\\\\\n    assert p.returncode==0,(args,p.returncode,p.stdout,p.stderr)\\\\\\\\n           ^^^^^^^^^^^^^^^\\\\\\\\nAssertionError: ((\\\\\\\\\\'/usr/bin/ottrin\\\\\\\\\\', \\\\\\\\\\'index\\\\\\\\\\', \\\\\\\\\\'service-install\\\\\\\\\\'), 1, \\\\\\\\\\'\\\\\\\\\\', \\\\\\\\\\'ottrin: Could not load Ottrin settings /home/ottrinqa/.config/ottrin/config.json: missing field `list_columns` at line 1 column 201. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\\\\\\\\\\\\\\\\n\\\\\\\\\\')\\\\\\\\n\\'})\",\\n  \"traceback\": \"Traceback (most recent call last):\\\\n  File \\\\\"/home/ottrinqa/actor.py\\\\\", line 31, in <module>\\\\n    assert worker[\\'status\\']==\\'pass\\',worker\\\\n           ^^^^^^^^^^^^^^^^^^^^^^^^\\\\nAssertionError: {\\'status\\': \\'fail\\', \\'startup_samples\\': [], \\'grid_cases\\': [], \\'error\\': \\\\\"AssertionError(((\\'/usr/bin/ottrin\\', \\'index\\', \\'service-install\\'), 1, \\'\\', \\'ottrin: Could not load Ottrin settings /home/ottrinqa/.config/ottrin/config.json: missing field `list_columns` at line 1 column 201. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\\\\\\\\\\\\\\\\n\\'))\\\\\", \\'traceback\\': \\'Traceback (most recent call last):\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 24, in <module>\\\\\\\\n    run(\\\\\\\\\\'/usr/bin/ottrin\\\\\\\\\\',\\\\\\\\\\'index\\\\\\\\\\',\\\\\\\\\\'service-install\\\\\\\\\\')\\\\\\\\n  File \\\\\"/home/ottrinqa/worker.py\\\\\", line 9, in run\\\\\\\\n    assert p.returncode==0,(args,p.returncode,p.stdout,p.stderr)\\\\\\\\n           ^^^^^^^^^^^^^^^\\\\\\\\nAssertionError: ((\\\\\\\\\\'/usr/bin/ottrin\\\\\\\\\\', \\\\\\\\\\'index\\\\\\\\\\', \\\\\\\\\\'service-install\\\\\\\\\\'), 1, \\\\\\\\\\'\\\\\\\\\\', \\\\\\\\\\'ottrin: Could not load Ottrin settings /home/ottrinqa/.config/ottrin/config.json: missing field `list_columns` at line 1 column 201. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\\\\\\\\\\\\\\\\n\\\\\\\\\\')\\\\\\\\n\\'}\\\\n\"\\n}\\n')",
+  "temporary_seed_and_ssh_keys_removed": true
+}
