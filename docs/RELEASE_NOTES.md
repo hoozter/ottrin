@@ -4,59 +4,52 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM now use runtime `f8db06a1`; Windows ZIP/NSIS and
-unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
-CI 41871666761 passes all four Linux/Windows verification/performance jobs.
+Linux AppImage/portable/DEB/RPM use runtime `aa241633`; Windows ZIP/NSIS and
+unsigned development MSIX17 retain accepted runtime `45830098`. Exact aa source
+CI41894809859 passes all four Linux/Windows verification/performance jobs.
+The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind the actual delivered hashes/scopes.
 
-Helper readiness now checks the installed protocol/capabilities without elevation.
-An incompatible helper shows Update needed and the reinstall action, and unsupported
-requests are refused before file mutations. Actual AppImage update cancellation
-preserves the old helper; authenticated replacement changes status to Ready.
+Linux administrator Copy now supports **Activity → Load administrator Copy
+history** after restarting. This explicit authenticated scan reads canonical
+journals without changing files. Undo and confirmed cleanup authenticate again
+and freshly validate retained ownership. Protocol2 detects older helpers before
+mutations. Current native AppImage checks cover setup/update cancellation,
+authenticated helper replacement, protected Copy, normal GUI restart, cancelled
+and authenticated history loading, Undo and cleanup. All16 reviewed captures and
+independent root checks are recorded in `administrator-copy-status-current/`.
+The corrected delivery removes raw cancellation errors and a stale history count.
 
-Native Linux acceptance includes normal GUI close and two actual LightDM desktop
-reboots: startup enabled runs before the GUI; disabling it preserves the current
-PID and leaves the next boot stopped until opening Ottrin. Current AppImage and
-portable updates from runtime47db preserve enabled/disabled startup, Grid preference and
-index database identity. These are bounded Ubuntu software-X11 scopes, not complete
-Linux/hardware or theme acceptance.
+Current native DEB acceptance covers normal GUI close and two actual LightDM
+reboots. Four f8-to-aa AppImage/portable replacement cases preserve enabled/disabled
+startup, Grid preference and database identity. The mounted daemon passes private
+1000-file watcher/query/restart/two-shutdown checks at0.067% of one core over30seconds
+without clients. These bounded software-X11/private-data results do not close
+physical graphics, sustained personal workloads or whole-interface acceptance.
 
-Linux administrator Copy uses the existing durable Copy registry and guarded
-Undo/cleanup APIs. Completed references reach Activity even after a later batch
-failure. The actual mounted AppImage passes active LightDM seat0 authentication,
-protected Copy cancellation, authenticated Copy and real application denied-Copy
-retry, then Activity Undo and confirmed/authenticated cleanup. Independent root
-checks verify copied bytes/ownership and absence of the publication/stage after
-Undo/cleanup. Twelve current full-window helper/recovery captures are directly reviewed.
-496 UI tests and the protocol/helper checks pass; strict Linux/Windows
-lint and actual ordinary-user helper JSON lifecycle/alias checks pass separately.
+The personal managed service is Ready on the matching daemon, with startup choice,
+exact preferences hash and database inode preserved. No new personal CPU sample
+is claimed. Existing AppImage/portable users can update their system helper in
+Settings → Services → Update / reinstall helper with administrator authentication;
+this delivery did not silently replace the personal system helper.
 
-For an existing AppImage/portable installation, use Settings → Services → Update /
-reinstall helper and complete administrator authentication to install the tested
-helper. This delivery does not silently change the personal system helper.
-Ordinary-user rediscovery of administrator Copy history after restarting and the
-Windows privileged Copy bridge remain unfinished software work.
+The later source checkpoint `af2b0dc5` distinguishes recovered administrator history
+from a known completed batch and refreshes its Undo availability while preserving
+live receipts. Its502 UI tests and strict native/Windows lint pass. It is pushed
+but not yet included in the delivered packages. Windows helper transport also has a source-only checkpoint: shared native pipe I/O
+and direct UAC replace temporary request/response files and PowerShell. Ten focused
+native checks include Unicode/spaced paths, peer/frame refusal and real UAC cancel/
+approve from an ordinary desktop token. This is not a new Windows package or
+administrator Copy acceptance. Windows privileged Copy, the full
+theme/interface audit, remaining supported integrations, MSI rollback, hardware,
+signing/Store and final owner acceptance remain unfinished.
 
-All four package contents pass production checks. The rebuilt daemon passes a
-fresh private1000-file watcher/create/rename/delete/query/restart/two-shutdown
-probe at0.067% of one core over30seconds without clients. Earlier daemon samples
-retain their original hashes/scopes. The personal managed service now runs the
-current binary and reports Ready, preserving startup choice, preference bytes and
-saved-index filesystem identity. No new personal CPU measurement is claimed.
-
-The source50a breadcrumb classification fix is included in Linux47db. Earlier
-Linux458 Nord Dark150/Light100 preview checks and Windows458 Native/OpenGL144DPI
-settings/preview/MSIX17 update checks retain their original exact scopes. The full
-theme/role/interface audit, remaining Linux login/binary-replacement and caller
-integration gates, MSI rollback, physical graphics, signing/Store and final owner
-acceptance remain open.
-
-Three completed fixture VMs/nine volumes, temporary credentials/profiles/seeds,
-transport archives,77MB content extraction, consumed staging and superseded Linux
-packages are removed. Twenty obsolete incremental sessions were retired through
-the guarded compiler-cache helper (0.76GiB); current binaries/dependencies/newest
-compiler state remain. Windows stable artifacts and protected VMs are unchanged.
-Packaged manuals are build-time snapshots; repository manifests and roadmap record
-later acceptance. These are local previews, not a public release.
+Completed Linux test VMs/volumes, profiles, credentials, mounts, transport files,
+consumed staging and superseded packages are removed. Current deliverables and
+useful compiler caches remain. Windows artifacts and protected environments are
+unchanged. Packaged manuals are build-time snapshots; repository manifests and
+roadmap record subsequent acceptance. These are local previews, not a public release.
 
 ## Highlights
 

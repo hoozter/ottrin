@@ -1,0 +1,9 @@
+{
+  "bytes": {
+    "target/debug/deps": 25165776738,
+    "target/debug/incremental": 25047684025,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28550116637,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42683187728,
+    ".hermes/evidence/windows-helper-pipe-current": 875467
+  }
+}

@@ -100,6 +100,8 @@ fn check_with_timeout(
     if copy_recovery {
         command.arg("--copy-recovery");
     }
+    #[cfg(target_os = "windows")]
+    command.arg("--local-pipe");
     let mut child = command.spawn().map_err(|_| guidance().to_owned())?;
     let deadline = Instant::now() + timeout;
     loop {
@@ -107,7 +109,7 @@ fn check_with_timeout(
             Ok(Some(status)) => {
                 return match status.code() {
                     Some(0) => Ok(path),
-                    Some(69) => {
+                    Some(69) if copy_recovery => {
                         Err("Administrator Copy recovery is unavailable in this helper.".into())
                     }
                     _ => Err(guidance().into()),

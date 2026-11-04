@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "retired": [
+    {
+      "removed_executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-6753e888d2d2a072.exe",
+      "current_replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-470ab05b74f61b7c.exe",
+      "same_configuration": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "target": 11464258118835825082,
+        "profile": 4539089746505721204,
+        "rustflags": [],
+        "compile_kind": 8200324069407742093
+      },
+      "bytes": 477519296,
+      "native_replacement_scope": "NATIVE_ACCEPTANCE.json; focused shared-pipe/helper/UAC checks, not a full unrelated platform suite"
+    },
+    {
+      "removed_executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-f6138a643ad74388.exe",
+      "current_replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_search-c17f9693eb7d1e62.exe",
+      "same_configuration": {
+        "rustc": 18276270781310494267,
+        "features": "[]",
+        "target": 4894659833296826094,
+        "profile": 1169666772337208464,
+        "rustflags": [],
+        "compile_kind": 8200324069407742093
+      },
+      "bytes": 85709899,
+      "native_replacement_scope": "NATIVE_ACCEPTANCE.json; focused shared-pipe/helper/UAC checks, not a full unrelated platform suite"
+    }
+  ],
+  "current_binaries_dependencies_and_caches_preserved": true
+}

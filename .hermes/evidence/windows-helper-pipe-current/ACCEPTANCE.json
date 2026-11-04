@@ -1,0 +1,55 @@
+{
+  "status": "pass focused Windows helper transport implementation, Linux regression and native split-token UAC; broader roadmap incomplete",
+  "base_revision": "1afb92b041bee2f663e4c75dcfc2234f0adefe19",
+  "source_sha256": {
+    "crates/ottrin-platform/Cargo.toml": "50261def63754b017fed528820e5dfffdc86a83e886358ce87e4660e14794555",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "d0902ede870b9a908fe8e74dbd62d4032e4947e94280b54f79a7409fec9957ac",
+    "crates/ottrin-platform/src/helper_protocol.rs": "296e5b66cbb899e5b31f418e654ccde711b185b25506308455479e2b74db7857",
+    "crates/ottrin-platform/src/lib.rs": "45656a66b2c04bb18a41d610030d0c349b1a976a2feddeedc025f1eba719d85f",
+    "crates/ottrin-platform/src/windows_pipe.rs": "18c9e391d5bdc210733a25f1689a4e30b298c1a78ec06b7fc7b52756717d1b31",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "83c626e4c86e15ed47c1f6c780e241a98a5a34157f305402832f1730cc350ed3",
+    "crates/ottrin-search/Cargo.toml": "bee64230911bd29f3c579755e28491b6c7d7bb8153956b9bee025b39b39c6e5f",
+    "crates/ottrin-search/src/windows_pipe.rs": "6f606e652539f1895b7bf67adfb22d80c5cb606f9c88f1ce64cb5355c68722c1"
+  },
+  "regression": {
+    "linux_platform_pass": 446,
+    "linux_helper_pass": 11,
+    "linux_search_pass": 249,
+    "linux_ui_pass": 502,
+    "existing_ignored": {
+      "platform": 4,
+      "search": 2,
+      "ui": 1
+    }
+  },
+  "lint": [
+    "native-lint.log",
+    "windows-lint.log"
+  ],
+  "native": "NATIVE_ACCEPTANCE.json",
+  "cleanup": [
+    "VM_CLEANUP.json",
+    "RETIRED_TESTS.json",
+    "INCREMENTAL_CLEANUP.json"
+  ],
+  "remaining_task_storage": {
+    "evidence": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-pipe-current",
+    "compiler_outputs": "/home/campbell/Projects/Ottrin/target",
+    "purpose": "Compact native/source receipts and current shared compiler outputs; no disposable VM, transfer staging or profiles retained"
+  },
+  "delivery": {
+    "linux_runtime": "aa241633",
+    "windows_runtime": "45830098/MSIX17",
+    "source_fixes_packaged": false
+  },
+  "next": [
+    "Finish separate Windows administrator registry and canonical durable Copy cleanup/restart ownership before enabling privileged Copy",
+    "Package current source UI/transport fixes with exact-source CI and native package gates",
+    "Finish U08/shared actual presenters and remaining requirement audit"
+  ],
+  "limits": [
+    "Filtered administrator desktop token with real split-token UAC; separate-account credential elevation not tested",
+    "Existing three coordinated cross-user index probes were not rerun; five ordinary pipe tests are the current shared-I/O regression scope",
+    "No Windows privileged Copy or whole-application/package acceptance"
+  ]
+}

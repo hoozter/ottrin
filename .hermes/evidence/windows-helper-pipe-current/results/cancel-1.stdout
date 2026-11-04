@@ -1,0 +1,6 @@
+
+running 1 test
+test windows_privileged_transport::tests::windows_helper_pipe_native_uac_round_trip ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 552 filtered out; finished in 46.38s
+

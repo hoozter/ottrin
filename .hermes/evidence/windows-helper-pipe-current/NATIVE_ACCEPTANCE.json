@@ -1,0 +1,61 @@
+{
+  "status": "pass focused native Windows transport and UAC checks",
+  "source_sha256": {
+    "crates/ottrin-platform/Cargo.toml": "50261def63754b017fed528820e5dfffdc86a83e886358ce87e4660e14794555",
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs": "d0902ede870b9a908fe8e74dbd62d4032e4947e94280b54f79a7409fec9957ac",
+    "crates/ottrin-platform/src/helper_protocol.rs": "296e5b66cbb899e5b31f418e654ccde711b185b25506308455479e2b74db7857",
+    "crates/ottrin-platform/src/lib.rs": "45656a66b2c04bb18a41d610030d0c349b1a976a2feddeedc025f1eba719d85f",
+    "crates/ottrin-platform/src/windows_pipe.rs": "18c9e391d5bdc210733a25f1689a4e30b298c1a78ec06b7fc7b52756717d1b31",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "83c626e4c86e15ed47c1f6c780e241a98a5a34157f305402832f1730cc350ed3",
+    "crates/ottrin-search/Cargo.toml": "bee64230911bd29f3c579755e28491b6c7d7bb8153956b9bee025b39b39c6e5f",
+    "crates/ottrin-search/src/windows_pipe.rs": "6f606e652539f1895b7bf67adfb22d80c5cb606f9c88f1ce64cb5355c68722c1"
+  },
+  "basic": {
+    "mode": "basic",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+    "temporary_entries": 0,
+    "ordinary_token": true,
+    "status": "pass",
+    "runs": [
+      {
+        "arguments": "windows_helper_pipe --nocapture --test-threads=1",
+        "binary": "ottrin_platform",
+        "exit": 0
+      },
+      {
+        "arguments": "windows_pipe --nocapture --test-threads=1",
+        "binary": "ottrin_search",
+        "exit": 0
+      },
+      {
+        "arguments": "windows_privileged_transport::tests::windows_helper_pipe_native_helper_round_trip_and_parent_rejection --ignored --exact --nocapture --test-threads=1",
+        "binary": "ottrin_platform",
+        "exit": 0
+      }
+    ]
+  },
+  "real_uac": [
+    "cancel",
+    "approve"
+  ],
+  "gates": {
+    "helper_peer_and_truncated_frames": 2,
+    "existing_index_pipe_regressions": 5,
+    "actual_helper_round_trip_and_parent_rejection": 1,
+    "real_uac_cancel": 1,
+    "real_uac_approve_protected_directory": 1
+  },
+  "bin_receipt": "TEST_BINARIES.json",
+  "captures_reviewed": {
+    "uac-cancel.png": "163b090935608ec758a93464d67cc422cee7b6566d3f095b5f79bbef93e2f9df",
+    "uac-approve.png": "163b090935608ec758a93464d67cc422cee7b6566d3f095b5f79bbef93e2f9df"
+  },
+  "no_owned_guest_processes": true,
+  "task_removed": true,
+  "protected_fixture_unchanged": true,
+  "limits": [
+    "Filtered administrator desktop token with real split-token UAC; separate-account credential elevation not tested",
+    "Existing three coordinated cross-user index probes were not rerun; five ordinary pipe tests are the current shared-I/O regression scope",
+    "No Windows privileged Copy or whole-application/package acceptance"
+  ]
+}

@@ -1,0 +1,9 @@
+
+running 4 tests
+test windows_privileged_transport::tests::windows_helper_pipe_native_helper_round_trip_and_parent_rejection ... ignored, requires the owned native helper executable in a Unicode/spaced package path
+test windows_privileged_transport::tests::windows_helper_pipe_native_uac_round_trip ... ignored, requires an owned interactive Windows desktop and real UAC consent/cancellation
+test windows_privileged_transport::tests::windows_helper_pipe_rejects_wrong_peer_before_receiving_authority ... ok
+test windows_privileged_transport::tests::windows_helper_pipe_truncated_frame_is_not_a_request ... ok
+
+test result: ok. 2 passed; 0 failed; 2 ignored; 0 measured; 549 filtered out; finished in 0.02s
+

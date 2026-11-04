@@ -1,21 +1,20 @@
 {
   "ordered_work": [
-    "Await exact aa241633 CI41894809859; publish through promote-linux.py after all four jobs pass, preserve personal preferences/database/startup and Windows458 artifacts",
-    "Continue Windows canonical privileged Copy receipt/Undo/cleanup bridge; source findings below constrain implementation",
-    "Finish U08 including actual shared List/Grid/status/Inspector presenters, theme field ownership, grouping and alignment; then remaining picker/caller and full54/15requirement audit"
+    "Package current restored-history/Windows transport source with exact-source CI and native package gates; stable Linuxaa and Windows458 remain preserved",
+    "Finish Windows canonical administrator registry and durable privileged Copy receipt/Undo/cleanup/restart ownership before enabling the bridge",
+    "Finish U08 actual List/Grid/status/Inspector presenters, theme ownership/grouping/alignment; remaining picker/caller and full54/15requirement audit"
   ],
   "windows_bridge_findings": [
     "Windows registry configured_path is LOCALAPPDATA/Ottrin/State/copies; AnchoredRoot validates current_owner()==creator, and current_owner uses effective TokenOwner. Split-token elevation can have a different owner; use canonical distinct administrator registry parent rather than weaken private ownership checks",
     "RetainedCopyCleanupPlan.requires_retained_retry warns final-control/metadata uncertainty may require its opaque in-memory proof. A short-lived helper must not lose that recovery ownership: finish canonical durable finalization before enabling the bridge; never serialize client paths as authority",
-    "Windows restore_undo_plan admits one transaction ID, unlike Linux batch admission; reverse batch retries must freshly recognize already-undone members and preserve partial progress",
-    "When expanding privileged receipt UI to Windows, add explicit session/restored provenance. Current Linux history dedup preserves any overlapping live receipt; restored snapshots need guarded refresh/reconciliation, and partial original jobs must not acquire an unsupported Done claim merely because Undo admission succeeds",
-    "Current Windows privileged transport uses PowerShell Start-Process -ArgumentList array; its request/response paths can contain spaces and need native Windows argument quoting. Verify actual spaced and Unicode temp paths when replacing/enabling this bridge.",
-    "Current Windows transport writes predictable temporary request/response files and ignores removal errors; response-read failure returns before cleanup. Use owned IPC staging with registered RAII teardown, exclusive/no-follow response creation, and explicit cancellation/committed-effect diagnostics; preserve canonical recovery if transport fails after a copy commits."
+    "Windows restore_undo_plan admits one transaction ID, unlike Linux batch admission; reverse batch retries must freshly recognize already-undone members and preserve partial progress"
   ],
   "ui_findings": [
     "file_grid uses character-count truncate_middle despite reserving two label lines. Replace with measured bounded two-line layout shared by manager and chooser; include text-size/view-scale and similar-name native checks",
     "Automatic startup: Running but disabled mixes runtime and startup; runtime already has its own status row",
     "Helper setup success banner mentions HTML sandbox installed while browser runtime is missing; scope wording to actual readiness",
     "Current login captures show1000items in all three windows; do not infer all initial-frame count/readiness issues are fixed"
-  ]
+  ],
+  "completed_transport_checkpoint": ".hermes/evidence/windows-helper-pipe-current/ACCEPTANCE.json",
+  "restored_history_checkpoint": ".hermes/evidence/administrator-copy-refresh-current/ACCEPTANCE.json"
 }

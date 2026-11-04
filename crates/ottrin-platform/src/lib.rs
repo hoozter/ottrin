@@ -6,6 +6,10 @@ mod helper_protocol;
 pub mod native_desktop;
 #[cfg(target_os = "linux")]
 pub mod privileged_copy;
+#[cfg(target_os = "windows")]
+pub mod windows_pipe;
+#[cfg(target_os = "windows")]
+pub mod windows_privileged_transport;
 #[cfg(target_os = "linux")]
 pub use file_uri::{local_file_uri, local_path_from_uri};
 #[cfg(target_os = "linux")]
@@ -2146,12 +2150,6 @@ impl PlatformOps for DefaultPlatform {
         }
         #[cfg(target_os = "windows")]
         {
-            if !is_executable_available("powershell.exe") && !is_executable_available("powershell")
-            {
-                return PrivilegedAvailability::Misconfigured(
-                    "Windows PowerShell is unavailable. Administrator operations need Windows PowerShell to display the permission prompt.".to_string(),
-                );
-            }
             let helper = resolve_helper_name("ottrin-priv-helper.exe");
             if !is_executable_available(&helper) {
                 return PrivilegedAvailability::Misconfigured("The administrator helper is missing from this package. Restore the complete portable package or reinstall Ottrin.".into());
@@ -2735,10 +2733,7 @@ fn execute_privileged_linux(
 fn execute_privileged_windows(
     request: &PrivilegedRequest,
 ) -> Result<PrivilegedResponse, PlatformError> {
-    use std::process::Command;
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    let helper = helper_protocol::check(
+    windows_privileged_transport::execute(
         &resolve_helper_name("ottrin-priv-helper.exe"),
         matches!(
             &request.command,
@@ -2747,52 +2742,8 @@ fn execute_privileged_windows(
                 | ottrin_core::PrivilegedCommand::UndoCopy { .. }
                 | ottrin_core::PrivilegedCommand::CleanupCopy { .. }
         ),
+        request,
     )
-    .map_err(PlatformError::PrivilegedHelperUnavailable)?;
-    let helper = helper.to_string_lossy();
-    let nonce = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_nanos())
-        .unwrap_or(0);
-    let pid = std::process::id();
-    let req_path = std::env::temp_dir().join(format!("ottrin-priv-{}-{}.req.json", pid, nonce));
-    let res_path = std::env::temp_dir().join(format!("ottrin-priv-{}-{}.res.json", pid, nonce));
-
-    let req_bytes = serde_json::to_vec(request)
-        .map_err(|e| PlatformError::Io(format!("serialize request failed: {}", e)))?;
-    std::fs::write(&req_path, req_bytes)
-        .map_err(|e| PlatformError::Io(format!("write request file failed: {}", e)))?;
-
-    let ps_quote = |s: &str| s.replace('\'', "''");
-    let helper_q = ps_quote(&helper);
-    let req_q = ps_quote(&req_path.display().to_string());
-    let res_q = ps_quote(&res_path.display().to_string());
-    let ps = format!(
-        "$p = Start-Process -FilePath '{}' -Verb RunAs -ArgumentList @('--request-file','{}','--response-file','{}') -PassThru -Wait; exit $p.ExitCode",
-        helper_q, req_q, res_q
-    );
-
-    let out = Command::new("powershell")
-        .args(["-NoProfile", "-Command", &ps])
-        .output()
-        .map_err(|e| PlatformError::Io(format!("failed to invoke UAC process: {}", e)))?;
-    if !out.status.success() {
-        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-        let _ = std::fs::remove_file(&req_path);
-        let _ = std::fs::remove_file(&res_path);
-        return Err(PlatformError::Io(if stderr.is_empty() {
-            "privileged helper process failed or canceled".to_string()
-        } else {
-            stderr
-        }));
-    }
-
-    let bytes = std::fs::read(&res_path)
-        .map_err(|e| PlatformError::Io(format!("read response file failed: {}", e)))?;
-    let _ = std::fs::remove_file(&req_path);
-    let _ = std::fs::remove_file(&res_path);
-    serde_json::from_slice::<PrivilegedResponse>(&bytes)
-        .map_err(|e| PlatformError::Io(format!("decode response failed: {}", e)))
 }
 
 fn ensure_existing_dir(path: &Path) -> Result<(), PlatformError> {

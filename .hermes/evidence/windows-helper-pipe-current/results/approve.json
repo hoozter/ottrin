@@ -1,0 +1,14 @@
+{
+    "mode":  "approve",
+    "sid":  "S-1-5-21-3183210791-1673105385-3262580894-1001",
+    "temporary_entries":  0,
+    "ordinary_token":  true,
+    "status":  "pass",
+    "runs":  [
+                 {
+                     "arguments":  "windows_privileged_transport::tests::windows_helper_pipe_native_uac_round_trip --ignored --exact --nocapture --test-threads=1",
+                     "binary":  "ottrin_platform",
+                     "exit":  0
+                 }
+             ]
+}

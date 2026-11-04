@@ -1,0 +1,24 @@
+{
+    "mode":  "basic",
+    "sid":  "S-1-5-21-3183210791-1673105385-3262580894-1001",
+    "temporary_entries":  0,
+    "ordinary_token":  true,
+    "status":  "pass",
+    "runs":  [
+                 {
+                     "arguments":  "windows_helper_pipe --nocapture --test-threads=1",
+                     "binary":  "ottrin_platform",
+                     "exit":  0
+                 },
+                 {
+                     "arguments":  "windows_pipe --nocapture --test-threads=1",
+                     "binary":  "ottrin_search",
+                     "exit":  0
+                 },
+                 {
+                     "arguments":  "windows_privileged_transport::tests::windows_helper_pipe_native_helper_round_trip_and_parent_rejection --ignored --exact --nocapture --test-threads=1",
+                     "binary":  "ottrin_platform",
+                     "exit":  0
+                 }
+             ]
+}

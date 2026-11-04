@@ -5,13 +5,14 @@ use ottrin_core::{
 use ottrin_platform::{DefaultPlatform, PlatformOps};
 use std::io::{Read as _, Write as _};
 use std::path::Path;
-use std::path::PathBuf;
 
 enum IoMode {
     Stdio,
-    Files {
-        request_file: PathBuf,
-        response_file: PathBuf,
+    #[cfg(target_os = "windows")]
+    Pipe {
+        nonce: String,
+        parent_pid: u32,
+        channel: Option<ottrin_platform::windows_privileged_transport::HelperChannel>,
     },
 }
 
@@ -69,7 +70,7 @@ fn main() {
         return;
     }
     let mode = parse_mode(std::env::args().skip(1).collect());
-    let mode = match mode {
+    let mut mode = match mode {
         Ok(m) => m,
         Err(msg) => {
             let _ = writeln!(std::io::stderr(), "{msg}");
@@ -77,7 +78,7 @@ fn main() {
         }
     };
 
-    let req = match read_request(&mode) {
+    let req = match read_request(&mut mode) {
         Ok(r) => r,
         Err(msg) => {
             let resp = PrivilegedResponse {
@@ -85,7 +86,7 @@ fn main() {
                 message: Some(msg),
                 payload: None,
             };
-            write_response(&mode, resp);
+            write_response(&mut mode, resp);
             return;
         }
     };
@@ -105,7 +106,7 @@ fn main() {
             run_system_locate_maintenance(operation)
         }
     };
-    write_response(&mode, response);
+    write_response(&mut mode, response);
 }
 
 /// Read-only feature negotiation. No stdin, privilege request or filesystem work.
@@ -118,10 +119,11 @@ fn protocol_check(args: &[String]) -> Option<i32> {
     {
         return Some(78);
     }
-    if args[2..]
-        .iter()
-        .any(|feature| feature != "--copy-recovery" || !cfg!(target_os = "linux"))
-    {
+    if args[2..].iter().any(|feature| {
+        !matches!(feature.as_str(),
+            "--copy-recovery" if cfg!(target_os = "linux"))
+            && !matches!(feature.as_str(), "--local-pipe" if cfg!(target_os = "windows"))
+    }) {
         return Some(69);
     }
     Some(0)
@@ -130,14 +132,19 @@ fn protocol_check(args: &[String]) -> Option<i32> {
 fn parse_mode(args: Vec<String>) -> Result<IoMode, String> {
     match args.as_slice() {
         [mode] if mode == "--stdio-json" => Ok(IoMode::Stdio),
-        [request_flag, request, response_flag, response]
-            if request_flag == "--request-file" && response_flag == "--response-file" =>
-                Ok(IoMode::Files { request_file: request.into(), response_file: response.into() }),
-        _ => Err("Usage: ottrin-priv-helper --stdio-json OR --request-file <path> --response-file <path>".into()),
+        #[cfg(target_os = "windows")]
+        [flag, nonce, parent_flag, parent] if flag == "--local-pipe" && parent_flag == "--parent-pid" => {
+            let parent_pid = parent.parse::<u32>().map_err(|_| "Invalid helper parent PID")?;
+            if parent_pid == 0 || nonce.len() != 32 || !nonce.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+                return Err("Invalid helper pipe identity".into());
+            }
+            Ok(IoMode::Pipe { nonce: nonce.clone(), parent_pid, channel: None })
+        },
+        _ => Err("Usage: ottrin-priv-helper --stdio-json (Linux) or --local-pipe <nonce> --parent-pid <PID> (Windows)".into()),
     }
 }
 
-fn read_request(mode: &IoMode) -> Result<PrivilegedRequest, String> {
+fn read_request(mode: &mut IoMode) -> Result<PrivilegedRequest, String> {
     let input = match mode {
         IoMode::Stdio => {
             let mut b = Vec::new();
@@ -146,8 +153,20 @@ fn read_request(mode: &IoMode) -> Result<PrivilegedRequest, String> {
                 .map_err(|_| "Failed to read request from stdin".to_string())?;
             b
         }
-        IoMode::Files { request_file, .. } => std::fs::read(request_file)
-            .map_err(|e| format!("Failed to read request file: {}", e))?,
+        #[cfg(target_os = "windows")]
+        IoMode::Pipe {
+            nonce,
+            parent_pid,
+            channel,
+        } => {
+            let connected = ottrin_platform::windows_privileged_transport::HelperChannel::connect(
+                nonce,
+                *parent_pid,
+            )
+            .map_err(|error| error.to_string())?;
+            *channel = Some(connected);
+            return channel.as_mut().unwrap().read_request();
+        }
     };
     let request: PrivilegedRequest =
         serde_json::from_slice(&input).map_err(|e| format!("Invalid request JSON: {}", e))?;
@@ -395,20 +414,23 @@ fn remove_system_locate_daily_job(path: &Path) -> Result<String, String> {
     Ok("Ottrin system locate maintenance removed.".to_string())
 }
 
-fn write_response(mode: &IoMode, resp: PrivilegedResponse) {
-    match serde_json::to_vec(&resp) {
-        Ok(bytes) => match mode {
-            IoMode::Stdio => {
-                let _ = std::io::stdout().write_all(&bytes);
-                let _ = std::io::stdout().flush();
-            }
-            IoMode::Files { response_file, .. } => {
-                let _ = std::fs::write(response_file, bytes);
-            }
-        },
-        Err(e) => {
-            let _ = writeln!(std::io::stderr(), "Failed to serialize response: {}", e);
-        }
+fn write_response(mode: &mut IoMode, resp: PrivilegedResponse) {
+    let result = match mode {
+        IoMode::Stdio => serde_json::to_vec(&resp)
+            .map_err(std::io::Error::other)
+            .and_then(|bytes| {
+                std::io::stdout().write_all(&bytes)?;
+                std::io::stdout().flush()
+            }),
+        #[cfg(target_os = "windows")]
+        IoMode::Pipe { channel, .. } => channel
+            .as_mut()
+            .ok_or_else(|| std::io::Error::other("Helper pipe was not connected"))
+            .and_then(|channel| channel.write_response(&resp)),
+    };
+    if let Err(error) = result {
+        eprintln!("Failed to deliver helper response: {error}");
+        std::process::exit(1);
     }
 }
 
@@ -508,15 +530,15 @@ mod tests {
             parse_mode(vec!["--stdio-json".into()]),
             Ok(IoMode::Stdio)
         ));
-        assert!(matches!(
+        assert!(
             parse_mode(vec![
                 "--request-file".into(),
                 "input".into(),
                 "--response-file".into(),
-                "output".into()
-            ]),
-            Ok(IoMode::Files { .. })
-        ));
+                "output".into(),
+            ])
+            .is_err()
+        );
     }
 
     #[test]

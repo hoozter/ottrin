@@ -9,15 +9,26 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` now use runtime
-`f8db06a1bc626468913427a83bea3480913dbca5`. Windows ZIP/NSIS/development
+`aa2416330e9209c844f99e5a318e44b3c9a5c277`. Windows ZIP/NSIS/development
 MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
-Source50a breadcrumb directory classification is delivered in Linuxf8; it is
+Source50a breadcrumb directory classification is delivered in Linuxaa; it is
 not included in Windows458.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`d220b9c38252c2e83e916124b3b6124fcf849e3ed9bd4f12551d954453a1699e`.
+`76eb72ecf9627a597c49e0c5c3f30bd6b69221ae5d75d4ef5b0240ee62a37dd0`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
+
+Exact aa CI41894809859 passes all four hosted jobs. The current Linux delivery
+adds authenticated administrator Copy history loading after restart, followed by
+freshly checked Undo and confirmed cleanup. Its 16 reviewed AppImage captures,
+DEB two-reboot checks and four AppImage/portable replacement cases retain their
+explicit scopes in `administrator-copy-status-current/`. The personal managed
+daemon is Ready on the matching binary with preferences/startup/database identity
+preserved; the installed system helper still needs owner authentication to update.
+The subsequent restored-history provenance/refresh fix is committed in `af2b0dc5`
+and pushed, but is not included in these packages.
+
 
 The current Linux packages correct Services showing a false red error for an
 intentionally stopped/uninstalled index with a stale socket pathname. The earlier061
@@ -385,7 +396,7 @@ acceptance receipts remain. This is scoped delivery, not full roadmap or U08
 acceptance. Whole-interface findings include settled startup item-count/search
 status, automatic-startup wording and Grid filename legibility.
 
-Candidate `aa241633` adds **Activity > Load administrator Copy history**. Its
+Delivered `aa241633` adds **Activity > Load administrator Copy history**. Its
 explicit authenticated scan reads canonical journals without changing files;
 subsequent Undo/cleanup reopens and validates them. Protocol 2 rejects older helpers.
 500 UI, 446 platform and 43 core tests pass, with strict native/Windows lint. Actual
@@ -422,7 +433,23 @@ packaged or accepted on a native desktop. Eight obsolete incremental sessions we
 removed; current binaries and compiler caches remain. Windows transport and its
 canonical privileged recovery bridge still need implementation and native testing.
 
-1. Package and verify the subsequent restored-history source fix, then finish administrator Copy recovery, including the Windows canonical
+Windows helper transport now has a focused source/native checkpoint in
+`.hermes/evidence/windows-helper-pipe-current/`. Direct native UAC and an owned
+local pipe replace PowerShell and temporary request/response files. The index and
+helper share one overlapped-I/O implementation, retaining separate authentication
+policies. Ten focused native cases pass: five index pipe regressions, helper peer/
+frame/actual-executable checks and real UAC cancellation/approval against an
+administrator-only directory. The helper path and ordinary TEMP include spaces
+and Unicode. Full Linux platform/helper/search/UI suites and strict Linux/Windows
+lint pass. This is split-token consent acceptance; separate-account credentials,
+three coordinated foreign-user index probes and packaged Windows acceptance are
+not newly claimed. Copy remains unavailable until its canonical administrator
+registry and durable cleanup/restart ownership are finished. The disposable guest,
+overlay, transfer staging and test task/processes are removed; two superseded test
+executables/fingerprints/dep-info and33 obsolete incremental sessions are retired.
+These source changes are not included in the current aa/Windows458 packages.
+
+1. Package and verify the subsequent restored-history and Windows transport source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted
@@ -431,7 +458,7 @@ canonical privileged recovery bridge still need implementation and native testin
    OS authentication; that does not stall these software changes.
 2. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor, delivered
-   in current Linuxf8 with bounded native acceptance; Windows458 retains its exact
+   in current Linuxaa with bounded native acceptance; Windows458 retains its exact
    earlier artifact/acceptance scope. U08 remains unfinished:
    tabs, window buttons and Miller file rows now share production presenters in
    source. Status controls, List/Grid representation, miniature corner scaling and

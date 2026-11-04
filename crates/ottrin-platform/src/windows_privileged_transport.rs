@@ -1,0 +1,415 @@
+//! One invocation, one local endpoint. No request/response files or shell command.
+//! The caller holds the launched process handle and authenticates its pipe PID
+//! before sending authority-bearing request bytes. Kernel handles own teardown.
+use crate::windows_pipe::{LocalPipeListener, LocalPipeStream};
+use crate::{PlatformError, helper_protocol};
+use ottrin_core::{PrivilegedRequest, PrivilegedResponse, PrivilegedStatus};
+use serde::{Serialize, de::DeserializeOwned};
+use std::ffi::OsStr;
+use std::io::{self, Read, Write};
+use std::os::windows::ffi::OsStrExt;
+use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
+use std::path::Path;
+use std::ptr;
+use std::time::{Duration, Instant};
+use windows_sys::Win32::Foundation::{ERROR_CANCELLED, WAIT_OBJECT_0, WAIT_TIMEOUT};
+use windows_sys::Win32::System::Com::{COINIT_APARTMENTTHREADED, CoInitializeEx, CoUninitialize};
+use windows_sys::Win32::System::Threading::{GetProcessId, WaitForSingleObject};
+use windows_sys::Win32::UI::Shell::{
+    SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW,
+    ShellExecuteExW,
+};
+use windows_sys::Win32::UI::WindowsAndMessaging::SW_HIDE;
+
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
+const PREFIX: &str = r"\\.\pipe\ottrin.priv.";
+
+fn endpoint(nonce: &str) -> io::Result<String> {
+    if nonce.len() != 32 || !nonce.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Invalid helper pipe nonce",
+        ));
+    }
+    Ok(format!("{PREFIX}{nonce}"))
+}
+
+fn verify_pid(actual: u32, expected: u32) -> io::Result<()> {
+    if actual == expected && expected != 0 {
+        Ok(())
+    } else {
+        Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "Administrator pipe peer is not the expected process",
+        ))
+    }
+}
+
+fn write_json(stream: &mut LocalPipeStream, value: &impl Serialize) -> io::Result<()> {
+    let bytes = serde_json::to_vec(value).map_err(io::Error::other)?;
+    let size = u32::try_from(bytes.len()).map_err(io::Error::other)?;
+    stream.write_all(&size.to_be_bytes())?;
+    stream.write_all(&bytes)
+}
+
+fn read_json<T: DeserializeOwned>(stream: &mut LocalPipeStream) -> io::Result<T> {
+    let mut header = [0; 4];
+    stream.read_exact(&mut header)?;
+    let mut frame = stream.take(u64::from(u32::from_be_bytes(header)));
+    // Parse incrementally instead of allocating an untrusted advertised length.
+    let value =
+        serde_json::from_reader(std::io::BufReader::new(&mut frame)).map_err(io::Error::other)?;
+    if frame.limit() != 0 {
+        return Err(io::Error::new(
+            io::ErrorKind::UnexpectedEof,
+            "Incomplete helper frame",
+        ));
+    }
+    Ok(value)
+}
+
+/// Helper-side connection. Authenticate the application before reading a request.
+pub struct HelperChannel(LocalPipeStream);
+impl HelperChannel {
+    pub fn connect(nonce: &str, parent_pid: u32) -> io::Result<Self> {
+        LocalPipeStream::connect(&endpoint(nonce)?, CONNECT_TIMEOUT, |pid| {
+            verify_pid(pid, parent_pid)
+        })
+        .map(Self)
+    }
+    pub fn read_request(&mut self) -> Result<PrivilegedRequest, String> {
+        let request: PrivilegedRequest =
+            read_json(&mut self.0).map_err(|error| error.to_string())?;
+        request.validate_protocol().map_err(str::to_owned)?;
+        Ok(request)
+    }
+    pub fn write_response(&mut self, response: &PrivilegedResponse) -> io::Result<()> {
+        write_json(&mut self.0, response)
+    }
+}
+
+fn wide(value: &OsStr) -> io::Result<Vec<u16>> {
+    let mut value = value.encode_wide().collect::<Vec<_>>();
+    if value.contains(&0) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "NUL in helper launch argument",
+        ));
+    }
+    value.push(0);
+    Ok(value)
+}
+
+struct ComApartment(bool);
+impl Drop for ComApartment {
+    fn drop(&mut self) {
+        if self.0 {
+            // SAFETY: balances only this thread's successful initialization.
+            unsafe { CoUninitialize() };
+        }
+    }
+}
+
+fn launch(helper: &Path, nonce: &str) -> io::Result<OwnedHandle> {
+    // SAFETY: initialize COM on the invoking thread; an existing apartment is OK.
+    let initialized = unsafe { CoInitializeEx(ptr::null(), COINIT_APARTMENTTHREADED as u32) };
+    // RPC_E_CHANGED_MODE: the caller already owns a different COM apartment.
+    if initialized < 0 && initialized != 0x80010106u32 as i32 {
+        return Err(io::Error::other(format!(
+            "Initialize UAC launcher: HRESULT {initialized:#x}"
+        )));
+    }
+    let _apartment = ComApartment(initialized >= 0);
+    let helper = wide(helper.as_os_str())?;
+    let verb = wide(OsStr::new("runas"))?;
+    // Only validated hexadecimal and decimal values enter lpParameters. The
+    // executable path is a separate native UTF-16 field, including spaces.
+    endpoint(nonce)?;
+    let args = wide(OsStr::new(&format!(
+        "--local-pipe {nonce} --parent-pid {}",
+        std::process::id()
+    )))?;
+    // SAFETY: zero initializes optional ShellExecute fields; pointers stay live.
+    let mut info: SHELLEXECUTEINFOW = unsafe { std::mem::zeroed() };
+    info.cbSize = std::mem::size_of::<SHELLEXECUTEINFOW>() as u32;
+    info.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC;
+    info.lpVerb = verb.as_ptr();
+    info.lpFile = helper.as_ptr();
+    info.lpParameters = args.as_ptr();
+    info.nShow = SW_HIDE;
+    // SAFETY: all string fields are terminated; Windows supplies the process handle.
+    if unsafe { ShellExecuteExW(&mut info) } == 0 {
+        return Err(io::Error::last_os_error());
+    }
+    if info.hProcess.is_null() {
+        return Err(io::Error::other(
+            "Windows returned no administrator helper process handle",
+        ));
+    }
+    // SAFETY: ShellExecute transferred this non-null handle to the caller.
+    Ok(unsafe { OwnedHandle::from_raw_handle(info.hProcess) })
+}
+
+pub(crate) fn execute(
+    helper: &str,
+    copy_recovery: bool,
+    request: &PrivilegedRequest,
+) -> Result<PrivilegedResponse, PlatformError> {
+    let helper = helper_protocol::check(helper, copy_recovery)
+        .map_err(PlatformError::PrivilegedHelperUnavailable)?;
+    let mut random = [0; 16];
+    getrandom::fill(&mut random).map_err(|error| PlatformError::Io(error.to_string()))?;
+    let nonce = random
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    // Owner + elevated administrators (including over-the-shoulder UAC) + SYSTEM.
+    // The ACL is only an admission boundary: the actual launched PID is mandatory.
+    let mut listener = LocalPipeListener::bind(
+        &endpoint(&nonce).map_err(io_error)?,
+        "D:P(A;;GA;;;OW)(A;;GA;;;BA)(A;;GA;;;SY)",
+    )
+    .map_err(io_error)?;
+    let process = match launch(&helper, &nonce) {
+        Ok(process) => process,
+        Err(error) if error.raw_os_error() == Some(ERROR_CANCELLED as i32) => {
+            return Ok(PrivilegedResponse {
+                status: PrivilegedStatus::Denied,
+                message: Some("Administrator permission request was cancelled.".into()),
+                payload: None,
+            });
+        }
+        Err(error) => return Err(io_error(error)),
+    };
+    // Holding this process handle prevents PID reuse until peer authentication.
+    let pid = unsafe { GetProcessId(process.as_raw_handle()) };
+    if pid == 0 {
+        return Err(io_error(io::Error::last_os_error()));
+    }
+    let deadline = Instant::now() + CONNECT_TIMEOUT;
+    let mut stream = loop {
+        if let Some(stream) = listener
+            .accept(Duration::from_millis(100), |peer| verify_pid(peer, pid))
+            .map_err(io_error)?
+        {
+            break stream;
+        }
+        // SAFETY: the retained process handle is valid and this is a nonblocking poll.
+        match unsafe { WaitForSingleObject(process.as_raw_handle(), 0) } {
+            WAIT_OBJECT_0 => {
+                return Err(io_error(io::Error::other(
+                    "Administrator helper exited before connecting",
+                )));
+            }
+            WAIT_TIMEOUT => {}
+            _ => return Err(io_error(io::Error::last_os_error())),
+        }
+        if Instant::now() >= deadline {
+            return Err(io_error(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "Administrator helper did not connect",
+            )));
+        }
+    };
+    write_json(&mut stream, request).map_err(io_error)?;
+    // File operations can legitimately take a long time. A disconnected/crashed
+    // helper closes the pipe immediately; elapsed operation time is not a failure.
+    stream.set_io_timeout(Duration::MAX);
+    read_json(&mut stream).map_err(|error| PlatformError::Io(format!("Administrator helper response failed: {error}. The operation may have changed files; review its destination and recovery history before retrying.")))
+}
+
+fn io_error(error: io::Error) -> PlatformError {
+    PlatformError::Io(format!("Administrator helper connection failed: {error}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ottrin_core::{PrivilegedCommand, PrivilegedContext, PrivilegedPayload};
+
+    const ACL: &str = "D:P(A;;GA;;;OW)(A;;GA;;;BA)(A;;GA;;;SY)";
+
+    fn nonce() -> String {
+        let mut bytes = [0; 16];
+        getrandom::fill(&mut bytes).unwrap();
+        bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+    }
+
+    #[test]
+    fn windows_helper_pipe_rejects_wrong_peer_before_receiving_authority() {
+        let name = endpoint(&nonce()).unwrap();
+        let mut listener = LocalPipeListener::bind(&name, ACL).unwrap();
+        assert!(LocalPipeListener::bind(&name, ACL).is_err());
+        let mut client = LocalPipeStream::connect(&name, Duration::from_secs(1), |pid| {
+            verify_pid(pid, std::process::id())
+        })
+        .unwrap();
+        let error = match listener.accept(Duration::from_secs(1), |pid| verify_pid(pid, 0)) {
+            Err(error) => error,
+            _ => panic!("Unexpected peer admitted"),
+        };
+        assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+        let mut byte = [0];
+        assert_eq!(client.read(&mut byte).unwrap(), 0);
+        drop(client);
+        drop(listener);
+        assert!(LocalPipeStream::connect(&name, Duration::from_millis(20), |_| Ok(())).is_err());
+    }
+
+    #[test]
+    fn windows_helper_pipe_truncated_frame_is_not_a_request() {
+        let name = endpoint(&nonce()).unwrap();
+        let mut listener = LocalPipeListener::bind(&name, ACL).unwrap();
+        let mut client =
+            LocalPipeStream::connect(&name, Duration::from_secs(1), |_| Ok(())).unwrap();
+        let mut server = listener
+            .accept(Duration::from_secs(1), |_| Ok(()))
+            .unwrap()
+            .unwrap();
+        client.write_all(&100u32.to_be_bytes()).unwrap();
+        client.write_all(b"{}").unwrap();
+        drop(client);
+        assert!(read_json::<PrivilegedRequest>(&mut server).is_err());
+    }
+
+    struct Child(std::process::Child);
+    impl Drop for Child {
+        fn drop(&mut self) {
+            if self.0.try_wait().ok().flatten().is_none() {
+                self.0.kill().expect("Stop owned read-only helper fixture");
+            }
+            self.0.wait().expect("Reap owned helper fixture");
+        }
+    }
+
+    #[test]
+    #[ignore = "requires the owned native helper executable in a Unicode/spaced package path"]
+    fn windows_helper_pipe_native_helper_round_trip_and_parent_rejection() {
+        let helper = std::env::var_os("OTTRIN_QA_PRIV_HELPER").expect("Owned helper fixture path");
+        assert!(helper.to_string_lossy().contains(' '));
+        assert!(!helper.to_string_lossy().is_ascii());
+        let dir = tempfile::tempdir().unwrap();
+        let item = dir.path().join("visible Å.txt");
+        std::fs::write(&item, b"owner data").unwrap();
+        for wrong_parent in [false, true] {
+            let nonce = nonce();
+            let name = endpoint(&nonce).unwrap();
+            let mut listener = LocalPipeListener::bind(&name, ACL).unwrap();
+            let mut child = Child(
+                std::process::Command::new(&helper)
+                    .args([
+                        "--local-pipe",
+                        &nonce,
+                        "--parent-pid",
+                        &if wrong_parent {
+                            std::process::id() + 1
+                        } else {
+                            std::process::id()
+                        }
+                        .to_string(),
+                    ])
+                    .spawn()
+                    .unwrap(),
+            );
+            let deadline = Instant::now() + Duration::from_secs(10);
+            let stream = loop {
+                if let Some(stream) = listener
+                    .accept(Duration::from_millis(100), |pid| {
+                        verify_pid(pid, child.0.id())
+                    })
+                    .unwrap()
+                {
+                    break Some(stream);
+                }
+                assert!(Instant::now() < deadline, "Owned helper did not connect");
+                if let Some(status) = child.0.try_wait().unwrap() {
+                    // A rejecting client may close before ConnectNamedPipe
+                    // observes it. That is refusal, not a failed connection test.
+                    assert!(wrong_parent);
+                    assert_eq!(status.code(), Some(1));
+                    break None;
+                }
+            };
+            if let Some(mut stream) = stream {
+                if wrong_parent {
+                    let mut byte = [0];
+                    assert_eq!(stream.read(&mut byte).unwrap(), 0);
+                } else {
+                    let request = PrivilegedRequest {
+                        protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+                        command: PrivilegedCommand::ListDirectory {
+                            path: dir.path().into(),
+                            show_hidden: false,
+                        },
+                        context: PrivilegedContext {
+                            reason: None,
+                            cwd: None,
+                        },
+                    };
+                    write_json(&mut stream, &request).unwrap();
+                    let response: PrivilegedResponse = read_json(&mut stream).unwrap();
+                    assert_eq!(response.status, PrivilegedStatus::Success);
+                    let Some(PrivilegedPayload::Entries(entries)) = response.payload else {
+                        panic!("Missing directory entries")
+                    };
+                    assert_eq!(entries.len(), 1);
+                    assert_eq!(entries[0].path, item);
+                }
+                drop(stream);
+            }
+            drop(listener);
+            while child.0.try_wait().unwrap().is_none() {
+                assert!(
+                    Instant::now() < deadline,
+                    "Helper retained a pipe after response"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            assert!(
+                LocalPipeStream::connect(&name, Duration::from_millis(20), |_| Ok(())).is_err()
+            );
+            assert_eq!(std::fs::read(&item).unwrap(), b"owner data");
+            assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+        }
+    }
+
+    #[test]
+    #[ignore = "requires an owned interactive Windows desktop and real UAC consent/cancellation"]
+    fn windows_helper_pipe_native_uac_round_trip() {
+        let helper = std::env::var("OTTRIN_QA_PRIV_HELPER").unwrap();
+        let directory =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_QA_ADMIN_DIRECTORY").unwrap());
+        assert_eq!(
+            std::fs::read_dir(&directory).unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        let request = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+            command: PrivilegedCommand::ListDirectory {
+                path: directory,
+                show_hidden: false,
+            },
+            context: PrivilegedContext {
+                reason: Some("Read the owned native UAC fixture".into()),
+                cwd: None,
+            },
+        };
+        let response = execute(&helper, false, &request).unwrap();
+        match std::env::var("OTTRIN_QA_UAC_EXPECT").unwrap().as_str() {
+            "cancel" => {
+                assert_eq!(response.status, PrivilegedStatus::Denied);
+                assert!(response.message.as_deref().unwrap().contains("cancelled"));
+                assert!(response.payload.is_none());
+            }
+            "approve" => {
+                assert_eq!(response.status, PrivilegedStatus::Success);
+                let Some(PrivilegedPayload::Entries(entries)) = response.payload else {
+                    panic!("Missing elevated listing")
+                };
+                assert_eq!(entries.len(), 1);
+                assert_eq!(entries[0].name, "protected-proof.txt");
+            }
+            _ => panic!("Unrecognized native acceptance expectation"),
+        }
+    }
+}

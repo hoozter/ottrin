@@ -1,0 +1,26 @@
+{
+  "domain": "ottrin-init-helper-pipe-qa",
+  "uuid": "728103fc-88b7-4cd2-9715-6826c33b794c",
+  "volume": "ottrin-init-helper-pipe-qa.qcow2",
+  "backing": "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+  "purpose": "Native shared pipe, packaged helper and UAC verification only",
+  "cleanup": "This live controller owns stopping/undefining the domain, NVRAM/TPM removal and exact overlay deletion",
+  "protected": {
+    "ottrin-copy-cleanup-qa": {
+      "xml": "4fffd8bac0954eac33a97af8ae83409f5f92e96fda11cf1665a394d4f6d60dc9",
+      "state": "shut off"
+    },
+    "ottrin-index-qa": {
+      "xml": "d77ea203cebc52e3ce211c62056060d52731004a29f9583bf6b6001b2b46add4",
+      "state": "shut off"
+    },
+    "ottrin-qa-20261011": {
+      "xml": "ad7a97cc7b134cdb3932f85935a6dd10e500e075ffd4cb7f2bff6f721085649d",
+      "state": "shut off"
+    },
+    "win11ltsc": {
+      "xml": "bd58d43e1b4dff1dcb280eee39c170a066fe830271bfea1024de67b164020986",
+      "state": "shut off"
+    }
+  }
+}

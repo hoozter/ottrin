@@ -24,7 +24,7 @@ libc = "0.2"
 [target.'cfg(windows)'.dependencies]
 base64 = "0.22"
 ottrin-platform = { path = "../ottrin-platform" }
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_System_IO", "Win32_System_Pipes"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_System_Threading", "Win32_System_Pipes"] }
 
 [dev-dependencies]
 tempfile = "3"
