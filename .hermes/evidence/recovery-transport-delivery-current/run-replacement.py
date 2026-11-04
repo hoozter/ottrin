@@ -6,6 +6,8 @@ assert not inputs.exists()
 read=lambda p:json.loads(p.read_text())
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 old=read(R/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json');new=read(E/'BUILD_RESULT.json');assert old['source_revision']=='aa2416330e9209c844f99e5a318e44b3c9a5c277'
+assert new['status'].startswith('four-format build pass')
+(N/'BUILD_RESULT.json').write_text(json.dumps(new,indent=2)+'\n')
 portable='Ottrin-0.1.0-linux-x86_64-portable.tar.gz';image='Ottrin-0.1.0-x86_64.AppImage';stage=Path(new['stage']);child=None;owned=False
 report={'status':'starting','source_revision':new['source_revision'],'input_directory':str(inputs)}
 def cancelled(*_):raise KeyboardInterrupt('Owned replacement fixture cancelled')

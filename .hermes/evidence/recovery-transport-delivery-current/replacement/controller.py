@@ -9,7 +9,7 @@ base=r/('.hermes/tools/fedora44/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2' i
 expected_base='28680fe5b371a5a82ebf43a31926e086a168e59949d03969c5093e7071f90b7f' if distro=='fedora' else '6a81c37564db9b1ee84e141922625e1d7c5b389b99bb3c572e0243607d5bb4d2'
 assert hashlib.file_digest(base.open('rb'),'sha256').hexdigest()==expected_base
 base_info=json.loads(subprocess.check_output(['qemu-img','info','--output=json',str(base)],text=True));assert base_info['format']=='qcow2'
-out=e/distro;out.mkdir(exist_ok=False)
+out=e/distro
 build=json.loads((r/'dist/packages/LINUX_PACKAGES_ACCEPTANCE.json' if args.published else e/'BUILD_RESULT.json').read_text())
 if not args.published:assert build['status'].startswith('four-format build pass')
 stage=r/'dist/packages' if args.published else Path(build['stage']);package=next(stage.glob('*.rpm' if distro=='fedora' else '*.deb'));portable=next(stage.glob('*portable.tar.gz'))
@@ -19,6 +19,7 @@ actor=args.actor.resolve() if args.actor else drivers/'native-actor.py'
 assert actor.is_relative_to(r/'.hermes/evidence') and actor.is_file()
 for artifact in [package,portable]:
  with artifact.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==build['artifacts'][artifact.name]
+out.mkdir(exist_ok=False)
 report={'setup_control':False,'distro':distro,'domain':name,'mac':mac,'source':build['source_revision'],'status':'running','package_sha256':hashlib.file_digest(package.open('rb'),'sha256').hexdigest()}
 def run(args,check=True,timeout=180):
  p=subprocess.run(list(map(str,args)),capture_output=True,text=True,timeout=timeout)

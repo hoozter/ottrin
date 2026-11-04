@@ -1,0 +1,12 @@
+{
+  "status": "fixture producer omitted its local build manifest; no VM allocated",
+  "controller": {
+    "status": "failed",
+    "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+    "input_directory": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.replacement-input",
+    "error": "AssertionError(1)",
+    "child_exit": 1,
+    "owned_host_input_removed": true
+  },
+  "controller_log_sha256": "638d784325789b3297b6d1bda3b4793d902d293744917f0687ff2c5dbe80fbe6"
+}
