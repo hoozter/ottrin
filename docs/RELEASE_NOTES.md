@@ -4,59 +4,60 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM use runtime `aa241633`; Windows ZIP/NSIS and
-unsigned development MSIX17 retain accepted runtime `45830098`. Exact aa source
-CI41894809859 passes all four Linux/Windows verification/performance jobs.
+Linux AppImage/portable/DEB/RPM use runtime `dacedd8d`; Windows ZIP/NSIS and
+unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
+CI41911407933 passes all four Linux/Windows verification/performance jobs.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind the actual delivered hashes/scopes.
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind delivered hashes and acceptance scopes.
 
-Linux administrator Copy now supports **Activity → Load administrator Copy
-history** after restarting. This explicit authenticated scan reads canonical
-journals without changing files. Undo and confirmed cleanup authenticate again
-and freshly validate retained ownership. Protocol2 detects older helpers before
-mutations. Current native AppImage checks cover setup/update cancellation,
-authenticated helper replacement, protected Copy, normal GUI restart, cancelled
-and authenticated history loading, Undo and cleanup. All16 reviewed captures and
-independent root checks are recorded in `administrator-copy-status-current/`.
-The corrected delivery removes raw cancellation errors and a stale history count.
+Linux administrator Copy supports **Activity → Load administrator Copy history**
+after restarting. This explicit authenticated scan reads canonical journals;
+Undo and confirmed cleanup authenticate again and freshly validate retained
+ownership. Recovered records say **Recovered history**, preserving live receipts
+and stable cards across refresh. Reloading a fully undone Copy now shows **Copy
+undone**, rather than Needs review with a misleading platform error. Changed
+retained contents still require review and refuse cleanup. Protocol3 detects
+older helpers before mutations.
 
-Current native DEB acceptance covers normal GUI close and two actual LightDM
-reboots. Four f8-to-aa AppImage/portable replacement cases preserve enabled/disabled
-startup, Grid preference and database identity. The mounted daemon passes private
-1000-file watcher/query/restart/two-shutdown checks at0.067% of one core over30seconds
-without clients. These bounded software-X11/private-data results do not close
-physical graphics, sustained personal workloads or whole-interface acceptance.
+Actual AppImage/FUSE acceptance covers setup/update cancellation, authenticated
+helper replacement, protected Copy, normal GUI restart, cancelled/authenticated
+history loading, live-receipt preservation, fresh Undo, canonical state refresh
+and confirmed cleanup. Twenty original complete-window captures and independent
+root checks are in `.hermes/evidence/recovery-transport-delivery-current/`.
+Native DEB normal-close and two real LightDM reboot checks pass. Four aa-to-DAC
+AppImage/portable replacement cases preserve startup choice, Grid preference and
+database identity. The mounted daemon passes watcher/query/restart/two-shutdown
+checks; a private1000-file30-second no-client sample measures0.0333% of one core.
+These scopes do not establish physical graphics, sustained personal workloads or
+whole-interface acceptance.
 
-The personal managed service is Ready on the matching daemon, with startup choice,
+The personal managed daemon is Ready on the matching binary with startup choice,
 exact preferences hash and database inode preserved. No new personal CPU sample
-is claimed. Existing AppImage/portable users can update their system helper in
-Settings → Services → Update / reinstall helper with administrator authentication;
-this delivery did not silently replace the personal system helper.
+is claimed. Existing AppImage/portable users update the separately installed
+helper through Settings → Services → Update / reinstall helper with administrator
+authentication. This delivery did not silently replace the personal system helper.
 
-The later source checkpoint `af2b0dc5` distinguishes recovered administrator history
-from a known completed batch and refreshes its Undo availability while preserving
-live receipts. Its502 UI tests and strict native/Windows lint pass. It is pushed
-but not yet included in the delivered packages. Windows helper transport also has a source-only checkpoint: shared native pipe I/O
-and direct UAC replace temporary request/response files and PowerShell. Ten focused
-native checks include Unicode/spaced paths, peer/frame refusal and real UAC cancel/
-approve from an ordinary desktop token. This is not a new Windows package or
-administrator Copy acceptance. Windows privileged Copy, the full
+The next Grid source correction shares measured two-line filename layout between
+the browser and picker. Native7fefe review caught untidy extension wrapping;
+a separator-wrapping refinement passes503 UI tests and strict Linux/Windows
+cross-target lint. Refined native/package acceptance is still required. A fresh
+account's no-input Miller count remains correct through30seconds; this does not
+close the earlier disabled-service initial-frame finding.
+
+Windows helper transport has a separate focused native checkpoint: direct UAC and
+shared local-pipe I/O replace PowerShell and request/response files. Its ten checks
+retain their original source/consent-token scope; it is not included in Windows458
+and does not enable administrator Copy. That canonical recovery bridge, full
 theme/interface audit, remaining supported integrations, MSI rollback, hardware,
 signing/Store and final owner acceptance remain unfinished.
 
-A subsequent native run found that reloading an already-undone Copy showed a
-misleading platform error. The correction carries explicit recovery states through
-helper protocol3, preserving normal completed-Undo styling and guarded cleanup.
-Changed retained contents still require review. Source checks pass; its rebuilt
-package/native acceptance is pending. The rejected candidate was retired and did
-not replace the usable previews above.
-
-Completed Linux test VMs/volumes, profiles, credentials, mounts, transport files,
-consumed staging and superseded packages are removed. Current deliverables and
-useful compiler caches remain. Windows artifacts and protected environments are
-unchanged. Packaged manuals are build-time snapshots; repository manifests and
-roadmap record subsequent acceptance. These are local previews, not a public release.
+Completed owned test VMs/volumes, profiles, credentials, mounts, inputs and transport
+archives are removed. Promotion retired superseded Linux packages and consumed
+staging. Current deliverables, compact evidence and useful compiler caches remain.
+Windows artifacts and protected environments are unchanged. Packaged manuals are
+build-time snapshots; repository manifests and roadmap record later acceptance.
+These are local previews, not a public release.
 
 ## Highlights
 

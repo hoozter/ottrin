@@ -8,27 +8,30 @@ not complete a broader native, platform or user-acceptance requirement.
 
 ### Usable local preview
 
-The four Linux formats in `dist/packages/` now use runtime
-`aa2416330e9209c844f99e5a318e44b3c9a5c277`. Windows ZIP/NSIS/development
+The four Linux formats in `dist/packages/` use runtime
+`dacedd8dfe7bd04cbfc4208d319d17a9d797deae`. Windows ZIP/NSIS/development
 MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
-Source50a breadcrumb directory classification is delivered in Linuxaa; it is
-not included in Windows458.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`76eb72ecf9627a597c49e0c5c3f30bd6b69221ae5d75d4ef5b0240ee62a37dd0`.
+`d85465b902055bb40f39a873e1eeb52fa975e4d3a26ea39eb6cf33977f6024e2`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
-Exact aa CI41894809859 passes all four hosted jobs. The current Linux delivery
-adds authenticated administrator Copy history loading after restart, followed by
-freshly checked Undo and confirmed cleanup. Its 16 reviewed AppImage captures,
-DEB two-reboot checks and four AppImage/portable replacement cases retain their
-explicit scopes in `administrator-copy-status-current/`. The personal managed
-daemon is Ready on the matching binary with preferences/startup/database identity
-preserved; the installed system helper still needs owner authentication to update.
-The subsequent restored-history provenance/refresh fix is committed in `af2b0dc5`
-and pushed, but is not included in these packages.
+Exact DAC run41911407933 passes all four hosted jobs. Current Linux packages include
+restored administrator history provenance/refresh and typed completed-Undo state,
+with helper protocol3 readiness/update checks. Actual AppImage/FUSE protected Copy,
+restart/history/Undo/cleanup, native DEB two-reboot and four aa-to-DAC replacement
+cases pass at their explicit scopes. The private1000-file mounted-daemon idle
+sample is0.0333% of one core over30seconds; no personal/large-corpus guarantee is
+inferred. Receipts: `.hermes/evidence/recovery-transport-delivery-current/`.
+The managed personal daemon is Ready on the matching binary with exact preferences,
+startup choice and database identity preserved. Superseded packages and consumed
+staging are removed. The personal system helper still needs owner authentication
+through Services to update. Windows458 remains unchanged.
 
+The next Grid caption refinement is source-tested, with native/package acceptance
+still pending. The ordered queue below records all remaining work. Earlier
+checkpoints retain their historical source/artifact scopes.
 
 The current Linux packages correct Services showing a false red error for an
 intentionally stopped/uninstalled index with a stale socket pathname. The earlier061
@@ -502,7 +505,13 @@ reviewed. Three owned attempts (including two fixture precondition failures),
 nine volumes, credentials, executable aliases and consumed transports are removed.
 Compact controls/captures remain in `.hermes/evidence/grid-label-layout-current/`.
 
-1. Package and verify the subsequent restored-history and Windows transport source fixes, then finish administrator Copy recovery, including the Windows canonical
+DAC Linux delivery is complete: all four exact-source jobs pass, guarded promotion
+published the accepted cohort, and the managed personal daemon is Ready with
+startup/preferences/database identity preserved. `PROMOTION.json` records actual
+replacement and retirement; the111MiB candidate stage is consumed. The subsequent
+Grid refinement remains separately pending native/package acceptance.
+
+1. Package and verify the subsequent Windows transport and Grid source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted

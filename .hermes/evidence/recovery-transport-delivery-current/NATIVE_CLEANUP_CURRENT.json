@@ -1,5 +1,5 @@
 {
-  "status": "pass owned native fixtures and transport cleanup; candidate retained for exact-source hosted CI and publication",
+  "status": "pass owned native fixtures/transports and accepted-package promotion cleanup",
   "baseline": {
     "target/debug/deps": 25230675719,
     "target/debug/incremental": 25049028553,
@@ -20,10 +20,6 @@
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/recovery-transport-delivery-current",
       "purpose": "Compact acceptance receipts, original reviewed captures and reproducible fixture producers"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-      "purpose": "Immutable protocol3 Linux candidate awaiting exact-source Windows CI and guarded publication"
     }
   ],
   "owned_disposable_vms_removed": [
@@ -38,5 +34,6 @@
     "ottrin-index-qa",
     "ottrin-qa-20261011",
     "win11ltsc"
-  ]
+  ],
+  "promotion_cleanup": "PROMOTION.json: candidate stage, retired package directory and all superseded files removed"
 }

@@ -1,9 +1,8 @@
 {
   "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "delivery_gates": [
-    "Poll existing exact-source CI41911407933; three jobs pass, Windows Cargo test confirmed live",
-    "When all four pass, save CI_CURRENT.json and run guarded promote-linux.py; preserve personal state and Windows458",
-    "New Grid two-line source correction has local checks but still needs native visual/package acceptance; do not cancel the existing candidate CI to push it"
+    "DAC delivery is complete; PROMOTION.json binds exact packages, current managed daemon and retirement",
+    "Build and natively/package-verify the committed refined Grid layout, then continue the Windows canonical administrator recovery bridge and full U08 audit"
   ],
   "windows_next": {
     "source_facts": [

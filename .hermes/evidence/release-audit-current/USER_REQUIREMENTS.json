@@ -16,7 +16,7 @@
     {
       "id": "U02",
       "requirement": "Indexer must be quiet while idle, use its own process name, survive main-window closure when enabled, and start reliably without a first-launch readiness error.",
-      "current_scope": "Latest DAC candidate: actual mounted AppImage daemon watcher/query/restart/two-shutdown acceptance; private1000-file30-second idle sample0.0333% of one core. Native DEB normal GUI-close and two real reboot enabled/disabled startup checks plus four aa-to-DAC replacement cases pass. Delivered personal daemon remains the separately accepted aa cohort until guarded publication. Private fixture performance is not personal/large-corpus or full resource acceptance. Settled initial item-count observation remains open. Older Windows and personal-index receipts remain bound to their original artifacts and workloads.",
+      "current_scope": "Delivered DAC cohort: actual mounted AppImage daemon watcher/query/restart/two-shutdown acceptance; private1000-file30-second idle sample0.0333% of one core. Native DEB normal GUI-close and two real reboot enabled/disabled startup checks plus four aa-to-DAC replacement cases pass. Managed personal daemon is Ready on exact DAC bytes after guarded publication, with preferences/startup/database identity preserved. Private fixture performance is not personal/large-corpus or full resource acceptance. Settled initial item-count observation remains open. Older Windows and personal-index receipts remain bound to their original artifacts and workloads.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/LINUX_DAEMON_RUNTIME.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
@@ -25,7 +25,8 @@
         ".hermes/evidence/release-audit-current/WINDOWS_UNATTENDED_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
         ".hermes/evidence/release-audit-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json",
-        ".hermes/evidence/release-audit-current/PERSONAL_INDEX_AFTER_REFRESH.json"
+        ".hermes/evidence/release-audit-current/PERSONAL_INDEX_AFTER_REFRESH.json",
+        ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json"
       ]
     },
     {
@@ -119,26 +120,29 @@
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable delivered Linuxaa and Windows458/MSIX17 remain authoritative. DAC four-format candidate has passed native/content gates and is waiting on exact-source CI41911407933: three jobs green, Windows tests/lint passed and its release build is live. Native acceptance checkpoint56f67636 pushed. Grid correction7fefe191 is committed locally, awaiting native visual acceptance and queued push after DAC CI to avoid cancellation/email churn. No public release or notification-policy change.",
+      "current_scope": "Stable LinuxDAC and unchanged Windows458/MSIX17 authority manifests bind delivered artifacts. All four exact-source DAC jobs41911407933 pass; guarded promotion preserves personal state and retires superseded packages/staging. Subsequent Grid refinement is locally committed/source-tested and awaiting native/package acceptance and checkpoint push. No public release, notification-policy change or failure/cancellation churn.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
         "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
         "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/BUILD_SOURCE.json",
-        ".hermes/evidence/release-audit-current/cohort/CI_CURRENT.json"
+        ".hermes/evidence/release-audit-current/cohort/CI_CURRENT.json",
+        ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json",
+        ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Existing cohort cleanup receipts retain their original scopes. Current DAC helper/login/replacement guests, credentials and consumed transports are removed; its111MiB candidate is retained for guarded publication. Grid visual fixtures, including two failed preconditions, all removed their owned guests/volumes/credentials/inputs; compact controls/captures and latest native-tested release GUI remain, with useful compiler caches retained.",
+      "current_scope": "Existing cohort cleanup receipts retain their original scopes. Current DAC helper/login/replacement guests, credentials and consumed transports are removed; its111MiB candidate stage and superseded packages were consumed/retired by guarded publication. Grid visual fixtures, including two failed preconditions, all removed their owned guests/volumes/credentials/inputs; compact controls/captures and latest native-tested release GUI remain, with useful compiler caches retained.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/CLEANUP_FINAL.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
-        ".hermes/evidence/grid-label-layout-current/CLEANUP.json"
+        ".hermes/evidence/grid-label-layout-current/CLEANUP.json",
+        ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json"
       ]
     }
   ],

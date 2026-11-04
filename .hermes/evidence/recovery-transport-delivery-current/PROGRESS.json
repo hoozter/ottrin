@@ -1,17 +1,16 @@
 {
-  "status": "corrected four-format content, native helper/history/Undo/cleanup, daemon, login/reboot and binary replacement acceptance pass; exact-source CI pending",
+  "status": "accepted exact-source DAC cohort published; managed personal daemon Ready and state preserved",
   "source_checks": "SOURCE_CHECKS.json",
   "rejected_first_candidate": "first-candidate/FINDING.json",
-  "candidate_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "candidate_stage": null,
   "preceding_pushed_ci": 41903425130,
   "preceding_ci_last_verified": "Windows release build live; other3jobs success",
-  "pending_consumers": [
-    "exact-source CI41911407933 and guarded Linux publication"
-  ],
-  "stable_deliverables": "Linuxaa241633 and Windows458/MSIX17 unchanged",
+  "pending_consumers": [],
+  "stable_deliverables": "Linuxdacedd8d and Windows458/MSIX17",
   "goal": "active and incomplete",
   "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "ci_run_id": 41911407933,
   "ci_url": "https://github.com/hoozter/ottrin/actions/runs/41911407933",
-  "preceding_pushed_ci_status": "completed success all4jobs"
+  "preceding_pushed_ci_status": "completed success all4jobs",
+  "delivery": "PROMOTION.json"
 }

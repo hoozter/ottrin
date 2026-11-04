@@ -36,35 +36,34 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages use runtime `f8db06a1`; Windows ZIP/NSIS and unsigned
-development MSIX0.1.0.17 remain on accepted runtime `45830098`. All four exact-source
-CI jobs 41871666761 pass for this runtime. Current Linux acceptance includes helper compatibility
-and authenticated update/recovery, two actual desktop reboots, and AppImage/portable
-binary replacement with enabled/disabled startup and Grid preference preserved.
-See the stable acceptance manifests for exact hashes and scopes.
+The four Linux packages use runtime `dacedd8d`; Windows ZIP/NSIS and unsigned
+development MSIX0.1.0.17 retain accepted runtime `45830098`. Exact-source
+CI41911407933 passes all four Linux/Windows verification/performance jobs.
+Linux administrator Copy supports authenticated history loading after restart,
+freshly checked Undo and confirmed cleanup. Recovered history is distinguished
+from a known completed batch; reloading a fully undone Copy shows Copy undone
+instead of a misleading error. Helper protocol3 requires updating older helpers
+through Settings → Services → Update / reinstall helper and authenticating.
+The personal system helper is not silently replaced.
 
-Linux privileged Copy now returns durable recovery references to Activity instead
-of committing a copy and reporting failure because its Undo receipt was lost.
-The actual mounted AppImage passes real local-seat authentication, denied Copy →
-administrator retry → Activity Undo → confirmed cleanup. Independent root checks
-verify exact source bytes/ownership, removal by Undo and reclaimed transaction
-stages. Five recovery tests,495 UI tests and nine helper tests pass; strict
-Linux/Windows lint passes. Existing AppImage/portable installations must update
-the separately installed helper through Settings → Services → Update / reinstall
-helper and authenticate to use this exact tested helper binary.
+Actual AppImage/FUSE acceptance covers helper update/cancellation, protected Copy,
+normal restart, history loading/refresh, Undo and cleanup, with independent root
+checks. DEB normal-close/two-reboot and four aa-to-DAC AppImage/portable replacement
+cases preserve startup choice, Grid preference and database identity. The mounted
+daemon's private1000-file30-second idle sample measures0.0333% of one core; this is
+not a personal/large-corpus guarantee. The managed personal daemon is Ready on the
+matching binary with exact preferences/startup/database identity preserved.
+Evidence: `.hermes/evidence/recovery-transport-delivery-current/`.
 
-The rebuilt Linux daemon passes fresh1000-file watcher/query/restart/shutdown
-checks at0.067% of one core over30seconds without clients. That is a private test,
-not a personal-service CPU measurement. The personal managed daemon now matches
-the new delivery; startup choice, preferences and saved-index identity are preserved.
-
-Shared production toolbar/tab/window/Miller presenters remain delivered on both
-platforms. Linux47db also includes the breadcrumb directory-classification fix;
-Windows458 retains its original scoped preview/native and MSIX update acceptance.
-Full theme consistency, elevated Copy restart discovery, Windows privileged Copy,
-remaining login/replacement and integration gates, MSI rollback, physical coverage
-and final daily-driver acceptance remain open. Completed QA fixtures, consumed
-staging/extraction and superseded packages are removed; useful compiler state remains.
+The next Grid source correction uses measured two-line captions shared by the
+browser and picker. Native review caught untidy extension wrapping; its refinement
+passes503 UI tests and strict Linux/Windows cross-target lint but still needs
+refined native/package acceptance. Windows direct-UAC pipe transport has focused
+native evidence at its original source scope and is not yet in Windows458.
+Windows administrator Copy recovery, full theme/interface consistency, remaining
+supported integration gates, MSI rollback, physical coverage and final user
+acceptance remain open. Owned test environments and superseded packages/staging
+are removed; current deliverables, compact evidence and useful compiler caches remain.
 
 ### Linux
 

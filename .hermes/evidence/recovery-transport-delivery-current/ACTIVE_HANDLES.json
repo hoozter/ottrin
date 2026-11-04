@@ -16,17 +16,16 @@
   "ci": {
     "run_id": 41911407933,
     "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
-    "status": "in_progress: Windows Cargo test; other three jobs success"
+    "status": "completed success all four jobs"
   },
-  "pending": [
-    "exact-source CI and guarded publication"
-  ],
-  "retained_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "pending": [],
+  "retained_stage": null,
   "safety": "Do not stage the evidence tree recursively while a VM controller is live: its disposable hidden runtime contains SSH credentials. Wait for registered teardown and verify removal first.",
   "native_replacement": {
     "status": "pass; controller terminal exit0; all eight original captures directly reviewed",
     "acceptance": "REPLACEMENT_ACCEPTANCE.json",
     "domain_and3volumes_removed": true,
     "credentials_input_and_consumed_archive_removed": true
-  }
+  },
+  "delivery": "PROMOTION.json: accepted cohort published; stage consumed"
 }

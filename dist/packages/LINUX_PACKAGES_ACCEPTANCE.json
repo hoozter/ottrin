@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux administrator Copy history recovery, helper readiness, native login/reboot and binary replacement delivery; full roadmap incomplete",
-  "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+  "status": "pass scoped Linux protocol3 typed Copy recovery state, helper readiness, native login/reboot and binary replacement delivery; full roadmap incomplete",
+  "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "a7dab83effb902ea2670fe86ca334e75bfcb8fd9b525231cb1bdeee845fab39e",
-    "Ottrin-0.1.0-x86_64.AppImage": "76eb72ecf9627a597c49e0c5c3f30bd6b69221ae5d75d4ef5b0240ee62a37dd0",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "9cfa92afe668be53690999d226fb5f873860bca4c8b8c67371077809ee9806e9",
-    "ottrin_0.1.0_amd64.deb": "565481dc46acb9cd35528c87ff97bc61746332e770fd81579c65775a39d8612f"
+    "ottrin-0.1.0-1.x86_64.rpm": "07253c91946a529e592d00863b2db8915147b5f011160a68f807ca5a8971e333",
+    "Ottrin-0.1.0-x86_64.AppImage": "d85465b902055bb40f39a873e1eeb52fa975e4d3a26ea39eb6cf33977f6024e2",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "609b62660c4556c3fb249408c9bb0fa73df2b97b4e4f9f0859f39659203b2ed9",
+    "ottrin_0.1.0_amd64.deb": "401ad35265d4dc80b85c68ef076c78cf780435f57b41a03f054b13bfc8297cc8"
   },
-  "evidence": ".hermes/evidence/administrator-copy-status-current",
+  "evidence": ".hermes/evidence/recovery-transport-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,29 +17,29 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "hosted_source": {
-    "run": 41894809859,
-    "tested_source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
+    "run": 41911407933,
+    "tested_source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
     "all_four_jobs_success": true
   },
-  "native_privileged_copy": ".hermes/evidence/administrator-copy-status-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/administrator-copy-status-current/LINUX_DAEMON_RUNTIME.json",
+  "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/recovery-transport-delivery-current/LINUX_DAEMON_RUNTIME.json",
   "runtime_sha256": {
-    "application": "96ff24fb97bfae67f0aad5bf0bb5735ef04e21c86b9b5563a0c490cc17b1ec95",
-    "index_daemon": "4a9dc5d358f44a6541e22b4f8546185298c99d3a4962520a1a6293fc8f8b6abe",
-    "privileged_helper": "39d442b881a1692a00665a1472b5cb1ad797931c62354275d70d98c4e4f72dce",
+    "application": "8569a35a2e182c504abd2171a2773316443a8356cea213f4fe60e4c406fcfa42",
+    "index_daemon": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "privileged_helper": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
-  "native_login": ".hermes/evidence/administrator-copy-status-current/login/ACCEPTANCE.json",
-  "binary_replacement": ".hermes/evidence/administrator-copy-status-current/REPLACEMENT_ACCEPTANCE.json",
+  "native_login": ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
+  "binary_replacement": ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_ACCEPTANCE.json",
   "historical_service_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
   "limits": [
     "Current helper/Copy uses actual AppImage/FUSE; login/reboot uses native DEB; four-format contents/closure and namespace gates have their explicit scopes",
-    "Actual f8-to-aa AppImage/portable replacement preserves enabled/disabled startup and Grid preference; future unknown schema/version transitions are not inferred",
+    "Actual previous-to-current AppImage/portable replacement preserves enabled/disabled startup and Grid preference; future unknown schema/version transitions are not inferred",
     "Linux administrator history restart/load/Undo/cleanup passes the stated native scope; Windows privileged Copy remains unfinished",
     "Whole U08/theme audit, settled startup status, physical graphics, Wayland and final daily-driver acceptance remain open",
     "Private1000-file idle sample is not a personal-index or large-corpus resource measurement",
     "Personal helper installation requires owner authentication; no automatic privileged installation was performed",
     "Windows remains458/MSIX17; no signing, public release or Store submission",
-    "Packaged development manuals are build-time snapshots ataa241633; repository delivery receipts are authoritative for subsequent acceptance/publication"
+    "Packaged development manuals are build-time snapshots atdacedd8d; repository delivery receipts are authoritative for subsequent acceptance/publication"
   ]
 }
