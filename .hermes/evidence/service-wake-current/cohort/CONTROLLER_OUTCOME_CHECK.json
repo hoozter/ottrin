@@ -1,0 +1,27 @@
+{
+  "status": "pass replay of actual failed/successful native results through updated terminal failure gate",
+  "producer_sha256": "33f153a7f285bacc87a254684f7e60cf4a1fdb52a28baa43733a7319eb178704",
+  "checks": [
+    {
+      "saved_case": "services-refresh-ambiguity",
+      "actor_status": "failed independent native Services workflow",
+      "controller_raises_failure": true
+    },
+    {
+      "saved_case": "services-reader-sharing",
+      "actor_status": "failed independent native Services workflow",
+      "controller_raises_failure": true
+    },
+    {
+      "saved_case": "services",
+      "actor_status": "pass independent native Services workflow and preserved uninstall",
+      "controller_raises_failure": false
+    },
+    {
+      "saved_case": "native",
+      "actor_status": "pass native settings rejection/save-retry and Search status workflow",
+      "controller_raises_failure": false
+    }
+  ],
+  "scope": "Producer syntax and real-result replay without VM allocation; guard runs after safe archive transfer and inside registered ExitStack teardown. Historical native acceptances retain their original frozen producer hash."
+}

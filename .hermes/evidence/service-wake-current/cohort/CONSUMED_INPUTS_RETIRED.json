@@ -1,0 +1,225 @@
+{
+  "cases": {
+    "services-refresh-ambiguity": {
+      "batches": [
+        {
+          "removed": [
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/RESULTS.zip",
+              "bytes": 1351560,
+              "sha256": "833c923d479a10303dbec8577d385a710569fc55c462c282a75eb34d3cd2baf3"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/controller.ps1",
+              "bytes": 4866,
+              "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/GUEST_PREPARATION.json",
+              "bytes": 883,
+              "sha256": "cbd90c4936f050ecb86cf2c84b62aaf60c3896cab1936c19d41fc7f1144bea0b"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/CONTROLLER_PROCESS.json",
+              "bytes": 1938,
+              "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/DESKTOP_SIGNAL.json",
+              "bytes": 255,
+              "sha256": "e4a16c463b3458c0a7a76059418f4927d7b05a73bf085a23af1659f3483f240f"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/readiness.log",
+              "bytes": 1117,
+              "sha256": "7ba5c27ffb9981101035fe28abd25dc22018cec46da86ab949d4c97a9554ba47"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/desktop-ready.png",
+              "bytes": 4996786,
+              "sha256": "64a0ce44d5da817a5cd4f9ff744bf5b189e6ce53edf3707770f2f05b384b2801"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/PRIVACY_STEPS.json",
+              "bytes": 282,
+              "sha256": "906d7c26ed0ede515c898e1936e566795dc7183afb6f3872945aee065987a765"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/privacy-accepted-0.png",
+              "bytes": 4996786,
+              "sha256": "64a0ce44d5da817a5cd4f9ff744bf5b189e6ce53edf3707770f2f05b384b2801"
+            }
+          ],
+          "bytes": 11354473
+        }
+      ],
+      "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+    },
+    "services-reader-sharing": {
+      "batches": [
+        {
+          "removed": [
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/RESULTS.zip",
+              "bytes": 1303431,
+              "sha256": "6abad84559b80f23a411d8495d5a3be4037cb74353a8e76138ba2755947b8b75"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/controller.ps1",
+              "bytes": 4866,
+              "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/GUEST_PREPARATION.json",
+              "bytes": 883,
+              "sha256": "eaaa63162e458246bf191aedaf4e63176936759fcd31753e04a845b93eb4f98c"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/CONTROLLER_PROCESS.json",
+              "bytes": 1938,
+              "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/readiness.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/privacy-accepted-0.png",
+              "bytes": 1409024,
+              "sha256": "92a42983040dd06c2d6afc178770a1b319a9261a61a22c2f655941a034aaf968"
+            }
+          ],
+          "bytes": 2720142
+        }
+      ],
+      "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+    },
+    "services": {
+      "batches": [
+        {
+          "removed": [
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/RESULTS.zip",
+              "bytes": 1458342,
+              "sha256": "f3c1f1ffc900324e0199fae8fe74c9399ba6f45f16e9bd7cd613442e4f4d2e9c"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/controller.ps1",
+              "bytes": 4866,
+              "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/GUEST_PREPARATION.json",
+              "bytes": 883,
+              "sha256": "d6f051c9d10d1b1835f022a40c59720e6a40798a2c82de24c8d0d4c5dbe6faf1"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/CONTROLLER_PROCESS.json",
+              "bytes": 1938,
+              "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/DESKTOP_SIGNAL.json",
+              "bytes": 255,
+              "sha256": "15b9e5303ca5fcae17f3eaa694c57fb9a822f3a021244dfe8d02604f6570639c"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/readiness.log",
+              "bytes": 1117,
+              "sha256": "fc78c0df61907987e4e0e627711fb4cf83879608c0bfbacf0806f9a4bddec285"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/desktop-ready.png",
+              "bytes": 941298,
+              "sha256": "9eed28b422df8a2010d54934ca3cec04687e3d8b0c677dcb30668f30b1108d55"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/PRIVACY_STEPS.json",
+              "bytes": 282,
+              "sha256": "3b178468f38ed04039f4727a248da10e08fd5520729f5dc04fb6e2a3dcc7ce29"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/services/privacy-accepted-0.png",
+              "bytes": 942449,
+              "sha256": "4a157ca4ad9884252d3e135e3266f6ee7480aba38c8e4e109df0726b013d717d"
+            }
+          ],
+          "bytes": 3351430
+        }
+      ],
+      "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+    },
+    "native": {
+      "batches": [
+        {
+          "removed": [
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/RESULTS.zip",
+              "bytes": 1218600,
+              "sha256": "4bf817cfc552c3ff5565b6e45b7a72fa63787a3ca0d7ffb8f50987401363a45b"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/controller.ps1",
+              "bytes": 4866,
+              "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/GUEST_PREPARATION.json",
+              "bytes": 883,
+              "sha256": "6d58eebec9eb54ffbe3109e0b0e1666241d72c007c24f885125e42fbeca09bef"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/CONTROLLER_PROCESS.json",
+              "bytes": 1940,
+              "sha256": "af577d28012d504eae9e4f301b5467a3ed7be94aa0e39ae39b98b4deb9b17bf6"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/DESKTOP_SIGNAL.json",
+              "bytes": 255,
+              "sha256": "5c211cc911441486983314ecd89a9b25f4ee14e7c812e639b356e8762ce723c7"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/readiness.log",
+              "bytes": 1117,
+              "sha256": "4b280beb2e9e955709700bfaf78e8fbd601cc5b8d16c0f767452587e759e0810"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/desktop-ready.png",
+              "bytes": 3631981,
+              "sha256": "21ee9549cb84edeb90ec90deccfec7b41c83af78761f0b406251dad4d52d8804"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/PRIVACY_STEPS.json",
+              "bytes": 282,
+              "sha256": "ce2e7f4dbdaa0f718d91f62bc54025fe99ff3b26d56d0dcbcd79a5cf390ac4df"
+            },
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/native/privacy-accepted-0.png",
+              "bytes": 4674563,
+              "sha256": "da9ea0e2101401f1524702d4cb287c2080d17d1048847409be0efeeeed807ff6"
+            }
+          ],
+          "bytes": 9534487
+        }
+      ],
+      "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+    },
+    "assembly": {
+      "batches": [
+        {
+          "removed": [
+            {
+              "path": ".hermes/evidence/service-wake-current/cohort/assembly/controller.ps1",
+              "bytes": 6844,
+              "sha256": "0a84d4ce5b0a5f53749440631977e2b702afb408963e0b0a01df5443eb90541f"
+            }
+          ],
+          "bytes": 6844
+        }
+      ],
+      "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+    }
+  },
+  "scope": "Safe results exported before retirement; exact terminal owned instances/disks/private desktops removed; raw private bootstrap/transport consumed and retired."
+}

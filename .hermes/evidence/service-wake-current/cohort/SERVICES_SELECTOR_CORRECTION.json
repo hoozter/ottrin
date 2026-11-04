@@ -1,0 +1,18 @@
+{
+  "previous_frozen_actor": "services-refresh-ambiguity/actor.ps1",
+  "corrected_actor": "services-actor.ps1",
+  "correction": "Require a unique enabled native Refresh status control strictly between Background index service and Desktop integration headings. Preserve180s bound and all16 state/six PID/security-toggle checks.",
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "artifact_sha256": "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f",
+  "previous_owned_clone_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "original_failure_retained": true
+}

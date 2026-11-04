@@ -1,0 +1,83 @@
+{
+  "status": "pass full AppImage file/symlink/mode change inventory",
+  "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "candidate_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "previous_artifact_sha256": "6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5",
+  "candidate_artifact_sha256": "b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02",
+  "entries": 113,
+  "changed": {
+    "usr/bin/ottrin-indexd": {
+      "previous": {
+        "sha256": "90c6e4544dfd328fc543bc44b51a2a3d8bf82fd34840b42f20daeee72fb72e32",
+        "mode": 493
+      },
+      "candidate": {
+        "sha256": "f49d38500c898aedc220db033fc019b41213b1cf651245227eee383097a15c97",
+        "mode": 493
+      }
+    },
+    "usr/bin/ottrin": {
+      "previous": {
+        "sha256": "8cfa859af91cbe0b1f0242fb3b15dd0decf088de0121079132f3f924d8ccafad",
+        "mode": 493
+      },
+      "candidate": {
+        "sha256": "1afece21d39fcb88aecd4af3a5c0716ab0b7f19ccb33e3af7f93d2659eb24c17",
+        "mode": 493
+      }
+    },
+    "usr/share/doc/ottrin/SOURCE_REVISION.txt": {
+      "previous": {
+        "sha256": "037ff16d50676c64b304159748e06dd6abd6b99e2de4f4feed5c9af2f842602f",
+        "mode": 436
+      },
+      "candidate": {
+        "sha256": "f0b5d7975bd8c3a325c9a6737d19b7f1d6b774b9fe780165da9cb0e983470016",
+        "mode": 436
+      }
+    },
+    "usr/share/doc/ottrin/README.md": {
+      "previous": {
+        "sha256": "43c19075679030cb609345dbb119ee446a6ad833f61c4941da9667fd2b076e00",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "5bba2893be069c7daea71ddb1c64a60a742ffb9fc7ccde240d0abbab5bf556be",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/USER_GUIDE.md": {
+      "previous": {
+        "sha256": "b309d7482ab8e49db2c377c27bb89d01afcf9845a94039917a1f4d9570c892f6",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "0342d1322f8f85938a1bf7ccc8700d0324adbb67272fcb1272af85060f203875",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/RELEASE_NOTES.md": {
+      "previous": {
+        "sha256": "81fee6a2c000a5679e03034e38398db1bd21805722570d57fe97979a301f58a1",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "8622fd5b0b9d6c102f42fd65615a096f8577981fd8db168aa7076553edca0f28",
+        "mode": 420
+      }
+    },
+    "usr/share/doc/ottrin/ROADMAP.md": {
+      "previous": {
+        "sha256": "99310268f43158da5b76e972136e6ae39bf4b891e1d337444183a9d191881c94",
+        "mode": 420
+      },
+      "candidate": {
+        "sha256": "ac43fb40499739b2e41334ce312ef8ec73d0c385651f1434ecdf56f646f07a0a",
+        "mode": 420
+      }
+    }
+  },
+  "unchanged_entries": 106,
+  "scope": "Every runtime library, other helper, font, asset, launcher and policy unchanged. Daemon complete loaded-image identity/differences are recorded in LINUX_INDEX_ELF_COMPARISON.json; reuse requires mapped_image_equal. GUI separately checked in native captures; earlier functional receipts remain historical.",
+  "temporary_extractions_removed": true
+}

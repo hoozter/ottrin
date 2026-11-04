@@ -1,0 +1,59 @@
+{
+  "status": "pass scoped Linux native settings rejection/save-retry and Search status",
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "artifact_sha256": "b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02",
+  "cases": 7,
+  "captures": [
+    {
+      "path": "linux-candidate/theme-save-refused.png",
+      "sha256": "91cebe2b42a2c8d32bf0389da819fdd992d1c0a68e61fa566a8b02c4e503ed28",
+      "review": "Reviewed original: editor and24px draft remain visible; complete read-only save error is visible below the action footer."
+    },
+    {
+      "path": "linux-candidate/theme-save-retried.png",
+      "sha256": "446479f53adcf87a144341658d516519e94b7ded9a12394d724e4d76b4d3e6b7",
+      "review": "Reviewed original: editor closed after retry; Settings shows selected saved theme and shared24px window corners."
+    },
+    {
+      "path": "linux-candidate/search-health.png",
+      "sha256": "41575feca33c19b556a2d557d730c2222a790abc5196500932d0c0020f96b9b2",
+      "review": "Reviewed original: watcher active in index daemon; login state separately says no login service installed, without falsely implying indexing is stopped."
+    }
+  ],
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-sn9p2iy6",
+    "owned_processes_reaped": [
+      {
+        "pid": 1659919,
+        "exit": 0
+      },
+      {
+        "pid": 1659924,
+        "exit": 0
+      },
+      {
+        "pid": 1659925,
+        "exit": 15
+      },
+      {
+        "pid": 1659978,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1660033,
+        1660108
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "96 34 0:65 / /var/tmp/.ottrin-picker-qa-sn9p2iy6/runtime/doc rw,nosuid,nodev,relatime shared:686 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "namespace_gate_pending_at_native_launch": false,
+  "content_gate_now_verified": true,
+  "scope": "Exact AppImage/private X11/software Dark150. Main/Properties/Inspector/index CLI startup errors are stderr diagnostics, not Linux native error-dialog acceptance. Real editor read-only save refusal retains draft and original bytes; repaired retry persists. Search labels, normal close and source preservation pass. No whole-appearance, sustained CPU, physical graphics or whole-roadmap claim."
+}

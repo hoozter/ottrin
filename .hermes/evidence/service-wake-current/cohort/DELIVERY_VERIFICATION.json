@@ -1,0 +1,48 @@
+{
+  "status": "pass exact seven-format publication and scoped owned cleanup",
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "artifacts": {
+    "dist/packages/ottrin-0.1.0-1.x86_64.rpm": {
+      "sha256": "62b0e7a04fe86b72ae8a6ea077caed09e42b9e009d080c94cac142d1bf36872a",
+      "bytes": 27955380,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-x86_64.AppImage": {
+      "sha256": "b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02",
+      "bytes": 32756928,
+      "sidecar_matches": true
+    },
+    "dist/packages/Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "sha256": "74e647a024b5ab7a73c68cf3cf0fef1ad0791d4425e653fdec93b0c14e7085de",
+      "bytes": 32382014,
+      "sidecar_matches": true
+    },
+    "dist/packages/ottrin_0.1.0_amd64.deb": {
+      "sha256": "ffb2b7566c83b38aed615eefd615c457fc0d3b0927068c5a7cba96febc6dbd85",
+      "bytes": 21554238,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip": {
+      "sha256": "621647d10471a184762dbe39cc40b4231af6a96589f5468820689c45de076e4c",
+      "bytes": 55511767,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe": {
+      "sha256": "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f",
+      "bytes": 39827166,
+      "sidecar_matches": true
+    },
+    "dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix": {
+      "sha256": "2987d5de5a229246978a6294c02607b25c7809a2d3daa5aaf8f54ab828069121",
+      "bytes": 57034104,
+      "sidecar_matches": true
+    }
+  },
+  "windows_payload_files": 58,
+  "held_msi_preserved_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "limits": [
+    "Current native settings preservation and Windows task/login controls pass at scoped software-renderer coverage; earlier GUI idle sample retains47a source scope",
+    "MSIX16 assembly/unpack only; historical lifecycle retains original hashes",
+    "Full roadmap, MSI rollback, sustained/personal/physical acceptance and signing/Store remain open"
+  ]
+}

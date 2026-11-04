@@ -9,31 +9,32 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 All seven stable packages remain runtime
-`47a772af0a15c353922aa9a78d14afdaa13ced1a`: four Linux formats in `dist/packages/`
-and ZIP/NSIS/development MSIX0.1.0.14 in `dist/windows-candidate/`.
+`f463ff268f1c0850360fb3d1d81da18a3d3240ec`: four Linux formats in `dist/packages/`
+and ZIP/NSIS/development MSIX0.1.0.16 in `dist/windows-candidate/`.
 The AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`6e0f9c27d5ffffe718a61cea985480ec763ae1c766cb1ceeb1590d5a9c4b99f5`.
+`b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
-The stable preview includes off-thread storage discovery, changed-only index
-observations and removal of unchanged GUI repaints. Its scoped Linux and Windows
-Native/OpenGL idle samples pass below2% of one core. Windows Dark144DPI controls,
-new-drive discovery, index counts, close/uninstall and native window-region
-receipts retain their original scopes in `gui-idle-refresh-current/`.
-Physical graphics, other scales/themes, sustained workloads and whole-interface
-acceptance are not established by those samples.
+The preview retains off-thread storage discovery and changed-only index
+observations. The earlier47a Linux/Windows Native/OpenGL GUI idle measurements
+remain historical evidence in `gui-idle-refresh-current/`; their exact numeric
+samples are not relabelled as fresh f463 results. Current daemon samples and
+settings/service acceptance are listed below. Physical graphics, other scales/
+themes, sustained workloads and whole-interface acceptance remain separate.
 
 Packaged manuals are build-time snapshots. `SOURCE_REVISION.txt` identifies the
 runtime; repository acceptance manifests and this queue record later progress.
 Documentation/evidence checkpoints do not require rebuilding unchanged runtime.
 
-### Current candidate: event-driven Services
+### Delivered cohort: event-driven Services
 
 Runtime source: `f463ff268f1c0850360fb3d1d81da18a3d3240ec`.
 Evidence/producers: `.hermes/evidence/service-wake-current/`.
-Stable packages above are preserved until the candidate's remaining gates pass.
+All seven artifacts above are promoted, rehashed and match the accepted source.
+`cohort/DELIVERY_VERIFICATION.json` and `cohort/CLEANUP_FINAL.json` bind delivery
+and cleanup; the whole roadmap remains unfinished.
 
 | Requirement/gate | Current evidence |
 | --- | --- |
@@ -41,50 +42,50 @@ Stable packages above are preserved until the candidate's remaining gates pass.
 | Source checks |489 Linux UI tests pass, one existing ignored; formatting and strict native/Windows Search/UI/app all-target lint pass. The rendered pending-service regression verifies no animation/polling and a real completion wakeup. |
 | Linux packaging |All four formats build and pass package/content/namespace checks. |
 | Linux native settings |Seven exact-AppImage cases pass at private software X11 Dark150: malformed settings are preserved/rejected, read-only theme save retains the24px draft, retry saves it, Search labels are truthful, close and source/preferences are preserved. Three original captures directly reviewed. Startup-error checks are stderr diagnostics, not native error-dialog acceptance. |
-| Linux candidate daemon |Fresh private1000-file watcher/create/rename/delete/query/restart/two-shutdown probe passes;0.033% one core over30seconds without clients during measurement. Private state/processes removed. |
+| Linux delivered daemon |Fresh private1000-file watcher/create/rename/delete/query/restart/two-shutdown probe passes;0.033% one core over30seconds without clients during measurement. Private state/processes removed. |
 | Personal Linux daemon |Read-only sample of the older running daemon: enabled, Ready,193207 items, watcher ready, no error;0.267% one core over30seconds. No restart or settings change. This is neither current-candidate nor sustained acceptance. |
 | Windows packaging |ZIP/NSIS build and all58 payload files match. Installer SHA256 `2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f`. |
-| Windows Services |Setup now completes (observed20–23seconds) and the diagnostic reached14 states. Full acceptance remains open: one run stopped at an ambiguous Refresh selector; the corrected selector identifies the index-section control, but an extra reader then caused a receipt-sharing failure. Both failed runs and teardown remain. An identical-actor/package clean-observer rerun is active; no assertions or deadlines were relaxed. |
-| Windows remaining gates |Fresh core9case settings/close/uninstall workflow, complete16-state/six-toggle Services workflow, MSIX16 assembly/fresh private daemon probe, and final Windows CI verification remain pending. Exact clean Git input is prepared for MSIX; no assembly/deployment success is claimed. |
-| Hosted checks |CI41779769053: Linux verification and both isolated performance jobs pass; Windows full verification is still running. Earlier6f CI failed the readable-error assertion; it is not counted as a passing run. |
+| Windows Services |All16 states and six native login toggles pass. Each toggle preserves the current daemon PID set, task-instance count and permissions. Setup completed in18.13seconds in the accepted software fixture. Seven original complete-window captures reviewed; source/preferences/index preserved and supported uninstall passed. Earlier selector/sharing failures remain explicitly failed diagnostic evidence. |
+| Windows native settings |Nine cases pass on both Native/OpenGL at Dark144DPI: configuration rejection, native startup error, retained24px theme draft after save refusal, persisted retry, separate daemon/login Search status, close and uninstall. Seven original captures reviewed. |
+| MSIX16 |Native MakeAppx/unpack matches all58 payload files. Fresh SYSTEM-account1000-file watcher/query/restart/two-stop daemon probe passes at0.208% one core over30seconds. New MSIX startup-checkbox/deployment/update/login acceptance remains separate; no Store/signing claim. |
+| Hosted checks |CI41779769053: all four exact-source verification/performance jobs pass. The full Windows suite includes the unchanged readable-error assertion. Earlier6f CI failure is not counted as a pass. |
 
-The current native Services fixture checks initial setup, update/reinstall,
+The accepted native Services fixture checks initial setup, update/reinstall,
 stop/restart, externally disabled registration, disabled repair and uninstall.
-Six native checkbox actions must preserve daemon PIDs, task-instance counts and
-permissions. Partial diagnostic progress does not replace the complete matrix.
+Six native checkbox actions preserve daemon PIDs, task-instance counts and
+permissions. Partial diagnostic progress was not substituted for the complete matrix.
 
-Completed cleanup: retired unpublished6f candidates and its unconsumed archive
-(553546060bytes),22 obsolete incremental sessions, completed Linux extraction
-(76560003bytes), private Linux profiles and terminal Windows VM disks/desktops/
-bootstrap inputs. Newest compiler state, useful shared caches, protected bases,
-user data and stable packages remain. Current candidate stages are
-`.hermes/packaging-tmp/.linux-native-desktop-stage` and
-`.hermes/packaging-tmp/.windows-picker-stage`; current source archive is
-`service-wake-current/cohort/source.zip`. They have declared native/MSIX/delivery
-consumers. The live VM owns its current overlay/media and has registered teardown.
+Completed cleanup: retired unpublished6f candidates/unconsumed archive
+(553546060bytes),22 obsolete incremental sessions, the completed Linux extraction
+(76560003bytes), current source archive, five owned VMs/ten volumes, six private
+profiles and consumed bootstrap/transport files. Superseded stable packages were
+replaced/retired after hash, hard-link and open-consumer checks. Newest compiler
+state, useful shared caches, protected bases, user data and current packages remain.
+No disposable fixture, source archive, extraction or candidate stage remains.
+Exact retained paths/purposes and compiler-size comparisons are in `CLEANUP_FINAL.json`.
+The QA controller now raises failure for an explicitly failed actor after safely
+exporting its evidence, with registered teardown retained; replay of both actual
+failed and passed results verifies this reporting change without rerunning matrices.
 
 ### Ordered implementation and acceptance queue
 
-1. Finish this candidate's Windows Services/core/MSIX and exact-source CI gates.
-   Review the original native captures, promote one coherent seven-format cohort
-   to the stable paths, and finish owned cleanup. Do not rebuild or change source
-   to compensate for a test-observer/selector defect.
-2. Complete actual Linux polkit prompt/cancel/setup/reinstall and managed-index
-   service/login/runtime states in an owned full-system environment. These are
-   independently executable software QA, not owner waits. Reuse cached distro
-   bases; preserve personal services and protected VMs.
-3. Finish the theme/interface consistency audit and implementation. U08 remains
+1. Complete actual Linux polkit prompt/cancel/setup/reinstall and managed-index
+   service/login/runtime states, including slow-start/upgrade readiness, in an
+   owned full-system environment. These are independently executable software QA,
+   not owner waits. Reuse cached distro bases and preserve personal services.
+2. Finish the theme/interface consistency audit and implementation. U08 remains
    unfulfilled: preview navigation and Sync are invented, address fill differs
    from the production breadcrumb frame, and miniatures apply full-size corners
    without scaling. Reuse actual production presenters and geometry. Verify all
    supported controls, role ownership, tabs, menus, text/icon alignment and window
    styling; field-map/test counts do not prove whole-interface consistency.
-4. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
+3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
    Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
    DEB/RPM and cooperating Windows caller receipts retain their exact scopes.
+   Verify the new MSIX startup checkbox in its installed-package context.
    Do not infer universal Windows dialog replacement or repeat fulfilled matrices
    without changed inputs or a reproduced defect.
-5. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
+4. Audit every remaining clause in `windows-preview-safety-current/AUDIT_REQUIREMENTS.json`
    (54 roadmap bullets) and `release-audit-current/USER_REQUIREMENTS.json` (15
    overlapping user requirements), reconcile the release matrix/documents, and
    leave only actual [owner/external waits](#ownerexternal-waiting-list).

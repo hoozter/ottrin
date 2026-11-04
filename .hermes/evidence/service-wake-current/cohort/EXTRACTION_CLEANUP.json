@@ -1,0 +1,7 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "removed_bytes": 76560003,
+  "removed": true,
+  "actual_app_sha256": "1afece21d39fcb88aecd4af3a5c0716ab0b7f19ccb33e3af7f93d2659eb24c17",
+  "retained": "Current four package candidates and compact evidence; no mount/process consumed extraction"
+}

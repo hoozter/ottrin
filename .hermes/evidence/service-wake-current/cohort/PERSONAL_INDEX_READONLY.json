@@ -1,0 +1,30 @@
+{
+  "scope": "Read-only actual personal Linux systemd daemon, no restart/configuration/index mutation;30-second one-core CPU sample with health snapshots outside measurement. No sustained or current-candidate acceptance claim.",
+  "pid": 885280,
+  "name": "ottrin-indexd",
+  "binary_sha256": "21fe794ad24e6db1c38c30a0fa34ef34b258d7d8dd09f78fa8ec21667dbcbdc0",
+  "service_enabled": "enabled",
+  "seconds": 30.000101775978692,
+  "cpu_one_core_percent": 0.26666576199436964,
+  "before": {
+    "observation_error": "[Errno 104] Connection reset by peer"
+  },
+  "after": {
+    "observation_error": "[Errno 104] Connection reset by peer"
+  },
+  "health_after_sample": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 988450816,
+    "snapshot_revision": 25417,
+    "indexed_items": 193207,
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_error": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_error": null
+  },
+  "health_observation_note": "Initial ad hoc health requests used an incorrect header byte order (and initially incorrect case); the daemon rejected them without mutation. CPU counters/sample remain valid. Reused the production fixture big-endian/snake_case/version2 wire contract for the succeeding read-only status observation; no sample rerun or restart."
+}

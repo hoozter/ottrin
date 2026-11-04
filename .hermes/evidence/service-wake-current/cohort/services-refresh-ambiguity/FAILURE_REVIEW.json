@@ -1,0 +1,9 @@
+{
+  "directly_reviewed_original": "services/results/failure-settings.png",
+  "sha256": "4c75bd1275c64906c2572c89907ad66b78112785a13078af3ccc2daae2cc1a81",
+  "visible": "Index is running/ready after restart. Index Refresh status and a second folder-integration Refresh status are both present. Old actor requires globally unique name, so it cannot choose the index control.",
+  "partial_states": 9,
+  "partial_login_toggles": 4,
+  "status": "failed QA selector; not full service acceptance",
+  "runtime_artifact_unchanged": "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f"
+}

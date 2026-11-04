@@ -1,0 +1,64 @@
+{
+  "status": "pass inspected declared production delta; behavioral/native gates separately required",
+  "previous_source": "47a772af0a15c353922aa9a78d14afdaa13ced1a",
+  "candidate_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "files": {
+    "Cargo.lock": "f4729d17d1bb9af00af3afdae6b708c1e729c1074d2aa7d283f5b6e715f83fa0",
+    "README.md": "5bba2893be069c7daea71ddb1c64a60a742ffb9fc7ccde240d0abbab5bf556be",
+    "crates/ottrin-app/src/bin/ottrin-indexd.rs": "e09f9aba101f47b96b239cf5186d98663b93953adb64190c58cb30bc25f67e24",
+    "crates/ottrin-app/src/main.rs": "2aa9954eb3d2e3da5d6c4282bfef18449f2d504c6eddc84c05b986e4d38b403b",
+    "crates/ottrin-search/Cargo.toml": "16c4c90c8c35c925618bdb3e723926d2dfbae57ea469ebecc5d9b3fcb1117b0c",
+    "crates/ottrin-search/src/lib.rs": "daa9a7461f65c53a474d068e6b5972439c14cf1ac611910383bf7f6a0fba892d",
+    "crates/ottrin-search/src/windows_index_startup.ps1": "ca44f565703632857b5f6d00b127bc2fc3612d821e1f11209aa40f2063e96e97",
+    "crates/ottrin-ui/Cargo.toml": "c0ca3784c6a0dab2dd6188f6f0efaa5753c545e771123be96b0af0b3a52a38cf",
+    "crates/ottrin-ui/src/appearance_editor.rs": "705db6f6ca85a42825153ba51a8783a50adee9fa64568ccd6030989d145b2edd",
+    "crates/ottrin-ui/src/config.rs": "9b69df52dc23ce6a95576dade0d1c7f69989746b21446774cbea0a787bbda630",
+    "crates/ottrin-ui/src/internal_picker.rs": "e00311d511a721ae277a8b04e48aa914182f6b941c85d571ba8acfe9672ba210",
+    "crates/ottrin-ui/src/lib.rs": "7224b7f481588070b417c616719fb2b73d5762cff415c27d7ccb8394a8809ac9",
+    "crates/ottrin-ui/src/picker.rs": "225f76a5982b09b7f8f2e392309c9ac3b4bb48a61dbdd91e22d558b6f4b194d0",
+    "crates/ottrin-ui/src/properties.rs": "824e0be246980b71ab3fccb2122f663a53f4e1c326b437860cd48c0f7133e8aa",
+    "docs/RELEASE_NOTES.md": "8622fd5b0b9d6c102f42fd65615a096f8577981fd8db168aa7076553edca0f28",
+    "docs/USER_GUIDE.md": "0342d1322f8f85938a1bf7ccc8700d0324adbb67272fcb1272af85060f203875",
+    "packaging/tests/verify-linux-native-daemon-ownership.py": "dd7f85ebdb8645d615c8056bbd68b20c4de68a79faa6f4b5ebc8ae6fd64450c6"
+  },
+  "changed_files": [
+    "Cargo.lock",
+    "README.md",
+    "crates/ottrin-app/src/bin/ottrin-indexd.rs",
+    "crates/ottrin-app/src/main.rs",
+    "crates/ottrin-search/Cargo.toml",
+    "crates/ottrin-search/src/lib.rs",
+    "crates/ottrin-search/src/windows_index_startup.ps1",
+    "crates/ottrin-ui/Cargo.toml",
+    "crates/ottrin-ui/src/appearance_editor.rs",
+    "crates/ottrin-ui/src/config.rs",
+    "crates/ottrin-ui/src/internal_picker.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/picker.rs",
+    "crates/ottrin-ui/src/properties.rs",
+    "docs/RELEASE_NOTES.md",
+    "docs/USER_GUIDE.md",
+    "packaging/tests/verify-linux-native-daemon-ownership.py"
+  ],
+  "prior_inspected_configuration_scope": ".hermes/evidence/config-status-current/cohort/SOURCE_SCOPE.json",
+  "prior_source": "e3e33ae3441412405424143dcaabc63604a3780f",
+  "new_production_delta": [
+    "Cargo.lock",
+    "crates/ottrin-search/Cargo.toml",
+    "crates/ottrin-search/src/lib.rs",
+    "crates/ottrin-search/src/windows_index_startup.ps1",
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "shipping_behavior": "Reject malformed/unreadable configuration without replacement; checked atomic settings saves and retained theme draft on error; actionable Windows startup failure reporting; truthful backend/login Search health. Independent future-login controls preserve current daemon state, with Linux disabled-startup repair retention and existing MSIX policy/collision guards. All Windows scheduler bodies use a single UTF16LE encoded input/UTF8 direct-error transport. Services progress/status views use worker completion wakes instead of continuous animation/polling.",
+  "basis": [
+    "Configuration/entrypoint/picker/properties/appearance files outside lib.rs are byte-identical to inspected e3 configuration-preservation source.",
+    "Inspected e3-to-candidate delta confines new behavior to service commands/transport, service UI and Search labels; native16state/six-toggle checks bind the ordinary-user Windows actions to the exact package.",
+    "No indexing algorithm, watcher, query, preview renderer, folder integration or theme field-map/presenter implementation changed in the delta. Full payload inventories enumerate changed binaries and manuals.",
+    "Exact-source hosted checks and named fresh native scopes gate delivery; this inspection does not replace them."
+  ],
+  "limits": [
+    "Current Linux managed-service/polkit and new MSIX startup-checkbox native coverage remain separate.",
+    "Current settings workflows are not whole-interface, whole-theme, sustained CPU or physical graphics acceptance.",
+    "U08 still requires actual production presenters and scaled miniature geometry; current originals preserve that open issue."
+  ]
+}

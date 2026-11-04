@@ -1,0 +1,48 @@
+{
+  "status": "pass native settings error/preservation/save-retry and Search status workflow",
+  "cases": [
+    {
+      "case": "invalid config refused: main",
+      "exit": 1,
+      "stderr": "ottrin: app creation error: Could not load Ottrin settings /var/tmp/.ottrin-picker-qa-sn9p2iy6/config/ottrin/config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n",
+      "original_bytes_preserved": true
+    },
+    {
+      "case": "invalid config refused: properties",
+      "exit": 1,
+      "stderr": "ottrin properties: Could not load Ottrin settings /var/tmp/.ottrin-picker-qa-sn9p2iy6/config/ottrin/config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n",
+      "original_bytes_preserved": true
+    },
+    {
+      "case": "invalid config refused: inspector",
+      "exit": 1,
+      "stderr": "ottrin: app creation error: Could not load Ottrin settings /var/tmp/.ottrin-picker-qa-sn9p2iy6/config/ottrin/config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n",
+      "original_bytes_preserved": true
+    },
+    {
+      "case": "invalid config refused: index-status",
+      "exit": 1,
+      "stderr": "ottrin: Could not load Ottrin settings /var/tmp/.ottrin-picker-qa-sn9p2iy6/config/ottrin/config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n",
+      "original_bytes_preserved": true
+    },
+    {
+      "case": "native theme save refused",
+      "draft_radius": 24,
+      "original_config_bytes_preserved": true,
+      "editor_stays_open": true
+    },
+    {
+      "case": "native save retry persisted retained draft",
+      "dark_radius": 24,
+      "light_radius": 0
+    },
+    {
+      "case": "Search shows independent daemon and separate login state",
+      "backend": "active in the index daemon",
+      "login": "Start index at login"
+    }
+  ],
+  "scope": "Actual AppImage/private X11/software Dark150; invalid main configuration never replaced, actual native theme draft retained on failed save, repaired retry persisted, and actual Search labels. Not full appearance/physical/platform acceptance.",
+  "source_preserved": true,
+  "normal_exit": 0
+}

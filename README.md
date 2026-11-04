@@ -36,16 +36,17 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The current seven local artifacts use clean runtime `47a772af`.
-All four exact-source CI jobs and 481 UI tests pass (one existing ignored).
-Matched private software-renderer samples pass the strict GUI idle CPU threshold
-on Linux and Windows Native/OpenGL. Automatic native index-count updates and
-Windows OS drive insertion pass without injected input; normal close and supported
-uninstall preserve fixture source/preferences. Development MSIX 0.1.0.14 passes
-native assembly/unpack and 58-file equality; no fresh MSIX update/login claim.
-Earlier appearance/preview/picker/folder/service checks retain their exact historical
-source/artifact scopes. Full roadmap, MSI rollback, sustained/physical/personal
-acceptance and final daily-driver review remain open. See the roadmap and stable
+The current seven local artifacts use clean runtime `f463ff26`.
+All four exact-source CI jobs pass. Current package checks include seven Linux
+settings cases, nine Windows settings cases on Native/OpenGL, and sixteen Windows
+Services states with six independent login toggles. Reviewed originals and
+source/preferences-preserving close/uninstall bind those scopes. Fresh private
+1,000-file daemon probes pass below1% of one core on both platforms. Development
+MSIX0.1.0.16 passes native assembly/unpack and58-file equality; installed-package
+startup/update/login coverage remains separate. Earlier GUI-idle, appearance,
+preview, picker, folder and media receipts retain their exact historical scopes.
+Full roadmap, Linux polkit/managed-service checks, MSI rollback, physical/sustained
+coverage and final daily-driver acceptance remain open. See the roadmap and stable
 acceptance manifests for exact scopes.
 
 ### Linux

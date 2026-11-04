@@ -1,0 +1,46 @@
+{
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": []
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Check Windows index transport before workspace suite",
+          "conclusion": "skipped"
+        }
+      ]
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "failure",
+      "steps": [
+        {
+          "name": "Check Windows index transport before workspace suite",
+          "conclusion": "success"
+        },
+        {
+          "name": "Cargo test",
+          "conclusion": "failure"
+        }
+      ]
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": []
+    }
+  ],
+  "status": "completed",
+  "source_revision": "6f0a58e98786878811b84e8df05c75e686d6424e",
+  "failure": "Full Windows Search suite: index_powershell_preserves_multiline_comments_quotes_and_unicode received CLIXML for thrown Unicode failure. Focused earlier step passed; full suite failed."
+}

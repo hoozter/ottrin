@@ -1,0 +1,26 @@
+{
+  "status": "failed receipt writer after intrusive diagnostic read; partial scope only",
+  "error": "Exception calling \"Replace\" with \"3\" argument(s): \"The process cannot access the file because it is being used by another process.\"",
+  "partial_states": 14,
+  "verified_login_toggle_checks": 4,
+  "refresh_selector": {
+    "section_start": "Background index service",
+    "target_bounds": "1153,744,163,42",
+    "index_section_buttons": 1,
+    "section_end": "Desktop integration",
+    "all_named_buttons": 2
+  },
+  "cause": "An extra ad hoc Get-Content receipt reader lacked FileShare.Delete. Normal controller/observer already use ReadWrite|Delete. Remove that read path; use only the shared-delete observer. No product or assertion/deadline changes.",
+  "native_frozen_actor_sha256": "f4f8f1d9f8eab801de92195d80b1efdc804c9608e14d10abcbb1c48f2996a01d",
+  "runtime_source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

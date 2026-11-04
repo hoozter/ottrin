@@ -1,0 +1,14 @@
+{
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "requirement": "U08 accurate production UI preview; not fulfilled by scoped settings workflow",
+  "directly_reviewed_images": [
+    "linux-candidate/theme-save-refused.png",
+    "linux-candidate/theme-save-retried.png"
+  ],
+  "remaining": [
+    "Theme editor still paints ASCII navigation and an invented Sync button; replace with production presenters.",
+    "Address preview fill uses raised-panel background while the production breadcrumb frame uses toolbar background.",
+    "Theme miniature applies full-size window radius to its small titlebar/thumbnail, yielding exaggerated corner/capsule geometry. Use consistent scaled production geometry."
+  ],
+  "next_action": "Refactor actual shared preview/presentation responsibilities after the current delivery cohort. Do not mark appearance acceptance from these preservation/retry captures."
+}

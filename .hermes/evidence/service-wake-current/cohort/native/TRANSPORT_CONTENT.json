@@ -1,0 +1,113 @@
+{
+  "members": [
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "6af36b4f7746d95380dfffb353b4e6fd5b3812579eef971f6eafcb27977df864",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 257,
+      "sha256": "04d18e178d6067622ae19c3cbca414ba8def3babdc5f438abfbaab5779c8489a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 90,
+      "sha256": "daa9827f7314e9cf03cca4c5aa7a0864eb453a1b9563fb3ccc588932f876a942",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-cli-process.json",
+      "bytes": 321,
+      "sha256": "7abd0515a263be19ad8002cf3781925e70e92f82ad5f374d8dfdfdbe672b415c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-daemon-process.json",
+      "bytes": 334,
+      "sha256": "c4d945914ad55a86541f94aec65d3b9b2f0ea1f536c799e387696d0dd093f2d1",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "invalid-settings-native.png",
+      "bytes": 109684,
+      "sha256": "2a484c4d59657a651963eb3a3b004a67f605345140faf86347b03d18754cbfde",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-save-refused.png",
+      "bytes": 209098,
+      "sha256": "41f5d45de9187133a9ea1061ade8f06699d2c5898f41704ede7b45e3912dad0a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-save-retried.png",
+      "bytes": 85025,
+      "sha256": "3f076f099cccbf299ddf8febbbb19e746b204efea4076fc7ec36e7f87838af89",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-search-health.png",
+      "bytes": 125576,
+      "sha256": "db33fa843fa5d87473b03bba61de0c3647f13bc7cfa00ca4c4eac0172205e4dc",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-save-refused.png",
+      "bytes": 209014,
+      "sha256": "6bac9d3d8ceb94d75fff5732f664069de22f48c81cd02180b59b67cfdabd5d48",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-save-retried.png",
+      "bytes": 84014,
+      "sha256": "642dfc4d04690ced67599c38535eb875fb7a1a9b02720d961889f261ce181529",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OpenGL-search-health.png",
+      "bytes": 123918,
+      "sha256": "91f3122f7758089b40ce38ad7d1c7de3484821da4cda3a3ad1ea84aa59efbf9f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "a3269fee1b158671be9f184e99c33e24b66a6d6ed55625fedd8bfdf9758ae3b3",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 6859,
+      "sha256": "394cf05ce9867cef688037ab0426ac8fdf59d0e4bb8bbc9ad398231da4f835a8",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "uninstall-process.json",
+      "bytes": 88,
+      "sha256": "d910e7fbe4b081fdcfc3187de8d59fe9cec6c88fde11744f995ed9c96a87a9be",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 257365,
+      "sha256": "2512da09714b2dd2ea43e90fe7a877b05d20b2ee7ea5788f642deef5be1b1986",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 148820,
+      "sha256": "400074e5b12044397844c508536fbd42c61ed24f7867884afe0aff14a37bca4f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "cfab1e1bdc3744cc2ea923868344cfc9237de55163dbed4d30b0beb049c0a7b2",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

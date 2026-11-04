@@ -2,33 +2,39 @@
 
 Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Final daily-driver and public-release acceptance remains outstanding.
 
-## Current local candidate
+## Current local preview
 
-The current Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development
-MSIX 0.1.0.14 use runtime `47a772af0a15c353922aa9a78d14afdaa13ced1a`. All seven artifacts/sidecars
-and 58 Windows payload files are independently rehashed at stable paths.
-Exact-source CI 41750766499 passes all four jobs; 481 UI tests pass (one existing
-ignored), with strict native/Windows lint and formatting.
+Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development MSIX0.1.0.16
+use runtime `f463ff268f1c0850360fb3d1d81da18a3d3240ec`. All seven artifacts and
+sidecars, plus all58 Windows payload files, are rehashed at the stable paths.
+Exact-source CI41779769053 passes all four verification/performance jobs.
 
-Unchanged storage and index status no longer trigger GUI repainting. Storage
-observation runs off-thread, starts with the locations rail, rejects observations
-older than a fresh operation guard and preserves selected volumes before the
-initial snapshot. Index status observes changes independently of GUI frames.
-Matched private software-renderer 30-second samples pass the below 2% one-core
-GUI idle threshold on Linux and both Windows renderers. Native index counts follow
-external create/delete without injected input; Windows also observes an inserted
-OS DOS-drive root. Normal close/uninstall preserve fixture source/preferences.
-Four Linux and six Windows original captures were reviewed. This is bounded
-software-fixture acceptance, not universal zero CPU or sustained/physical testing.
+Settings now reject malformed/unreadable files without replacing them. A failed
+theme save retains the draft and original settings; after permissions are fixed,
+retry persists the same draft. Windows startup failures provide a native error
+and diagnostic log path. Fresh package checks pass seven Linux cases and nine
+Windows cases on Native/OpenGL, with original captures reviewed.
 
-MSIX14 passes production MakeAppx/unpack and complete58-file equality; runtime,
-update and login acceptance retain historical exact scopes. Earlier numeric/theme,
-window-region, preview, picker, folder, service and media receipts likewise retain
-their original artifacts. Required MSI rollback, full roadmap/platform coverage,
-signing/Store and owner acceptance remain open. No public release or personal
-service/settings change is claimed. Owned fixtures, source archive, extraction,
-superseded packages and obsolete incremental state were removed. Packaged manuals
-are build-time snapshots; repository manifests/docs record later acceptance.
+Services separates automatic startup at the next sign-in from the daemon running
+now. Windows passes sixteen native states and six checkbox toggles that preserve
+current daemon PIDs, task instances and permissions. Linux source/unit checks cover
+future-startup commands and preservation of a disabled choice during repair;
+actual managed-service/polkit prompt coverage remains pending. Pending service
+work uses completion wakeups instead of a continuously repainting spinner.
+
+Fresh private1,000-file daemon probes pass watcher changes, queries, persistence,
+restart and two shutdowns: Linux0.033% and Windows0.208% of one core over30seconds.
+The Windows probe uses the disposable SYSTEM assembly account. These bounded
+samples do not establish sustained/physical acceptance or replace the older GUI
+idle receipts. MSIX16 passes native MakeAppx/unpack and58-file equality; installed
+startup/update/login acceptance remains separate.
+
+Owned VMs, profiles, source archive, staging/extraction, consumed bootstrap and
+superseded packages are removed. Personal services/settings were preserved.
+Full theme/interface and caller audits, Linux prompt/managed-service acceptance,
+MSI rollback, signing/Store and final owner acceptance remain open. Packaged
+manuals are build-time snapshots; repository manifests/docs record later delivery.
+No public release is implied.
 
 ## Highlights
 

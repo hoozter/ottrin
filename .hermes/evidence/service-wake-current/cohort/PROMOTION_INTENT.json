@@ -1,0 +1,8 @@
+{
+  "source": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "linux_from": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "windows_from": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "windows_retired": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+  "held_msi_sha256": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9",
+  "all_native_consumers_terminal": true
+}

@@ -1,0 +1,89 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 249,
+      "sha256": "52c68149d39ddfa9e7c0afda64722cbbbab3e1583886502b217510b2c90c22dc",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "failure-settings.png",
+      "bytes": 181447,
+      "sha256": "ffb410eaf0a859fc3274db4beeef0c66e994cc35d48f8cdaf51babf916718294",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "d362f3ad63d4d7fb496cc16374a437792093c4c89f45b57ec10e010bebd5efc0",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 90,
+      "sha256": "160a53bc40bf4a01ae9070173662210011b4ab1e66e6ffa32da72ab47344853f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "33e37130f25cfa75593379ca6087859049d86de99cec9bc8f14962b23c45308d",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 65194,
+      "sha256": "07a933b1260719d19a29ebdeb3d2c69cb67b8eb9d23e71ab8c1879936aee3194",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "services-disabled-running.png",
+      "bytes": 183394,
+      "sha256": "b231f94bc8e7e455aa26488b825b1d7e992586a8b65a7ab3732ef55535b41712",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "services-disabled-stopped.png",
+      "bytes": 180522,
+      "sha256": "fb5659b3ee0c066f794d34dcbb7cf2acc027f4286111c078aea52b6272193bd2",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "services-installed-running.png",
+      "bytes": 185390,
+      "sha256": "af1571f859160b741cfbae582ec9353e94438472ace5a549626776b8b595263e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "services-installed-stopped.png",
+      "bytes": 179265,
+      "sha256": "6d991c81d2408dd4c59898e033af4877f6d0782ee4bb939a229ced7daed192e2",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "services-session-running.png",
+      "bytes": 172685,
+      "sha256": "e2e848f0377c3d047b4c15ba6ba92e3dbd36741949b2ec5e2aa11d4f86b122a3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 190093,
+      "sha256": "f60c0495541102c75290fb56a1b71b9a14b6db998026ad35a16972f95cbd726d",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 112952,
+      "sha256": "781f1eb31007bc2c85ed2cb0ea121c6d339e2292b64cba912676f75e46dd17d3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "9f1c44d60c5552e7ba44df97496c19cf2e6253ba520ebc499825ab3c7882aafe",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

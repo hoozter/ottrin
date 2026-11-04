@@ -1,0 +1,126 @@
+{
+    "settings_host":  {
+                          "title":  "Settings",
+                          "pid":  6644,
+                          "type":  "ControlType.Window"
+                      },
+    "scope":  "Exact current NSIS/ordinary user, Dark144DPI Native and OpenGL; malformed settings refusal, retained native theme draft after save failure, repaired retry and truthful Search health. Other appearance/MSIX/physical scopes separate",
+    "phase":  "supported uninstall",
+    "preferences_preserved":  true,
+    "cases":  [
+                  {
+                      "case":  "invalid-cli",
+                      "original_bytes_preserved":  true,
+                      "exit":  1
+                  },
+                  {
+                      "case":  "invalid-daemon",
+                      "original_bytes_preserved":  true,
+                      "exit":  1
+                  },
+                  {
+                      "case":  "native invalid-settings startup dialog",
+                      "visible_error":  "Ottrin could not start\n\napp creation error: Could not load Ottrin settings C:\\Users\\OTMSI6f3f2fff76a0\\AppData\\Roaming\\ottrin\\config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n\nDiagnostic log:\nC:\\Users\\OTMSI6f3f2fff76a0\\AppData\\Local\\Ottrin\\startup.log",
+                      "original_bytes_preserved":  true,
+                      "exit":  1
+                  },
+                  {
+                      "radius":  24,
+                      "error":  "Could not save Ottrin settings \\\\?\\C:\\Users\\OTMSI6f3f2fff76a0\\AppData\\Roaming\\ottrin\\config.json: The settings file is read-only; it has been preserved.",
+                      "case":  "native failed theme save retains draft",
+                      "original_bytes_preserved":  true,
+                      "renderer":  "Native"
+                  },
+                  {
+                      "light_radius":  0,
+                      "case":  "native repaired save retry persisted",
+                      "dark_radius":  24,
+                      "renderer":  "Native"
+                  },
+                  {
+                      "dpi":  144,
+                      "case":  "native Search separates daemon runtime and login",
+                      "renderer":  "Native"
+                  },
+                  {
+                      "radius":  24,
+                      "error":  "Could not save Ottrin settings \\\\?\\C:\\Users\\OTMSI6f3f2fff76a0\\AppData\\Roaming\\ottrin\\config.json: The settings file is read-only; it has been preserved.",
+                      "case":  "native failed theme save retains draft",
+                      "original_bytes_preserved":  true,
+                      "renderer":  "OpenGL"
+                  },
+                  {
+                      "light_radius":  0,
+                      "case":  "native repaired save retry persisted",
+                      "dark_radius":  24,
+                      "renderer":  "OpenGL"
+                  },
+                  {
+                      "dpi":  144,
+                      "case":  "native Search separates daemon runtime and login",
+                      "renderer":  "OpenGL"
+                  }
+              ],
+    "package":  {
+                    "source_revision":  "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+                    "files":  [
+                                  {
+                                      "name":  "current-setup.exe",
+                                      "sha256":  "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f"
+                                  }
+                              ],
+                    "actor_sha256":  "520bf2270dd2c4e66b21ffa8354217c04081639084f615041e6f0eb52c33cbcc",
+                    "scope":  "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+                },
+    "dpi_setup":  {
+                      "selected_label":  "150%",
+                      "method":  "Native Scale ComboBox Expand, visible150percent ListItem Select",
+                      "actual_settings_dpi":  144
+                  },
+    "source_preserved":  true,
+    "display_modes":  [
+                          "640x480x32",
+                          "1024x768x32",
+                          "800x600x32",
+                          "2048x1152x32",
+                          "1920x1080x32",
+                          "1920x1200x32",
+                          "1600x1200x32",
+                          "1680x1050x32",
+                          "1440x900x32",
+                          "1280x1024x32",
+                          "1280x960x32",
+                          "1280x768x32",
+                          "1360x768x32",
+                          "1400x1050x32",
+                          "1792x1344x32",
+                          "1856x1392x32",
+                          "1920x1440x32",
+                          "1280x720x32",
+                          "5120x2160x32",
+                          "4096x2160x32",
+                          "3840x2160x32",
+                          "2560x1080x32",
+                          "2560x1600x32"
+                      ],
+    "status":  "pass native settings rejection/save-retry and Search status workflow",
+    "remaining_owned_installed_processes":  0,
+    "error_dialog_controls":  [
+                                  {
+                                      "name":  "OK",
+                                      "offscreen":  false,
+                                      "type":  "ControlType.Pane"
+                                  },
+                                  {
+                                      "name":  "",
+                                      "offscreen":  false,
+                                      "type":  "ControlType.Pane"
+                                  },
+                                  {
+                                      "name":  "Ottrin could not start\n\napp creation error: Could not load Ottrin settings C:\\Users\\OTMSI6f3f2fff76a0\\AppData\\Roaming\\ottrin\\config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n\nDiagnostic log:\nC:\\Users\\OTMSI6f3f2fff76a0\\AppData\\Local\\Ottrin\\startup.log",
+                                      "offscreen":  false,
+                                      "type":  "ControlType.Pane"
+                                  }
+                              ],
+    "display_mode":  "1920x1440"
+}

@@ -1,0 +1,14 @@
+{
+  "directly_reviewed_originals": 7,
+  "captures": {
+    "invalid-settings-native.png": "2a484c4d59657a651963eb3a3b004a67f605345140faf86347b03d18754cbfde",
+    "Native-save-refused.png": "41f5d45de9187133a9ea1061ade8f06699d2c5898f41704ede7b45e3912dad0a",
+    "Native-save-retried.png": "3f076f099cccbf299ddf8febbbb19e746b204efea4076fc7ec36e7f87838af89",
+    "Native-search-health.png": "db33fa843fa5d87473b03bba61de0c3647f13bc7cfa00ca4c4eac0172205e4dc",
+    "OpenGL-save-refused.png": "6bac9d3d8ceb94d75fff5732f664069de22f48c81cd02180b59b67cfdabd5d48",
+    "OpenGL-save-retried.png": "642dfc4d04690ced67599c38535eb875fb7a1a9b02720d961889f261ce181529",
+    "OpenGL-search-health.png": "91f3122f7758089b40ce38ad7d1c7de3484821da4cda3a3ad1ea84aa59efbf9f"
+  },
+  "scope": "Direct original native captures: actionable startup failure with diagnostic path/OK; both renderers retain24px draft and show complete read-only error, successful retry closes editor and selects saved theme, Search shows1 file indexed with active daemon and independently Off login. Dark144DPI software fixture; no whole-interface/theme or physical acceptance.",
+  "remaining_visual_gap": "Both renderers still show invented preview ASCII arrows/Sync and unscaled theme-miniature corners, tracked separately under U08."
+}

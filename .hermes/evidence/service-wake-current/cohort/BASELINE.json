@@ -1,0 +1,19 @@
+{
+  "source_head": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "at": "2026-11-04T05:31:58.404469+00:00",
+  "compiler_roots": {
+    "target/debug/deps": 41726605035,
+    "target/debug/incremental": 24280782034,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33305582628,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40082785447,
+    "target/release/deps": 4445344566,
+    "target/x86_64-pc-windows-gnu/release/deps": 3996438209
+  },
+  "staging_before": {
+    "linux": false,
+    "windows": false
+  },
+  "evidence_before_bytes": 142486,
+  "purpose": "One clean coherent native/Windows event-driven Services cohort, same compiler roots/features/flags and one job. No source archive until MSIX consumer ready.",
+  "cleanup_owner": ".hermes/evidence/service-wake-current/cohort"
+}

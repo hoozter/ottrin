@@ -1,0 +1,652 @@
+{
+  "settings_host": {
+    "title": "Settings",
+    "pid": 7540,
+    "type": "ControlType.Window"
+  },
+  "scope": "Exact current NSIS event-driven Services workflow and independent login checkbox matrix; decoded child diagnostics are read-only. No broader Linux/MSIX/login/physical acceptance.",
+  "phase": "Native service registration/runtime and independent login checkbox matrix",
+  "service_timings": [
+    {
+      "seconds": 20.1538982,
+      "case": "installed enabled running",
+      "app_cpu_seconds": 1.546875,
+      "action": "Enable automatic startup"
+    },
+    {
+      "seconds": 9.7431494,
+      "case": "login disabled while task stays running",
+      "app_cpu_seconds": 1.171875,
+      "action": "login disabled while task stays running"
+    },
+    {
+      "seconds": 6.4609483999999995,
+      "case": "login reenabled while task stays running",
+      "app_cpu_seconds": 0.875,
+      "action": "login reenabled while task stays running"
+    },
+    {
+      "seconds": 16.1175239,
+      "case": "reinstalled enabled running",
+      "app_cpu_seconds": 1.5,
+      "action": "Update / reinstall service"
+    },
+    {
+      "seconds": 11.8812762,
+      "case": "installed enabled stopped",
+      "app_cpu_seconds": 1.21875,
+      "action": "Stop indexing"
+    },
+    {
+      "seconds": 6.635549999999999,
+      "case": "login disabled while index stays stopped",
+      "app_cpu_seconds": 1.125,
+      "action": "login disabled while index stays stopped"
+    },
+    {
+      "seconds": 6.2621816,
+      "case": "login reenabled while index stays stopped",
+      "app_cpu_seconds": 1.09375,
+      "action": "login reenabled while index stays stopped"
+    },
+    {
+      "seconds": 14.7785955,
+      "case": "installed enabled restarted",
+      "app_cpu_seconds": 1.25,
+      "action": "Start / restart"
+    },
+    {
+      "seconds": 4.2411416,
+      "case": "installed disabled but running",
+      "app_cpu_seconds": 0.625,
+      "action": "Refresh status"
+    },
+    {
+      "seconds": 15.764681399999999,
+      "case": "disabled registration repaired; runtime resumed",
+      "app_cpu_seconds": 1.484375,
+      "action": "Update / reinstall service"
+    },
+    {
+      "seconds": 10.113382099999999,
+      "case": "installed disabled stopped",
+      "app_cpu_seconds": 1.109375,
+      "action": "Stop indexing"
+    },
+    {
+      "seconds": 6.565719499999999,
+      "case": "disabled login; session restarted",
+      "app_cpu_seconds": 0.90625,
+      "action": "Start / restart"
+    },
+    {
+      "seconds": 7.796127599999999,
+      "case": "login enabled while existing session stays running",
+      "app_cpu_seconds": 0.828125,
+      "action": "login enabled while existing session stays running"
+    }
+  ],
+  "cases": [],
+  "failure_task": {
+    "state": 3,
+    "name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "last_result": 0,
+    "instances": 0,
+    "enabled": true
+  },
+  "index_refresh_selector": {
+    "section_start": "Background index service",
+    "target_bounds": "1153,744,163,42",
+    "index_section_buttons": 1,
+    "section_end": "Desktop integration",
+    "all_named_buttons": 2
+  },
+  "service_pending": [
+    {
+      "expected": "Update / reinstall service",
+      "pid": 6004,
+      "seconds": 11.6977142,
+      "stage": "resolve task name",
+      "parent": 1564,
+      "executable": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "created": "11/04/2026 07:03:25",
+      "fixed_script": "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n$ErrorActionPreference = 'Stop'\n$ProgressPreference = 'SilentlyContinue'\ntry {\n$ErrorActionPreference='Stop'; # Shared by the application's embedded scheduler scripts and the MSI transaction.\nfunction Get-OttrinIndexTaskName {\n    'Ottrin Index ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value\n}\n\nfunction Get-OttrinIndexTask($folder) {\n    try { return $folder.GetTask((Get-OttrinIndexTaskName)) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -eq -2147024894) { return $null }\n        throw\n    }\n}\n\nfunction Get-OttrinTaskOwner($task) {\n    $principal = $task.Definition.Principal.UserId\n    if ($principal.StartsWith('S-1-')) { return $principal }\n    ([Security.Principal.NTAccount]::new($principal)).Translate([Security.Principal.SecurityIdentifier]).Value\n}\n\nfunction Assert-OttrinTaskOwner($task) {\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {\n        throw 'The existing index task belongs to another user; setup was not changed.'\n    }\n    if ($task.Definition.Principal.LogonType -ne 3) {\n        throw 'The existing index task uses an unsupported logon type; setup was not changed.'\n    }\n}\n\n# Caller first asks the authenticated daemon to exit gracefully when available.\n# Scheduler stop also handles prior one-shot tasks that have no daemon endpoint.\nfunction Stop-OttrinIndexTask($task) {\n    Assert-OttrinTaskOwner $task\n    $task.Stop(0)\n    $deadline = [DateTime]::UtcNow.AddSeconds(10)\n    while ($task.GetInstances(0).Count -ne 0 -or $task.State -eq 4) {\n        if ([DateTime]::UtcNow -ge $deadline) {\n            throw 'The index task did not stop within 10 seconds; its registration was retained.'\n        }\n        Start-Sleep -Milliseconds 20\n    }\n}\n\n# Retirement of the superseded registration is an upgrade operation only.\n# Status/run/remove never fall back to the old global namespace.\nfunction Get-OttrinSupersededTask($folder) {\n    try { $task = $folder.GetTask('Ottrin Index') }\n    catch {\n        $code = $_.Exception.GetBaseException().HResult\n        if ($code -eq -2147024894 -or $code -eq -2147024891) { return $null }\n        throw\n    }\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) { return $null }\n    $action = $task.Definition.Actions.Item(1)\n    $leaf = [IO.Path]::GetFileName($action.Path)\n    if ($leaf -notin @('ottrin.exe', 'ottrin-app.exe', 'ottrin-indexd.exe') -or\n        $action.Arguments -notin @('index update', '--index-update')) { return $null }\n    Assert-OttrinTaskOwner $task\n    $task\n}\n\nfunction Get-OttrinTaskRecord($name, $task) {\n    @{ name = $name; xml = $(if ($null -ne $task) { $task.Xml } else { $null }); security = $(if ($null -ne $task) { $task.GetSecurityDescriptor(7) } else { $null }); running = ($null -ne $task -and $task.GetInstances(0).Count -ne 0) }\n}\n\nfunction Restore-OttrinTaskRecord($folder, $record) {\n    if ($record.running -isnot [bool]) { throw 'Rollback task running state is invalid.' }\n    $existing = $null\n    try { $existing = $folder.GetTask($record.name) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }\n    }\n    if ($null -ne $existing) { Assert-OttrinTaskOwner $existing }\n    $restored = $null\n    if ($null -ne $existing -and $existing.Xml -eq $record.xml -and\n        $existing.GetSecurityDescriptor(7) -eq $record.security) {\n        # A cleanup failure can leave the original task untouched. Preserve its\n        # live instance instead of stopping and replacing an identical task.\n        $restored = $existing\n    } else {\n        if ($null -ne $existing) { Stop-OttrinIndexTask $existing }\n        if ($null -eq $record.xml) {\n            if ($null -ne $existing) { $folder.DeleteTask($record.name, 0) }\n        } else {\n            $restored = $folder.RegisterTask($record.name, $record.xml, 54, $null, $null, 3, $null)\n            $restored.SetSecurityDescriptor($record.security, 16)\n        }\n    }\n    if ($null -ne $restored) { Restore-OttrinTaskRunningState $restored $record.running }\n}\n\n# Use current task metadata when preserving runtime intent after a successful\n# upgrade; rollback first restores the captured metadata, then uses this too.\nfunction Restore-OttrinTaskRunningState($task, [bool]$running) {\n    Assert-OttrinTaskOwner $task\n    if ($running -and $task.GetInstances(0).Count -eq 0) {\n        # Resume captured instance intent, independently of future triggers.\n        # Disabled tasks can have live instances; preserve that distinction.\n        $enabled = $task.Enabled\n        try {\n            if (-not $enabled) { $task.Enabled = $true }\n            $instance = $task.RunEx($null, 2, 0, $null)\n            if ($null -eq $instance) { throw 'Restored index task did not accept a restart.' }\n            $deadline = [DateTime]::UtcNow.AddSeconds(10)\n            while ($instance.State -ne 4) {\n                $instance.Refresh()\n                if ([DateTime]::UtcNow -ge $deadline) { throw 'Restored index task did not start within 10 seconds.' }\n                Start-Sleep -Milliseconds 20\n            }\n        } finally {\n            if (-not $enabled) { $task.Enabled = $false }\n        }\n    } elseif (-not $running -and $task.GetInstances(0).Count -ne 0) {\n        Stop-OttrinIndexTask $task\n    }\n}\n\n[Console]::Out.Write((Get-OttrinIndexTaskName))\n} catch {\n[Console]::Error.Write($_.Exception.GetBaseException().Message)\nexit 1\n}"
+    },
+    {
+      "expected": "Update / reinstall service",
+      "pid": 2696,
+      "seconds": 10.0919125,
+      "stage": "stop task or other fixed scheduler script",
+      "parent": 1564,
+      "executable": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "created": "11/04/2026 07:04:01",
+      "fixed_script": "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n$ErrorActionPreference = 'Stop'\n$ProgressPreference = 'SilentlyContinue'\ntry {\ntry { $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; # Shared by the application's embedded scheduler scripts and the MSI transaction.\nfunction Get-OttrinIndexTaskName {\n    'Ottrin Index ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value\n}\n\nfunction Get-OttrinIndexTask($folder) {\n    try { return $folder.GetTask((Get-OttrinIndexTaskName)) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -eq -2147024894) { return $null }\n        throw\n    }\n}\n\nfunction Get-OttrinTaskOwner($task) {\n    $principal = $task.Definition.Principal.UserId\n    if ($principal.StartsWith('S-1-')) { return $principal }\n    ([Security.Principal.NTAccount]::new($principal)).Translate([Security.Principal.SecurityIdentifier]).Value\n}\n\nfunction Assert-OttrinTaskOwner($task) {\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {\n        throw 'The existing index task belongs to another user; setup was not changed.'\n    }\n    if ($task.Definition.Principal.LogonType -ne 3) {\n        throw 'The existing index task uses an unsupported logon type; setup was not changed.'\n    }\n}\n\n# Caller first asks the authenticated daemon to exit gracefully when available.\n# Scheduler stop also handles prior one-shot tasks that have no daemon endpoint.\nfunction Stop-OttrinIndexTask($task) {\n    Assert-OttrinTaskOwner $task\n    $task.Stop(0)\n    $deadline = [DateTime]::UtcNow.AddSeconds(10)\n    while ($task.GetInstances(0).Count -ne 0 -or $task.State -eq 4) {\n        if ([DateTime]::UtcNow -ge $deadline) {\n            throw 'The index task did not stop within 10 seconds; its registration was retained.'\n        }\n        Start-Sleep -Milliseconds 20\n    }\n}\n\n# Retirement of the superseded registration is an upgrade operation only.\n# Status/run/remove never fall back to the old global namespace.\nfunction Get-OttrinSupersededTask($folder) {\n    try { $task = $folder.GetTask('Ottrin Index') }\n    catch {\n        $code = $_.Exception.GetBaseException().HResult\n        if ($code -eq -2147024894 -or $code -eq -2147024891) { return $null }\n        throw\n    }\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) { return $null }\n    $action = $task.Definition.Actions.Item(1)\n    $leaf = [IO.Path]::GetFileName($action.Path)\n    if ($leaf -notin @('ottrin.exe', 'ottrin-app.exe', 'ottrin-indexd.exe') -or\n        $action.Arguments -notin @('index update', '--index-update')) { return $null }\n    Assert-OttrinTaskOwner $task\n    $task\n}\n\nfunction Get-OttrinTaskRecord($name, $task) {\n    @{ name = $name; xml = $(if ($null -ne $task) { $task.Xml } else { $null }); security = $(if ($null -ne $task) { $task.GetSecurityDescriptor(7) } else { $null }); running = ($null -ne $task -and $task.GetInstances(0).Count -ne 0) }\n}\n\nfunction Restore-OttrinTaskRecord($folder, $record) {\n    if ($record.running -isnot [bool]) { throw 'Rollback task running state is invalid.' }\n    $existing = $null\n    try { $existing = $folder.GetTask($record.name) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }\n    }\n    if ($null -ne $existing) { Assert-OttrinTaskOwner $existing }\n    $restored = $null\n    if ($null -ne $existing -and $existing.Xml -eq $record.xml -and\n        $existing.GetSecurityDescriptor(7) -eq $record.security) {\n        # A cleanup failure can leave the original task untouched. Preserve its\n        # live instance instead of stopping and replacing an identical task.\n        $restored = $existing\n    } else {\n        if ($null -ne $existing) { Stop-OttrinIndexTask $existing }\n        if ($null -eq $record.xml) {\n            if ($null -ne $existing) { $folder.DeleteTask($record.name, 0) }\n        } else {\n            $restored = $folder.RegisterTask($record.name, $record.xml, 54, $null, $null, 3, $null)\n            $restored.SetSecurityDescriptor($record.security, 16)\n        }\n    }\n    if ($null -ne $restored) { Restore-OttrinTaskRunningState $restored $record.running }\n}\n\n# Use current task metadata when preserving runtime intent after a successful\n# upgrade; rollback first restores the captured metadata, then uses this too.\nfunction Restore-OttrinTaskRunningState($task, [bool]$running) {\n    Assert-OttrinTaskOwner $task\n    if ($running -and $task.GetInstances(0).Count -eq 0) {\n        # Resume captured instance intent, independently of future triggers.\n        # Disabled tasks can have live instances; preserve that distinction.\n        $enabled = $task.Enabled\n        try {\n            if (-not $enabled) { $task.Enabled = $true }\n            $instance = $task.RunEx($null, 2, 0, $null)\n            if ($null -eq $instance) { throw 'Restored index task did not accept a restart.' }\n            $deadline = [DateTime]::UtcNow.AddSeconds(10)\n            while ($instance.State -ne 4) {\n                $instance.Refresh()\n                if ([DateTime]::UtcNow -ge $deadline) { throw 'Restored index task did not start within 10 seconds.' }\n                Start-Sleep -Milliseconds 20\n            }\n        } finally {\n            if (-not $enabled) { $task.Enabled = $false }\n        }\n    } elseif (-not $running -and $task.GetInstances(0).Count -ne 0) {\n        Stop-OttrinIndexTask $task\n    }\n}\n\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) { Stop-OttrinIndexTask $task } } catch { [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }\n} catch {\n[Console]::Error.Write($_.Exception.GetBaseException().Message)\nexit 1\n}"
+    },
+    {
+      "expected": "Running \u2014 index ready",
+      "pid": 3048,
+      "seconds": 10.0688357,
+      "stage": "stop task or other fixed scheduler script",
+      "parent": 1564,
+      "executable": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "created": "11/04/2026 07:04:40",
+      "fixed_script": "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n$ErrorActionPreference = 'Stop'\n$ProgressPreference = 'SilentlyContinue'\ntry {\ntry { $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; # Shared by the application's embedded scheduler scripts and the MSI transaction.\nfunction Get-OttrinIndexTaskName {\n    'Ottrin Index ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value\n}\n\nfunction Get-OttrinIndexTask($folder) {\n    try { return $folder.GetTask((Get-OttrinIndexTaskName)) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -eq -2147024894) { return $null }\n        throw\n    }\n}\n\nfunction Get-OttrinTaskOwner($task) {\n    $principal = $task.Definition.Principal.UserId\n    if ($principal.StartsWith('S-1-')) { return $principal }\n    ([Security.Principal.NTAccount]::new($principal)).Translate([Security.Principal.SecurityIdentifier]).Value\n}\n\nfunction Assert-OttrinTaskOwner($task) {\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {\n        throw 'The existing index task belongs to another user; setup was not changed.'\n    }\n    if ($task.Definition.Principal.LogonType -ne 3) {\n        throw 'The existing index task uses an unsupported logon type; setup was not changed.'\n    }\n}\n\n# Caller first asks the authenticated daemon to exit gracefully when available.\n# Scheduler stop also handles prior one-shot tasks that have no daemon endpoint.\nfunction Stop-OttrinIndexTask($task) {\n    Assert-OttrinTaskOwner $task\n    $task.Stop(0)\n    $deadline = [DateTime]::UtcNow.AddSeconds(10)\n    while ($task.GetInstances(0).Count -ne 0 -or $task.State -eq 4) {\n        if ([DateTime]::UtcNow -ge $deadline) {\n            throw 'The index task did not stop within 10 seconds; its registration was retained.'\n        }\n        Start-Sleep -Milliseconds 20\n    }\n}\n\n# Retirement of the superseded registration is an upgrade operation only.\n# Status/run/remove never fall back to the old global namespace.\nfunction Get-OttrinSupersededTask($folder) {\n    try { $task = $folder.GetTask('Ottrin Index') }\n    catch {\n        $code = $_.Exception.GetBaseException().HResult\n        if ($code -eq -2147024894 -or $code -eq -2147024891) { return $null }\n        throw\n    }\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) { return $null }\n    $action = $task.Definition.Actions.Item(1)\n    $leaf = [IO.Path]::GetFileName($action.Path)\n    if ($leaf -notin @('ottrin.exe', 'ottrin-app.exe', 'ottrin-indexd.exe') -or\n        $action.Arguments -notin @('index update', '--index-update')) { return $null }\n    Assert-OttrinTaskOwner $task\n    $task\n}\n\nfunction Get-OttrinTaskRecord($name, $task) {\n    @{ name = $name; xml = $(if ($null -ne $task) { $task.Xml } else { $null }); security = $(if ($null -ne $task) { $task.GetSecurityDescriptor(7) } else { $null }); running = ($null -ne $task -and $task.GetInstances(0).Count -ne 0) }\n}\n\nfunction Restore-OttrinTaskRecord($folder, $record) {\n    if ($record.running -isnot [bool]) { throw 'Rollback task running state is invalid.' }\n    $existing = $null\n    try { $existing = $folder.GetTask($record.name) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }\n    }\n    if ($null -ne $existing) { Assert-OttrinTaskOwner $existing }\n    $restored = $null\n    if ($null -ne $existing -and $existing.Xml -eq $record.xml -and\n        $existing.GetSecurityDescriptor(7) -eq $record.security) {\n        # A cleanup failure can leave the original task untouched. Preserve its\n        # live instance instead of stopping and replacing an identical task.\n        $restored = $existing\n    } else {\n        if ($null -ne $existing) { Stop-OttrinIndexTask $existing }\n        if ($null -eq $record.xml) {\n            if ($null -ne $existing) { $folder.DeleteTask($record.name, 0) }\n        } else {\n            $restored = $folder.RegisterTask($record.name, $record.xml, 54, $null, $null, 3, $null)\n            $restored.SetSecurityDescriptor($record.security, 16)\n        }\n    }\n    if ($null -ne $restored) { Restore-OttrinTaskRunningState $restored $record.running }\n}\n\n# Use current task metadata when preserving runtime intent after a successful\n# upgrade; rollback first restores the captured metadata, then uses this too.\nfunction Restore-OttrinTaskRunningState($task, [bool]$running) {\n    Assert-OttrinTaskOwner $task\n    if ($running -and $task.GetInstances(0).Count -eq 0) {\n        # Resume captured instance intent, independently of future triggers.\n        # Disabled tasks can have live instances; preserve that distinction.\n        $enabled = $task.Enabled\n        try {\n            if (-not $enabled) { $task.Enabled = $true }\n            $instance = $task.RunEx($null, 2, 0, $null)\n            if ($null -eq $instance) { throw 'Restored index task did not accept a restart.' }\n            $deadline = [DateTime]::UtcNow.AddSeconds(10)\n            while ($instance.State -ne 4) {\n                $instance.Refresh()\n                if ([DateTime]::UtcNow -ge $deadline) { throw 'Restored index task did not start within 10 seconds.' }\n                Start-Sleep -Milliseconds 20\n            }\n        } finally {\n            if (-not $enabled) { $task.Enabled = $false }\n        }\n    } elseif (-not $running -and $task.GetInstances(0).Count -ne 0) {\n        Stop-OttrinIndexTask $task\n    }\n}\n\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) { Stop-OttrinIndexTask $task } } catch { [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }\n} catch {\n[Console]::Error.Write($_.Exception.GetBaseException().Message)\nexit 1\n}"
+    },
+    {
+      "expected": "Update / reinstall service",
+      "pid": 2820,
+      "seconds": 10.1787525,
+      "stage": "query XML and owner",
+      "parent": 1564,
+      "executable": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "created": "11/04/2026 07:05:00",
+      "fixed_script": "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)\n$ErrorActionPreference = 'Stop'\n$ProgressPreference = 'SilentlyContinue'\ntry {\ntry { $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; # Shared by the application's embedded scheduler scripts and the MSI transaction.\nfunction Get-OttrinIndexTaskName {\n    'Ottrin Index ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value\n}\n\nfunction Get-OttrinIndexTask($folder) {\n    try { return $folder.GetTask((Get-OttrinIndexTaskName)) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -eq -2147024894) { return $null }\n        throw\n    }\n}\n\nfunction Get-OttrinTaskOwner($task) {\n    $principal = $task.Definition.Principal.UserId\n    if ($principal.StartsWith('S-1-')) { return $principal }\n    ([Security.Principal.NTAccount]::new($principal)).Translate([Security.Principal.SecurityIdentifier]).Value\n}\n\nfunction Assert-OttrinTaskOwner($task) {\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {\n        throw 'The existing index task belongs to another user; setup was not changed.'\n    }\n    if ($task.Definition.Principal.LogonType -ne 3) {\n        throw 'The existing index task uses an unsupported logon type; setup was not changed.'\n    }\n}\n\n# Caller first asks the authenticated daemon to exit gracefully when available.\n# Scheduler stop also handles prior one-shot tasks that have no daemon endpoint.\nfunction Stop-OttrinIndexTask($task) {\n    Assert-OttrinTaskOwner $task\n    $task.Stop(0)\n    $deadline = [DateTime]::UtcNow.AddSeconds(10)\n    while ($task.GetInstances(0).Count -ne 0 -or $task.State -eq 4) {\n        if ([DateTime]::UtcNow -ge $deadline) {\n            throw 'The index task did not stop within 10 seconds; its registration was retained.'\n        }\n        Start-Sleep -Milliseconds 20\n    }\n}\n\n# Retirement of the superseded registration is an upgrade operation only.\n# Status/run/remove never fall back to the old global namespace.\nfunction Get-OttrinSupersededTask($folder) {\n    try { $task = $folder.GetTask('Ottrin Index') }\n    catch {\n        $code = $_.Exception.GetBaseException().HResult\n        if ($code -eq -2147024894 -or $code -eq -2147024891) { return $null }\n        throw\n    }\n    if ((Get-OttrinTaskOwner $task) -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) { return $null }\n    $action = $task.Definition.Actions.Item(1)\n    $leaf = [IO.Path]::GetFileName($action.Path)\n    if ($leaf -notin @('ottrin.exe', 'ottrin-app.exe', 'ottrin-indexd.exe') -or\n        $action.Arguments -notin @('index update', '--index-update')) { return $null }\n    Assert-OttrinTaskOwner $task\n    $task\n}\n\nfunction Get-OttrinTaskRecord($name, $task) {\n    @{ name = $name; xml = $(if ($null -ne $task) { $task.Xml } else { $null }); security = $(if ($null -ne $task) { $task.GetSecurityDescriptor(7) } else { $null }); running = ($null -ne $task -and $task.GetInstances(0).Count -ne 0) }\n}\n\nfunction Restore-OttrinTaskRecord($folder, $record) {\n    if ($record.running -isnot [bool]) { throw 'Rollback task running state is invalid.' }\n    $existing = $null\n    try { $existing = $folder.GetTask($record.name) }\n    catch {\n        if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }\n    }\n    if ($null -ne $existing) { Assert-OttrinTaskOwner $existing }\n    $restored = $null\n    if ($null -ne $existing -and $existing.Xml -eq $record.xml -and\n        $existing.GetSecurityDescriptor(7) -eq $record.security) {\n        # A cleanup failure can leave the original task untouched. Preserve its\n        # live instance instead of stopping and replacing an identical task.\n        $restored = $existing\n    } else {\n        if ($null -ne $existing) { Stop-OttrinIndexTask $existing }\n        if ($null -eq $record.xml) {\n            if ($null -ne $existing) { $folder.DeleteTask($record.name, 0) }\n        } else {\n            $restored = $folder.RegisterTask($record.name, $record.xml, 54, $null, $null, 3, $null)\n            $restored.SetSecurityDescriptor($record.security, 16)\n        }\n    }\n    if ($null -ne $restored) { Restore-OttrinTaskRunningState $restored $record.running }\n}\n\n# Use current task metadata when preserving runtime intent after a successful\n# upgrade; rollback first restores the captured metadata, then uses this too.\nfunction Restore-OttrinTaskRunningState($task, [bool]$running) {\n    Assert-OttrinTaskOwner $task\n    if ($running -and $task.GetInstances(0).Count -eq 0) {\n        # Resume captured instance intent, independently of future triggers.\n        # Disabled tasks can have live instances; preserve that distinction.\n        $enabled = $task.Enabled\n        try {\n            if (-not $enabled) { $task.Enabled = $true }\n            $instance = $task.RunEx($null, 2, 0, $null)\n            if ($null -eq $instance) { throw 'Restored index task did not accept a restart.' }\n            $deadline = [DateTime]::UtcNow.AddSeconds(10)\n            while ($instance.State -ne 4) {\n                $instance.Refresh()\n                if ([DateTime]::UtcNow -ge $deadline) { throw 'Restored index task did not start within 10 seconds.' }\n                Start-Sleep -Milliseconds 20\n            }\n        } finally {\n            if (-not $enabled) { $task.Enabled = $false }\n        }\n    } elseif (-not $running -and $task.GetInstances(0).Count -ne 0) {\n        Stop-OttrinIndexTask $task\n    }\n}\n\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) { Assert-OttrinTaskOwner $task; [Console]::Out.Write($task.Xml) } } catch { [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }\n} catch {\n[Console]::Error.Write($_.Exception.GetBaseException().Message)\nexit 1\n}"
+    }
+  ],
+  "stack": "at Save, <No file>: line 5\r\nat ObserveService, <No file>: line 179\r\nat ToggleLogin, <No file>: line 187\r\nat RunServicesAudit, <No file>: line 223\r\nat <ScriptBlock>, <No file>: line 239\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f"
+      }
+    ],
+    "actor_sha256": "f4f8f1d9f8eab801de92195d80b1efdc804c9608e14d10abcbb1c48f2996a01d",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "dpi_setup": {
+    "selected_label": "150%",
+    "method": "Native Scale ComboBox Expand, visible150percent ListItem Select",
+    "actual_settings_dpi": 144
+  },
+  "failure_controls": [
+    {
+      "name": "Close window",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "\ue8b8 Settings",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Preferences",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "General",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Appearance",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Files",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Services",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Search",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Search",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Cache",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Services",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Set up and manage Ottrin's optional system integration.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Automatic startup at sign-in enabled. Current indexing is unchanged.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Administrator operations",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Ready \u2014 Windows prompts when needed",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "The bundled helper uses Windows\u2019 administrator prompt when a protected file operation needs elevation.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Background index service",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Running \u2014 index ready",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Automatic startup at sign-in: Enabled at login",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Start index automatically at sign-in",
+      "offscreen": false,
+      "type": "ControlType.CheckBox",
+      "enabled": true
+    },
+    {
+      "name": "Controls the next sign-in. Use Start / restart or Stop indexing to change what is running now.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Update / reinstall service",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Start / restart",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Stop indexing",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Uninstall service",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Refresh status",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Desktop integration",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Folder integration",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Add Open in Ottrin to folder, drive and folder-background menus. On Windows 11, use Show more options. Default folder opening is a separate choice below.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Off \u2014 Windows folder menus keep their current actions",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Enable folder menu actions",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Refresh status",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Default folder opening",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Windows keeps its current folder-opening default",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Applies when an application asks Windows for the default folder action. Programs that explicitly launch Explorer or use another verb keep that behavior. Virtual folders stay with Windows.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Use Ottrin to open folders",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    }
+  ],
+  "display_modes": [
+    "640x480x32",
+    "1024x768x32",
+    "800x600x32",
+    "2048x1152x32",
+    "1920x1080x32",
+    "1920x1200x32",
+    "1600x1200x32",
+    "1680x1050x32",
+    "1440x900x32",
+    "1280x1024x32",
+    "1280x960x32",
+    "1280x768x32",
+    "1360x768x32",
+    "1400x1050x32",
+    "1792x1344x32",
+    "1856x1392x32",
+    "1920x1440x32",
+    "1280x720x32",
+    "5120x2160x32",
+    "4096x2160x32",
+    "3840x2160x32",
+    "2560x1080x32",
+    "2560x1600x32"
+  ],
+  "error": "Exception calling \"Replace\" with \"3\" argument(s): \"The process cannot access the file because it is being used by another process.\"",
+  "service_matrix": {
+    "scope": "Ordinary-user current NSIS, existing Task Scheduler service controls. No reboot/login, MSIX startup, Linux polkit or full U04 acceptance.",
+    "status": "running",
+    "states": [
+      {
+        "native_setup_action": "Enable automatic startup",
+        "native_login": "Automatic startup at sign-in: Off",
+        "case": "session running; login not installed",
+        "login_enabled": false,
+        "task_instances": 0,
+        "task_name": null,
+        "task_enabled": null,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": false
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Enabled at login",
+        "case": "installed enabled running",
+        "login_enabled": true,
+        "task_instances": 1,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": true,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Installed but disabled",
+        "case": "login disabled while task stays running",
+        "login_enabled": false,
+        "task_instances": 1,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": false,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Enabled at login",
+        "case": "login reenabled while task stays running",
+        "login_enabled": true,
+        "task_instances": 1,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": true,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Enabled at login",
+        "case": "reinstalled enabled running",
+        "login_enabled": true,
+        "task_instances": 1,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": true,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Enabled at login",
+        "case": "installed enabled stopped",
+        "login_enabled": true,
+        "task_instances": 0,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": true,
+        "daemon_processes": 0,
+        "running": false,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Installed but disabled",
+        "case": "login disabled while index stays stopped",
+        "login_enabled": false,
+        "task_instances": 0,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": false,
+        "daemon_processes": 0,
+        "running": false,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Enabled at login",
+        "case": "login reenabled while index stays stopped",
+        "login_enabled": true,
+        "task_instances": 0,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": true,
+        "daemon_processes": 0,
+        "running": false,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Enabled at login",
+        "case": "installed enabled restarted",
+        "login_enabled": true,
+        "task_instances": 1,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": true,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Installed but disabled",
+        "case": "installed disabled but running",
+        "login_enabled": false,
+        "task_instances": 1,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": false,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Installed but disabled",
+        "case": "disabled registration repaired; runtime resumed",
+        "login_enabled": false,
+        "task_instances": 0,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": false,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Installed but disabled",
+        "case": "installed disabled stopped",
+        "login_enabled": false,
+        "task_instances": 0,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": false,
+        "daemon_processes": 0,
+        "running": false,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Installed but disabled",
+        "case": "disabled login; session restarted",
+        "login_enabled": false,
+        "task_instances": 0,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": false,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      },
+      {
+        "native_setup_action": "Update / reinstall service",
+        "native_login": "Automatic startup at sign-in: Enabled at login",
+        "case": "login enabled while existing session stays running",
+        "login_enabled": true,
+        "task_instances": 0,
+        "task_name": "Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "task_enabled": true,
+        "daemon_processes": 1,
+        "running": true,
+        "installed": true
+      }
+    ],
+    "login_toggle_checks": [
+      {
+        "permissions_preserved": true,
+        "daemon_pids_preserved": [
+          8944
+        ],
+        "task_instances_preserved": 1,
+        "case": "login disabled while task stays running",
+        "running": true,
+        "enabled": false
+      },
+      {
+        "permissions_preserved": true,
+        "daemon_pids_preserved": [
+          8944
+        ],
+        "task_instances_preserved": 1,
+        "case": "login reenabled while task stays running",
+        "running": true,
+        "enabled": true
+      },
+      {
+        "permissions_preserved": true,
+        "daemon_pids_preserved": [],
+        "task_instances_preserved": 0,
+        "case": "login disabled while index stays stopped",
+        "running": false,
+        "enabled": false
+      },
+      {
+        "permissions_preserved": true,
+        "daemon_pids_preserved": [],
+        "task_instances_preserved": 0,
+        "case": "login reenabled while index stays stopped",
+        "running": false,
+        "enabled": true
+      }
+    ]
+  },
+  "status": "failed independent native Services workflow",
+  "remaining_owned_installed_processes": 0,
+  "cleanup_index_remove": {
+    "stdout": "SUCCESS: The scheduled task \"Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002\" was successfully deleted.\r\nBackground Ottrin index task removed.\n",
+    "stderr": "",
+    "seconds": 10.0836743,
+    "exit": 0
+  },
+  "display_mode": "1920x1440"
+}

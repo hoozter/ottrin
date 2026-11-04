@@ -1,0 +1,40 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/service-wake-current/cohort/services/RESULTS.zip",
+          "bytes": 1303431,
+          "sha256": "6abad84559b80f23a411d8495d5a3be4037cb74353a8e76138ba2755947b8b75"
+        },
+        {
+          "path": ".hermes/evidence/service-wake-current/cohort/services/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/service-wake-current/cohort/services/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "eaaa63162e458246bf191aedaf4e63176936759fcd31753e04a845b93eb4f98c"
+        },
+        {
+          "path": ".hermes/evidence/service-wake-current/cohort/services/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+        },
+        {
+          "path": ".hermes/evidence/service-wake-current/cohort/services/readiness.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".hermes/evidence/service-wake-current/cohort/services/privacy-accepted-0.png",
+          "bytes": 1409024,
+          "sha256": "92a42983040dd06c2d6afc178770a1b319a9261a61a22c2f655941a034aaf968"
+        }
+      ],
+      "bytes": 2720142
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

@@ -1,0 +1,32 @@
+{
+  "before": {
+    "target/debug/deps": 41726605035,
+    "target/debug/incremental": 24280782034,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33305582628,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40082785447,
+    "target/release/deps": 4445344566,
+    "target/x86_64-pc-windows-gnu/release/deps": 3996438209
+  },
+  "after": {
+    "target/debug/deps": 41726605035,
+    "target/debug/incremental": 24280782034,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33305582628,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40082785447,
+    "target/release/deps": 4445345288,
+    "target/x86_64-pc-windows-gnu/release/deps": 3996437967
+  },
+  "logical_delta": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 0,
+    "target/release/deps": 722,
+    "target/x86_64-pc-windows-gnu/release/deps": -242
+  },
+  "obsolete_incremental_sessions_removed": 22,
+  "review": ".hermes/evidence/service-startup-current/cohort/BUSY_UI_INCREMENTAL_REVIEW.json",
+  "newest_sessions_retained": true,
+  "extra_target_trees": [],
+  "new_duplicate_test_executables": "None: current native UI test path/configuration reused; retained current test binaries and dependency caches.",
+  "scope": "Existing native/Windows compiler roots, flags/features unchanged; release output replaced in place, no blanket clean."
+}

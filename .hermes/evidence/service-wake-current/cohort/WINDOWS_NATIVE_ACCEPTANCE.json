@@ -1,0 +1,39 @@
+{
+  "status": "pass scoped Windows native settings rejection/save-retry and Search status",
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "installer_sha256": "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f",
+  "cases": 9,
+  "full_window_captures": 7,
+  "captures": {
+    "invalid-settings-native.png": "2a484c4d59657a651963eb3a3b004a67f605345140faf86347b03d18754cbfde",
+    "Native-save-refused.png": "41f5d45de9187133a9ea1061ade8f06699d2c5898f41704ede7b45e3912dad0a",
+    "Native-save-retried.png": "3f076f099cccbf299ddf8febbbb19e746b204efea4076fc7ec36e7f87838af89",
+    "Native-search-health.png": "db33fa843fa5d87473b03bba61de0c3647f13bc7cfa00ca4c4eac0172205e4dc",
+    "OpenGL-save-refused.png": "6bac9d3d8ceb94d75fff5732f664069de22f48c81cd02180b59b67cfdabd5d48",
+    "OpenGL-save-retried.png": "642dfc4d04690ced67599c38535eb875fb7a1a9b02720d961889f261ce181529",
+    "OpenGL-search-health.png": "91f3122f7758089b40ce38ad7d1c7de3484821da4cda3a3ad1ea84aa59efbf9f"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "checks": [
+    "Exact58-file NSIS installation by ordinary user",
+    "CLI and daemon reject invalid config without replacing bytes",
+    "Native startup error dialog visible and dismissible; exit1 with preserved file",
+    "Both renderers retain editable24px draft and original bytes after read-only save refusal, persist24/0 after repaired retry",
+    "Actual144DPI Search distinguishes independent daemon from optional login startup",
+    "Ordinary close and supported uninstall preserve source/preferences"
+  ],
+  "limits": [
+    "Private signed-VirtIO software VM, Dark144DPI; not all appearance controls or physical/human acceptance",
+    "No fresh GUI CPU/long-duration performance claim; earlier unchanged idle-observation acceptance keeps47a scope",
+    "MSIX runtime/update/login, Store/signing and whole-roadmap completion separate"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-ztdii11w",
+  "owned_processes_reaped": [
+    {
+      "pid": 1675033,
+      "exit": 0
+    },
+    {
+      "pid": 1675036,
+      "exit": 0
+    },
+    {
+      "pid": 1675037,
+      "exit": 15
+    },
+    {
+      "pid": 1675089,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

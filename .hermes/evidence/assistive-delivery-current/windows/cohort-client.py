@@ -600,5 +600,10 @@ with ExitStack() as stack:
  assert (e/'RESULTS.zip').stat().st_size==archive['bytes']
  with (e/'RESULTS.zip').open('rb') as stream:assert hashlib.file_digest(stream,'sha256').hexdigest()==archive['sha256']
  save('ARCHIVE_TRANSFER.json',{'status':'pass chunked verified owned result archive','bytes':archive['bytes'],'sha256':archive['sha256'],'chunk_bytes':65536,'uncertain_read_recovery':'Seek to exact original offset before retry; no process restart'})
+ # Preserve the failed actor's evidence first, then fail the controller as well.
+ # ExitStack still tears down the exact owned instance and its resources.
+ actor_status=str(actor_result.get('status',''))
+ if actor_status.lower().startswith(('fail','error')):
+  raise RuntimeError('Native actor reported '+actor_status+'; safe results captured in GUEST_RESULT.json and RESULTS.zip')
  state['status']='control finished; inspect exact result, not assumed pass';save('OWNER.json',state)
 print('Clean client control and owned overlay teardown finished.',flush=True)

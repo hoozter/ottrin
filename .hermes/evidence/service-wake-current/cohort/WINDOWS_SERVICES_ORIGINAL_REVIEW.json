@@ -1,0 +1,20 @@
+{
+  "directly_reviewed_originals": 7,
+  "captures": {
+    "services-session-running.png": "4b7124968ed4c2ca007db3c74860050b1cc09705481ecf1bba18146850c342a0",
+    "services-installed-running.png": "1d8074e079335e3bb51fcc76b868e31f649099ee8d1331c5fd58913ef2a828e4",
+    "services-installed-stopped.png": "f055d33e21093f5fe7c3ab286e9035ee41a3e9e5daf954988cad3206ba06ba48",
+    "services-disabled-running.png": "8b2544c0892f058291284b0ae6a3863aa38a7b0e21f2378d4b7530c722431de1",
+    "services-disabled-stopped.png": "4424b6658f75681a269c748d8e897c944719b2043cd9dc9cf0ed9646a21aefe9",
+    "services-enabled-session-running.png": "51785cc750dcb00e0a6cc8573266392e8478316937c34126817f3cc1cf4cb9d9",
+    "services-uninstalled.png": "b5c173ed3d6fa3ce8b2db69030e9412fc296f0799cb8697f4405c9eabcf70873"
+  },
+  "scope": "Direct original complete-window review, software OpenGL Dark144DPI: green Ready/running dot, gray stopped state, login checkbox on/off independent of runtime, install/repair/uninstall actions and explanatory text match each captured state. Scrollable folder section below is not a whole-interface acceptance.",
+  "notes": [
+    "Session-running capture shows automatic startup Off and Enable automatic startup, with running green index status.",
+    "Installed-running/stopped captures preserve enabled login checkbox while runtime changes independently.",
+    "Disabled-running/stopped captures show unchecked login and Installed but disabled; repair success retains disabled choice.",
+    "Enabled-existing-session capture shows checked login and running index; native metadata separately proves the same direct session PID/task-instance count.",
+    "Uninstalled capture shows stopped index, startup Off and Enable automatic startup; no stale repair/uninstall action."
+  ]
+}

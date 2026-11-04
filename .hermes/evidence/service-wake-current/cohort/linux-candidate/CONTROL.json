@@ -1,0 +1,42 @@
+{
+  "namespace_content_gate_pending_at_launch": false,
+  "status": "functional pass; original captures require review",
+  "case": "candidate",
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "artifact_sha256": "b9156012b2a99920f614ba78a08f04ef0c696284aeb1cf6695c1e6eaca9ecc02",
+  "scope": "Private software X11 Dark150; actual startup rejection, settings preservation/theme save failure/retry and Search backend/login labels. Full platform/physical acceptance separate.",
+  "worker_sha256": "374304ada4f65326f0752277c737d779107c38344a1a6b22c27f847ab7647991",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-sn9p2iy6",
+    "owned_processes_reaped": [
+      {
+        "pid": 1659919,
+        "exit": 0
+      },
+      {
+        "pid": 1659924,
+        "exit": 0
+      },
+      {
+        "pid": 1659925,
+        "exit": 15
+      },
+      {
+        "pid": 1659978,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1660033,
+        1660108
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "96 34 0:65 / /var/tmp/.ottrin-picker-qa-sn9p2iy6/runtime/doc rw,nosuid,nodev,relatime shared:686 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

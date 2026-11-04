@@ -1,0 +1,38 @@
+{
+  "status": "pass scoped native Windows service/login control lifecycle",
+  "source_revision": "f463ff268f1c0850360fb3d1d81da18a3d3240ec",
+  "installer_sha256": "2e8624f551eb13d8e051ba9b632a128333cf63fabfca5ed8afc24bf7a482be5f",
+  "states": 16,
+  "login_toggle_checks": 6,
+  "full_window_captures": 7,
+  "captures": {
+    "services-session-running.png": "4b7124968ed4c2ca007db3c74860050b1cc09705481ecf1bba18146850c342a0",
+    "services-installed-running.png": "1d8074e079335e3bb51fcc76b868e31f649099ee8d1331c5fd58913ef2a828e4",
+    "services-installed-stopped.png": "f055d33e21093f5fe7c3ab286e9035ee41a3e9e5daf954988cad3206ba06ba48",
+    "services-disabled-running.png": "8b2544c0892f058291284b0ae6a3863aa38a7b0e21f2378d4b7530c722431de1",
+    "services-disabled-stopped.png": "4424b6658f75681a269c748d8e897c944719b2043cd9dc9cf0ed9646a21aefe9",
+    "services-enabled-session-running.png": "51785cc750dcb00e0a6cc8573266392e8478316937c34126817f3cc1cf4cb9d9",
+    "services-uninstalled.png": "b5c173ed3d6fa3ce8b2db69030e9412fc296f0799cb8697f4405c9eabcf70873"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "checks": [
+    "Actual ordinary-user NSIS install and supported uninstall",
+    "Initial setup, update/reinstall, stop, restart, disabled registration repair, external startup choice and removal",
+    "Six native checkbox actions preserve current daemon PID set, task instances and permissions",
+    "Stopped and running intent remain independent of future login enablement; managed setup/repair/restart has a scheduled instance",
+    "Source, preferences and saved index preserved"
+  ],
+  "limits": [
+    "Owned software-renderer Dark144DPI OpenGL VM; core9case settings and other renderer separate",
+    "No reboot/login activation, MSIX startup, Linux service/polkit, physical or final human acceptance"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "source_revision": "6f0a58e98786878811b84e8df05c75e686d6424e",
+  "status": "failed; no service lifecycle acceptance",
+  "error": "Service action is not enabled: Update / reinstall service",
+  "observations": [
+    {
+      "expected": "Update / reinstall service",
+      "pid": 5736,
+      "seconds": 64.9587452,
+      "stage": "query XML and owner",
+      "parent": 2880,
+      "executable": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "created": "11/04/2026 06:17:03",
+      "fixed_script_sha256": "60e80d94aee0d5aa9caa14496e78094a432022ea66314ed7a0b900779b104add"
+    },
+    {
+      "expected": "Update / reinstall service",
+      "pid": 4028,
+      "seconds": 131.3239557,
+      "stage": "register",
+      "parent": 2880,
+      "executable": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "created": "11/04/2026 06:19:13",
+      "fixed_script_sha256": "7f17b2d649b2159ccb3d65e5c42585e3f853d89d3c22c9da2d4939639546e9a0"
+    }
+  ],
+  "interpretation": "Preflight XML/owner query was observed at64.96s; a later registration child at131.32s proves that first query eventually completed. Registration/update state still not ready at180s. No single blocking statement identified.",
+  "original_failure_image_directly_reviewed": {
+    "path": ".hermes/evidence/service-startup-current/cohort/services-launch-observation/results/failure-settings.png",
+    "sha256": "90904bb15a3e1b18e109ddc24b929e1bf61d3725cc42df9eee96c691cb826bbd",
+    "visible": "Working; stopped index; disabled controls; automatic startup Off"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "transport_cleanup": "services-launch-observation/RETIRED_INPUTS.json"
+}
