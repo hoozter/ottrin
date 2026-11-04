@@ -1,0 +1,23 @@
+{
+  "members": [
+    {
+      "name": "DEPLOYMENT.json",
+      "bytes": 681,
+      "sha256": "abe9f5e302f6f17718e87bb61d672a93bf69b9e02b0c1aa62c37a05f3add7a74",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_WAITING.json",
+      "bytes": 303,
+      "sha256": "86cb08b7062cb03914207abb8468168bb8f5cb27376acc623228dab527dea69c",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 900,
+      "sha256": "b0284c4d859ec6dc8443caae0160b5b2348f470d85a1f38b2207e8fc21ff27b0",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

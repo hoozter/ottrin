@@ -1,0 +1,7 @@
+{
+  "process_exit": 0,
+  "source_sha256": "2716e28c2c54ce81801d705fc1919259e09a88f4dedb899ef0a1c820de63b421",
+  "stdout": "{\"errors\":[],\"syntax_errors\":0}\r\n#< CLIXML\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>Preparing modules for first use.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>",
+  "scope": "Native Windows PowerShell5.1 parser only; script not executed and MSIX runtime not accepted",
+  "owned_domain_uuid": "e5158de0-088f-4ab1-9b88-c315835cba22"
+}

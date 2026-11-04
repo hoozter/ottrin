@@ -1,0 +1,15 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/assembly/controller.ps1",
+          "bytes": 6844,
+          "sha256": "0a84d4ce5b0a5f53749440631977e2b702afb408963e0b0a01df5443eb90541f"
+        }
+      ],
+      "bytes": 6844
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

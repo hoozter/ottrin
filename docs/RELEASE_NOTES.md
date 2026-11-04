@@ -4,18 +4,20 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM use runtime `0613162d`; Windows ZIP/NSIS/MSIX16
+Linux AppImage/portable/DEB/RPM use runtime `45830098`; Windows ZIP/NSIS/MSIX16
 retain the accepted `f463ff26` cohort. The Linux-only Services correction now
 shows gray Stopped after intentional stop/uninstall even when a socket pathname
-remains. All four exact-source CI jobs41794783542 pass.
+remains. All four exact-source CI jobs41809847269 pass.
 
-The new mounted AppImage verifies real helper setup/cancel/reinstall, nine
+The earlier061 mounted AppImage verifies real helper setup/cancel/reinstall, nine
 service states/five independent startup toggles, and normal GUI close/reopen with
 the same managed daemon PID and disabled startup choice retained. Actual
 same-version f463-to-061 DEB replacement passes enabled/running,
 disabled/running and disabled/stopped cases; first ensure succeeds and1000 source
-files/preferences are unchanged. A fresh Linux daemon probe passes watcher,
+files/preferences are unchanged. That061 Linux daemon probe passes watcher,
 query, persistence/restart and two shutdowns at0.067% of one core over30seconds.
+Linux458 retains that exact daemon binary; those earlier GUI/update receipts
+retain their original artifact scopes.
 
 Earlier f463 configuration-preservation/theme-save, Windows Native/OpenGL,
 Windows16-state service management and MSIX16 assembly evidence retains its exact
@@ -31,11 +33,14 @@ clicks select theme roles without operating windows. Miller file rows now use th
 production renderer too, with exact painted/hit bounds and measured filename
 elision that reserves directory-chevron space. The new row regression compares
 real geometry, typography/color and accessible selection at the same three scales.
-492 UI tests and strict native/Windows UI lint pass. This is source-only work;
-current packages do not contain it and the full theme/role audit remains open.
+492 UI tests and strict native/Windows UI lint pass. These changes are delivered
+in all four Linux458 packages; mounted AppImage Nord Dark150/Light100 preview
+selection checks and eight directly reviewed original captures pass. Windows458/
+MSIX17 remain staged for native acceptance. The full theme/role audit remains open.
 
-Owned VM/profile/bootstrap resources, extraction and superseded Linux packages
-are removed. Current Windows packages and personal services/data were preserved.
+Completed fixture VM/profile/bootstrap resources, extraction and superseded Linux
+packages are removed. The current MSIX runtime fixture retains its own teardown
+lease until its test finishes. Current Windows packages and personal services/data were preserved.
 Login/reboot, broader caller/visual/physical acceptance, MSI rollback, signing/Store
 and final owner acceptance remain open. Packaged manuals are build-time snapshots;
 repository manifests/docs record later delivery. No public release is implied.

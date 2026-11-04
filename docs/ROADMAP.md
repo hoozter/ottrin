@@ -9,17 +9,17 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` now use runtime
-`0613162ddee19361e02eb9a3cc315d8a4e643493`. Windows ZIP/NSIS/development
+`45830098b6d58eeb8a08252f8d8b9c6fe35d9eef`. Windows ZIP/NSIS/development
 MSIX0.1.0.16 remain the accepted `f463ff268f1c0850360fb3d1d81da18a3d3240ec`
-cohort in `dist/windows-candidate/`; the status correction changes Linux-only code.
+cohort in `dist/windows-candidate/`; the new Windows UI cohort remains staged.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`a4073e944502aa7ab3208ee1ae2da139f959d9a44eddc4ea5c7e75ea1b15855c`.
+`4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
 The current Linux packages correct Services showing a false red error for an
-intentionally stopped/uninstalled index with a stale socket pathname. Fresh
+intentionally stopped/uninstalled index with a stale socket pathname. The earlier061
 mounted-AppImage captures show gray Stopped in both states. This is Services
 acceptance, not whole-interface completion: the main-window search indicator
 still turns red when stopped, and settled resize observation remains open.
@@ -32,16 +32,17 @@ also use the production renderer: actual typography/icons/chevrons, theme colors
 selection and hit rectangles. Pixel-rounded painting now matches hit testing, and
 measured filename elision reserves the chevron space. 492 UI tests and strict
 native/Windows UI lint pass.
-This source-only theme work is not in the current 061 Linux or f463 Windows packages;
-full preview/interface audit, native visual checks and the next UI package batch
-remain required. Source scopes: `theme-presenters-current/IMPLEMENTATION.json`,
+These shared-widget changes are delivered in all four Linux458 packages. Windows
+stable packages remain f463; the Windows458/MSIX17 cohort is staged for further
+native acceptance. The full preview/interface audit remains required. Source scopes: `theme-presenters-current/IMPLEMENTATION.json`,
 `theme-chrome-current/SOURCE_CHECKS.json` and
 `theme-file-rows-current/SOURCE_CHECKS.json`. Rendered regressions compare actual tab
 size/corners/typography and window-control dimensions at 100/150/200 percent text
 size, and check that preview clicks select their theme role without window actions.
 File-row regressions compare production/preview row dimensions, painted selection,
 label typography/color and actual accessible selection at the same three scales.
-Native visual acceptance remains open.
+Scoped Nord Dark150/Light100 native preview acceptance passes below; broader
+visual/role/theme/scale acceptance remains open.
 
 The preview retains off-thread storage discovery and changed-only index
 observations. The earlier47a Linux/Windows Native/OpenGL GUI idle measurements
@@ -194,12 +195,12 @@ active local-console condition. The positive test must use a genuine local seat;
 no permission rule was relaxed. This remains independently executable software QA.
 Evidence: `.hermes/evidence/linux-stopped-delivery-current/`.
 
-### Staged shared-widget delivery, 2026-11-04
+### Shared-widget delivery, 2026-11-04
 
 Runtime source `45830098b6d58eeb8a08252f8d8b9c6fe35d9eef` now has four built
-Linux candidates and Windows portable/NSIS candidates. These are staged, not
-promoted: the stable paths/manifests above still identify the usable061/f463
-cohorts. Evidence: `.hermes/evidence/theme-delivery-current/`.
+Linux packages now promoted at stable paths. Windows portable/NSIS/MSIX17
+candidates remain staged; the stable Windows paths/manifest still identify the
+usablef463 cohort. Evidence: `.hermes/evidence/theme-delivery-current/`.
 
 Linux production content/dependency/policy/namespace gates pass. A complete113-file
 AppImage inventory shows only expected GUI/documentation changes; indexd is
@@ -215,23 +216,40 @@ explicit diagnostic evidence; actual preset cloning supplies accepted light colo
 Windows portable/NSIS build successfully. All58 portable ZIP files match the
 staged payload; the complete change inventory is limited to GUI/provenance/docs
 and daemon PE metadata. Indexd's mapped image is unchanged. Native Windows GUI/lifecycle checks and
-new MSIX assembly/runtime acceptance remain pending. Hosted41809847269 currently
-passes both performance jobs and Linux verification; Windows verification is
-still running. No failed/pending gate has been relabelled as a pass.
+new MSIX runtime acceptance remain pending. MSIX17 native MakeAppx/unpack and
+independent58-file equality pass; its fresh private1000-file daemon probe passes
+watcher/query/restart/two-stop checks at0.156% one core over30seconds. Its source
+archive and assembly VM/two volumes are removed. Hosted41809847269 passes all
+four exact-source jobs. Four native Windows preview attempts remain diagnostic,
+not full passes: the initial Invoke pattern was wrong for a toggle row; the next
+pointer attempt did not select the inspector; the third exposed a null-name QA
+matcher; the fourth verifies advertised Toggle row selection and New tab Invoke,
+but a physical pointer at the observed row center still leaves the prior inspector
+selected. Cursor-position telemetry is prepared to distinguish fixture routing
+from a product defect. Linux physical pointer selection of the same row, New tab
+and preview Close passes at150% scale, with three original captures reviewed
+(`LINUX_POINTER_ACCEPTANCE.json`). The first MSIX17 runtime run reached actual
+ordinary package-identity launch, normal close and startup registration, then
+failed because the QA checkbox helper was scoped inside its Login branch. The
+helper now has a native parser/root-scope preflight. The next fixture reached
+ordinary login but timed out waiting for readiness while its console was blank;
+normal Return input revealed its desktop just before teardown. A fresh run uses
+a one-time uniformly-black-display wake guard, with no policy or product changes. None of these partial results waive Windows delivery gates.
 
-All six private Linux desktop profiles/processes/mounts are removed, along with
+All seven private Linux desktop profiles/processes/mounts are removed, along with
 the consumed76551599-byte extraction and owned Python compile cache. Existing
 compiler caches/configurations, user data and stable deliverables are preserved;
-incremental inspection found zero obsolete candidates. The two staged candidate
-roots remain for native acceptance and promotion, with cleanup owners/pending
-consumers in BUILD_SOURCE.json and windows/BUILD_SOURCE.json.
+incremental inspection found zero obsolete candidates. The Linux stage and superseded stable packages are retired after hash/hard-link/
+consumer checks. Only the Windows candidate stage remains for native acceptance
+and promotion, with its owner/consumers in windows/BUILD_SOURCE.json. The current
+Windows native clone has its own OWNER.json and teardown lease.
 
 ### Ordered implementation and acceptance queue
 
-1. Finish the staged458 UI delivery: observe the live hosted Windows verification,
-   complete current-candidate native Windows/MSIX checks, promote verified Linux
-   and Windows artifacts at stable paths, and retire consumed staging. Scoped
-   Linux native preview acceptance and package-content checks above are complete.
+1. Finish Windows458/MSIX17 delivery: resolve native preview action/pointer checks,
+   complete installed-package startup-checkbox and remaining runtime acceptance,
+   promote verified Windows artifacts and retire consumed staging. Linux458
+   promotion, scoped native preview checks and all four hosted jobs are complete.
 2. Complete positive protected-file elevation in a genuine local-seat Linux
    desktop fixture, then real login/reboot and remaining AppImage/portable binary
    replacement readiness. Background no-seat denial is diagnosed, not positive

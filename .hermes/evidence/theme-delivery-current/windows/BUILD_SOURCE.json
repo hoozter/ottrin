@@ -4,10 +4,11 @@
   "scope": "Shared theme preview production widgets and pixel-aligned/measured Miller file rows. Existing Windows ZIP/NSIS/MSIX stable candidates preserved until native acceptance. Held MSI unchanged.",
   "pending_consumers": [
     "Native Windows GUI/lifecycle acceptance",
-    "MSIX assembly/runtime acceptance",
+    "MSIX17 installed runtime and real login acceptance",
     "Stable Windows promotion or safe retirement"
   ],
   "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/windows",
   "cleanup_complete": false,
-  "delivery_status": "Built and content-verified; stable promotion remains pending"
+  "delivery_status": "Built and content-verified; stable promotion remains pending",
+  "msix_assembly": "ASSEMBLY_ACCEPTANCE.json native MakeAppx/unpack and 58-file equality pass"
 }

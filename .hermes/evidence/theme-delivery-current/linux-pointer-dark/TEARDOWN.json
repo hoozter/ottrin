@@ -1,0 +1,31 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-wxq_i96g",
+  "owned_processes_reaped": [
+    {
+      "pid": 1816107,
+      "exit": 0
+    },
+    {
+      "pid": 1816113,
+      "exit": 0
+    },
+    {
+      "pid": 1816114,
+      "exit": 15
+    },
+    {
+      "pid": 1816207,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [
+      1816220,
+      1816309
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

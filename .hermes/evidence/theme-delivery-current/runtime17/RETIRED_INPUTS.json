@@ -1,0 +1,50 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/RESULTS.zip",
+          "bytes": 56116,
+          "sha256": "278eba45398715a98e9ed02c6776a149a0a08e90304b1b8eaf4c2a850fbb87c8"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/RESULT_EXPORT_PROCESS.json",
+          "bytes": 99850,
+          "sha256": "b0eb5d3f14253d64c61d5a00b8c1418866aca71878dbca0d91fb14369fc7df96"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/PREPARATION.json",
+          "bytes": 318,
+          "sha256": "78b37615092c806c3891910e7672c24b83fa54c32b654601daa15905496f47d4"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "304646b42220ce36d24a5e0f7d44088639c572460f36ce95a5c649653d08204f"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/readiness.log",
+          "bytes": 1117,
+          "sha256": "13531bf261d9dcd54404ffa075c4f94aa673a7bbb2a944ce3c59a1b55f2c461a"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/desktop-ready.png",
+          "bytes": 2522703,
+          "sha256": "9c09a3d47ea71a170e9c4c8865f17a99d06fcdfb09ccd38f5a873b9a4153cbf7"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "af9354c04109aac88e6c9744541c7d2df3cc6ab52f9493a75e197080b6852d90"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/runtime17/privacy-accepted-0.png",
+          "bytes": 1493098,
+          "sha256": "3f27425afc49e422a8f26ad725f966f68bd2682db2ab6dbe98cba1d2b1bfb7f9"
+        }
+      ],
+      "bytes": 4173739
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

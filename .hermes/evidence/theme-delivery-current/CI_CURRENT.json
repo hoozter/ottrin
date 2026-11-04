@@ -1,7 +1,6 @@
 {
-  "run_id": 41809847269,
-  "status": "in_progress",
-  "conclusion": "",
+  "conclusion": "success",
+  "headSha": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
   "jobs": [
     {
       "name": "search-performance (windows-latest)",
@@ -10,8 +9,8 @@
     },
     {
       "name": "verify (windows-latest)",
-      "status": "in_progress",
-      "conclusion": ""
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "name": "search-performance (ubuntu-latest)",
@@ -23,5 +22,7 @@
       "status": "completed",
       "conclusion": "success"
     }
-  ]
+  ],
+  "status": "completed",
+  "run_id": 41809847269
 }

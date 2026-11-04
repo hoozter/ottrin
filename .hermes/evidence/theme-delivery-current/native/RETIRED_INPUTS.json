@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/RESULTS.zip",
+          "bytes": 675038,
+          "sha256": "7e90c82ea0a448e1392d1559846b034c28a9f6b9330cf8b76394721e6265a814"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "a8b878b64d9bd33937e2f89094439c4e46576aa1f93a2b9c578e7fe364d7c99e"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/CONTROLLER_PROCESS.json",
+          "bytes": 1940,
+          "sha256": "bc675e1f4a5e1723516fbff97829006ab049b462a1e0228886a9b0f6f4b76f88"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "89f8002523d50ddea4a403988849823e5e2f341221fb2e5fa152ccacb68ca7bb"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/readiness.log",
+          "bytes": 1117,
+          "sha256": "92761fede3fdccc4c311d2aee3eebe84e5e43b144aeca16140e5cb968a6eaaa1"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/desktop-ready.png",
+          "bytes": 950982,
+          "sha256": "e4bf7e6c81bad46873d43d75bb1e1b26b0192b6548a7a023a19508c5dc1f2a26"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "fb2f3f23329844beda9281ee3cde86bff9f5a7c541739f757fc9fb21a67506a3"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native/privacy-accepted-0.png",
+          "bytes": 976347,
+          "sha256": "558e336ec5cf58a8d4ae77ad13b8e8e1758769253b4f129c62cb88f50de8e1ef"
+        }
+      ],
+      "bytes": 2611710
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

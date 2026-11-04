@@ -1,0 +1,1025 @@
+{
+  "settings_host": {
+    "title": "Settings",
+    "pid": 5220,
+    "type": "ControlType.Window"
+  },
+  "scope": "Exact current NSIS/ordinary user, Dark144DPI Native and OpenGL; malformed settings refusal, retained native theme draft after save failure, repaired retry and truthful Search health. Other appearance/MSIX/physical scopes separate",
+  "phase": "Native production preview row selection",
+  "failure_controls": [
+    {
+      "name": "Close window",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "\ue8b8 Settings",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Preferences",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "General",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Appearance",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Files",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Services",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Search",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Search",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Cache",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Appearance",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Appearance mode",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Light",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Dark",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "System",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Active \u00b7 Settings audit",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Theme preview in progress",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Continue editing",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Discard preview",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Built-in themes",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Ottrin",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Customize Ottrin",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Breeze",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Customize Breeze",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Adwaita",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Customize Adwaita",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Windows 11",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Customize Windows 11",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Solarized",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Customize Solarized",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Nord",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Customize Nord",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "G33k",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Customize G33k",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Your themes",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Settings audit",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": false
+    },
+    {
+      "name": "Edit Settings audit",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "\u00d7",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "File and folder colors",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Use category colors to distinguish images, documents, archives and other file types.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Color files by type",
+      "offscreen": false,
+      "type": "ControlType.CheckBox",
+      "enabled": true
+    },
+    {
+      "name": "Also color folder labels",
+      "offscreen": false,
+      "type": "ControlType.CheckBox",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    }
+  ],
+  "preview_controls": [],
+  "cases": [
+    {
+      "case": "invalid-cli",
+      "original_bytes_preserved": true,
+      "exit": 1
+    },
+    {
+      "case": "invalid-daemon",
+      "original_bytes_preserved": true,
+      "exit": 1
+    },
+    {
+      "case": "native invalid-settings startup dialog",
+      "visible_error": "Ottrin could not start\n\napp creation error: Could not load Ottrin settings C:\\Users\\OTMSI4b2830c04965\\AppData\\Roaming\\ottrin\\config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n\nDiagnostic log:\nC:\\Users\\OTMSI4b2830c04965\\AppData\\Local\\Ottrin\\startup.log",
+      "original_bytes_preserved": true,
+      "exit": 1
+    }
+  ],
+  "stack": "at Invoke, <No file>: line 24\r\nat PreviewControls, <No file>: line 128\r\nat <ScriptBlock>, <No file>: line 184\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "e5e99978b9d99cff7e1f8d1d7151163db6a08f51ff0beb77873198995d41b4a6"
+      }
+    ],
+    "actor_sha256": "5a0dfb1773c099102a93cad2d5b4ebe2d4dbef1df7bae5cdde2a032db8e4df7c",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "dpi_setup": {
+    "selected_label": "150%",
+    "method": "Native Scale ComboBox Expand, visible150percent ListItem Select",
+    "actual_settings_dpi": 144
+  },
+  "display_modes": [
+    "640x480x32",
+    "1024x768x32",
+    "800x600x32",
+    "2048x1152x32",
+    "1920x1080x32",
+    "1920x1200x32",
+    "1600x1200x32",
+    "1680x1050x32",
+    "1440x900x32",
+    "1280x1024x32",
+    "1280x960x32",
+    "1280x768x32",
+    "1360x768x32",
+    "1400x1050x32",
+    "1792x1344x32",
+    "1856x1392x32",
+    "1920x1440x32",
+    "1280x720x32",
+    "5120x2160x32",
+    "4096x2160x32",
+    "3840x2160x32",
+    "2560x1080x32",
+    "2560x1600x32"
+  ],
+  "error": "Exception calling \"GetCurrentPattern\" with \"1\" argument(s): \"Unsupported Pattern.\"",
+  "status": "failed native settings preservation workflow",
+  "failure_editor_controls": [
+    {
+      "name": "Close window",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Edit Settings audit",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Theme name",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Theme name",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "Light",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Dark",
+      "offscreen": false,
+      "type": "ControlType.RadioButton",
+      "enabled": true
+    },
+    {
+      "name": "Editing variant",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "workspace",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "New tab",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Close window",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Maximize or restore window",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Minimize window",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Back",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Forward",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": false
+    },
+    {
+      "name": "Parent folder",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Menu",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Switch to List view",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "View Options",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Open /",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "\u203a",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Open /home",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "\u203a",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Open /home/user",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "\u203a",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Open /home/user/projects",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "\u203a",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Open /home/user/projects/ottrin",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "Documents",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Downloads",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Pictures",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Music",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Videos",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Projects",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "src",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "assets",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "tests",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Cargo.toml",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "README.md",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "notes.txt",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "photo.png",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "movie.mp4",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "archive.zip",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "budget.xlsx",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "slides.pptx",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "settings.ini",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Show or hide info panel",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Show or hide drop-folder panel",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Toggle Search",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Show or hide Activity",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Show or hide Trash",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.ComboBox",
+      "enabled": true
+    },
+    {
+      "name": "Shared panels, inputs, text, focus and hover colors. Window corners affect application windows; surface corners affect tabs, inputs and cards. Button corners are separate.",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Component colors",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Panels and dialogs",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Panels and dialogs (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Inputs / raised surfaces",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Inputs / raised surfaces (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Active & focus accent",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Active & focus accent (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Primary text",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Primary text (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Secondary text",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Secondary text (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Muted text",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Muted text (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Heading text",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Heading text (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Hover background",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Hover background (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Error & danger",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Error & danger (hex)",
+      "offscreen": false,
+      "type": "ControlType.Edit",
+      "enabled": true
+    },
+    {
+      "name": "\ue8ba",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Typography",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Text size",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Text size",
+      "offscreen": false,
+      "type": "ControlType.Spinner",
+      "enabled": true
+    },
+    {
+      "name": "Restore Text size",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Geometry",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Window corners",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Window corners",
+      "offscreen": false,
+      "type": "ControlType.Spinner",
+      "enabled": true
+    },
+    {
+      "name": "Restore Window corners",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Surface corners",
+      "offscreen": false,
+      "type": "ControlType.Text",
+      "enabled": true
+    },
+    {
+      "name": "Surface corners",
+      "offscreen": false,
+      "type": "ControlType.Spinner",
+      "enabled": true
+    },
+    {
+      "name": "Restore Surface corners",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Reset theme defaults",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Custom",
+      "enabled": true
+    },
+    {
+      "name": "More",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Save changes",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Save as new",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    },
+    {
+      "name": "Cancel",
+      "offscreen": false,
+      "type": "ControlType.Button",
+      "enabled": true
+    }
+  ],
+  "remaining_owned_installed_processes": 0,
+  "cleanup_index_remove": {
+    "stdout": "Session indexing stopped; no background Ottrin index task was installed.\n",
+    "stderr": "",
+    "seconds": 3.1563972,
+    "exit": 0
+  },
+  "error_dialog_controls": [
+    {
+      "name": "OK",
+      "offscreen": false,
+      "type": "ControlType.Pane"
+    },
+    {
+      "name": "",
+      "offscreen": false,
+      "type": "ControlType.Pane"
+    },
+    {
+      "name": "Ottrin could not start\n\napp creation error: Could not load Ottrin settings C:\\Users\\OTMSI4b2830c04965\\AppData\\Roaming\\ottrin\\config.json: key must be a string at line 1 column 3. Correct the file or move it aside to start with defaults; Ottrin has preserved it.\n\nDiagnostic log:\nC:\\Users\\OTMSI4b2830c04965\\AppData\\Local\\Ottrin\\startup.log",
+      "offscreen": false,
+      "type": "ControlType.Pane"
+    }
+  ],
+  "display_mode": "1920x1440"
+}

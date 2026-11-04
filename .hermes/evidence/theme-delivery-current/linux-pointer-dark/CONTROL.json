@@ -1,0 +1,40 @@
+{
+  "status": "functional pass; original screenshots await direct visual review",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "artifact_sha256": "4b9816c10eb0ee948b815bd04ef32f48e568cab80347512754b29b817ce89e58",
+  "theme": "Dark",
+  "scale": "1.5",
+  "scope": "Mounted AppImage, private software X11, built-in Nord dark/light theme cloned through its actual Customize control; actual ordinary-pointer shared preview row/tab/window control actions and original complete-window captures. Full theme/platform/physical acceptance remains open.",
+  "worker_sha256": "2b21204aec1dd8683d57144860081716fd278006e186d0d2660fbe4dce923159",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-wxq_i96g",
+    "owned_processes_reaped": [
+      {
+        "pid": 1816107,
+        "exit": 0
+      },
+      {
+        "pid": 1816113,
+        "exit": 0
+      },
+      {
+        "pid": 1816114,
+        "exit": 15
+      },
+      {
+        "pid": 1816207,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1816220,
+        1816309
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

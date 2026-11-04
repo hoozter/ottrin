@@ -1,0 +1,55 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/RESULTS.zip",
+          "bytes": 1251162,
+          "sha256": "7d657b1c897ac944b5972efe23ef9f1476b25bdbd9bcd745d80b2bcdebd65978"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "e4554ce6d72c953e76f18d1c048e017415dd0d62b42a6a60c1f01aa05a90fc8d"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "217d527acd36ab60375d2d5861bb996926efed7c26116599368a43f1f9a45d40"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "def5423e2526bb4d2ec73fcaab01de081d92259df862172d54a48587eeb089ef"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/readiness.log",
+          "bytes": 1117,
+          "sha256": "2470546925ce56263448ff4ce6041c5e770d09c6705c5cf1d8ee24a4c2f82038"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/desktop-ready.png",
+          "bytes": 4997126,
+          "sha256": "d60d63db5611e5e332210948f1f3243545cd83f018838ed1bfae7c2384e43f1d"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/PRIVACY_STEPS.json",
+          "bytes": 282,
+          "sha256": "820bdf6b27925b939de0908477f794173ac76c67c37c5f0aaf4471bcf6b75d4d"
+        },
+        {
+          "path": ".hermes/evidence/theme-delivery-current/native-observed-controls/privacy-accepted-0.png",
+          "bytes": 4997126,
+          "sha256": "d60d63db5611e5e332210948f1f3243545cd83f018838ed1bfae7c2384e43f1d"
+        }
+      ],
+      "bytes": 11254755
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

@@ -1,5 +1,5 @@
 {
-  "verified_at": "2026-11-04T10:05:23.271446+00:00",
+  "verified_at": "2026-11-04T11:26:11.221037+00:00",
   "profiles": [
     {
       "path": "/var/tmp/.ottrin-picker-qa-f3ib1a7h",
@@ -30,6 +30,11 @@
       "path": "/var/tmp/.ottrin-picker-qa-psmvg2kj",
       "removed": true,
       "receipt": "native-dark/TEARDOWN.json"
+    },
+    {
+      "path": "/var/tmp/.ottrin-picker-qa-wxq_i96g",
+      "removed": true,
+      "receipt": "linux-pointer-dark/TEARDOWN.json"
     }
   ],
   "extraction": "EXTRACTION_CLEANUP.json",
@@ -37,16 +42,16 @@
   "incremental_candidates": 0,
   "retained": [
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-      "purpose": "Four exact458 Linux packages awaiting CI and stable promotion"
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Current four Linux458 stable deliverables and their acceptance receipts"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "Exact458 Windows portable/NSIS and58-file payload awaiting native/MSIX acceptance"
+      "purpose": "Windows458 ZIP/NSIS/MSIX17 and58-file payload awaiting native preview/runtime acceptance and promotion"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current",
-      "purpose": "Compact build/content/runtime/native/diagnostic/cleanup evidence"
+      "purpose": "Compact source, build, native and cleanup evidence"
     }
   ],
   "compiler_cache_note": "Existing target/Cargo/Rustup configurations reused; debug incremental inspection found zero obsolete candidates; release dependencies and current binaries retained.",
@@ -65,5 +70,111 @@
     "target/x86_64-pc-windows-gnu/debug/incremental": 40305981201,
     "target/release/deps": 4445339481,
     "target/x86_64-pc-windows-gnu/release/deps": 3996422822
+  },
+  "linux_stage_and_superseded_packages_retired": true,
+  "completed_windows_cases": [
+    {
+      "case": "native",
+      "uuid": "dcde6d76-65e1-4eb1-9509-8fd0ea61d99a",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-pointer",
+      "uuid": "e5158de0-088f-4ab1-9b88-c315835cba22",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-toggle-pointer",
+      "uuid": "e6e35144-3631-4481-9c7b-82753a188ed9",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "native-observed-controls",
+      "uuid": "db20a818-125f-43fd-8f56-f8d71a10d906",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "assembly",
+      "uuid": "c90af7f7-c85f-4aa6-b110-f92e89775273",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-assembly.qcow2",
+          "ottrin-msix-assembly-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "runtime17",
+      "uuid": "98acc53d-0876-4dbb-bfad-27dc5a5d8c18",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "case": "runtime17-scoped",
+      "uuid": "c5260ac4-c592-4fea-95aa-bc9613e2eb10",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  ],
+  "live_owned_case": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-delivery-current/runtime17-wake",
+    "purpose": "Installed MSIX17 ordinary GUI startup checkbox, real login and removal acceptance",
+    "teardown_owner": "native-driver.py ExitStack registered before VM allocation"
   }
 }

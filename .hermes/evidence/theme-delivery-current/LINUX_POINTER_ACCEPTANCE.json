@@ -1,0 +1,94 @@
+{
+  "status": "pass within actual Linux pointer scope",
+  "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "package_authority": "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+  "display_scale": 1.5,
+  "theme": "Nord Dark",
+  "cases": [
+    "Shared production rows visible",
+    "Actual assets row selects Selected row",
+    "Actual New tab selects Navigation & tabs",
+    "Actual preview Close selects Title bar without closing editor"
+  ],
+  "pointer_actions": [
+    {
+      "name": "assets",
+      "bounds": [
+        381,
+        346,
+        266,
+        37
+      ],
+      "point": [
+        514,
+        364
+      ]
+    },
+    {
+      "name": "New tab",
+      "bounds": [
+        191,
+        209,
+        13,
+        27
+      ],
+      "point": [
+        197,
+        222
+      ]
+    },
+    {
+      "name": "Close window",
+      "bounds": [
+        923,
+        202,
+        42,
+        42
+      ],
+      "point": [
+        944,
+        223
+      ]
+    }
+  ],
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/theme-delivery-current/linux-pointer-dark/selected-row.png": "7a7413791d3082f51d64a7b47f8cc73aaa86dbe8537fcab6d17495f6b0e28fb9",
+    ".hermes/evidence/theme-delivery-current/linux-pointer-dark/navigation-tabs.png": "93dcf625740e37e8afae827b8e86366f736c59358dac7e94ec7fcc3a36c3a3fa",
+    ".hermes/evidence/theme-delivery-current/linux-pointer-dark/titlebar-controls.png": "55cb6aa6d3bc55b07217e08ec0a7f353e82dc6ed54e4f7587ba00564e6ac07cf"
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-wxq_i96g",
+    "owned_processes_reaped": [
+      {
+        "pid": 1816107,
+        "exit": 0
+      },
+      {
+        "pid": 1816113,
+        "exit": 0
+      },
+      {
+        "pid": 1816114,
+        "exit": 15
+      },
+      {
+        "pid": 1816207,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1816220,
+        1816309
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "limitations": [
+    "Linux X11 software desktop only; not Windows pointer acceptance",
+    "No full theme consistency or every-role acceptance"
+  ]
+}
