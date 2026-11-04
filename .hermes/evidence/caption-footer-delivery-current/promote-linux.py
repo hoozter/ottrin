@@ -122,9 +122,17 @@ manifest={
     'native_privileged_copy':previous['native_privileged_copy'],
     'daemon_runtime':previous['daemon_runtime'],'native_login':previous['native_login'],
     'binary_replacement':previous['binary_replacement'],'retained_native_scope_source':old_source,
-    'limits':main['limits']+appearance['limits']+[
-        'Unchanged daemon/helper/HTML identities retain original DAC scope, not freshly rerun resource/UAC/reboot/replacement matrices.',
-        'Personal helper update still requires owner authentication; no automatic privileged installation.',
+    'acceptance_notes':[
+        'Main18 captures plus the dedicated4-capture saved-theme supplement are accepted separately; offscreen original Appearance captures do not substitute for the supplement.',
+        'Three failed supplements remain failures in their original receipts; the final supplemented fixture passes with explicit desktop readiness and normal close.'
+    ],
+    'limits':[
+        'Controlled software X11 only; no physical graphics, Wayland, Windows or complete theme/interface audit.',
+        'Miller rows and saved-theme names cover Dark/Light100/150; List headers, Grid and cooperating-picker cancellation retain their exact receipt scopes.',
+        'Earliest native no-input count sample is0.69s after the visible window; the rendered regression proves the missing wakeup and return to idle, not every native intervening frame.',
+        'Unchanged daemon/helper/HTML identities retain original DAC scope; resource/UAC/reboot/replacement matrices were not freshly rerun.',
+        'The subsequent Services startup On/Off/Unavailable correction is source-tested separately and is not in this c4 package.',
+        'Personal helper update requires owner authentication; no automatic privileged installation.',
         'Windows remains458/MSIX17; no public release/signing/Store submission.',
         f'Packaged manuals are build-time snapshots at {source[:8]}; subsequent repository metadata records delivery.'
     ]

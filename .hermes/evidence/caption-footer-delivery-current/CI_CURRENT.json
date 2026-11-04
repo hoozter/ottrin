@@ -1,5 +1,5 @@
 {
-  "conclusion": "",
+  "conclusion": "success",
   "headSha": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
   "jobs": [
     {
@@ -86,12 +86,12 @@
       "url": "https://github.com/hoozter/ottrin/actions/runs/41929773433/job/126923421176"
     },
     {
-      "completedAt": "0001-01-01T00:00:00Z",
-      "conclusion": "",
+      "completedAt": "2026-11-04T23:48:39Z",
+      "conclusion": "success",
       "databaseId": 126923421379,
       "name": "verify (windows-latest)",
       "startedAt": "2026-11-04T22:57:54Z",
-      "status": "in_progress",
+      "status": "completed",
       "steps": [
         {
           "completedAt": "2026-11-04T22:57:56Z",
@@ -230,108 +230,116 @@
           "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:42:10Z",
+          "conclusion": "success",
           "name": "Cargo test",
           "number": 18,
           "startedAt": "2026-11-04T23:10:37Z",
-          "status": "in_progress"
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:42:10Z",
+          "conclusion": "skipped",
           "name": "Verify production Linux desktop integration",
           "number": 19,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:42:10Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:42:10Z",
+          "conclusion": "skipped",
           "name": "Upload Linux portal evidence",
           "number": 20,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:42:10Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:42:37Z",
+          "conclusion": "success",
           "name": "Cargo clippy",
           "number": 21,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:42:10Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:30Z",
+          "conclusion": "success",
           "name": "Release build",
           "number": 22,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:42:37Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:31Z",
+          "conclusion": "success",
           "name": "Verify Windows executable icons",
           "number": 23,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:30Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:31Z",
+          "conclusion": "success",
           "name": "Prepare release-build artifact",
           "number": 24,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:31Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:35Z",
+          "conclusion": "success",
           "name": "Upload release-build artifact",
           "number": 25,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:31Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:35Z",
+          "conclusion": "skipped",
           "name": "Upload Windows native boundary failure diagnostics",
           "number": 26,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:35Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:35Z",
+          "conclusion": "skipped",
           "name": "Retire production Linux HTML integration",
           "number": 27,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:35Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:35Z",
+          "conclusion": "skipped",
           "name": "Upload Linux HTML sandbox evidence",
           "number": 28,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:35Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:35Z",
+          "conclusion": "success",
           "name": "Post Cache Rust build",
           "number": 55,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:35Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T23:48:37Z",
+          "conclusion": "success",
           "name": "Post Checkout",
           "number": 56,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T23:48:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-04T23:48:38Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 57,
+          "startedAt": "2026-11-04T23:48:37Z",
+          "status": "completed"
         }
       ],
       "url": "https://github.com/hoozter/ottrin/actions/runs/41929773433/job/126923421379"
@@ -679,6 +687,6 @@
       "url": "https://github.com/hoozter/ottrin/actions/runs/41929773433/job/126923421596"
     }
   ],
-  "status": "in_progress",
+  "status": "completed",
   "run_id": 41929773433
 }

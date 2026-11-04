@@ -1,11 +1,11 @@
 {
   "goal": "active/incomplete",
   "next": [
-    "Re-poll existing exact-source CI41929773433; Linux verification and both performance jobs pass; Windows Cargo test remains live. Do not cancel/restart it.",
-    "When all4 exact-source jobs pass, use current main and Appearance receipts plus SOURCE_SCOPE to prepare and perform guarded c4 four-format promotion. Update stable manifests/docs and retire superseded316 packages after consumer checks.",
-    "The subsequent Services startup-state correction passes250 search/506 UI tests and strict Linux/Windows search/UI/app lint. Commit locally, then push only after this source CI is terminal; package/native verification remains separate.",
-    "Continue Windows canonical administrator Copy registry caller binding and durable cleanup restart authority before enabling Copy; remaining full theme/picker/integration audit remains independently executable."
+    "Push the locally committed Services startup-status fix together with this c4 delivery checkpoint; prior CI41929773433 is terminal all4 success.",
+    "Build the next clean-source four-format cohort for startup On/Off/Unavailable and verify native controls/query errors at the freed stable candidate path; preserve deliveredc4 until acceptance.",
+    "Implement and natively accept Windows canonical durable cleanup restart authority and caller-bound administrator registry before enabling helper Copy. Source-backed seams/test requirements: windows-cleanup-coordinator-current/INVESTIGATION.json.",
+    "Continue full theme/interface and supported picker/folder/portal integration audit; no whole-roadmap acceptance is inferred."
   ],
-  "stable_deliverables": "Linux316 / Windows458; c4 AppImage e88e49e8 is staged, not delivered",
+  "stable_deliverables": "Linuxc4 / Windows458; caption/footer cohort published",
   "owner_waits": "Personal helper OS authentication, signing/Store identity, unavailable physical hardware and final user acceptance stay parked."
 }

@@ -8,7 +8,7 @@
   },
   "ci": {
     "run_id": 41929773433,
-    "status": "in_progress",
+    "status": "completed success; all4 exact-source jobs green",
     "url": "https://github.com/hoozter/ottrin/actions/runs/41929773433",
     "jobs": [
       {
@@ -33,7 +33,7 @@
       }
     ]
   },
-  "stable_deliverables": "Linux316 / Windows458; preserve until accepted replacement",
+  "stable_deliverables": "Linuxc4 promoted / Windows458 unchanged",
   "native": {
     "status": "terminal; main18 originals and saved-theme supplement4 originals directly reviewed; five guests/15volumes removed including three failed attempts",
     "tool_session": null,
@@ -43,5 +43,6 @@
       "CLEANUP.json"
     ]
   },
-  "goal": "active/incomplete"
+  "goal": "active/incomplete",
+  "promotion": "PROMOTION.json: pass, managed daemon Ready, preferences/startup/database identity preserved; old316 packages and stage removed"
 }

@@ -9,17 +9,17 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` use runtime
-`31616771f1e346d84c3b0bf5ab0fd29af1b6e89b`. Windows ZIP/NSIS/development
+`c4a7b46b8bc77c66f62b112689fa6b382a51ddb8`. Windows ZIP/NSIS/development
 MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`b4e2995dcec8f0dd7a03b36b8dcba68f4d8e3ca34707ad88a9deaaf15cc7814e`.
+`e88e49e876721b1c065addd2f79f83b508bb533b241b536eb0166ac4118cb634`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
-Exact316 run41920332944 passes all four hosted jobs. Current Linux packages include
+Exactc4 run41929773433 passes all four hosted jobs. Current Linux packages include
 restored administrator history provenance/refresh and typed completed-Undo state,
-with helper protocol3 readiness/update checks. Actual AppImage/FUSE protected Copy,
+with helper protocol3 readiness/update checks. Original DAC AppImage/FUSE protected Copy,
 restart/history/Undo/cleanup, native DEB two-reboot and four aa-to-DAC replacement
 cases pass at their explicit scopes. The private1000-file mounted-daemon idle
 sample is0.0333% of one core over30seconds; no personal/large-corpus guarantee is
@@ -29,9 +29,11 @@ startup choice and database identity preserved. Superseded packages and consumed
 staging are removed. The personal system helper still needs owner authentication
 through Services to update. Windows458 remains unchanged.
 
-The Grid caption refinement is delivered with actual AppImage browser/picker
-Dark/Light100% and controlled150% software-X11 review. Subsequent single-line
-caption and Miller footer wakeup fixes remain source-tested only. The ordered queue below records all remaining work. Earlier
+The caption/footer correction is delivered with22 directly reviewed successful
+AppImage captures, including Dark/Light100/150 Miller rows and saved-theme names,
+normal List headers, Grid75/100/185 and cooperating-picker cancellation. The
+installed Ready-index no-input footer remains correct through30seconds. The
+subsequent Services startup wording correction remains source-only. The ordered queue below records all remaining work. Earlier
 checkpoints retain their historical source/artifact scopes.
 
 The current Linux packages correct Services showing a false red error for an
@@ -547,10 +549,10 @@ before the accepted supplement. Five owned guests/15volumes, credentials,
 transports, displays and content extractions are removed. Debug compiler roots
 are unchanged; current release binaries and useful caches remain.
 
-Receipts are in `caption-footer-delivery-current/`. Its111MiB immutable candidate
-is retained only for exact-source CI41929773433 and guarded publication. Linux
-verification and both search-performance jobs pass; Windows workspace tests are
-still live. The delivered image remains316 and Windows remains458. No full theme,
+Receipts are in `caption-footer-delivery-current/`. All four exact-source jobs41929773433 pass. Guarded publication replaces all
+four Linux formats withc4, restarts the managed daemon to Ready, and preserves
+startup choice, exact preferences and database identity. The111MiB stage is
+consumed and superseded316 packages are removed. Windows remains458. No full theme,
 whole-interface, physical-platform or roadmap completion is implied.
 
 
@@ -562,7 +564,7 @@ Task Scheduler/package and CLI status carry an explicit unknown value. SQLite
 startup inspection no longer queries current runtime. The rendered regression
 fails the old wording and passes all three states;250 search and506 UI tests,
 strict native/Windows all-target lint for search/UI/app, and formatting pass.
-This is not in delivered316 or stagedc4 and still needs native/package acceptance.
+This is not in deliveredc4 and still needs native/package acceptance.
 Receipt: `login-startup-wording-current/SOURCE_CHECKS.json`. Owned disposable tests
 are removed;32 superseded incremental sessions were retired with newest per-
 configuration caches retained (1.00GiB reported). Current all-target check caches

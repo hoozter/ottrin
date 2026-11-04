@@ -4,9 +4,9 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM use runtime `31616771`; Windows ZIP/NSIS and
+Linux AppImage/portable/DEB/RPM use runtime `c4a7b46b`; Windows ZIP/NSIS and
 unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
-CI41920332944 passes all four Linux/Windows verification/performance jobs.
+CI41929773433 passes all four Linux/Windows verification/performance jobs.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind delivered hashes and acceptance scopes.
@@ -20,7 +20,7 @@ undone**, rather than Needs review with a misleading platform error. Changed
 retained contents still require review and refuse cleanup. Protocol3 detects
 older helpers before mutations.
 
-Actual AppImage/FUSE acceptance covers setup/update cancellation, authenticated
+Original DAC AppImage/FUSE acceptance covers setup/update cancellation, authenticated
 helper replacement, protected Copy, normal GUI restart, cancelled/authenticated
 history loading, live-receipt preservation, fresh Undo, canonical state refresh
 and confirmed cleanup. Twenty original complete-window captures and independent
@@ -38,20 +38,22 @@ is claimed. Existing AppImage/portable users update the separately installed
 helper through Settings → Services → Update / reinstall helper with administrator
 authentication. This delivery did not silently replace the personal system helper.
 
-The delivered Grid layout uses measured, centered, at-most-two-line filenames in
-both the browser and cooperating picker. Actual AppImage review covers Dark/Light,
-100% and controlled150% software-X11 desktop scaling, normal/enlarged Grid captions
-and picker cancellation. All24 original captures were reviewed. The unchanged
-helper/service scopes above retain their original DAC acceptance; they were not
-freshly rerun. Evidence: `.hermes/evidence/grid-caption-delivery-current/`.
-
-The subsequent single-line caption and one-shot Miller footer fixes pass505 UI
-tests, strict native/Windows cross-target lint, four-format package checks and
-scoped actual-AppImage review. Dark/Light100/150 Miller rows and saved-theme names
-use their label widths; an installed Ready index shows1002 items without input
-through30seconds. This c4 candidate remains staged pending its Windows CI job;
-it is not in the delivered316 image. Evidence:
+The delivered caption/footer correction uses the available single-line width
+before ellipsis, including Miller rows and saved-theme names. Actual current
+AppImage review covers those surfaces in Dark/Light100/150, normal List headers,
+Grid75/100/185 and cooperating-picker cancellation. All22 successful original
+captures were directly reviewed. An installed Ready index shows1002 items without
+input in all four samples through30seconds; the rendered regression proves the one-shot footer wakeup
+and return to idle. The unchanged helper/service scopes above retain their actual
+DAC source; their matrices were not freshly rerun. Evidence:
 `.hermes/evidence/caption-footer-delivery-current/`.
+
+The subsequent Services startup-status correction says On, Off or Unavailable,
+separate from the running-index status. It preserves query errors and does not
+show an editable unchecked toggle when inspection is unavailable.250 search and
+506 UI tests, strict Linux/Windows search/UI/app lint and formatting pass. This
+source-only follow-up is not in the deliveredc4 image and still needs native/
+package acceptance. Evidence: `.hermes/evidence/login-startup-wording-current/`.
 
 Windows helper transport has a separate focused native checkpoint: direct UAC and
 shared local-pipe I/O replace PowerShell and request/response files. Its ten checks

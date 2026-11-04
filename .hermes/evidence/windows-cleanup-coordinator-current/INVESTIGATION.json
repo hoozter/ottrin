@@ -1,0 +1,35 @@
+{
+  "status": "source investigation; Windows durable coordinator not implemented or accepted",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "836986d8c532d8dd423f62b9660b1cd0ddce2c5e4f0cd37a255e3d9a3a1dbb6f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "7cd3efc80c3cfc57074c5bbc452210fafe72476f327ec60ea433c311d2e9eec3",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "2f19fc3f8b5b75aa911100d36ed44d84a745ec7796d14f5149f0adc4746413e2",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "982990869e86f71d8a904dfbbeb09c0d4d020ddae41fcad76702a92093fc29a8",
+    "crates/ottrin-platform/src/copy_finalization.rs": "2d43098ce045c00a7363b2263d04b7addb84125c3fccd9e96586dc1497c9ae1e"
+  },
+  "verified_seams": [
+    "RetainedCopyCleanupPlan is handle-free but requires_retained_retry currently relies on volatile group authority after metadata removal.",
+    "Observation.reclaim_all reclaims all payloads, then calls finish_metadata per member. finish_metadata combines metadata-intent admission, pending-member freeze, retained-plan reconciliation, metadata removal and Complete acknowledgement.",
+    "Selection binds full registry names/root version and peer control bytes/versions. A newly created coordinator inside that registry changes the guarded namespace; ignoring it or dropping the root/version proof would weaken validation.",
+    "Metadata Plan contains Header, journal digest, retained name, native parent/central locations and parent security. It already supports a bounded retry in the same process. Its existing authority must be validated, not replaced with client-supplied serialized proof.",
+    "Linux RetainedCopyFinalization is the precedent: canonical server-owned manifest after all payloads complete, removed last; absent final manifest cannot be reconstructed from IDs alone."
+  ],
+  "implementation_candidate": [
+    "Prepare paired MetadataRemovalIntent for every selected member while retaining every canonical journal; crash before coordinator publication can still rediscover all member IDs. Confirm this re-admission explicitly in native tests.",
+    "Use a canonical backend-owned, externally anchored coordinator namespace that does not perturb Selection registry membership/root versions during checkpoint writes. Bind it to the original registry identity, caller/creator/security and complete immutable cohort/native metadata proofs. Reuse AnchoredRoot validation rather than path-only trust.",
+    "Split metadata admission from removal so a durable pending-member checkpoint is committed before that member can be unlinked. Persist verified completed-prefix/catalog acknowledgements between members; a restart may reconcile only the one durably pending member, never arbitrary missing IDs.",
+    "Revalidate completed-member absence, unchanged peers, case/owner/DACL/object identities and the intended single-member namespace delta on every load and before mutation. Canonical manifests may carry server-created state; the protocol must never accept a client serialized Plan/path as deletion authority.",
+    "Retire the coordinator only after all selected metadata is absent and durable. Preserve the existing explicit uncertainty contract for a final unlink/sync failure; never synthesize Done from a missing ID."
+  ],
+  "required_native_tests": [
+    "Multi-member partial metadata deletion, terminate helper, fresh process re-open by canonical coordinator ID without source files, finish remaining cleanup.",
+    "Crash before coordinator publication with a partial/all metadata-intent prefix; all original control IDs remain discoverable and re-admission is valid.",
+    "Crash before/after each pending checkpoint, each local/stage/central unlink, each completed acknowledgement and last coordinator unlink/flush.",
+    "Changed coordinator/header/cohort, swapped native IDs, parent/registry replacement, added/changed unselected peer, reparse/case/DACL/owner changes and same-name recreation refuse before unrelated mutation.",
+    "Foreign-user and over-the-shoulder UAC caller binding remains a separate necessary gate before helper Copy is enabled."
+  ],
+  "limits": [
+    "This record is a source-backed implementation candidate, not a new serialization/protocol contract or proof of native recovery.",
+    "Windows administrator Copy remains disabled until the caller-bound registry, durable restart authority and native acceptance are complete."
+  ]
+}
