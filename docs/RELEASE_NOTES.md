@@ -23,9 +23,12 @@ scope. The main search indicator's stopped color and settled resize observation
 remain in the consistency audit. A protected-copy probe was denied in a no-seat
 background session; positive local-console elevation remains unverified.
 
-The source now shares production navigation/menu/view/breadcrumb presentation
-with the theme editor, removing its invented Sync control and ASCII navigation.
-490 UI tests and strict native/Windows UI lint pass. This is source-only work;
+The source now shares production navigation/menu/view/breadcrumb/tab presentation
+and window-control widgets with the theme editor, removing invented Sync, ASCII
+navigation and separately painted tab/window buttons. Rendered regressions compare
+real tab geometry/typography and controls at 100/150/200 percent text size; preview
+clicks select theme roles without operating windows. 491 UI tests and strict
+native/Windows UI lint pass. This is source-only work;
 current packages do not contain it and the full theme/role audit remains open.
 
 Owned VM/profile/bootstrap resources, extraction and superseded Linux packages

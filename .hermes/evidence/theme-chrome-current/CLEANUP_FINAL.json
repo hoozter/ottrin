@@ -1,0 +1,28 @@
+{
+  "verified_at": "2026-11-04T09:39:15.677571+00:00",
+  "compiler_bytes_before": {
+    "target/debug/deps": 41729610638,
+    "target/debug/incremental": 24404306272,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336217703,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40304729986
+  },
+  "compiler_bytes_after": {
+    "target/debug/deps": 41729662886,
+    "target/debug/incremental": 24406289775,
+    "target/x86_64-pc-windows-gnu/debug/deps": 33336222515,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 40305932019
+  },
+  "obsolete_incremental_sessions_removed": 5,
+  "fresh_candidates": 0,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/theme-chrome-current",
+      "purpose": "Compact source checks and cleanup evidence"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc",
+      "purpose": "Current verified UI test executable; same compiler settings and path as prior executable"
+    }
+  ],
+  "scope": "No additional compiler trees, native displays, VMs or package staging allocated. Disposable HOME/XDG tests used scripts/test-workspace.py teardown. Current packages, user data and useful caches preserved."
+}

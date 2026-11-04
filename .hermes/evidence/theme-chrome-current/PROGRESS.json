@@ -1,0 +1,7 @@
+{
+  "previous_goal_turn": "progress: verified Linux delivery checkpoint committed and pushed as 44782229",
+  "this_turn": "Shared live tab and New tab presentation; preview uses actual window-control buttons; rendered geometry/theme/action checks pass with full 491-test suite and strict cross-platform UI lint",
+  "source_checks": "SOURCE_CHECKS.json",
+  "packaged": false,
+  "remaining": "Native visuals, file rows/status presenters, role ownership, miniature geometry, next package delivery and wider active roadmap remain open"
+}

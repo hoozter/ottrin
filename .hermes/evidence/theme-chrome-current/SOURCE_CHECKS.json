@@ -1,0 +1,61 @@
+{
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "30f0257ad5a53cccd31ad3f29bb1d31f2646e7f41a1e7e2fb3dca4adb45512d7",
+    "crates/ottrin-ui/src/appearance_editor.rs": "3fb1d02dbaa22e52b3f573780f8f849034974f955d9b97934c8ec64b205aeb22"
+  },
+  "checks": [
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "scripts/test-workspace.py",
+        "-p",
+        "ottrin-ui",
+        "--lib"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "native-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "ottrin-ui",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "windows-lint",
+      "command": [
+        "cargo",
+        "clippy",
+        "--target",
+        "x86_64-pc-windows-gnu",
+        "-p",
+        "ottrin-ui",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "scope": "Source-only UI suite and strict native/Windows UI lint. Shared tab fill/corners/size, label typography and window control dimensions compared against real production output at 100/150/200 percent text scale; actual AccessKit clicks select theme roles without viewport actions. No native desktop visual or package acceptance."
+}

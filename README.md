@@ -47,8 +47,8 @@ Windows retains its earlier9 settings cases,16 Services states/six startup toggl
 58-file payload/MSIX16 assembly and scoped daemon acceptance. These are bounded
 software fixtures, not sustained, physical or whole-interface acceptance.
 
-Source-only theme work now shares live toolbar/breadcrumb widgets with the editor;
-490 UI tests and strict Linux/Windows UI lint pass. It is not in the current packages.
+Source-only theme work now shares live toolbar/breadcrumb/tab and window-control
+widgets with the editor; 491 UI tests and strict Linux/Windows UI lint pass. It is not in the current packages.
 Full theme/role consistency, positive local-seat protected-file elevation,
 login/reboot, MSI rollback, physical coverage and final daily-driver acceptance
 remain open. See the roadmap and stable manifests for exact evidence and limits.

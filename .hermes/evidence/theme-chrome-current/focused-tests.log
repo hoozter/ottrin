@@ -1,0 +1,10 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 14.01s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 2 tests
+test tests::theme_preview_matches_live_tab_and_window_controls_without_executing_window_actions ... ok
+test tests::theme_preview_exposes_the_live_navigation_controls_and_selects_their_role ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 490 filtered out; finished in 0.01s
+

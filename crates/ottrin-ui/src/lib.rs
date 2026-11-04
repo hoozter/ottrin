@@ -11793,325 +11793,253 @@ impl OttrinApp {
         let c = self.colors;
         let mut blocked_drag_rects: Vec<Rect> = Vec::new();
         let titlebar_bg = c.titlebar_bg;
-        let active_tab_bg = theme_tab_fill(c);
-        let inactive_text = mix_color(c.text_muted, titlebar_bg, 0.32);
 
-        let panel_rect = egui::TopBottomPanel::top("tab_row")
-            .exact_height((CUSTOM_TITLEBAR_HEIGHT * c.font_scale).ceil())
-            .show_separator_line(false)
-            .frame(
-                Frame::new()
-                    .fill(titlebar_bg)
-                    .inner_margin(egui::Margin::symmetric(6, 1)),
-            )
-            .show(ctx, |ui| {
-                ui.spacing_mut().item_spacing.x = 0.0;
+        let panel_rect =
+            egui::TopBottomPanel::top("tab_row")
+                .exact_height((CUSTOM_TITLEBAR_HEIGHT * c.font_scale).ceil())
+                .show_separator_line(false)
+                .frame(
+                    Frame::new()
+                        .fill(titlebar_bg)
+                        .inner_margin(egui::Margin::symmetric(6, 1)),
+                )
+                .show(ctx, |ui| {
+                    ui.spacing_mut().item_spacing.x = 0.0;
 
-                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                    let n_tabs = self.state.tabs.len();
-                    let active = self.state.active_tab_idx;
-                    let tandem = self.current_tandem_view();
-                    let mut navigate_to: Option<(u64, PathBuf)> = None;
-                    let mut close_idx: Option<usize> = None;
-                    let mut new_tab_requested = false;
-                    let mut activate_selected_tandem_requested = false;
-                    let mut tab_rects: Vec<Rect> = Vec::with_capacity(n_tabs);
-                    let mut tab_drag: Option<(usize, egui::Pos2, bool)> = None;
+                    ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                        let n_tabs = self.state.tabs.len();
+                        let active = self.state.active_tab_idx;
+                        let tandem = self.current_tandem_view();
+                        let mut navigate_to: Option<(u64, PathBuf)> = None;
+                        let mut close_idx: Option<usize> = None;
+                        let mut new_tab_requested = false;
+                        let mut activate_selected_tandem_requested = false;
+                        let mut tab_rects: Vec<Rect> = Vec::with_capacity(n_tabs);
+                        let mut tab_drag: Option<(usize, egui::Pos2, bool)> = None;
 
-                    self.tab_tandem_selection
-                        .retain(|id| self.state.tab_idx_by_id(*id).is_some());
+                        self.tab_tandem_selection
+                            .retain(|id| self.state.tab_idx_by_id(*id).is_some());
 
-                    for i in 0..n_tabs {
-                        let is_active = i == active;
-                        let (label, tab_id, tab_dir) = {
-                            let tab = &self.state.tabs[i];
-                            let label = if tab.label.is_none() && tab.current_dir.parent().is_none()
-                            {
-                                path_label(&tab.current_dir)
-                            } else {
-                                tab.display_name().to_string()
-                            };
-                            (label, tab.id, tab.current_dir.clone())
-                        };
-                        let is_tandem_selected = self.tab_tandem_selection.contains(&tab_id);
-
-                        // Active tab should visually connect to the nav row below.
-                        let tab_fill = if is_active {
-                            active_tab_bg
-                        } else if is_tandem_selected {
-                            mix_color(c.accent, titlebar_bg, 0.18)
-                        } else {
-                            Color32::TRANSPARENT
-                        };
-                        let text_color = if is_active || is_tandem_selected {
-                            c.text_muted
-                        } else {
-                            inactive_text
-                        };
-                        let mut close_rect: Option<Rect> = None;
-
-                        let frame = Frame::new()
-                            .fill(tab_fill)
-                            .stroke(Stroke::NONE)
-                            .corner_radius(theme_tab_corners(c))
-                            .inner_margin(egui::Margin {
-                                left: 14,
-                                right: 6,
-                                top: 4,
-                                bottom: 4,
-                            });
-
-                        let resp = frame.show(ui, |ui| {
-                            ui.set_max_width(190.0);
-                            ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                                if let Some(link) = tandem.as_ref()
-                                    && link.contains_tab(tab_id)
-                                {
-                                    let dot_color = if link.active_tab_id() == tab_id {
-                                        c.accent
+                        for i in 0..n_tabs {
+                            let is_active = i == active;
+                            let (label, tab_id, tab_dir) = {
+                                let tab = &self.state.tabs[i];
+                                let label =
+                                    if tab.label.is_none() && tab.current_dir.parent().is_none() {
+                                        path_label(&tab.current_dir)
                                     } else {
-                                        c.text_muted
+                                        tab.display_name().to_string()
                                     };
-                                    ui.label(
-                                        RichText::new("•")
-                                            .color(dot_color)
-                                            .size(14.0 * c.font_scale),
-                                    );
-                                    if link.pinned_tab_id == Some(tab_id) {
-                                        ui.add_space(2.0);
-                                        ui.label(
-                                            RichText::new(MI_LOCK)
-                                                .color(c.accent)
-                                                .size(11.5 * c.font_scale),
-                                        );
-                                    }
-                                    ui.add_space(4.0);
-                                }
-                                ui.label(
-                                    RichText::new(&label)
-                                        .color(text_color)
-                                        .size(12.5 * c.font_scale),
-                                );
-                                ui.add_space(6.0);
-                                if n_tabs > 1 {
-                                    let close_btn = ui.add(
-                                        egui::Button::new(
-                                            RichText::new(MI_CLOSE)
-                                                .color(c.text_dim)
-                                                .size(13.0 * c.font_scale),
-                                        )
-                                        .frame(false)
-                                        .min_size(Vec2::new(18.0, 18.0))
-                                        .themed(&c),
-                                    );
-                                    close_rect = Some(close_btn.rect);
-                                    if close_btn.hovered() {
-                                        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                                    }
-                                    if close_btn.clicked() {
-                                        close_idx = Some(i);
-                                    }
-                                }
-                            });
-                        });
+                                (label, tab.id, tab.current_dir.clone())
+                            };
+                            let is_tandem_selected = self.tab_tandem_selection.contains(&tab_id);
 
-                        let tab_rect = resp.response.rect;
-                        let tab_click_rect = if let Some(close_rect) = close_rect {
-                            blocked_drag_rects.push(close_rect);
-                            Rect::from_min_max(
-                                tab_rect.min,
-                                egui::pos2(
-                                    (close_rect.min.x - 6.0).max(tab_rect.min.x),
-                                    tab_rect.max.y,
-                                ),
-                            )
-                        } else {
-                            tab_rect
-                        };
-                        // Frame::show response has Sense::hover only — interact explicitly for clicks
-                        let tab_click = ui.interact(
-                            tab_click_rect,
-                            ui.id().with(("tab_click", tab_id)),
-                            Sense::click_and_drag(),
-                        );
-                        if tab_click.hovered() {
-                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                        }
-                        if (tab_click.dragged() || tab_click.drag_stopped())
-                            && let Some(pointer) = tab_click.interact_pointer_pos()
-                        {
-                            tab_drag = Some((i, pointer, tab_click.drag_stopped()));
-                        }
-                        blocked_drag_rects.push(tab_rect);
-                        tab_rects.push(tab_rect);
-                        if tab_click.clicked() && close_idx.is_none() {
-                            let shift = ui.ctx().input(|input| input.modifiers.shift);
-                            if shift {
-                                let active_id = self.state.active_tab().id;
-                                self.tab_tandem_selection = Self::tab_selection_after_click(
-                                    &self.tab_tandem_selection,
-                                    active_id,
-                                    tab_id,
-                                    true,
-                                );
-                            } else {
-                                self.tab_tandem_selection.clear();
-                                self.focus_tab_idx(i);
-                            }
-                            if !self.tab_ui.contains_key(&tab_id) {
-                                navigate_to = Some((tab_id, tab_dir.clone()));
-                            }
-                        }
-                        tab_click.context_menu(|ui| {
-                            ui.set_min_width(210.0);
-                            let can_open_tandem = self.tab_tandem_selection.len() == 2
-                                && self.tab_tandem_selection.contains(&tab_id);
-                            if ui
-                                .add_enabled(
-                                    can_open_tandem,
-                                    aligned_menu_button(
-                                        "",
-                                        MI_VIEW_COLUMN,
-                                        "Open selected tabs in Tandem",
-                                        &c,
-                                    )
-                                    .themed(&c),
-                                )
-                                .clicked()
-                            {
-                                activate_selected_tandem_requested = true;
-                                ui.close();
-                            }
-                            ui.separator();
-                            if ui
-                                .add_enabled(
-                                    n_tabs > 1,
-                                    aligned_menu_button("", MI_CLOSE, "Close Tab", &c).themed(&c),
-                                )
-                                .clicked()
+                            let tab = tab_widget(
+                                ui,
+                                c,
+                                TabPresentation {
+                                    label: &label,
+                                    active: is_active,
+                                    selected_for_tandem: is_tandem_selected,
+                                    tandem: tandem
+                                        .as_ref()
+                                        .filter(|link| link.contains_tab(tab_id))
+                                        .map(|link| {
+                                            (
+                                                link.active_tab_id() == tab_id,
+                                                link.pinned_tab_id == Some(tab_id),
+                                            )
+                                        }),
+                                    closable: n_tabs > 1,
+                                },
+                            );
+                            let close_rect = tab.close_button.as_ref().map(|button| button.rect);
+                            if tab
+                                .close_button
+                                .as_ref()
+                                .is_some_and(|button| button.clicked())
                             {
                                 close_idx = Some(i);
-                                ui.close();
                             }
-                        });
-                        resp.response.on_hover_text(format!(
-                            "{}{}",
-                            path_label(&tab_dir),
-                            if is_tandem_selected {
-                                "\nSelected for Tandem"
+                            let tab_rect = tab.response.rect;
+                            let tab_click_rect = if let Some(close_rect) = close_rect {
+                                blocked_drag_rects.push(close_rect);
+                                Rect::from_min_max(
+                                    tab_rect.min,
+                                    egui::pos2(
+                                        (close_rect.min.x - 6.0).max(tab_rect.min.x),
+                                        tab_rect.max.y,
+                                    ),
+                                )
                             } else {
-                                ""
+                                tab_rect
+                            };
+                            // Frame::show response has Sense::hover only — interact explicitly for clicks
+                            let tab_click = ui.interact(
+                                tab_click_rect,
+                                ui.id().with(("tab_click", tab_id)),
+                                Sense::click_and_drag(),
+                            );
+                            if tab_click.hovered() {
+                                ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                             }
-                        ));
-                        if is_active || is_tandem_selected {
-                            ui.painter().hline(
-                                tab_rect.x_range(),
-                                tab_rect.bottom() - 1.0,
+                            if (tab_click.dragged() || tab_click.drag_stopped())
+                                && let Some(pointer) = tab_click.interact_pointer_pos()
+                            {
+                                tab_drag = Some((i, pointer, tab_click.drag_stopped()));
+                            }
+                            blocked_drag_rects.push(tab_rect);
+                            tab_rects.push(tab_rect);
+                            if tab_click.clicked() && close_idx.is_none() {
+                                let shift = ui.ctx().input(|input| input.modifiers.shift);
+                                if shift {
+                                    let active_id = self.state.active_tab().id;
+                                    self.tab_tandem_selection = Self::tab_selection_after_click(
+                                        &self.tab_tandem_selection,
+                                        active_id,
+                                        tab_id,
+                                        true,
+                                    );
+                                } else {
+                                    self.tab_tandem_selection.clear();
+                                    self.focus_tab_idx(i);
+                                }
+                                if !self.tab_ui.contains_key(&tab_id) {
+                                    navigate_to = Some((tab_id, tab_dir.clone()));
+                                }
+                            }
+                            tab_click.context_menu(|ui| {
+                                ui.set_min_width(210.0);
+                                let can_open_tandem = self.tab_tandem_selection.len() == 2
+                                    && self.tab_tandem_selection.contains(&tab_id);
+                                if ui
+                                    .add_enabled(
+                                        can_open_tandem,
+                                        aligned_menu_button(
+                                            "",
+                                            MI_VIEW_COLUMN,
+                                            "Open selected tabs in Tandem",
+                                            &c,
+                                        )
+                                        .themed(&c),
+                                    )
+                                    .clicked()
+                                {
+                                    activate_selected_tandem_requested = true;
+                                    ui.close();
+                                }
+                                ui.separator();
+                                if ui
+                                    .add_enabled(
+                                        n_tabs > 1,
+                                        aligned_menu_button("", MI_CLOSE, "Close Tab", &c)
+                                            .themed(&c),
+                                    )
+                                    .clicked()
+                                {
+                                    close_idx = Some(i);
+                                    ui.close();
+                                }
+                            });
+                            tab.response.on_hover_text(format!(
+                                "{}{}",
+                                path_label(&tab_dir),
+                                if is_tandem_selected {
+                                    "\nSelected for Tandem"
+                                } else {
+                                    ""
+                                }
+                            ));
+                        }
+
+                        if let Some((from, pointer, dropped)) = tab_drag {
+                            let insertion_slot = tab_rects
+                                .iter()
+                                .position(|rect| pointer.x < rect.center().x)
+                                .unwrap_or(n_tabs);
+                            let marker_x = if insertion_slot < n_tabs {
+                                tab_rects[insertion_slot].left()
+                            } else {
+                                tab_rects.last().map_or(pointer.x, Rect::right)
+                            };
+                            ui.painter().vline(
+                                marker_x,
+                                egui::Rangef::new(
+                                    tab_rects[0].top() + 3.0,
+                                    tab_rects[0].bottom() - 3.0,
+                                ),
                                 Stroke::new(2.0, c.accent),
                             );
+                            if dropped {
+                                let to = if from < insertion_slot {
+                                    insertion_slot.saturating_sub(1)
+                                } else {
+                                    insertion_slot
+                                };
+                                let _ = self.state.reorder_tab(from, to);
+                            }
                         }
-                    }
 
-                    if let Some((from, pointer, dropped)) = tab_drag {
-                        let insertion_slot = tab_rects
-                            .iter()
-                            .position(|rect| pointer.x < rect.center().x)
-                            .unwrap_or(n_tabs);
-                        let marker_x = if insertion_slot < n_tabs {
-                            tab_rects[insertion_slot].left()
-                        } else {
-                            tab_rects.last().map_or(pointer.x, Rect::right)
-                        };
-                        ui.painter().vline(
-                            marker_x,
-                            egui::Rangef::new(
-                                tab_rects[0].top() + 3.0,
-                                tab_rects[0].bottom() - 3.0,
-                            ),
-                            Stroke::new(2.0, c.accent),
-                        );
-                        if dropped {
-                            let to = if from < insertion_slot {
-                                insertion_slot.saturating_sub(1)
-                            } else {
-                                insertion_slot
-                            };
-                            let _ = self.state.reorder_tab(from, to);
+                        // New tab +
+                        ui.add_space(6.0);
+                        let new_tab_btn = new_tab_button(ui, c);
+                        blocked_drag_rects.push(new_tab_btn.rect);
+                        if new_tab_btn.clicked() {
+                            new_tab_requested = true;
                         }
-                    }
 
-                    // New tab +
-                    ui.add_space(6.0);
-                    let new_tab_btn = ui.add(
-                        egui::Button::new(
-                            RichText::new("+")
-                                .color(c.text_muted)
-                                .size(16.0 * c.font_scale),
-                        )
-                        .frame(false)
-                        .themed(&c)
-                        .accessible_name("New tab"),
-                    );
-                    blocked_drag_rects.push(new_tab_btn.rect);
-                    if new_tab_btn.clicked() {
-                        new_tab_requested = true;
-                    }
+                        // Apply tab actions
+                        if let Some(idx) = close_idx {
+                            self.close_tab(idx);
+                        } else if let Some((tid, dir)) = navigate_to {
+                            self.refresh_tab(tid, dir);
+                        }
+                        if activate_selected_tandem_requested {
+                            let _ = self.activate_selected_tabs_in_tandem();
+                        }
+                        if new_tab_requested {
+                            let home = default_home_dir();
+                            let idx = self.state.new_tab(home.clone());
+                            let new_id = self.state.tabs[idx].id;
+                            self.focus_tab_idx(idx);
+                            self.refresh_tab(new_id, home);
+                        }
 
-                    // Apply tab actions
-                    if let Some(idx) = close_idx {
-                        self.close_tab(idx);
-                    } else if let Some((tid, dir)) = navigate_to {
-                        self.refresh_tab(tid, dir);
-                    }
-                    if activate_selected_tandem_requested {
-                        let _ = self.activate_selected_tabs_in_tandem();
-                    }
-                    if new_tab_requested {
-                        let home = default_home_dir();
-                        let idx = self.state.new_tab(home.clone());
-                        let new_id = self.state.tabs[idx].id;
-                        self.focus_tab_idx(idx);
-                        self.refresh_tab(new_id, home);
-                    }
-
-                    // Window controls — far right, Material Icons
-                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        ui.add_space(8.0);
-                        let close_btn = wm_btn(ui, WmBtn::Close, &c).on_hover_text("Close");
-                        blocked_drag_rects.push(close_btn.rect);
-                        if close_btn.clicked() {
-                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                        }
-                        let is_max = ctx.input(|i| i.viewport().maximized.unwrap_or(false));
-                        let max_btn = wm_btn(ui, WmBtn::Maximize, &c).on_hover_text(if is_max {
-                            "Restore"
-                        } else {
-                            "Maximize"
-                        });
-                        blocked_drag_rects.push(max_btn.rect);
-                        if max_btn.clicked() {
-                            ctx.send_viewport_cmd(egui::ViewportCommand::Maximized(!is_max));
-                        }
-                        let min_btn = wm_btn(ui, WmBtn::Minimize, &c).on_hover_text("Minimize");
-                        blocked_drag_rects.push(min_btn.rect);
-                        if min_btn.clicked() {
-                            ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
-                        }
-                        if administrator_session() {
+                        // Window controls — far right, Material Icons
+                        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                             ui.add_space(8.0);
-                            ui.label(
-                                RichText::new("Administrator")
-                                    .color(c.accent)
-                                    .strong()
-                                    .size(11.5 * c.font_scale),
-                            )
-                            .on_hover_text("This Ottrin session is running as Administrator.");
-                        }
+                            let close_btn = wm_btn(ui, WmBtn::Close, &c).on_hover_text("Close");
+                            blocked_drag_rects.push(close_btn.rect);
+                            if close_btn.clicked() {
+                                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                            }
+                            let is_max = ctx.input(|i| i.viewport().maximized.unwrap_or(false));
+                            let max_btn = wm_btn(ui, WmBtn::Maximize, &c)
+                                .on_hover_text(if is_max { "Restore" } else { "Maximize" });
+                            blocked_drag_rects.push(max_btn.rect);
+                            if max_btn.clicked() {
+                                ctx.send_viewport_cmd(egui::ViewportCommand::Maximized(!is_max));
+                            }
+                            let min_btn = wm_btn(ui, WmBtn::Minimize, &c).on_hover_text("Minimize");
+                            blocked_drag_rects.push(min_btn.rect);
+                            if min_btn.clicked() {
+                                ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+                            }
+                            if administrator_session() {
+                                ui.add_space(8.0);
+                                ui.label(
+                                    RichText::new("Administrator")
+                                        .color(c.accent)
+                                        .strong()
+                                        .size(11.5 * c.font_scale),
+                                )
+                                .on_hover_text("This Ottrin session is running as Administrator.");
+                            }
+                        });
                     });
-                });
-            })
-            .response
-            .rect;
+                })
+                .response
+                .rect;
 
         // Drag only from non-interactive tab-row areas so button clicks do not race StartDrag.
         let viewport_rect = ctx.viewport_rect();
@@ -25252,6 +25180,119 @@ fn theme_editor_region_at_pos(
     None
 }
 
+struct TabPresentation<'a> {
+    label: &'a str,
+    active: bool,
+    selected_for_tandem: bool,
+    tandem: Option<(bool, bool)>,
+    closable: bool,
+}
+
+struct TabPresentationResponse {
+    response: egui::Response,
+    close_button: Option<egui::Response>,
+}
+
+// Presentation only: the caller owns selection, reordering and close actions.
+fn tab_widget(ui: &mut egui::Ui, c: Colors, tab: TabPresentation<'_>) -> TabPresentationResponse {
+    let tab_fill = if tab.active {
+        theme_tab_fill(c)
+    } else if tab.selected_for_tandem {
+        mix_color(c.accent, c.titlebar_bg, 0.18)
+    } else {
+        Color32::TRANSPARENT
+    };
+    let text_color = if tab.active || tab.selected_for_tandem {
+        c.text_muted
+    } else {
+        mix_color(c.text_muted, c.titlebar_bg, 0.32)
+    };
+    let mut close_button = None;
+
+    let frame = Frame::new()
+        .fill(tab_fill)
+        .stroke(Stroke::NONE)
+        .corner_radius(theme_tab_corners(c))
+        .inner_margin(egui::Margin {
+            left: 14,
+            right: 6,
+            top: 4,
+            bottom: 4,
+        });
+
+    let response = frame.show(ui, |ui| {
+        ui.set_max_width(190.0);
+        ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+            if let Some((active, pinned)) = tab.tandem {
+                let dot_color = if active { c.accent } else { c.text_muted };
+                ui.label(
+                    RichText::new("•")
+                        .color(dot_color)
+                        .size(14.0 * c.font_scale),
+                );
+                if pinned {
+                    ui.add_space(2.0);
+                    ui.label(
+                        RichText::new(MI_LOCK)
+                            .color(c.accent)
+                            .size(11.5 * c.font_scale),
+                    );
+                }
+                ui.add_space(4.0);
+            }
+            ui.label(
+                RichText::new(tab.label)
+                    .color(text_color)
+                    .size(12.5 * c.font_scale),
+            );
+            ui.add_space(6.0);
+            if tab.closable {
+                let close_btn = ui.add(
+                    egui::Button::new(
+                        RichText::new(MI_CLOSE)
+                            .color(c.text_dim)
+                            .size(13.0 * c.font_scale),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::new(18.0, 18.0))
+                    .themed(&c),
+                );
+
+                if close_btn.hovered() {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                }
+                close_button = Some(close_btn);
+            }
+        });
+    });
+
+    if tab.active || tab.selected_for_tandem {
+        let rect = response.response.rect;
+        ui.painter().hline(
+            rect.x_range(),
+            rect.bottom() - 1.0,
+            Stroke::new(2.0, c.accent),
+        );
+    }
+    TabPresentationResponse {
+        response: response.response,
+        close_button,
+    }
+}
+
+fn new_tab_button(ui: &mut egui::Ui, c: Colors) -> egui::Response {
+    ui.add(
+        egui::Button::new(
+            RichText::new("+")
+                .color(c.text_muted)
+                .size(16.0 * c.font_scale),
+        )
+        .frame(false)
+        .themed(&c)
+        .accessible_name("New tab"),
+    )
+}
+
 fn theme_tab_fill(c: Colors) -> Color32 {
     mix_color(c.toolbar_bg, c.titlebar_bg, 0.28)
 }
@@ -25283,7 +25324,7 @@ fn theme_editor_large_preview(
     let p = ui.painter().clone();
     let outer = rect;
     let frame = rect.shrink(14.0);
-    let title_h = (frame.height() * 0.13).clamp(32.0, 44.0);
+    let title_h = (CUSTOM_TITLEBAR_HEIGHT * preview.font_scale).ceil();
     let nav_h = (CUSTOM_TITLEBAR_HEIGHT * preview.font_scale).ceil();
     let status_h = (frame.height() * 0.08).clamp(22.0, 28.0);
     let titlebar = Rect::from_min_size(frame.min, Vec2::new(frame.width(), title_h));
@@ -25371,52 +25412,42 @@ fn theme_editor_large_preview(
         },
         preview.titlebar_bg,
     );
-    let title_tab = Rect::from_min_size(
-        egui::pos2(titlebar.left() + 12.0, titlebar.top() + 7.0),
-        Vec2::new(150.0, titlebar.height() - 12.0),
+    let mut title_ui = ui.new_child(
+        egui::UiBuilder::new()
+            .id_salt("theme_preview_titlebar")
+            .max_rect(titlebar.shrink2(Vec2::new(6.0, 1.0)))
+            .layout(Layout::left_to_right(Align::Center)),
     );
-    p.rect_filled(
-        title_tab,
-        theme_tab_corners(preview),
-        theme_tab_fill(preview),
+    title_ui.set_clip_rect(titlebar.intersect(ui.clip_rect()));
+    title_ui.spacing_mut().item_spacing.x = 0.0;
+    let tab = tab_widget(
+        &mut title_ui,
+        preview,
+        TabPresentation {
+            label: "workspace",
+            active: true,
+            selected_for_tandem: false,
+            tandem: None,
+            closable: false,
+        },
     );
-    p.text(
-        egui::pos2(title_tab.left() + 12.0, title_tab.center().y),
-        Align2::LEFT_CENTER,
-        "workspace",
-        FontId::proportional(11.0 * preview.font_scale),
-        preview.text_muted,
-    );
-    p.line_segment(
-        [
-            egui::pos2(title_tab.left() + 10.0, title_tab.bottom()),
-            egui::pos2(title_tab.right() - 10.0, title_tab.bottom()),
-        ],
-        Stroke::new(2.4, preview.accent),
-    );
-    let control_stroke = Stroke::new(1.0, preview.text_dim);
-    let control_y = titlebar.center().y;
-    let min_x = titlebar.right() - 54.0;
-    p.line_segment(
-        [
-            egui::pos2(min_x - 4.0, control_y),
-            egui::pos2(min_x + 4.0, control_y),
-        ],
-        control_stroke,
-    );
-    p.rect_stroke(
-        Rect::from_center_size(egui::pos2(min_x + 20.0, control_y), Vec2::splat(8.0)),
-        0.0,
-        control_stroke,
-        egui::StrokeKind::Inside,
-    );
-    p.text(
-        egui::pos2(min_x + 40.0, control_y),
-        Align2::CENTER_CENTER,
-        MI_CLOSE,
-        FontId::proportional(12.0 * preview.font_scale),
-        preview.text_dim,
-    );
+    let title_tab = tab.response.rect;
+    let tab_clicked = title_ui
+        .interact(
+            title_tab,
+            title_ui.id().with("tab_selection"),
+            Sense::click(),
+        )
+        .clicked();
+    title_ui.add_space(6.0);
+    let tab_clicked = new_tab_button(&mut title_ui, preview).clicked() || tab_clicked;
+    let mut titlebar_clicked = false;
+    title_ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        ui.add_space(8.0);
+        for kind in [WmBtn::Close, WmBtn::Maximize, WmBtn::Minimize] {
+            titlebar_clicked |= wm_btn(ui, kind, &preview).clicked();
+        }
+    });
 
     p.rect_filled(nav, 0.0, preview.toolbar_bg);
     let mut navigation_ui = ui.new_child(
@@ -25684,7 +25715,9 @@ fn theme_editor_large_preview(
     if hovered_region.is_some() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }
-    let clicked_region = if navigation_clicked {
+    let clicked_region = if titlebar_clicked {
+        Some(ThemePreviewRegion::Titlebar)
+    } else if navigation_clicked || tab_clicked {
         Some(ThemePreviewRegion::Navigation)
     } else if ui.rect_contains_pointer(rect)
         && ui.ctx().input(|i| {
@@ -33158,6 +33191,146 @@ mod tests {
             data: None,
         })]);
         assert_eq!(selected, Some(ThemePreviewRegion::Navigation));
+    }
+
+    #[test]
+    fn theme_preview_matches_live_tab_and_window_controls_without_executing_window_actions() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+        for scale in [1.0, 1.5, 2.0] {
+            let mut app = OttrinApp::default();
+            app.colors.font_scale = scale;
+            app.colors.border_radius = 17;
+            app.colors.toolbar_bg = Color32::from_rgb(32, 60, 90);
+            app.colors.titlebar_bg = Color32::from_rgb(80, 40, 60);
+            app.state.active_tab_mut().label = Some("workspace".into());
+            let colors = app.colors;
+            let input = |events| egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(1200.0, 800.0),
+                )),
+                events,
+                ..Default::default()
+            };
+            let live_ctx = Context::default();
+            live_ctx.enable_accesskit();
+            let live = live_ctx.run(input(vec![]), |ctx| app.render_tab_row(ctx));
+            let preview_ctx = Context::default();
+            preview_ctx.enable_accesskit();
+            let selected = std::cell::Cell::new(None);
+            let render = |events| {
+                preview_ctx.run(input(events), |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        selected.set(
+                            theme_editor_large_preview(ui, colors, ThemePreviewRegion::Defaults).1,
+                        );
+                    });
+                })
+            };
+            let preview = render(vec![]);
+            let buttons = |output: &egui::FullOutput| {
+                output
+                    .platform_output
+                    .accesskit_update
+                    .as_ref()
+                    .unwrap()
+                    .nodes
+                    .iter()
+                    .filter(|(_, node)| node.role() == Role::Button)
+                    .map(|(id, node)| {
+                        (
+                            node.label().unwrap_or_default().to_owned(),
+                            (*id, node.bounds().unwrap()),
+                        )
+                    })
+                    .collect::<std::collections::HashMap<_, _>>()
+            };
+            let actual_buttons = buttons(&live);
+            let samples = buttons(&preview);
+            for name in [
+                "New tab",
+                "Close window",
+                "Maximize or restore window",
+                "Minimize window",
+            ] {
+                let actual = actual_buttons[name].1;
+                let sample = samples[name].1;
+                assert!(
+                    (actual.width() - sample.width()).abs() < 0.1,
+                    "{name} at {scale}"
+                );
+                assert!(
+                    (actual.height() - sample.height()).abs() < 0.1,
+                    "{name} at {scale}"
+                );
+            }
+            let tab_surface = |output: &egui::FullOutput| {
+                output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Rect(rect) if rect.fill == theme_tab_fill(colors) => {
+                            Some((rect.rect.size(), rect.corner_radius))
+                        }
+                        _ => None,
+                    })
+                    .expect("The production active tab surface must be painted")
+            };
+            assert_eq!(
+                tab_surface(&live),
+                tab_surface(&preview),
+                "Actual tab size and corners at {scale}"
+            );
+            assert_eq!(tab_surface(&preview).1, theme_tab_corners(colors));
+            let tab_text = |output: &egui::FullOutput| {
+                output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == "workspace" => {
+                            Some(text)
+                        }
+                        _ => None,
+                    })
+                    .map(|text| {
+                        (
+                            text.galley.size(),
+                            text.override_text_color,
+                            text.galley.job.sections[0].format.clone(),
+                        )
+                    })
+                    .unwrap()
+            };
+            let actual = tab_text(&live);
+            let sample = tab_text(&preview);
+            assert_eq!(
+                actual, sample,
+                "The tab label must use production typography at {scale}"
+            );
+            for (name, expected) in [
+                ("Close window", ThemePreviewRegion::Titlebar),
+                ("Maximize or restore window", ThemePreviewRegion::Titlebar),
+                ("Minimize window", ThemePreviewRegion::Titlebar),
+                ("New tab", ThemePreviewRegion::Navigation),
+            ] {
+                let output = render(vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                    action: Action::Click,
+                    target: samples[name].0,
+                    data: None,
+                })]);
+                assert!(!output.viewport_output.values().any(|viewport| {
+                    viewport.commands.iter().any(|command| {
+                        matches!(
+                            command,
+                            egui::ViewportCommand::Close
+                                | egui::ViewportCommand::Minimized(_)
+                                | egui::ViewportCommand::Maximized(_)
+                        )
+                    })
+                }));
+                assert_eq!(selected.get(), Some(expected));
+            }
+        }
     }
 
     pub(super) fn rendered_text_fields(output: &egui::FullOutput) -> Vec<(String, String)> {

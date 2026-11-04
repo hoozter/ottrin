@@ -1655,7 +1655,7 @@ mod tests {
         assert_eq!(tab.corner_radius, theme_tab_corners(colors));
         assert_eq!(tab.corner_radius.sw, 0);
         assert_eq!(tab.corner_radius.se, 0);
-        assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "workspace" && t.fallback_color == colors.text_muted)));
+        assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "workspace" && t.galley.job.sections.iter().all(|section| section.format.color == colors.text_muted))));
         assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Rect(r) if r.rect == tab.rect && r.stroke.width == 2.0 && r.stroke.color == colors.accent)), "Choosing Navigation & tabs also outlines the tab");
         let fields = OttrinApp::theme_preview_region_shared_fields(ThemePreviewRegion::Navigation);
         for field in [
