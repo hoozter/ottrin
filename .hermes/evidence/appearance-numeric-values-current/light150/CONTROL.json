@@ -1,0 +1,41 @@
+{
+  "status": "functional checks pass; native captures require review",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "artifact_sha256": "ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb",
+  "theme": "Light",
+  "scope": "Private X11/software Dark100 or Light150 exact staged AppImage named visible numeric editing/restore/Cancel, normal close and source preservation; broader controls/platform acceptance separate",
+  "worker_sha256": "ea5bdde421c93ab0ed4fb7e55bf5008951bc91b74af211aab3a3826976e78333",
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-20_oc5fe",
+    "owned_processes_reaped": [
+      {
+        "pid": 1368148,
+        "exit": 0
+      },
+      {
+        "pid": 1368153,
+        "exit": 0
+      },
+      {
+        "pid": 1368155,
+        "exit": 15
+      },
+      {
+        "pid": 1368317,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1368335,
+        1368512
+      ],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "142 34 0:65 / /var/tmp/.ottrin-picker-qa-20_oc5fe/runtime/doc rw,nosuid,nodev,relatime shared:686 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  }
+}

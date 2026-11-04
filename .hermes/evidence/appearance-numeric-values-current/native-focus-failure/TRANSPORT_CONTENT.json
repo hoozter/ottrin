@@ -1,0 +1,107 @@
+{
+  "members": [
+    {
+      "name": "cleanup-index-remove-process.json",
+      "bytes": 162,
+      "sha256": "8a2e7a482336a6c6537495835da8854aabe2ca95424627a5064f573f4b2d9f2b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-Native-1-process.json",
+      "bytes": 849,
+      "sha256": "5bdadf5c8009cba91d9eab7e830f48fb0102adb98d86f589612f4664fa2a556e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-Native-2-process.json",
+      "bytes": 858,
+      "sha256": "71dfd7b4300d89c690e6435975e29839436ed76909e0a1dacca1c08195411d91",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-Native-3-process.json",
+      "bytes": 781,
+      "sha256": "b2fd032966b350fed99384f7dc603e7ae0389795c8e7a6318fbcf3b001fed773",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "idle-index-Native-after-process.json",
+      "bytes": 781,
+      "sha256": "e6177706ec0fd68f485501d397b8b2cb5291865041c13eb38acd1672b4aa72af",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-remove-process.json",
+      "bytes": 249,
+      "sha256": "4da3dea61ef0f49b353275288f2e03948e3ed4dbb648debcf5bc4b5be676bb93",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install-process.json",
+      "bytes": 97,
+      "sha256": "7c73acbadf47c9cfecd4747f9a2334dbbb85686eb2a5e7a70b16b2a02794d4d3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-after-restore-0.png",
+      "bytes": 174247,
+      "sha256": "a3a8a007703e10457c9844befffe8706c19d768dddf1845c4cc4b258ae3fcf92",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-before-cancel-24.png",
+      "bytes": 183586,
+      "sha256": "91ec767a811557036ce98e3c125c20fab66ea0a7b7304c964f1d14c064399500",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-live-0.png",
+      "bytes": 173574,
+      "sha256": "a7e57e97de2a619ac5043659d496f03b3651655f8643b1afc596b0c2ca1636f3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-editor-live-24.png",
+      "bytes": 179918,
+      "sha256": "0f6183b54af5da8978cf389ba86308986646804f17d4c298af297bb383bee2b4",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Native-settings-after-cancel-0.png",
+      "bytes": 84731,
+      "sha256": "82c80fea6a02e51eb34655739456a78a017b1e316570fd755528c2b708445dfc",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "88a1a93f50d5d2521db1681ee0c24c821cb6732e1816badd986996752bd92cd6",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 21798,
+      "sha256": "1da0798967d54976630302ffacb356eb068bcabd4e119e328c51180ba6726669",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings-150.png",
+      "bytes": 237636,
+      "sha256": "f2a1bd95d2792c779e11bcd2e60b574744b97d693eb5afaadd59df6927b39606",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-settings.png",
+      "bytes": 138743,
+      "sha256": "497a25835382f1feba9d02246ad7e2fa1a7386ccc5df0a52c0893374d48dfe99",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "windows-display-tree.json",
+      "bytes": 12099,
+      "sha256": "13e3a3c077720c55a10ee679f3e6d693b2fbf39102bedfe3dc469e58be2de834",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

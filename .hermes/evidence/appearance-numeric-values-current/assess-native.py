@@ -57,7 +57,8 @@ receipt = {
     'limits': ['Background owners have native-region observations while the editor owns input; no foreground capture is claimed for those12 observations',
                'Software VM with signed VirtIO display driver; physical graphics and human usability separate',
                'Dark Windows144DPI scope; not all appearance settings or platform combinations',
-               'No new GUI/daemon CPU benchmark, Store, signing or MSIX runtime/update/login acceptance'],
+               'Separate fresh GUI idle baseline is recorded below; no performance fix, daemon CPU, Store/signing or fresh MSIX runtime/update/login acceptance'],
+    'gui_idle_baseline': v.get('gui_idle_baseline', []),
     'cleanup': owner['cleanup'], 'result': str((f / 'GUEST_RESULT.json').relative_to(r)),
 }
 (e / 'WINDOWS_NATIVE_ACCEPTANCE.json').write_text(json.dumps(receipt, indent=2) + '\n')

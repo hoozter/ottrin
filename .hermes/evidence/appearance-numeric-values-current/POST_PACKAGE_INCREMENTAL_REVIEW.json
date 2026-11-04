@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-11-04T00:15:58.761845+00:00",
+  "roots": [
+    "target/debug/incremental",
+    "target/x86_64-pc-windows-gnu/debug/incremental"
+  ],
+  "canonical_tool": "/home/campbell/.codex/skills/computer-cleanup/scripts/rust_incremental.py",
+  "result": "Obsolete/unpublished sessions identified: 0",
+  "action": "No deletion needed; newest per-configuration caches retained"
+}

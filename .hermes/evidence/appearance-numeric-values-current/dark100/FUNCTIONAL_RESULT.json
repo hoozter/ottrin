@@ -1,0 +1,25 @@
+{
+  "status": "pass named visible numeric typing/restore/Cancel and normal closure",
+  "theme": "Dark",
+  "scale": 1.0,
+  "cases": [
+    {
+      "case": "named visible numeric typing",
+      "value": 24.0,
+      "role": "spin button",
+      "name": "Window corners"
+    },
+    {
+      "case": "specifically named native restore",
+      "name": "Restore Window corners",
+      "value": 0
+    },
+    {
+      "case": "discard edited draft through native Cancel",
+      "saved_opening_radius": 0
+    }
+  ],
+  "source_preserved": true,
+  "unsaved_radius_not_persisted": true,
+  "scope": "Exact AppImage/private X11/software native AT-SPI names, values/actions. No complete39control/platform/human acceptance claim"
+}

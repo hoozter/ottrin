@@ -1,0 +1,404 @@
+{
+  "settings_host": {
+    "title": "Settings",
+    "pid": 6424,
+    "type": "ControlType.Window"
+  },
+  "scope": "Exact current installer at actual Windows144DPI; named visible numeric editing/restore/Cancel, all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures; Native/OpenGL",
+  "phase": "Native separate GUI idle baseline",
+  "cases": [
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 36,
+      "capture": "Native-editor-live-24.png",
+      "case": "editor-live",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 24,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1770,
+        1140
+      ],
+      "foreground_capture_requested": true,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 36,
+      "capture": null,
+      "case": "settings-live",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 24,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1380,
+        960
+      ],
+      "foreground_capture_requested": false,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 36,
+      "capture": null,
+      "case": "main-live",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 24,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "foreground_capture_requested": false,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 0,
+      "capture": "Native-editor-live-0.png",
+      "case": "editor-live",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 0,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1770,
+        1140
+      ],
+      "foreground_capture_requested": true,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 0,
+      "capture": null,
+      "case": "settings-live",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 0,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1380,
+        960
+      ],
+      "foreground_capture_requested": false,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 0,
+      "capture": null,
+      "case": "main-live",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 0,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "foreground_capture_requested": false,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 0,
+      "capture": "Native-editor-after-restore-0.png",
+      "case": "editor-after-restore",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 0,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1770,
+        1140
+      ],
+      "foreground_capture_requested": true,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 0,
+      "capture": null,
+      "case": "settings-after-restore",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 0,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1380,
+        960
+      ],
+      "foreground_capture_requested": false,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 0,
+      "capture": null,
+      "case": "main-after-restore",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 0,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "foreground_capture_requested": false,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    },
+    {
+      "window_fits_work_area": true,
+      "physical_radius": 36,
+      "capture": "Native-editor-before-cancel-24.png",
+      "case": "editor-before-cancel",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "logical_radius": 24,
+      "window_enabled": true,
+      "dpi": 144,
+      "bounds": [
+        0,
+        0,
+        1770,
+        1140
+      ],
+      "foreground_capture_requested": true,
+      "native_expected_region_match": true,
+      "renderer": "Native"
+    }
+  ],
+  "remaining_owned_installed_processes": 0,
+  "numeric_actions": [
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    },
+    {
+      "expected": 0,
+      "keyboard_focus_acknowledged": true,
+      "before": 24,
+      "action": "typed commit"
+    },
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    },
+    {
+      "expected": 24,
+      "keyboard_focus_acknowledged": true,
+      "before": 0,
+      "action": "typed commit"
+    }
+  ],
+  "stack": "at ObserveWindow, <No file>: line 101\r\nat CaptureLive, <No file>: line 113\r\nat <ScriptBlock>, <No file>: line 175\r\nat <ScriptBlock>, <No file>: line 1",
+  "package": {
+    "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "1844a2e984e4edecb5756cda82edd0666cd2b606a767d022eb160f0787d6f029"
+      }
+    ],
+    "actor_sha256": "8b89b3b765406833919a3aa0f413f2757250c3a2ed2aa5481fbcc0d03d439698",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "dpi_setup": {
+    "selected_label": "150%",
+    "method": "Native Scale ComboBox Expand, visible150percent ListItem Select",
+    "actual_settings_dpi": 144
+  },
+  "display_modes": [
+    "640x480x32",
+    "1024x768x32",
+    "800x600x32",
+    "2048x1152x32",
+    "1920x1080x32",
+    "1920x1200x32",
+    "1600x1200x32",
+    "1680x1050x32",
+    "1440x900x32",
+    "1280x1024x32",
+    "1280x960x32",
+    "1280x768x32",
+    "1360x768x32",
+    "1400x1050x32",
+    "1792x1344x32",
+    "1856x1392x32",
+    "1920x1440x32",
+    "1280x720x32",
+    "5120x2160x32",
+    "4096x2160x32",
+    "3840x2160x32",
+    "2560x1080x32",
+    "2560x1600x32"
+  ],
+  "error": "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+  "status": "failed native DPI/layout audit",
+  "gui_idle_baseline": [
+    {
+      "seconds": 30.0087554,
+      "cpu_one_core_percent": 66.543079624022,
+      "rss_before": 73756672,
+      "renderer": "Native",
+      "bounds": [
+        0,
+        0,
+        1500,
+        1050
+      ],
+      "index_after": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4632576,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793754786,
+        "last_scan_completed_unix_secs": 1793754786,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793754778,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_after": 21,
+      "rss_after": 72200192,
+      "status": "failed current-scope criterion",
+      "work_area": [
+        0,
+        0,
+        1920,
+        1368
+      ],
+      "dpi": 144,
+      "scope": "Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.",
+      "criterion": "StaticGUIbelow2percentonecore",
+      "index_before": {
+        "active_root": null,
+        "active_root_index": 0,
+        "configured_roots": 1,
+        "database_bytes": 4632576,
+        "detail": "Ready \u00b7 1 indexed",
+        "error": null,
+        "estimated_total_items": null,
+        "freelist_bytes": 0,
+        "freelist_pages": 0,
+        "indexed_items": 1,
+        "last_completed_indexed_items": 1,
+        "last_progress_unix_secs": 1793754786,
+        "last_scan_completed_unix_secs": 1793754786,
+        "last_scan_duration_ms": null,
+        "last_scan_started_unix_secs": 1793754778,
+        "snapshot_revision": 1,
+        "status": "ready",
+        "total_roots": 1,
+        "wal_bytes": 4152,
+        "watched_roots": 1,
+        "watcher_error": null,
+        "watcher_ready": true
+      },
+      "gdi_before": 21
+    }
+  ],
+  "cleanup_index_remove": {
+    "stdout": "Session indexing stopped; no background Ottrin index task was installed.\n",
+    "stderr": "",
+    "seconds": 2.5540297,
+    "exit": 0
+  },
+  "display_mode": "1920x1440"
+}

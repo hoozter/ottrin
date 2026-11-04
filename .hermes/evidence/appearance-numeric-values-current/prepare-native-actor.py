@@ -51,4 +51,43 @@ s=s.replace(old,"$w=Await $p.Id 'Ottrin';CaptureLive $w 'main-saved-startup' 24;
 s=s.replace('all six native window types and complete work-area capture containment','all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures')
 
 s=s.replace(";cases=@()};$final=",";cases=@();numeric_actions=@()};$final=")
+# Reuse the same owned software display for a separate current-source idle
+# baseline. This does not waive the existing performance gate or change input.
+marker="  Invoke $w 'Menu';Invoke $w ('Settings'+[char]0x2026);$settings=Await $p.Id 'Ottrin Settings'"
+assert s.count(marker)==1
+s=s.replace(marker,"  MeasureGuiIdle $p $w\n"+marker,1)
+start=s.index(" Phase 'prepare native large display'")
+s=s[:start]+r'''
+ function MeasureGuiIdle($process,$window){
+  Phase ($renderer+' separate GUI idle baseline');$deadline=[DateTime]::UtcNow.AddSeconds(60);$attempt=0
+  do{$attempt++;$state=Run $app 'index status --json' ('idle-index-'+$renderer+'-'+$attempt);$index=$state.stdout|ConvertFrom-Json;if($index.status-eq'ready'-and$index.watcher_ready){break};Start-Sleep -Milliseconds 500}while([DateTime]::UtcNow-lt$deadline)
+  if($index.status-ne'ready'-or-not$index.watcher_ready){$report.gui_idle_baseline+=@{renderer=$renderer;status='unmeasured: index not ready';index=$index};Save;return}
+  [PickerNative]::Place($window);[PickerNative]::Focus($window);$area=[DpiDesktop]::Work($window);[Windows.Forms.Cursor]::Position=[Drawing.Point]::new($area[2]-2,$area[3]-2);Start-Sleep -Seconds 5
+  $process.Refresh();$before=$process.TotalProcessorTime.TotalSeconds;$rssBefore=$process.WorkingSet64;$gdiBefore=[RadiusProbe]::GetGuiResources($process.Handle,0);$clock=[Diagnostics.Stopwatch]::StartNew();Start-Sleep -Seconds 30;$process.Refresh();$seconds=$clock.Elapsed.TotalSeconds;$cpu=100*($process.TotalProcessorTime.TotalSeconds-$before)/$seconds;$rssAfter=$process.WorkingSet64;$gdiAfter=[RadiusProbe]::GetGuiResources($process.Handle,0)
+  $after=(Run $app 'index status --json' ('idle-index-'+$renderer+'-after')).stdout|ConvertFrom-Json;$idle=$after.status-eq'ready'-and$after.watcher_ready
+  $report.gui_idle_baseline+=@{renderer=$renderer;status=if(-not$idle){'unverified: index state changed'}elseif($cpu-lt2){'pass current-scope criterion'}else{'failed current-scope criterion'};criterion='StaticGUIbelow2percentonecore';cpu_one_core_percent=$cpu;seconds=$seconds;dpi=[DpiDesktop]::GetDpiForWindow($window);bounds=[DpiDesktop]::Bounds($window);work_area=$area;rss_before=$rssBefore;rss_after=$rssAfter;gdi_before=$gdiBefore;gdi_after=$gdiAfter;index_before=$index;index_after=$after;scope='Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.'};Save
+ }
+'''+s[start:]
+s=s.replace(';numeric_actions=@()};$final=',';numeric_actions=@();gui_idle_baseline=@()};$final=')
+
+# Invoke is asynchronous. Wait for the closed native viewport to disappear
+# before attempting to focus its owner; never click through a closing window.
+marker=' [DllImport("user32.dll")]static extern bool PostMessageW('
+assert marker in s
+s=s.replace(marker,' [DllImport("user32.dll")]public static extern bool IsWindowVisible(IntPtr window);\n'+marker,1)
+marker=' function CaptureLive('
+i=s.index(marker)
+s=s[:i]+r'''
+ function AwaitClosed($handle){
+  $deadline=[DateTime]::UtcNow.AddSeconds(15)
+  do{if(-not[DpiDesktop]::IsWindowVisible($handle)){return};Pump}while([DateTime]::UtcNow-lt$deadline)
+  [PickerNative]::Shot($handle,(Join-Path $out 'close-not-completed.png'));throw 'Invoked Close window did not close its native viewport'
+ }
+ function CloseOwned($handle){Invoke $handle 'Close window';AwaitClosed $handle}
+'''+s[i:]
+s=s.replace("Invoke $settings 'Close window'",'CloseOwned $settings')
+s=s.replace("Invoke $inspector 'Close window'",'CloseOwned $inspector')
+s=s.replace("Invoke $editor 'Cancel';Start-Sleep -Milliseconds 700", "Invoke $editor 'Cancel';AwaitClosed $editor")
+s=s.replace('  [PickerNative]::Place($handle);$enabled=', '  Phase ($renderer+\' observe \'+$label+\' radius\'+$radius);[PickerNative]::Place($handle);$enabled=')
+
 (e/'native-actor.ps1').write_text(s)

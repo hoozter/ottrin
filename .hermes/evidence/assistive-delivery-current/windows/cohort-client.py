@@ -183,6 +183,12 @@ with ExitStack() as stack:
    with path.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==digest
    os.link(path,fixture/name_in_iso);assembly_inputs['files'].append({'name':name_in_iso,'sha256':digest})
   (fixture/'assembly-inputs.json').write_text(json.dumps(assembly_inputs));shutil.copy2(parent/'assembly.ps1',fixture/'assembly.ps1')
+  # The assembly fixture may also verify its rebuilt portable daemon in private
+  # state. Bind the ordinary app's existing serialized config as an explicit input.
+  config=json.loads((r/'.hermes/evidence/linux-cli-options-package-current/after100/TEARDOWN.json').read_text())['persisted_config']
+  (fixture/'daemon-config-template.json').write_text(json.dumps(config))
+  assembly_inputs['files'].append({'name':'daemon-config-template.json','sha256':hashlib.sha256((fixture/'daemon-config-template.json').read_bytes()).hexdigest()})
+  (fixture/'assembly-inputs.json').write_text(json.dumps(assembly_inputs))
  if args.msix_runtime:
   parent=e.parent;accepted=json.loads((parent/'ASSEMBLY_ACCEPTANCE.json').read_text());assert args.msix_runtime.resolve()==Path(accepted['artifact'])
   with args.msix_runtime.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==accepted['artifact_sha256']
@@ -335,7 +341,7 @@ with ExitStack() as stack:
    iso_inputs.append(fixture/'update-inputs.json')
   if args.update_manifest or args.msix_parse_only or args.msix_stage:
    iso_inputs.extend(fixture/name for name in ['package-msix.ps1','msix-manifest.xml','windows-sdk-buildtools.zip','windows-msix-template.ps1','icon.png'])
-  if args.msix_stage:iso_inputs.extend(fixture/name for name in ['portable.zip','source.zip','mingit.zip','assembly-inputs.json','assembly.ps1'])
+  if args.msix_stage:iso_inputs.extend(fixture/name for name in ['portable.zip','source.zip','mingit.zip','assembly-inputs.json','assembly.ps1','daemon-config-template.json'])
  # UDF carries the real >4GiB file size; the ISO9660 fallback is limited.
  # The Windows reader must recheck every update hash before WUSA executes it.
  if args.display_driver:

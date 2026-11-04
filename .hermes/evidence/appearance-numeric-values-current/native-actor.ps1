@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$Root,[Parameter(Mandatory=$true)][string]$ExpectedSid)
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
-$out=Join-Path $Root 'results';$report=@{status='running';scope='Exact current installer at actual Windows144DPI; named visible numeric editing/restore/Cancel, all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures; Native/OpenGL';cases=@();numeric_actions=@()};$final='failed native DPI/layout audit';$owned=[Collections.Generic.List[Diagnostics.Process]]::new();$install=$null
+$out=Join-Path $Root 'results';$report=@{status='running';scope='Exact current installer at actual Windows144DPI; named visible numeric editing/restore/Cancel, all six native window types and complete work-area capture containment; live owners use complete native-region observation while editor owns input, with separate unobscured saved-startup captures; Native/OpenGL';cases=@();numeric_actions=@();gui_idle_baseline=@()};$final='failed native DPI/layout audit';$owned=[Collections.Generic.List[Diagnostics.Process]]::new();$install=$null
 function Require($value,$message){if(-not$value){throw $message}}
 function Save{$p=Join-Path $out 'RESULT.json';$tmp=$p+'.next';[IO.File]::WriteAllText($tmp,($report|ConvertTo-Json -Depth 30),[Text.UTF8Encoding]::new($false));if(Test-Path $p){[IO.File]::Replace($tmp,$p,[NullString]::Value)}else{[IO.File]::Move($tmp,$p)}}
 function Phase($value){$report.phase=$value;Save}
@@ -81,6 +81,7 @@ public static class DpiDesktop {
   if(area==ulong.MaxValue)throw new Exception("Driver has no supported1920x1440-or-larger mode");
   int result=ChangeDisplaySettingsExW(null,ref best,IntPtr.Zero,0,IntPtr.Zero);if(result!=0)throw new Exception("Native display change failed: "+result);Thread.Sleep(1500);return best.width+"x"+best.height;
  }
+ [DllImport("user32.dll")]public static extern bool IsWindowVisible(IntPtr window);
  [DllImport("user32.dll")]static extern bool PostMessageW(IntPtr window,uint message,IntPtr wparam,IntPtr lparam);
  public static void Close(IntPtr window){if(!PostMessageW(window,0x10,IntPtr.Zero,IntPtr.Zero))throw new Exception("Normal Settings close request failed");}
  public static void PerMonitor(){if(SetThreadDpiAwarenessContext(new IntPtr(-4))==IntPtr.Zero)throw new Exception("Cannot enter native per-monitor V2 observation context");}
@@ -96,13 +97,20 @@ public static class DpiDesktop {
 
 
  function ObserveWindow($handle,$label,$radius,[bool]$capture){
-  [PickerNative]::Place($handle);$enabled=[PickerNative]::IsWindowEnabled($handle);$file=$null
+  Phase ($renderer+' observe '+$label+' radius'+$radius);[PickerNative]::Place($handle);$enabled=[PickerNative]::IsWindowEnabled($handle);$file=$null
   if($capture){[PickerNative]::Focus($handle);$position=[DpiDesktop]::Bounds($handle);[Windows.Forms.Cursor]::Position=[Drawing.Point]::new($position[0]+80,$position[1]+15)}
   Start-Sleep -Milliseconds 700;$dpi=[DpiDesktop]::GetDpiForWindow($handle);$physical=[int]($radius*$dpi/96);$matches=[RadiusProbe]::Matches($handle,$physical);$fits=[DpiDesktop]::Fits($handle)
   if($capture){$file=$renderer+'-'+$label+'-'+$radius+'.png';[PickerNative]::Shot($handle,(Join-Path $out $file))}
   $report.cases+=@{renderer=$renderer;case=$label;logical_radius=$radius;dpi=$dpi;physical_radius=$physical;native_expected_region_match=$matches;window_fits_work_area=$fits;bounds=[DpiDesktop]::Bounds($handle);work_area=[DpiDesktop]::Work($handle);capture=$file;foreground_capture_requested=$capture;window_enabled=$enabled};Save
   Require ($dpi-eq144) ('Expected actual144DPI, got '+$dpi);Require $matches ('DPI-scaled native region mismatch '+$label);Require $fits ('Window extends outside native work area '+$label)
  }
+
+ function AwaitClosed($handle){
+  $deadline=[DateTime]::UtcNow.AddSeconds(15)
+  do{if(-not[DpiDesktop]::IsWindowVisible($handle)){return};Pump}while([DateTime]::UtcNow-lt$deadline)
+  [PickerNative]::Shot($handle,(Join-Path $out 'close-not-completed.png'));throw 'Invoked Close window did not close its native viewport'
+ }
+ function CloseOwned($handle){Invoke $handle 'Close window';AwaitClosed $handle}
  function CaptureLive($handle,$label,$radius){ObserveWindow $handle $label $radius $true}
  function ObserveOwner($handle,$label,$radius){ObserveWindow $handle $label $radius $false}
  function NativePath($path){return @{encoding='windows-utf16-le';units_hex=(-join $path.ToCharArray().ForEach({([int]$_).ToString('x4')}))}}
@@ -127,6 +135,16 @@ public static class DpiDesktop {
   $focus=[Windows.Automation.AutomationElement]::FocusedElement;$report.numeric_failure=@{action=$action;expected=$value;actual=$actual;focused_name=$focus.Current.Name;focused_type=$focus.Current.ControlType.ProgrammaticName};[PickerNative]::Shot($editor,(Join-Path $out 'numeric-mismatch.png'));Save;throw ('Named native value mismatch after '+$action+': expected='+$value+' actual='+$actual)
 
  }
+
+ function MeasureGuiIdle($process,$window){
+  Phase ($renderer+' separate GUI idle baseline');$deadline=[DateTime]::UtcNow.AddSeconds(60);$attempt=0
+  do{$attempt++;$state=Run $app 'index status --json' ('idle-index-'+$renderer+'-'+$attempt);$index=$state.stdout|ConvertFrom-Json;if($index.status-eq'ready'-and$index.watcher_ready){break};Start-Sleep -Milliseconds 500}while([DateTime]::UtcNow-lt$deadline)
+  if($index.status-ne'ready'-or-not$index.watcher_ready){$report.gui_idle_baseline+=@{renderer=$renderer;status='unmeasured: index not ready';index=$index};Save;return}
+  [PickerNative]::Place($window);[PickerNative]::Focus($window);$area=[DpiDesktop]::Work($window);[Windows.Forms.Cursor]::Position=[Drawing.Point]::new($area[2]-2,$area[3]-2);Start-Sleep -Seconds 5
+  $process.Refresh();$before=$process.TotalProcessorTime.TotalSeconds;$rssBefore=$process.WorkingSet64;$gdiBefore=[RadiusProbe]::GetGuiResources($process.Handle,0);$clock=[Diagnostics.Stopwatch]::StartNew();Start-Sleep -Seconds 30;$process.Refresh();$seconds=$clock.Elapsed.TotalSeconds;$cpu=100*($process.TotalProcessorTime.TotalSeconds-$before)/$seconds;$rssAfter=$process.WorkingSet64;$gdiAfter=[RadiusProbe]::GetGuiResources($process.Handle,0)
+  $after=(Run $app 'index status --json' ('idle-index-'+$renderer+'-after')).stdout|ConvertFrom-Json;$idle=$after.status-eq'ready'-and$after.watcher_ready
+  $report.gui_idle_baseline+=@{renderer=$renderer;status=if(-not$idle){'unverified: index state changed'}elseif($cpu-lt2){'pass current-scope criterion'}else{'failed current-scope criterion'};criterion='StaticGUIbelow2percentonecore';cpu_one_core_percent=$cpu;seconds=$seconds;dpi=[DpiDesktop]::GetDpiForWindow($window);bounds=[DpiDesktop]::Bounds($window);work_area=$area;rss_before=$rssBefore;rss_after=$rssAfter;gdi_before=$gdiBefore;gdi_after=$gdiAfter;index_before=$index;index_after=$after;scope='Same signed VirtIO/software fixture and exact current package; Dark144DPI, initial main radius0. GUI process only; no daemon CPU sample, physical or cross-source comparison.'};Save
+ }
  Phase 'prepare native large display';$report.display_modes=[DpiDesktop]::Modes();Save;$report.display_mode=[DpiDesktop]::LargeMode();Save
 
  $null=Start-Process 'ms-settings:display';$deadline=[DateTime]::UtcNow.AddSeconds(90);$systemWindow=[IntPtr]::Zero;$settingsCandidates=@();$actorSession=[Diagnostics.Process]::GetCurrentProcess().SessionId
@@ -149,19 +167,20 @@ public static class DpiDesktop {
  foreach($renderer in @('Native','OpenGL')){
   Phase ($renderer+' live editor radius');$config.theme='Dark';$config.window_size=@(1000,700);$config.graphics_renderer=if($renderer-eq'Native'){'Native'}else{'OpenGlCompatibility'};$config.active_custom_theme='Radius audit';$config.custom_themes=@(@{name='Radius audit';base_preset='Ottrin';dark=@{app_radius=0};light=@{app_radius=0}});$rendererArgs=if($renderer-eq'OpenGL'){' --renderer opengl'}else{''};[IO.File]::WriteAllText($pref,($config|ConvertTo-Json -Depth 30),[Text.UTF8Encoding]::new($false))
   $s=[Diagnostics.ProcessStartInfo]::new($app,('"'+$corpus+'"'+$rendererArgs));$s.UseShellExecute=$false;$p=[Diagnostics.Process]::Start($s);$owned.Add($p);$w=Await $p.Id 'Ottrin';$null=Node $w 'Menu' ([Windows.Automation.ControlType]::Button)
+  MeasureGuiIdle $p $w
   Invoke $w 'Menu';Invoke $w ('Settings'+[char]0x2026);$settings=Await $p.Id 'Ottrin Settings'
   (Node $settings 'Appearance' ([Windows.Automation.ControlType]::RadioButton)).GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select();Pump
   $buttons=@();for($i=0;$i-lt12;$i++){$buttons=@(Nodes $settings 'Edit Radius audit'|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::Button});if($buttons.Count-eq1){break};[PickerNative]::Wheel($settings,-480);Pump};Require ($buttons.Count-eq1) 'Saved theme edit not visible';$buttons[0].GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke();$editor=Await $p.Id 'Ottrin Theme Editor';[RadiusProbe]::Resize($editor,1770,1140);Pump
   foreach($radius in @(24,0)){SetCorners $editor $radius;CaptureLive $editor 'editor-live' $radius;ObserveOwner $settings 'settings-live' $radius;ObserveOwner $w 'main-live' $radius}
   SetCorners $editor 24;Invoke $editor 'Restore Window corners';Start-Sleep -Milliseconds 700;AwaitCorners $editor 0 'named restore';CaptureLive $editor 'editor-after-restore' 0;ObserveOwner $settings 'settings-after-restore' 0;ObserveOwner $w 'main-after-restore' 0
-  SetCorners $editor 24;CaptureLive $editor 'editor-before-cancel' 24;Invoke $editor 'Cancel';Start-Sleep -Milliseconds 700;CaptureLive $settings 'settings-after-cancel' 0
-  Invoke $settings 'Close window';CaptureLive $w 'main-after-cancel' 0;Invoke $w 'Close window';Require ($p.WaitForExit(15000)-and$p.ExitCode-eq0) 'Normal close failed';$savedConfig=Get-Content $pref -Raw|ConvertFrom-Json;Require ($savedConfig.custom_themes[0].dark.app_radius-eq0) 'Cancel persisted unsaved radius';Require ((Get-FileHash $source).Hash-eq$sourceHash) 'Source changed';Save
+  SetCorners $editor 24;CaptureLive $editor 'editor-before-cancel' 24;Invoke $editor 'Cancel';AwaitClosed $editor;CaptureLive $settings 'settings-after-cancel' 0
+  CloseOwned $settings;CaptureLive $w 'main-after-cancel' 0;Invoke $w 'Close window';Require ($p.WaitForExit(15000)-and$p.ExitCode-eq0) 'Normal close failed';$savedConfig=Get-Content $pref -Raw|ConvertFrom-Json;Require ($savedConfig.custom_themes[0].dark.app_radius-eq0) 'Cancel persisted unsaved radius';Require ((Get-FileHash $source).Hash-eq$sourceHash) 'Source changed';Save
  }
 
  foreach($renderer in @('Native','OpenGL')){
   Phase ($renderer+'144DPI other native windows');$config.graphics_renderer=if($renderer-eq'Native'){'Native'}else{'OpenGlCompatibility'};$config.custom_themes[0].dark.app_radius=24;$config.custom_themes[0].light.app_radius=24;$rendererArgs=if($renderer-eq'OpenGL'){' --renderer opengl'}else{''};[IO.File]::WriteAllText($pref,($config|ConvertTo-Json -Depth 30),[Text.UTF8Encoding]::new($false))
-  $s=[Diagnostics.ProcessStartInfo]::new($app,('"'+$corpus+'"'+$rendererArgs));$s.UseShellExecute=$false;$p=[Diagnostics.Process]::Start($s);$owned.Add($p);$w=Await $p.Id 'Ottrin';CaptureLive $w 'main-saved-startup' 24;Invoke $w 'Menu';Invoke $w ('Settings'+[char]0x2026);$settings=Await $p.Id 'Ottrin Settings';CaptureLive $settings 'settings-saved-startup' 24;Invoke $settings 'Close window';$row=Node $w 'preserve.txt' ([Windows.Automation.ControlType]::Button);$toggle=$row.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern);if($toggle.Current.ToggleState-ne[Windows.Automation.ToggleState]::On){$toggle.Toggle()};Start-Sleep -Milliseconds 500
-  Invoke $w 'Menu';Invoke $w 'Quick Inspector Selection';$inspector=Await $p.Id ('Ottrin Quick Inspector '+[char]0x2014+' preserve.txt');CaptureLive $inspector 'inspector-scaled' 24;Invoke $inspector 'Close window';Invoke $w 'Close window';Require ($p.WaitForExit(15000)-and$p.ExitCode-eq0) 'Normal main close failed'
+  $s=[Diagnostics.ProcessStartInfo]::new($app,('"'+$corpus+'"'+$rendererArgs));$s.UseShellExecute=$false;$p=[Diagnostics.Process]::Start($s);$owned.Add($p);$w=Await $p.Id 'Ottrin';CaptureLive $w 'main-saved-startup' 24;Invoke $w 'Menu';Invoke $w ('Settings'+[char]0x2026);$settings=Await $p.Id 'Ottrin Settings';CaptureLive $settings 'settings-saved-startup' 24;CloseOwned $settings;$row=Node $w 'preserve.txt' ([Windows.Automation.ControlType]::Button);$toggle=$row.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern);if($toggle.Current.ToggleState-ne[Windows.Automation.ToggleState]::On){$toggle.Toggle()};Start-Sleep -Milliseconds 500
+  Invoke $w 'Menu';Invoke $w 'Quick Inspector Selection';$inspector=Await $p.Id ('Ottrin Quick Inspector '+[char]0x2014+' preserve.txt');CaptureLive $inspector 'inspector-scaled' 24;CloseOwned $inspector;Invoke $w 'Close window';Require ($p.WaitForExit(15000)-and$p.ExitCode-eq0) 'Normal main close failed'
   $s=[Diagnostics.ProcessStartInfo]::new($app,('picker'+$rendererArgs));$s.UseShellExecute=$false;$s.RedirectStandardInput=$true;$s.RedirectStandardOutput=$true;$s.RedirectStandardError=$true;$picker=[Diagnostics.Process]::Start($s);$owned.Add($picker);$stdout=$picker.StandardOutput.ReadToEndAsync();$stderr=$picker.StandardError.ReadToEndAsync();$picker.StandardInput.Write((@{mode='open';title='DPI probe';initial_directory=(NativePath $corpus)}|ConvertTo-Json -Depth 5 -Compress));$picker.StandardInput.Close();$pickWindow=Await $picker.Id ('Ottrin '+[char]0x2014+' DPI probe');CaptureLive $pickWindow 'picker-scaled' 24;Invoke $pickWindow 'Cancel';Require ($picker.WaitForExit(15000)-and$picker.ExitCode-eq0) 'Picker cancel failed';Require ($stdout.Wait(5000)-and$stderr.Wait(5000)) 'Picker streams incomplete';Require (-not($stdout.Result|ConvertFrom-Json).accepted) 'Picker cancel accepted'
   $s=[Diagnostics.ProcessStartInfo]::new($app,('--properties "'+$source+'"'+$rendererArgs));$s.UseShellExecute=$false;$properties=[Diagnostics.Process]::Start($s);$owned.Add($properties);$propWindow=Await $properties.Id ('Ottrin '+[char]0x2014+' Properties '+[char]0x2014+' preserve.txt');CaptureLive $propWindow 'properties-scaled' 24;Invoke $propWindow 'Close window';Require ($properties.WaitForExit(15000)-and$properties.ExitCode-eq0) 'Properties close failed'
  }

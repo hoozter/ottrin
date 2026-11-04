@@ -1,0 +1,43 @@
+{
+  "status": "pass6native action cases and4directly reviewed captures",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "artifact_sha256": "ed372fcba27e1639986e3932e38b3ff5b77412b5511a6b4f83000b001c9c2ccb",
+  "cases": [
+    "Dark100",
+    "Light150"
+  ],
+  "checks": [
+    "actual named AT-SPI spin button typing24",
+    "specifically named restore to0",
+    "Cancel keeps both saved variants at0",
+    "normal Settings and main window closure",
+    "fixture source bytes preserved"
+  ],
+  "captures": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/dark100/editor-restored-0.png",
+      "sha256": "0463e4ab497e0216b488d0075de8edc06d797cca30ff0908399d669d681d348a",
+      "observed": "Direct original capture review completed: actual numeric value24/restored0 agrees with preview and outer corners; property/reset and footer visible; coherent palette",
+      "scope": "Named numeric/restore/Cancel only; broader control/platform acceptance remains separate"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/dark100/editor-typed-24.png",
+      "sha256": "865730de2ce549755084233acd57cfb06afb76755b50641d9c5e5eb38ab94f3a",
+      "observed": "Direct original capture review completed: actual numeric value24/restored0 agrees with preview and outer corners; property/reset and footer visible; coherent palette",
+      "scope": "Named numeric/restore/Cancel only; broader control/platform acceptance remains separate"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/light150/editor-restored-0.png",
+      "sha256": "9c5d55727e7aa955a56561b2be75c1935464d4a87b089ff20650a3110254fcc3",
+      "observed": "Direct original capture review completed: actual numeric value24/restored0 agrees with preview and outer corners; property/reset and footer visible; coherent palette",
+      "scope": "Named numeric/restore/Cancel only; broader control/platform acceptance remains separate"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current/light150/editor-typed-24.png",
+      "sha256": "404540e3c4d290dd23f73bd83814cc8168c061626b38bd91ea892aa03d0647a1",
+      "observed": "Direct original capture review completed: actual numeric value24/restored0 agrees with preview and outer corners; property/reset and footer visible; coherent palette",
+      "scope": "Named numeric/restore/Cancel only; broader control/platform acceptance remains separate"
+    }
+  ],
+  "owned_desktops_and_profiles_removed": true
+}

@@ -15,6 +15,15 @@ assert read(e / 'DELIVERY_VERIFICATION.json')['source_revision'] == source
 assert read(e / 'CLEANUP_FINAL.json')['pending_disposable_consumers'] == []
 appimage = linux['artifacts']['Ottrin-0.1.0-x86_64.AppImage']
 installer = windows['artifacts']['Ottrin-0.1.0-windows-x64-setup.exe']
+ci = read(e / 'CI_CURRENT.json')['databaseId']
+cleanup = read(e / 'CLEANUP_FINAL.json')
+vm_count = len(cleanup['owned_vms'])
+volume_count = sum(len(v['cleanup']['owned_volumes_removed']) for v in cleanup['owned_vms'])
+profile_count = len(cleanup['removed_private_profiles'])
+gui = read(e / 'WINDOWS_NATIVE_ACCEPTANCE.json')['gui_idle_baseline']
+gui_text = '; '.join(v['renderer'] + ': ' + str(round(v['cpu_one_core_percent'], 3)) + '% one core/' + str(round(v['seconds'], 2)) + 's' for v in gui if 'cpu_one_core_percent' in v)
+linux_cpu = read(e / 'LINUX_DAEMON_RUNTIME.json')['idle']['cpu_one_core_percent']
+windows_cpu = read(e / 'WINDOWS_DAEMON_RUNTIME.json')['idle']['cpu_one_core_percent']
 p = r / 'docs/ROADMAP.md'
 s = p.read_text()
 s = re.sub(r'Updated \d{4}-\d{2}-\d{2}\.', 'Updated ' + str(datetime.now(ZoneInfo('Europe/Stockholm')).date()) + '.', s, count=1)
@@ -36,25 +45,28 @@ No public release, signing or Store submission is implied. MSI remains held.
 | Source checks | 27 appearance tests and 476 UI tests pass; one existing ignored. Strict native/Windows UI/app all-target lint and formatting pass. |
 | Linux delivery | All four formats pass package-content checks. Exact AppImage passes six native typing/Restore/Cancel cases in Dark100/Light150; all four original captures reviewed. Normal close and fixture source/saved-theme preservation pass. |
 | Windows delivery | ZIP/NSIS have identical 58-file payloads; installer SHA256 `{installer}`. Installed Native/OpenGL pass 34 complete native-region/DPI/work-area observations and eight focus-acknowledged numeric commits. Named Restore, Cancel, normal Close and supported uninstall preserve source/preferences. All 22 unobscured full-window captures reviewed. Background owners have region observations while editor input is active; separate captures cover all six window types. MSIX13 passes native MakeAppx/unpack and exact 58-file equality; no fresh MSIX runtime/update/login claim. |
-| Hosted gates | CI 41728865733: all four exact-source Linux/Windows verification and isolated release performance jobs pass. These jobs do not establish static GUI idle CPU acceptance. |
-| GUI performance | Earlier strict default-DPI software-VM samples failed: Native33.54%, OpenGL3.70% of one core, with unchanged CBC Native baseline34.21%. No fresh GUI CPU measurement is claimed by this delivery. The unresolved failure remains a release hold, separate from daemon CPU. |
+| Hosted gates | CI {ci}: all four exact-source Linux/Windows verification and isolated release performance jobs pass. These jobs do not establish static GUI idle CPU acceptance. |
+| GUI performance | Fresh144DPI software fixture: {gui_text}. Earlier default-DPI samples retain their original scope. The unresolved strict idle failure remains a release hold, separate from daemon CPU; no performance fix or matched cross-source improvement is claimed. |
 
 Current evidence and registered producers:
-`.hermes/evidence/appearance-numeric-names-current/`.
+`.hermes/evidence/appearance-numeric-values-current/`.
 `DELIVERY_VERIFICATION.json` rehashes all seven stable artifacts/sidecars and all
-58 Windows payload files. `CLEANUP_FINAL.json` records two owned VMs/four volumes,
-three private profiles, source archive, consumed transports/extractions and candidate
-stages removed; superseded stable output retired. Fifteen obsolete incremental
+58 Windows payload files. `CLEANUP_FINAL.json` records {vm_count} owned VMs/{volume_count} volumes,
+{profile_count} private profiles, source archive, consumed transports/extractions and candidate
+stages removed; superseded stable output retired. Sixteen obsolete incremental
 sessions were removed, newest per-configuration sessions retained; final inspection
 finds zero obsolete candidates. Current packages, compact evidence, useful shared
 caches, user data and protected bases remain. The small signed display-driver cache
 is retained for future isolated DPI acceptance.
 
-The Linux daemon is byte-identical to the previous 0aac cohort. Windows daemon
-loaded code/data and all executable sections match; timestamp/checksum and
-nonloaded COFF metadata differ. This is identity evidence, not a fresh daemon
-benchmark. The earlier CBC read-only 30-second personal-daemon sample remains
-historical:0.267% one core/about26MB RSS. Personal services/settings/data were
+Both rebuilt daemon mapped images differ from0aac, and no earlier binary-equivalence
+acceptance is inherited. Fresh private1000-file checks pass watcher create/rename/
+delete, queries, persistence/restart and two protocol shutdowns on each platform.
+Quiet30-second samples use{linux_cpu:.3f}% one core on Linux and{windows_cpu:.3f}%
+in the noninteractive Windows assembly account; ordinary-user native daemon readiness
+is separately observed by the GUI fixture. These bounded samples do not establish
+sustained, large-corpus, personal-service or GUI CPU acceptance. The earlier personal
+daemon observation retains its historical exact binary scope. Personal services/settings/data were
 not changed by this task. Earlier pointer, native-region, preview, picker, folder,
 service and media receipts retain their exact original source/artifact scopes.
 
@@ -62,7 +74,7 @@ service and media receipts retain their exact original source/artifact scopes.
 s = s.replace('The 100-run GitHub audit snapshot contains 30 failures, 18 cancellations and\n52 successes after the current exact-source run completed.', 'The historical 100-run GitHub audit snapshot recorded 30 failures, 18 cancellations\nand 52 successes at its original 0aac checkpoint; these are not current rolling counts.')
 s = s.replace('Current appearance mapping/draft/preview functions and\nsemantic roles remain byte-identical to the original 39-control Linux acceptance.', 'The original 39-control Linux appearance acceptance retains its source/artifact\nscope; current numeric naming and actions have additional native checks above.')
 s = s.replace('scoped above. Nondefault Windows DPI, physical graphics and full-window visual\nlayout remain separate acceptance gaps.', 'scoped above. Current Dark Windows144DPI complete-window captures now pass in\nboth software renderers; other scales/themes, physical graphics and whole-interface\ncoverage remain separate acceptance gaps.')
-a = s.index('1. Deliver the current appearance numeric naming correction,')
+a = s.index('1. Deliver the corrected native numeric metadata,')
 b = s.index('2. Complete the concentrated', a)
 s = s[:a] + '''1. Investigate and fix the unresolved strict GUI idle CPU failure, including
    unconditional frame refresh, using a controlled same-driver baseline/current
@@ -100,7 +112,7 @@ a, b = s.index('The current Linux'), s.index('## Highlights')
 s = s[:a] + f'''The current Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/development
 MSIX0.1.0.13 use runtime `{source}`. All seven artifacts/sidecars
 and58 Windows payload files are independently rehashed at stable paths.
-Exact-source CI41728865733 passes all four jobs. Source checks pass27 appearance
+Exact-source CI{ci} passes all four jobs. Source checks pass27 appearance
 and476 UI tests (one existing ignored), native/Windows strict lint and formatting.
 
 Native numeric metadata now describes the committed model value, replacing its

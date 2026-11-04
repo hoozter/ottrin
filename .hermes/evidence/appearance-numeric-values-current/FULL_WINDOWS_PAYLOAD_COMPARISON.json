@@ -1,0 +1,35 @@
+{
+  "status": "pass complete58-file change inventory",
+  "previous_source": "0aac86f98a6411b690ede891f48438d02a9701ea",
+  "candidate_source": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "entries": 58,
+  "changed": {
+    "SOURCE_REVISION.txt": {
+      "previous_sha256": "8649baa33811fa7cdf0febc83e8d8d3bfeb5a76f80b11f825115b022ac256679",
+      "candidate_sha256": "c338a357898bd832f6fedd0328262528dfb5f7de12aec185667a60b85e8476d1"
+    },
+    "README.md": {
+      "previous_sha256": "93a398321e87f0db4b28a0221acb47a028cc1aa1e8b9a8af853662785d9d0d1a",
+      "candidate_sha256": "390f74280376090390261aec1d0ecad7e6ee70b7a3effa5f1fd0afec0511e207"
+    },
+    "docs/RELEASE_NOTES.md": {
+      "previous_sha256": "ea3a2d83c1bf254bdc28091031bdc8a6b177573eb20c95552bafedcc9ecc1357",
+      "candidate_sha256": "2976d457ea6e942d1a3d3c498b29d16a79d2e33851a4b0030ac5cd4d7c7de49c"
+    },
+    "docs/ROADMAP.md": {
+      "previous_sha256": "3a212772ad80d878738c626bd55cf39260f2b2a75c2904a3dce096432c5d7e97",
+      "candidate_sha256": "4dfb90811df30a1759239b1793726c634d5f18471ef2505f62a053e6afe146c6"
+    },
+    "bin/ottrin-indexd.exe": {
+      "previous_sha256": "e0a243776f29abf19114e91c86775a9ed51c2e73541d2a1f4c6d495916c54e4d",
+      "candidate_sha256": "7fcb0c6420824f0251240bc863ba48f210a6b0289f931a284f142ec60bbe6058"
+    },
+    "bin/ottrin.exe": {
+      "previous_sha256": "fb2d424f02cc8ab902a38cc4e2cf9565bf45e10f6a00662c9b20f34eccfcc6bf",
+      "candidate_sha256": "67229c594308f90da7b23f41846fa22fba17105f54977bd97b5e1367e45378bf"
+    }
+  },
+  "unchanged_entries": 52,
+  "daemon_comparison": "WINDOWS_INDEX_PE_COMPARISON.json",
+  "scope": "GUI independently requires native acceptance; documentation/provenance changes expected. Daemon differs and requires fresh scoped runtime verification. All other helpers, libraries, fonts, icons and transaction payloads byte-identical."
+}

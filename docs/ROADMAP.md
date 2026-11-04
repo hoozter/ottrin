@@ -96,9 +96,23 @@ Continue in this order:
    No dependency versions changed; all103 upstream source/manifest/README files were
    compared with the lock-hash-verified crate archive, with only that widget changed.
    All476 UI tests pass (one existing ignored), along with strict native/Windows
-   UI/app all-target lint and formatting. Replacement packaging,
-   native captures and new exact-source CI remain pending under
-   `.hermes/evidence/appearance-numeric-values-current/`.
+   UI/app all-target lint and formatting. Replacement source `748ae91a` now has
+   all four Linux formats and Windows ZIP/NSIS built and content-verified. The
+   exact AppImage passes six named numeric/Restore/Cancel cases in Dark100 and
+   Light150, with four original captures reviewed and both desktops removed.
+   Both rebuilt daemon mapped images differ; full file inventories pass, but
+   earlier binary-equivalence acceptance is not inherited. The actual Linux
+   portable daemon passes a private1000-file watcher create/rename/delete,
+   query, persistence/restart and two protocol-shutdown checks. Its quiet30-second
+   sample uses0.067percent of one core; no personal-service or large-corpus claim.
+   A Windows native attempt passed11 region observations/four typed commits but
+   failed to focus the main owner after asynchronous Settings close. Its native
+   GUI idle sample uses67.032percent of one core at144DPI with the index ready;
+   the performance criterion fails. The next registered native run waits for the
+   actual Settings viewport to disappear before owner focus. Complete34-case/
+   22-capture acceptance, native MSIX13 assembly, fresh scoped Windows daemon
+   checks and the remaining exact-source hosted Windows verification gate are
+   pending under `.hermes/evidence/appearance-numeric-values-current/`.
    The original `84ea` candidate is superseded before delivery: all seven packages,
    its58-file payload, five owned VMs/ten volumes/six profiles, private transports,
    source archive and content extraction are removed. Stable packages remain0aac.

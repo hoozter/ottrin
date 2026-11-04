@@ -1,0 +1,7 @@
+{
+  "status": "pass chunked verified owned result archive",
+  "bytes": 889024,
+  "sha256": "fb6e77054bf5a0644ce88c2c2b674309db4383cd64c1e875374734a9c0925931",
+  "chunk_bytes": 65536,
+  "uncertain_read_recovery": "Seek to exact original offset before retry; no process restart"
+}

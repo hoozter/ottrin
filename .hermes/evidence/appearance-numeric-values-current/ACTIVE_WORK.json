@@ -1,0 +1,45 @@
+{
+  "observed_at": "2026-11-04T00:15:10.292162+00:00",
+  "source_revision": "748ae91aba51eb35f23e716ba7d4799623e082b6",
+  "source_pushed": true,
+  "source_checks": "SOURCE_CHECKS.json:476 UI tests/27 appearance, one existing ignored; strict native/Windows lint and formatting pass",
+  "original_negative": "negative.log:actual model2/native0 in typed commit frame; final getter source patch positive",
+  "linux_exec_session": null,
+  "windows_exec_session": null,
+  "live_build_processes": {},
+  "ci_run": 41740616987,
+  "stable_deliverables": "Unchanged0aac cohort; unpublished84ea candidates retired after metadata defect",
+  "next_actions": [
+    "Finish exact native63935; export original capture archive and review all22 required captures; never accept a partial/failing result",
+    "Native MSIX13 assembly with fresh scoped portable daemon runtime/idle sample in disposable noninteractive account; ordinary-user lifecycle remains separate",
+    "Current hosted CI41740616987:3success, Windows verify/Cargo test still in progress at last live check",
+    "Promote7only after exact-source/content/native/daemon gates. Update docs and clean owned fixtures/stages/cache outputs, commit/push checkpoint",
+    "Continue unresolved GUI CPU and Services/full54+15audit; keep owner/external waits separate"
+  ],
+  "retained_owned_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Live four-format Linux package build; pending content/native/promotion consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Live Windows ZIP/NSIS build; pending content/native/MSIX13/promotion consumers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/appearance-numeric-values-current",
+      "purpose": "Current compact source/correction/build evidence and registered producers"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/tools/windows-display-driver",
+      "purpose": "Small reusable signed driver input for pending isolated Windows native DPI acceptance"
+    }
+  ],
+  "cleanup_completed": "Old84ea:5VMs/10volumes/6profiles, source/archive/private transports/extractions and408MB unpublished packages/payload removed. New source validation:exact805MB old test plus dep-info/fingerprint and16obsolete incremental sessions removed; newest per-configuration caches/current test retained.",
+  "native_exec_session": 38149,
+  "linux_content_and_native": "pass: all4formats;6AT-SPI actions/4directly reviewed captures; consumed76.5MB extraction retired",
+  "fresh_linux_daemon": "LINUX_DAEMON_RUNTIME.json:1000files, watcher create/rename/delete, restart,2protocol stops,30sec0.0667percent onecore; private profile removed",
+  "daemon_identity": "Both mapped images differ after pinned dependency source change. Full payload inventories pass; no old binary-equivalence or performance acceptance carried forward.",
+  "windows_native_previous": "Two terminal attempts:11/10 native region observations; each4 typed commits; owner focus failures after asynchronous close. Exact results/captures retained under native-focus-failure and native-cancel-focus-failure. Both VMs/4volumes/2profiles and consumed private transports removed.",
+  "gui_cpu": "Current Native144DPI software:67.032percent and66.543percent onecore/30seconds, same package/driver, index ready before/after both. Criterion failed; no performance fix or matched cross-source comparison claimed.",
+  "native_next": "Registered38149: same current package; AwaitClosed checks actual editor Cancel and Settings/Inspector Close viewport disappearance before owner focus. Exact liveUUID is authority."
+}
