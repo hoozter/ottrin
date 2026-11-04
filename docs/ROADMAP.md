@@ -403,11 +403,12 @@ query, restart and two-shutdown checks; its private 1000-file 30-second sample
 measures 0.07% of one core, not a personal/large-corpus guarantee. Current receipts:
 `.hermes/evidence/administrator-copy-status-current/`. All owned test environments,
 credentials, input aliases, transports, profiles and content extractions are removed.
-One candidate stage remains for hosted verification/publication. Linux f8 and
-Windows458 remain the usable deliveries until that gate completes. The prior1388
-source passes all four hosted jobs; exact aa run41894809859 currently has Linux and
-both performance jobs green, with Windows verification in progress. Neither this
-checkpoint nor the capture count closes U08 or daily-driver acceptance.
+Exact aa run41894809859 passes all four hosted jobs. The accepted four-format aa
+cohort is now published at `dist/packages/`; the managed personal index is Ready
+on its matching daemon. Startup choice, exact preferences hash and database inode
+are preserved. Superseded packages and candidate staging are removed. Windows458
+remains unchanged. `PROMOTION.json` records the actual replacement and cleanup.
+Neither this checkpoint nor the capture count closes U08 or daily-driver acceptance.
 
 A subsequent source checkpoint adds explicit restored administrator receipt
 provenance. Activity labels these records **Recovered history**, without claiming
@@ -421,8 +422,7 @@ packaged or accepted on a native desktop. Eight obsolete incremental sessions we
 removed; current binaries and compiler caches remain. Windows transport and its
 canonical privileged recovery bridge still need implementation and native testing.
 
-1. Publish the locally accepted aa cohort after its exact-source hosted gates pass.
-   Finish administrator Copy recovery, including the Windows canonical
+1. Package and verify the subsequent restored-history source fix, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted

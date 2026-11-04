@@ -1,15 +1,15 @@
 {
-  "conclusion": "",
+  "conclusion": "success",
   "databaseId": 41894809859,
   "headSha": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
   "jobs": [
     {
-      "completedAt": "0001-01-01T00:00:00Z",
-      "conclusion": "",
+      "completedAt": "2026-11-04T20:02:26Z",
+      "conclusion": "success",
       "databaseId": 126801375591,
       "name": "verify (windows-latest)",
       "startedAt": "2026-11-04T19:13:12Z",
-      "status": "in_progress",
+      "status": "completed",
       "steps": [
         {
           "completedAt": "2026-11-04T19:13:14Z",
@@ -172,76 +172,84 @@
           "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:18Z",
+          "conclusion": "success",
           "name": "Release build",
           "number": 21,
           "startedAt": "2026-11-04T19:56:34Z",
-          "status": "in_progress"
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:19Z",
+          "conclusion": "success",
           "name": "Verify Windows executable icons",
           "number": 22,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:18Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:19Z",
+          "conclusion": "success",
           "name": "Prepare release-build artifact",
           "number": 23,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:19Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:22Z",
+          "conclusion": "success",
           "name": "Upload release-build artifact",
           "number": 24,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:19Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:22Z",
+          "conclusion": "skipped",
           "name": "Upload Windows native boundary failure diagnostics",
           "number": 25,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:22Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:22Z",
+          "conclusion": "skipped",
           "name": "Retire production Linux HTML integration",
           "number": 26,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:22Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:22Z",
+          "conclusion": "skipped",
           "name": "Upload Linux HTML sandbox evidence",
           "number": 27,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:22Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:22Z",
+          "conclusion": "success",
           "name": "Post Cache Rust build",
           "number": 53,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:22Z",
+          "status": "completed"
         },
         {
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
+          "completedAt": "2026-11-04T20:02:25Z",
+          "conclusion": "success",
           "name": "Post Checkout",
           "number": 54,
-          "startedAt": "0001-01-01T00:00:00Z",
-          "status": "pending"
+          "startedAt": "2026-11-04T20:02:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-04T20:02:25Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 55,
+          "startedAt": "2026-11-04T20:02:25Z",
+          "status": "completed"
         }
       ],
       "url": "https://github.com/hoozter/ottrin/actions/runs/41894809859/job/126801375591"
@@ -664,7 +672,7 @@
       "url": "https://github.com/hoozter/ottrin/actions/runs/41894809859/job/126801376082"
     }
   ],
-  "status": "in_progress",
+  "status": "completed",
   "url": "https://github.com/hoozter/ottrin/actions/runs/41894809859",
   "run_id": 41894809859
 }

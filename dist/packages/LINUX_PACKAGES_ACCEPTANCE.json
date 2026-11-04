@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux helper compatibility, native login/reboot and binary replacement delivery; full roadmap incomplete",
-  "source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+  "status": "pass scoped Linux administrator Copy history recovery, helper readiness, native login/reboot and binary replacement delivery; full roadmap incomplete",
+  "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "30467e8baaa3ca2e23b61fc2062013b3b73997c9427bf074c57f8dd02c1682c4",
-    "Ottrin-0.1.0-x86_64.AppImage": "d220b9c38252c2e83e916124b3b6124fcf849e3ed9bd4f12551d954453a1699e",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "225032c7039f56d00a680a7aa76e2d0b3e845a1303005b7bb9b85f1e79f72130",
-    "ottrin_0.1.0_amd64.deb": "fbd39a5c6080ebeb158572e155182f21812b4ea13abea429e87a0e50770c59ae"
+    "ottrin-0.1.0-1.x86_64.rpm": "a7dab83effb902ea2670fe86ca334e75bfcb8fd9b525231cb1bdeee845fab39e",
+    "Ottrin-0.1.0-x86_64.AppImage": "76eb72ecf9627a597c49e0c5c3f30bd6b69221ae5d75d4ef5b0240ee62a37dd0",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "9cfa92afe668be53690999d226fb5f873860bca4c8b8c67371077809ee9806e9",
+    "ottrin_0.1.0_amd64.deb": "565481dc46acb9cd35528c87ff97bc61746332e770fd81579c65775a39d8612f"
   },
-  "evidence": ".hermes/evidence/helper-readiness-final-current",
+  "evidence": ".hermes/evidence/administrator-copy-status-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,24 +17,29 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "hosted_source": {
-    "run": 41871666761,
-    "tested_source_revision": "f8db06a1bc626468913427a83bea3480913dbca5",
+    "run": 41894809859,
+    "tested_source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
     "all_four_jobs_success": true
   },
-  "native_privileged_copy": ".hermes/evidence/helper-readiness-final-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/helper-readiness-final-current/LINUX_DAEMON_RUNTIME.json",
-  "payload_comparison": ".hermes/evidence/helper-readiness-final-current/PAYLOAD_COMPARISON.json",
-  "native_login": ".hermes/evidence/helper-readiness-final-current/login/ACCEPTANCE.json",
-  "binary_replacement": ".hermes/evidence/helper-readiness-final-current/REPLACEMENT_ACCEPTANCE.json",
+  "native_privileged_copy": ".hermes/evidence/administrator-copy-status-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/administrator-copy-status-current/LINUX_DAEMON_RUNTIME.json",
+  "runtime_sha256": {
+    "application": "96ff24fb97bfae67f0aad5bf0bb5735ef04e21c86b9b5563a0c490cc17b1ec95",
+    "index_daemon": "4a9dc5d358f44a6541e22b4f8546185298c99d3a4962520a1a6293fc8f8b6abe",
+    "privileged_helper": "39d442b881a1692a00665a1472b5cb1ad797931c62354275d70d98c4e4f72dce",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "native_login": ".hermes/evidence/administrator-copy-status-current/login/ACCEPTANCE.json",
+  "binary_replacement": ".hermes/evidence/administrator-copy-status-current/REPLACEMENT_ACCEPTANCE.json",
   "historical_service_basis": ".hermes/evidence/linux-stopped-delivery-current/DELIVERY_VERIFICATION.json",
   "limits": [
     "Current helper/Copy uses actual AppImage/FUSE; login/reboot uses native DEB; four-format contents/closure and namespace gates have their explicit scopes",
-    "Actual47db-to-f8 AppImage/portable replacement preserves enabled/disabled startup and Grid preference; future unknown schema/version transitions are not inferred",
-    "Ordinary-user elevated Copy restart discovery and Windows privileged Copy remain unfinished",
+    "Actual f8-to-aa AppImage/portable replacement preserves enabled/disabled startup and Grid preference; future unknown schema/version transitions are not inferred",
+    "Linux administrator history restart/load/Undo/cleanup passes the stated native scope; Windows privileged Copy remains unfinished",
     "Whole U08/theme audit, settled startup status, physical graphics, Wayland and final daily-driver acceptance remain open",
     "Private1000-file idle sample is not a personal-index or large-corpus resource measurement",
     "Personal helper installation requires owner authentication; no automatic privileged installation was performed",
     "Windows remains458/MSIX17; no signing, public release or Store submission",
-    "Packaged development manuals are build-time snapshots atf8; repository delivery receipts are authoritative for subsequent acceptance/publication"
+    "Packaged development manuals are build-time snapshots ataa241633; repository delivery receipts are authoritative for subsequent acceptance/publication"
   ]
 }

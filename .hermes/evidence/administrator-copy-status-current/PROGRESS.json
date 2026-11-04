@@ -1,21 +1,20 @@
 {
-  "status": "corrected source pushed; all local content/native/runtime/login/replacement gates pass; exact-source Windows hosted verification pending",
+  "status": "pass exact aa source CI and four-format Linux stable delivery; roadmap incomplete",
   "source_revision": "aa2416330e9209c844f99e5a318e44b3c9a5c277",
   "ci_run_id": 41894809859,
   "ci_url": "https://github.com/hoozter/ottrin/actions/runs/41894809859",
-  "ci_status": "in_progress",
+  "ci_status": "completed",
   "passed_ci_jobs": [
-    "search-performance (ubuntu-latest)",
     "verify (ubuntu-latest)",
+    "verify (windows-latest)",
+    "search-performance (ubuntu-latest)",
     "search-performance (windows-latest)"
   ],
-  "running_ci_jobs": [
-    "verify (windows-latest)"
-  ],
+  "running_ci_jobs": [],
   "local_acceptance": "LOCAL_ACCEPTANCE.json",
   "cleanup": "NATIVE_CLEANUP_CURRENT.json",
-  "stable_deliverables": "Linuxf8 and Windows458/MSIX17 unchanged",
-  "pending_consumer": "/home/campbell/Projects/Ottrin/.hermes/evidence/administrator-copy-status-current/promote-linux.py",
-  "next_actions": "NEXT_IMPLEMENTATION.json",
+  "stable_deliverables": "Linux aa241633 and Windows458/MSIX17",
+  "pending_consumer": null,
+  "next_actions": "Windows authenticated helper transport and canonical privileged Copy recovery; U08 and remaining requirement audit",
   "goal": "active and incomplete; Windows bridge, U08, remaining supported integrations and54/15requirement audit remain"
 }
