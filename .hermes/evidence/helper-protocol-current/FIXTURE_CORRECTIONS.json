@@ -1,0 +1,4 @@
+{
+  "comparison": "Initial inherited comparison omitted USER_GUIDE.md, updated by delivery commit dd64551a after the prior47db package was built. Verified git diff47db..3b and exact source documentation bytes through the package verifier before adding that one expected manual snapshot.",
+  "daemon_initial": "Attempted before noticing comparison failure; stopped before launching a daemon, disposable profile removed by context teardown. Initial failed log and receipt retained; it is not acceptance."
+}

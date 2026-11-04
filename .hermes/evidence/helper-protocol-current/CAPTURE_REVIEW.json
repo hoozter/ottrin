@@ -1,0 +1,22 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "old-helper-update-needed.png": "4d951c2b64a33351854ca21c82bed7336bac8d37804eec689cf7f44c7a9001d6",
+    "update-cancel-prompt.png": "331158b9bf6c995d4b4bdedd8058ff354779e00ca21154929022bd52ba5a3505",
+    "update-cancelled.png": "e8196d3f049796444bd3f76166e3cfa7eb190f8e10683a3c01c45fd921747f9f",
+    "update-prompt.png": "6b95bdeba1f8db2931d2c2f58332d73f758ff8e5762e1cd562534277b5c53d4c",
+    "updated-helper-ready.png": "d64760e6f26b29b9a71ca9cfe750cb773e0728d7d78b67147765558de5cb2381",
+    "gui-copy-denied.png": "6e43509e2ee2d803b6bba3892a0c088a9dbfe4a817b8a8f2dbd6b312a05df571",
+    "gui-copy-prompt.png": "dcbe7658197b0e6a6dc77f861eb0ff5ae2f38accc74fe16f89ef1b6ef6f2e3a1",
+    "gui-copy-activity.png": "8c49c30ce04d2fd76b14a0890347492e93d3db452a972a4de607f4e5db35cc79",
+    "gui-undo-prompt.png": "37df024c9f427a83f0003257a8c0459042d3682ebfb4e7ed81315b112d49e067",
+    "gui-undo-completed.png": "17b10682c2eab4ab5f452c861330bf355d28d080375216bf4d13d2189b2ac202",
+    "gui-cleanup-prompt.png": "3d7b5409eb2f50dac3027f239c20faaa90a0c21d282cf6cb7e736412b885bd7a",
+    "gui-copy-cleanup-completed.png": "56a96faafc2115f806ccc15e0e23842ada40b6205cc7d42a7dd82ab60d164a94"
+  },
+  "findings": [
+    "Functional helper update/cancel/readiness and protected Copy/Undo/cleanup states match actual controls",
+    "New recovery guidance renders its arrow as a missing-glyph square in the bundled font. Fix wording before delivery; this receipt is not whole-interface visual acceptance.",
+    "Broader Services typography, grouping and pending-control contrast remain part of the open U08 audit"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "boot_status_code": "enabled-by-generator",
+  "datasource": "nocloud",
+  "detail": "DataSourceNoCloud [seed=/dev/sr0]",
+  "errors": [],
+  "extended_status": "done",
+  "init": {
+    "errors": [],
+    "finished": 11.35,
+    "recoverable_errors": {},
+    "start": 10.07
+  },
+  "init-local": {
+    "errors": [],
+    "finished": 6.67,
+    "recoverable_errors": {},
+    "start": 5.98
+  },
+  "last_update": "Thu, 01 Jan 1970 00:00:13 +0000",
+  "modules-config": {
+    "errors": [],
+    "finished": 12.84,
+    "recoverable_errors": {},
+    "start": 12.36
+  },
+  "modules-final": {
+    "errors": [],
+    "finished": 13.67,
+    "recoverable_errors": {},
+    "start": 13.52
+  },
+  "recoverable_errors": {},
+  "stage": null,
+  "status": "done"
+}

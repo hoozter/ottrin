@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/helper-protocol-current/linux-daemon-runtime.py", line 32, in <module>
+    assert report['binary_sha256'] == read(e / 'PAYLOAD_COMPARISON.json')['daemon_sha256']
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/helper-protocol-current/linux-daemon-runtime.py", line 8, in read
+    def read(p): return json.loads(p.read_text())
+                                   ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/campbell/Projects/Ottrin/.hermes/evidence/helper-protocol-current/PAYLOAD_COMPARISON.json'

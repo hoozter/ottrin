@@ -1,0 +1,23 @@
+{
+  "status": "pass source wording correction; corrected packaging/native text verification pending",
+  "base_commit": "3b35dab536918af69c472ca68521278bcc4d147b",
+  "change": "Replace unsupported arrow glyph in helper update guidance with plain words",
+  "source_sha256": {
+    "crates/ottrin-platform/src/helper_protocol.rs": "da6c25498d9e43431a4d269a6d36175ceb50481b86da8cbda65b8baafb7ed631"
+  },
+  "checks": {
+    "wording-protocol-tests.log": "4 passed; 0 failed",
+    "wording-ui-test.log": "1 passed; 0 failed",
+    "wording-native-lint.log": "Finished `dev`",
+    "wording-windows-lint.log": "Finished `dev`"
+  },
+  "native_functional_basis": "LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "native_basis_source": "3b35dab536918af69c472ca68521278bcc4d147b",
+  "candidate_retired": "CANDIDATE_CLEANUP.json",
+  "limits": [
+    "The original3b packages passed functional native upgrade/recovery but were not delivered because visual review caught the missing glyph",
+    "The native capture does not verify the corrected wording until rebuilt",
+    "Stable Linux47db and Windows458 packages remain unchanged",
+    "Current source CI remains separately pending"
+  ]
+}

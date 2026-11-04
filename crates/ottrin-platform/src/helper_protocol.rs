@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 
 fn guidance() -> &'static str {
     if cfg!(target_os = "linux") {
-        "Administrator helper needs an update. Open Services → Update / reinstall helper."
+        "Administrator helper needs an update. Open Services and choose Update / reinstall helper."
     } else {
         "Administrator helper does not match Ottrin. Reinstall Ottrin or restore the complete portable package."
     }

@@ -1,0 +1,8 @@
+{
+  "status": "failed",
+  "source_revision": "3b35dab536918af69c472ca68521278bcc4d147b",
+  "archive_sha256": "fc5900fdeb4eecac3da5d787fa641ae4f76cf9e680a7a78d527e4c61844ad039",
+  "scope": "Exact portable daemon, private1000-file root, content indexing disabled; real filesystem watcher create/rename/delete, queries, persistence/restart, idle CPU and protocol shutdown. No personal service, distro installation, large corpus or GUI performance claim.",
+  "binary_sha256": "4cceba0adbdfe215cdb673837bf8863cec638e7c27cb090d52c1dc82ae463975",
+  "error": "FileNotFoundError(2, 'No such file or directory')"
+}

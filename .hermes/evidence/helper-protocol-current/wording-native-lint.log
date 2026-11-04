@@ -1,0 +1,8 @@
+    Checking glib-sys v0.20.10
+    Checking gobject-sys v0.20.10
+    Checking gio-sys v0.20.10
+    Checking glib v0.20.12
+    Checking gio v0.20.12
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 23.00s

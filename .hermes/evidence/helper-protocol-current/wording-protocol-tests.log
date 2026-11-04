@@ -1,0 +1,23 @@
+   Compiling glib-sys v0.20.10
+   Compiling gobject-sys v0.20.10
+   Compiling gio-sys v0.20.10
+   Compiling glib v0.20.12
+   Compiling gio v0.20.12
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 39.36s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_platform-5a95d0376980cc28)
+
+running 4 tests
+test helper_protocol::tests::helper_protocol_refuses_set_id_helper_before_execution ... ok
+test helper_protocol::tests::helper_protocol_probes_exact_version_and_required_feature_without_stdin ... ok
+test helper_protocol::tests::helper_protocol_refuses_legacy_mismatch_and_unavailable_features ... ok
+test helper_protocol::tests::helper_protocol_kills_and_reaps_a_nonresponsive_probe ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 445 filtered out; finished in 0.21s
+
+     Running unittests src/bin/ottrin-priv-helper.rs (target/debug/deps/ottrin_priv_helper-54132b059e6f738d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.00s
+

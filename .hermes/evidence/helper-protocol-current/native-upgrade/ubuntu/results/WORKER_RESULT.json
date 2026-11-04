@@ -1,0 +1,60 @@
+{
+  "status": "pass",
+  "cases": [
+    "old installed helper shows Update needed; cancel preserves exact old helper and unavailable status",
+    "authenticated update replaces old helper with protocol-compatible root-owned helper; actual Ready status",
+    "actual reinstall authenticated and completed"
+  ],
+  "login_session_id": "c1",
+  "fuse_mount": {
+    "executable": "/tmp/.mount_OttrinKHnGYQ/usr/bin/ottrin",
+    "mountinfo": "58 30 0:45 / /tmp/.mount_OttrinKHnGYQ ro,nosuid,nodev,relatime shared:263 - fuse.Ottrin-0.1.0-x86_64.AppImage Ottrin-0.1.0-x86_64.AppImage ro,user_id=1000,group_id=1000"
+  },
+  "updated_helper_sha256": "3e8f04b59ec41d3950ef412625901a94cebb43d6125197532c1adb6b9a45c558",
+  "session_properties": "Seat=seat0\nRemote=no\nService=lightdm-autologin\nType=x11\nClass=user\nActive=yes\nState=active\n",
+  "helper_policy": "org.ottrin.filesystem.privileged:\n  description:       Run privileged operations for Ottrin\n  message:           Authentication is required to perform this privileged operation in Ottrin.\n  vendor:            Ottrin\n  vendor_url:        https://github.com/hoozter/ottrin\n  icon:              system-file-manager\n  implicit any:      no\n  implicit inactive: no\n  implicit active:   auth_admin_keep\n  annotation:        org.freedesktop.policykit.exec.path -> /usr/libexec/ottrin/ottrin-priv-helper\n  annotation:        org.freedesktop.policykit.exec.allow_gui -> true\n\n",
+  "temporary_authorizations_after_revoke": "",
+  "helper_copy_root_verification": {
+    "phase": "HELPER_COPY",
+    "root_owned": true,
+    "exact_source_bytes": true,
+    "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+  },
+  "protected_helper": {
+    "ordinary_write_denied": true,
+    "cancel_exit": 126,
+    "authenticated_response": {
+      "status": "Success",
+      "message": null,
+      "payload": {
+        "Copy": {
+          "completed_sources": 1,
+          "transactions": [
+            "6b0ecef8a670b33ee87eb78583bf67ed"
+          ],
+          "paths": [
+            [
+              "/var/lib/ottrin-owned-protected-qa/.ottrin-txn-6b0ecef8a670b33ee87eb78583bf67ed/candidate",
+              "/var/lib/ottrin-owned-protected-qa/preserve.txt"
+            ]
+          ]
+        }
+      }
+    },
+    "undo_and_cleanup": "Success through fresh authenticated helper processes"
+  },
+  "gui_copy_root_verification": {
+    "phase": "GUI_COPY",
+    "root_owned": true,
+    "exact_source_bytes": true,
+    "sha256": "4fc5780c5d136b2f3659dbc44b6351c014dffc837f9558920014e2d9e735279e"
+  },
+  "activity_controls": [
+    {
+      "name": "Show or hide Activity",
+      "role": "toggle button"
+    }
+  ],
+  "gui_privileged_copy": "Actual cp command denied, authenticated app retry created exact root-owned output; Activity authenticated Undo and confirmed/authenticated cleanup completed",
+  "source_preserved": true
+}

@@ -350,16 +350,27 @@ remain separate.
 
 ### Ordered implementation and acceptance queue
 
-The next source checkpoint adds a required helper protocol version and a bounded,
+Source3b35dab5 adds a required helper protocol version and a bounded,
 unelevated capability probe. Incompatible helpers show **Update needed** with the
 existing reinstall action; malformed/version-mismatched requests are rejected
 before dispatch. Source verification: 496 UI tests pass (one existing ignored),
 11 helper tests and four probe tests pass, and strict native/Windows all-target
 lint passes. Actual debug-helper IPC verifies rejected requests leave files
 untouched and valid Copy/Undo/cleanup still works across fresh processes. Evidence:
-`.hermes/evidence/helper-protocol-current/`. This is not yet packaged acceptance:
-the stable Linux47db and Windows458 deliveries above are unchanged. Native upgrade
-from an older installed helper remains to be verified with the next packages.
+`.hermes/evidence/helper-protocol-current/`. Its four-format package-content checks
+and actual AppImage/FUSE old-helper upgrade pass: cancellation preserves the old
+helper and Update needed status; authentication installs the compatible helper and
+shows Ready; actual protected Copy, Activity Undo and confirmed cleanup pass with
+independent root byte/ownership checks. The rebuilt daemon passes fresh watcher,
+query, restart and two-stop checks at 0.10% one core over30seconds without clients
+in a private1000-file fixture. This is not a personal-service CPU measurement.
+Screenshot review caught a missing arrow glyph in the new guidance; the source now
+uses plain wording. The3b candidate packages and extraction were retired before
+delivery; corrected packages and their native wording check remain pending. The
+stable Linux47db and Windows458 deliveries above are unchanged. Twelve original
+captures were directly reviewed; this does not close U08 or whole-interface
+acceptance. The owned VM, three volumes, credentials, transport and host input
+were removed; compact receipts remain in the evidence root.
 Windows elevated Copy remains unimplemented; it is now refused before dispatch
 rather than copying without returning recovery ownership.
 

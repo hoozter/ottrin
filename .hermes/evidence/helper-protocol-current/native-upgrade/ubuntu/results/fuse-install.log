@@ -1,0 +1,51 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following packages were automatically installed and are no longer required:
+  libgstreamer-plugins-base1.0-0 liborc-0.4-0t64 libxcb-xkb1
+  libxkbcommon-x11-0
+Use 'sudo apt autoremove' to remove them.
+The following NEW packages will be installed:
+  libfuse2t64
+0 upgraded, 1 newly installed, 0 to remove and 72 not upgraded.
+Need to get 89.9 kB of archives.
+After this operation, 326 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/universe amd64 libfuse2t64 amd64 2.9.9-8.1build1 [89.9 kB]
+Fetched 89.9 kB in 0s (578 kB/s)
+Selecting previously unselected package libfuse2t64:amd64.
+(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 91420 files and directories currently installed.)
+Preparing to unpack .../libfuse2t64_2.9.9-8.1build1_amd64.deb ...
+Unpacking libfuse2t64:amd64 (2.9.9-8.1build1) ...
+Setting up libfuse2t64:amd64 (2.9.9-8.1build1) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.

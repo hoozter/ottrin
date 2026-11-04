@@ -1,0 +1,12 @@
+   Compiling glib v0.20.12
+   Compiling gio v0.20.12
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 39.45s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+test tests::incompatible_installed_helper_shows_update_instead_of_ready_or_install ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 496 filtered out; finished in 0.01s
+
