@@ -1,7 +1,7 @@
 {
   "goal": "active/incomplete",
   "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
-  "source_status": "runtime24af all4 exact hosted jobs pass; current Linux and Windows ZIP/NSIS/MSIX19 delivered; final metadata checkpoint pending",
+  "source_status": "Runtime24af exact-source all4 hosted jobs pass; Linux and Windows ZIP/NSIS/MSIX19 delivered; delivery and owned cleanup metadata included in this checkpoint",
   "previous_goal_turn": "progress: current exact-source CI green, native Linux/Windows delivery and cleanup complete; actual19 native focus defect addressed in fixture; no source, native, packaging or cleanup result promoted beyond explicit scope",
   "completed": [
     "508 UI tests and1 existing ignored; source red/green filename and independent-density regressions; native/Windows strict lint",
