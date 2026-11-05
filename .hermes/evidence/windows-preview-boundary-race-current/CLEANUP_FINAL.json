@@ -1,0 +1,162 @@
+{
+  "verified_at": "2026-11-05T06:29:33.145274+00:00",
+  "before_bytes": {
+    "target/debug/deps": 25266377773,
+    "target/debug/incremental": 25261810571,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070382886,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44270182049,
+    ".hermes/evidence/windows-preview-boundary-race-current": 0
+  },
+  "after_bytes": {
+    "target/debug/deps": 25266444193,
+    "target/debug/incremental": 25263273553,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30027110841,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44548740839,
+    ".hermes/evidence/windows-preview-boundary-race-current": 8896983
+  },
+  "delta_bytes": {
+    "target/debug/deps": 66420,
+    "target/debug/incremental": 1462982,
+    "target/x86_64-pc-windows-gnu/debug/deps": 956727955,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 278558790,
+    ".hermes/evidence/windows-preview-boundary-race-current": 8896983
+  },
+  "native_teardown": [
+    {
+      "case": "native",
+      "uuid": "72e61b35-0f66-4d90-98fe-f882d9c0dbc6",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-boundary-client.qcow2",
+          "ottrin-boundary-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "allocations": [
+        {
+          "volume": "ottrin-boundary-client-fixture.iso",
+          "allocated_bytes": 447410176,
+          "virtual_capacity_bytes": 447391744
+        },
+        {
+          "volume": "ottrin-boundary-client.qcow2",
+          "allocated_bytes": 13512486912,
+          "virtual_capacity_bytes": 68719476736
+        }
+      ]
+    },
+    {
+      "case": "serial",
+      "uuid": "918cfc4d-b207-41b2-b1bc-7e7f79c76e34",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-boundary-client.qcow2",
+          "ottrin-boundary-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "allocations": [
+        {
+          "volume": "ottrin-boundary-client-fixture.iso",
+          "allocated_bytes": 447406080,
+          "virtual_capacity_bytes": 447391744
+        },
+        {
+          "volume": "ottrin-boundary-client.qcow2",
+          "allocated_bytes": 5633982464,
+          "virtual_capacity_bytes": 68719476736
+        }
+      ]
+    },
+    {
+      "case": "stripped-parallel",
+      "uuid": "cd855a27-ae22-441d-84e8-86308d7fd9e5",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-boundary-client.qcow2",
+          "ottrin-boundary-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "allocations": [
+        {
+          "volume": "ottrin-boundary-client-fixture.iso",
+          "allocated_bytes": 55840768,
+          "virtual_capacity_bytes": 55836672
+        },
+        {
+          "volume": "ottrin-boundary-client.qcow2",
+          "allocated_bytes": 11199934464,
+          "virtual_capacity_bytes": 68719476736
+        }
+      ]
+    },
+    {
+      "case": "companion",
+      "uuid": "c5d94a7a-e6b2-48fe-9427-8f7d821738ad",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-boundary-client.qcow2",
+          "ottrin-boundary-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "allocations": [
+        {
+          "volume": "ottrin-boundary-client-fixture.iso",
+          "allocated_bytes": 57061376,
+          "virtual_capacity_bytes": 57055232
+        },
+        {
+          "volume": "ottrin-boundary-client.qcow2",
+          "allocated_bytes": 7816159232,
+          "virtual_capacity_bytes": 68719476736
+        }
+      ]
+    }
+  ],
+  "removed_host_outputs": [
+    "consumed 446 MB windows_job_native-ca2a23aaefb4cf34.exe, dep-info and matching fingerprint; six passing replacement runs use identical compiler/profile flags",
+    "15 locked obsolete incremental sessions; newest per crate/configuration retained",
+    "unused diagnostic boundary-running.png"
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-boundary-race-current",
+      "purpose": "Compact frozen producers, positive/negative test results, directly reviewed desktop frames, input and cleanup receipts; no test profiles or runtime staging"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-e79be56cfa052a12.exe",
+      "purpose": "Current canonical integration-test harness, retained for upcoming combined-source and Windows CI recovery checks"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-native-job-fixture.exe",
+      "purpose": "Current small matching process actor required by subsequent native boundary tests"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-legacy-doc-render.exe",
+      "purpose": "Current automatically rebuilt canonical debug renderer; pending native provider/preview verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-html-render.exe",
+      "purpose": "Current automatically rebuilt canonical debug renderer; pending native renderer verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug",
+      "purpose": "Reused native compiler outputs/dependencies and latest finalized cache for upcoming UI/native integration; no extra target tree"
+    }
+  ],
+  "preserved": "Current b020 stable packages, original user files/services/preferences, useful shared compiler caches and all four protected VMs"
+}

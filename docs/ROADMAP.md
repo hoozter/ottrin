@@ -64,6 +64,18 @@ jobs passing; Windows verification failed in Office AppContainer creation and
 child readiness tests. Preserve those failures as software work, not an owner
 wait or an accepted branch.
 
+The Windows preview boundary tests now use a standalone process actor instead of
+copying and launching the preview-linked test harness. The original GNU harness
+was447MB; debug stripping alone reduced it to55MB but did not resolve readiness
+failures. The standalone actor is1.24MB after verified debug stripping. All ten
+existing boundaries pass in three concurrent and three serial ordinary-user
+native runs (60 checks), retaining the five-second readiness deadline and all
+containment/resource assertions. Native/Windows lint pass. Production sandbox
+code and current packages are unchanged; hosted AppContainer creation failure
+still needs the combined-source CI gate. Four owned VMs/eight volumes/private
+consoles, the superseded harness/dep-info/fingerprint and15 obsolete incremental
+sessions were retired. Evidence: `windows-preview-boundary-race-current/`.
+
 ### Previous delivery receipts — historical source and artifact scopes
 
 The superseded `7fa0e46c` candidate is retired. Its directly reviewed native

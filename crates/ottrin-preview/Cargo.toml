@@ -20,6 +20,12 @@ name = "ottrin-media-playback"
 path = "src/bin/ottrin-media-playback.rs"
 required-features = ["system-gstreamer"]
 
+[[bin]]
+name = "ottrin-native-job-fixture"
+path = "tests/fixtures/windows_job_actor.rs"
+test = false
+bench = false
+
 [dependencies]
 ottrin-core = { path = "../ottrin-core" }
 thiserror.workspace = true

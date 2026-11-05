@@ -79,6 +79,14 @@ Windows first runs the native Move ownership/cleanup/Undo admission filters, the
 the complete workspace suite. The focused gate gives prompt failures for this
 security boundary; it does not replace broader native/platform acceptance.
 
+The Windows preview Job/AppContainer suite automatically builds the small
+`ottrin-native-job-fixture` companion. Copy that actor into each private test
+profile; do not copy or launch the preview-linked test harness as its descendant.
+Keep the existing startup deadlines, containment checks and resource limits.
+Cross-compiled native runners must stage the matching companion and set
+`OTTRIN_NATIVE_JOB_FIXTURE` to its verified guest path. This is a test-only input;
+the companion is excluded from application packages.
+
 Hosted Linux verification explicitly installs Bubblewrap, the systemd user-bus
 package and Ubuntu's restrictive AppArmor profile. The CI-only
 `scripts/ci/prepare-linux-isolation.sh` starts the runner's real user manager and

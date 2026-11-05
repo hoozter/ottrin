@@ -1,0 +1,18 @@
+{
+  "source_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+  "source_test_sha256": "6a5224c21280624bf0cd2a045cddfe6e8edd243b8fdc53878a35ce29a4222240",
+  "test_sha256": "95888c3ff6c60aa0f609c50aa01264fc037f0e5d1ef7698271d63aebe71b1bf8",
+  "source_bytes": 446504442,
+  "staged_bytes": 54949792,
+  "strip_command": [
+    "x86_64-w64-mingw32-strip",
+    "--strip-debug"
+  ],
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 28099072,
+    "sha256": "1123c7ceb852ddfbbfb881ef315bfdf3456261ce15ebfae24c45544fbfc92fec"
+  },
+  "actor_sha256": "8935eb4bfc339ba7f7b0f1544c8e248640daba25377af3fcdae3c43392f79c44",
+  "scope": "Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance"
+}

@@ -1,0 +1,112 @@
+{
+  "status": "pass within standalone native test-fixture scope",
+  "source": {
+    "base_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+    "scope": "Unchanged production preview implementation at base revision with the following test-fixture source changes; no packaged delivery",
+    "files": {
+      "crates/ottrin-preview/Cargo.toml": "e69a7e7daf963216242269f34987f86901ae26ec1f9a54383687b2fc96c73d1b",
+      "crates/ottrin-preview/tests/windows_job_native.rs": "ae92607649a1fffdfcd95bd0cd1c4ad2f7bc84eb9787f64d4e4e5c9595a8815f",
+      "crates/ottrin-preview/tests/fixtures/windows_job_actor.rs": "eb779f058cd4628ed1bf5dde79bf31272674391699023da74b3c7d06913c91de",
+      "crates/ottrin-preview/tests/fixtures/windows_job_common.rs": "df85619138dcd243128067cd55389eacc6b168a97a7aed838671536049133f85"
+    },
+    "production_preview_unchanged": true
+  },
+  "native_source_producer_sha256": "f9e8a6561aeedff1b257136b957d772e9545c557d744abdf7112e5bfbea08830",
+  "input": {
+    "source_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+    "source_test_sha256": "8a0620b9fddcb22e749a1abbd0713d351b77983b2bc883f317712a375583222c",
+    "test_sha256": "6924c147e6119d15289f17fdc21d2334bfaefccd2767e2afac654ba31acb6c85",
+    "source_bytes": 446387957,
+    "staged_bytes": 54927991,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 28085248,
+      "sha256": "319af9e4b20e10454e96247736bef9b53a14f0c194f540ac2a9fe66c329c848f"
+    },
+    "actor_sha256": "fba047ad021ba09b578c95fea0c2fd5a7de23311bfc088f1db75b88506c6bafc",
+    "scope": "Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance",
+    "fixture": {
+      "source_sha256": "3b81d273b11ca16b9110bf42ec158bf99c0618a1e61e20bbb4e572c0eac35a6a",
+      "sha256": "c21ef020ce4c6df1fddaf7da63ae5a2fdac0722d82349356198c7f3baa73fb57",
+      "source_bytes": 2863865,
+      "staged_bytes": 1235261,
+      "unchanged_executable_text": {
+        "entry_rva": 5136,
+        "bytes": 653312,
+        "sha256": "04e953654a1f9f1004a3bfc0535c8e05c2c046e96fd128aaadf8bfdebbd24345"
+      }
+    }
+  },
+  "ordinary_identity": {
+    "profile": "C:\\Users\\OTMSI340c786987d8",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "runs": [
+    {
+      "threads": 4,
+      "run": 1,
+      "passed": 10,
+      "seconds": 13.69
+    },
+    {
+      "threads": 4,
+      "run": 2,
+      "passed": 10,
+      "seconds": 9.66
+    },
+    {
+      "threads": 4,
+      "run": 3,
+      "passed": 10,
+      "seconds": 11.55
+    },
+    {
+      "threads": 1,
+      "run": 1,
+      "passed": 10,
+      "seconds": 12.3
+    },
+    {
+      "threads": 1,
+      "run": 2,
+      "passed": 10,
+      "seconds": 13.07
+    },
+    {
+      "threads": 1,
+      "run": 3,
+      "passed": 10,
+      "seconds": 16.86
+    }
+  ],
+  "total_passed": 60,
+  "unchanged_assertions": [
+    "original five-second fixture readiness deadline",
+    "Job Object process and aggregate memory limits",
+    "timeout and cancellation reap retained parent/descendant handles",
+    "handle inheritance positive/negative controls",
+    "private environment and admitted source snapshot",
+    "network/filesystem/IPC containment",
+    "private diagnostic cleanup"
+  ],
+  "strict_lint": [
+    "Linux preview all targets",
+    "Windows preview test and fixture binary"
+  ],
+  "desktop_directly_reviewed": {
+    "path": ".hermes/evidence/windows-preview-boundary-race-current/companion/desktop-ready.png",
+    "sha256": "722a4d30ff6d66d288e3cc7d48423e15bf8fb0e08eeb473a179888f170c19379"
+  },
+  "packaging": "Explicit native package binary lists exclude ottrin-native-job-fixture; current stable b020 artifacts untouched",
+  "limitations": [
+    "No installed Office conversion, UAC, package, graphics or whole-interface acceptance",
+    "Hosted b961 AppContainer creation error remains unproven as resolved; the new fixture will run in normal hosted verification",
+    "Production preview implementation unchanged at b176; current test-fixture changes are identified by file hashes"
+  ]
+}

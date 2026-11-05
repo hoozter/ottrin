@@ -1,0 +1,11 @@
+{
+  "base_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+  "scope": "Unchanged production preview implementation at base revision with the following test-fixture source changes; no packaged delivery",
+  "files": {
+    "crates/ottrin-preview/Cargo.toml": "e69a7e7daf963216242269f34987f86901ae26ec1f9a54383687b2fc96c73d1b",
+    "crates/ottrin-preview/tests/windows_job_native.rs": "ae92607649a1fffdfcd95bd0cd1c4ad2f7bc84eb9787f64d4e4e5c9595a8815f",
+    "crates/ottrin-preview/tests/fixtures/windows_job_actor.rs": "eb779f058cd4628ed1bf5dde79bf31272674391699023da74b3c7d06913c91de",
+    "crates/ottrin-preview/tests/fixtures/windows_job_common.rs": "df85619138dcd243128067cd55389eacc6b168a97a7aed838671536049133f85"
+  },
+  "production_preview_unchanged": true
+}

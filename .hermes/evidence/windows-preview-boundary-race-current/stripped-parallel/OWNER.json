@@ -1,0 +1,101 @@
+{
+  "domain": "ottrin-boundary-client",
+  "uuid": "cd855a27-ae22-441d-84e8-86308d7fd9e5",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-boundary-client-fixture.iso",
+    "ottrin-boundary-client.qcow2"
+  ],
+  "status": "control finished; inspect exact result, not assumed pass",
+  "public_compiler_cache": null,
+  "scope": "Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance",
+  "producer_sha256": "29b0aa8fd3a7b52cc79aa605d98575ff283db0b106836c84620fe6866bb2451c",
+  "storage_at_start": {
+    "available_bytes": 31870631936,
+    "minimum_headroom_bytes": 25769803776,
+    "path": "/var/lib/libvirt/images"
+  },
+  "uploaded_host_iso_removed_bytes": 55836672,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "absolute_pointer": "Clone-only virtual tablet present at boot; no host device passthrough",
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "privacy_control_sha256": "958e1ad3b0890090ae1863987666759697958a25cfd95d03499a0c9f54a3f848",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 2689324,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-mbec6o9p/home"
+  },
+  "guest_pid": 7420,
+  "desktop_observer_pid": 2690213,
+  "checked_backing_chains": [
+    {
+      "retained_domain": "ottrin-copy-cleanup-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-index-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-qa-20261011",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "win11ltsc",
+      "files": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-boundary-client-fixture.iso",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-boundary-client-fixture.iso"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-boundary-client.qcow2",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-boundary-client.qcow2",
+        "/var/lib/libvirt/images/ottrin-stock-client.qcow2"
+      ]
+    }
+  ],
+  "owned_volume_allocations_before_removal": [
+    {
+      "volume": "ottrin-boundary-client-fixture.iso",
+      "allocated_bytes": 55840768,
+      "virtual_capacity_bytes": 55836672
+    },
+    {
+      "volume": "ottrin-boundary-client.qcow2",
+      "allocated_bytes": 11199934464,
+      "virtual_capacity_bytes": 68719476736
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

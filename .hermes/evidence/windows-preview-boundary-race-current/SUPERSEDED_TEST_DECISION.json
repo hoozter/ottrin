@@ -1,0 +1,38 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-ca2a23aaefb4cf34.exe",
+      "kind": "build-cache",
+      "reason": "Consumed superseded preview integration test artifact; lightweight companion replacement passed all ten boundaries in three concurrent and three serial runs",
+      "evidence": "Exact rustc, target, profile, feature, path, rustflags, config and compile-kind fields match replacement fingerprint ottrin-preview-e79be56cfa052a12. Replacement and actor retained. All four owned native domains, all eight volumes and fixture links retired. Old executable has one link; check_consumers performs live fd/mmap/cwd review before each deletion."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-ca2a23aaefb4cf34.d",
+      "kind": "build-cache",
+      "reason": "Consumed superseded preview integration test artifact; lightweight companion replacement passed all ten boundaries in three concurrent and three serial runs",
+      "evidence": "Exact rustc, target, profile, feature, path, rustflags, config and compile-kind fields match replacement fingerprint ottrin-preview-e79be56cfa052a12. Replacement and actor retained. All four owned native domains, all eight volumes and fixture links retired. Old executable has one link; check_consumers performs live fd/mmap/cwd review before each deletion."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-ca2a23aaefb4cf34",
+      "kind": "build-cache",
+      "reason": "Consumed superseded preview integration test artifact; lightweight companion replacement passed all ten boundaries in three concurrent and three serial runs",
+      "evidence": "Exact rustc, target, profile, feature, path, rustflags, config and compile-kind fields match replacement fingerprint ottrin-preview-e79be56cfa052a12. Replacement and actor retained. All four owned native domains, all eight volumes and fixture links retired. Old executable has one link; check_consumers performs live fd/mmap/cwd review before each deletion."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Existing nondumpable session process; exact comm, start ticks, argv digest and UID revalidated. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this process. Scoped targets are the consumed old Windows preview test executable/dep-info/fingerprint after six passing replacement runs with matching compiler settings, plus rustc-obsolete sessions with exclusive locks and newest per-configuration state retained. No current binaries, user data, source or other cache deletion."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Existing nondumpable session process; exact comm, start ticks, argv digest and UID revalidated. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this process. Scoped targets are the consumed old Windows preview test executable/dep-info/fingerprint after six passing replacement runs with matching compiler settings, plus rustc-obsolete sessions with exclusive locks and newest per-configuration state retained. No current binaries, user data, source or other cache deletion."
+    }
+  ]
+}

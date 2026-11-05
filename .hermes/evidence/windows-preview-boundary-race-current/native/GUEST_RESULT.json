@@ -1,0 +1,21 @@
+{
+  "input": {
+    "source_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+    "test_sha256": "6a5224c21280624bf0cd2a045cddfe6e8edd243b8fdc53878a35ce29a4222240",
+    "actor_sha256": "8935eb4bfc339ba7f7b0f1544c8e248640daba25377af3fcdae3c43392f79c44",
+    "scope": "Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance"
+  },
+  "desktop_ready": true,
+  "stack": "at <ScriptBlock>, <No file>: line 30\r\nat <ScriptBlock>, <No file>: line 1",
+  "error": "Native boundary run 1 timed out",
+  "phase": "native boundary concurrent run 1",
+  "scope": "Native preview Job/AppContainer boundary under a fresh ordinary interactive user; no Office conversion or package acceptance",
+  "identity": {
+    "profile": "C:\\Users\\OTMSIb7769a64409b",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "failed",
+  "runs": []
+}

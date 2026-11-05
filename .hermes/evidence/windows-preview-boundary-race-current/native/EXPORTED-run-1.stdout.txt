@@ -1,0 +1,7 @@
+
+running 10 tests
+test native_job_cancellation_kills_parent_and_descendant has been running for over 60 seconds
+test native_job_captures_output_and_cleans_diagnostics has been running for over 60 seconds
+test native_job_denies_private_files_source_writes_and_network has been running for over 60 seconds
+test native_job_does_not_inherit_parent_environment has been running for over 60 seconds
+test native_job_denies_private_files_source_writes_and_network ... ok

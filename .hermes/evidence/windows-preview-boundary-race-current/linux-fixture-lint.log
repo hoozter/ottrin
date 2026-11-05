@@ -1,0 +1,6 @@
+    Checking fontique v0.11.1
+    Checking parley v0.11.1
+    Checking rwml v0.1.4
+    Checking ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+    Checking ottrin-preview v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-preview)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 17.33s

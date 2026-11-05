@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-05T06:05:57.179047+00:00",
+  "status": "staged debug-only reduction verified; runtime test still pending",
+  "original": {
+    "sha256": "6a5224c21280624bf0cd2a045cddfe6e8edd243b8fdc53878a35ce29a4222240",
+    "bytes": 446504442
+  },
+  "staged": {
+    "sha256": "95888c3ff6c60aa0f609c50aa01264fc037f0e5d1ef7698271d63aebe71b1bf8",
+    "bytes": 54949792
+  },
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 28099072,
+    "sha256": "1123c7ceb852ddfbbfb881ef315bfdf3456261ce15ebfae24c45544fbfc92fec"
+  },
+  "preserved": "Canonical target executable, source code and private test admission checks",
+  "limits": "The oversized baseline timeout is not attributed to a product defect. Debug stripping corrects local fixture overhead; hosted CI failure remains independent until reproduced or resolved."
+}

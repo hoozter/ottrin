@@ -1,0 +1,90 @@
+{
+  "source": {
+    "base_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+    "scope": "Unchanged production preview implementation at base revision with the following test-fixture source changes; no packaged delivery",
+    "files": {
+      "crates/ottrin-preview/Cargo.toml": "e69a7e7daf963216242269f34987f86901ae26ec1f9a54383687b2fc96c73d1b",
+      "crates/ottrin-preview/tests/windows_job_native.rs": "ae92607649a1fffdfcd95bd0cd1c4ad2f7bc84eb9787f64d4e4e5c9595a8815f",
+      "crates/ottrin-preview/tests/fixtures/windows_job_actor.rs": "eb779f058cd4628ed1bf5dde79bf31272674391699023da74b3c7d06913c91de",
+      "crates/ottrin-preview/tests/fixtures/windows_job_common.rs": "df85619138dcd243128067cd55389eacc6b168a97a7aed838671536049133f85"
+    },
+    "production_preview_unchanged": true
+  },
+  "compiler": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.0\nLLVM version: 21.1.8\n",
+  "artifacts": [
+    {
+      "cargo_artifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///home/campbell/Projects/Ottrin/crates/ottrin-preview#0.1.0",
+        "manifest_path": "/home/campbell/Projects/Ottrin/crates/ottrin-preview/Cargo.toml",
+        "target": {
+          "kind": [
+            "test"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "windows_job_native",
+          "src_path": "/home/campbell/Projects/Ottrin/crates/ottrin-preview/tests/windows_job_native.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "1",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [
+          "default"
+        ],
+        "filenames": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-e79be56cfa052a12.exe"
+        ],
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-e79be56cfa052a12.exe",
+        "fresh": false
+      },
+      "sha256": "8a0620b9fddcb22e749a1abbd0713d351b77983b2bc883f317712a375583222c"
+    },
+    {
+      "cargo_artifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///home/campbell/Projects/Ottrin/crates/ottrin-preview#0.1.0",
+        "manifest_path": "/home/campbell/Projects/Ottrin/crates/ottrin-preview/Cargo.toml",
+        "target": {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "ottrin-native-job-fixture",
+          "src_path": "/home/campbell/Projects/Ottrin/crates/ottrin-preview/tests/fixtures/windows_job_actor.rs",
+          "edition": "2024",
+          "doc": true,
+          "doctest": false,
+          "test": false
+        },
+        "profile": {
+          "opt_level": "1",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": false
+        },
+        "features": [
+          "default"
+        ],
+        "filenames": [
+          "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-native-job-fixture.exe"
+        ],
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-native-job-fixture.exe",
+        "fresh": false
+      },
+      "sha256": "3b81d273b11ca16b9110bf42ec158bf99c0618a1e61e20bbb4e572c0eac35a6a"
+    }
+  ]
+}

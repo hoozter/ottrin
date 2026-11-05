@@ -1,0 +1,74 @@
+RESULT.json
+                     "run":  1,
+                     "stderr":  "\nthread \u0027native_job_cancellation_kills_parent_and_descendant\u0027 (1460) panicked at crates/ottrin-preview/tests/windows_job_native.rs:329:9:\nfixture did not publish its PID: \"C:\\\\Users\\\\OTMSI4~1\\\\AppData\\\\Local\\\\Temp\\\\ottrin native job 9988 1793862421925586100\\\\profile with spaces\\\\descendant.pid\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nOffice child failed Timeout: Native fixture cancel: strict_handle_query=1, strict_handles=0x3, NUL_read=Ok(()), NUL_write=Ok(()), executable_read=Ok(())\n\nOffice child failed Timeout: Native fixture descendant: strict_handle_query=1, strict_handles=0x3, NUL_read=Ok(()), NUL_write=Ok(()), executable_read=Ok(())\n\n",
+                     "all_ten_pass":  false,
+                     "exit":  101
+                 },
+                 {
+                     "stdout":  "\nrunning 10 tests\ntest native_job_does_not_inherit_parent_environment ... ok\ntest native_job_captures_output_and_cleans_diagnostics ... ok\ntest native_job_denies_private_files_source_writes_and_network ... ok\ntest native_job_enforces_output_budget ... ok\ntest native_job_enforces_aggregate_memory_across_descendants ... ok\ntest native_job_enforces_memory_and_process_limits ... ok\n",
+                     "run":  2,
+                     "stderr":  "\nthread \u0027native_job_cancellation_kills_parent_and_descendant\u0027 (8732) panicked at crates/ottrin-preview/tests/windows_job_native.rs:329:9:\nfixture did not publish its PID: \"C:\\\\Users\\\\OTMSI4~1\\\\AppData\\\\Local\\\\Temp\\\\ottrin native job 4132 1793862510075609600\\\\profile with spaces\\\\descendant.pid\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nOffice child failed Timeout: Native fixture cancel: strict_handle_query=1, strict_handles=0x3, NUL_read=Ok(()), NUL_write=Ok(()), executable_read=Ok(())\n\n\nthread \u0027native_job_cancellation_kills_parent_and_descendant\u0027 (8732) panicked at crates/ottrin-preview/tests/windows_job_native.rs:97:40:\nnative fixture must release all private files: Os { code: 5, kind: PermissionDenied, message: \"Access is denied.\" }\nstack backtrace:\n   0:     0x7ff7ebd5d5d9 - \u003cstd::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display\u003e::fmt::ha4a044c8b67b450d\n   1:     0x7ff7ebd8d511 - core::fmt::write::h1574bcc7d6e6dd31\n   2:     0x7ff7ebd12da5 - std::io::Write::write_fmt::h18e104f41a5a4364\n   3:     0x7ff7ebd3264f - std::panicking::default_hook::{{closure}}::hdb36a472b11443d7\n   4:     0x7ff7ebd324b9 - std::panicking::default_hook::he515e27fd7c2462c\n   5:     0x7ff7ebd32a1a - std::panicking::panic_with_hook::ha57fcb9b212aee15\n   6:     0x7ff7ebd3271d - std::panicking::panic_handler::{{closure}}::h3c457668506f6c77\n   7:     0x7ff7ebd2a5af - std::sys::backtrace::__rust_end_short_backtrace::h7a40a0bc58e1ddc8\n   8:     0x7ff7ebd0a5ae - __rustc[4425a7e20b4c8619]::rust_begin_unwind\n   9:     0x7ff7ebd9c0cd - core::panicking::panic_fmt::h69476444b3c5e641\n  10:     0x7ff7ebd9ade7 - core::result::unwrap_failed::h1fc2e69d84c463c8\n  11:     0x7ff7ea3b253b - core::ptr::drop_in_place\u003cwindows_job_native::Fixture\u003e::hd6e5281220087021\n  12:     0x7ff7ea3b7567 - core::ops::function::FnOnce::call_once::h5bafd78d07c5da9c\n  13:     0x7ff7ea3dd3d0 - test::__rust_begin_short_backtrace::ha50ff4749fc4655f\n  14:     0x7ff7ea3f1d47 - test::run_test::{{closure}}::h022320b46fa7733e\n  15:     0x7ff7ea3ca5bc - std::sys::backtrace::__rust_begin_short_backtrace::h4653304d9fddc365\n  16:     0x7ff7ea3cdd84 - core::ops::function::FnOnce::call_once{{vtable.shim}}::h1f9189c2d245e9bb\n  17:     0x7ff7ebd2355e - std::sys::thread::windows::Thread::new::thread_start::hcf21ef992aa0a375\n  18:     0x7ffd8933cd87 - \u003cunknown\u003e\n  19:     0x7ffd8aeacaec - \u003cunknown\u003e\n\nthread \u0027native_job_cancellation_kills_parent_and_descendant\u0027 (8732) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\\core\\src\\panicking.rs:233:5:\npanic in a destructor during cleanup\nthread caused non-unwinding panic. aborting.\n",
+                     "all_ten_pass":  false,
+                     "exit":  -1073740791
+                 }
+             ]
+}
+run-1.stdout.txt
+test native_job_enforces_output_budget ... ok
+test native_job_enforces_memory_and_process_limits ... ok
+test native_job_enforces_aggregate_memory_across_descendants ... ok
+test native_job_restricts_inherited_handles ... ok
+test native_job_isolates_ipc_pipe_namespace ... ok
+test native_job_timeout_kills_descendant_after_parent_exit ... ok
+
+failures:
+
+failures:
+    native_job_cancellation_kills_parent_and_descendant
+
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 86.88s
+
+run-1.stderr.txt
+
+thread 'native_job_cancellation_kills_parent_and_descendant' (1460) panicked at crates/ottrin-preview/tests/windows_job_native.rs:329:9:
+fixture did not publish its PID: "C:\\Users\\OTMSI4~1\\AppData\\Local\\Temp\\ottrin native job 9988 1793862421925586100\\profile with spaces\\descendant.pid"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Office child failed Timeout: Native fixture cancel: strict_handle_query=1, strict_handles=0x3, NUL_read=Ok(()), NUL_write=Ok(()), executable_read=Ok(())
+
+Office child failed Timeout: Native fixture descendant: strict_handle_query=1, strict_handles=0x3, NUL_read=Ok(()), NUL_write=Ok(()), executable_read=Ok(())
+
+[
+    {
+        "Moniker":  "ottrin.office.4132.1793862524754701100"
+    },
+    {
+        "Moniker":  "ottrin.office.4132.1793862524421971800"
+    },
+    {
+        "Moniker":  "ottrin.office.6908.1793862531559661400"
+    },
+    {
+        "Moniker":  "ottrin.office.6908.1793862541715494800"
+    },
+    {
+        "Moniker":  "ottrin.office.6908.1793862539137638100"
+    }
+]
+[
+    {
+        "Name":  "AppReadiness",
+        "Status":  4
+    },
+    {
+        "Name":  "AppXSvc",
+        "Status":  4
+    },
+    {
+        "Name":  "ProfSvc",
+        "Status":  4
+    },
+    {
+        "Name":  "StateRepository",
+        "Status":  4
+    }
+]

@@ -1,0 +1,6 @@
+{
+  "at": "2026-11-05T06:03:45.056648+00:00",
+  "pid": 2687388,
+  "reason": "Stop the known oversized diagnostic input before treating timing as runtime evidence; 426 MB GNU debug PE is copied per test. Producer will stage debug-stripped bytes with original hash, entry point and executable section equality proof. Not an observation timeout or inferred process failure.",
+  "scope": "Owned serial diagnostic VM only; registered driver teardown owns export, process, console and disk cleanup"
+}

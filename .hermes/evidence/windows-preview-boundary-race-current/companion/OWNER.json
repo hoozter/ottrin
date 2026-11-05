@@ -1,0 +1,148 @@
+{
+  "domain": "ottrin-boundary-client",
+  "uuid": "c5d94a7a-e6b2-48fe-9427-8f7d821738ad",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-boundary-client-fixture.iso",
+    "ottrin-boundary-client.qcow2"
+  ],
+  "status": "control finished; inspect exact result, not assumed pass",
+  "public_compiler_cache": null,
+  "scope": "Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance",
+  "producer_sha256": "f9e8a6561aeedff1b257136b957d772e9545c557d744abdf7112e5bfbea08830",
+  "storage_at_start": {
+    "available_bytes": 31335677952,
+    "minimum_headroom_bytes": 25769803776,
+    "path": "/var/lib/libvirt/images"
+  },
+  "uploaded_host_iso_removed_bytes": 57055232,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "absolute_pointer": "Clone-only virtual tablet present at boot; no host device passthrough",
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "privacy_control_sha256": "958e1ad3b0890090ae1863987666759697958a25cfd95d03499a0c9f54a3f848",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 2695755,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-ek5kibj9/home"
+  },
+  "guest_pid": 1532,
+  "guest_observation_interruption": {
+    "pid": 4672,
+    "error": "guest-exec-status failed for ottrin-boundary-client: error: Guest agent is not responding: QEMU guest agent is not connected",
+    "process_restarted": false
+  },
+  "desktop_observer_pid": 2696968,
+  "actor_observation": {
+    "status": "pass",
+    "phase": "three concurrent and three serial boundary runs completed",
+    "runs": [
+      {
+        "threads": 4,
+        "run": 1,
+        "exit": 0,
+        "all_ten_pass": true
+      },
+      {
+        "threads": 4,
+        "run": 2,
+        "exit": 0,
+        "all_ten_pass": true
+      },
+      {
+        "threads": 4,
+        "run": 3,
+        "exit": 0,
+        "all_ten_pass": true
+      },
+      {
+        "threads": 1,
+        "run": 1,
+        "exit": 0,
+        "all_ten_pass": true
+      },
+      {
+        "threads": 1,
+        "run": 2,
+        "exit": 0,
+        "all_ten_pass": true
+      },
+      {
+        "threads": 1,
+        "run": 3,
+        "exit": 0,
+        "all_ten_pass": true
+      }
+    ]
+  },
+  "checked_backing_chains": [
+    {
+      "retained_domain": "ottrin-copy-cleanup-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-index-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-qa-20261011",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "win11ltsc",
+      "files": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-boundary-client-fixture.iso",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-boundary-client-fixture.iso"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-boundary-client.qcow2",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-boundary-client.qcow2",
+        "/var/lib/libvirt/images/ottrin-stock-client.qcow2"
+      ]
+    }
+  ],
+  "owned_volume_allocations_before_removal": [
+    {
+      "volume": "ottrin-boundary-client-fixture.iso",
+      "allocated_bytes": 57061376,
+      "virtual_capacity_bytes": 57055232
+    },
+    {
+      "volume": "ottrin-boundary-client.qcow2",
+      "allocated_bytes": 7816159232,
+      "virtual_capacity_bytes": 68719476736
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

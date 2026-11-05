@@ -1,0 +1,6 @@
+{
+  "source_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+  "test_sha256": "6a5224c21280624bf0cd2a045cddfe6e8edd243b8fdc53878a35ce29a4222240",
+  "actor_sha256": "ddcb797fce36285b1a52bf6e4667d5546002ea08b60fa513ddb78dbebd36f34a",
+  "scope": "Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance"
+}

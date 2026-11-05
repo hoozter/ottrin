@@ -1,0 +1,40 @@
+{
+  "source_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-ca2a23aaefb4cf34.exe",
+  "sha256": "6a5224c21280624bf0cd2a045cddfe6e8edd243b8fdc53878a35ce29a4222240",
+  "compiler_artifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///home/campbell/Projects/Ottrin/crates/ottrin-preview#0.1.0",
+    "manifest_path": "/home/campbell/Projects/Ottrin/crates/ottrin-preview/Cargo.toml",
+    "target": {
+      "kind": [
+        "test"
+      ],
+      "crate_types": [
+        "bin"
+      ],
+      "name": "windows_job_native",
+      "src_path": "/home/campbell/Projects/Ottrin/crates/ottrin-preview/tests/windows_job_native.rs",
+      "edition": "2024",
+      "doc": false,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "1",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "features": [
+      "default"
+    ],
+    "filenames": [
+      "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-ca2a23aaefb4cf34.exe"
+    ],
+    "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-ca2a23aaefb4cf34.exe",
+    "fresh": false
+  },
+  "purpose": "Reproduce hosted ordinary-user AppContainer failures without changing the product or skipping tests"
+}

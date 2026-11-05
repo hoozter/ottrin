@@ -9,25 +9,17 @@ use ottrin_preview::{
 use std::fs;
 use std::os::windows::io::AsRawHandle;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+#[path = "fixtures/windows_job_common.rs"]
+mod common;
+use common::{current_process_has_handle, pipe_creation_error};
 use windows_sys::Win32::Foundation::{
-    CloseHandle, ERROR_NO_MORE_ITEMS, GetLastError, HANDLE, HANDLE_FLAG_INHERIT,
-    INVALID_HANDLE_VALUE, SetHandleInformation, WAIT_OBJECT_0, WAIT_TIMEOUT,
-};
-use windows_sys::Win32::Storage::FileSystem::{FILE_FLAG_OVERLAPPED, PIPE_ACCESS_DUPLEX};
-use windows_sys::Win32::System::Diagnostics::ProcessSnapshotting::{
-    HPSS, HPSSWALK, PSS_CAPTURE_HANDLES, PSS_HANDLE_ENTRY, PSS_WALK_HANDLES, PssCaptureSnapshot,
-    PssFreeSnapshot, PssWalkMarkerCreate, PssWalkMarkerFree, PssWalkSnapshot,
-};
-use windows_sys::Win32::System::JobObjects::IsProcessInJob;
-use windows_sys::Win32::System::Pipes::{
-    CreateNamedPipeW, PIPE_READMODE_MESSAGE, PIPE_TYPE_MESSAGE, PIPE_UNLIMITED_INSTANCES,
+    CloseHandle, HANDLE, HANDLE_FLAG_INHERIT, SetHandleInformation, WAIT_OBJECT_0, WAIT_TIMEOUT,
 };
 use windows_sys::Win32::System::Threading::{
-    GetCurrentProcess, GetProcessMitigationPolicy, OpenProcess, PROCESS_SYNCHRONIZE,
-    ProcessStrictHandleCheckPolicy, WaitForSingleObject,
+    OpenProcess, PROCESS_SYNCHRONIZE, WaitForSingleObject,
 };
 
 struct Fixture {
@@ -51,9 +43,7 @@ impl Fixture {
             root,
             request: IsolatedProcessRequest {
                 executable: profile.join("fixture.exe"),
-                arguments: ["--exact", "fixture_root", "--ignored", "--nocapture"]
-                    .map(Into::into)
-                    .to_vec(),
+                arguments: ["root"].map(Into::into).to_vec(),
                 input: None,
                 private_profile_dir: profile.clone(),
                 private_output_dir: output.clone(),
@@ -65,10 +55,18 @@ impl Fixture {
         };
         fs::create_dir(&profile).unwrap();
         fs::create_dir(&output).unwrap();
-        // Descendants need an executable inside the same private access policy.
+        // Copy the small standalone actor, not this preview-linked test harness.
+        // Descendants use that same executable under the private access policy.
         // Copy bytes into a new file without inheriting the build artifact's ACL.
         std::io::copy(
-            &mut fs::File::open(std::env::current_exe().unwrap()).unwrap(),
+            &mut fs::File::open(
+                std::env::var_os("OTTRIN_NATIVE_JOB_FIXTURE")
+                    .map(PathBuf::from)
+                    .unwrap_or_else(|| {
+                        PathBuf::from(env!("CARGO_BIN_EXE_ottrin-native-job-fixture"))
+                    }),
+            )
+            .unwrap(),
             &mut fs::File::create(&fixture.request.executable).unwrap(),
         )
         .unwrap();
@@ -95,179 +93,6 @@ impl Fixture {
 impl Drop for Fixture {
     fn drop(&mut self) {
         fs::remove_dir_all(&self.root).expect("native fixture must release all private files");
-    }
-}
-
-#[test]
-#[ignore = "subprocess fixture selected explicitly by native_job tests"]
-fn fixture_root() {
-    let mode = fs::read_to_string("mode").unwrap();
-    let output = PathBuf::from(fs::read_to_string("output-dir").unwrap());
-    let mut in_job = 0;
-    // SAFETY: current-process pseudo handle and writable Boolean output.
-    assert_ne!(
-        unsafe { IsProcessInJob(GetCurrentProcess(), std::ptr::null_mut(), &mut in_job) },
-        0
-    );
-    assert_ne!(in_job, 0, "the fixture must start inside the Job Object");
-    let mut strict_handles = 0_u32;
-    // SAFETY: the documented strict-handle policy is a single DWORD. This is a
-    // read-only diagnostic; the fixture never changes process mitigations.
-    let mitigation_read = unsafe {
-        GetProcessMitigationPolicy(
-            GetCurrentProcess(),
-            ProcessStrictHandleCheckPolicy,
-            (&mut strict_handles as *mut u32).cast(),
-            std::mem::size_of::<u32>(),
-        )
-    };
-    eprintln!(
-        "Native fixture {mode}: strict_handle_query={mitigation_read}, strict_handles={strict_handles:#x}, NUL_read={:?}, NUL_write={:?}, executable_read={:?}",
-        fs::File::open("NUL").map(|_| ()),
-        fs::OpenOptions::new().write(true).open("NUL").map(|_| ()),
-        fs::File::open(std::env::current_exe().unwrap()).map(|_| ()),
-    );
-    match mode.as_str() {
-        "ipc" => {
-            let errors = [pipe_creation_error(""), pipe_creation_error("LOCAL\\")];
-            fs::write(output.join("ipc-errors"), format!("{errors:?}")).unwrap();
-        }
-        "containment" => {
-            let outside = PathBuf::from(fs::read_to_string("outside-file").unwrap());
-            let input = PathBuf::from(std::env::args().next_back().unwrap());
-            let address: std::net::SocketAddr =
-                fs::read_to_string("listener").unwrap().parse().unwrap();
-            let flags = [
-                fs::read(&outside).is_ok(),
-                fs::OpenOptions::new().write(true).open(&input).is_ok(),
-                std::net::TcpStream::connect_timeout(&address, Duration::from_secs(1)).is_ok(),
-            ];
-            fs::write(output.join("access-results"), flags.map(u8::from)).unwrap();
-            assert_eq!(fs::read(&input).unwrap(), b"admitted fixture");
-        }
-        "environment" => {
-            for key in ["OTTRIN_NATIVE_JOB_SECRET", "PYTHONHOME", "HTTP_PROXY"] {
-                if std::env::var_os(key).is_some() {
-                    fs::write(output.join("environment-leak"), key).unwrap();
-                    return;
-                }
-            }
-            let profile = std::env::current_dir().unwrap();
-            for key in [
-                "TEMP",
-                "TMP",
-                "HOME",
-                "USERPROFILE",
-                "APPDATA",
-                "LOCALAPPDATA",
-            ] {
-                let path = PathBuf::from(std::env::var_os(key).unwrap());
-                assert!(path.starts_with(&profile), "{key} escaped private profile");
-                assert!(path.is_dir(), "{key} does not name a usable directory");
-                let probe = path.join(format!("environment-write-{key}"));
-                fs::write(&probe, b"private environment fixture").unwrap();
-                fs::remove_file(probe).unwrap();
-            }
-            assert!(
-                !std::env::var_os("PATH")
-                    .unwrap()
-                    .to_string_lossy()
-                    .contains("untrusted-bin")
-            );
-            assert!(PathBuf::from(std::env::var_os("SystemRoot").unwrap()).is_dir());
-            fs::write(output.join("environment-restricted"), b"yes").unwrap();
-        }
-        "normal" => {
-            println!("native stdout marker");
-            eprintln!("native stderr marker");
-            fs::write(output.join("result"), b"fixture output").unwrap();
-        }
-        "descendant" | "cancel" | "process-limit" => {
-            let child = Command::new(std::env::current_exe().unwrap())
-                .args(["--exact", "fixture_descendant", "--ignored", "--nocapture"])
-                // NUL is not an admitted file inside every AppContainer.
-                // Reuse the broker's already admitted, bounded standard I/O.
-                .stdin(Stdio::inherit())
-                .stdout(Stdio::inherit())
-                .stderr(Stdio::inherit())
-                .spawn();
-            if mode == "process-limit" {
-                assert!(
-                    child.is_err(),
-                    "active-process limit must reject the descendant"
-                );
-                fs::write(output.join("limit-enforced"), b"process").unwrap();
-            } else {
-                let child = child.unwrap();
-                fs::write("descendant.pid", child.id().to_string()).unwrap();
-                fs::write("parent.pid", std::process::id().to_string()).unwrap();
-                // Deliberately leave the descendant alive when the parent exits.
-                if mode == "cancel" {
-                    std::thread::sleep(Duration::from_secs(60));
-                }
-                // Exit the fixture parent explicitly: waiting here would hide
-                // the orphan-descendant lifetime that this test must exercise.
-                std::process::exit(0);
-            }
-        }
-        "within-memory-limit" | "aggregate-memory" => {
-            let mut allocation = Vec::<u8>::new();
-            allocation.try_reserve_exact(32 * 1024 * 1024).unwrap();
-            if mode == "aggregate-memory" {
-                let status = Command::new(std::env::current_exe().unwrap())
-                    .args(["--exact", "fixture_descendant", "--ignored", "--nocapture"])
-                    .stdin(Stdio::inherit())
-                    .stdout(Stdio::inherit())
-                    .stderr(Stdio::inherit())
-                    .status()
-                    .unwrap();
-                assert!(
-                    status.success(),
-                    "aggregate-memory child must report its allocation result"
-                );
-            } else {
-                fs::write(output.join("within-memory-limit"), b"allowed").unwrap();
-            }
-            std::hint::black_box(&allocation);
-        }
-        "memory-limit" => {
-            let mut allocation = Vec::<u8>::new();
-            assert!(
-                allocation.try_reserve_exact(128 * 1024 * 1024).is_err(),
-                "process memory limit must reject allocation"
-            );
-            fs::write(output.join("limit-enforced"), b"memory").unwrap();
-        }
-        "inheritance" => {
-            let raw: usize = fs::read_to_string("unrelated-handle")
-                .unwrap()
-                .parse()
-                .unwrap();
-            // Query the valid handle table, not an invalid handle: Windows'
-            // permanent strict-handle policy raises an exception for the latter.
-            assert!(
-                !current_process_has_handle(raw as HANDLE),
-                "unrelated inheritable parent handle must not reach the provider"
-            );
-            fs::write(output.join("handle-restricted"), b"yes").unwrap();
-        }
-        _ => panic!("unknown fixture mode"),
-    }
-}
-
-#[test]
-#[ignore = "subprocess fixture selected explicitly by fixture_root"]
-fn fixture_descendant() {
-    if fs::read_to_string("mode").unwrap() == "aggregate-memory" {
-        let mut allocation = Vec::<u8>::new();
-        assert!(
-            allocation.try_reserve_exact(32 * 1024 * 1024).is_err(),
-            "the combined parent/child allocation must exceed the job limit"
-        );
-        let output = PathBuf::from(fs::read_to_string("output-dir").unwrap());
-        fs::write(output.join("aggregate-memory-limit"), b"denied").unwrap();
-    } else {
-        std::thread::sleep(Duration::from_secs(60));
     }
 }
 
@@ -435,65 +260,6 @@ fn native_job_enforces_aggregate_memory_across_descendants() {
     }
 }
 
-/// Inspect our own valid handle table without triggering strict invalid-handle
-/// exceptions. PSS_CAPTURE_HANDLES does not clone the process or capture memory.
-fn current_process_has_handle(expected: HANDLE) -> bool {
-    struct Snapshot {
-        capture: HPSS,
-        walk: HPSSWALK,
-    }
-    impl Drop for Snapshot {
-        fn drop(&mut self) {
-            // SAFETY: both handles are uniquely owned PSS objects from this call.
-            unsafe {
-                if !self.walk.is_null() {
-                    assert_eq!(PssWalkMarkerFree(self.walk), 0);
-                }
-                if !self.capture.is_null() {
-                    assert_eq!(PssFreeSnapshot(GetCurrentProcess(), self.capture), 0);
-                }
-            }
-        }
-    }
-    let mut snapshot = Snapshot {
-        capture: std::ptr::null_mut(),
-        walk: std::ptr::null_mut(),
-    };
-    // SAFETY: current process and writable PSS outputs; no foreign handles queried.
-    unsafe {
-        assert_eq!(
-            PssCaptureSnapshot(
-                GetCurrentProcess(),
-                PSS_CAPTURE_HANDLES,
-                0,
-                &mut snapshot.capture
-            ),
-            0
-        );
-        assert_eq!(PssWalkMarkerCreate(std::ptr::null(), &mut snapshot.walk), 0);
-    }
-    loop {
-        let mut entry = PSS_HANDLE_ENTRY::default();
-        // SAFETY: live snapshot/marker and the correctly sized output structure.
-        let result = unsafe {
-            PssWalkSnapshot(
-                snapshot.capture,
-                PSS_WALK_HANDLES,
-                snapshot.walk,
-                (&mut entry as *mut PSS_HANDLE_ENTRY).cast(),
-                std::mem::size_of::<PSS_HANDLE_ENTRY>() as u32,
-            )
-        };
-        if result == ERROR_NO_MORE_ITEMS {
-            return false;
-        }
-        assert_eq!(result, 0, "Current-process handle snapshot failed");
-        if entry.Handle == expected {
-            return true;
-        }
-    }
-}
-
 #[test]
 fn native_job_restricts_inherited_handles() {
     let f = Fixture::new("inheritance");
@@ -616,37 +382,6 @@ fn native_job_denies_private_files_source_writes_and_network() {
     assert_eq!(fs::read(&input).unwrap(), b"admitted fixture");
     assert_eq!(fs::read(&outside).unwrap(), b"private fixture");
     f.assert_logs_removed();
-}
-
-fn pipe_creation_error(namespace: &str) -> u32 {
-    let name: Vec<u16> = format!(
-        r"\\.\pipe\{namespace}Ottrin-Office-fixture-{}",
-        std::process::id()
-    )
-    .encode_utf16()
-    .chain(Some(0))
-    .collect();
-    // SAFETY: the unique pipe name is live and NUL-terminated; no client connects.
-    let handle = unsafe {
-        CreateNamedPipeW(
-            name.as_ptr(),
-            PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE,
-            PIPE_UNLIMITED_INSTANCES,
-            4096,
-            4096,
-            0,
-            std::ptr::null(),
-        )
-    };
-    if handle == INVALID_HANDLE_VALUE {
-        unsafe { GetLastError() }
-    } else {
-        unsafe {
-            CloseHandle(handle);
-        }
-        0
-    }
 }
 
 #[test]

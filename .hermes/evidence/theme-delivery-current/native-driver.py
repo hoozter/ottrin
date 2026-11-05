@@ -4,19 +4,21 @@ from contextlib import ExitStack
 import argparse, base64, re, hashlib, importlib.util, json, os, shutil, signal, subprocess, sys, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-helper',type=Path);parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);parser.add_argument('--display-resolution',choices=['2560x1600']);parser.add_argument('--display-driver',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-helper',type=Path);parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);parser.add_argument('--application-native-test',type=Path);parser.add_argument('--boundary-fixture',type=Path);parser.add_argument('--display-resolution',choices=['2560x1600']);parser.add_argument('--display-driver',type=Path);args=parser.parse_args()
 assert not args.office_worksheet or args.office_installed,'Worksheet surface requires the installed Office fixture'
 assert not args.office_installed or (args.application_nsis_stage and args.output and not args.use_stock_base and not args.use_updated_base),'Installed Office uses its exact declared retained-provider clone'
-assert not args.application_actor or (args.application_nsis_stage and args.use_stock_base and args.output and not args.office_installed),'Explicit actor requires a receipt-bound package and stock-client case'
+assert not args.application_actor or ((args.application_nsis_stage or args.application_native_test) and args.use_stock_base and args.output and not args.office_installed),'Explicit actor requires a receipt-bound package and stock-client case'
 assert not args.display_resolution or args.application_actor,'Explicit virtual resolution requires an owned stock-client application actor'
 assert not args.display_driver or (args.display_resolution and args.application_actor),'Display driver setup is only for an explicitly configured owned application clone'
 assert not args.application_actor or (args.application_actor.is_file() and not args.application_actor.is_symlink()),'Actor must be a regular reviewable input'
-application_case=bool(args.application_msi or args.application_nsis_stage or args.application_uia_stage)
+application_case=bool(args.application_msi or args.application_nsis_stage or args.application_uia_stage or args.application_native_test)
 assert not args.native_transport_probe or (args.use_stock_base and args.output and not any([application_case,args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'Transport probe requires an isolated stock case'
-assert sum(map(bool,[args.application_msi,args.application_nsis_stage,args.application_uia_stage]))<=1
+assert sum(map(bool,[args.application_msi,args.application_nsis_stage,args.application_uia_stage,args.application_native_test]))<=1
 assert not args.application_uia_stage or (args.use_stock_base and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), "UIAutomation requires its own stock ordinary-user case"
 assert not args.application_nsis_stage or ((args.use_stock_base or args.office_installed) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'NSIS requires its own stock ordinary-user case'
 assert not args.application_msi or ((args.use_stock_base or args.use_updated_base) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])),'Application MSI requires a fresh declared stock or prepared updated ordinary-user case'
+assert not args.boundary_fixture or args.application_native_test
+assert not args.application_native_test or (args.boundary_fixture and args.use_stock_base and args.output and args.application_actor and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test,args.native_helper])), 'Native boundary test requires an explicit isolated ordinary-user actor'
 assert not args.native_elevated or args.native_msi_builder,'Elevated diagnostic requires the native file-only builder; never an application deployment mode'
 assert not args.native_helper or (args.native_test and args.test_filter=='windows_privileged_transport::tests::windows_helper_pipe_'), 'Helper input only supports the explicit production-helper test'
 assert not args.test_filter or args.native_test
@@ -38,7 +40,7 @@ if interactive_case:
  assert helper.is_file() and not helper.is_symlink(), f'Missing owned interactive controller: {helper}'
 e.mkdir(parents=True,exist_ok=True)
 (e/'DRIVER_SOURCE.py').write_bytes(Path(__file__).read_bytes())
-name='ottrin-uia-client' if args.application_uia_stage else 'ottrin-transport-probe' if args.native_transport_probe else 'ottrin-nsis-client' if args.application_nsis_stage else 'ottrin-native-test' if args.native_test else 'ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
+name='ottrin-boundary-client' if args.application_native_test else 'ottrin-uia-client' if args.application_uia_stage else 'ottrin-transport-probe' if args.native_transport_probe else 'ottrin-nsis-client' if args.application_nsis_stage else 'ottrin-native-test' if args.native_test else 'ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
 def virsh(*args):return subprocess.check_output(['virsh','-c','qemu:///system',*args],text=True).strip()
 def save(n,data):(e/n).write_text(json.dumps(data,indent=2)+'\n')
 def nsis_input(stage):
@@ -79,6 +81,7 @@ if args.application_msi:scope='Exact held diagnostic Ottrin MSI ordinary-user in
 if args.native_elevated:scope='Diagnostic elevated owned QA account, same native file-only MSI authoring. No ordinary-user acceptance, Ottrin executable, security-policy change or original profile mutation.'
 if args.office_installed:scope='Current NSIS installed Office main/Inspector render and fallback on ordinary native WGPU/OpenGL; private clone of retained verified-provider QA base, not a clean stock installation'
 if args.application_actor:scope='Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance.'
+if args.application_native_test:scope='Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
 if args.office_installed:
  assert virsh('domstate','ottrin-copy-cleanup-qa')=='shut off' and virsh('domuuid','ottrin-copy-cleanup-qa')=='9b2e795f-fb04-4adb-95a7-8832f8894c67'
@@ -306,6 +309,38 @@ with ExitStack() as stack:
    shutil.copy2(r/'.hermes/evidence/desktop-package-current/windows/gui/NATIVE_CONTROLS_INPUT.ps1',fixture/'native-controls.ps1')
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
+  if args.application_native_test:
+   executable=args.application_native_test.resolve();assert executable.parent==r/'target/x86_64-pc-windows-gnu/debug/deps' and re.fullmatch(r'windows_job_native-[0-9a-f]{16}\.exe',executable.name) and not args.application_native_test.is_symlink()
+   with executable.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+   # GNU embeds debug sections in the executable; copying hundreds of MB per
+   # case changes the test workload. Retain the canonical compiler output and
+   # stage only a verified debug-stripped executable, as MSVC stores PDBs apart.
+   import mmap,struct
+   def executable_text(path):
+    with path.open('rb') as stream,mmap.mmap(stream.fileno(),0,access=mmap.ACCESS_READ) as data:
+     assert data[:2]==b'MZ';pe=struct.unpack_from('<I',data,60)[0];assert data[pe:pe+4]==b'PE\0\0'
+     count=struct.unpack_from('<H',data,pe+6)[0];optional=pe+24;assert struct.unpack_from('<H',data,optional)[0]==0x20b
+     entry=struct.unpack_from('<I',data,optional+16)[0];sections=optional+struct.unpack_from('<H',data,pe+20)[0]
+     rows=[]
+     for index in range(count):
+      at=sections+index*40
+      if data[at:at+8].rstrip(b'\0')==b'.text':
+       size,offset=struct.unpack_from('<II',data,at+16);rows.append({'entry_rva':entry,'bytes':size,'sha256':hashlib.sha256(data[offset:offset+size]).hexdigest()})
+     assert len(rows)==1;return rows[0]
+   staged=fixture/'boundary-test.exe';subprocess.run(['x86_64-w64-mingw32-strip','--strip-debug','-o',str(staged),str(executable)],check=True)
+   code_identity=executable_text(executable);assert executable_text(staged)==code_identity,'Debug stripping changed executable code or its entry point'
+   original_digest=digest
+   with staged.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+   identity={'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'source_test_sha256':original_digest,'test_sha256':digest,'source_bytes':executable.stat().st_size,'staged_bytes':staged.stat().st_size,'strip_command':['x86_64-w64-mingw32-strip','--strip-debug'],'unchanged_executable_text':code_identity,'actor_sha256':hashlib.sha256(args.application_actor.read_bytes()).hexdigest(),'scope':scope}
+   companion=args.boundary_fixture.resolve();assert companion==r/'target/x86_64-pc-windows-gnu/debug/ottrin-native-job-fixture.exe' and not args.boundary_fixture.is_symlink()
+   staged_companion=fixture/'boundary-fixture.exe';subprocess.run(['x86_64-w64-mingw32-strip','--strip-debug','-o',str(staged_companion),str(companion)],check=True)
+   companion_code=executable_text(companion);assert executable_text(staged_companion)==companion_code
+   with companion.open('rb') as stream:companion_source_sha=hashlib.file_digest(stream,'sha256').hexdigest()
+   with staged_companion.open('rb') as stream:companion_sha=hashlib.file_digest(stream,'sha256').hexdigest()
+   identity['fixture']={'source_sha256':companion_source_sha,'sha256':companion_sha,'source_bytes':companion.stat().st_size,'staged_bytes':staged_companion.stat().st_size,'unchanged_executable_text':companion_code}
+   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity);application_files=['boundary-test.exe','boundary-fixture.exe','application-input.json']
+   start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
+   script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
   if args.application_nsis_stage and args.application_actor:
    stage=args.application_nsis_stage.resolve();revision,artifacts,payload=nsis_input(args.application_nsis_stage)
    setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';digest=hashlib.sha256(setup.read_bytes()).hexdigest();assert digest==artifacts[setup.name];os.link(setup,fixture/'current-setup.exe')
@@ -341,13 +376,13 @@ with ExitStack() as stack:
    application_files=['uia.zip','uia-input.json','config-template.json','native-controls.ps1'];save('APPLICATION_INPUT.json',identity)
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
-  if args.application_nsis_stage or args.application_uia_stage:
+  if args.application_nsis_stage or args.application_uia_stage or args.application_native_test:
    marker=" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1') (Join-Path $root 'actor.ps1')"
    assert marker in script
    script=script.replace(marker,marker+"\n $tokens=$null;$parseErrors=$null;$null=[Management.Automation.Language.Parser]::ParseFile((Join-Path $root 'actor.ps1'),[ref]$tokens,[ref]$parseErrors);if($parseErrors.Count){throw ($parseErrors|Out-String)}")
   (fixture/'controller.ps1').write_text(script);shutil.copy2(fixture/'controller.ps1',e/'controller.ps1');shutil.copy2(fixture/'actor.ps1',e/'actor.ps1')
   iso_inputs=[fixture/n for n in (['native-build.ps1','actor.ps1','controller.ps1'] if args.native_msi_builder else ['runtime.zip','wix.zip','pins.json','actor.ps1','controller.ps1'])]
-  if args.application_nsis_stage or args.application_uia_stage:iso_inputs=[fixture/n for n in ['actor.ps1','controller.ps1',*application_files]]
+  if args.application_nsis_stage or args.application_uia_stage or args.application_native_test:iso_inputs=[fixture/n for n in ['actor.ps1','controller.ps1',*application_files]]
   if args.application_msi:iso_inputs=[fixture/n for n in ['actor.ps1','controller.ps1','application.msi','application-input.json','payload.json','config-template.json']]
   if (fixture/'failure.dll').exists():iso_inputs.append(fixture/'failure.dll')
   if args.update_manifest:
@@ -576,7 +611,7 @@ with ExitStack() as stack:
  prepared=ps("Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw",30)
  owner=json.loads(base64.b64decode(prepared['out-data']).decode('utf-8-sig'));assert owner['status']=='prepared';save('GUEST_PREPARATION.json',owner)
  reboot_owned_guest();state['status']='waiting for owned interactive actor after reboot';save('OWNER.json',state)
- if args.application_uia_stage or args.application_nsis_stage:
+ if args.application_uia_stage or args.application_nsis_stage or args.application_native_test:
   # Observe the fresh owned desktop promptly; actor ownership/nonce checks stay
   # unchanged. Register cancellation before the observer can allocate work.
   observer_log=stack.enter_context((e/'readiness.log').open('w'))
@@ -591,6 +626,10 @@ with ExitStack() as stack:
    result=ps("$p='"+owner['root']+"\\results\\RESULT.json';if(Test-Path $p){$s=[IO.File]::Open($p,'Open','Read',([IO.FileShare]::ReadWrite-bor[IO.FileShare]::Delete));$r=[IO.StreamReader]::new($s);try{$r.ReadToEnd()}finally{$r.Dispose()}}else{'{}'}",20)
    if result.get('exitcode')==0:
     actor_result=json.loads(base64.b64decode(result.get('out-data','e30=')).decode('utf-8-sig'))
+    observation={k:actor_result[k] for k in ['status','phase','error'] if k in actor_result}
+    if isinstance(actor_result.get('runs'),list):observation['runs']=[{k:run[k] for k in ['threads','run','exit','all_ten_pass'] if k in run} for run in actor_result['runs']]
+    if observation and observation!=state.get('actor_observation'):
+     state['actor_observation']=observation;save('OWNER.json',state)
     if actor_result.get('status') not in [None,'running']:break
   except (RuntimeError,TimeoutError,json.JSONDecodeError):pass
   assert time.monotonic()<deadline,'Interactive actor did not finish'

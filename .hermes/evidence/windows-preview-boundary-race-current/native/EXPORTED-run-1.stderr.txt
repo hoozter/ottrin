@@ -1,0 +1,4 @@
+
+thread 'native_job_cancellation_kills_parent_and_descendant' (8104) panicked at crates/ottrin-preview/tests/windows_job_native.rs:329:9:
+fixture did not publish its PID: "C:\\Users\\OTMSIB~1\\AppData\\Local\\Temp\\ottrin native job 6048 1793861810921275000\\profile with spaces\\descendant.pid"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

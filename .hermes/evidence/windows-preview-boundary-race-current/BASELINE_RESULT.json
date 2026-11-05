@@ -1,0 +1,27 @@
+{
+  "status": "reproduced native boundary timeout; not accepted",
+  "product_source_revision": "b176d25399aa31ce69bad9a8530608059d0fad00",
+  "test_sha256": "6a5224c21280624bf0cd2a045cddfe6e8edd243b8fdc53878a35ce29a4222240",
+  "identity": {
+    "profile": "C:\\Users\\OTMSIb7769a64409b",
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "error": "Native boundary run 1 timed out",
+  "scope": "Fresh ordinary interactive account on stock Windows client, four concurrent threads; not proof of the same root cause as hosted 0x8007000a",
+  "desktop_directly_reviewed": {
+    "path": "native/desktop-ready.png",
+    "sha256": "a34e61bf9e77c2c682c2f54f0b81f1dcdf898559f548ccf00e386faf35428c2f"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}
