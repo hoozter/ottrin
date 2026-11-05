@@ -1,0 +1,268 @@
+{
+  "members": [
+    {
+      "name": "ACTOR.json",
+      "bytes": 4516,
+      "sha256": "4a3f4eab560c1d6f95821dbbb3b4dc989ff8da0ba3ae5430ec6c9582e9cbdcf7",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "BEFORE_UPDATE.json",
+      "bytes": 12839,
+      "sha256": "ed78b0af287dca7d0031f1a90c34e202a709e1f1c86331655418376bd9c5b187",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-disabled.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-disabled.stdout",
+      "bytes": 67,
+      "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-enabled.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "checkbox-enabled.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "CRASH_EVENTS.json",
+      "bytes": 111,
+      "sha256": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DEPLOYMENT.json",
+      "bytes": 681,
+      "sha256": "a0121255334192e6579b1ee6cd978b7bd0d17abc7ff2d6ca489192c21b4d348f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "456ec12511c2f63ef43dfe6a1decc084e96dd13bd87ba2e858b83e41aec8ed31",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_WAITING.json",
+      "bytes": 303,
+      "sha256": "b15bdf6567a3ae15b1687d5c8e5fdfc0967d76a6a796f277d4c518b6e11c6f17",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "disabled-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "disabled-status.stdout",
+      "bytes": 67,
+      "sha256": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-status.json",
+      "bytes": 616,
+      "sha256": "758a3e4c036f8bb99b63c4c7b573191cad5137eb67d70161eac47d71f01cf4ed",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "login-index-status.json",
+      "bytes": 619,
+      "sha256": "713fe41354b674a8f725e9739e948641c3e0e96ac6b86d5949d19df0d0c966ec",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "login-index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "login-service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "login-service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "LOGIN.json",
+      "bytes": 1156,
+      "sha256": "e68d3c911bf4469bb76829315a711b9c9d1e98c7a0838244794c04b2c62f4ed4",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "main.png",
+      "bytes": 34929,
+      "sha256": "7b4a055e3544b3559b5765cebf7fff481300e4eb842af9baef0b41684ed561b9",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "msix-startup-disabled.png",
+      "bytes": 116045,
+      "sha256": "73275c15a7e4aa369ac55e805350cd000e49c3ab0353d259a8189d41dd2468c1",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "msix-startup-enabled.png",
+      "bytes": 115971,
+      "sha256": "62a463013bfa4c719215a8b8867bb0b80e445bce4f7df6e5f116e8c50137dde4",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "MSIX_CHECKBOX_TRACE.json",
+      "bytes": 2809,
+      "sha256": "5a7266961278b4710a8cc5e7c6f90eb585ff288b1754442b50831ddd03ee8c57",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "reenable.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "reenable.stdout",
+      "bytes": 93,
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "reenabled-index-status.json",
+      "bytes": 683,
+      "sha256": "a5c4f449a631493c0900475d8473857ca3997960d9fb3d30ecac459c133ae952",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "reenabled-index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 14674,
+      "sha256": "45a7f96949faf02dbd246769a40132cc500b62031954efa1806132a8cdb5075d",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-install.stdout",
+      "bytes": 93,
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-remove.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-remove.stdout",
+      "bytes": 81,
+      "sha256": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "STATE_READER_SMOKE.json",
+      "bytes": 249,
+      "sha256": "add31edbbdab6746778c0a517720f5fc932e5556882b56d7653709ca4611a4c5",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "UPDATE.json",
+      "bytes": 13363,
+      "sha256": "b4ffcddccc13dbc0cd235f5544bfc366a6f0f1f03eda3decebc345c3d6e3af8e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "updated-after-gui-service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "updated-after-gui-service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "updated-index-status.json",
+      "bytes": 619,
+      "sha256": "5da3e57cff77256801f846c3dfdb0e9eb9317f3afdb3dd3ece309e205e8f495b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "updated-index-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "updated-main.png",
+      "bytes": 34990,
+      "sha256": "f603b649f479f1f243fd1b42bd651c48abbb9dac19db9bedb5b2f5c10aff52e2",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "updated-service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "updated-service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "UPDATED.json",
+      "bytes": 1910,
+      "sha256": "0c4553dd192b3bf46fc5f4d830b263874937c10e2c4cde322bf884b0d42f9efd",
+      "private_bootstrap_not_extracted": false
+    }
+  ]
+}

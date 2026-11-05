@@ -1,0 +1,70 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/RESULTS.zip",
+          "bytes": 4228,
+          "sha256": "b50316d38b5328fcf1d796de5a6dbeae44c5f8c93f336da9972881c7e4093428"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/RESULT_EXPORT_PROCESS.json",
+          "bytes": 7580,
+          "sha256": "88c3336f000facfe7c171e855c0b9b496cf2c2f0a86d12c51eb66d615cb2f9ce"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/PREPARATION.json",
+          "bytes": 318,
+          "sha256": "4d1bcfa42ef0357d2d41116ff7d04447d16999d3fde302370b153833f57416c3"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "85393baf30352d1e3675fc2816e82f73ed528fb3bf0859c67a6b9ec12a02b43f"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/readiness.log",
+          "bytes": 480,
+          "sha256": "0d1882181cd743c3a4e7cbda0a007f17bbb63b2003de3d0a4605e8b1fbca5754"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/desktop-ready.png",
+          "bytes": 961529,
+          "sha256": "6ade01ab9c081c51ee11cb349b864d11d2ee1f1ec58fa67d71e5417676f49c3f"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/privacy-accepted-5.png",
+          "bytes": 961584,
+          "sha256": "1840ec1fe1fad4d13f2473cb35f60d8c3c87899fbefd2be143b77311e95fb9b7"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/privacy-accepted-4.png",
+          "bytes": 191089,
+          "sha256": "5238a8eed42a2fc1dc5b1503eea8ef338aee5b937ec32c719db73b1bc19e2cf9"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/privacy-accepted-2.png",
+          "bytes": 178017,
+          "sha256": "a62ef4d2a2044e13663450dd83ea864187e622effb906ffebef6a914807299db"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/privacy-accepted-0.png",
+          "bytes": 9384,
+          "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/privacy-accepted-3.png",
+          "bytes": 182530,
+          "sha256": "0d75046a64976237d6ece47a9ad5ca9cb85e03cbddaeca23a4abce795bae31cc"
+        },
+        {
+          "path": ".hermes/evidence/status-error-delivery-current/runtime18-upgrade-enabled/privacy-accepted-1.png",
+          "bytes": 185236,
+          "sha256": "e428cd53e7d010f73ed2babdbafd4280cd9d4696a685ff072b0cd8821d0b52ad"
+        }
+      ],
+      "bytes": 2682230
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

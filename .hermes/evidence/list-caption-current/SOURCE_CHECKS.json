@@ -1,8 +1,8 @@
 {
-  "status": "pass source renderer regression and UI suite; packaged native verification outstanding",
-  "base_revision": "7fa0e46cd8ead5e5a4e6a83d6439953109a731b4",
+  "status": "pass source filename and view-density regressions, full UI suite and native/Windows strict lint; packaged native verification outstanding",
+  "base_revision": "fb717b0379c5e54d06fa451bcf6645ed1d75ac47",
   "source_sha256": {
-    "crates/ottrin-ui/src/lib.rs": "0f93a1245c7cbfc9e6a41068ab3a38badfa9680bdcac67b1f25226de5c20c222"
+    "crates/ottrin-ui/src/lib.rs": "f682fa8b6e41c34fd492ea17648c5b957e844c622cd3f7da4f39ae0ac44e6bae"
   },
   "finding": ".hermes/evidence/status-error-delivery-current/NATIVE_CAPTION_REVIEW.json",
   "regression": {
@@ -11,7 +11,7 @@
     "test": "list_filename_paint_stays_before_metadata_columns"
   },
   "suite": {
-    "passed": 507,
+    "passed": 508,
     "failed": 0,
     "existing_ignored": 1
   },
@@ -26,6 +26,17 @@
     "filesystem_recovered_bytes": 626274304,
     "private_test_profiles": "test-workspace.py finally removed",
     "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc",
-    "retained": "Newest exact crate/config caches; current binaries/dependencies; no extra target tree"
+    "retained": "Newest exact crate/config caches; current binaries/dependencies; no extra target tree",
+    "density_followup": {
+      "obsolete_incremental_sessions_removed": 5,
+      "filesystem_recovered_bytes": 296198144,
+      "retained": "Newest same-configuration caches and same current test executable; disposable test profiles torn down"
+    }
+  },
+  "density_regression": {
+    "test": "file_view_density_uses_only_its_own_saved_scale",
+    "red": "Miller typography did not change with its own density; source also selected Miller density for List.",
+    "green": "Actual Column-row and List renderers respond to their own saved density and ignore the other two view settings.",
+    "fix": "List reads List scale; Column row wrapper reads Miller scale. Filename regression now varies List scale directly."
   }
 }

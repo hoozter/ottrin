@@ -1,0 +1,38 @@
+{
+    "gui_focus_and_capture":  "pass",
+    "scope":  "Actual ordinary post-update GUI, unchanged startup/configuration and declared startup choice after main window closes",
+    "main":  {
+                 "path":  "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.18_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+                 "pid":  1296,
+                 "binary_sha256":  "C90839A6D2B6070A0BCB76CCFD96FD0A958048F43B16A0B5FE676ADC85FCF5C3",
+                 "title":  "Ottrin"
+             },
+    "phase":  "updated-after-gui-service-status.stdout",
+    "actual_process_package":  "Ottrin.Development_0.1.0.18_x64__vs01n017nxmbr",
+    "actual_process_elevated":  false,
+    "cli_exits":  {
+                      "updated-after-gui-service-status.stdout":  0,
+                      "updated-index-status.json":  0,
+                      "updated-service-status.stdout":  0
+                  },
+    "administrator":  false,
+    "input_desktop":  "Default",
+    "preferences_before_removal":  "9CCED8BDA6C81D2BFBA7A3B56C3F581A673B8DF9B7FF0951603704022B573873",
+    "index_ready":  "ready",
+    "status":  "pass",
+    "store":  {
+                  "path":  "C:\\Users\\OTMSIX9bd4282ac45f\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+                  "bytes":  28672,
+                  "identity":  "9E9485EC9485C76D:000200000001B7090000000000000000"
+              },
+    "window_diagnostics":  {
+                               "foreground":  131502,
+                               "enable_lua":  1,
+                               "window":  131502,
+                               "cloaked":  0,
+                               "process_session":  1,
+                               "minimized":  false,
+                               "console_session":  1
+                           },
+    "normal_close_exit":  0
+}

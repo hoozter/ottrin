@@ -1,0 +1,17 @@
+{
+  "status": "failed fixture foreground step; no update attempted; not accepted",
+  "reason": "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+  "old_package": "Ottrin.Development_0.1.0.17_x64__vs01n017nxmbr",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "retry": "runtime18-upgrade-enabled (fresh actual retry passed)",
+  "scope": "Failure preserved separately; removed own clone and volumes, no observation-timeout restart"
+}

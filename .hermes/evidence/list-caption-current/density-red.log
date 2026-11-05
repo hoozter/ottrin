@@ -1,0 +1,22 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 21.84s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+test tests::file_view_density_uses_only_its_own_saved_scale ... FAILED
+
+failures:
+
+---- tests::file_view_density_uses_only_its_own_saved_scale stdout ----
+
+thread 'tests::file_view_density_uses_only_its_own_saved_scale' (2540460) panicked at crates/ottrin-ui/src/lib.rs:38434:13:
+Miller density did not change its text
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::file_view_density_uses_only_its_own_saved_scale
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 508 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

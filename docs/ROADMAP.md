@@ -26,12 +26,20 @@ found that a wide filename in List view paints across Type/Size in both themes;
 the automated control checks had not detected it. Fix measured text containment
 and repeat packaged native visual checks before delivery. The source regression
 reproduces the overlap and passes with measured filename elision and cell clipping;
-507 UI tests pass with one existing ignored test. Fresh MSIX18 functional
+The same review exposed crossed view-density settings: List read Column density,
+and Column rows read Grid density. Both now use their own saved settings; an
+actual-renderer regression verifies that other view settings have no effect.
+508 UI tests pass with one existing ignored test, plus native/Windows strict lint.
+Both corrections require a rebuilt cohort and directly reviewed native captures.
+Fresh MSIX18 functional
 runtime/login/removal passes, including an OS-started daemon observed before any
 Ottrin CLI after real reboot. Two startup screenshots were occluded by the main
 viewport: their painted-state acceptance is incomplete. The fixture now refocuses
-Settings after CLI inspection before capturing; verify this on the enabled/disabled
-17-to18 updates (enabled case in progress). All four exact7fa hosted jobs pass.
+Settings after CLI inspection before capturing. The enabled17-to18 update passes
+with four directly reviewed captures; its Settings captures exercise17 and its
+updated main/login exercise18. The disabled17-to18 update is in progress.
+All four exact7fa hosted jobs pass; the `fb717b03` source checkpoint is pushed,
+and its hosted Windows suite is still running. Avoid cancelling that live run.
 Evidence: `.hermes/evidence/status-error-delivery-current/`, especially
 `NATIVE_CAPTION_REVIEW.json`; the filename regression work is in
 `.hermes/evidence/list-caption-current/`. Stable packages above remain unchanged.

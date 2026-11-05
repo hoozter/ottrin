@@ -18476,7 +18476,7 @@ impl OttrinApp {
 
     fn render_list(&mut self, ui: &mut egui::Ui, tab_id: u64) {
         let c = self.colors;
-        let scale = self.view_scale_for(ViewMode::Miller);
+        let scale = self.view_scale_for(ViewMode::List);
         let current_dir = self
             .state
             .tab_by_id(tab_id)
@@ -23096,7 +23096,7 @@ impl OttrinApp {
             file_row::FileRowLayout {
                 index: row_index,
                 width: row_width,
-                scale: self.view_scale_for(ViewMode::Grid),
+                scale: self.view_scale_for(ViewMode::Miller),
             },
             c,
             &self.state.config,
@@ -38381,12 +38381,72 @@ mod tests {
     }
 
     #[test]
+    fn file_view_density_uses_only_its_own_saved_scale() {
+        let painted_size = |view, miller, list, grid| {
+            let mut app = OttrinApp::default();
+            app.state.config.miller_view_scale = miller;
+            app.state.config.list_view_scale = list;
+            app.state.config.grid_view_scale = grid;
+            let entry = FileEntry {
+                name: "density.txt".into(),
+                path: PathBuf::from("density.txt"),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: None,
+                modified_unix_secs: None,
+            };
+            let tab_id = app.state.active_tab().id;
+            let state = app.tab_ui.entry(tab_id).or_default();
+            state.main.loading = false;
+            state.main.entries = vec![entry.clone()];
+            let ctx = Context::default();
+            install_application_fonts(&ctx);
+            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| match view {
+                    ViewMode::Miller => {
+                        app.render_file_row(ui, &entry, false, true, false, 0, 240.0, &app.colors);
+                    }
+                    ViewMode::List => app.render_list(ui, tab_id),
+                    _ => unreachable!(),
+                });
+            });
+            output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) if text.galley.job.text == "density.txt" => {
+                        Some(text.galley.job.sections[0].format.font_id.size)
+                    }
+                    _ => None,
+                })
+                .expect("Actual filename typography")
+        };
+        for view in [ViewMode::Miller, ViewMode::List] {
+            let baseline = painted_size(view, 1.0, 1.0, 1.0);
+            let (own, unrelated) = match view {
+                ViewMode::Miller => (
+                    painted_size(view, 1.85, 1.0, 1.0),
+                    painted_size(view, 1.0, 1.85, 1.85),
+                ),
+                ViewMode::List => (
+                    painted_size(view, 1.0, 1.85, 1.0),
+                    painted_size(view, 1.85, 1.0, 1.85),
+                ),
+                _ => unreachable!(),
+            };
+            assert!(own > baseline, "{view:?} density did not change its text");
+            assert_eq!(unrelated, baseline, "Another view changed {view:?} density");
+        }
+    }
+
+    #[test]
     fn list_filename_paint_stays_before_metadata_columns() {
         for dark in [false, true] {
             for scale in [0.75, 1.0, 1.85] {
                 let mut app = OttrinApp::default();
                 app.colors = Colors::preset(ThemePreset::Ottrin, dark);
-                app.state.config.miller_view_scale = scale;
+                app.state.config.list_view_scale = scale;
                 let tab_id = app.state.active_tab().id;
                 let name = format!("00-{}.txt", "W".repeat(40));
                 let state = app.tab_ui.entry(tab_id).or_default();

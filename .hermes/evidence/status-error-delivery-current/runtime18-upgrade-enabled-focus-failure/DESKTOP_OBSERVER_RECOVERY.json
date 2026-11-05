@@ -1,0 +1,6 @@
+{
+  "status": "Observed same owned guest desktop after finite OCR transition observer timed out; sent desktop-ready only",
+  "observed_frame_sha256": "b67f6fd1c417d2aba6043fb4b47990bf1a6f6b35a28eb192f3c5ab9513e2c5fb",
+  "domain_uuid": "6e29ce56-f254-4029-9e86-f883b766b1e0",
+  "scope": "Directly reviewed owned private console showing normal Windows desktop, readiness helper independently checks exact console account; no restart, no repeated page input, no Ottrin CLI or policy change"
+}

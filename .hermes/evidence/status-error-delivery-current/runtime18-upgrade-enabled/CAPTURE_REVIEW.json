@@ -1,0 +1,23 @@
+{
+  "reviewed": true,
+  "captures": {
+    "main.png": "7b4a055e3544b3559b5765cebf7fff481300e4eb842af9baef0b41684ed561b9",
+    "msix-startup-enabled.png": "62a463013bfa4c719215a8b8867bb0b80e445bce4f7df6e5f116e8c50137dde4",
+    "msix-startup-disabled.png": "73275c15a7e4aa369ac55e805350cd000e49c3ab0353d259a8189d41dd2468c1",
+    "updated-main.png": "f603b649f479f1f243fd1b42bd651c48abbb9dac19db9bedb5b2f5c10aff52e2"
+  },
+  "scope": {
+    "main.png": "Pre-update MSIX17 main",
+    "updated-main.png": "Updated MSIX18 main",
+    "msix-startup-disabled.png": "Pre-update MSIX17 actual Disabled checkbox/OS state",
+    "msix-startup-enabled.png": "Pre-update MSIX17 actual Enabled checkbox/OS state"
+  },
+  "findings": [
+    "All four original windows are visible; Settings foreground correction resolves prior occluded screenshots.",
+    "Old17 Services folder integration reports a transactional resource-manager error and repair action. Retain as a Windows integration investigation finding; no successful integration acceptance implied."
+  ],
+  "limits": [
+    "Updated18 startup state verified through OS/backend and actual login; these Settings captures are17, not18.",
+    "No List containment, whole theme or physical hardware acceptance"
+  ]
+}
