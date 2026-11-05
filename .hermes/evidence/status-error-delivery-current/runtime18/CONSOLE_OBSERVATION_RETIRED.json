@@ -1,0 +1,6 @@
+{
+  "path": ".hermes/evidence/status-error-delivery-current/runtime18/login-current.png",
+  "bytes": 2513122,
+  "sha256": "a8353d1b391079bfad39386e9fdc1c32467e51b8b011eefefab3c32df6bfaabe",
+  "reason": "Consumed owned-console observation; safe runtime captures and actual ordinary-user login receipt retained"
+}

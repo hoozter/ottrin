@@ -1,0 +1,104 @@
+{
+  "status": "pass exact MSIX18 functional runtime/login/removal; startup screenshots occluded, visual acceptance incomplete",
+  "package": {
+    "runtime_script_sha256": "50a87ecf0049f79928be41f7384a0e1e6e759d409c5ac609acc692c2fa6ff1d0",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "4da3fcc72f25584b7015bdf21c66846aee51091c2ecad880c1d4b0a6e3e65d0b",
+    "source_revision": "7fa0e46cd8ead5e5a4e6a83d6439953109a731b4",
+    "version": "0.1.0.18",
+    "startup_enabled": true
+  },
+  "source_revision": "7fa0e46cd8ead5e5a4e6a83d6439953109a731b4",
+  "runtime_result": ".hermes/evidence/status-error-delivery-current/runtime18/RUNTIME_RESULT.json",
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          8264
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          8264
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          8264
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          8264
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.18_x64__vs01n017nxmbr"
+  },
+  "real_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8132,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.18_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIX17320f9d3836\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "9E9485EC9485C76D:000400000001B7050000000000000000"
+    },
+    "boot_ticks": 639294363755000000,
+    "administrator": false
+  },
+  "removal": {
+    "package_removed": true,
+    "package_processes_removed": true,
+    "fixture_preserved": true,
+    "preferences_preserved": true,
+    "remaining_index_tasks": []
+  },
+  "state_reader_native_smoke": {
+    "transient_milliseconds": 242.76690000000002,
+    "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed": true,
+    "persistent_lock_seconds": 2.0170600999999997
+  },
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/status-error-delivery-current/runtime18/results/main.png": "4e90ccc782b0a49900d8f3dc68fa6e9e9ea7a8d54c8c29186cac72b615cd2587",
+    ".hermes/evidence/status-error-delivery-current/runtime18/results/msix-startup-disabled.png": "a1de3dc28474b8a02329c117f7fd2ce3d9116ca704d87db11729de429b3727d5",
+    ".hermes/evidence/status-error-delivery-current/runtime18/results/msix-startup-enabled.png": "2a86e0d774c19a7561b198fdf7dd6e7b4ebc127cd0feafbe50a653310cf284b6"
+  },
+  "fixture_recovery": null,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Fresh MSIX18 only; no MSIX17-to-18 upgrade acceptance",
+    "Unsigned development deployment in disposable software desktop; no signing, Store or physical hardware acceptance",
+    "Windows native preview pointer check and full theme audit remain open",
+    "Current stable Windows artifacts remain458 until cohort acceptance/promotion",
+    "Native checkbox actions and OS backend agree, but screenshot producer must regain Settings foreground after CLI observation and rerun painted startup-state checks."
+  ],
+  "capture_review": {
+    "main.png": "Actual packaged main window correctly visible",
+    "msix-startup-disabled.png": "FAIL evidence quality: main window occludes the startup checkbox; no painted state verification",
+    "msix-startup-enabled.png": "FAIL evidence quality: main window occludes the startup checkbox; no painted state verification"
+  }
+}

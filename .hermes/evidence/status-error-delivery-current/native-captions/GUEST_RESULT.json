@@ -1,0 +1,216 @@
+{
+  "no_input_footer_samples": [
+    {
+      "seconds": 0.052705999999999996,
+      "label": "3 items"
+    },
+    {
+      "seconds": 2.0404987,
+      "label": "3 items"
+    },
+    {
+      "seconds": 10.0559011,
+      "label": "3 items"
+    }
+  ],
+  "sources_preserved": true,
+  "package": {
+    "source_revision": "7fa0e46cd8ead5e5a4e6a83d6439953109a731b4",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "7036c50ed415fde1ac662ae8e4fb817de0adaa75862ba155bf04750c4dab3190"
+      }
+    ],
+    "actor_sha256": "5286ef8ca92242765ba7bae7fdeb13d063b9128fb355929d98c7c5b826f1b6c2",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "phase": "uninstall preserves preferences and files",
+  "scope": "Exact NSIS, ordinary-user Native renderer; caption/default-view, no-input footer, real Task Scheduler startup controls and uninstall preservation. Full theme, MSIX lifecycle and physical graphics remain separate.",
+  "service_round_trip": {
+    "running_pid_preserved": 6564,
+    "os_task_inspected": true,
+    "normal_close_keeps_daemon": true,
+    "registration": "On -> Off -> On"
+  },
+  "status": "pass native caption/default-view, service startup and uninstall scope",
+  "preferences_preserved": true,
+  "cases": [
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 240,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 240,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "Miller-Dark-1.png",
+      "grid_scale": 1,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Dark"
+    },
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "List-Dark-1.png",
+      "grid_scale": 1,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Dark"
+    },
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 84,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 84,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "Grid-Dark-1.png",
+      "grid_scale": 1,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Dark"
+    },
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 240,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 240,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "Miller-Light-1.png",
+      "grid_scale": 1,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Light"
+    },
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "List-Light-1.png",
+      "grid_scale": 1,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Light"
+    },
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 84,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 84,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "Grid-Light-1.png",
+      "grid_scale": 1,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Light"
+    },
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 84,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 81,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 84,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 81,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "Grid-Dark-0.75.png",
+      "grid_scale": 0.75,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Dark"
+    },
+    {
+      "actual_view_toggle_verified": true,
+      "captions": [
+        {
+          "width": 105,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 150,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 105,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 150,
+          "type": "ControlType.Button"
+        }
+      ],
+      "capture": "Grid-Dark-1.85.png",
+      "grid_scale": 1.85,
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Dark"
+    }
+  ]
+}

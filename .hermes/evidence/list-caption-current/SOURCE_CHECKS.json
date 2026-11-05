@@ -1,0 +1,31 @@
+{
+  "status": "pass source renderer regression and UI suite; packaged native verification outstanding",
+  "base_revision": "7fa0e46cd8ead5e5a4e6a83d6439953109a731b4",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "0f93a1245c7cbfc9e6a41068ab3a38badfa9680bdcac67b1f25226de5c20c222"
+  },
+  "finding": ".hermes/evidence/status-error-delivery-current/NATIVE_CAPTION_REVIEW.json",
+  "regression": {
+    "red": "Actual List renderer wide filename painted to x491.34 while Type began x372.60 at75%; original character-count implementation failed.",
+    "green": "Measured middle elision and Name-cell clipping pass Dark/Light at75/100/185%.",
+    "test": "list_filename_paint_stays_before_metadata_columns"
+  },
+  "suite": {
+    "passed": 507,
+    "failed": 0,
+    "existing_ignored": 1
+  },
+  "checks": [
+    "cargo fmt --all --check",
+    "native ottrin-ui all-target strict clippy",
+    "Windows GNU ottrin-ui all-target strict clippy"
+  ],
+  "delivery": "Source-only; stable Linuxc4 and Windows458 unchanged. Rebuild candidate and directly inspect original native List captures before delivery.",
+  "cleanup": {
+    "obsolete_incremental_sessions_removed": 16,
+    "filesystem_recovered_bytes": 626274304,
+    "private_test_profiles": "test-workspace.py finally removed",
+    "current_test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc",
+    "retained": "Newest exact crate/config caches; current binaries/dependencies; no extra target tree"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "status": "functional scope passed; visual List filename containment FAILED; cohort not ready for promotion",
+  "source_revision": "7fa0e46cd8ead5e5a4e6a83d6439953109a731b4",
+  "nsis_sha256": "7036c50ed415fde1ac662ae8e4fb817de0adaa75862ba155bf04750c4dab3190",
+  "original_captures_directly_reviewed": {
+    "Grid-Dark-0.75.png": "920760b28f6e090789fb8aa7c2d1cf4c7f0131f3f601532fcdb4f7f1f0aed07f",
+    "Grid-Dark-1.85.png": "c9f8011c3e3856b4de4c7a0dae5f29d9d74f93cbde3a7296cfe5adb794e94ba1",
+    "Grid-Dark-1.png": "b64fe13a1e94ced7b098a71f2a7c52be202782f8aa28d7ba1a0bdd1e3618582d",
+    "Grid-Light-1.png": "469c5142aeac17aed208fa63f51a48a64292de2bf5f47440addff2c8c98140ee",
+    "List-Dark-1.png": "5882ed1ed546ba2d1f2cd9d6b426fb985d276baab78535fb4a1f19bb0a36acd7",
+    "List-Light-1.png": "fd781f815bf6641ca33feed0eae1ae5a491ce1a16302b3ecdd4c4bcaa532eda9",
+    "Miller-Dark-1.png": "704a55be607cdb7807fcd854fb22fdeefa47d9a9013b4fe791d9ca793b65ed99",
+    "Miller-Light-1.png": "aa2509cf6d6bdace797a47f75fa185753ab879e004b79b8e5c588866e601975e",
+    "services-off.png": "19caa683ec87d0391c6142bd345988a64620539e27a7d1913e4736fb94cc9b19",
+    "services-on.png": "e1aa853649fb1cc035f48ba4feeea8de19280bd9b7170f1a470600fb92b8100b"
+  },
+  "findings": [
+    "Dark and Light List: wide 40-W filename spills across Type and Size cells; character-count truncation is not pixel containment. Must fix and rerun packaged native captures.",
+    "Miller captions are elided within their column; Grid captions wrap/truncate within tiles in reviewed 0.75, 1.0 and 1.85 scales.",
+    "Services On/Off labels match actual OS state and current daemon remains Ready."
+  ],
+  "functional_evidence": {
+    "cases": [
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 240,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 25,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 240,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 25,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "Miller-Dark-1.png",
+        "grid_scale": 1,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "Miller",
+        "theme": "Dark"
+      },
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 820,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 28,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 820,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 28,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "List-Dark-1.png",
+        "grid_scale": 1,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "List",
+        "theme": "Dark"
+      },
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 84,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 98,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 84,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 98,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "Grid-Dark-1.png",
+        "grid_scale": 1,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "Grid",
+        "theme": "Dark"
+      },
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 240,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 25,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 240,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 25,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "Miller-Light-1.png",
+        "grid_scale": 1,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "Miller",
+        "theme": "Light"
+      },
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 820,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 28,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 820,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 28,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "List-Light-1.png",
+        "grid_scale": 1,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "List",
+        "theme": "Light"
+      },
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 84,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 98,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 84,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 98,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "Grid-Light-1.png",
+        "grid_scale": 1,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "Grid",
+        "theme": "Light"
+      },
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 84,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 81,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 84,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 81,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "Grid-Dark-0.75.png",
+        "grid_scale": 0.75,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "Grid",
+        "theme": "Dark"
+      },
+      {
+        "actual_view_toggle_verified": true,
+        "captions": [
+          {
+            "width": 105,
+            "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+            "height": 150,
+            "type": "ControlType.Button"
+          },
+          {
+            "width": 105,
+            "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+            "height": 150,
+            "type": "ControlType.Button"
+          }
+        ],
+        "capture": "Grid-Dark-1.85.png",
+        "grid_scale": 1.85,
+        "geometry": "client=900x600 origin=0,0 dpi=96",
+        "view": "Grid",
+        "theme": "Dark"
+      }
+    ],
+    "service_round_trip": {
+      "running_pid_preserved": 6564,
+      "os_task_inspected": true,
+      "normal_close_keeps_daemon": true,
+      "registration": "On -> Off -> On"
+    },
+    "no_input_footer_samples": [
+      {
+        "seconds": 0.052705999999999996,
+        "label": "3 items"
+      },
+      {
+        "seconds": 2.0404987,
+        "label": "3 items"
+      },
+      {
+        "seconds": 10.0559011,
+        "label": "3 items"
+      }
+    ],
+    "preferences_preserved": true,
+    "sources_preserved": true
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "900x600,96DPI ordinary-user software desktop only",
+    "No full-theme, physical graphics, MSIX update or admin Copy acceptance"
+  ]
+}

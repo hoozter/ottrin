@@ -1,0 +1,11 @@
+{
+  "reviewed": true,
+  "painted_startup_state_accepted": false,
+  "scope": "Main visible; disabled/enabled Settings captures are occluded by main viewport. Functional backend and UIA assertions remain bounded evidence.",
+  "producer_fix": "Refocus Settings and require foreground after each CLI observation, before capture. Repeat on actual update fixtures.",
+  "sha256": {
+    "main.png": "4e90ccc782b0a49900d8f3dc68fa6e9e9ea7a8d54c8c29186cac72b615cd2587",
+    "msix-startup-enabled.png": "2a86e0d774c19a7561b198fdf7dd6e7b4ebc127cd0feafbe50a653310cf284b6",
+    "msix-startup-disabled.png": "a1de3dc28474b8a02329c117f7fd2ce3d9116ca704d87db11729de429b3727d5"
+  }
+}

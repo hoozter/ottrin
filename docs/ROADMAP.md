@@ -17,6 +17,25 @@ The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
+The staged `7fa0e46c` cohort is **not ready for promotion**. Linux package
+contents, private daemon runtime and twelve directly reviewed Services captures
+pass their bounded scopes. Windows ZIP/NSIS payload equality, native MSIX18
+assembly, private daemon runtime, default-view persistence, startup On/Off/On
+and uninstall preservation pass. Direct review of the ten Windows NSIS captures
+found that a wide filename in List view paints across Type/Size in both themes;
+the automated control checks had not detected it. Fix measured text containment
+and repeat packaged native visual checks before delivery. The source regression
+reproduces the overlap and passes with measured filename elision and cell clipping;
+507 UI tests pass with one existing ignored test. Fresh MSIX18 functional
+runtime/login/removal passes, including an OS-started daemon observed before any
+Ottrin CLI after real reboot. Two startup screenshots were occluded by the main
+viewport: their painted-state acceptance is incomplete. The fixture now refocuses
+Settings after CLI inspection before capturing; verify this on the enabled/disabled
+17-to18 updates (enabled case in progress). All four exact7fa hosted jobs pass.
+Evidence: `.hermes/evidence/status-error-delivery-current/`, especially
+`NATIVE_CAPTION_REVIEW.json`; the filename regression work is in
+`.hermes/evidence/list-caption-current/`. Stable packages above remain unchanged.
+
 Exactc4 run41929773433 passes all four hosted jobs. Current Linux packages include
 restored administrator history provenance/refresh and typed completed-Undo state,
 with helper protocol3 readiness/update checks. Original DAC AppImage/FUSE protected Copy,

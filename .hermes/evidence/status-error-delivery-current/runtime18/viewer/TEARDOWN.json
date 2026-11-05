@@ -1,0 +1,30 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-btuek_x8",
+  "owned_processes_reaped": [
+    {
+      "pid": 2521461,
+      "exit": 0
+    },
+    {
+      "pid": 2521464,
+      "exit": 0
+    },
+    {
+      "pid": 2521465,
+      "exit": 15
+    },
+    {
+      "pid": 2521520,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "237 34 0:71 / /var/tmp/.ottrin-picker-qa-btuek_x8/runtime/doc rw,nosuid,nodev,relatime shared:595 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "profile_removed": true
+}

@@ -1,0 +1,24 @@
+{
+    "index_ready":  "ready",
+    "phase":  "login-index-status.json",
+    "observed_before_any_ottrin_cli":  {
+                                           "pid":  8132,
+                                           "administrator":  false,
+                                           "session":  1,
+                                           "package":  "Ottrin.Development_0.1.0.18_x64__vs01n017nxmbr"
+                                       },
+    "cli_exits":  {
+                      "login-service-status.stdout":  0,
+                      "login-index-status.json":  0
+                  },
+    "scope":  "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved":  true,
+    "status":  "pass",
+    "store":  {
+                  "path":  "C:\\Users\\OTMSIX17320f9d3836\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+                  "bytes":  28672,
+                  "identity":  "9E9485EC9485C76D:000400000001B7050000000000000000"
+              },
+    "boot_ticks":  639294363755000000,
+    "administrator":  false
+}

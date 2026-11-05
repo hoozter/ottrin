@@ -18822,15 +18822,20 @@ impl OttrinApp {
                                     egui::pos2(x + 28.0, row_rect.top()),
                                     egui::pos2((x + w - 6.0).max(x + 30.0), row_rect.bottom()),
                                 );
-                                let name_cap = ((name_rect.width() / (name_size * 0.58)).floor()
-                                    as usize)
-                                    .max(8);
-                                let visible_name = truncate_middle(&entry.name, name_cap);
-                                ui.painter().text(
-                                    egui::Pos2::new(x + 28.0, y),
+                                let font = FontId::proportional(name_size);
+                                let visible_name = Self::middle_ellipsis(
+                                    ui,
+                                    &entry.name,
+                                    name_rect.width(),
+                                    &font,
+                                );
+                                // Column widths are pixels, not character counts. Use
+                                // real glyph advances and keep painting inside the cell.
+                                ui.painter_at(name_rect).text(
+                                    egui::Pos2::new(name_rect.left(), y),
                                     Align2::LEFT_CENTER,
                                     &visible_name,
-                                    FontId::proportional(name_size),
+                                    font,
                                     style.text_color,
                                 );
                                 if visible_name != entry.name {
@@ -38373,6 +38378,71 @@ mod tests {
             (first_id, second_id)
         );
         assert!(app.tab_tandem_selection.is_empty());
+    }
+
+    #[test]
+    fn list_filename_paint_stays_before_metadata_columns() {
+        for dark in [false, true] {
+            for scale in [0.75, 1.0, 1.85] {
+                let mut app = OttrinApp::default();
+                app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                app.state.config.miller_view_scale = scale;
+                let tab_id = app.state.active_tab().id;
+                let name = format!("00-{}.txt", "W".repeat(40));
+                let state = app.tab_ui.entry(tab_id).or_default();
+                state.main.loading = false;
+                state.main.entries = vec![FileEntry {
+                    name: name.clone(),
+                    path: PathBuf::from(&name),
+                    kind: EntryKind::File,
+                    is_executable: false,
+                    symlink_target_is_dir: None,
+                    size_bytes: Some(14),
+                    modified_unix_secs: None,
+                }];
+                let ctx = Context::default();
+                install_application_fonts(&ctx);
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(820.0, 480.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            app.render_list(ui, tab_id);
+                        });
+                    },
+                );
+                let (shape, label) = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text.starts_with("00-") => {
+                            Some((shape, text))
+                        }
+                        _ => None,
+                    })
+                    .expect("Actual List filename paint");
+                let kind = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == "File" => Some(text),
+                        _ => None,
+                    })
+                    .expect("Actual List Type cell");
+                let painted_right =
+                    (label.pos.x + label.galley.size().x).min(shape.clip_rect.right());
+                assert!(
+                    painted_right <= kind.pos.x - 2.0,
+                    "Filename crossed Type at scale {scale}, dark={dark}: {painted_right} > {}",
+                    kind.pos.x
+                );
+            }
+        }
     }
 
     fn assert_rubber_band_starts_below_entries(view: ViewMode) {
