@@ -1,0 +1,42 @@
+{
+  "status": "consumed observer diagnostics retired; compact failed outcome, exact frozen worker and teardown retained",
+  "replacement": "native-source/RESULT.json",
+  "replacement_source": "b961609554cdf72cd42dd9d4e059582a64eac92b",
+  "retired": [
+    {
+      "path": "native-source-shortcut-failed/Dark-ready-services.png",
+      "bytes": 142393,
+      "sha256": "165cd3979f60b27bef6e6775e0d4eb17a11cf589c5e46e86d667f5f5381e4916"
+    },
+    {
+      "path": "native-source-shortcut-failed/Dark-ready-services.a11y.txt",
+      "bytes": 21749,
+      "sha256": "4020756424b3a2868d2953c33740b9aa572df1e643ae630b1a04535b124bf838"
+    },
+    {
+      "path": "native-source-shortcut-failed/dbus.log",
+      "bytes": 4114,
+      "sha256": "9aadd29eeb6763b97a0e707fda0ebf6f12f28d5953ae5081ea3a420ffad7e02f"
+    },
+    {
+      "path": "native-source-shortcut-failed/Dark-gui.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native-source-shortcut-failed/Dark-initial-daemon.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native-source-shortcut-failed/wm.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native-source-shortcut-failed/xvfb.log",
+      "bytes": 1666,
+      "sha256": "7c4e3754cf5a338339a9a7345e6bb91ae70586b49b1b8abdfbd9419e0af8fd50"
+    }
+  ]
+}

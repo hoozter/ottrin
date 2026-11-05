@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-943t2ujk",
+  "owned_processes_reaped": [
+    {
+      "pid": 2664755,
+      "exit": 0
+    },
+    {
+      "pid": 2664758,
+      "exit": 0
+    },
+    {
+      "pid": 2664759,
+      "exit": 15
+    },
+    {
+      "pid": 2664897,
+      "exit": 1
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "error": "1",
+  "profile_removed": true
+}

@@ -1,0 +1,6 @@
+{
+  "status": "failed",
+  "themes": [],
+  "scope": "Production release GUI on owned software X11 desktop with private daemon/state; no packaged/native-distribution, Windows or personal-profile acceptance",
+  "error": "AssertionError('Timed out waiting for settings closed')"
+}

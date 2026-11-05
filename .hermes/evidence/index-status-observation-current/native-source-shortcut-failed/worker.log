@@ -1,0 +1,11 @@
+
+(process:2662783): dbind-WARNING **: 06:09:01.845: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-observation-current/native-source-worker.py", line 69, in <module>
+    observe(theme,'ready','Running — index ready')
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-observation-current/native-source-worker.py", line 42, in observe
+    close_window(settings);q.wait_for(lambda:not q.run('xdotool','search','--onlyvisible','--pid',str(app.pid),'--name','^Ottrin Settings$',capture=True,check=False).stdout.strip(),'settings closed')
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/campbell/Projects/Ottrin/scripts/linux-desktop-qa.py", line 70, in wait_for
+    raise AssertionError(f"Timed out waiting for {message}{suffix}")
+AssertionError: Timed out waiting for settings closed

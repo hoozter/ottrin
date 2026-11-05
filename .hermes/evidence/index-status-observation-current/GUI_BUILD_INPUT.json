@@ -1,0 +1,24 @@
+{
+  "source_revision": "b961609554cdf72cd42dd9d4e059582a64eac92b",
+  "purpose": "Production GUI binary for private stopped/error/Ready source behavior; not a new distributed package",
+  "before_logical_bytes": {
+    "target/release": 4545261793,
+    "target/debug/deps": 25263006505,
+    "target/debug/incremental": 25174825104,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070294366,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272725988
+  },
+  "command": [
+    "cargo",
+    "build",
+    "--release",
+    "-p",
+    "ottrin-app",
+    "-p",
+    "ottrin-platform",
+    "-p",
+    "ottrin-search"
+  ],
+  "same_canonical_release_flags": true,
+  "daemon_sha256_before": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3"
+}

@@ -1,6 +1,6 @@
 {
-  "status": "progress: verified b020 Linux/Windows cohort delivered; independent follow-up branch remains in progress",
-  "checked_utc": "2026-11-05T05:12:54.135834+00:00",
+  "status": "progress: b020 Linux/Windows delivered; b961 source status follow-up passes native Linux source GUI and waits for hosted/native Windows/package gates",
+  "checked_utc": "2026-11-05T05:21:51.129885+00:00",
   "previous_goal_turn": "progress:32 current original native UI frames accepted, exact native MSIX20 assembly completed, owned fixtures/archives retired and checkpoints pushed",
   "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
   "hosted_ci": {
@@ -23,12 +23,13 @@
     "hosted_run": 41971204224,
     "hosted_status": "in_progress",
     "source_tests": "514 UI passed,1 ignored; strict native/Windows lint passed",
-    "native_source_gui": "Two unaccepted Settings-close fixture attempts; both private profiles/displays/buses/processes removed; next attempt must target the exact Settings accessible Close control",
+    "native_source_gui": "pass bounded source production GUI on private X11: Dark/Light Ready -> Stopped -> wrong-type-endpoint error -> Ready;16 original frames directly reviewed; same GUI per theme; normal close preserves daemon; all4 owned profiles/displays/buses/process trees removed",
     "evidence": ".hermes/evidence/index-status-observation-current",
-    "delivery_status": "not merged or packaged; target/release source GUI retained for pending private QA"
+    "delivery_status": "not merged or packaged; target/release source GUI retained for pending private QA",
+    "observer_failure_resolution": "The old xdotool any-match query still found the main window after Settings closed. All8 actual exact-accessible-control closes now prove exact Settings PID/name absence with --all, while retaining that false-positive query as an independent native control."
   },
   "next": [
-    "Finish source follow-up native main/Services Ready/stopped/real-error/recovery checks, retain exact failure scopes and cleanup",
+    "After follow-up hosted gates, integrate source branch without reverting current stable manifests; run current native Windows stopped/error/recovery and packaged acceptance before promoting its UI changes",
     "After follow-up hosted/native gates, integrate verified branch and produce its current delivery cohort",
     "Continue Windows canonical administrator Copy/caller binding, full theme/role audit, supported picker and folder integration",
     "Keep only genuine owner/external acceptance on the waiting list; no whole-roadmap completion claim"

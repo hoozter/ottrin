@@ -1,0 +1,516 @@
+frame | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+push button | Manage administrator helper
+push button | Manage index service
+push button | Show hidden files
+push button | Show command bar
+label | 2 items
+image | 
+label | files
+unknown | 
+push button | New tab
+push button | Close window
+push button | Maximize or restore window
+push button | Minimize window
+push button | Back
+push button | Forward
+push button | Parent folder
+push button | Menu
+push button | Switch to List view
+push button | View Options
+push button | Open /
+label | ›
+push button | Open /var
+label | ›
+push button | Open /var/tmp
+label | ›
+push button | Open /var/tmp/.ottrin-picker-qa-ht16acxq
+label | ›
+push button | Open /var/tmp/.ottrin-picker-qa-ht16acxq/home
+label | ›
+push button | Open /var/tmp/.ottrin-picker-qa-ht16acxq/home/files
+unknown | 
+panel | 
+push button | Expand locations rail
+push button | Home · /var/tmp/.opqa-4j7ocglh/home
+push button | Root · /
+label | Sort
+combo box | 
+push button | A-Z
+push button | 
+label | 100%
+push button | Reset current view size
+unknown | 
+toggle button | bin.usr-is-merged
+toggle button | boot
+toggle button | dev
+toggle button | etc
+toggle button | home
+toggle button | lib.usr-is-merged
+toggle button | lost+found
+toggle button | media
+toggle button | mnt
+toggle button | opt
+toggle button | proc
+toggle button | root
+toggle button | run
+toggle button | sbin.usr-is-merged
+toggle button | snap
+toggle button | srv
+toggle button | sys
+toggle button | tmp
+toggle button | usr
+toggle button | var
+toggle button | bin
+toggle button | lib
+toggle button | lib32
+toggle button | lib64
+toggle button | sbin
+toggle button | swapfile
+unknown | 
+unknown | 
+unknown | 
+toggle button | backups
+toggle button | cache
+toggle button | lib
+toggle button | local
+toggle button | log
+toggle button | mail
+toggle button | opt
+toggle button | snap
+toggle button | spool
+toggle button | tmp
+toggle button | lock
+toggle button | run
+unknown | 
+toggle button | minus-dormant-patch.eK50CF
+toggle button | minus-dormant-patch.HbLyuZ
+toggle button | minus-patch-base.dKLDDg
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-bluetooth.service-X4JOax
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-colord.service-4rMk8m
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-fwupd.service-0QZs8h
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-iio-sensor-proxy.service-MrQ73y
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-ModemManager.service-9Gw5hb
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-polkit.service-LzhwNN
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-power-profiles-daemon.service-31PmDr
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-switcheroo-control.service-uZ9viL
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-systemd-logind.service-sNdQvT
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-systemd-resolved.service-fenWSO
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-systemd-timesyncd.service-b5gIhq
+toggle button | systemd-private-b09afa6709f84c95bfb276fb9f47fcd3-upower.service-8FepiI
+toggle button | 0022-current-full.diff
+toggle button | 0022-current-tracked.diff
+toggle button | 0022-mv2-teardown-review.log
+toggle button | etilqs_121a32c1108f09d6
+toggle button | etilqs_140e711579af95c5
+toggle button | etilqs_14879e071e678d06
+toggle button | etilqs_148e8943673dd37a
+toggle button | etilqs_153453f7e3684b37
+toggle button | etilqs_159b39cd33f71a30
+toggle button | etilqs_15c376489b79f1f1
+toggle button | etilqs_1605a72c1d52e69b
+toggle button | etilqs_16428cec57f51787
+toggle button | etilqs_165f992c63ecd1b9
+toggle button | etilqs_1679c90afc37c857
+toggle button | etilqs_19199f7aeabf0a9b
+toggle button | etilqs_191b80bb18c5baf1
+toggle button | etilqs_193f0367c750624c
+toggle button | etilqs_19bf2a17f600f6e6
+toggle button | etilqs_19f837489b7c5a3d
+toggle button | etilqs_1b221a34aad75ead
+toggle button | etilqs_1b9cff1a47a7c0d2
+toggle button | etilqs_1bb8cda251db2f77
+toggle button | etilqs_1ccdb789791c792a
+toggle button | etilqs_1cf7b3a478e67317
+toggle button | etilqs_1d14ff208deb20d
+toggle button | etilqs_1d819d5e6ae4a22
+toggle button | etilqs_1e21e1ef09988f15
+toggle button | etilqs_1ec5cd897aa14626
+toggle button | etilqs_1f18328f6ad91fec
+toggle button | etilqs_1fce82ed14f83403
+toggle button | etilqs_209a2af3973ba6d5
+toggle button | etilqs_20bf67fcbe790630
+toggle button | etilqs_2179bb5ed70ddd19
+toggle button | etilqs_21c39b98034cedb7
+toggle button | etilqs_21e584d95cdd553c
+toggle button | etilqs_22064c6b23225b5c
+toggle button | etilqs_220fa67e2c2b5291
+toggle button | etilqs_22506cae39a77f7c
+toggle button | etilqs_22f0281220bf4e09
+toggle button | etilqs_2336275abf1ba068
+toggle button | etilqs_2372a3ba412a8f16
+toggle button | etilqs_23ad3a8510b0e1bf
+toggle button | etilqs_245d160744315a0f
+toggle button | etilqs_24992b7d8262c064
+toggle button | etilqs_24e3cb8a01a781b5
+toggle button | etilqs_25dc344189c1cc15
+toggle button | etilqs_271d2d18ba563293
+toggle button | etilqs_2776f52767da4bf9
+toggle button | etilqs_28640508596cbe76
+toggle button | etilqs_286f10469430de0
+toggle button | etilqs_29948139f7a380a8
+toggle button | etilqs_2a5775ad10b7999e
+toggle button | etilqs_2a622bb3e9934298
+toggle button | etilqs_2a89b897c2381365
+toggle button | etilqs_2ab1490aa926c691
+toggle button | etilqs_2be27f68f22933dc
+toggle button | etilqs_2ca008fe0cc80e5d
+toggle button | etilqs_2d16fb8589a68c69
+toggle button | etilqs_2daed8cbdc245e39
+toggle button | etilqs_2df780fe96d5b512
+toggle button | etilqs_2f375af86e1bb567
+toggle button | etilqs_30b44493a4f55ca6
+toggle button | etilqs_3350de2f0ed6f65f
+toggle button | etilqs_33933d1e99a5761
+toggle button | etilqs_33b9d1c940571544
+toggle button | etilqs_34804b7fee5ba8
+toggle button | etilqs_35952987f5e0d844
+toggle button | etilqs_35d9ed0401dd6c00
+toggle button | etilqs_35eaf2ee272487e
+toggle button | etilqs_3637411345abaa2
+toggle button | etilqs_366d9567028d9f96
+toggle button | etilqs_37d3377ab7305d42
+toggle button | etilqs_381866f5b36392f8
+toggle button | etilqs_393e5e9b09b25f17
+toggle button | etilqs_3bd5bf4ee72ab38a
+toggle button | etilqs_3d90c19cd913757f
+toggle button | etilqs_3e58d78d92dc71ba
+toggle button | etilqs_40452f55608da188
+toggle button | etilqs_4098795ed39b4941
+toggle button | etilqs_410d03ae20b7f98e
+toggle button | etilqs_439a214cd4fc87c8
+toggle button | etilqs_4540c14ab2dd8368
+toggle button | etilqs_471815da075a6d0f
+toggle button | etilqs_471c854d2a879d11
+toggle button | etilqs_47e50e9193f2efd
+toggle button | etilqs_4804307f555b8253
+toggle button | etilqs_48ceb216cc824dc2
+toggle button | etilqs_497f5ad4fd494cd4
+toggle button | etilqs_4985c9b2c5e233ee
+toggle button | etilqs_4a0966210808ccca
+toggle button | etilqs_4a57c3dd25eccafb
+toggle button | etilqs_4a73cd720351440a
+toggle button | etilqs_4bb20cf59d18a8f8
+toggle button | etilqs_4bdf07992c9df5a
+toggle button | etilqs_4bee728a0f20869b
+toggle button | etilqs_4c74a72b548200bd
+toggle button | etilqs_4dd0aba26e02fe9b
+toggle button | etilqs_4fd7fb095588c88
+toggle button | etilqs_4fe793b455d88b9e
+toggle button | etilqs_501c26793029b8e1
+toggle button | etilqs_506842828d5b8308
+toggle button | etilqs_506f7772f5de68
+toggle button | etilqs_50c1858fa5babe54
+toggle button | etilqs_510ac50cca48951c
+toggle button | etilqs_51c477d9fdf72e00
+toggle button | etilqs_51d13f8ee2f7ea03
+toggle button | etilqs_534b31909eec1ab2
+toggle button | etilqs_541daaef74335efb
+toggle button | etilqs_54cb7c4dbe2ca021
+toggle button | etilqs_54ecb8ab7ee29fe0
+toggle button | etilqs_5598d9f7310096ef
+toggle button | etilqs_564cbe21540a115f
+toggle button | etilqs_56a05d21a88186d
+toggle button | etilqs_57301d70eef67d41
+toggle button | etilqs_58b5dd649e03a6a1
+toggle button | etilqs_5a4e66d9426d8946
+toggle button | etilqs_5a60d39663e2416c
+toggle button | etilqs_5a9ec5d487ca72c6
+toggle button | etilqs_5ab50f1fd264e493
+toggle button | etilqs_5abd2b38642245c2
+toggle button | etilqs_5b1bd9cad37c2be4
+toggle button | etilqs_5bc67f7f3054dc98
+toggle button | etilqs_5c4eda57c9215091
+toggle button | etilqs_5e2b56c620ea902c
+toggle button | etilqs_5e5f07119e71ee54
+toggle button | etilqs_5eb8e0a4bedb05ba
+toggle button | etilqs_60571b397259160a
+toggle button | etilqs_60af4c0480b39f04
+toggle button | etilqs_62da56f66075e838
+toggle button | etilqs_6321fc8cbdfd30a3
+toggle button | etilqs_6373995cd556ac5f
+toggle button | etilqs_639abf2d41ee20b0
+toggle button | etilqs_63b63b4b9b0bdeb7
+toggle button | etilqs_63be6a84da815dcb
+toggle button | etilqs_650032f7eb39b3d6
+toggle button | etilqs_677b6c4a53f4c8d9
+toggle button | etilqs_67cb56d42a7945b3
+toggle button | etilqs_68654e924fd6a0d1
+toggle button | etilqs_68d3bf72c9849d72
+toggle button | etilqs_698be0f0075033c8
+toggle button | etilqs_6b4db2d7e24001f7
+toggle button | etilqs_6b7613ef39fc8593
+toggle button | etilqs_6b8eb121b0ad2b29
+toggle button | etilqs_6d696fc2833dc8c5
+toggle button | etilqs_6f1d25878ab073bf
+toggle button | etilqs_6fb7f72436cb72df
+toggle button | etilqs_6fc952fe6c445ec0
+toggle button | etilqs_715236893c707646
+toggle button | etilqs_7184d7c3003143d
+toggle button | etilqs_71e0ed9f1a2a2f1b
+toggle button | etilqs_71f253e3f74ee9c4
+toggle button | etilqs_7215842c15edf351
+toggle button | etilqs_7271896b10b19c41
+toggle button | etilqs_7335ad8c2e8289e7
+toggle button | etilqs_74cb1d275e4a968e
+toggle button | etilqs_74cfcecf12802d24
+toggle button | etilqs_74e94e4af7792f0b
+toggle button | etilqs_757909fda5514719
+toggle button | etilqs_75c400dcf9b748fa
+toggle button | etilqs_764fbba7979cca50
+toggle button | etilqs_76e24aaf377e357d
+toggle button | etilqs_76fa9f3b3298d9da
+toggle button | etilqs_7750cd4899585e4d
+toggle button | etilqs_7794bf900c897dac
+toggle button | etilqs_77cfbd38039b854d
+toggle button | etilqs_798d2dcc4ddd2b2c
+toggle button | etilqs_79ab76929306ceac
+toggle button | etilqs_7d3e2230848e355d
+toggle button | etilqs_7d5cd083d176e7bc
+toggle button | etilqs_7d91696cf744e104
+toggle button | etilqs_7ed4b2304e6f0668
+toggle button | etilqs_7f8da1ec78cf9642
+toggle button | etilqs_7fae36309f4c7b50
+toggle button | etilqs_7fc4d4287b1a8bba
+toggle button | etilqs_7fea11802dfc8cbd
+toggle button | etilqs_81942b6144127734
+toggle button | etilqs_8318b3332634a648
+toggle button | etilqs_8605ba82fc9619ad
+toggle button | etilqs_872ab6c264ffb039
+toggle button | etilqs_88578cb41947af16
+toggle button | etilqs_894e5311ada32c0e
+toggle button | etilqs_89cc27d8f536c61d
+toggle button | etilqs_89da4ac4de1bda30
+toggle button | etilqs_8a7f49ae54d13d8f
+toggle button | etilqs_8b8d44797b729bd7
+toggle button | etilqs_8bee2f5b304cda86
+toggle button | etilqs_8cecfce08cd58830
+toggle button | etilqs_8ceffcfd310e9d4d
+toggle button | etilqs_8d3a8586ab5f0299
+toggle button | etilqs_8d7f2879fd132e85
+toggle button | etilqs_8e4dc75cd7c80a94
+toggle button | etilqs_8e927faa09eab9a5
+toggle button | etilqs_8f930d87de2a1ad1
+toggle button | etilqs_905d1c05acdc4592
+toggle button | etilqs_90a60ef6f4a75e04
+toggle button | etilqs_90e9da6ddcf9b92f
+toggle button | etilqs_9198e6fa5092cb13
+toggle button | etilqs_92c2f9db60e49389
+toggle button | etilqs_92db131af882584f
+toggle button | etilqs_9351ab7935e9f7a9
+toggle button | etilqs_9385d36b7e245755
+toggle button | etilqs_9496771f0f55ecf0
+toggle button | etilqs_94e00c98214cd346
+toggle button | etilqs_94eecb93a307e0b9
+toggle button | etilqs_9557203a44e960ba
+toggle button | etilqs_96f887ebedffae91
+toggle button | etilqs_96fe9a27f6a17f8c
+toggle button | etilqs_972c04d3713279b7
+toggle button | etilqs_980ccaa56959dc65
+toggle button | etilqs_98995cf894cccabb
+toggle button | etilqs_99674d3c637a6d22
+toggle button | etilqs_9a51a4588798770d
+toggle button | etilqs_9cd7a8c66599e2df
+toggle button | etilqs_9ce105de01fb7250
+toggle button | etilqs_9ced615613b568b0
+toggle button | etilqs_9d9833b7cefde6b7
+toggle button | etilqs_9ddf4c6509bae696
+toggle button | etilqs_9df77e2f474ad3af
+toggle button | etilqs_9f5e645e8eb9ed8
+toggle button | etilqs_9fdf42ffa67ec063
+toggle button | etilqs_9ffb331f8c6f3a12
+toggle button | etilqs_a0664ea48e30ad8e
+toggle button | etilqs_a07278e2f4410853
+toggle button | etilqs_a2d056ff4e39b2c5
+toggle button | etilqs_a2d61836fa17caef
+toggle button | etilqs_a359e28e46bca52c
+toggle button | etilqs_a43de97984357533
+toggle button | etilqs_a50e3d4f267755c7
+toggle button | etilqs_a59b634ed27ad0a
+toggle button | etilqs_a651d5f14d485240
+toggle button | etilqs_a6e518b68a041117
+toggle button | etilqs_a7340082b9e6679
+toggle button | etilqs_a78cca2ad4a0d025
+toggle button | etilqs_a7b01aa7745f81d2
+toggle button | etilqs_a8ef8ed72dc144bf
+toggle button | etilqs_a9c41c69339e186
+toggle button | etilqs_aa6a7d7c2b3a51f8
+toggle button | etilqs_ab80e75b312f46cb
+toggle button | etilqs_ae9271e2e6c1ac87
+toggle button | etilqs_af592775a3beb96c
+toggle button | etilqs_b0c857864a0ec703
+toggle button | etilqs_b10d3c0a3f9e312b
+toggle button | etilqs_b194648d24cd49a2
+toggle button | etilqs_b296cf23024da89d
+toggle button | etilqs_b35d3a4ad1ed4e13
+toggle button | etilqs_b3cbedf7c7b6f110
+toggle button | etilqs_b58c6c676ba07b30
+toggle button | etilqs_b5986c7799e8247f
+toggle button | etilqs_b5d122c59ece9b95
+toggle button | etilqs_b66c4819a75324e5
+toggle button | etilqs_b7a3a5a880b3cabe
+toggle button | etilqs_badec41124ba667
+toggle button | etilqs_bb64c13947214d78
+toggle button | etilqs_bb8dcddec837aa00
+toggle button | etilqs_bd92385c0cc9bbeb
+toggle button | etilqs_bdc9d340d5a74b23
+toggle button | etilqs_be275ec598632a4e
+toggle button | etilqs_be527de369e9c08b
+toggle button | etilqs_be57d6cfc2c0e6a4
+toggle button | etilqs_be6e511e55c41433
+toggle button | etilqs_be9f2b5c281a85cf
+toggle button | etilqs_bf0d7b6266480c8c
+toggle button | etilqs_bfe7dda9be3dab9c
+toggle button | etilqs_c026a540a0c54337
+toggle button | etilqs_c04972b9aabf276e
+toggle button | etilqs_c0ffee9e3c342ede
+toggle button | etilqs_c1e560a0c643e74a
+toggle button | etilqs_c26a80b56b5d3fc1
+toggle button | etilqs_c28f5e4c35260c4b
+toggle button | etilqs_c4257c05d65a0860
+toggle button | etilqs_c4741da3166c20cd
+toggle button | etilqs_c56c59c17a39d04c
+toggle button | etilqs_c5e03fb125a0cf70
+toggle button | etilqs_c7eab29d9fcd3162
+toggle button | etilqs_c93544904cf14612
+toggle button | etilqs_c956e7ae50f56a88
+toggle button | etilqs_ca71225ba3fa7ab0
+toggle button | etilqs_cc474d9ca552d00e
+toggle button | etilqs_cce21ac16fb792c1
+toggle button | etilqs_cd4cb8bf016c9215
+toggle button | etilqs_cd9a18e614e807e
+toggle button | etilqs_ce37bff8c5a88d17
+toggle button | etilqs_ce4800d9b9e0a41c
+toggle button | etilqs_ce5c71561bd4d9b0
+toggle button | etilqs_ceb6232d70836852
+toggle button | etilqs_d01d1b433df99725
+toggle button | etilqs_d0919066c83bdb2c
+toggle button | etilqs_d0a8d8eed3e4a76e
+toggle button | etilqs_d0cca4979f1684e2
+toggle button | etilqs_d126c1f6f4f57ebe
+toggle button | etilqs_d176c78e90eed197
+toggle button | etilqs_d2011088e8e24a31
+toggle button | etilqs_d2a1285245dd85be
+toggle button | etilqs_d3216d439f139b02
+toggle button | etilqs_d3510447f4efe2d8
+toggle button | etilqs_d368b2f84858c6c1
+toggle button | etilqs_d414991ff0347b76
+toggle button | etilqs_d6325761970a6169
+toggle button | etilqs_d69745f59a86086a
+toggle button | etilqs_d69c6f6d83dfc576
+toggle button | etilqs_d7df4e8835b360bf
+toggle button | etilqs_d805ce44d380efe2
+toggle button | etilqs_d84ee046a781f4a1
+toggle button | etilqs_d8bf0cf71ead54b3
+toggle button | etilqs_d91bc0f85bfaf5d0
+toggle button | etilqs_d96f29d08ed57329
+toggle button | etilqs_dac9f7d4a8ede82b
+toggle button | etilqs_dc8a3d68982c0a15
+toggle button | etilqs_dd1cbc60f5e0e86e
+toggle button | etilqs_dd7aef658c21ca92
+toggle button | etilqs_dddf7aea139424ae
+toggle button | etilqs_de997c4c195682a1
+toggle button | etilqs_dee80f81fb5d8380
+toggle button | etilqs_df46ff58aeeeaaed
+toggle button | etilqs_e16b3fac033d3271
+toggle button | etilqs_e1a375812f51f1c9
+toggle button | etilqs_e2843948f6a5be05
+toggle button | etilqs_e35eb0a6a6add3d0
+toggle button | etilqs_e3ceb21efdf08127
+toggle button | etilqs_e42a8a7040e819e6
+toggle button | etilqs_e44b7d5a19e3b94c
+toggle button | etilqs_e4530799c1564596
+toggle button | etilqs_e560aff38092adad
+toggle button | etilqs_e5ccf1f47a20c272
+toggle button | etilqs_e5d6308b0255aa96
+toggle button | etilqs_e68d333352785df6
+toggle button | etilqs_e9084fa517ccae6c
+toggle button | etilqs_e981a1d13d48081c
+toggle button | etilqs_e9a814d766818fc3
+toggle button | etilqs_ea0eb58b9d9d2995
+toggle button | etilqs_eae723588f931e3c
+toggle button | etilqs_eb89e1c57cd62820
+toggle button | etilqs_eb8e899baf134def
+toggle button | etilqs_ebe4d1c0fe03944
+toggle button | etilqs_ebe6ff581674badd
+toggle button | etilqs_ec8196e7b4d1cc1c
+toggle button | etilqs_ed35c80134021729
+toggle button | etilqs_ed69b47ba2618690
+toggle button | etilqs_ede5e91f6344d9fc
+toggle button | etilqs_ee4a628c25b52973
+toggle button | etilqs_ee9f4a1c68e664b5
+toggle button | etilqs_eed63bedabcfaef
+toggle button | etilqs_ef2ec95836c88379
+toggle button | etilqs_efa3440de593cbe4
+toggle button | etilqs_efeebfbf0ee83e6a
+toggle button | etilqs_effb3cb82edd6a44
+toggle button | etilqs_f0b6300df26e6141
+toggle button | etilqs_f1302e9828fafb4
+toggle button | etilqs_f271acef187827c2
+toggle button | etilqs_f36ea86be007e567
+toggle button | etilqs_f3753cd973a8e489
+toggle button | etilqs_f41968024c5ae471
+toggle button | etilqs_f430f808d4365efa
+toggle button | etilqs_f52bc9d1137b8751
+toggle button | etilqs_f5959b8cf5254381
+toggle button | etilqs_f5a3b5245611c99b
+toggle button | etilqs_f5b164002581b8c7
+toggle button | etilqs_f5e6a409f3512528
+toggle button | etilqs_f6ea5e18ca748f6d
+toggle button | etilqs_f77c6fce9a30136e
+toggle button | etilqs_f952104c52494531
+toggle button | etilqs_fad9024e9610f890
+toggle button | etilqs_fb2f7342fc1f2b65
+toggle button | etilqs_fbedcb060bb97dea
+toggle button | etilqs_fbf409170171c588
+toggle button | etilqs_fc147acf7c725f92
+toggle button | etilqs_fc2c0b618634be84
+toggle button | etilqs_fc5ba320f72b9c61
+toggle button | etilqs_fc6b9a8051539898
+toggle button | etilqs_fdcc510767650228
+toggle button | etilqs_feb0daa216248f64
+toggle button | etilqs_ffdb1612833d10a
+toggle button | minus-current-0022-tracked.diff
+toggle button | minus-messaging-reactivation.log
+toggle button | minus-mv3-initial-authority-rebuild-20260805.log
+toggle button | minus-mv3-lifecycle-current.patch
+toggle button | minus-omnibox-guard-red.log
+toggle button | minus-omnibox-placeholder-rebuild-20260805.log
+toggle button | minus-placeholder-red.log
+toggle button | minus-runtime-pref-build-20260804T2324+0200.log
+toggle button | minus-runtime-pref-build-20260804T2359+0200.log
+toggle button | minus-runtime-pref-build-20260805T0002+0200.log
+toggle button | minus-runtime-pref-build-absolute-20260805T0021+0200.log
+toggle button | minus-runtime-pref-build-detached-20260805T0026+0200.log
+toggle button | minus-runtime-pref-build-detached-20260805T0026.pid
+toggle button | minus-runtime-pref-build-resume-20260805T0019+0200.log
+label | …
+unknown | 
+unknown | 
+unknown | 
+toggle button | cache
+toggle button | config
+toggle button | data
+toggle button | home
+toggle button | local
+toggle button | roaming
+toggle button | runtime
+toggle button | state
+toggle button | t
+unknown | 
+toggle button | files
+unknown | 
+toggle button | one.txt
+toggle button | two.txt
+unknown | 
+unknown | 
+unknown | 
+toggle button | Show or hide info panel
+toggle button | Show or hide drop-folder panel
+toggle button | Toggle Search
+toggle button | Show or hide Activity
+toggle button | Show or hide Trash

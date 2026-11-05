@@ -35,11 +35,17 @@ A separate source follow-up is pushed on `branch/index-status-observation`,
 commit `b9616095`, with hosted run41971204224 still in progress. It unifies
 Services/main-index status through one background observation and removes
 render-thread endpoint probes. All514 UI tests and native/Windows strict lint
-pass. Its native source-GUI fixture reached Ready but stopped at the Settings
-close step; both attempts are unaccepted and their private displays/buses/state
-were removed. The next check must close the exact Settings accessible control,
-then verify stopped/error/recovery in both themes. This follow-up is not merged
-or included in current b020 packages. Its branch roadmap/evidence retain details.
+pass. Current production-source GUI testing also passes Dark/Light
+Ready → Stopped → real endpoint error → Ready, with all16 original main/Services
+frames directly reviewed. Same-app transitions, unchanged fixture files and
+normal-close daemon continuity pass. Three earlier observer attempts remain
+failed: the old any-match window query still found the main window after Settings
+closed. The corrected exact PID/name query and scoped accessible Close action
+prove all8 Settings closes; the false-positive query is retained as a native
+control. All4 private displays/buses/profiles/process trees and consumed failed
+captures are removed. Source evidence is `index-status-observation-current/`.
+This follow-up is not merged or included in current b020 packages. Hosted,
+native Windows and packaged acceptance remain required before delivery.
 
 ### Previous delivery receipts — historical source and artifact scopes
 

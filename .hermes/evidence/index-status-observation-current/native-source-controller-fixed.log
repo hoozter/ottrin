@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-observation-current/run-native-source.py", line 10, in <module>
+    code=worker.wait(timeout=240);assert code==0,code
+                                         ^^^^^^^
+AssertionError: 1
