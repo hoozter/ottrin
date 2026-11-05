@@ -1,0 +1,8 @@
+{
+  "source": ".hermes/evidence/service-feedback-current",
+  "sha256": {
+    "run-native-source.py": "16188c1a463914cf522ca1a2043adb35fde1e991959d225b503955497cf3ac2a",
+    "native-source-worker.py": "d3254ac5fde41c77a1cc0b8d38e92173153ac2309c4eeece8acb49d751eddd5d"
+  },
+  "scope": "Unchanged production source-GUI recovery checks; not native Windows long-registry-diagnostic acceptance"
+}

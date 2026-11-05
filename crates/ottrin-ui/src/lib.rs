@@ -20982,10 +20982,12 @@ impl OttrinApp {
     }
 
     fn render_service_status(ui: &mut egui::Ui, text: &str, color: Color32) {
-        ui.horizontal(|ui| {
-            let (dot, _) = ui.allocate_exact_size(egui::vec2(10.0, 10.0), egui::Sense::hover());
+        ui.horizontal_top(|ui| {
+            let line_height = ui.text_style_height(&egui::TextStyle::Body);
+            let (dot, _) =
+                ui.allocate_exact_size(egui::vec2(10.0, line_height), egui::Sense::hover());
             ui.painter().circle_filled(dot.center(), 4.0, color);
-            ui.label(RichText::new(text).color(color));
+            ui.add(egui::Label::new(RichText::new(text).color(color)).wrap());
         });
     }
 
@@ -27612,6 +27614,68 @@ mod tests {
         assert_eq!(app.settings_tab, SettingsTab::Services);
         assert!(app.search_ui.sqlite_schedule_status.is_none());
         assert!(app.service_action_rx.is_none());
+    }
+
+    #[test]
+    fn service_status_keeps_long_diagnostics_and_first_line_dot_inside_the_panel() {
+        let diagnostic = "RegOpenKeyTransactedW for HKCU\\Software\\Ottrin\\DesktopIntegration failed (Windows error 6801): Transaction support within the specified resource manager is not started or was shut down due to an error. (os error 6801)";
+        for width in [320.0, 760.0] {
+            for scale in [1.0, 1.7] {
+                let ctx = Context::default();
+                ctx.style_mut(|style| {
+                    style
+                        .text_styles
+                        .get_mut(&egui::TextStyle::Body)
+                        .unwrap()
+                        .size *= scale;
+                });
+                let mut line_height = 0.0;
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(width, 1200.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            ui.group(|ui| {
+                                line_height = ui.text_style_height(&egui::TextStyle::Body);
+                                OttrinApp::render_service_status(ui, diagnostic, Color32::RED);
+                            });
+                        });
+                    },
+                );
+                let text = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == diagnostic => {
+                            Some((text, shape.clip_rect))
+                        }
+                        _ => None,
+                    })
+                    .expect("Complete diagnostic remains rendered");
+                let bounds = Rect::from_min_size(text.0.pos, text.0.galley.size());
+                assert!(
+                    text.1.contains_rect(bounds),
+                    "Diagnostic overflow at width {width}, scale {scale}: {bounds:?}"
+                );
+                let dot = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Circle(circle) if circle.fill == Color32::RED => Some(circle),
+                        _ => None,
+                    })
+                    .expect("Status dot remains visible");
+                assert!(
+                    (dot.center.y - (bounds.top() + line_height / 2.0)).abs() < 1.0,
+                    "Status dot must align with the first line at width {width}, scale {scale}"
+                );
+            }
+        }
     }
 
     #[cfg(any(target_os = "linux", target_os = "windows"))]

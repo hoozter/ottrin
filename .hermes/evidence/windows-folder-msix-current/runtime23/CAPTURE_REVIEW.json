@@ -1,0 +1,18 @@
+{
+  "reviewed": true,
+  "settings_visible": true,
+  "all_captures_match_exact_hashes": true,
+  "captures": {
+    "main.png": "957dc0088f1362f61f65c050f2a700d6eb10dbe6e9a8135b285288f334611938",
+    "msix-startup-disabled.png": "1b3e8ce463259428303489fa0f0074cdf457580b36f9dc97f00466d311401b59",
+    "msix-startup-enabled.png": "d317447837719d41e9d0818432f97b3500e3aac4e91521934c70ff6414b36a13",
+    "msix-folder-status.png": "d317447837719d41e9d0818432f97b3500e3aac4e91521934c70ff6414b36a13"
+  },
+  "observations": [
+    "Directly reviewed four original captures. Main window is visible and coherent in Dark; no Light or full interface audit.",
+    "Actual startup checkbox Off/On and sign-in status match; index remains green Ready; historical action is explicitly neutral.",
+    "Folder diagnostic extends horizontally outside the window. The capture and actor vertical-bounds check do not establish full text visibility. Source wrapping correction is separately under verification.",
+    "Guest taskbar overlays bottom edge of Settings. No folder mutation or successful folder integration is claimed."
+  ],
+  "scope": "Fresh MSIX23 ordinary runtime only; no upgrade, signing, Store, or whole-theme acceptance."
+}

@@ -1,0 +1,8 @@
+{
+  "removed_transport": ".hermes/evidence/windows-folder-msix-current/runtime23/RESULTS.zip",
+  "bytes": 405211,
+  "sha256": "677e90e68a734d68658e5bdb4891436829fa7d4cf84089f1d3f082c8729d2717",
+  "verification": "Every archive member matches extracted original; one hard link, no fuser consumer, native domain and owned volumes removed",
+  "retained_stage": ".hermes/packaging-tmp/.windows-picker-stage",
+  "stage_purpose": "Exact 9f portable/NSIS/MSIX23 baseline for corrective package-context integration comparison; not stable delivery"
+}

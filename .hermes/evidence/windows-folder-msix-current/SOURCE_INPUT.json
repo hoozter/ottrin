@@ -1,0 +1,14 @@
+{
+  "source_revision": "9f81685ee550695be7b6e8b2135f2aba782623b2",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-folder-msix-current/source.zip",
+  "status": "consumed by native MSIX23 assembly; owned source archive retired",
+  "sha256": "ea698762760451391506fef92b57e81a79d0bc9e7f96a905dcbcd9a644e085bb",
+  "archive_bytes": 2585312,
+  "real_shallow_clone": true,
+  "filter_requested": true,
+  "source_scope": "Exact Git commit and sparse packager inputs; omitted blobs are not assembly inputs. No new Git revision or forged provenance.",
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

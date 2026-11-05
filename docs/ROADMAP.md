@@ -37,13 +37,29 @@ removal and earlier update proofs retain original source/artifact scopes; no
 fresh22 runtime or21-to22 upgrade acceptance is claimed. Actual21 folder
 integration still reports a transaction-resource error: independent software
 work, not an owner wait.
-A newer source checkpoint adds API names, HKCU paths and numeric Windows errors
-at transaction boundaries. Strict Windows platform lint and workspace formatting
-pass; the first failing packaged API still needs actual native observation.
+Newer source `9f81685e` adds API names, HKCU paths and numeric Windows errors
+at transaction boundaries; all four exact-source hosted jobs passed in
+[run42012178068](https://github.com/hoozter/ottrin/actions/runs/42012178068).
+A fresh development MSIX23 native ordinary-user case passes main-window launch,
+startup checkbox Off/On without restarting the daemon, actual reboot/login before
+any Ottrin CLI, and removal preserving files/preferences. The folder failure is
+now isolated to `RegOpenKeyTransactedW` opening Ottrin's HKCU state (error6801).
+The identical executable under the same ordinary user, outside package identity,
+returns the expected Off status. Neither observation mutates folder integration.
+This identifies a package-context failure, not its internal Windows mechanism or
+a successful integration fix. The original Settings diagnostic overflows the
+right edge; the actor's vertical-bounds check did not prove full visibility.
+Four originals were directly reviewed. Evidence and exact scopes:
+`.hermes/evidence/windows-folder-msix-current/MSIX_RUNTIME_ACCEPTANCE.json`.
+MSIX23 is an investigation candidate, not the stable delivered MSIX22.
 
 Both accepted cohorts are published at the stable dist paths. Superseded781
-packages/payloads and all current staging, owned guests/disks/desktops/buses,
-private profiles and consumed source/result transports are removed. The first
+packages/payloads and that delivery's staging, owned guests/disks/desktops/buses,
+private profiles and consumed source/result transports were removed. The newer
+9f Windows investigation baseline remains at
+`.hermes/packaging-tmp/.windows-picker-stage` (about281MiB), pending corrective
+package-context comparison. Its owned guests/disks/profiles are removed; its
+consumed source/result transports were retired after equality/consumer checks. The first
 native geometry fixture failed before daemon suspension; a corrected fresh run
 passed unchanged assertions/deadlines. Compact failure evidence and its original
 failure frame remain;16 superseded failed-case captures were retired after
@@ -64,6 +80,17 @@ sessions (0.33GiB) were retired with current caches retained. This correction is
 not in the delivered d032 packages and still needs relevant Windows/package
 acceptance. Evidence: `.hermes/evidence/service-feedback-current/ACCEPTANCE.json`.
 
+The MSIX23 capture also reproduced a shared status-label overflow. A newer
+source correction wraps complete diagnostics and aligns the status dot to the
+first line. The rendered regression fails before correction and passes at320/760
+points and1.0/1.7 font scales afterward. All517 UI tests pass (one existing
+ignored), native/Windows UI lint and release GUI build pass, and actual Linux
+source GUI recovery checks pass in Dark/Light with stable control geometry.
+Four targeted originals were reviewed; this is not native Windows wrapping or
+packaged acceptance. Seven obsolete incremental sessions were retired (0.39GiB);
+private test processes/display/bus/profile are removed. Evidence:
+`.hermes/evidence/service-status-wrap-current/ACCEPTANCE.json`.
+
 ### Current ordered work
 
 1. Finish Windows administrator Copy recovery: the externally anchored durable
@@ -82,8 +109,10 @@ acceptance. Evidence: `.hermes/evidence/service-feedback-current/ACCEPTANCE.json
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
    reversible Windows folder-integration caller/software gaps. Isolate the exact
-   MSIX registry API failure and supported packaged behavior while retaining
-   atomic ownership/rollback guarantees. Existing browser/Flatpak, native-package
+   MSIX packaged behavior now that the first failing API is isolated, while
+   retaining atomic ownership/rollback and uninstall guarantees. Windows-owned
+   [declarative Explorer registration](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/integrate-packaged-app-with-file-explorer) is a supported integration route to evaluate;
+   do not bypass the failure by dropping transactions or broadening virtualization. Existing browser/Flatpak, native-package
    and cooperating Windows caller receipts keep exact scopes. Do not infer
    universal Windows dialog replacement or repeat fulfilled matrices without
    changed inputs or a reproduced defect.

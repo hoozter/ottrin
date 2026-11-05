@@ -1,0 +1,21 @@
+{
+  "status": "Fresh MSIX23 ordinary runtime/startup/reboot/login/removal pass; packaged folder API failure isolated against same-profile exact-byte unpackaged control",
+  "goal": "active/incomplete",
+  "previous_goal_turn": "progress: fresh Windows evidence identifies first packaged failing API; status wrapping regression reproduced and source fix under verification",
+  "source_revision": "9f81685ee550695be7b6e8b2135f2aba782623b2",
+  "ci": {
+    "run": 42012178068,
+    "conclusion": "success",
+    "jobs": 4
+  },
+  "stable_packages": "d032 preserved; diagnostic cohort not promoted",
+  "native_runtime": "MSIX_RUNTIME_ACCEPTANCE.json",
+  "active_native_processes": false,
+  "cleanup": "All owned guests/disks/desktops/private profiles removed. Result archive retired after member equality checks. Exact Windows baseline retained for corrective comparison.",
+  "pending": [
+    "Implement supported MSIX folder integration preserving ownership/removal guarantees",
+    "Verify wrapped long status on native packaged interface",
+    "Deliver verified UI fixes through relevant native/package gates",
+    "Continue full independent roadmap queue"
+  ]
+}

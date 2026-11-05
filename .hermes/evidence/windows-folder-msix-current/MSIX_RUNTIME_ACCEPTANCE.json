@@ -1,0 +1,149 @@
+{
+  "folder_comparison": {
+    "packaged": {
+      "windows_error": 6801,
+      "capture": "msix-folder-status.png",
+      "application_pid": 7236,
+      "status": "observed read-only actual packaged Settings",
+      "package_identity": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr",
+      "api": "RegOpenKeyTransactedW",
+      "text": "RegOpenKeyTransactedW for HKCU\\Software\\Ottrin\\DesktopIntegration failed (Windows error 6801): Transaction support within the specified resource manager is not started or was shut down due to an error. (os error 6801)",
+      "mutating_folder_actions": 0
+    },
+    "unpackaged_same_profile": {
+      "same_windows_profile": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+      "application_sha256": "27EE54FFC5F217A751DCBE26D304D276741951E79F4585ED2CB86771DC8E04A2",
+      "exit": 0,
+      "stdout": "{\"enabled\":false,\"ready\":false,\"detail\":\"Off \u0393\u00c7\u00f6 Windows folder menus keep their current actions\",\"default_enabled\":false,\"default_ready\":false}\n",
+      "status": "read-only control observed",
+      "stderr": "",
+      "package_identity_code": 15700,
+      "mutating_folder_actions": 0,
+      "folder_status": {
+        "enabled": false,
+        "ready": false,
+        "detail": "Off \u0393\u00c7\u00f6 Windows folder menus keep their current actions",
+        "default_enabled": false,
+        "default_ready": false
+      }
+    },
+    "conclusion": "Exact first failing API identified under package identity; no successful folder integration or underlying Windows mechanism proved",
+    "transport_limit": "Control stdout used a non-UTF8 reader; em dash is mojibake. Raw text retained; ASCII booleans, native code, SID and binary hash are unaffected"
+  },
+  "capture_review": {
+    "reviewed": true,
+    "settings_visible": true,
+    "all_captures_match_exact_hashes": true,
+    "captures": {
+      "main.png": "957dc0088f1362f61f65c050f2a700d6eb10dbe6e9a8135b285288f334611938",
+      "msix-startup-disabled.png": "1b3e8ce463259428303489fa0f0074cdf457580b36f9dc97f00466d311401b59",
+      "msix-startup-enabled.png": "d317447837719d41e9d0818432f97b3500e3aac4e91521934c70ff6414b36a13",
+      "msix-folder-status.png": "d317447837719d41e9d0818432f97b3500e3aac4e91521934c70ff6414b36a13"
+    },
+    "observations": [
+      "Directly reviewed four original captures. Main window is visible and coherent in Dark; no Light or full interface audit.",
+      "Actual startup checkbox Off/On and sign-in status match; index remains green Ready; historical action is explicitly neutral.",
+      "Folder diagnostic extends horizontally outside the window. The capture and actor vertical-bounds check do not establish full text visibility. Source wrapping correction is separately under verification.",
+      "Guest taskbar overlays bottom edge of Settings. No folder mutation or successful folder integration is claimed."
+    ],
+    "scope": "Fresh MSIX23 ordinary runtime only; no upgrade, signing, Store, or whole-theme acceptance."
+  },
+  "status": "pass exact MSIX23 functional runtime, real reboot/login and removal; visual scope requires capture review",
+  "package": {
+    "runtime_script_sha256": "4ed3253aa863219ebb5893a236c42786ac7a87fe69ffa144e8afa474965b6d91",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "af1d7c7225b9a3fcc6a32841866e53d78f53d7756ec2fdc90a87abce1cf8b165",
+    "source_revision": "9f81685ee550695be7b6e8b2135f2aba782623b2",
+    "version": "0.1.0.23",
+    "startup_enabled": true
+  },
+  "source_revision": "9f81685ee550695be7b6e8b2135f2aba782623b2",
+  "runtime_result": ".hermes/evidence/windows-folder-msix-current/runtime23/RUNTIME_RESULT.json",
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          7720
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          7720
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          7720
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          7720
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr"
+  },
+  "real_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 5300,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXa5ae6855cb87\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B820000000000000000"
+    },
+    "boot_ticks": 639294770825000000,
+    "administrator": false
+  },
+  "removal": {
+    "package_removed": true,
+    "package_processes_removed": true,
+    "fixture_preserved": true,
+    "preferences_preserved": true,
+    "remaining_index_tasks": []
+  },
+  "state_reader_native_smoke": {
+    "transient_milliseconds": 333.39000000000004,
+    "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed": true,
+    "persistent_lock_seconds": 2.0036617
+  },
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/windows-folder-msix-current/runtime23/results/main.png": "957dc0088f1362f61f65c050f2a700d6eb10dbe6e9a8135b285288f334611938",
+    ".hermes/evidence/windows-folder-msix-current/runtime23/results/msix-startup-disabled.png": "1b3e8ce463259428303489fa0f0074cdf457580b36f9dc97f00466d311401b59",
+    ".hermes/evidence/windows-folder-msix-current/runtime23/results/msix-startup-enabled.png": "d317447837719d41e9d0818432f97b3500e3aac4e91521934c70ff6414b36a13",
+    ".hermes/evidence/windows-folder-msix-current/runtime23/results/msix-folder-status.png": "d317447837719d41e9d0818432f97b3500e3aac4e91521934c70ff6414b36a13"
+  },
+  "fixture_recovery": null,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Fresh MSIX23 only; no MSIX22-to-23 upgrade acceptance",
+    "Unsigned development deployment in disposable software desktop; no signing, Store or physical hardware acceptance",
+    "Folder status overflows horizontally in this source; source wrapping fix has separate verification. No full-text visibility or successful folder integration acceptance",
+    "Windows native preview pointer check and full theme audit remain open",
+    "Stable-path delivery has its own authoritative Windows candidate manifest; this receipt proves only the stated native runtime scope"
+  ]
+}

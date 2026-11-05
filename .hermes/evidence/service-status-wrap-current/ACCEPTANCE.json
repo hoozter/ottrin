@@ -1,0 +1,40 @@
+{
+  "status": "pass source status wrapping regression and Linux GUI recovery scope; not packaged",
+  "source_head_at_verification": "9f81685ee550695be7b6e8b2135f2aba782623b2",
+  "dirty_source_file_sha256": "4fb72ec2d501df468256830d61c21c956c5bc3ff45210b5043562b34169bb40d",
+  "gui_sha256": "cc3d74defff9cec1e593a33302fcffbe5e3e8a0004c566c15b2c6e1edbbb06ce",
+  "checks": [
+    "Rendered regression failed before correction:320-point panel text reached1333points",
+    "After correction, full text fits320/760-point panels at1.0/1.7font scales and dot aligns with first line",
+    "517 UI tests pass; one existing ignored",
+    "Whole-workspace format and strict native/Windows GNU UI lint pass",
+    "Linux production source GUI Ready/Stopped/real endpoint error/Ready in both themes; controls retain geometry, disclosure/scrolling works, normal close preserves daemon and owned files"
+  ],
+  "direct_original_captures_reviewed": {
+    "Dark-ready-services.png": "9abdda2cbe91e9950c2701a525beb10235e6ebaa047da20941c7f29b24f89525",
+    "Dark-failed-services.png": "82412a5db9b5164dcf5e21125fb388e9c9a40de51a309beb122cfea05f82df2c",
+    "Light-ready-services.png": "f2cf41f74bad996fb86872a24b8566374739091fa332077f6bfd189f842f8b1a",
+    "Light-failed-services.png": "c9e6dd9db9da9d365ebc44b82272a06371152a318deb706290b0f295404c5131"
+  },
+  "limits": [
+    "Windows MSIX23 original overflow remains in that older candidate; no native packaged wrapping acceptance",
+    "Private Linux software X11 only; main configured900x720, Settings production default920x640; no minimum-size,600-high or all-interface acceptance",
+    "Stable d032 deliverables unchanged; no signing, Store, protected Copy or owner acceptance"
+  ],
+  "cleanup": {
+    "private_desktop": "native-source/TEARDOWN.json",
+    "profile_removed": true,
+    "obsolete_incremental_sessions_removed": 7,
+    "filesystem_free_delta": 423542784
+  },
+  "retained_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/service-status-wrap-current",
+      "purpose": "Compact receipts/producers and scoped originals pending next delivery"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/release/ottrin-app",
+      "purpose": "Current shared source GUI output, consumed/replaced by next coherent build; not stable package"
+    }
+  ]
+}

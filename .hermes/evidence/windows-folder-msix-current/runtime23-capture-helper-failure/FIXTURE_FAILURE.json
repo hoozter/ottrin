@@ -1,0 +1,16 @@
+{
+  "status": "terminal QA capture-helper error before saved folder observation; no product change",
+  "correction": "Use existing PickerNative.GetForegroundWindow, preserving the foreground assertion",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "archive_sha256": "ccd1600ef0ac08f4a3714326b20210b401020ae4617391b1868db1e8a373e5d7",
+  "duplicate_result_transport_removed_after_extraction": true
+}

@@ -1,0 +1,15 @@
+{
+  "goal": "active/incomplete",
+  "status": "pass source status wrapping regression and Linux GUI recovery scope; not packaged",
+  "next": [
+    "Native/package wrapping acceptance and delivery",
+    "Supported MSIX folder integration preserving ownership/removal",
+    "Remaining ordered roadmap implementation"
+  ],
+  "cleanup": {
+    "private_desktop": "native-source/TEARDOWN.json",
+    "profile_removed": true,
+    "obsolete_incremental_sessions_removed": 7,
+    "filesystem_free_delta": 423542784
+  }
+}
