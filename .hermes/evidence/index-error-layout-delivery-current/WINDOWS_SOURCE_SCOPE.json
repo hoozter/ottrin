@@ -1,0 +1,12 @@
+{
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "previous_delivered_source": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "changed_product_files": [
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "current_ui_receipt": ".hermes/evidence/index-error-layout-delivery-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+  "current_msix_assembly": ".hermes/evidence/index-error-layout-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+  "previous_runtime_receipt": ".hermes/evidence/index-status-final-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+  "previous_update_receipt": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json",
+  "lifecycle_basis": "Current22 native assembly and58-file equality plus exact same GUI in current ordinary-user NSIS error/disclosure/geometry/recovery and uninstall acceptance. MSIX21 actual ordinary runtime/startup/reboot/login/removal remains historical781 source/artifacts. Packaging unchanged and product delta is Services layout only; no fresh21-to22 upgrade or22 runtime claim."
+}

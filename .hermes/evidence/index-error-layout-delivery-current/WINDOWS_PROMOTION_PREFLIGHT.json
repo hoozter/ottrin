@@ -1,0 +1,23 @@
+{
+  "status": "ready for guarded Windows publication",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "d3af3d4e146d24c1393514bc9d5796361afb5aee6219a3e8ec03497a72d5e4a7",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "d4f116532d3dff303db93aecd2b6799d0629590f069216d64ab5170c40e80180",
+    "Ottrin-0.1.0-windows-x64-development.msix": "a62e4a6bd94217239bf310a1ef927de7995f1c32448d259b71791add89519f52"
+  },
+  "mutation_performed": false,
+  "all_current_native_consumers_terminal": true,
+  "historical_update_scope": {
+    "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+    "previous_delivered_source": "781444efd5ed4f67c6848127935366356be5b6d1",
+    "changed_product_files": [
+      "crates/ottrin-ui/src/lib.rs"
+    ],
+    "current_ui_receipt": ".hermes/evidence/index-error-layout-delivery-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+    "current_msix_assembly": ".hermes/evidence/index-error-layout-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "previous_runtime_receipt": ".hermes/evidence/index-status-final-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "previous_update_receipt": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json",
+    "lifecycle_basis": "Current22 native assembly and58-file equality plus exact same GUI in current ordinary-user NSIS error/disclosure/geometry/recovery and uninstall acceptance. MSIX21 actual ordinary runtime/startup/reboot/login/removal remains historical781 source/artifacts. Packaging unchanged and product delta is Services layout only; no fresh21-to22 upgrade or22 runtime claim."
+  }
+}

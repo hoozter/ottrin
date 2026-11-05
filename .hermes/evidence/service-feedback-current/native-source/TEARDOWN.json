@@ -1,0 +1,28 @@
+{
+  "status": "closed",
+  "profile": "/var/tmp/.ottrin-picker-qa-bwij5400",
+  "owned_processes_reaped": [
+    {
+      "pid": 2838099,
+      "exit": 0
+    },
+    {
+      "pid": 2838102,
+      "exit": 0
+    },
+    {
+      "pid": 2838103,
+      "exit": 15
+    },
+    {
+      "pid": 2838183,
+      "exit": 0
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [],
+  "profile_removed": true
+}

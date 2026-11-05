@@ -1,0 +1,43 @@
+{
+  "status": "pass source feedback semantics; not packaged and full UI audit remains open",
+  "source_head_at_verification": "d7b969666463e08adeea65dc75cfb6e1c56b8142",
+  "dirty_source_file_sha256": "c3f5ceede1f73120311d88a0b9256a28a2750ddce7bdab925ac9f66fad91e70e",
+  "gui_sha256": "694d06fa0d4c633793bdf666b35d5106574035de5cf7876bf2c5755d839bc24d",
+  "packaged": false,
+  "checks": [
+    "Initial real failed-store rendered regression failed before correction; final compact-history/current-error color and complete-failure checks pass in Dark and Light",
+    "All516 UI tests pass,1 existing ignored",
+    "Strict native and Windows GNU all-target UI lint pass",
+    "Actual source GUI successful Start/restart while owned daemon is Ready, then stopped/wrong-type endpoint/Ready, keeps qualified historical feedback and authoritative live status",
+    "Recovery geometry, diagnostic disclosure/scrolling, normal GUI close/daemon continuity and unchanged owned files pass"
+  ],
+  "direct_original_captures_reviewed": {
+    "Dark-ready-services.png": "5197ec3ef2a2d65cfbd13952f51f6fba04944ef52431221aab8d59b52728c960",
+    "Dark-failed-services.png": "599e045806d55e5cad011f042f91003246e4c1bb072bfb6e80a2ee18edaec068",
+    "Light-ready-services.png": "e11e980a797edb4871ed86b461a766b091342771d9c1e0760594eef0a91452e1",
+    "Light-failed-services.png": "8819bfbc373291492682e72d4768712f4ab77207ef2392bf21d96b5806617dfb"
+  },
+  "native_scope_correction": "The raw producer scope says900x720: this refers only to configured main window size. Settings uses its production default child viewport. No all-size/minimum-size or600-high layout acceptance is claimed. The producer is retained unchanged; this note corrects its scope wording.",
+  "limits": [
+    "Source snapshot proof only; neither staged d032 packages nor stable781 contain this correction",
+    "No fresh Windows native feedback/packaged acceptance; prior d032 Windows layout evidence retains its old source/artifacts",
+    "No whole interface/theme property, minimum window, root helper setup, protected Copy, physical GPU or user acceptance"
+  ],
+  "cleanup": {
+    "desktop_receipt": "native-source/TEARDOWN.json",
+    "profile_removed": true,
+    "obsolete_incremental_sessions_removed": 5,
+    "filesystem_free_delta": 356831232,
+    "relative_root_refusal": "First cleanup call refused relative candidate paths before deletion; same five candidates were re-inspected at normalized absolute roots and normal safeguards passed"
+  },
+  "retained_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/service-feedback-current",
+      "purpose": "Current source-fix originals, regression/focused/full/lint/build receipts and cleanup evidence pending next source-cohort packaging"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/release/ottrin-app",
+      "purpose": "Normal shared release output, current source GUI; not a stable user package; future coherent cohort build consumes/replaces it"
+    }
+  ]
+}

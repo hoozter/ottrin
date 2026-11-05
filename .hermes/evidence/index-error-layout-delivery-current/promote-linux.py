@@ -107,6 +107,7 @@ manifest['limits']=[
  'Actual mounted AppImage on owned software X11. Six targeted Dark/Light error/collapse/scroll originals directly reviewed; automated Ready/Stopped/error/Ready, stable control geometry and full diagnostic visibility pass. No whole-interface or physical graphics acceptance.',
  'Current daemon, helper and HTML bytes exactly match previous delivered781. Their retained native runtime/wire checks keep original source scopes; no fresh idle/large-corpus, elevated Copy or personal helper authentication claim.',
  'Native distribution installation, startup toggle, caption/footer and theme-name acceptance retain original receipt source/artifact scopes.',
+ 'Historical service-action feedback can outlive current readiness; the separate service-feedback-current source fix is not in this cohort.',
  'No public release, signing, Store or MSI acceptance.',
  f'Packaged manuals are build-time snapshots at {source[:8]}; repository metadata records later delivery.'
 ]

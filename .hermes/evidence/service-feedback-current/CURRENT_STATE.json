@@ -1,0 +1,10 @@
+{
+  "goal": "active/incomplete",
+  "status": "Source fixed and locally verified; native Windows/package delivery still required",
+  "acceptance": "ACCEPTANCE.json",
+  "pending": [
+    "Fresh relevant Windows/native/package acceptance for this source feedback correction in next coherent cohort",
+    "Continue canonical Windows Copy coordinator/caller registry, full UI/theme audit, supported picker/folder integration, MSI and remaining requirements",
+    "Keep owner/external acceptance separate; full roadmap remains active"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "status": "unchanged producer source references",
+  "references": [
+    {
+      "materialized": "verify-source.py",
+      "authoritative_source": ".hermes/evidence/index-error-layout-current/verify-source.py",
+      "git_revision": "d7b969666463e08adeea65dc75cfb6e1c56b8142",
+      "sha256": "8ac6085a27204b7f7738c5ad7cc33d88a744dcda34ccc580fa840da4e2542611",
+      "usage": "Materialize unchanged producer under case root to bind __file__ parent. The full verifier executes all checks; no hardcoded test-completion phase."
+    },
+    {
+      "materialized": "run-native-source.py",
+      "authoritative_source": ".hermes/evidence/index-error-layout-current/run-native-source.py",
+      "git_revision": "d7b969666463e08adeea65dc75cfb6e1c56b8142",
+      "sha256": "16188c1a463914cf522ca1a2043adb35fde1e991959d225b503955497cf3ac2a",
+      "usage": "Materialize unchanged producer under case root to bind __file__ parent. The full verifier executes all checks; no hardcoded test-completion phase."
+    }
+  ]
+}

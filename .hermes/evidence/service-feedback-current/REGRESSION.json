@@ -1,0 +1,11 @@
+{
+  "status": "reproduced before source correction; final expanded regression passes within full516-test suite",
+  "before_observation": "Initial prototype failed with Missing rendered feedback: Last completed action,1 failed,0 passed",
+  "before_product_baseline": "d7b969666463e08adeea65dc75cfb6e1c56b8142:crates/ottrin-ui/src/lib.rs",
+  "before_log_sha256": "72c022364b0d1de76c0fe60913e61ea4e20767a053e1987247d62ea7253bb213",
+  "final_test": "tests::service_action_feedback_is_historical_when_current_index_has_failed",
+  "final_source_sha256": "c3f5ceede1f73120311d88a0b9256a28a2750ddce7bdab925ac9f66fad91e70e",
+  "test_evolution": "Final regression extends the original failed-store observation to both themes and a compact single-row history prefix, preserving complete failures and current live error severity",
+  "full_ui_result": "516 passed,0 failed,1 existing ignored",
+  "not_packaged": true
+}

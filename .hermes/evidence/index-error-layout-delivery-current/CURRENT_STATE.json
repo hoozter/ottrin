@@ -1,39 +1,30 @@
 {
-  "status": "Current d032 Linux and Windows installed layout acceptance and native MSIX22 assembly pass; all owned guests/desktops/state removed; exact-source hosted Windows workspace suite remains live, stable781 retained",
+  "status": "Exact d032 Linux/Windows cohort delivered; all four hosted jobs pass; managed Linux index Ready with preferences/startup/database preserved; superseded packages and staging removed",
   "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
   "hosted_ci": {
     "id": 41998168676,
     "url": "https://github.com/hoozter/ottrin/actions/runs/41998168676"
   },
-  "stable_deliverables": "781 at dist/packages and dist/windows-candidate, preserved",
+  "stable_deliverables": "d032 at dist/packages and dist/windows-candidate; MSIX22 assembly current,21 runtime/login/removal historical",
   "goal": "active/incomplete",
   "source_acceptance": "../index-error-layout-current/ACCEPTANCE.json",
   "pending": [
-    "Exact-source hosted Windows workspace/lint/release completion",
-    "Guarded stable publication and managed Linux service restart with preference/database/startup preservation",
-    "Delivery documentation/checkpoint push"
+    "Package and natively verify newer historical-feedback source correction in next coherent source cohort",
+    "Continue canonical Windows Copy coordinator/caller registry, full UI/theme audit, supported picker/folder integration, MSI and final requirements audit"
   ],
   "cleanup_owner": "Serial build producers use shared caches, register subprocess teardown and remove failed owned staging; successful staging is retained only for current acceptance and guarded replacement",
   "retained_storage": [
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-      "purpose": "Current committed-source Linux build and upcoming package acceptance; owned producer cleans failures, guarded publication removes success staging"
-    },
-    {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "Upcoming same-cohort Windows portable/NSIS build and native acceptance; same teardown contract"
-    },
-    {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current",
-      "purpose": "Current build receipts/logs and acceptance inputs; active producer handle in ACTIVE_HANDLES.json"
+      "purpose": "Delivered d032 scoped originals, compact failure evidence and promotion receipts; no pending build staging or live QA"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current",
-      "purpose": "Published781 acceptance and original captures/failure diagnostics; compact receipts committed, originals retained for current-deliverable audit"
+      "purpose": "Historical781 acceptance/originals used by unchanged-runtime/helper evidence; superseded usable packages removed"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-current",
-      "purpose": "Verified source-layout original captures and build/test evidence; compact receipts committed, current package build consumes the same source change"
+      "purpose": "Historical source-layout test/native baseline and reusable source QA producer; current actual packaged proof is in this delivered cohort"
     }
   ],
   "previous_attempt": "attempt-1: Linux AppStream homepage reachability HTTP504, failed staging retired; Windows not started",
@@ -61,5 +52,6 @@
     "active_native_resources": "native-windows/OWNER.json: registered private guest, console, disk and actor teardown"
   },
   "msix_current_scope": "Actual22 assembly/58-file equality and fresh daemon1000-file/idle checks;21 ordinary runtime/login/removal keeps original781 source scope",
-  "open_ui_findings": "OPEN_UI_FINDINGS.json: stale historical success banner remains above newer live error; next coherent UI work, not owner-dependent"
+  "open_ui_findings": "OPEN_UI_FINDINGS.json: stale historical success banner remains above newer live error; next coherent UI work, not owner-dependent",
+  "source_followup": "../service-feedback-current/ACCEPTANCE.json"
 }

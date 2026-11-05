@@ -21100,11 +21100,13 @@ impl OttrinApp {
         ui.label("Set up and manage Ottrin's optional system integration.");
         ui.add_space(12.0);
         if let Some(result) = &self.service_action_result {
-            let (text, color) = match result {
-                Ok(text) => (text, ready_color),
-                Err(text) => (text, c.error),
+            let (heading, text, color) = match result {
+                Ok(text) => ("Last completed action", text, c.text_muted),
+                Err(text) => ("Last action failed", text, c.error),
             };
-            ui.label(RichText::new(text).color(color));
+            // Action completion is history. Current helper/index observations
+            // below remain the authority for readiness after a later failure.
+            ui.label(RichText::new(format!("{heading}: {text}")).color(color));
             ui.add_space(8.0);
         }
         let busy = self.service_action_rx.is_some();
@@ -27610,6 +27612,93 @@ mod tests {
         assert_eq!(app.settings_tab, SettingsTab::Services);
         assert!(app.search_ui.sqlite_schedule_status.is_none());
         assert!(app.service_action_rx.is_none());
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[test]
+    fn service_action_feedback_is_historical_when_current_index_has_failed() {
+        let root = tempfile::tempdir().unwrap();
+        let blocked = root.path().join("not-a-directory");
+        std::fs::write(&blocked, b"owned test fixture").unwrap();
+        for theme in [ThemeMode::Dark, ThemeMode::Light] {
+            for result in [
+                Ok("Background Ottrin index service restarted and ready.".to_owned()),
+                Err("Administrator permission was denied.".to_owned()),
+            ] {
+                let mut app = OttrinApp::default();
+                app.state.config.theme = theme;
+                app.colors = Colors::for_config(&app.state.config, None);
+                app.search_service.local = SearchService::new_with_store_path(
+                    app.state.config.search.clone(),
+                    blocked.join("search.db"),
+                );
+                app.search_service.start();
+                assert_eq!(
+                    app.search_service.observation().diagnostics.status,
+                    SearchIndexStatus::Unavailable,
+                    "Exercise an actual failed store, not an injected display label"
+                );
+                app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
+                    source: "none".into(),
+                    enabled: Some(false),
+                    detail: "Not installed".into(),
+                });
+                app.service_action_result = Some(result.clone());
+                let ctx = Context::default();
+                #[cfg(target_os = "linux")]
+                ctx.data_mut(|data| {
+                    data.insert_temp(
+                        egui::Id::new("html-sandbox-status"),
+                        (
+                            std::time::Instant::now(),
+                            ottrin_preview::HtmlPreviewRuntimeStatus::Ready,
+                        ),
+                    );
+                });
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(1800.0))),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            let colors = app.colors;
+                            app.render_services_settings(ui, colors);
+                        });
+                    },
+                );
+                let text = |label: &str| {
+                    output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text) if text.galley.job.text == label => Some(text),
+                            _ => None,
+                        })
+                        .unwrap_or_else(|| panic!("Missing rendered feedback: {label}"))
+                };
+                let (heading, message, color) = match &result {
+                    Ok(message) => ("Last completed action", message, app.colors.text_muted),
+                    Err(message) => ("Last action failed", message, app.colors.error),
+                };
+                assert!(
+                    text(&format!("{heading}: {message}"))
+                        .galley
+                        .job
+                        .sections
+                        .iter()
+                        .all(|section| section.format.color == color)
+                );
+                assert!(
+                    text("Needs attention")
+                        .galley
+                        .job
+                        .sections
+                        .iter()
+                        .all(|section| section.format.color == app.colors.error)
+                );
+            }
+        }
     }
 
     #[test]

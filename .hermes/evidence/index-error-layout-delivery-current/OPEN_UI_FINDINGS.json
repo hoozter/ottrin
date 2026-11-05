@@ -1,10 +1,12 @@
 {
-  "status": "open software defect",
+  "status": "Source follow-up verified locally; old staged d032 cohort still contains this defect",
   "evidence": [
     "native-windows/results/services-Dark-live-error.png",
     "native-windows/results/services-Light-live-error.png"
   ],
   "problem": "Persistent service-action success message says restarted and ready while live current status correctly says Needs attention",
   "required_outcome": "Current service status remains authoritative; stale action results must not imply current readiness after a later runtime error. Add meaningful rendered transition regression and actual native verification in next coherent UI/source delivery.",
-  "scope": "New finding from current native fault; not a failure of the recovery-control geometry/disclosure correction and not owner-dependent"
+  "scope": "New finding from current native fault; not a failure of the recovery-control geometry/disclosure correction and not owner-dependent",
+  "source_followup": ".hermes/evidence/service-feedback-current/ACCEPTANCE.json",
+  "resolved_in_staged_or_stable_packages": false
 }
