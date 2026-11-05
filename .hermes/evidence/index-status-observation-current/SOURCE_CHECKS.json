@@ -1,0 +1,34 @@
+{
+  "status": "pass source worker behavior, full UI suite, formatting and strict native/Windows lint; native package acceptance pending",
+  "base_revision": "050e2322885698b5353f82e6ce1a1791b84c5c5a",
+  "source_files_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "4de0352653d65abd61f07043d95925095e735c953b83d24151097039fd4b8c30",
+    "crates/ottrin-ui/src/remote_index.rs": "6341666793cd196cad965c48b5190a3abac033a143bd606bff493d969ff843d5"
+  },
+  "tests": {
+    "worker_tests": 9,
+    "full_ui_passed": 514,
+    "full_ui_ignored": 1,
+    "test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc",
+    "new_regressions": [
+      "Stopped endpoint -> failed probe -> live RPC error -> Ready recovery; preserve real RPC/probe errors",
+      "Blocked endpoint probe leaves GUI snapshot reads nonblocking; repeated snapshot reads perform no endpoint I/O"
+    ]
+  },
+  "checks": [
+    "cargo fmt --all --check",
+    "cargo clippy -p ottrin-ui --all-targets -- -D warnings",
+    "cargo clippy -p ottrin-ui --all-targets --target x86_64-pc-windows-gnu -- -D warnings"
+  ],
+  "implementation": [
+    "One atomic background observation contains diagnostics and stopped state",
+    "Endpoint probe runs on existing ordered RPC worker only after RPC failure; no render-thread socket/pipe inspection",
+    "Services and main index indicator share one status label/color mapping; stopped is muted, running uses semantic green, real failures remain errors",
+    "Stopped tooltip has no fabricated Error line; no search daemon protocol/API or startup setting change"
+  ],
+  "limits": [
+    "Source checks only; not included in b020 staged deliverables or current24af usable previews",
+    "Current packaged stopped/error/recovery visual acceptance still required",
+    "No new personal CPU, full interface or full roadmap acceptance"
+  ]
+}

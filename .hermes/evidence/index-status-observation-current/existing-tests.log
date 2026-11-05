@@ -1,0 +1,9 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+error[E0425]: cannot find type `ThemeColors` in this scope
+     --> crates/ottrin-ui/src/lib.rs:25964:9
+      |
+25964 |     c: &ThemeColors,
+      |         ^^^^^^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `ottrin-ui` (lib test) due to 1 previous error

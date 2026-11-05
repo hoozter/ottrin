@@ -180,6 +180,27 @@ because its console-helper input was absent; its domain/volumes were removed and
 the failure receipt retained. The corrected run supplies the helper, and the
 canonical controller now rejects this missing input before allocating a VM.
 
+### Stopped-index presentation — source follow-up, not delivered
+
+The main-window index indicator treated every unavailable daemon as an error,
+while Services separately probed its endpoint during rendering to recognize a
+stopped service. The UI now consumes one atomic background observation for both.
+The existing ordered RPC worker checks endpoint presence after an RPC failure;
+a missing/stale stopped listener produces neutral Stopped text/icon and a truthful
+tooltip. Reachable-but-failing RPCs, endpoint ownership/probe failures and worker
+startup failures retain error presentation. Ready/loading/indexing use the same
+semantic green in both places. No render-thread socket/pipe probe remains.
+
+All514 UI tests pass with one existing ignored test, plus strict native/Windows
+lint and formatting. Two new real worker regressions cover stopped/error/recovery
+transitions and a blocked endpoint probe while GUI snapshot reads continue.
+Evidence: `index-status-observation-current/SOURCE_CHECKS.json`. This source
+follow-up is separate from the b020 replacement cohort and needs its own packaged
+visual acceptance. Existing current previews and their evidence are unchanged.
+Five obsolete incremental sessions were removed with locks and newest exact
+compiler configurations retained; measured recovery is0.33GiB. Test profiles and
+processes are removed. No new package or VM was allocated for this source pass.
+
 The Windows Copy coordinator investigation is refreshed in
 `windows-cleanup-coordinator-current/CURRENT_FINDINGS.json`. The all-member
 metadata preparation barrier is already implemented. Restart authority still

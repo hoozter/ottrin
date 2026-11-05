@@ -1,0 +1,20 @@
+{
+  "verified_at": "2026-11-05T04:57:52.540003+00:00",
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Existing non-dumpable systemd PAM session helper predates this task; observed exact comm/argv0/UID and start identity. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this system process and its authority. Scoped removal covers only rustc-obsolete debug incremental sessions with exclusive session locks and newest per-configuration state retained; no current binaries or data. Identity exception applies only to this exact recorded process."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Existing non-dumpable KDE polkit authentication agent predates this task; observed exact comm/argv0/UID and start identity. exe/cwd/maps remain unreadable, not claimed inspected. Preserve this system process and its authority. Scoped removal covers only rustc-obsolete debug incremental sessions with exclusive session locks and newest per-configuration state retained; no current binaries or data. Identity exception applies only to this exact recorded process."
+    }
+  ],
+  "scope": "Exact current identities revalidated from comm, cmdline digest, UID and start ticks. Same two existing nondumpable session processes preserved; scoped obsolete incremental deletion retains newest finalized cache per crate/configuration."
+}

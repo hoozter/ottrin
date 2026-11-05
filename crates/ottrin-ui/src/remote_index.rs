@@ -12,6 +12,7 @@ use std::time::{Duration, Instant};
 trait IndexRpc: Send + Sync {
     fn configure(&self, config: SearchConfig) -> Result<(), String>;
     fn diagnostics(&self) -> Result<SearchIndexDiagnostics, String>;
+    fn endpoint_present(&self) -> Result<bool, String>;
     fn query(
         &self,
         query: SearchQuery,
@@ -26,6 +27,18 @@ impl IndexRpc for SearchDaemonClient {
     }
     fn diagnostics(&self) -> Result<SearchIndexDiagnostics, String> {
         SearchDaemonClient::diagnostics(self)
+    }
+    fn endpoint_present(&self) -> Result<bool, String> {
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
+        {
+            SearchDaemonClient::endpoint_present(self)
+        }
+        #[cfg(all(unix, not(target_os = "linux")))]
+        {
+            ottrin_search::default_daemon_socket_path()?
+                .try_exists()
+                .map_err(|e| e.to_string())
+        }
     }
     fn query(
         &self,
@@ -43,8 +56,22 @@ impl IndexRpc for SearchDaemonClient {
         Ok(bytes)
     }
 }
+/// One coherent background observation; rendering never probes a socket or pipe.
+#[derive(Clone, PartialEq)]
+pub(crate) struct Observation {
+    pub(crate) diagnostics: SearchIndexDiagnostics,
+    pub(crate) stopped: bool,
+}
+impl From<SearchIndexDiagnostics> for Observation {
+    fn from(diagnostics: SearchIndexDiagnostics) -> Self {
+        Self {
+            diagnostics,
+            stopped: false,
+        }
+    }
+}
 struct Shared {
-    snapshot: Mutex<SearchIndexDiagnostics>,
+    snapshot: Mutex<Observation>,
     refresh_queued: AtomicBool,
     stopped: AtomicBool,
     maintenance_active: AtomicBool,
@@ -52,10 +79,10 @@ struct Shared {
     repaint: ResultRepaint,
 }
 impl Shared {
-    fn publish(&self, diagnostics: SearchIndexDiagnostics) {
+    fn publish(&self, observation: Observation) {
         let mut snapshot = self.snapshot.lock().expect("index snapshot");
-        if *snapshot != diagnostics {
-            *snapshot = diagnostics;
+        if *snapshot != observation {
+            *snapshot = observation;
             drop(snapshot);
             self.repaint.wake();
         }
@@ -138,7 +165,7 @@ impl RemoteIndex {
             SearchIndexDiagnostics::unavailable("Connecting to the index service");
         diagnostics.status = SearchIndexStatus::Loading;
         let shared = Arc::new(Shared {
-            snapshot: Mutex::new(diagnostics),
+            snapshot: Mutex::new(diagnostics.into()),
             refresh_queued: AtomicBool::new(false),
             stopped: AtomicBool::new(false),
             maintenance_active: AtomicBool::new(false),
@@ -269,7 +296,7 @@ impl RemoteIndex {
                                     }
                                     SearchIndexStatus::Unavailable => Duration::from_secs(2),
                                 };
-                            state.publish(diagnostics);
+                            state.publish(diagnostics.into());
                         }
                         Ok(None) => {
                             if !is_query {
@@ -277,9 +304,31 @@ impl RemoteIndex {
                             }
                         }
                         Err(error) => {
+                            let endpoint = client.as_ref().map(|client| client.endpoint_present());
+                            let mut observation =
+                                Observation::from(SearchIndexDiagnostics::unavailable(error));
+                            match endpoint {
+                                Some(Ok(false)) => {
+                                    observation.stopped = true;
+                                    observation.diagnostics.detail = Some(
+                                        "Indexing is stopped. Click to manage the index service."
+                                            .into(),
+                                    );
+                                    observation.diagnostics.last_error = None;
+                                }
+                                Some(Err(probe_error)) => {
+                                    observation
+                                        .diagnostics
+                                        .last_error
+                                        .as_mut()
+                                        .expect("failed RPC")
+                                        .push_str(&format!("; {probe_error}"));
+                                }
+                                Some(Ok(true)) | None => {}
+                            }
                             client = None;
                             needs_configuration = true;
-                            state.publish(SearchIndexDiagnostics::unavailable(error));
+                            state.publish(observation);
                             poll_at = Instant::now() + Duration::from_secs(2);
                         }
                     }
@@ -288,7 +337,8 @@ impl RemoteIndex {
         if let Err(error) = worker {
             *shared.snapshot.lock().expect("index snapshot") = SearchIndexDiagnostics::unavailable(
                 format!("Cannot start index connection worker: {error}"),
-            );
+            )
+            .into();
         }
         Self {
             handle: Handle { sender, shared },
@@ -297,7 +347,11 @@ impl RemoteIndex {
     pub(crate) fn handle(&self) -> Handle {
         self.handle.clone()
     }
+    #[cfg(test)]
     pub(crate) fn diagnostics(&self) -> SearchIndexDiagnostics {
+        self.observation().diagnostics
+    }
+    pub(crate) fn observation(&self) -> Observation {
         self.handle
             .shared
             .snapshot
@@ -339,7 +393,7 @@ impl RemoteIndex {
     fn record_error(&self, error: String) {
         self.handle
             .shared
-            .publish(SearchIndexDiagnostics::unavailable(error));
+            .publish(SearchIndexDiagnostics::unavailable(error).into());
     }
 }
 struct MaintenanceCompletion {
@@ -439,6 +493,9 @@ mod tests {
         events: Mutex<Vec<String>>,
         diagnostics: AtomicUsize,
         indexed_items: AtomicUsize,
+        endpoint: Mutex<Option<Result<bool, String>>>,
+        endpoint_probes: AtomicUsize,
+        fail_configure: AtomicBool,
         hold_query: AtomicBool,
         fail_rebuild: AtomicBool,
         hold_maintenance: AtomicBool,
@@ -476,7 +533,19 @@ mod tests {
                 .lock()
                 .unwrap()
                 .push(format!("configure:{:?}", config.include_roots));
+            if self.trace.fail_configure.load(Ordering::Acquire) {
+                return Err("configure refused".into());
+            }
             Ok(())
+        }
+        fn endpoint_present(&self) -> Result<bool, String> {
+            self.trace.endpoint_probes.fetch_add(1, Ordering::AcqRel);
+            self.trace
+                .endpoint
+                .lock()
+                .unwrap()
+                .clone()
+                .unwrap_or(Ok(true))
         }
         fn diagnostics(&self) -> Result<SearchIndexDiagnostics, String> {
             self.trace.diagnostics.fetch_add(1, Ordering::AcqRel);
@@ -676,6 +745,72 @@ mod tests {
             .unwrap();
         assert!(trace.events.lock().unwrap()[0].contains("latest-root"));
     }
+    #[test]
+    fn stopped_endpoint_is_neutral_but_live_and_probe_failures_remain_errors() {
+        let trace = Arc::new(Trace::default());
+        trace.fail_configure.store(true, Ordering::Release);
+        *trace.endpoint.lock().unwrap() = Some(Ok(false));
+        let state = trace.clone();
+        let remote = RemoteIndex::with_factory(
+            SearchConfig::default(),
+            ResultRepaint::default(),
+            move || Ok(Arc::new(Fake::new(state.clone()))),
+        );
+        wait_for(|| remote.observation().stopped);
+        let stopped = remote.observation();
+        assert_eq!(stopped.diagnostics.status, SearchIndexStatus::Unavailable);
+        assert_eq!(stopped.diagnostics.last_error, None);
+        assert!(stopped.diagnostics.detail.unwrap().contains("stopped"));
+        let probes = trace.endpoint_probes.load(Ordering::Acquire);
+        for _ in 0..100 {
+            assert!(remote.observation().stopped);
+        }
+        assert_eq!(trace.endpoint_probes.load(Ordering::Acquire), probes);
+
+        *trace.endpoint.lock().unwrap() = Some(Err("endpoint ownership denied".into()));
+        remote.refresh();
+        wait_for(|| remote.diagnostics().last_error.is_some());
+        let failed = remote.observation();
+        assert!(!failed.stopped);
+        let error = failed.diagnostics.last_error.unwrap();
+        assert!(error.contains("configure refused") && error.contains("ownership denied"));
+
+        *trace.endpoint.lock().unwrap() = Some(Ok(true));
+        remote.refresh();
+        wait_for(|| remote.diagnostics().last_error.as_deref() == Some("configure refused"));
+        assert!(!remote.observation().stopped);
+
+        trace.fail_configure.store(false, Ordering::Release);
+        remote.refresh();
+        wait_for(|| remote.diagnostics().status == SearchIndexStatus::Ready);
+        assert!(!remote.observation().stopped);
+        assert_eq!(remote.diagnostics().last_error, None);
+    }
+
+    #[test]
+    fn endpoint_probe_cannot_block_gui_snapshot_reads() {
+        let trace = Arc::new(Trace::default());
+        trace.fail_configure.store(true, Ordering::Release);
+        let mut gate = trace.endpoint.lock().unwrap();
+        *gate = Some(Ok(false));
+        let state = trace.clone();
+        let remote = RemoteIndex::with_factory(
+            SearchConfig::default(),
+            ResultRepaint::default(),
+            move || Ok(Arc::new(Fake::new(state.clone()))),
+        );
+        wait_for(|| trace.endpoint_probes.load(Ordering::Acquire) == 1);
+        // The worker is blocked on the endpoint gate, while the GUI remains able
+        // to read its last complete observation without touching that gate.
+        let started = Instant::now();
+        for _ in 0..1000 {
+            assert!(!remote.observation().stopped);
+        }
+        assert!(started.elapsed() < Duration::from_millis(100));
+        drop(gate);
+        wait_for(|| remote.observation().stopped);
+    }
+
     #[test]
     fn ready_snapshot_reads_do_not_enqueue_rpc() {
         let trace = Arc::new(Trace::default());

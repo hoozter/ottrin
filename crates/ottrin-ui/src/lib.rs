@@ -62,7 +62,7 @@ use ottrin_preview::load_preview;
 use ottrin_preview::{
     PreviewData, PreviewKind, PreviewRequest, is_complete_text_preview, load_preview_cancellable,
 };
-#[cfg(all(any(unix, target_os = "windows"), not(test)))]
+#[cfg(all(unix, not(test)))]
 use ottrin_search::SearchDaemonClient;
 #[cfg(any(not(target_os = "windows"), test))]
 use ottrin_search::SearchHandle;
@@ -3267,28 +3267,33 @@ impl UiSearchService {
         self.local.update_config(config);
     }
 
-    fn diagnostics(&self) -> SearchIndexDiagnostics {
+    fn observation(&self) -> remote_index::Observation {
         #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
             #[cfg(unix)]
             if let Some(session) = &self.administrator_session {
-                return session.service.diagnostics();
+                return session.service.diagnostics().into();
             }
             if let Some(remote) = &self.remote {
-                return remote.diagnostics();
+                return remote.observation();
             }
             #[cfg(unix)]
             if let Some(error) = &self.administrator_error {
-                return SearchIndexDiagnostics::unavailable(error.clone());
+                return SearchIndexDiagnostics::unavailable(error.clone()).into();
             }
             SearchIndexDiagnostics::unavailable(
                 "Administrator indexing is disabled until explicitly enabled",
             )
+            .into()
         }
         #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
-            self.local.diagnostics()
+            self.local.diagnostics().into()
         }
+    }
+
+    fn diagnostics(&self) -> SearchIndexDiagnostics {
+        self.observation().diagnostics
     }
 
     fn refresh(&self) {
@@ -14031,11 +14036,8 @@ impl OttrinApp {
                         }
                     }
                     ui.add_space(2.0);
-                    let search_diag = self.search_service.diagnostics();
-                    let s_col = match search_diag.status {
-                        SearchIndexStatus::Unavailable => c.error,
-                        _ => bottom_text,
-                    };
+                    let search_observation = self.search_service.observation();
+                    let (_, s_col) = index_service_status(&search_observation, &c);
                     let s_resp = ui.add(
                         egui::Button::new(
                             RichText::new(MI_SEARCH)
@@ -14051,7 +14053,7 @@ impl OttrinApp {
                         .on_hover_text(format!(
                             "{}\nClick to manage the index service",
                             search_diagnostics_tooltip(
-                                &search_diag,
+                                &search_observation.diagnostics,
                                 self.search_ui.scope,
                                 &self.state.active_tab().current_dir,
                             )
@@ -21162,27 +21164,10 @@ impl OttrinApp {
             let status = cached_sqlite_schedule_status(&mut self.search_ui.sqlite_schedule_status, SearchService::sqlite_schedule_status);
             let installed = status.source != "none";
             let package_managed = status.package_managed();
-            let diag = self.search_service.diagnostics();
-            #[cfg(target_os = "linux")]
-            let stopped = diag.status == SearchIndexStatus::Unavailable && ottrin_search::SearchDaemonClient::connect_default().is_ok_and(|client| client.endpoint_present() == Ok(false));
-            #[cfg(all(unix, not(target_os = "linux")))]
-            let stopped = ottrin_search::default_daemon_socket_path().is_ok_and(|path| !path.exists());
-            #[cfg(all(target_os = "windows", not(test)))]
-            let stopped = diag.status == SearchIndexStatus::Unavailable && SearchDaemonClient::connect_default().is_ok_and(|client| client.endpoint_present() == Ok(false));
-            #[cfg(any(all(target_os = "windows", test), not(any(unix, target_os = "windows"))))]
-            let stopped = false;
-            let index_status = match diag.status {
-                SearchIndexStatus::Ready => "Running — index ready",
-                SearchIndexStatus::Loading => "Running — loading index",
-                SearchIndexStatus::Indexing => "Running — indexing files",
-                SearchIndexStatus::Unavailable if stopped => "Stopped",
-                SearchIndexStatus::Unavailable => "Needs attention",
-            };
-            let index_color = match diag.status {
-                SearchIndexStatus::Ready | SearchIndexStatus::Loading | SearchIndexStatus::Indexing => ready_color,
-                SearchIndexStatus::Unavailable if stopped => c.text_muted,
-                SearchIndexStatus::Unavailable => c.error,
-            };
+            let observation = self.search_service.observation();
+            let diag = &observation.diagnostics;
+            let stopped = observation.stopped;
+            let (index_status, index_color) = index_service_status(&observation, &c);
             Self::render_service_status(ui, index_status, index_color);
             let startup = match status.enabled {
                 Some(true) => "On",
@@ -25971,6 +25956,19 @@ fn search_scan_summary(diagnostics: &SearchIndexDiagnostics) -> String {
                 .unwrap_or_else(|| "unknown duration".to_string());
             format!("Scan: failed {} after {}", completed, duration)
         }
+    }
+}
+
+fn index_service_status(
+    observation: &remote_index::Observation,
+    c: &Colors,
+) -> (&'static str, Color32) {
+    match observation.diagnostics.status {
+        SearchIndexStatus::Ready => ("Running — index ready", c.success_text()),
+        SearchIndexStatus::Loading => ("Running — loading index", c.success_text()),
+        SearchIndexStatus::Indexing => ("Running — indexing files", c.success_text()),
+        SearchIndexStatus::Unavailable if observation.stopped => ("Stopped", c.text_muted),
+        SearchIndexStatus::Unavailable => ("Needs attention", c.error),
     }
 }
 
