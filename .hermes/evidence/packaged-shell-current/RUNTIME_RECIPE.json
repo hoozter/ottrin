@@ -1,7 +1,7 @@
 {
   "authoritative_recipe": "runtime.ps1",
   "consumed_helper_sha256": "34f7942e51de2216ff9ae4b6b99e56ba74cb5045bdef2debc20ff6d023701505",
-  "scope": "Self-contained native ordinary-user COM probe accepted by MSIX_RUNTIME_ACCEPTANCE.json; exact OS-parsed folder argv and Windows-normalized executable path, one main window, parent-bound optional index ensure child",
+  "scope": "Latest recipe accepted for native23-to24 update, actual selected-folder Explorer menu and same-user ordinary COM unregistration; fresh24 source remains frozen separately",
   "limits": [
     "Real Explorer menu surface, automatic foreground, background invocation, COM registration removal/update remain separate checks"
   ],
@@ -9,5 +9,10 @@
   "previous_failures": [
     "runtime24-bootstrap-observation-failure/INVESTIGATION.json",
     "runtime24-argv-path-failure/RECOVERY_ACCEPTANCE.json"
-  ]
+  ],
+  "current_recipe_sha256": "825ede8a16638f8521633d3c484be6f684f528034df9e1c2ed5fe1b876d331c9",
+  "active_case": null,
+  "failed_explorer_observation": "update23to24-uia-duplicate-failure/INVESTIGATION.json",
+  "failed_exit_observation": "update23to24-exit-observation-failure/INVESTIGATION.json",
+  "accepted_case": "MSIX_UPDATE_ACCEPTANCE.json"
 }

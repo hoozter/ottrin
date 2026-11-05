@@ -1,0 +1,62 @@
+{
+  "status": "pass consumed failed-case result transports removed",
+  "retired": [
+    {
+      "name": "RESULTS.zip",
+      "sha256": "c2e4a70ecfdeb8a026d4497527c0c52597d8a72ce45d3a1fd23704476827ffaf",
+      "bytes": 644687
+    },
+    {
+      "name": "RESULT_EXPORT_PROCESS.json",
+      "sha256": "f632b7ad5379e0a7dec183338d8f24f2a37827d28a93446c025bdec396aa9254",
+      "bytes": 1146198
+    }
+  ],
+  "retained_originals": {
+    "ACTOR.json": "90ae1f5eb281b9bd0d8a1c9aecd1450d64d9ef88268590109bb5328b0dd9f65b",
+    "BEFORE_UPDATE.json": "4e5254c9c0edaf7620b7e1737b949c43303bc8e88dcaa19622dd063e5ed073a7",
+    "checkbox-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-disabled.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "checkbox-enabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-enabled.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "DEPLOYMENT.json": "c41b3b93d0eb74649470ba3bb061c82b099df704d1f92a8996851d4e5c5412d8",
+    "DESKTOP_READY.json": "5d5c6a8e1ffd4c90e8db73bd390cd85ca0923b579f4670d674abfd9fb1c12967",
+    "DESKTOP_WAITING.json": "a100ab6f368d7d9f58cc0ad3b3272a9a9d100adcd7b1b27b4730cbb66b5ac977",
+    "disabled-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disabled-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "explorer-folder-menu.png": "aa353aeb4b2488bf5bcbb5428c0deeca0e55921e9264f57f8ae97a242cfbd100",
+    "explorer-invoked-main.png": "ed729852a82249ee2f250af0a271c3d3137164b1978b0de08221089cb38e7e50",
+    "EXPLORER_MENU.json": "044e0af2b7025df4a0568c81ed4bc392bd80c005a697f0661179a3d51b83df57",
+    "focus-failure.png": "0c664a9e0c1e2f905acf3467086a413028409ad0bd915f887fe6808c1e305ac5",
+    "FOLDER_COMMAND.json": "51057cd07e1dc8c1b544b437296e7099f6cef8a1524ae92104f32ba3a694df82",
+    "FOLDER_COMMAND_PROCESSES.json": "b5ce40bb516a66eb86ca48baf7189e10528952a527ebd2bf015dd0a1c0409d2e",
+    "index-status.json": "59e1d471cf586ef6310e639b308d88791563eaeb59823ac63323bb5d7e1c098d",
+    "index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "main.png": "4862699c11c6c4845a0a339197f24fa4f4fd6526009167371b81901d321d665e",
+    "mapped-main-before-focus.png": "0c664a9e0c1e2f905acf3467086a413028409ad0bd915f887fe6808c1e305ac5",
+    "msix-folder-disabled.png": "9d524b17bfaa02e183b6dd6226b7803aac37c9b36ef8e67040ef9c20371ab345",
+    "msix-folder-enabled.png": "f9ec5c96cd636a8685aedd719d303e957c20df585c8e32acb4a50d32ffd3cf45",
+    "msix-folder-invoked.png": "dfe5323262c24a6ac38ca4f9d371b4ee8be0afd08800467a19b6951c40e61c78",
+    "msix-startup-disabled.png": "488b34947eebb1a22e643df38705016a6a7769c10000e00cb931a992353d13f8",
+    "msix-startup-enabled.png": "4962f268e23d455bb96cc728c0372d33fd35a16119bda98148d524b33c06593a",
+    "msix-startup-failure.png": "456e90ca9659b1cace28a5475221464c7bb4d1e98be7bb4ca19bd36745559d2d",
+    "MSIX_CHECKBOX_TRACE.json": "6cab121b8dc3b0c93f22ef57d7af0cf9c67477c6d6d928847cdd46eeec42c605",
+    "reenable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "reenabled-index-status.json": "93bdd3492d4f17779c54e17003cefa4eee09047c3b262975f1ba8b0fdd08bab0",
+    "reenabled-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "RESULT.json": "cf5c76aedb53d84e637d1ed05a7e1b9f866adf74f5e250e2dcf8e5384da3dca0",
+    "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "service-remove.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-remove.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+    "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "STATE_READER_SMOKE.json": "9e259e58d3a5cd3246e575bc08e8d4fb1e70c04bfbcfcd6449753e120f128aed",
+    "UPDATE.json": "1ef68181b8af8fadbbda27789dfbeee0a52ebdd6aed9c2b55b668fccd47a747f",
+    "updated-service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "updated-service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "UPDATED.json": "13d11603099b31fe361ab475bcf693e119c47ca3032fae9f8974e2d0aaa78fb1"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "status": "failed broader post-update runtime; actual version update observed",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "update": {
+    "old_pids": [
+      9460
+    ],
+    "startup_enabled": true,
+    "previous_daemon_count": 1,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr"
+  },
+  "failure": "Actual Explorer context menu has no unique Open in Ottrin command",
+  "menu_observation": {
+    "commands": 2,
+    "explorer_hwnd": 590412,
+    "selected": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+    "items": [
+      "Open",
+      "Open in new tab",
+      "Open in new window",
+      "Pin to Quick access",
+      "Pin to Start",
+      "Compress to...",
+      "Copy as path",
+      "Properties",
+      "Open in Ottrin",
+      "Open in Terminal",
+      "Show more options",
+      "Cut",
+      "Copy",
+      "Rename",
+      "Delete",
+      "Open",
+      "Open in new tab",
+      "Open in new window",
+      "Pin to Quick access",
+      "Pin to Start",
+      "Compress to...",
+      "Copy as path",
+      "Properties",
+      "Open in Ottrin",
+      "Open in Terminal",
+      "Show more options"
+    ]
+  },
+  "direct_original_capture": {
+    "path": "results/explorer-folder-menu.png",
+    "sha256": "f8cc739ac7cf1525f09473af1263eb7d348d728517d435aff4b2eae506e9d462"
+  },
+  "observations": [
+    "Original shows one physical Open in Ottrin row; UIA inventory repeats ordinary Explorer menu items as well as this command",
+    "No menu invocation, reboot/login, removal or COM unregistration accepted from this run",
+    "Command icon has low contrast in the light Explorer menu; retain for interface audit"
+  ],
+  "corrective_fixture": "Require a unique positive-area physical menu row keyed by process and rectangle; retain every provider/runtime identity. Distinct duplicate rows still fail. Real invocation/content/close remain mandatory.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

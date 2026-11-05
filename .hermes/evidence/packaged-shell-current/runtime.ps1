@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][ValidateSet('Prepare','Install','Actor','Login','Finalize','Updated')][string]$Mode,[string]$Disc,[string]$Root='C:\OttrinOwnedMsixRuntime')
+param([Parameter(Mandatory=$true)][ValidateSet('Prepare','Install','Actor','Login','Finalize','Updated','AfterRemoval')][string]$Mode,[string]$Disc,[string]$Root='C:\OttrinOwnedMsixRuntime')
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
 function Save($Name,$Value){
  $path=Join-Path $Root ('results\'+$Name+'.json');$temporary=$path+'.'+[Guid]::NewGuid().ToString('N')+'.tmp'
@@ -71,13 +71,13 @@ if($Mode-eq'Prepare'){
   $acl=Get-Acl (Join-Path $Root 'results');$acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($user.SID,'Modify','ContainerInherit,ObjectInherit','None','Allow'));Set-Acl (Join-Path $Root 'results') $acl
   Copy-Item (Join-Path $Disc 'Ottrin.msix'),(Join-Path $Disc 'runtime.ps1'),(Join-Path $Disc 'native-controls.ps1') $Root
   if($packageInput.previous){Copy-Item (Join-Path $Disc 'Previous.msix') $Root}
-  $owner=@{nonce=$nonce;account=$name;sid=$user.SID.Value;package=$packageInput;installer_task=('OttrinMsixInstall-'+$nonce);actor_task=('OttrinMsixActor-'+$nonce);login_task=('OttrinMsixLogin-'+$nonce);finalizer_task=('OttrinMsixFinalize-'+$nonce);updated_task=('OttrinMsixUpdated-'+$nonce);scope='Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes'}
+  $owner=@{nonce=$nonce;account=$name;sid=$user.SID.Value;package=$packageInput;installer_task=('OttrinMsixInstall-'+$nonce);actor_task=('OttrinMsixActor-'+$nonce);login_task=('OttrinMsixLogin-'+$nonce);finalizer_task=('OttrinMsixFinalize-'+$nonce);updated_task=('OttrinMsixUpdated-'+$nonce);removed_task=('OttrinMsixRemoved-'+$nonce);scope='Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes'}
   $owner|ConvertTo-Json -Depth 6|Set-Content -Encoding UTF8 (Join-Path $Root 'OWNER.json')
-  foreach($phase in @('Install','Actor','Login','Finalize','Updated')){
+  foreach($phase in @('Install','Actor','Login','Finalize','Updated','AfterRemoval')){
    $invoke="& ([ScriptBlock]::Create([IO.File]::ReadAllText('$Root\runtime.ps1'))) -Mode $phase -Root '$Root'"
    $action=New-ScheduledTaskAction -Execute "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand '+[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($invoke)))
    $principal=New-ScheduledTaskPrincipal -UserId ($env:COMPUTERNAME+'\'+$name) -LogonType Interactive -RunLevel $(if($phase-in@('Install','Finalize')){'Highest'}else{'Limited'})
-   if($phase-eq'Install'){$trigger=New-ScheduledTaskTrigger -AtLogOn -User ($env:COMPUTERNAME+'\'+$name);Register-ScheduledTask -TaskName $owner.installer_task -Action $action -Principal $principal -Trigger $trigger|Out-Null}else{$taskName=switch($phase){'Actor'{$owner.actor_task};'Login'{$owner.login_task};'Finalize'{$owner.finalizer_task};'Updated'{$owner.updated_task}};Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal|Out-Null}
+   if($phase-eq'Install'){$trigger=New-ScheduledTaskTrigger -AtLogOn -User ($env:COMPUTERNAME+'\'+$name);Register-ScheduledTask -TaskName $owner.installer_task -Action $action -Principal $principal -Trigger $trigger|Out-Null}else{$taskName=switch($phase){'Actor'{$owner.actor_task};'Login'{$owner.login_task};'Finalize'{$owner.finalizer_task};'Updated'{$owner.updated_task};'AfterRemoval'{$owner.removed_task}};Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal|Out-Null}
   }
   $key='HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
   foreach($pair in @(@('AutoAdminLogon','1'),@('DefaultUserName',$name),@('DefaultDomainName',$env:COMPUTERNAME),@('DefaultPassword',$secret))){Set-ItemProperty $key -Name $pair[0] -Value $pair[1]}
@@ -203,6 +203,79 @@ public static class PackagedShellQA {
 '@
 }
 
+function Exercise-ExplorerFolderCommand([string]$Selection,[string]$Marker){
+ $result.phase='actual Explorer folder context menu';Save $ActorStateName $result
+ $parent=Split-Path $Selection;$leaf=Split-Path $Selection -Leaf
+ $shell=New-Object -ComObject Shell.Application;$browser=$null;$windows=$null
+ $before=@(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe}|ForEach-Object {$_.Id})
+ try{
+  $windows=$shell.Windows()
+  foreach($existing in $windows){if($existing.Document.Folder.Self.Path-ieq$parent){throw 'Unexpected preexisting Explorer window on owned fixture'}}
+  $shell.Open($parent);$deadline=[DateTime]::UtcNow.AddSeconds(30)
+  do{
+   foreach($candidate in $shell.Windows()){
+    try{if($candidate.Document.Folder.Self.Path-ieq$parent){$browser=$candidate;break}}catch{}
+   }
+   if($browser){break};Start-Sleep -Milliseconds 200
+  }while([DateTime]::UtcNow-lt$deadline)
+  if(-not$browser){throw 'Owned Explorer folder window did not appear'}
+  $hwnd=[IntPtr][long]$browser.HWND;[PickerNative]::Place($hwnd);[PickerNative]::Focus($hwnd)
+  $deadline=[DateTime]::UtcNow.AddSeconds(15)
+  do{$items=@(UiNodes $hwnd $leaf|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::ListItem-and-not$_.Current.IsOffscreen});if($items.Count-eq1){break};Start-Sleep -Milliseconds 200}while([DateTime]::UtcNow-lt$deadline)
+  if($items.Count-ne1){throw 'Explorer did not expose the unique owned selected folder'}
+  $items[0].GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select();$items[0].SetFocus()
+  [Windows.Forms.SendKeys]::SendWait('+{F10}');$deadline=[DateTime]::UtcNow.AddSeconds(15)
+  do{
+   $commands=@([Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty,'Open in Ottrin'))|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::MenuItem-and-not$_.Current.IsOffscreen-and$_.Current.BoundingRectangle.Width-gt0-and$_.Current.BoundingRectangle.Height-gt0})
+   if($commands.Count){break};Start-Sleep -Milliseconds 200
+  }while([DateTime]::UtcNow-lt$deadline)
+  $menu=@([Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty,[Windows.Automation.ControlType]::MenuItem))|Where-Object {-not$_.Current.IsOffscreen}|ForEach-Object {$_.Current.Name})
+  $providers=@($commands|ForEach-Object {$c=$_.Current;$b=$c.BoundingRectangle;@{runtime_id=($_.GetRuntimeId()-join',');process=$c.ProcessId;native_window=$c.NativeWindowHandle;left=$b.Left;top=$b.Top;width=$b.Width;height=$b.Height;enabled=$c.IsEnabled}})
+  $rows=@($commands|Group-Object {$c=$_.Current;$b=$c.BoundingRectangle;'{0}:{1}:{2}:{3}:{4}'-f$c.ProcessId,$b.Left,$b.Top,$b.Width,$b.Height})
+  Save 'EXPLORER_MENU' @{items=$menu;selected=$Selection;commands=$commands.Count;physical_rows=$rows.Count;command_providers=$providers;explorer_hwnd=$hwnd.ToInt64()}
+  [PickerNative]::Shot($hwnd,(Join-Path $Root 'results\explorer-folder-menu.png'))
+  if($rows.Count-ne1){throw 'Actual Explorer context menu has no unique physical Open in Ottrin row'}
+  $commands=@($rows[0].Group|Where-Object {$_.Current.IsEnabled});if(-not$commands.Count){throw 'Actual Explorer command is disabled'}
+  $commands[0].GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+  $deadline=[DateTime]::UtcNow.AddSeconds(60);$child=$null;$window=[IntPtr]::Zero
+  do{
+   $mains=@()
+   foreach($candidate in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe-and$_.Id-notin$before})){
+    $native=Get-CimInstance Win32_Process -Filter ('ProcessId='+$candidate.Id);if(-not$native){continue}
+    $argv=[PackagedShellQA]::Arguments($native.CommandLine)
+    if($argv.Count-eq3-and[IO.Path]::GetFullPath($argv[0])-ieq[IO.Path]::GetFullPath($exe)-and$argv[1]-ceq'--'-and$argv[2]-ceq$Selection){$mains+=,$candidate}
+    elseif(-not($argv.Count-eq3-and$argv[1]-ceq'index'-and$argv[2]-ceq'ensure')){throw 'Unexpected process from Explorer invocation'}
+   }
+   if($mains.Count-gt1){throw 'Explorer command launched more than one selected-folder main'}
+   if($mains.Count-eq1){$child=$mains[0];$window=[PickerNative]::Window($child.Id,'Ottrin');if($window-ne[IntPtr]::Zero){break}}
+   Start-Sleep -Milliseconds 200
+  }while([DateTime]::UtcNow-lt$deadline)
+  if(-not$child-or$window-eq[IntPtr]::Zero){throw 'Explorer command did not map the selected-folder main window'}
+  [uint32]$packageLength=0
+  if([PackageIdentityQA]::GetPackageFullName($child.Handle,[ref]$packageLength,$null)-ne122){throw 'Explorer-launched process has no queryable package identity'}
+  $packageName=[Text.StringBuilder]::new([int]$packageLength)
+  if([PackageIdentityQA]::GetPackageFullName($child.Handle,[ref]$packageLength,$packageName)-ne0-or$packageName.ToString()-ne$package.PackageFullName-or[InputDesktopQA]::Elevated($child.Handle)){throw 'Explorer-launched process must be the ordinary installed package'}
+  $processOwner=Invoke-CimMethod -InputObject (Get-CimInstance Win32_Process -Filter ('ProcessId='+$child.Id)) -MethodName GetOwnerSid
+  if($processOwner.Sid-ne$owner.sid){throw 'Explorer-launched process belongs to another user'}
+  $deadline=[DateTime]::UtcNow.AddSeconds(20)
+  do{$markers=@(UiNodes $window $Marker|Where-Object {-not$_.Current.IsOffscreen});if($markers.Count){break};Start-Sleep -Milliseconds 100}while([DateTime]::UtcNow-lt$deadline)
+  if(-not$markers.Count){throw 'Explorer-launched main does not display selected folder contents'}
+  $foregroundBeforeQaFocus=([PickerNative]::GetForegroundWindow()-eq$window)
+  [PickerNative]::Place($window);[PickerNative]::Focus($window);[PickerNative]::Shot($window,(Join-Path $Root 'results\explorer-invoked-main.png'))
+  [PackageIdentityQA]::PostMessageW($window,0x10,[IntPtr]::Zero,[IntPtr]::Zero)|Out-Null
+  $closed=$child.WaitForExit(15000);if($closed){$child.WaitForExit()}
+  $exitCode=if($closed){$child.ExitCode}else{$null}
+  Save 'EXPLORER_INVOKED_PROCESS' @{pid=$child.Id;package=$packageName.ToString();sid=$processOwner.Sid;ordinary=$true;selected=$Selection;visible_marker=$Marker;closed=$closed;exit_code=$exitCode;foreground_before_qa_focus=$foregroundBeforeQaFocus}
+  if(-not$closed-or$exitCode-ne0){throw ('Explorer-launched main did not close normally; closed='+$closed+' exit='+$exitCode)}
+  return @{status='pass actual Explorer menu invocation';selected=$Selection;pid=$child.Id;visible_marker=$Marker;foreground_before_explicit_qa_focus=$foregroundBeforeQaFocus;menu_items=$menu}
+ }finally{
+  foreach($process in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe-and$_.Id-notin$before})){if(-not$process.HasExited){$process.Kill();$null=$process.WaitForExit(5000)}}
+  if($browser){if($browser.Document.Folder.Self.Path-ine$parent){throw 'Owned Explorer window navigated elsewhere; preserve it'};$browser.Quit();[Runtime.InteropServices.Marshal]::FinalReleaseComObject($browser)|Out-Null}
+  if($windows){[Runtime.InteropServices.Marshal]::FinalReleaseComObject($windows)|Out-Null}
+  [Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)|Out-Null
+ }
+}
+
 function Exercise-PackagedFolderCommand($App,$Settings){
  $result.phase='external ordinary-user packaged COM activation';Save $ActorStateName $result
  Initialize-ShellProbe
@@ -287,6 +360,7 @@ function Exercise-PackagedFolderCommand($App,$Settings){
   $daemonAfter=@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonPath}|ForEach-Object {$_.Id})
   if($daemonAfter.Count-ne1-or$daemonAfter[0]-ne$daemonBefore[0]){throw 'Folder commands or closing their main window restarted the index daemon'}
   $proof.daemon_pids_after=$daemonAfter
+  $proof.explorer=Exercise-ExplorerFolderCommand $selection 'menu-invocation-proof.txt'
   $proof.status='pass native packaged COM activation, UI preference and selected-folder invocation';$result.folder_command=$proof;Save 'FOLDER_COMMAND' $proof;Save $ActorStateName $result
  }finally{
   foreach($process in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe-and$_.Id-notin$before})){
@@ -356,7 +430,7 @@ function Exercise-StartupCheckbox($App,$Window){
   Save $ActorStateName $result
   CheckboxTrace 'after result serialization'
 
-  Exercise-PackagedFolderCommand $App $settings
+  if([string]$package.Version-eq$owner.package.version){Exercise-PackagedFolderCommand $App $settings}else{if(-not$owner.package.previous-or[string]$package.Version-ne$owner.package.previous.version){throw 'Undeclared baseline package'}}
 
  }catch{
   [PickerNative]::Shot($settings,(Join-Path $Root 'results\msix-startup-failure.png'));throw
@@ -496,6 +570,11 @@ if($Mode-in@('Install','Finalize')){
   }
   Remove-AppxPackage -Package $package.PackageFullName
   $result.package_removed=(@(Get-AppxPackage -Name 'Ottrin.Development').Count-eq0)
+  if($actor.status-eq'pass'){
+   Start-ScheduledTask -TaskName $owner.removed_task;$deadline=[DateTime]::UtcNow.AddSeconds(45)
+   do{$path=Join-Path $Root 'results\AFTER_REMOVAL.json';if(Test-Path $path){$removed=Read-State $path;if($removed.status-ne'running'){break}};Start-Sleep -Milliseconds 200}while([DateTime]::UtcNow-lt$deadline)
+   if(-not$removed-or$removed.status-ne'pass'){throw 'Ordinary-user COM removal verification failed'};$result.com_unregistration=$removed
+  }
   $deadline=[DateTime]::UtcNow.AddSeconds(15)
   do{$live=@(Get-Process ottrin,ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-and$_.Path.StartsWith($package.InstallLocation,[StringComparison]::OrdinalIgnoreCase)});if($live.Count-eq0){break};Start-Sleep -Milliseconds 200}while([DateTime]::UtcNow-lt$deadline)
   $result.package_processes_removed=($live.Count-eq0)
@@ -514,6 +593,23 @@ if($Mode-in@('Install','Finalize')){
  finally{Save 'RESULT' $result}
  exit $(if($result.status-eq'pass'){0}else{1})
 }
+if($Mode-eq'AfterRemoval'){
+ $removed=@{status='running';administrator=$admin;sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value};Save 'AFTER_REMOVAL' $removed
+ try{
+  if($admin-or$removed.sid-ne$owner.sid){throw 'COM removal observer must use original ordinary user'}
+  if(@(Get-AppxPackage -Name 'Ottrin.Development').Count){throw 'Package remains registered'}
+  $previous=Read-State (Join-Path $Root ('results\'+$(if($owner.package.previous){'UPDATED'}else{'ACTOR'})+'.json'))
+  if(-not$previous.folder_command.status.StartsWith('pass')){throw 'Same-user positive COM activation control required'}
+  Initialize-ShellProbe
+  if([PackagedShellQA]::HostIdentity()-ne15700){throw 'Removal probe must have no package identity'}
+  $code=0;try{$null=[PackagedShellQA]::Title()}catch{$code=$_.Exception.GetBaseException().HResult}
+  if($code-ne-2147221164){throw ('Removed COM class must be unregistered; actual HRESULT='+$code)}
+  $removed.activation_hresult=$code;$removed.status='pass'
+ }catch{$removed.status='failed ordinary COM unregistration';$removed.error=$_.Exception.Message}
+ finally{Save 'AFTER_REMOVAL' $removed}
+ exit $(if($removed.status-eq'pass'){0}else{1})
+}
+
 if($Mode-eq'Login'){
 $result=@{status='running';administrator=$admin;cli_exits=@{};scope='Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login'}
  try{
@@ -569,7 +665,7 @@ if($Mode-eq'Updated'){
   Assert-OwnStartup 'updated-'
   $result.store=Get-OwnStore
   if($result.store.identity-ne$before.actor.store.identity-or$result.store.path-ne$before.actor.store.path){throw 'Update replaced or relocated the saved index database'}
-  Exercise-MainWindow
+  Exercise-MainWindow -StartupCheckbox
   if($result.gui_focus_and_capture-ne'pass'-or-not$result.ContainsKey('normal_close_exit')-or$result.normal_close_exit-ne0){throw 'Updated GUI focus or normal close failed'}
   $daemonExe=Join-Path $package.InstallLocation 'bin\ottrin-indexd.exe'
   $sessionDaemons=@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonExe})

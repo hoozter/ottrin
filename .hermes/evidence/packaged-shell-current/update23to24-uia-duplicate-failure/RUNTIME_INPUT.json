@@ -1,0 +1,13 @@
+{
+  "runtime_script_sha256": "c16b5c0f1f23e500877ecb706c89bab80636d76ebccf427f666ee8e664e1adf0",
+  "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+  "sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "version": "0.1.0.24",
+  "startup_enabled": true,
+  "previous": {
+    "sha256": "af1d7c7225b9a3fcc6a32841866e53d78f53d7756ec2fdc90a87abce1cf8b165",
+    "version": "0.1.0.23",
+    "source_revision": "9f81685ee550695be7b6e8b2135f2aba782623b2"
+  }
+}

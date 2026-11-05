@@ -1,0 +1,19 @@
+{
+  "reviewed": true,
+  "settings_visible": false,
+  "explorer_menu_visible": true,
+  "invoked_main_visible": true,
+  "all_captures_match_exact_hashes": true,
+  "captures": {
+    "explorer-folder-menu.png": "599f4c0652cd3b7babfb9c50bfaae142a34df00cb4ea98cc231a9f152689f220",
+    "explorer-invoked-main.png": "e033c73ff27d5db865bdc53a7f58bf0cec9c39ac0b31bd8c0e6d98855fd2e3d6"
+  },
+  "observations": [
+    "Directly reviewed two exact originals: actual Explorer context menu and its invoked Ottrin main window. Other captures retain automated scope only.",
+    "Explorer shows one physical Open in Ottrin row; duplicate UIA entries share runtime ID, process and rectangle. Actual InvokePattern action opens the selected Unicode folder and its marker.",
+    "Native process proof separately establishes ordinary original user/package identity, automatic foreground before explicit QA focus, and clean close with exit0.",
+    "Light native menu icon remains low contrast; supplementary U+10437 glyph remains a missing box despite correct native path. These are open appearance findings, not completed visual acceptance.",
+    "Menu bottom extends beyond the captured Explorer frame; target command is visible. No complete menu/window or whole-theme acceptance."
+  ],
+  "scope": "Current23-to24 update, actual selected-folder Explorer invocation and scoped originals only; no background/drive/multiselection or physical hardware acceptance."
+}

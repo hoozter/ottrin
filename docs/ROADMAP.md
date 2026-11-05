@@ -60,11 +60,11 @@ The accepted cohorts are published at their stable dist paths. Superseded781
 packages/payloads and that delivery's staging, owned guests/disks/desktops/buses,
 private profiles and consumed source/result transports were removed. The newer
 9f Windows investigation's ZIP/NSIS/payload stage is also retired after exact
-byte/ownership/consumer checks. Only its exact MSIX23 remains at
-`.hermes/evidence/packaged-shell-current/previous23.msix` (about55MiB), pending
-corrective package update/comparison. Its owned guests/disks/profiles and consumed
-source/result transports are removed. The Windows stage path is reserved for the
-new clean-source shell candidate; stable dist deliverables are unchanged. The first
+byte/ownership/consumer checks. Its retained MSIX23 input is now retired after
+verified native23-to24 upgrade acceptance (about55MiB removed). The current
+MSIX24/59-file candidate remains in the single Windows stage, pending remaining
+Explorer and NSIS delivery gates. Owned guests/disks/profiles and consumed
+source/result transports are removed. Stable Windows deliverables are unchanged. The first
 native geometry fixture failed before daemon suspension; a corrected fresh run
 passed unchanged assertions/deadlines. Compact failure evidence and its original
 failure frame remain;16 superseded failed-case captures were retired after
@@ -74,7 +74,7 @@ Delivery authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 No public release, signing, Store, MSI or full interface acceptance is implied.
 
 The new native timeout captures exposed historical green readiness feedback
-remaining above a newer live error. A newer **source-only** correction labels
+remaining above a newer live error. The correction labels
 completed actions explicitly as history in a neutral color and preserves complete
 failures in red. A rendered real failed-store regression covers both themes;
 all516 UI tests pass (one existing ignored), strict native/Windows UI lint passes,
@@ -96,53 +96,41 @@ package acceptance. Native Windows long-diagnostic wrapping remains separate. Ex
 private test processes/display/bus/profile are removed. Evidence:
 `.hermes/evidence/service-status-wrap-current/ACCEPTANCE.json`.
 
-A package-owned MSIX Explorer COM command now passes strict Windows
-shell/platform/UI lint and a real native COM factory/interface/site/lifetime,
-manifest and Unicode folder-selection contract test. The test runs under the
-guest-agent token; it does not prove ordinary-user package activation. Package
-activation, menu visibility, invocation and removal remain unverified. Default folder opening remains unresolved for MSIX;
-portable/NSIS integration keeps its existing registry transaction implementation.
-The first native SDK gate rejected dotted command IDs (`C00CE169`). The source
-now uses distinct alphanumeric IDs and its native regression passes. The SDK
-control includes the declared DLL and retains complete rejection output. Earlier
-59-file investigation output was retired after byte/ownership/consumer checks; a
-clean rebuild is required, with no provenance rewriting. A subsequent SDK gate
-also rejected a literal `Drive` selector. Corrected `Directory`/background
-declarations now pass actual MakeAppx/control-byte round trip and the native
-component regression. Actual drive-menu behavior remains required testing.
-These failed guests and the schema/component guests are removed. Prioritize
-delivery of the committed Linux UI fixes independently of remaining Windows
-package/Explorer work.
-Exact source `bee15669` now passes actual clean-Git MakeAppx development
-MSIX24 assembly and independent 59-file portable equality. The exact rebuilt
-Windows daemon passes private1000-file create/rename/delete watcher, restart,
-two protocol shutdowns and a30-second idle sample (0.26% of one core). This
-noninteractive assembly-account test does not prove ordinary-user startup or
-Explorer behavior. Its owned guest, volumes and consumed source archive are
-removed. The first MSIX24 ordinary-user run passes actual COM activation,
-UI visibility toggles and disabled-invocation refusal, but fails a fixture check
-that counts all new `ottrin` processes as main windows. The GUI also starts an
-`index ensure` child. A corrected native fixture requires exact OS-parsed
-selected-folder argv, one main window, and at most one exact bootstrap child
-owned by that main; it is running against the unchanged package. The failed
-run and two reviewed status originals retain their original failed scope. A
-second fixture failure captured a valid executable path with mixed separators;
-its lexical path check was corrected to Windows-normalized equality. Both
-failed guests, volumes and desktops are removed; the interrupted second host
-controller required explicit verified orphan cleanup. The current unchanged
-MSIX24 ordinary actor passes actual COM selected-folder invocation, Unicode
-folder contents, package/ordinary identity, normal close, same-daemon continuity
-and startup Off/On. Actual new-boot sign-in starts the ordinary packaged index
-before any Ottrin CLI; removal preserves preferences, database fixture and files.
-Six current Dark originals were reviewed. Settings status text fits; taskbar
-overlap at its bottom prevents whole-window visual acceptance. The supplementary
-U+10437 folder glyph is missing in the title/breadcrumb despite correct native
-UTF16 argv/navigation; font fallback remains an interface-audit item. Owned
-VM/volumes/desktop/portal/profile and consumed result transports are removed.
-Real Explorer menu surface, background/drive/multiselection, update and ordinary
-COM unregistration remain separate acceptance requirements. Exact receipt:
-`.hermes/evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`.
-Work evidence: `.hermes/evidence/packaged-shell-current/`.
+A package-owned MSIX Explorer COM command on source `bee15669` passes strict
+Windows shell/platform/UI lint, the native COM/manifest/Unicode contract and
+actual clean-Git MakeAppx MSIX24 assembly with independent59-file portable
+identity. SDK-rejected dotted IDs and a literal Drive selector were corrected;
+compact failure evidence retains the original scopes. The exact rebuilt Windows
+daemon passes private1000-file watcher/restart/two-shutdown checks and a30-second
+idle sample (0.26% of one core) in the noninteractive assembly account.
+
+Fresh MSIX24 ordinary runtime passes direct COM activation/invocation, UI
+visibility and startup Off/On, normal close, daemon continuity, actual new-boot
+sign-in before any Ottrin CLI, and removal preserving files/preferences. Six
+Dark originals were reviewed. Native23-to24 upgrade now also passes: Windows
+stops the old daemon, preserves preferences and database identity, and the
+updated ordinary app opens the selected Unicode folder through the actual
+Explorer context menu. Its kernel package/original-user identity, automatic
+foreground before QA focus and normal exit0 are verified. Actual reboot/login
+and original ordinary-user COM activation refusal after removal pass; the
+negative result is REGDB_E_CLASSNOTREG after a same-user positive control.
+Two new originals (Explorer menu and invoked Ottrin window) were reviewed.
+Duplicate UIA entries have identical runtime ID/process/rectangle and represent
+one physical row. Failed fixture assumptions and the stronger final checks are
+retained separately; none of those failed runs is promoted to acceptance.
+
+Background/drive/multiselection and retaining an already enabled command across
+a later feature-bearing update remain open. Default folder opening for MSIX
+still uses the unresolved transaction path; no default-manager acceptance is
+claimed. Portable/NSIS keeps its existing atomic registry implementation.
+Low-contrast native light-menu icon, supplementary U+10437 font fallback and
+Settings capture/work-area limitations remain open interface findings. No full
+UI/theme, physical graphics, signing, Store or stable Windows delivery claim.
+Owned VM/volumes/desktop/portal/profile, consumed result transports and the
+completed MSIX23 input are removed. Exact current receipts:
+`.hermes/evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`,
+`MSIX_UPDATE_ACCEPTANCE.json`, `OPEN_UI_FINDINGS.json`, and
+`UPDATE_CLEANUP_ACCEPTANCE.json` in the same evidence directory.
 
 The same clean source has a completed four-format Linux package cohort with
 contents/runtime closure/provenance/namespace ownership checks. Actual mounted

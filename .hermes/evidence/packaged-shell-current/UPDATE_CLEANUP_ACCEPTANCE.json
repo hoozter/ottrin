@@ -1,0 +1,160 @@
+{
+  "status": "pass consumed upgrade inputs/transports and owned native resources removed",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "retired": [
+    {
+      "name": ".hermes/evidence/packaged-shell-current/update23to24/RESULTS.zip",
+      "bytes": 617661,
+      "sha256": "c3f21498aaaa7fd24f9bb305c7f20a0f48d7f25add8a95a2734c36062da644d2"
+    },
+    {
+      "name": ".hermes/evidence/packaged-shell-current/update23to24/RESULT_EXPORT_PROCESS.json",
+      "bytes": 1098150,
+      "sha256": "04f41c3744554db15584cfe850b9217b7f60db855b9e4cad0b5dcdfffe8cbbb0"
+    },
+    {
+      "name": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous23.msix",
+      "bytes": 57125931,
+      "sha256": "af1d7c7225b9a3fcc6a32841866e53d78f53d7756ec2fdc90a87abce1cf8b165",
+      "purpose_completed": "Native23-to24 real upgrade/runtime/Explorer/login/COM-unregistration accepted"
+    }
+  ],
+  "retained_originals": {
+    "ACTOR.json": "fc3dc59c4a42886eaf7aaf13bff0821b8c4e713d571479aa7f77d57904a5768e",
+    "AFTER_REMOVAL.json": "9b53fc99e79be9a287d3652f5bc77f3c4dd58f8a39b06b72836f5cd717730f2c",
+    "BEFORE_UPDATE.json": "3cb566bc233a9cc28a75e3802b252a786f1eee7de56478cd7123a437dc3b6d58",
+    "checkbox-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-disabled.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "checkbox-enabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-enabled.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "DEPLOYMENT.json": "c41b3b93d0eb74649470ba3bb061c82b099df704d1f92a8996851d4e5c5412d8",
+    "DESKTOP_READY.json": "586f8ea6dde79ebc822dcf5989f7f68a40758341170a53b3769245c91874eacd",
+    "DESKTOP_WAITING.json": "6d34d766fd9bc82cb10221253873069de6a6b449fbfaea496f9ec6d4e372a028",
+    "disabled-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disabled-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "explorer-folder-menu.png": "599f4c0652cd3b7babfb9c50bfaae142a34df00cb4ea98cc231a9f152689f220",
+    "explorer-invoked-main.png": "e033c73ff27d5db865bdc53a7f58bf0cec9c39ac0b31bd8c0e6d98855fd2e3d6",
+    "EXPLORER_INVOKED_PROCESS.json": "22caaaff35f4f32bcc33ffdd743a6bb198439104b05d7db45092f24d571dd2da",
+    "EXPLORER_MENU.json": "ff1d8812227853088948ee2c38faa4448b0dd63fd8ce0546302f5d039ca02803",
+    "FOLDER_COMMAND.json": "29e9f0c58f54cc537f3f24970702e34404c2a87d24fdf4728d98055479b1be4d",
+    "FOLDER_COMMAND_PROCESSES.json": "d6defda8f843b67afda62495328e52650c32c61cab637c41683796359d594a0a",
+    "index-status.json": "5ad893c54dae60db9e2357e797ebff0622cf7e94a684a9b2484dc034821a713b",
+    "index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "login-index-status.json": "d0c2797f7f0bc285c79c721f2102508565289713a8a3103f6d343a0ebe59b833",
+    "login-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "login-service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "login-service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "LOGIN.json": "eac7ea4c4e0af78d31b36cda2997afd40cc73d0ddefa17cf41ce319989deec62",
+    "main.png": "f83363100695c13043ff383f9345294939bf511fc1b2dad137ca7a5e47efa381",
+    "mapped-main-before-focus.png": "2587220b9895b6b17afc1f9414c21d42331510a99c933b26ea56c100e5be268b",
+    "msix-folder-disabled.png": "c8171c6b558e6c31848173287ef325c5db2b5c32a314012b63da691dee220c0f",
+    "msix-folder-enabled.png": "647c3740199a61f55e1776eb66f8b3ddc3dd04eb4be6ce0cdfe535ad2d632527",
+    "msix-folder-invoked.png": "ca1e98952904a99530ae15ff595eb96327e4f3436bb12fc0d2cda9be6e684e6b",
+    "msix-startup-disabled.png": "82d634ba3b54c229d3df2967ffe61b44ab532591c8649edec82d8ad3dacc5275",
+    "msix-startup-enabled.png": "71b277ddd0c704d78eb478531e6445d3468103cc98da7df71dbdd8981bc57cbd",
+    "MSIX_CHECKBOX_TRACE.json": "6cab121b8dc3b0c93f22ef57d7af0cf9c67477c6d6d928847cdd46eeec42c605",
+    "reenable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "reenabled-index-status.json": "eb8844fd54d69058f193a193cfefa68123fa7e7bda38a5aaffcb74bd4eb42033",
+    "reenabled-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "RESULT.json": "86f9d383e39c9d08c9d653efa6b0be492441f5dd464086bf295f89a67b119c10",
+    "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "service-remove.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-remove.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+    "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "STATE_READER_SMOKE.json": "cf73c0cd8e01cd45d6a8dbda786ade66605ea00c53bd9c44577f693a6467e65e",
+    "UPDATE.json": "6fae552955d4220f26db53a18bc408b7ba2800436cfd02c3525acc651a0e497e",
+    "updated-after-gui-service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "updated-after-gui-service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "updated-index-status.json": "6319c1577d260affa87b12f760e039aa01b0283a9c5ea8a76d710f9863a9a427",
+    "updated-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "updated-main.png": "2587220b9895b6b17afc1f9414c21d42331510a99c933b26ea56c100e5be268b",
+    "updated-service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "updated-service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "UPDATED.json": "7b7f0e7d05137a8104964c72d835521ce2df51b0c7bed4fb30d12241d5a9fd75"
+  },
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "owned_desktop_cleanup": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-ub4n98qr",
+    "owned_processes_reaped": [
+      {
+        "pid": 2963888,
+        "exit": 0
+      },
+      {
+        "pid": 2963891,
+        "exit": 0
+      },
+      {
+        "pid": 2963892,
+        "exit": 15
+      },
+      {
+        "pid": 2963947,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 3
+    },
+    "owned_mounts_unmounted": [
+      "102 34 0:70 / /var/tmp/.ottrin-picker-qa-ub4n98qr/runtime/doc rw,nosuid,nodev,relatime shared:595 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "no_host_compiler_started": true,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Latest current59-file Windows candidate including MSIX24",
+      "pending_consumer": "Real background/drive/multiselection and current NSIS UI delivery gates"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current",
+      "purpose": "Compact native acceptance/failure receipts, producers, source pins and original captures",
+      "pending_consumer": "Current package provenance and open interface findings; no active VM or profile"
+    }
+  ],
+  "superseded_boot_readiness_frames_removed": [
+    {
+      "path": ".hermes/evidence/packaged-shell-current/runtime24-bootstrap-observation-failure/desktop-ready.png",
+      "bytes": 2142368,
+      "sha256": "96f83ee245044bd502b4f8d5b6ca58555bae116d620fa7dbc59bd79a3825425c"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/runtime24-argv-path-failure/desktop-ready.png",
+      "bytes": 1694902,
+      "sha256": "c4c3d681305b48b6bb56e9a2682883daf8899549958eeccf1949448ef4a6a351"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/runtime24/desktop-ready.png",
+      "bytes": 2523366,
+      "sha256": "b8beca9996706cdad379062bc7d7169c69478134076f261bd7cf8ca74fafabe2"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/update23to24-uia-duplicate-failure/desktop-ready.png",
+      "bytes": 1694845,
+      "sha256": "20619caf883e52af44cdffc9481ff0d9b1ba1736a636537a1f7754882b0b0a0d"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/update23to24-exit-observation-failure/desktop-ready.png",
+      "bytes": 1692782,
+      "sha256": "357a4e6f3bd1feef96f8076c4e08605a77f8fcd518dda1cf88ede67cf4c82afc"
+    }
+  ],
+  "boot_frame_basis": "Completed setup frames superseded by retained actual UI originals and compact native/privacy readiness receipts; no claimed reviewed acceptance image removed"
+}

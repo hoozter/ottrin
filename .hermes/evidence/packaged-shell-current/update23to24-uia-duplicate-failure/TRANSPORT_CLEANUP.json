@@ -1,0 +1,62 @@
+{
+  "status": "pass consumed failed-case result transports retired",
+  "retired": [
+    {
+      "name": "RESULTS.zip",
+      "bytes": 653850,
+      "sha256": "1aed7c9862d5bf0821fefad51117663c3e116dd9a500aca097cd7cb030a0b125"
+    },
+    {
+      "name": "RESULT_EXPORT_PROCESS.json",
+      "bytes": 1162486,
+      "sha256": "1350b0c9f2204b39791a7a8f0194ece8b7d45f880f5086aaa87f1b4329ed87e2"
+    }
+  ],
+  "retained_originals": {
+    "ACTOR.json": "6dcb7ddfde688039e1789fdcf9c478da4ec10f8f4fa4f473a10bce4a9245a15e",
+    "BEFORE_UPDATE.json": "fda642791cbf4a50b11ef5aa063fd60e84fb319565e63a39b9ec9ec0352c6640",
+    "checkbox-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-disabled.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "checkbox-enabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-enabled.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "DEPLOYMENT.json": "c41b3b93d0eb74649470ba3bb061c82b099df704d1f92a8996851d4e5c5412d8",
+    "DESKTOP_READY.json": "7bf418e39bbbd29e02e427fa2cc76f34805fecea44b6ed0d1b56b4ac531d41ff",
+    "DESKTOP_WAITING.json": "bd7748d48363f06e7596dc0660bf304b4524d20511333068fdffb6aef8cfb5ce",
+    "disabled-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disabled-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "explorer-folder-menu.png": "f8cc739ac7cf1525f09473af1263eb7d348d728517d435aff4b2eae506e9d462",
+    "EXPLORER_MENU.json": "d55596ae2fb84d11324760f5721cb32475342ea4f9f46b3f025856dec9749e63",
+    "focus-failure.png": "39c65e08edc6b3a99235584ddcc983799f52fb311ae039b8020a80aa6087301a",
+    "FOLDER_COMMAND.json": "c97ed6e574ceadbb1926ed620bd251fde10121952c18bc20ad3ba60bf21e71f0",
+    "FOLDER_COMMAND_PROCESSES.json": "79b9541ae64fe9740a619dc136d208232e99d9c39db341a8f60b61a052876584",
+    "index-status.json": "91fe7bb2012a3a4adab360529f1d9f26ec767a115bd00d4b79c8a58a6dcdfa50",
+    "index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "main.png": "8dc7849489ff3c9e7b785e0ac7d2e5e706ecc3010dba306766d9f5e50414fd9c",
+    "mapped-main-before-focus.png": "39c65e08edc6b3a99235584ddcc983799f52fb311ae039b8020a80aa6087301a",
+    "msix-folder-disabled.png": "9d524b17bfaa02e183b6dd6226b7803aac37c9b36ef8e67040ef9c20371ab345",
+    "msix-folder-enabled.png": "f9ec5c96cd636a8685aedd719d303e957c20df585c8e32acb4a50d32ffd3cf45",
+    "msix-folder-invoked.png": "dfe5323262c24a6ac38ca4f9d371b4ee8be0afd08800467a19b6951c40e61c78",
+    "msix-startup-disabled.png": "488b34947eebb1a22e643df38705016a6a7769c10000e00cb931a992353d13f8",
+    "msix-startup-enabled.png": "4962f268e23d455bb96cc728c0372d33fd35a16119bda98148d524b33c06593a",
+    "msix-startup-failure.png": "6dc04fbab9f619b93a1bf1e7fd3b561979af18c79a52b5474ef4fe27d38f0cab",
+    "MSIX_CHECKBOX_TRACE.json": "6cab121b8dc3b0c93f22ef57d7af0cf9c67477c6d6d928847cdd46eeec42c605",
+    "reenable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "reenabled-index-status.json": "1ff9a98f1e3229b8ca2bd0f8796dd4357ee1a25486df0157085aaca2f984f36f",
+    "reenabled-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "RESULT.json": "d166df311926c41f1f1b2a7a929a6ad87883a0739ab35160e3ed4dd39126cfc1",
+    "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "service-remove.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-remove.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+    "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "STATE_READER_SMOKE.json": "33e4f88d67db134a82ac4b26f262a1cb78d7d3e8c5fc7f540c3f02a843ef9601",
+    "UPDATE.json": "61ed2973c64a7e64a983796f2dd86c8019ba6e5c88d30f8844da1c7bab0c9244",
+    "updated-service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "updated-service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "UPDATED.json": "e649f7f76cca3d35688d4621e129128b061fd22b84c2fe1715a241c175613945"
+  },
+  "scope": "Failed native case remains failed; compact diagnostics, raw originals and frozen recipe retained"
+}

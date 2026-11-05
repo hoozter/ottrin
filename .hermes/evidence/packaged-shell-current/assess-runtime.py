@@ -1,19 +1,31 @@
 """Accept exact fresh MSIX runtime scope only after native outcomes and teardown."""
 from pathlib import Path
-import hashlib,json,subprocess
-r=Path.cwd();e=Path(__file__).resolve().parent;d=e/'runtime24'
+import argparse,hashlib,json,subprocess
+parser=argparse.ArgumentParser();parser.add_argument('--case',choices=['fresh','update'],default='fresh');args=parser.parse_args()
+r=Path.cwd();e=Path(__file__).resolve().parent;d=e/('runtime24' if args.case=='fresh' else 'update23to24')
 read=lambda p:json.loads(p.read_text())
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 v=read(d/'RUNTIME_RESULT.json');i=read(d/'RUNTIME_INPUT.json');o=read(d/'OWNER.json');a=v['actor'];login=v['login'];package=Path(read(e/'ASSEMBLY_ACCEPTANCE.json')['artifact'])
 assert v['status']==a['status']==login['status']=='pass'
 assert v['source_revision']==i['source_revision']==read(e/'ASSEMBLY_ACCEPTANCE.json')['source_revision']
-assert i['version']==v['deployment']['version']=='0.1.0.24' and sha(package)==i['sha256']
+assert i['version']=='0.1.0.24' and sha(package)==i['sha256']
+if args.case=='fresh':assert v['deployment']['version']==i['version']
+else:
+ assert v['deployment']['version']==i['previous']['version']=='0.1.0.23'
+ assert v['update']['before']==v['deployment']['full_name'] and v['update']['old_processes_removed']
+ assert v['update']['family']==v['deployment']['family'] and v['update']['after']!=v['update']['before']
+ assert v['pre_update_actor']['status']=='pass'
+ assert all(a['store'][k]==v['pre_update_actor']['store'][k] for k in ['path','identity'])
+ assert a['preferences_before_removal']==v['pre_update_actor']['preferences_before_removal']
 assert sha(d/'RUNTIME_SOURCE.ps1')==i['runtime_script_sha256'] and sha(d/'NATIVE_CONTROLS_SOURCE.ps1')==i['native_controls_sha256']
 assert a['main']['binary_sha256'].lower()==read(e/'PAYLOAD.json')['bin/ottrin.exe']
-assert not a['administrator'] and not a['actual_process_elevated'] and not a['daemon']['administrator']
-assert a['actual_process_package']==a['daemon']['package']==v['deployment']['full_name']==login['observed_before_any_ottrin_cli']['package']
+assert not a['administrator'] and not a['actual_process_elevated']
+if args.case=='fresh':assert not a['daemon']['administrator'] and a['daemon']['package']==a['actual_process_package']
+else:
+ previous_daemon=v['pre_update_actor']['daemon'];assert not previous_daemon['administrator'] and previous_daemon['package']==v['deployment']['full_name']
+assert a['actual_process_package']==(v['deployment']['full_name'] if args.case=='fresh' else v['update']['after'])==login['observed_before_any_ottrin_cli']['package']
 assert not login['observed_before_any_ottrin_cli']['administrator'] and not login['administrator']
-assert a['normal_close_exit']==0 and a['gui_focus_and_capture']=='pass' and a['disable_reenable']=='pass'
+assert a['normal_close_exit']==0 and a['gui_focus_and_capture']=='pass' and (a if args.case=='fresh' else v['pre_update_actor'])['disable_reenable']=='pass'
 assert a['index_ready']==login['index_ready']=='ready' and all(code==0 for code in a['cli_exits'].values()) and all(code==0 for code in login['cli_exits'].values())
 assert login['boot_ticks']>v['before_login_boot_ticks'] and login['store']['identity']==a['store']['identity'] and login['preferences_preserved']
 assert v['package_removed'] and v['package_processes_removed'] and v['fixture_preserved'] and v['preferences_preserved'] and not v['remaining_index_tasks']
@@ -34,7 +46,15 @@ assert invocation['visible_marker']=='menu-invocation-proof.txt' and invocation[
 assert invocation['selected_folder'].endswith('-- folder with spaces Ω𐐷')
 assert all(x['complete_status_bounds']['width']>0 and x['complete_status_bounds']['height']>0 for x in folder['actions'])
 assert folder['invocation_processes'], 'Actual OS argv observations required'
-capture_review=read(d/'CAPTURE_REVIEW.json');assert capture_review['reviewed'] and capture_review['settings_visible'] and capture_review['all_captures_match_exact_hashes']
+if args.case=='update':
+ assert folder['explorer']['status']=='pass actual Explorer menu invocation' and 'Open in Ottrin' in folder['explorer']['menu_items']
+ explorer=read(d/'results/EXPLORER_INVOKED_PROCESS.json')
+ assert explorer['closed'] and explorer['exit_code']==0 and explorer['foreground_before_qa_focus']
+ assert explorer['package']==a['actual_process_package'] and explorer['sid']==v['actor_sid'] and explorer['ordinary']
+ assert v['com_unregistration']['status']=='pass' and not v['com_unregistration']['administrator']
+ assert v['com_unregistration']['sid']==v['actor_sid'] and v['com_unregistration']['activation_hresult']==-2147221164
+capture_review=read(d/'CAPTURE_REVIEW.json');assert capture_review['reviewed'] and capture_review['all_captures_match_exact_hashes']
+assert capture_review['settings_visible'] if args.case=='fresh' else capture_review['explorer_menu_visible'] and capture_review['invoked_main_visible']
 for name,digest in capture_review['captures'].items():assert sha(d/'results'/name)==digest
 result={'status':'pass exact MSIX24 ordinary runtime, direct packaged COM folder invocation, real reboot/login and removal preservation',
  'package':i,'source_revision':v['source_revision'],'runtime_result':str((d/'RUNTIME_RESULT.json').relative_to(r)),
@@ -45,5 +65,9 @@ result={'status':'pass exact MSIX24 ordinary runtime, direct packaged COM folder
  'Real Explorer foreground/background/drive/multiselection, package upgrade and ordinary-user COM unregistration remain separate',
  'Dark software-desktop targeted captures only; no Light, whole-interface, physical GPU, Store, signing or owner acceptance',
  'Stable-path Windows publication requires its own remaining package gates; this is an investigation candidate']}
-(e/'MSIX_RUNTIME_ACCEPTANCE.json').write_text(json.dumps(result,indent=2)+'\n')
-print('Exact fresh MSIX24 direct COM/runtime/login/removal scope accepted; wider Explorer/update gates remain')
+if args.case=='update':
+ result['status']='pass exact MSIX23-to24 ordinary upgrade, actual Explorer folder menu, real login and COM unregistration'
+ result['update']=v['update'];result['com_unregistration']=v['com_unregistration'];result['explorer_invoked_process']=explorer
+ result['limits']=['Actual selected-folder Explorer menu invocation only; background/drive/multiselection remain separate','Dark owned software desktop; no full UI, physical GPU, Store, signing or owner acceptance','Current Windows stable-path publication requires separate NSIS UI package gates']
+(e/('MSIX_RUNTIME_ACCEPTANCE.json' if args.case=='fresh' else 'MSIX_UPDATE_ACCEPTANCE.json')).write_text(json.dumps(result,indent=2)+'\n')
+print('Exact fresh MSIX24 scope accepted' if args.case=='fresh' else 'Exact23-to24 update, actual Explorer invocation and ordinary COM unregistration accepted')

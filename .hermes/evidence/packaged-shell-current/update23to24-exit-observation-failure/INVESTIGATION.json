@@ -1,0 +1,92 @@
+{
+  "status": "failed final exit observation; not lifecycle acceptance",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "update": {
+    "old_pids": [
+      5596
+    ],
+    "startup_enabled": true,
+    "previous_daemon_count": 1,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr"
+  },
+  "failure": "Explorer-launched main did not close normally",
+  "menu_provider_identity": {
+    "selected": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+    "explorer_hwnd": 787290,
+    "physical_rows": 1,
+    "command_providers": [
+      {
+        "width": 282,
+        "process": 5456,
+        "height": 32,
+        "enabled": true,
+        "top": 507,
+        "runtime_id": "42,66508,4,157",
+        "left": 201,
+        "native_window": 0
+      },
+      {
+        "width": 282,
+        "process": 5456,
+        "height": 32,
+        "enabled": true,
+        "top": 507,
+        "runtime_id": "42,66508,4,157",
+        "left": 201,
+        "native_window": 0
+      }
+    ],
+    "items": [
+      "Open",
+      "Open in new tab",
+      "Open in new window",
+      "Pin to Quick access",
+      "Pin to Start",
+      "Compress to...",
+      "Copy as path",
+      "Properties",
+      "Open in Ottrin",
+      "Open in Terminal",
+      "Show more options",
+      "Cut",
+      "Copy",
+      "Rename",
+      "Delete",
+      "Open",
+      "Open in new tab",
+      "Open in new window",
+      "Pin to Quick access",
+      "Pin to Start",
+      "Compress to...",
+      "Copy as path",
+      "Properties",
+      "Open in Ottrin",
+      "Open in Terminal",
+      "Show more options"
+    ],
+    "commands": 2
+  },
+  "observed": "Native menu invocation mapped selected-folder main and visible marker before close predicate failed",
+  "direct_original_capture": {
+    "path": "results/explorer-invoked-main.png",
+    "sha256": "ed729852a82249ee2f250af0a271c3d3137164b1978b0de08221089cb38e7e50"
+  },
+  "limits": [
+    "Exit result was not separately recorded; no successful close, reboot/login or COM unregistration accepted",
+    "Supplementary glyph and native light-menu icon contrast remain open UI audit findings"
+  ],
+  "next_fixture": "Pin live child through kernel package/token identity, verify original user SID, wait fully and record actual closed/exit values before assertion",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

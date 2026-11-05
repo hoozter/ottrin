@@ -1,0 +1,239 @@
+{
+  "scope": "Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes",
+  "actor_sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+  "stack": "at <ScriptBlock>, <No file>: line 546\r\nat <ScriptBlock>, <No file>: line 1",
+  "updated_actor": {
+    "gui_focus_and_capture": "failed",
+    "scope": "Actual ordinary post-update GUI, unchanged startup/configuration and declared startup choice after main window closes",
+    "focus_failure_capture": "focus-failure.png",
+    "phase": "actual Explorer folder context menu",
+    "actual_process_package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "gui_error": "Actual Explorer context menu has no unique Open in Ottrin command",
+    "window_diagnostics": {
+      "foreground": 1245836,
+      "enable_lua": 1,
+      "window": 1245836,
+      "cloaked": 0,
+      "process_session": 1,
+      "minimized": false,
+      "console_session": 1
+    },
+    "actual_process_elevated": false,
+    "main": {
+      "path": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+      "pid": 9044,
+      "binary_sha256": "41CCBC96B725623DE2285645C0F157E033A8F00FD72221584A5CAFF98BE8DBA8",
+      "title": "Ottrin"
+    },
+    "stack": "at Exercise-ExplorerFolderCommand, <No file>: line 235\r\nat Exercise-PackagedFolderCommand, <No file>: line 351\r\nat Exercise-StartupCheckbox, <No file>: line 421\r\nat Exercise-MainWindow, <No file>: line 482\r\nat <ScriptBlock>, <No file>: line 656\r\nat <ScriptBlock>, <No file>: line 1",
+    "cli_exits": {
+      "checkbox-disabled.stdout": 0,
+      "checkbox-enabled.stdout": 0,
+      "updated-service-status.stdout": 0
+    },
+    "administrator": false,
+    "input_desktop": "Default",
+    "preferences_before_removal": "DE1FA0C0F453C226EE46FEB99B7A1D8613141AEEDCBFA3FA44885DCAEE6BD069",
+    "error": "Actual Explorer context menu has no unique Open in Ottrin command",
+    "status": "failed post-update runtime",
+    "store": {
+      "path": "C:\\Users\\OTMSIX14145c47a863\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B9D0000000000000000"
+    },
+    "msix_startup_checkbox": {
+      "status": "pass actual installed-package checkbox",
+      "actions": [
+        {
+          "daemon_pids_before": [
+            9900
+          ],
+          "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+          "daemon_pids_after": [
+            9900
+          ],
+          "enabled": false
+        },
+        {
+          "daemon_pids_before": [
+            9900
+          ],
+          "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+          "daemon_pids_after": [
+            9900
+          ],
+          "enabled": true
+        }
+      ],
+      "package_identity": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+    },
+    "normal_close_exit": 0
+  },
+  "error": "Actual post-update ordinary runtime failed",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "actor": {
+    "gui_focus_and_capture": "failed",
+    "scope": "Actual ordinary post-update GUI, unchanged startup/configuration and declared startup choice after main window closes",
+    "focus_failure_capture": "focus-failure.png",
+    "phase": "actual Explorer folder context menu",
+    "actual_process_package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "gui_error": "Actual Explorer context menu has no unique Open in Ottrin command",
+    "window_diagnostics": {
+      "foreground": 1245836,
+      "enable_lua": 1,
+      "window": 1245836,
+      "cloaked": 0,
+      "process_session": 1,
+      "minimized": false,
+      "console_session": 1
+    },
+    "actual_process_elevated": false,
+    "main": {
+      "path": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+      "pid": 9044,
+      "binary_sha256": "41CCBC96B725623DE2285645C0F157E033A8F00FD72221584A5CAFF98BE8DBA8",
+      "title": "Ottrin"
+    },
+    "stack": "at Exercise-ExplorerFolderCommand, <No file>: line 235\r\nat Exercise-PackagedFolderCommand, <No file>: line 351\r\nat Exercise-StartupCheckbox, <No file>: line 421\r\nat Exercise-MainWindow, <No file>: line 482\r\nat <ScriptBlock>, <No file>: line 656\r\nat <ScriptBlock>, <No file>: line 1",
+    "cli_exits": {
+      "checkbox-disabled.stdout": 0,
+      "checkbox-enabled.stdout": 0,
+      "updated-service-status.stdout": 0
+    },
+    "administrator": false,
+    "input_desktop": "Default",
+    "preferences_before_removal": "DE1FA0C0F453C226EE46FEB99B7A1D8613141AEEDCBFA3FA44885DCAEE6BD069",
+    "error": "Actual Explorer context menu has no unique Open in Ottrin command",
+    "status": "failed post-update runtime",
+    "store": {
+      "path": "C:\\Users\\OTMSIX14145c47a863\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B9D0000000000000000"
+    },
+    "msix_startup_checkbox": {
+      "status": "pass actual installed-package checkbox",
+      "actions": [
+        {
+          "daemon_pids_before": [
+            9900
+          ],
+          "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+          "daemon_pids_after": [
+            9900
+          ],
+          "enabled": false
+        },
+        {
+          "daemon_pids_before": [
+            9900
+          ],
+          "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+          "daemon_pids_after": [
+            9900
+          ],
+          "enabled": true
+        }
+      ],
+      "package_identity": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+    },
+    "normal_close_exit": 0
+  },
+  "status": "failed native MSIX lifecycle",
+  "pre_update_actor": {
+    "msix_startup_checkbox": {
+      "status": "pass actual installed-package checkbox",
+      "actions": [
+        {
+          "daemon_pids_before": [
+            1016
+          ],
+          "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+          "daemon_pids_after": [
+            1016
+          ],
+          "enabled": false
+        },
+        {
+          "daemon_pids_before": [
+            1016
+          ],
+          "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+          "daemon_pids_after": [
+            1016
+          ],
+          "enabled": true
+        }
+      ],
+      "package_identity": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr"
+    },
+    "gui_focus_and_capture": "pass",
+    "scope": "Actual packaged ordinary main-window launch, normal close and optional index registration; no upgrade acceptance yet",
+    "session_id": 1,
+    "phase": "reenabled-index-status.json",
+    "actual_process_package": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr",
+    "service_remove_exit": 0,
+    "service_status_exit": 0,
+    "disable_reenable": "pass",
+    "actual_process_elevated": false,
+    "main": {
+      "path": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+      "pid": 10208,
+      "binary_sha256": "27EE54FFC5F217A751DCBE26D304D276741951E79F4585ED2CB86771DC8E04A2",
+      "title": "Ottrin"
+    },
+    "cli_exits": {
+      "service-remove.stdout": 0,
+      "reenabled-index-status.json": 0,
+      "reenable.stdout": 0,
+      "service-status.stdout": 0,
+      "checkbox-enabled.stdout": 0,
+      "disabled-status.stdout": 0,
+      "service-install.stdout": 0,
+      "index-status.json": 0,
+      "checkbox-disabled.stdout": 0
+    },
+    "administrator": false,
+    "input_desktop": "Default",
+    "preferences_before_removal": "DE1FA0C0F453C226EE46FEB99B7A1D8613141AEEDCBFA3FA44885DCAEE6BD069",
+    "service_install_exit": 0,
+    "daemon": {
+      "pid": 1016,
+      "administrator": false,
+      "package": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr"
+    },
+    "index_ready": "ready",
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIX14145c47a863\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B9D0000000000000000"
+    },
+    "window_diagnostics": {
+      "foreground": 458840,
+      "enable_lua": 1,
+      "window": 458840,
+      "cloaked": 0,
+      "process_session": 1,
+      "minimized": false,
+      "console_session": 1
+    },
+    "normal_close_exit": 0
+  },
+  "deployment": {
+    "full_name": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr",
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "location": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr",
+    "version": "0.1.0.23"
+  },
+  "update": {
+    "old_pids": [
+      9460
+    ],
+    "startup_enabled": true,
+    "previous_daemon_count": 1,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.23_x64__vs01n017nxmbr"
+  }
+}

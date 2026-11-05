@@ -4,5 +4,8 @@
   "sha256": "af1d7c7225b9a3fcc6a32841866e53d78f53d7756ec2fdc90a87abce1cf8b165",
   "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous23.msix",
   "original_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix",
-  "purpose": "Exact prior23 native upgrade/comparison input for new package-owned shell implementation; retire after consumer completion"
+  "purpose": "Exact prior23 native upgrade/comparison input for new package-owned shell implementation; retire after consumer completion",
+  "retired": true,
+  "completed_consumer": "MSIX_UPDATE_ACCEPTANCE.json",
+  "retirement_receipt": "UPDATE_CLEANUP_ACCEPTANCE.json"
 }

@@ -1,0 +1,27 @@
+{
+  "status": "open scoped findings; full theme audit remains in roadmap",
+  "findings": [
+    {
+      "id": "native-menu-icon-contrast",
+      "surface": "Windows Explorer light context menu",
+      "evidence": "update23to24-uia-duplicate-failure/results/explorer-folder-menu.png",
+      "observed": "White Ottrin artwork is difficult to distinguish on the light menu",
+      "source": "assets/icon.svg uses white fill; crates/ottrin-app/windows.rc embeds assets/icon.ico",
+      "required": "Preserve canonical brand while providing readable native icon contrast on light and dark backgrounds; verify actual generated resources and rendered menus"
+    },
+    {
+      "id": "supplementary-folder-glyph",
+      "surface": "Ottrin Windows title and breadcrumb",
+      "evidence": "update23to24-exit-observation-failure/results/explorer-invoked-main.png",
+      "observed": "U+10437 folder glyph appears as a missing-glyph box; native path and argv remain correct",
+      "required": "Audit font fallback without treating valid Unicode paths as malformed"
+    },
+    {
+      "id": "settings-capture-workarea",
+      "surface": "Private native Settings QA capture",
+      "evidence": "runtime24/CAPTURE_REVIEW.json",
+      "observed": "Taskbar overlays bottom controls; current Place only moves the window into the working area without constraining its size",
+      "required": "Fit the owned QA window within its working area and verify resulting bounds in the next relevant native UI case; do not infer complete-window acceptance from current targeted screenshots"
+    }
+  ]
+}
