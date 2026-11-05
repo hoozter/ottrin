@@ -1,0 +1,5 @@
+{
+  "source_revision": "f71a53839cc753fc91a0378b0818b6e083aa49eb",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "purpose": "Corrected command IDs and documented background folder lookup; real clean-source candidate, stable d032 preserved and prior23 comparison input retained"
+}

@@ -1,0 +1,5 @@
+{
+  "process_exit": 0,
+  "stdout": "{\"scope\":\"Actual template accepted by native MakeAppx and unpacked with unchanged Windows cmd.exe/shell32.dll control bytes; not Ottrin runtime, COM activation or deployment acceptance.\",\"status\":\"pass\",\"makeappx_sha256\":\"58D5E69FD0322F960AFBE34AFED0EDA66A5D001811EE838D1C7165130C3D55E5\",\"template_sha256\":\"9CF2F0040F4752E483065811D380D53576CDDB70200BE5463EA09ECAC2280280\"}\r\n",
+  "stderr": ""
+}

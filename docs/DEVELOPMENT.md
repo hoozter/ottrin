@@ -2061,10 +2061,9 @@ Windows runtime execution is separate from the direct native caller checks.
 
 Services → Desktop integration → Folder integration and the headless
 `ottrin folders enable|disable|status [--json]` commands use the same per-user
-implementation. Both installation types expose **Open in Ottrin** for folders,
-folder backgrounds and drives. `folders enable` does not change folder defaults.
+implementation. `folders enable` does not change folder defaults.
 
-Portable/NSIS installs use static verbs, which Windows 11 may place under
+Portable/NSIS installs add static folder, folder-background and drive verbs, which Windows 11 may place under
 **Show more options**. The three registry verbs, native executable path, ownership marker and receipt
 commit together in one native registry transaction. An abandoned transaction
 rolls back. Repair restores missing owned data; changed or unknown data refuses
@@ -2083,7 +2082,10 @@ Arguments use native Windows argv without a command shell. Metadata, COM site,
 factory/lifetime and Unicode path conversion pass the direct native contract;
 actual ordinary-user package activation, Explorer visibility/invocation and
 update/removal still require acceptance. MSIX default folder opening remains
-unfinished and does not use this menu preference.
+unfinished and does not use this menu preference. The native SDK accepts
+`Directory` and `Directory\Background` selectors and rejects a literal `Drive`
+selector. Actual drive-menu visibility/invocation through the supported selectors
+remains a required native check; schema acceptance does not prove it.
 The [Microsoft integration contract](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/integrate-packaged-app-with-file-explorer)
 defines package-owned command registration. Current evidence is under
 `.hermes/evidence/packaged-shell-current/`.

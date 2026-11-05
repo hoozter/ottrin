@@ -256,7 +256,7 @@ mod tests {
         let manifest = include_str!("../../../packaging/windows/msix-manifest.xml");
         assert!(manifest.contains(&format!("{:?}", CLASS).to_ascii_lowercase()));
         let verbs: Vec<_> = manifest.split("<desktop5:Verb ").skip(1).collect();
-        assert_eq!(verbs.len(), 3);
+        assert_eq!(verbs.len(), 2);
         for verb in verbs {
             let id = verb
                 .split_once("Id=\"")
@@ -270,7 +270,7 @@ mod tests {
                 "Packaged Explorer verb identifiers must satisfy the native SDK schema: {id}"
             );
         }
-        for context in ["Directory", "Directory\\Background", "Drive"] {
+        for context in ["Directory", "Directory\\Background"] {
             assert!(manifest.contains(&format!("Type=\"{context}\"")));
         }
     }

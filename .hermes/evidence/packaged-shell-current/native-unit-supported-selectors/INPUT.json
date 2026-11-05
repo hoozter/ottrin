@@ -1,0 +1,8 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_shell-36fcbe56ed1c0b11.exe",
+  "sha256": "ee102e58d70a5e030dd57fc7fba69964fceda5e023abed1022c205cd40ee1f9e",
+  "test_filter": "server::tests::packaged_shell_com_contract",
+  "exact": true,
+  "expected_pass_count": 1,
+  "cargo_output_directory": "debug"
+}

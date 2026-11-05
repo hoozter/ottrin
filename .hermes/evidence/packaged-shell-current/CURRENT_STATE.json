@@ -1,10 +1,10 @@
 {
   "goal": "active/incomplete",
   "previous_goal_turn": "progress: wrapping fix committed/pushed and real MSIX failure isolated",
-  "status": "pass current source checks and direct native COM contract; SDK and packaged runtime remain separate",
+  "status": "pass current source/direct native COM and SDK schema controls; actual product package/Explorer acceptance remains open",
   "stable_delivery": "d032 unchanged",
   "scope": "MSIX folder context menus; default folder opening remains separate unresolved work",
-  "next": "Clean-source candidate rebuild, then actual native SDK/package and ordinary-user COM/Explorer checks",
+  "next": "Deliver committed Linux UI fixes through actual package gates; rebuild corrected Windows candidate and continue ordinary-user COM/Explorer/update/removal checks",
   "native_cleanup": {
     "domain_removed": true,
     "owned_volumes_removed": [
@@ -19,5 +19,6 @@
   "previous_msix": "previous23.msix",
   "candidate_stage": ".hermes/packaging-tmp/.windows-picker-stage",
   "baseline_retirement": "BASELINE_RETIREMENT.json",
-  "case_base_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa"
+  "case_base_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa",
+  "sdk_schema": "SDK_SCHEMA_ACCEPTANCE.json"
 }

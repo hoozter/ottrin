@@ -104,8 +104,13 @@ The first native SDK gate rejected dotted command IDs (`C00CE169`). The source
 now uses distinct alphanumeric IDs and its native regression passes. The SDK
 control includes the declared DLL and retains complete rejection output. Earlier
 59-file investigation output was retired after byte/ownership/consumer checks; a
-clean rebuild is required, with no provenance rewriting. Both failed guests and
-the latest native component guest are removed.
+clean rebuild is required, with no provenance rewriting. A subsequent SDK gate
+also rejected a literal `Drive` selector. Corrected `Directory`/background
+declarations now pass actual MakeAppx/control-byte round trip and the native
+component regression. Actual drive-menu behavior remains required testing.
+These failed guests and the schema/component guests are removed. Prioritize
+delivery of the committed Linux UI fixes independently of remaining Windows
+package/Explorer work.
 The stable packages are unchanged. Work evidence:
 `.hermes/evidence/packaged-shell-current/`.
 

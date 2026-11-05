@@ -1,0 +1,7 @@
+{
+  "status": "Native SDK rejected Drive selector before actual product assembly",
+  "error": "C00CE169: ItemType permits *, extension, Directory or Directory\\Background; literal Drive rejected",
+  "next": "Use supported Directory/background selectors; actual drive-menu behavior remains a native acceptance requirement, not declared unsupported or completed",
+  "cleanup": "OWNER.json records domain/fixture/both volumes removed",
+  "workflow_change": "Run existing native schema-only mode before rebuilding the product candidate"
+}

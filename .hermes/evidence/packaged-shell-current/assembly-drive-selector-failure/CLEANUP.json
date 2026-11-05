@@ -1,0 +1,11 @@
+{
+  "reason": "Superseded f71 investigation cohort after native SDK rejected Drive selector; stable packages and prior23 upgrade input preserved",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "regular_files": 63,
+  "retired_logical_bytes": 241526290,
+  "source_archive": {
+    "bytes": 2596741,
+    "sha256": "c5c5906c5530ac563f182d6c4ef9fc74bd1d31cfb65606a8e0ea8f6163e6d497"
+  },
+  "checks": "Every payload/artifact byte checked; exact owned top level, no links/consumers or live guest. Schema-only correction passed separately."
+}

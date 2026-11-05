@@ -1,0 +1,35 @@
+{
+  "status": "pass native SDK schema/control round trip for corrected supported selectors",
+  "verification_head": "f71a53839cc753fc91a0378b0818b6e083aa49eb",
+  "snapshot_manifest_sha256": "9cf2f0040f4752e483065811d380d53576cddb70200be5463ea09ecac2280280",
+  "snapshot_sdk_fixture_sha256": "6082b1745fa1c448156d93bb629a69d9103779462d24dad1b7b629aa2fce01dd",
+  "source_dirty_at_verification": true,
+  "native_sdk": {
+    "scope": "Actual template accepted by native MakeAppx and unpacked with unchanged Windows cmd.exe/shell32.dll control bytes; not Ottrin runtime, COM activation or deployment acceptance.",
+    "status": "pass",
+    "makeappx_sha256": "58D5E69FD0322F960AFBE34AFED0EDA66A5D001811EE838D1C7165130C3D55E5",
+    "template_sha256": "9CF2F0040F4752E483065811D380D53576CDDB70200BE5463EA09ECAC2280280"
+  },
+  "parser": {
+    "source_sha256": "90D75BBBB777988903FDBFE77D5B91BB2AD62E73603618AB79333625669CDE67",
+    "scope": "Native parser and XML load; not package assembly/deployment",
+    "manifest_sha256": "9CF2F0040F4752E483065811D380D53576CDDB70200BE5463EA09ECAC2280280",
+    "syntax_errors": 0,
+    "parser": "Windows PowerShell 5.1"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-parser.qcow2",
+      "ottrin-msix-parser-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "cmd.exe/shell32.dll controls, not an actual Ottrin package or COM activation",
+    "Directory and Directory\\Background declarations accepted; actual drive-context visibility/invocation remains required native testing",
+    "No package update, uninstall, Store, signing or complete roadmap acceptance"
+  ]
+}
