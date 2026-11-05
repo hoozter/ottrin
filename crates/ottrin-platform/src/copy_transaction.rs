@@ -14,6 +14,8 @@ use std::path::{Path, PathBuf};
 #[cfg(target_os = "windows")]
 mod windows;
 #[cfg(target_os = "windows")]
+pub(crate) use windows::CallerProfile;
+#[cfg(target_os = "windows")]
 pub(super) use windows::{MAX_COPY_ENTRIES, copy_configured};
 #[cfg(target_os = "windows")]
 pub use windows::{

@@ -1,0 +1,26 @@
+[
+  {
+    "path": ".hermes/evidence/caller-context-current/native/RESULTS.zip",
+    "bytes": 2808,
+    "sha256": "f9998df80b37fdfe9563ab2a6275c6e63b011c0d3935100176154b6f36032d1a",
+    "reason": "Consumed native acceptance transport/setup frame; extracted result and frozen provenance retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-context-current/native/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "reason": "Consumed native acceptance transport/setup frame; extracted result and frozen provenance retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-context-current/native/privacy-accepted-1.png",
+    "bytes": 955677,
+    "sha256": "c893f8287ae1546f1e18166933da4f07d3dc19f4bc546d2fc5026e89934a2da1",
+    "reason": "Consumed native acceptance transport/setup frame; extracted result and frozen provenance retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-context-current/native/desktop-ready.png",
+    "bytes": 1696731,
+    "sha256": "147d4def0b16cf36f0d7dda46af64a159e7f2366f84c1d6fe8f5aef55bad3d8a",
+    "reason": "Consumed native acceptance transport/setup frame; extracted result and frozen provenance retained"
+  }
+]

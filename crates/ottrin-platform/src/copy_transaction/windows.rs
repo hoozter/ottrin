@@ -33,6 +33,7 @@ mod links;
 mod metadata;
 mod namespace;
 mod security;
+pub(crate) use security::CallerProfile;
 mod tree;
 
 use super::PlatformError;

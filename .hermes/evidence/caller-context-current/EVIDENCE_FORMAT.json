@@ -1,0 +1,14 @@
+[
+  {
+    "path": ".hermes/evidence/caller-context-current/native/RESULT.json",
+    "raw_sha256": "4b3d56939c28ffb1f3addd92fb9132961c9cb6b35d7777a643b4088a6aa9da62",
+    "normalized_sha256": "b0fa0c16f48e6ea49e433736012018775f501459541a6afba2909681a6c8dcc1",
+    "change": "Transport line endings only; parsed native values and stdout/stderr unchanged"
+  },
+  {
+    "path": ".hermes/evidence/caller-context-current/native/DESKTOP_READY.json",
+    "raw_sha256": "3046b303e8930ef560bc7dc1ceea16023eb1fa41d1ba240cbf3e9806addbbf79",
+    "normalized_sha256": "2cf8077b568766b20cb005bb0d4f5bf15f48938f331b6e6455323decffba964d",
+    "change": "Transport line endings only; parsed native values and stdout/stderr unchanged"
+  }
+]

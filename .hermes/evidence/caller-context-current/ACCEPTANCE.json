@@ -1,0 +1,31 @@
+{
+  "status": "Pass scoped ordinary-user authenticated caller profile context",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/RESULT.json",
+  "frozen_actor": "native/actor.ps1",
+  "native_source_binding": "native/APPLICATION_INPUT.json",
+  "native_invocations": 3,
+  "named_top_level_passes": 6,
+  "verified": [
+    "Profile directory replacement is refused; original owned fixture bytes remain unchanged",
+    "Real DACL change on an owned fixture is refused; ordinary profile content changes remain permitted",
+    "Original registered Local AppData is selected by kernel token despite poisoned helper/original environment",
+    "Separate TokenUser and TokenOwner values are read from the authenticated original token",
+    "Retained profile context refuses access after original process exit",
+    "Four existing helper process-birth, peer, retained-process and truncated-frame regressions pass"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "log": "windows-lint.log"
+  },
+  "limits": [
+    "No recovery-registry initialization/admission, permission installation, or Copy/Undo/cleanup authority is granted by this profile context",
+    "Same ordinary user only; alternate-administrator UAC, package identity and an actual in-place TokenOwner mutation are not proven here",
+    "Actual production-helper/UAC regressions retain their previous artifact scopes; this actor exercises library/native pipe components",
+    "Administrator Copy remains disabled; stable Linuxbee/Windows8e packages are unchanged"
+  ],
+  "prior_profile_locator": "../caller-profile-current/ACCEPTANCE.json",
+  "current_package_hashes_verified": "../cohort-coordinator-current/PRESERVED_PACKAGES.json"
+}

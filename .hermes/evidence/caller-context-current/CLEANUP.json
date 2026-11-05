@@ -1,0 +1,46 @@
+{
+  "status": "Complete owned teardown and consumed-output cleanup",
+  "baseline": "STORAGE_BEFORE.json",
+  "incremental_receipt": "INCREMENTAL_CLEANUP.json",
+  "guest_receipt": "native/OWNER.json",
+  "consumed_transports": "native/CONSUMED_OUTPUT_CLEANUP.json",
+  "available_bytes": 26323877888,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "bytes": 772082893,
+      "purpose": "Newest same-configuration Windows platform/UI compiler output; subsequent caller/registry bridge and package verification input"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "bytes": 545143232,
+      "purpose": "Newest same-configuration Windows platform/UI compiler output; subsequent caller/registry bridge and package verification input"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps",
+      "bytes": 23815171724,
+      "purpose": "Shared authoritative build caches/current dependencies; older finalized sessions removed through locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental",
+      "bytes": 25263960526,
+      "purpose": "Shared authoritative build caches/current dependencies; older finalized sessions removed through locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps",
+      "bytes": 31112395043,
+      "purpose": "Shared authoritative build caches/current dependencies; older finalized sessions removed through locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental",
+      "bytes": 48837088353,
+      "purpose": "Shared authoritative build caches/current dependencies; older finalized sessions removed through locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-context-current",
+      "bytes": 527606,
+      "purpose": "Compact native/source/build receipts and current isolated QA actor; no guest disk, test payload, runtime extraction or package staging"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

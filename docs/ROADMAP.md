@@ -68,14 +68,21 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    the per-member refusal gate. Strict Windows platform/UI lint and the focused
    four-case Linux Activity cleanup regression pass. Owned guests, disks, desktops,
    profiles and consumed transports are removed. This is source/controller
-   acceptance, not a new package or a complete administrator-Copy gate. Parent owner/group/DACL evidence is pinned, but
-   the new parent-security refusal fixture changes the group, not a literal DACL.
-   Administrator Copy stays disabled. Kernel process/TokenUser binding and the
-   explicit-token registered Local AppData locator have bounded same-user native
-   acceptance (`caller-profile-current/ACCEPTANCE.json`); that read-only locator
-   grants no filesystem recovery authority. Original-caller registry ownership,
-   alternate-administrator and package-context proof remain required before helper
-   enablement. Current downloads remain Linuxbee/Windows8e. Missing member IDs
+   acceptance, not a new package or a complete administrator-Copy gate.
+   The path-only caller locator is now replaced by an authenticated caller context:
+   frozen native TokenUser and default TokenOwner remain distinct, and the registered
+   Local AppData directory is pinned by native identity, location, owner/group/DACL
+   and case policy. Six focused native checks pass: actual owned-directory/DACL
+   substitution refusal, ordinary content changes, poisoned environment, process
+   exit and existing transport identity/frame regressions. Receipt:
+   `caller-context-current/ACCEPTANCE.json`. This read-only context grants no
+   recovery-registry or file-mutation authority. Alternate-administrator, package
+   identity and actual in-place TokenOwner mutation are not proven by these cases.
+   The coordinator's registry-parent security fixture still changes a group, not
+   a literal DACL; the new profile-DACL test has its separate profile-only scope.
+   Administrator Copy stays disabled. Original-caller registry initialization,
+   private-file ownership, receipt/Undo/cleanup bridging and cross-administrator/
+   package-context proof remain required before helper enablement. Current downloads remain Linuxbee/Windows8e. Missing member IDs
    never license deletion or a completed original-batch history claim.
 2. Finish U05–U08 interface/theme consistency and property mapping. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the

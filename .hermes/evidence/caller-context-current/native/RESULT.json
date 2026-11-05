@@ -1,0 +1,62 @@
+{
+    "input":  {
+                  "source_revision":  "c920153277f8a76c2e89570f1ce8c43b2eeeea36",
+                  "source_test_sha256":  "25d2757a2aac4911eb67b0856d63d21d54a95bfe87a0fab3b85f52d57ae6f43c",
+                  "test_sha256":  "cb6016bafe325288c0ce7df93b649d7950625e82fe35554d003c41490b6c53fd",
+                  "source_bytes":  545143232,
+                  "staged_bytes":  523684216,
+                  "strip_command":  [
+                                        "x86_64-w64-mingw32-strip",
+                                        "--strip-debug"
+                                    ],
+                  "unchanged_executable_text":  {
+                                                    "entry_rva":  5136,
+                                                    "bytes":  408612864,
+                                                    "sha256":  "e886c14eaf3d014d95f0d8ce8bd7aa221c01a389c6d2747078df3cc7b0626185"
+                                                },
+                  "actor_sha256":  "e17c80d3e539a0f5321d4e7a9ae477874fc06d20dd86f60bfbd88da98adc19cc",
+                  "scope":  "Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.",
+                  "changed_product_sources":  {
+                                                  "crates/ottrin-platform/src/copy_transaction.rs":  "d9989d57b836dc48cd254c362d462521ea88e8788b1218c87120850c051f5354",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows.rs":  "ccf627c9fa4fbeebce105a8a0a1a6a0f875c97293e17f5c9619e5200fa4ed6ab",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/security.rs":  "501e18ca1d7839b2a85678e4c970b216f2e3413a91e4c7ad384e44e7773ab444",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/security/caller_profile.rs":  "f54f1536b754e04f1ebc6e3a217ed9131f03853aa607a9623b5c01b73956af4c",
+                                                  "crates/ottrin-platform/src/windows_privileged_transport.rs":  "a9265b094099715bceff1318714b3e09d8e34e90df61ae24dd0014f9fa88cea1"
+                                              },
+                  "source_scope":  "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+              },
+    "profile_observation":  {
+                                "scope":  "Both profile variables poisoned in helper worker and original child; absent poisoned directory and exit refusal asserted natively. Same-user tokens only; no cross-admin claim.",
+                                "path":  "C:\\Users\\OTMSI004c71fab812\\AppData\\Local",
+                                "matches_actor_known_folder":  true
+                            },
+    "phase":  "complete",
+    "scope":  "Ordinary-user authenticated profile pin, distinct kernel user/default owner, poisoned environment and original-process exit plus existing pipe identity/frame regressions; no registry mutation, alternate-admin/package or enabled administrator Copy acceptance",
+    "identity":  {
+                     "local_app_data":  "C:\\Users\\OTMSI004c71fab812\\AppData\\Local",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "status":  "pass ordinary-user authenticated profile context and transport regressions",
+    "runs":  [
+                 {
+                     "stdout":  "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_profile_native_pin_refuses_replacement_and_permission_changes ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 575 filtered out; finished in 0.04s\n\n",
+                     "case":  "profile-pin",
+                     "stderr":  "",
+                     "exit":  0
+                 },
+                 {
+                     "stdout":  "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_profile_uses_kernel_token_not_environment ... \nrunning 1 test\ntest windows_privileged_transport::tests::caller_profile_worker ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 575 filtered out; finished in 0.01s\n\nOTTRIN_CALLER_PROFILE=\"C:\\\\Users\\\\OTMSI004c71fab812\\\\AppData\\\\Local\"\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 575 filtered out; finished in 0.14s\n\n",
+                     "case":  "profile",
+                     "stderr":  "",
+                     "exit":  0
+                 },
+                 {
+                     "stdout":  "\nrunning 4 tests\ntest windows_privileged_transport::tests::windows_helper_pipe_binds_creation_time_before_connecting ... ok\ntest windows_privileged_transport::tests::windows_helper_pipe_rejects_wrong_peer_before_receiving_authority ... ok\ntest windows_privileged_transport::tests::windows_helper_pipe_retains_original_process_and_refuses_its_exit ... ok\ntest windows_privileged_transport::tests::windows_helper_pipe_truncated_frame_is_not_a_request ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 0.05s\n\n",
+                     "case":  "transport",
+                     "stderr":  "",
+                     "exit":  0
+                 }
+             ]
+}

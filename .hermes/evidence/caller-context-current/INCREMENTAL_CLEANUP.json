@@ -1,0 +1,17 @@
+{
+  "finished": "2026-11-05T20:48:25.934538+00:00",
+  "removed_sessions": 11,
+  "before": {
+    "total": 502609965056,
+    "used": 472713404416,
+    "available": 24761851904,
+    "free": 29896560640
+  },
+  "after": {
+    "total": 502609965056,
+    "used": 471140614144,
+    "available": 26334642176,
+    "free": 31469350912
+  },
+  "filesystem_free_delta": 1572790272
+}

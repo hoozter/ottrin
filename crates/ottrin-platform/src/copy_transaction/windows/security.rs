@@ -14,7 +14,9 @@ use windows_sys::Win32::Security::Authorization::{SE_FILE_OBJECT, SetSecurityInf
 use windows_sys::Win32::Security::*;
 use windows_sys::Win32::Storage::FileSystem::*;
 
+mod caller_profile;
 mod tree;
+pub(crate) use caller_profile::CallerProfile;
 pub(super) use tree::{
     PermissionProgress, PlannedEntry, SecurityEntry, SecurityPlanHeader, TreeSecurityEvidence,
     TreeSecurityPlan,

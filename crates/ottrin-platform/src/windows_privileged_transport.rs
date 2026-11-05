@@ -11,6 +11,7 @@ use std::os::windows::ffi::{OsStrExt, OsStringExt};
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::path::{Path, PathBuf};
 use std::ptr;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use windows_sys::Win32::Foundation::{
     ERROR_CANCELLED, FILETIME, HANDLE, WAIT_OBJECT_0, WAIT_TIMEOUT,
@@ -165,7 +166,23 @@ fn local_app_data(token: &OwnedHandle) -> io::Result<PathBuf> {
 struct CallerProcess {
     process: OwnedHandle,
     token: OwnedHandle,
+    identity: CallerIdentity,
 }
+
+#[derive(PartialEq, Eq)]
+struct CallerIdentity {
+    user: Vec<u8>,
+    owner: Vec<u8>,
+}
+impl CallerIdentity {
+    fn capture(token: &OwnedHandle) -> io::Result<Self> {
+        Ok(Self {
+            user: crate::windows_fs::user_for_token(token).map_err(io::Error::other)?,
+            owner: crate::windows_fs::owner_for_token(token).map_err(io::Error::other)?,
+        })
+    }
+}
+
 impl CallerProcess {
     fn capture(pid: u32, expected_start: u64) -> io::Result<Self> {
         if pid == 0 || expected_start == 0 {
@@ -193,7 +210,12 @@ impl CallerProcess {
             ));
         }
         let token = process_token(&process, TOKEN_QUERY)?;
-        let caller = Self { process, token };
+        let identity = CallerIdentity::capture(&token)?;
+        let caller = Self {
+            process,
+            token,
+            identity,
+        };
         caller.validate()?;
         Ok(caller)
     }
@@ -206,12 +228,10 @@ impl CallerProcess {
             &self.process,
             TOKEN_QUERY | TOKEN_IMPERSONATE | TOKEN_DUPLICATE,
         )?;
-        if crate::windows_fs::user_for_token(&token).map_err(io::Error::other)?
-            != crate::windows_fs::user_for_token(&self.token).map_err(io::Error::other)?
-        {
+        if CallerIdentity::capture(&token)? != self.identity {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
-                "Caller token user changed before profile lookup",
+                "Caller token user or default owner changed before profile lookup",
             ));
         }
         let path = local_app_data(&token)?;
@@ -230,17 +250,55 @@ impl CallerProcess {
             }
             _ => return Err(io::Error::last_os_error()),
         }
-        let original = crate::windows_fs::user_for_token(&self.token).map_err(io::Error::other)?;
-        let current =
-            crate::windows_fs::user_for_token(&process_token(&self.process, TOKEN_QUERY)?)
-                .map_err(io::Error::other)?;
-        if current != original {
+        if CallerIdentity::capture(&self.token)? != self.identity
+            || CallerIdentity::capture(&process_token(&self.process, TOKEN_QUERY)?)?
+                != self.identity
+        {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
-                "Original application token user changed",
+                "Original application token user or default owner changed",
             ));
         }
         Ok(())
+    }
+}
+
+/// Authenticated, read-only original-caller profile context. This pins the
+/// native directory and both distinct token principals. It does not create or
+/// admit a recovery registry, install permissions or authorize Copy/Undo/cleanup.
+pub struct CallerCopyContext {
+    caller: Arc<CallerProcess>,
+    profile: crate::copy_transaction::CallerProfile,
+}
+impl CallerCopyContext {
+    fn capture(caller: Arc<CallerProcess>) -> io::Result<Self> {
+        let path = caller.local_app_data()?;
+        let profile = crate::copy_transaction::CallerProfile::capture(
+            &path,
+            &caller.identity.user,
+            &caller.identity.owner,
+        )
+        .map_err(io::Error::other)?;
+        let context = Self { caller, profile };
+        context.validate()?;
+        Ok(context)
+    }
+    pub fn validate(&self) -> io::Result<()> {
+        self.caller.validate()?;
+        self.profile.validate().map_err(io::Error::other)?;
+        self.caller.validate()
+    }
+    pub fn local_app_data(&self) -> io::Result<&Path> {
+        self.validate()?;
+        Ok(self.profile.path())
+    }
+    pub fn user_sid(&self) -> io::Result<&[u8]> {
+        self.validate()?;
+        Ok(&self.caller.identity.user)
+    }
+    pub fn default_file_owner_sid(&self) -> io::Result<&[u8]> {
+        self.validate()?;
+        Ok(&self.caller.identity.owner)
     }
 }
 
@@ -248,12 +306,12 @@ impl CallerProcess {
 /// request bytes; no caller SID, profile or elevated environment is trusted.
 pub struct HelperChannel {
     stream: LocalPipeStream,
-    caller: CallerProcess,
+    caller: Arc<CallerProcess>,
 }
 impl HelperChannel {
     pub fn connect(nonce: &str, parent_pid: u32, parent_start: u64) -> io::Result<Self> {
         let name = endpoint(nonce)?;
-        let caller = CallerProcess::capture(parent_pid, parent_start)?;
+        let caller = Arc::new(CallerProcess::capture(parent_pid, parent_start)?);
         let stream = LocalPipeStream::connect(&name, CONNECT_TIMEOUT, |pid| {
             verify_pid(pid, parent_pid)?;
             caller.validate()
@@ -268,11 +326,8 @@ impl HelperChannel {
         request.validate_protocol().map_err(str::to_owned)?;
         Ok(request)
     }
-    /// Read-only Local AppData locator for the authenticated original process.
-    /// This does not create, admit or authorize a Copy registry. A future registry
-    /// binding must separately pin and validate its native identity/security.
-    pub fn caller_local_app_data(&self) -> io::Result<PathBuf> {
-        self.caller.local_app_data()
+    pub fn caller_copy_context(&self) -> io::Result<CallerCopyContext> {
+        CallerCopyContext::capture(Arc::clone(&self.caller))
     }
     pub fn write_response(&mut self, response: &PrivilegedResponse) -> io::Result<()> {
         write_json(&mut self.stream, response)
@@ -525,8 +580,80 @@ mod tests {
         )
         .unwrap();
         channel.read_request().unwrap();
-        let path = channel.caller_local_app_data().unwrap();
+        let context = channel.caller_copy_context().unwrap();
+        let path = context.local_app_data().unwrap();
         write_json(&mut channel.stream, &path).unwrap();
+    }
+
+    #[test]
+    fn caller_profile_native_pin_refuses_replacement_and_permission_changes() {
+        let started = process_start_time(unsafe { GetCurrentProcess() }).unwrap();
+        let caller = Arc::new(CallerProcess::capture(std::process::id(), started).unwrap());
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("profile Ω");
+        std::fs::create_dir(&path).unwrap();
+        // Only this private fixture substitutes a path. Production construction
+        // always resolves the authenticated token's registered known folder.
+        let context = CallerCopyContext {
+            profile: crate::copy_transaction::CallerProfile::capture(
+                &path,
+                &caller.identity.user,
+                &caller.identity.owner,
+            )
+            .unwrap(),
+            caller,
+        };
+        context.validate().unwrap();
+        std::fs::write(path.join("untouched.txt"), b"caller data").unwrap();
+        context.validate().unwrap(); // Normal profile content is not frozen.
+        let displaced = root.path().join("original");
+        std::fs::rename(&path, &displaced).unwrap();
+        std::fs::create_dir(&path).unwrap();
+        assert!(context.local_app_data().is_err());
+        assert_eq!(
+            std::fs::read(displaced.join("untouched.txt")).unwrap(),
+            b"caller data"
+        );
+        std::fs::remove_dir(&path).unwrap();
+        std::fs::rename(&displaced, &path).unwrap();
+        context.validate().unwrap();
+
+        // Change only this owned fixture's real DACL, retaining its owner and
+        // contents. Use a live native descriptor, never serialized ACL bytes.
+        use windows_sys::Win32::Security::{Authorization::*, *};
+        let policy = crate::windows_fs::LocalSecurity::private().unwrap();
+        let (mut present, mut defaulted, mut dacl) = (0, 0, ptr::null_mut());
+        assert_ne!(
+            unsafe {
+                GetSecurityDescriptorDacl(policy.as_raw(), &mut present, &mut dacl, &mut defaulted)
+            },
+            0
+        );
+        assert_ne!(present, 0);
+        let file = crate::windows_fs::open_directory(
+            &path,
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
+        )
+        .unwrap();
+        assert_eq!(
+            unsafe {
+                SetSecurityInfo(
+                    file.as_raw_handle().cast(),
+                    SE_FILE_OBJECT,
+                    DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    dacl,
+                    ptr::null_mut(),
+                )
+            },
+            0
+        );
+        assert!(context.validate().is_err());
+        assert_eq!(
+            std::fs::read(path.join("untouched.txt")).unwrap(),
+            b"caller data"
+        );
     }
 
     #[test]
@@ -600,13 +727,22 @@ mod tests {
                 .unwrap(),
         );
         let started = process_start_time(original.0.as_raw_handle()).unwrap();
-        let caller = CallerProcess::capture(original.0.id(), started).unwrap();
-        assert_eq!(caller.local_app_data().unwrap(), expected);
+        let caller = Arc::new(CallerProcess::capture(original.0.id(), started).unwrap());
+        let context = CallerCopyContext::capture(Arc::clone(&caller)).unwrap();
+        assert_eq!(context.local_app_data().unwrap(), expected);
+        assert_eq!(
+            context.user_sid().unwrap(),
+            crate::windows_fs::user_for_token(&caller.token).unwrap()
+        );
+        assert_eq!(
+            context.default_file_owner_sid().unwrap(),
+            crate::windows_fs::owner_for_token(&caller.token).unwrap()
+        );
         assert!(!false_profile.exists());
         original.0.kill().unwrap();
         original.0.wait().unwrap();
         assert_eq!(
-            caller.local_app_data().unwrap_err().kind(),
+            context.local_app_data().unwrap_err().kind(),
             io::ErrorKind::PermissionDenied
         );
         println!(
