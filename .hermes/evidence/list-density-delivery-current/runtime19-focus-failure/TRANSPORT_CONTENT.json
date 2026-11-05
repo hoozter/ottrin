@@ -1,0 +1,71 @@
+{
+  "members": [
+    {
+      "name": "ACTOR.json",
+      "bytes": 10397,
+      "sha256": "6bc80e6cb63d1f1335193190f322a732ba1c20a1f5973a5eacb1b729d473a056",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "CRASH_EVENTS.json",
+      "bytes": 111,
+      "sha256": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DEPLOYMENT.json",
+      "bytes": 681,
+      "sha256": "c8a5f4f1cecc04f69612bd8a6fe366660045a33ed0375fb93ec6c64e4becff93",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "642b95175ded9a80244b9065a34688c78a8864b09f7ad57dd8c3a3aa4315f2de",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "DESKTOP_WAITING.json",
+      "bytes": 303,
+      "sha256": "5e6b38f856fd78bb880b404df94a03b187c7c9d9e31287b5e1cc7d639cae42eb",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 13606,
+      "sha256": "293ef0415041b11c4a01659283f6a1d86005774f32d3c6098b7b3fe7a4f45051",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-install.stdout",
+      "bytes": 93,
+      "sha256": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "service-status.stdout",
+      "bytes": 65,
+      "sha256": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "STATE_READER_SMOKE.json",
+      "bytes": 249,
+      "sha256": "ef380d70bd2170d4fc552be92b01a75a1edf44584d1a1518262dc9f3b2e89b2e",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

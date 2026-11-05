@@ -36,15 +36,26 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages use runtime `c4a7b46b`; Windows ZIP/NSIS and unsigned
+The four Linux packages use runtime `24af31d7`; Windows ZIP/NSIS and unsigned
 development MSIX0.1.0.17 retain accepted runtime `45830098`. Exact-source
-CI41929773433 passes all four Linux/Windows verification/performance jobs.
+CI41956606124 passes all four Linux/Windows verification/performance jobs.
 Linux administrator Copy supports authenticated history loading after restart,
 freshly checked Undo and confirmed cleanup. Recovered history is distinguished
 from a known completed batch; reloading a fully undone Copy shows Copy undone
 instead of a misleading error. Helper protocol3 requires updating older helpers
 through Settings → Services → Update / reinstall helper and authenticating.
 The personal system helper is not silently replaced.
+
+Current Linux delivery fixes wide List filenames spilling into metadata columns
+and ensures Column/List density each uses its own saved setting. Services shows
+startup On/Off/Unavailable independently of the running index. Exact native
+verification includes26 caption/density/footer/picker and12 Services captures.
+The managed daemon returned Ready after replacement with preferences, startup
+choice and database identity preserved. Its30-second personal sample measured
+0.83% of one core under normal filesystem activity; this is not a strict idle or
+sustained-workload guarantee. High-density icon/text padding and Light-theme
+contrast remain open UI-audit findings. Evidence:
+`.hermes/evidence/list-density-delivery-current/`.
 
 Original DAC AppImage/FUSE acceptance covers helper update/cancellation, protected Copy,
 normal restart, history loading/refresh, Undo and cleanup, with independent root

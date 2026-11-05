@@ -1,0 +1,61 @@
+{
+  "status": "completed task fixtures retired; current Windows consumers explicitly retained",
+  "baseline": {
+    "target/debug/deps": 25231342820,
+    "target/debug/incremental": 25055113550,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070289663,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272466157,
+    "target/release": 4545256737,
+    "target/x86_64-pc-windows-gnu/release": 4005721878,
+    ".hermes/evidence/list-density-delivery-current": 10921,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 0,
+    ".hermes/packaging-tmp/.windows-picker-stage": 0
+  },
+  "current": {
+    "target/debug/deps": 25231342820,
+    "target/debug/incremental": 25055113550,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070289663,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272466157,
+    "target/release": 4545256193,
+    "target/x86_64-pc-windows-gnu/release": 4005720873,
+    ".hermes/evidence/list-density-delivery-current": 67451875,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 0,
+    ".hermes/packaging-tmp/.windows-picker-stage": 294400789
+  },
+  "delta": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 0,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 0,
+    "target/release": -544,
+    "target/x86_64-pc-windows-gnu/release": -1005,
+    ".hermes/evidence/list-density-delivery-current": 67440954,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 0,
+    ".hermes/packaging-tmp/.windows-picker-stage": 294400789
+  },
+  "cleanup": [
+    "Current Linux stable publication removed superseded four-format artifacts, consumed stage and temporary rollback directory",
+    "Both Linux native clones/three volumes each, private SSH seeds/profiles and consumed transport archives removed",
+    "Both NSIS native clones/two volumes each and consumed bootstrap/archives removed; duplicate failed-case captures retired after exact replacement review",
+    "MSIX19 assembly clone/two volumes and consumed source ZIP removed",
+    "Failed fresh19 runtime package/processes/clone/two volumes/bootstrap removed; original failure measurements retained"
+  ],
+  "remaining": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Current58-file Windows payload, ZIP/NSIS and native MSIX19",
+      "pending_consumer": "Live MSIX runtime12348 and guarded stable-path delivery"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/list-density-delivery-current/runtime19",
+      "purpose": "Live owned MSIX19 runtime retry controller/ISO/overlay/private console",
+      "pending_consumer": "Original focus failure addressed in fixture, ordinary launch, actual visible Settings and reboot/login/removal; registered native-driver teardown"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/list-density-delivery-current",
+      "purpose": "Current successful originals, compact receipts and reproducible fixture producers",
+      "pending_consumer": "Delivery/roadmap evidence; exclude live private bootstrap from Git"
+    }
+  ],
+  "cache_scope": "No additional debug configuration or target tree in this turn. Shared Cargo/Rustup/current normal release and test caches retained;21 obsolete incremental sessions were already retired with exact helper in prior source pass."
+}

@@ -1,0 +1,17 @@
+{
+  "status": "preflight passed; managed service will be quiesced for exact package replacement",
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "before_unit": {
+    "MainPID": "2448604",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/ottrin-index.service",
+    "ActiveState": "active"
+  },
+  "startup_before": "enabled",
+  "preferences_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "database_identity": [
+    66306,
+    8651420
+  ],
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "retired": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-current-retired"
+}

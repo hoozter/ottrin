@@ -1,0 +1,13 @@
+{
+  "status": "failed; no native MSIX19 runtime acceptance",
+  "cause": "Ordinary packaged window could not acquire foreground focus; later missing-checkbox error masked the original failure",
+  "native_main_identity": "Ottrin.Development_0.1.0.19_x64__vs01n017nxmbr",
+  "normal_close_exit": 0,
+  "package_removed": true,
+  "package_processes_removed": true,
+  "fixture_preserved": true,
+  "preferences_preserved": false,
+  "next_fixture_change": "Request focus on actual accessible Menu control before native activation, retain strict foreground assertion, and rethrow original GUI failure after owned normal close",
+  "recovery_correction": "Any manual desktop readiness recovery must focus the visually verified guest canvas once and send Escape before signalling, matching the automatic ready workflow; previous manual signal omitted this input",
+  "retry_runtime_sha256": "3a38ea475710d8a5f48c2eb4acb900a2610cd4f5b3f15505313c1a2bdba69091"
+}

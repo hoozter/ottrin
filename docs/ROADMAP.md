@@ -9,10 +9,10 @@ not complete a broader native, platform or user-acceptance requirement.
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` use runtime
-`c4a7b46b8bc77c66f62b112689fa6b382a51ddb8`. Windows ZIP/NSIS/development
+`24af31d70cb9950527b6fcb113c466213f3a2422`. Windows ZIP/NSIS/development
 MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`e88e49e876721b1c065addd2f79f83b508bb533b241b536eb0166ac4118cb634`.
+`d771c7bd863bcdfa1b2bce1b0761d356a42bccafaa44ad76b9912f42d5f06a47`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
@@ -23,8 +23,12 @@ Source `24af31d7` fixes measured filename elision/clipping and crossed density
 settings: List now reads List density and Column rows read Column density.
 508 UI tests pass with one existing ignored test, plus native/Windows strict lint.
 
-The rebuilt `24af31d7` four-format Linux and Windows ZIP/NSIS candidates remain
-outside the stable paths pending the remaining exact-package gates. Linux package
+The rebuilt `24af31d7` four-format Linux cohort is delivered at the stable paths.
+The managed daemon returned Ready on the exact new binary with preferences, startup
+choice and database identity preserved; a30-second personal sample measured0.83%
+of one core under normal filesystem activity (not strict idle or sustained proof).
+Superseded Linux packages and staging are removed. Windows candidates remain
+outside stable paths pending remaining exact-package gates. Linux package
 contents/runtime closure, private1000-file daemon watcher/restart/idle checks,
 26 directly reviewed caption/density/footer/picker captures and twelve Services
 captures pass their bounded scopes. Own-density Column row heights are23/25/34;
@@ -47,23 +51,24 @@ images are retired with exact hashes and compact failure measurements retained.
 Native Microsoft MakeAppx MSIX19 assembly and58-file payload equality pass,
 including private daemon watcher/restart/shutdown/idle checks. Its clone/volumes
 and consumed2.527MB source archive are removed. Fresh19 installed-package
-launch/startup/reboot/login/removal acceptance is running; stable delivery remains
-pending. Fresh prior MSIX18 functional runtime/login/removal and both enabled and
+launch/startup/reboot/login/removal attempt failed ordinary foreground activation;
+its package/processes/clone/volumes/bootstrap are removed and no runtime pass is
+claimed. A revised fixture requests focus through the actual accessible Menu
+control, retains the foreground assertion, and preserves the original GUI error
+after normal close. Its retry is running; Windows stable delivery remains pending. Fresh prior MSIX18 functional runtime/login/removal and both enabled and
 disabled17-to18 updates passed; the disabled login observation lasted180seconds
 without a daemon before any Ottrin CLI. Those packages were retired. Pre-update17
 Settings captures and updated18 main/login captures retain distinct scopes;
 previous fresh18 Settings images were occluded, requiring newly visible19 captures.
 
-All four hosted jobs passed for `7fa0e46c` and `fb717b03`. Current24af run41956606124
-has passed Linux verification and both performance jobs; Windows verification is
-still running after its Cargo tests passed and moved to strict lint. Avoid
-cancelling that run. Evidence:
+All four hosted jobs passed for `7fa0e46c`, `fb717b03` and current24af
+run41956606124, including Windows tests, strict lint and release build. Evidence:
 `.hermes/evidence/list-density-delivery-current/` (current staged cohort),
 `.hermes/evidence/list-caption-current/` (source regressions), and
 `.hermes/evidence/status-error-delivery-current/` (retired prior cohort).
-Stable packages above remain unchanged.
+Linux is delivered; stable Windows458/MSIX17 remains unchanged.
 
-Exactc4 run41929773433 passes all four hosted jobs. Current Linux packages include
+Earlierc4 run41929773433 passed all four hosted jobs. Current Linux retains
 restored administrator history provenance/refresh and typed completed-Undo state,
 with helper protocol3 readiness/update checks. Original DAC AppImage/FUSE protected Copy,
 restart/history/Undo/cleanup, native DEB two-reboot and four aa-to-DAC replacement

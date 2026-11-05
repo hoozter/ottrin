@@ -1,0 +1,10 @@
+{
+  "status": "pass direct visual normal desktop review and kernel user identity checked by ready helper",
+  "cause": "Finite OCR observer failed to recognize normal desktop after privacy choices; no guest or actor restart",
+  "observed_sha256": "c94d3daf6af0a277256da68fa8b2b94696b5dda468eaad684248e3d74d0f54fd",
+  "observed": "Visible Recycle Bin, ordinary desktop and taskbar; no privacy dialog or security prompt",
+  "action": "Signal readiness only after actual normal desktop review and exact owned account check",
+  "no_guest_restart": true,
+  "no_policy_change": true,
+  "process_exit": 0
+}

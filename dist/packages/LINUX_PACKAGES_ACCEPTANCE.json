@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped native caption/footer/theme-name delivery; full roadmap incomplete",
-  "source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "status": "pass scoped filename/density and Services delivery; full roadmap and UI audit incomplete",
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "cfa7feb657c27c27fc420003917265b44dbaeb64c9a5e427f549d561b618f408",
-    "Ottrin-0.1.0-x86_64.AppImage": "e88e49e876721b1c065addd2f79f83b508bb533b241b536eb0166ac4118cb634",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "0d17c4fcb7fee5e7f80ce41d1460c1ec948660303efd37a012fa806d12cde74c",
-    "ottrin_0.1.0_amd64.deb": "ee4a47ff655b990b237bfcc70bb4a7fcc22b6ada28b9654a466b8646f6b2edb8"
+    "ottrin-0.1.0-1.x86_64.rpm": "7d478e3c56c62e6a65e708ce2e1581c550ca16691f1cae756f3a98f88169526a",
+    "Ottrin-0.1.0-x86_64.AppImage": "d771c7bd863bcdfa1b2bce1b0761d356a42bccafaa44ad76b9912f42d5f06a47",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "75062ded8642fbcbe53b7a05e86e2bb6dd2d683736c306872344e602deb44378",
+    "ottrin_0.1.0_amd64.deb": "eb9d3f4ce6668c705772e7099475e3d537dbeeff09b965e9e895f3ac016ba5e2"
   },
-  "evidence": ".hermes/evidence/caption-footer-delivery-current",
+  "evidence": ".hermes/evidence/list-density-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,36 +17,38 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "17df41da907892ccf0127971775c0ea8e409f50636970afe7f3ed2f5ccff493c",
-    "index_daemon": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "application": "4f0aaf44c9f0fa7510b392f1aa67653d65df86ff248259167c1c1c9f425e3bbc",
+    "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
     "privileged_helper": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 41929773433,
-    "tested_source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+    "run": 41956606124,
+    "tested_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
     "all_four_jobs_success": true
   },
-  "native_captions_and_footer": ".hermes/evidence/caption-footer-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
+  "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
+  "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/caption-footer-delivery-current/SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/list-density-delivery-current/SOURCE_SCOPE.json",
+  "daemon_runtime": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/recovery-transport-delivery-current/LINUX_DAEMON_RUNTIME.json",
-  "native_login": ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
-  "binary_replacement": ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_ACCEPTANCE.json",
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
-  "acceptance_notes": [
-    "Main18 captures plus the dedicated4-capture saved-theme supplement are accepted separately; offscreen original Appearance captures do not substitute for the supplement.",
-    "Three failed supplements remain failures in their original receipts; the final supplemented fixture passes with explicit desktop readiness and normal close."
-  ],
+  "historical_daemon_evidence": {
+    "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+    "daemon_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "native_login": ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
+    "binary_replacement": ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_ACCEPTANCE.json",
+    "freshly_rerun": false,
+    "applies_to_current_daemon_identity": false
+  },
   "limits": [
-    "Controlled software X11 only; no physical graphics, Wayland, Windows or complete theme/interface audit.",
-    "Miller rows and saved-theme names cover Dark/Light100/150; List headers, Grid and cooperating-picker cancellation retain their exact receipt scopes.",
-    "Earliest native no-input count sample is0.69s after the visible window; the rendered regression proves the missing wakeup and return to idle, not every native intervening frame.",
-    "Unchanged daemon/helper/HTML identities retain original DAC scope; resource/UAC/reboot/replacement matrices were not freshly rerun.",
-    "The subsequent Services startup On/Off/Unavailable correction is source-tested separately and is not in this c4 package.",
-    "Personal helper update requires owner authentication; no automatic privileged installation.",
-    "Windows remains458/MSIX17; no public release/signing/Store submission.",
-    "Packaged manuals are build-time snapshots at c4a7b46b; subsequent repository metadata records delivery."
+    "Actual AppImage software-X11 Ubuntu guest only; no physical graphics, Wayland or full interface acceptance.",
+    "Own-density filename/row/caption checks and Services startup registration/error controls retain their exact original capture scopes.",
+    "High-density icon/text padding and Light footer/logo/Ready-text contrast remain explicit full UI audit findings.",
+    "Fresh daemon watcher/query/restart/shutdown/idle and installed-service GUI-close pass. Earlier reboot/replacement evidence remains historical.",
+    "Unchanged helper/HTML bytes retain original protected-Copy scope. Personal helper setup requires owner OS authentication.",
+    "Windows remains458/MSIX17; no public release, signing, Store or MSI acceptance.",
+    "Packaged manuals are build-time snapshots at 24af31d7; repository metadata records later delivery."
   ]
 }

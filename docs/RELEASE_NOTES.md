@@ -4,12 +4,23 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM use runtime `c4a7b46b`; Windows ZIP/NSIS and
+Linux AppImage/portable/DEB/RPM use runtime `24af31d7`; Windows ZIP/NSIS and
 unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
-CI41929773433 passes all four Linux/Windows verification/performance jobs.
+CI41956606124 passes all four Linux/Windows verification/performance jobs.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind delivered hashes and acceptance scopes.
+
+Current Linux delivery fixes wide List filenames spilling into metadata columns
+and ensures Column/List density each uses its own saved setting. Services shows
+startup On/Off/Unavailable independently of the running index. Exact native
+verification includes26 caption/density/footer/picker and12 Services captures.
+The managed daemon returned Ready after replacement with preferences, startup
+choice and database identity preserved. Its30-second personal sample measured
+0.83% of one core under normal filesystem activity; this is not a strict idle or
+sustained-workload guarantee. High-density icon/text padding and Light-theme
+contrast remain open UI-audit findings. Evidence:
+`.hermes/evidence/list-density-delivery-current/`.
 
 Linux administrator Copy supports **Activity → Load administrator Copy history**
 after restarting. This explicit authenticated scan reads canonical journals;

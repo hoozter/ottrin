@@ -1,0 +1,22 @@
+{
+  "new_scales": [
+    0.75,
+    1,
+    1.85
+  ],
+  "old_comparison": false,
+  "old_scales": [
+    1.85,
+    1,
+    0.75
+  ],
+  "old_heights": [
+    34,
+    25,
+    23
+  ],
+  "scope": "Native Windows PowerShell5.1 isolated in-memory fixture assertion reproduction; no app/config/registry mutation",
+  "guest_process_exited": true,
+  "old_heights_parenthesized_comparison": false,
+  "conclusion": "PowerShell5.1 Sort-Object property syntax ordered dictionary cases in reverse scale order; explicit numeric script expression orders correctly. Comparison correctly rejected reversed dimensions. Product dimensions were correct."
+}
