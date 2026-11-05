@@ -1,0 +1,24 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 6.33s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 2 tests
+
+thread 'tests::status_colors_preserve_the_selected_footer_text_color' (2615822) panicked at crates/ottrin-ui/src/lib.rs:38582:9:
+Footer silently changes the chosen theme text color
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::status_colors_preserve_the_selected_footer_text_color ... FAILED
+
+thread 'tests::status_colors_keep_ready_text_readable_in_builtin_themes' (2615821) panicked at crates/ottrin-ui/src/lib.rs:38645:17:
+Ottrin dark=false Ready text contrast=2.2447205
+test tests::status_colors_keep_ready_text_readable_in_builtin_themes ... FAILED
+
+failures:
+
+failures:
+    tests::status_colors_keep_ready_text_readable_in_builtin_themes
+    tests::status_colors_preserve_the_selected_footer_text_color
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 510 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

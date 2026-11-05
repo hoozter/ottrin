@@ -13941,8 +13941,8 @@ impl OttrinApp {
     fn render_status_bar(&mut self, ctx: &Context) {
         let c = self.colors;
         let bottom_bar_bg = c.statusbar_bg;
-        let bottom_text = mix_color(c.text_muted, bottom_bar_bg, 0.38);
-        let bottom_dim = mix_color(c.text_dim, bottom_bar_bg, 0.48);
+        let bottom_text = c.text_muted;
+        let bottom_dim = c.text_dim;
         if let Some(st) = &self.privileged_status {
             let ttl = match st.kind {
                 PrivilegedUiKind::InProgress => Duration::from_secs(30),
@@ -14174,7 +14174,7 @@ impl OttrinApp {
                         logo_rect,
                         egui::Image::new(egui::include_image!("../../../assets/logo.svg"))
                             .fit_to_exact_size(logo_size)
-                            .tint(c.border),
+                            .tint(c.text_muted),
                     );
                 }
             });
@@ -18791,13 +18791,12 @@ impl OttrinApp {
                             ListColumn::Name => {
                                 let icon_str = material_icon(style.icon);
                                 let thumb_size = (row_h - 7.0).clamp(18.0, 32.0);
-                                let thumb_rect = Rect::from_center_size(
-                                    egui::pos2(x + 14.0, y),
+                                let thumb_rect = Rect::from_min_size(
+                                    egui::pos2(x + 6.0, y - thumb_size / 2.0),
                                     Vec2::splat(thumb_size),
                                 );
-                                let painted_thumbnail =
-                                    thumbnails_enabled && image_thumbnail_candidate(entry);
-                                if painted_thumbnail {
+                                let mut painted_thumbnail = false;
+                                if thumbnails_enabled && image_thumbnail_candidate(entry) {
                                     paint_thumbnail_slot(ui, thumb_rect, c);
                                     let thumb = self.cached_image_preview_widget(
                                         &entry.path,
@@ -18807,20 +18806,33 @@ impl OttrinApp {
                                     );
                                     if let Some(img) = thumb {
                                         paint_centered_image(ui, thumb_rect, img);
+                                        painted_thumbnail = true;
                                     }
                                 }
+                                let mut leading_width = icon_size.ceil();
+                                if thumbnails_enabled {
+                                    // One leading slot keeps image and ordinary-file
+                                    // names aligned while thumbnails load or fail.
+                                    leading_width = leading_width.max(thumb_size);
+                                }
                                 if !painted_thumbnail {
-                                    ui.painter().text(
+                                    let icon_rect = ui.painter().text(
                                         egui::Pos2::new(x + 6.0, y),
                                         Align2::LEFT_CENTER,
                                         icon_str,
                                         FontId::proportional(icon_size),
                                         style.icon_color,
                                     );
+                                    leading_width = leading_width.max(icon_rect.width());
                                 }
+                                let name_right = x + w - 6.0;
+                                let name_left = x
+                                    + 6.0
+                                    + leading_width
+                                    + file_row::ICON_TEXT_GAP * c.font_scale;
                                 let name_rect = Rect::from_min_max(
-                                    egui::pos2(x + 28.0, row_rect.top()),
-                                    egui::pos2((x + w - 6.0).max(x + 30.0), row_rect.bottom()),
+                                    egui::pos2(name_left.min(name_right), row_rect.top()),
+                                    egui::pos2(name_right, row_rect.bottom()),
                                 );
                                 let font = FontId::proportional(name_size);
                                 let visible_name = Self::middle_ellipsis(
@@ -21076,7 +21088,7 @@ impl OttrinApp {
     }
 
     fn render_services_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
-        let ready_color = Color32::from_rgb(80, 185, 110);
+        let ready_color = c.success_text();
         ui.label(
             RichText::new("Services")
                 .size(15.0 * c.font_scale)
@@ -21936,7 +21948,7 @@ impl OttrinApp {
                                         ui.add_space(12.0);
                                     }
 
-                                    let ok_col = Color32::from_rgb(80, 185, 110);
+                                    let ok_col = c.success_text();
                                     let warn_col = Color32::from_rgb(214, 167, 78);
                                     settings_section_icon(ui, c, MI_SEARCH, "Index status", "Live health, progress, and rebuild controls.", |ui| {
                                         let diag = self.search_service.diagnostics();
@@ -38437,6 +38449,324 @@ mod tests {
             };
             assert!(own > baseline, "{view:?} density did not change its text");
             assert_eq!(unrelated, baseline, "Another view changed {view:?} density");
+        }
+    }
+
+    #[test]
+    fn file_row_labels_clear_icons_and_directory_chevrons() {
+        for dark in [false, true] {
+            for view in [ViewMode::Miller, ViewMode::List] {
+                for scale in [0.75, 1.0, 1.85, 3.0] {
+                    for font_scale in [1.0, 1.5] {
+                        for kind in [EntryKind::File, EntryKind::Directory] {
+                            let mut app = OttrinApp::default();
+                            app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                            app.colors.font_scale = font_scale;
+                            app.state.config.miller_view_scale = scale;
+                            app.state.config.list_view_scale = scale;
+                            let entry = FileEntry {
+                                name: format!("spacing-{}.txt", "W".repeat(32)),
+                                path: PathBuf::from("spacing.txt"),
+                                kind,
+                                is_executable: false,
+                                symlink_target_is_dir: None,
+                                size_bytes: Some(14),
+                                modified_unix_secs: None,
+                            };
+                            let tab_id = app.state.active_tab().id;
+                            let state = app.tab_ui.entry(tab_id).or_default();
+                            state.main.loading = false;
+                            state.main.entries = vec![entry.clone()];
+                            let ctx = Context::default();
+                            install_application_fonts(&ctx);
+                            let output = ctx.run(
+                                egui::RawInput {
+                                    screen_rect: Some(Rect::from_min_size(
+                                        egui::Pos2::ZERO,
+                                        Vec2::new(820.0, 480.0),
+                                    )),
+                                    ..Default::default()
+                                },
+                                |ctx| {
+                                    egui::CentralPanel::default().show(ctx, |ui| match view {
+                                        ViewMode::Miller => {
+                                            app.render_file_row(
+                                                ui,
+                                                &entry,
+                                                false,
+                                                true,
+                                                false,
+                                                0,
+                                                240.0,
+                                                &app.colors,
+                                            );
+                                        }
+                                        ViewMode::List => app.render_list(ui, tab_id),
+                                        _ => unreachable!(),
+                                    });
+                                },
+                            );
+                            let texts = output
+                                .shapes
+                                .iter()
+                                .filter_map(|shape| match &shape.shape {
+                                    egui::Shape::Text(text) => Some((shape.clip_rect, text)),
+                                    _ => None,
+                                })
+                                .collect::<Vec<_>>();
+                            let (clip, label) = texts
+                                .iter()
+                                .find(|(_, text)| text.galley.job.text.starts_with("spacing-"))
+                                .expect("actual filename paint");
+                            let (_, icon) = texts
+                                .iter()
+                                .find(|(_, text)| {
+                                    text.galley.job.text.chars().count() == 1
+                                        && text.galley.job.text.chars().next().is_some_and(|ch| {
+                                            ('\u{e000}'..='\u{f8ff}').contains(&ch)
+                                        })
+                                        && ((text.pos.y + text.galley.size().y / 2.0)
+                                            - (label.pos.y + label.galley.size().y / 2.0))
+                                            .abs()
+                                            < 0.5
+                                })
+                                .expect("actual Material file icon");
+                            let gap = label.pos.x - (icon.pos.x + icon.galley.size().x);
+                            assert!(
+                                gap >= 5.5 * font_scale,
+                                "{view:?} {kind:?} scale={scale} font={font_scale} dark={dark}: icon/name gap={gap}"
+                            );
+                            if view == ViewMode::Miller && kind == EntryKind::Directory {
+                                let (_, chevron) = texts
+                                    .iter()
+                                    .find(|(_, text)| text.galley.job.text == "›")
+                                    .expect("actual directory chevron");
+                                let right = (label.pos.x + label.galley.size().x).min(clip.right());
+                                assert!(
+                                    chevron.pos.x - right >= 5.5 * font_scale,
+                                    "Filename reaches directory chevron at scale={scale}, font={font_scale}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn status_colors_preserve_the_selected_footer_text_color() {
+        let mut app = OttrinApp::default();
+        app.colors.text_muted = Color32::from_rgb(31, 129, 73);
+        app.status_message = None;
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        let output = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(900.0, 600.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| app.render_status_bar(ctx),
+        );
+        let label = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text.contains("0 items") => Some(text),
+                _ => None,
+            })
+            .expect("actual footer count");
+        assert!(
+            label
+                .galley
+                .job
+                .sections
+                .iter()
+                .all(|section| section.format.color == app.colors.text_muted),
+            "Footer silently changes the chosen theme text color"
+        );
+    }
+
+    #[test]
+    fn status_colors_keep_ready_text_readable_in_builtin_themes() {
+        fn luminance(color: Color32) -> f32 {
+            let linear = |v: u8| {
+                let v = f32::from(v) / 255.0;
+                if v <= 0.04045 {
+                    v / 12.92
+                } else {
+                    ((v + 0.055) / 1.055).powf(2.4)
+                }
+            };
+            0.2126 * linear(color.r()) + 0.7152 * linear(color.g()) + 0.0722 * linear(color.b())
+        }
+        for preset in [
+            ThemePreset::Ottrin,
+            ThemePreset::Breeze,
+            ThemePreset::Adwaita,
+            ThemePreset::Windows11,
+            ThemePreset::Solarized,
+            ThemePreset::Nord,
+            ThemePreset::G33k,
+        ] {
+            for dark in [false, true] {
+                let mut app = OttrinApp::default();
+                app.colors = Colors::preset(preset, dark);
+                app.privileged_availability = PrivilegedAvailability::Ready;
+                let colors = app.colors;
+                let ctx = Context::default();
+                install_application_fonts(&ctx);
+                let output = ctx.run(egui::RawInput::default(), |ctx| {
+                    egui::CentralPanel::default()
+                        .frame(Frame::new().fill(colors.panel))
+                        .show(ctx, |ui| app.render_services_settings(ui, colors));
+                });
+                let title = if cfg!(target_os = "windows") {
+                    "Ready — Windows prompts when needed"
+                } else {
+                    "Installed and ready"
+                };
+                let color = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == title => {
+                            Some(text.galley.job.sections[0].format.color)
+                        }
+                        _ => None,
+                    })
+                    .expect("actual Ready status text");
+                let a = luminance(color);
+                for surface in [colors.panel, colors.panel_raised, colors.bg] {
+                    let b = luminance(surface);
+                    let contrast = (a.max(b) + 0.05) / (a.min(b) + 0.05);
+                    assert!(
+                        contrast >= 4.5,
+                        "{preset:?} dark={dark} Ready text contrast={contrast}, surface={surface:?}"
+                    );
+                }
+                assert!(
+                    color.g() > color.r() && color.g() > color.b(),
+                    "Ready keeps its green status meaning"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn list_thumbnail_and_icon_rows_keep_names_aligned_and_separated() {
+        for scale in [0.75, 1.0, 1.85, 3.0] {
+            for ready in [false, true] {
+                let mut app = OttrinApp::default();
+                app.state.config.list_view_scale = scale;
+                app.state.config.list_show_thumbnails = true;
+                let entries = ["align-image.png", "align-text.txt"].map(|name| FileEntry {
+                    name: name.into(),
+                    path: PathBuf::from(name),
+                    kind: EntryKind::File,
+                    is_executable: false,
+                    symlink_target_is_dir: None,
+                    size_bytes: Some(14),
+                    modified_unix_secs: None,
+                });
+                let key = preview_cache_key_for_page_with_generations(
+                    &entries[0].path,
+                    PREVIEW_CACHE_BUCKET_SMALL,
+                    0,
+                    None,
+                    None,
+                    None,
+                    None,
+                );
+                app.image_preview_cache.insert(
+                    key,
+                    ImagePreviewCacheEntry::from_response(
+                        ready.then(|| ready_docx_test_raster([15, 90, 150, 255])),
+                    ),
+                );
+                let text_key = preview_cache_key_for_page_with_generations(
+                    &entries[1].path,
+                    PREVIEW_CACHE_BUCKET_SMALL,
+                    0,
+                    None,
+                    None,
+                    None,
+                    None,
+                );
+                app.image_preview_cache
+                    .insert(text_key, ImagePreviewCacheEntry::from_response(None));
+                let tab_id = app.state.active_tab().id;
+                let state = app.tab_ui.entry(tab_id).or_default();
+                state.main.loading = false;
+                state.main.entries = entries.to_vec();
+                let ctx = Context::default();
+                install_application_fonts(&ctx);
+                egui_extras::install_image_loaders(&ctx);
+                let deadline = Instant::now() + Duration::from_secs(2);
+                loop {
+                    let output = ctx.run(egui::RawInput::default(), |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| app.render_list(ui, tab_id));
+                    });
+                    let labels = output
+                        .shapes
+                        .iter()
+                        .filter_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text)
+                                if text.galley.job.text.starts_with("align-") =>
+                            {
+                                Some(text)
+                            }
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>();
+                    assert_eq!(labels.len(), 2);
+                    assert!(
+                        (labels[0].pos.x - labels[1].pos.x).abs() < 0.1,
+                        "Thumbnail availability shifts filenames at scale={scale}, ready={ready}"
+                    );
+                    if ready {
+                        let primitives =
+                            ctx.tessellate(output.shapes.clone(), ctx.pixels_per_point());
+                        if let Some(mesh) = primitives.iter().find_map(|primitive| match &primitive
+                            .primitive
+                        {
+                            egui::epaint::Primitive::Mesh(mesh)
+                                if mesh.texture_id != egui::TextureId::Managed(0) =>
+                            {
+                                Some(mesh)
+                            }
+                            _ => None,
+                        }) {
+                            let right = mesh
+                                .vertices
+                                .iter()
+                                .map(|v| v.pos.x)
+                                .fold(f32::NEG_INFINITY, f32::max);
+                            assert!(
+                                labels[0].pos.x - right >= 5.5,
+                                "Actual thumbnail overlaps its filename"
+                            );
+                            break;
+                        }
+                    } else {
+                        let center = labels[0].pos.y + labels[0].galley.size().y / 2.0;
+                        let painted = output.shapes.iter().any(|shape| matches!(&shape.shape, egui::Shape::Text(text) if text.galley.job.text.chars().count() == 1 && text.galley.job.text.chars().next().is_some_and(|ch| ('\u{e000}'..='\u{f8ff}').contains(&ch)) && (text.pos.y + text.galley.size().y / 2.0 - center).abs() < 0.5));
+                        assert!(
+                            painted,
+                            "Unavailable thumbnail must retain its actual file icon"
+                        );
+                        break;
+                    }
+                    assert!(
+                        Instant::now() < deadline,
+                        "Actual loaded thumbnail was never painted"
+                    );
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+            }
         }
     }
 

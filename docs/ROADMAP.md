@@ -136,6 +136,33 @@ Packaged manuals are build-time snapshots. `SOURCE_REVISION.txt` identifies the
 runtime; repository acceptance manifests and this queue record later progress.
 Documentation/evidence checkpoints do not require rebuilding unchanged runtime.
 
+### File-row spacing and status-color follow-up — source checkpoint
+
+Actual renderer tests reproduce insufficient icon/name separation at enlarged
+text and density. Shared Column/chooser rows now reserve measured icon/chevron
+bounds and clip filenames to the remaining cell. List uses a consistent leading
+visual slot for thumbnails/icons and keeps a file icon when a thumbnail is
+unavailable. Source checks cover75/100/185/300 density, normal/enlarged text and
+both themes; actual tessellated loaded-thumbnail geometry is also checked.
+
+The Light Ready text used one fixed green (contrast2.24), and footer text silently
+faded selected theme colors toward the background. Services/Search now share a
+surface-appropriate green; footer text/wordmark use the selected theme text token.
+Actual Ready text passes4.5 contrast against panel/raised/content surfaces for all
+seven built-in Light/Dark themes. Arbitrary custom-color contrast and complete
+role/property/native acceptance are not inferred. All512 UI tests pass with one
+existing ignored test, plus native/Windows strict lint and formatting. Evidence:
+`entry-label-spacing-current/SOURCE_CHECKS.json`. These are source changes; current
+usable24af packages remain above until a new cohort passes its native gates.
+
+The Windows Copy coordinator investigation is refreshed in
+`windows-cleanup-coordinator-current/CURRENT_FINDINGS.json`. The all-member
+metadata preparation barrier is already implemented. Restart authority still
+needs a canonical store outside the frozen registry and an explicit distinct
+anchor. Default file TokenOwner and UI-caller TokenUser are different purposes;
+caller binding must not replace the existing file-owner API globally.
+Administrator Copy remains gated; this investigation is not implementation.
+
 ### Earlier delivered cohort: event-driven Services
 
 Runtime source: `f463ff268f1c0850360fb3d1d81da18a3d3240ec`.

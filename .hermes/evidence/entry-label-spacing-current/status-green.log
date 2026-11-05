@@ -1,0 +1,10 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 5.49s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 2 tests
+test tests::status_colors_preserve_the_selected_footer_text_color ... ok
+test tests::status_colors_keep_ready_text_readable_in_builtin_themes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 510 filtered out; finished in 0.10s
+

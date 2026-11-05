@@ -1,0 +1,82 @@
+{
+  "status": "pass source rendered regressions,512 UI tests, native/Windows strict lint and formatting; packaging/native windows outstanding",
+  "source_sha256": {
+    "crates/ottrin-ui/src/lib.rs": "1bda298aa9814e0ed365c5f380ea3334515a0c906acd4b02e7cee7ab59bada68",
+    "crates/ottrin-ui/src/file_row.rs": "b88e02020812e7bb331ea181523b01d3a8a6934cc0962105741ae3016733caec",
+    "crates/ottrin-ui/src/theme_colors.rs": "8bd266ea3c825e79a16182523bab99be9f04e315242c21b836bcf4e42033a9fe"
+  },
+  "changes": [
+    "Measured icon and directory-chevron bounds reserve a six-logical-pixel gap scaled by theme text size; filenames clip to remaining shared Column/chooser row space",
+    "List reserves one leading visual slot for consistent names across thumbnail and file-icon rows; unavailable thumbnail retains the actual file icon",
+    "Footer text and wordmark use selected theme text colors directly rather than hidden fades or border tint",
+    "Services and Search share a surface-dependent semantic green tone for readable status text"
+  ],
+  "regressions": {
+    "geometry": {
+      "red": "Actual Column file at75% density and150% text had6px gap, below scaled minimum8.25; other increased-density conditions were visually confirmed in prior native captures",
+      "green": "Actual Column/List file/directory paint at75/100/185/300 density, text100/150, both themes; icon/filename and directory-chevron separation"
+    },
+    "footer": {
+      "red": "Actual footer changed selected muted-text color through implicit background blending",
+      "green": "Actual footer layout sections exactly preserve selected text_muted"
+    },
+    "status": {
+      "red": "Actual Light Ottrin Ready text contrast2.2447205",
+      "green": "Actual Ready text remains green with contrast at least4.5 against panel, raised panel and content surfaces for all seven built-in Light/Dark themes"
+    },
+    "thumbnail": {
+      "red": "Unavailable List thumbnail removed the actual file icon",
+      "green": "Actual unavailable file icon and tessellated loaded-thumbnail paint; consistent filename alignment and separation at75/100/185/300 density"
+    }
+  },
+  "suite": {
+    "passed": 512,
+    "failed": 0,
+    "existing_ignored": 1
+  },
+  "checks": [
+    "cargo fmt --all --check",
+    "cargo clippy -p ottrin-ui --all-targets -- -D warnings",
+    "cargo clippy -p ottrin-ui --all-targets --target x86_64-pc-windows-gnu -- -D warnings"
+  ],
+  "limits": [
+    "Actual renderer/source tests are not native packaged screenshots",
+    "Source success-color adaptation covers built-in surfaces; arbitrary custom-color contrast and full role/property audit remain unaccepted",
+    "Stable Linux/Windows24af artifacts unchanged until exact new cohort acceptance",
+    "Windows durable Copy coordinator/caller registry and current MSIX folder integration defect remain separate open software tasks"
+  ],
+  "cleanup": {
+    "status": "complete source-test cleanup; current compiler caches and same configured test executable retained",
+    "incremental_sessions_removed": 13,
+    "filesystem_free_delta": 613220352,
+    "after": {
+      "target/debug/deps": 25262909658,
+      "target/debug/incremental": 25174074911,
+      "target/x86_64-pc-windows-gnu/debug/deps": 29070290835,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 44272921258,
+      "target/release": 4545256193,
+      "target/x86_64-pc-windows-gnu/release": 4005720873,
+      ".hermes/evidence/entry-label-spacing-current": 75547
+    },
+    "delta": {
+      "target/debug/deps": 31566838,
+      "target/debug/incremental": 118961361,
+      "target/x86_64-pc-windows-gnu/debug/deps": 1172,
+      "target/x86_64-pc-windows-gnu/debug/incremental": 455101,
+      "target/release": 0,
+      "target/x86_64-pc-windows-gnu/release": 0,
+      ".hermes/evidence/entry-label-spacing-current": 75547
+    },
+    "test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc",
+    "test_binary_sha256": "afd9247854e34328f6b9090e4389b2af336922d37fb10b1b744a2d5890a4932f",
+    "compiler_settings": "Shared target, rust1.94.0, normal test/native and Windows GNU strict-lint profiles; no alternate target trees or build flags",
+    "removed": "Only superseded finalized rustc incremental sessions after candidate/replacement/lock/consumer checks; scripts/test-workspace.py removed isolated HOME/XDG and owned preview/render jobs",
+    "remaining_task_storage": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/entry-label-spacing-current",
+        "purpose": "Compact source regression, full-suite, lint, storage and cleanup evidence",
+        "consumer": "Upcoming coherent native package delivery and roadmap audit"
+      }
+    ]
+  }
+}

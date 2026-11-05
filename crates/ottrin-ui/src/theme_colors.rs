@@ -38,6 +38,15 @@ pub(crate) struct Colors {
 }
 
 impl Colors {
+    /// Preserve green status meaning with a legible tone on the theme surface.
+    pub(crate) fn success_text(&self) -> Color32 {
+        if self.panel.intensity() > 0.5 {
+            Color32::from_rgb(26, 112, 58)
+        } else {
+            Color32::from_rgb(110, 215, 145)
+        }
+    }
+
     fn dark() -> Self {
         Self {
             statusbar_bg: Color32::from_rgb(27, 29, 34),

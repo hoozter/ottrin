@@ -1,0 +1,29 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+warning: value assigned to `painted` is never read
+     --> crates/ottrin-ui/src/lib.rs:38708:35
+      |
+38708 |                 let mut painted = false;
+      |                                   ^^^^^
+      |
+      = help: maybe it is overwritten before being read?
+      = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ottrin-ui` (lib test) generated 1 warning
+    Finished `test` profile [optimized + debuginfo] target(s) in 6.24s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+
+thread 'tests::list_thumbnail_and_icon_rows_keep_names_aligned_and_separated' (2618061) panicked at crates/ottrin-ui/src/lib.rs:38763:21:
+Actual loaded thumbnail was never painted
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::list_thumbnail_and_icon_rows_keep_names_aligned_and_separated ... FAILED
+
+failures:
+
+failures:
+    tests::list_thumbnail_and_icon_rows_keep_names_aligned_and_separated
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 512 filtered out; finished in 2.02s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

@@ -1,0 +1,7 @@
+{
+  "status": "starting confirmed row-spacing correction",
+  "base_revision": "b9575141281718098de2b142182ab6b3b47f3777",
+  "finding": ".hermes/evidence/list-density-delivery-current/native-captions/CAPTURE_REVIEW.json",
+  "scope": "Actual Column/chooser shared rows and List leading visuals must leave visible space before filenames at increased density, with consistent List thumbnail/icon name alignment. Full theme audit and Windows Copy coordinator remain open.",
+  "stable_deliverables": "Linux/Windows24af retained until the next coherent verified runtime delivery"
+}

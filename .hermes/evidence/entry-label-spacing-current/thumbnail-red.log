@@ -1,0 +1,20 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 6.37s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+Text thumbnail render failed for align-text.txt: could not inspect text input: No such file or directory (os error 2)
+
+thread 'tests::list_thumbnail_and_icon_rows_keep_names_aligned_and_separated' (2617334) panicked at crates/ottrin-ui/src/lib.rs:38743:25:
+Unavailable thumbnail must retain its actual file icon
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::list_thumbnail_and_icon_rows_keep_names_aligned_and_separated ... FAILED
+
+failures:
+
+failures:
+    tests::list_thumbnail_and_icon_rows_keep_names_aligned_and_separated
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 512 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

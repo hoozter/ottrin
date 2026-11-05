@@ -1,0 +1,19 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 8.01s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 1 test
+
+thread 'tests::file_row_labels_clear_icons_and_directory_chevrons' (2612730) panicked at crates/ottrin-ui/src/lib.rs:38531:29:
+List File scale=0.75 font=1 dark=false: icon/name gap=-18.35125
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::file_row_labels_clear_icons_and_directory_chevrons ... FAILED
+
+failures:
+
+failures:
+    tests::file_row_labels_clear_icons_and_directory_chevrons
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 509 filtered out; finished in 0.12s
+
+error: test failed, to rerun pass `-p ottrin-ui --lib`

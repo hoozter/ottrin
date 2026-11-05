@@ -1,0 +1,34 @@
+{
+  "status": "complete source-test cleanup; current compiler caches and same configured test executable retained",
+  "incremental_sessions_removed": 13,
+  "filesystem_free_delta": 613220352,
+  "after": {
+    "target/debug/deps": 25262909658,
+    "target/debug/incremental": 25174074911,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070290835,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272921258,
+    "target/release": 4545256193,
+    "target/x86_64-pc-windows-gnu/release": 4005720873,
+    ".hermes/evidence/entry-label-spacing-current": 75547
+  },
+  "delta": {
+    "target/debug/deps": 31566838,
+    "target/debug/incremental": 118961361,
+    "target/x86_64-pc-windows-gnu/debug/deps": 1172,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 455101,
+    "target/release": 0,
+    "target/x86_64-pc-windows-gnu/release": 0,
+    ".hermes/evidence/entry-label-spacing-current": 75547
+  },
+  "test_binary": "target/debug/deps/ottrin_ui-c354643af000a7cc",
+  "test_binary_sha256": "afd9247854e34328f6b9090e4389b2af336922d37fb10b1b744a2d5890a4932f",
+  "compiler_settings": "Shared target, rust1.94.0, normal test/native and Windows GNU strict-lint profiles; no alternate target trees or build flags",
+  "removed": "Only superseded finalized rustc incremental sessions after candidate/replacement/lock/consumer checks; scripts/test-workspace.py removed isolated HOME/XDG and owned preview/render jobs",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/entry-label-spacing-current",
+      "purpose": "Compact source regression, full-suite, lint, storage and cleanup evidence",
+      "consumer": "Upcoming coherent native package delivery and roadmap audit"
+    }
+  ]
+}

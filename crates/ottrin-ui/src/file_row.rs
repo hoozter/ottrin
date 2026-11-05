@@ -3,6 +3,8 @@ use crate::{Colors, EntryVisualState, material_icon, style_for_entry};
 use egui::{Align2, Color32, FontId, Rect, Sense, Stroke, Vec2, WidgetInfo, WidgetType};
 use ottrin_core::{AppConfig, EntryKind, FileEntry};
 
+pub(crate) const ICON_TEXT_GAP: f32 = 6.0;
+
 #[derive(Clone, Copy)]
 pub(crate) struct FileRowLayout {
     pub index: usize,
@@ -88,7 +90,8 @@ pub(crate) fn render_file_row(
         config,
     );
     let icon_str = material_icon(style.icon);
-    ui.painter().text(
+    let painter = ui.painter().with_clip_rect(row_rect);
+    let icon_rect = painter.text(
         egui::Pos2::new(row_rect.min.x + 10.0, row_rect.center().y),
         Align2::LEFT_CENTER,
         icon_str,
@@ -96,35 +99,45 @@ pub(crate) fn render_file_row(
         style.icon_color,
     );
 
-    // Use measured glyph layout instead of character-count estimates. Reserve
-    // the directory chevron so enlarged text never paints over that control.
+    let gap = ICON_TEXT_GAP * c.font_scale;
+    let text_left = icon_rect.right() + gap;
+    let text_right = if is_dir {
+        painter
+            .text(
+                egui::Pos2::new(row_rect.right() - 10.0, row_rect.center().y),
+                Align2::RIGHT_CENTER,
+                "\u{203A}",
+                FontId::proportional(text_size),
+                c.text_muted,
+            )
+            .left()
+            - gap
+    } else {
+        row_rect.right() - 10.0
+    }
+    .max(row_rect.left());
+    let name_rect = Rect::from_min_max(
+        egui::pos2(text_left.min(text_right), row_rect.top()),
+        egui::pos2(text_right, row_rect.bottom()),
+    );
+    // Measured leading/trailing visuals own their space even when density and
+    // theme text size change independently. Clip names to the remaining cell.
     let label_job = crate::widget_style::single_line_text_job(
         entry.name.as_str(),
         FontId::proportional(text_size),
         style.text_color,
-        (row_rect.width() - if is_dir { 56.0 } else { 40.0 }).max(1.0),
+        name_rect.width().max(1.0),
     );
     let galley = ui.painter().layout_job(label_job);
     let elided = galley.elided;
-    ui.painter().galley(
+    painter.with_clip_rect(name_rect).galley(
         egui::pos2(
-            row_rect.left() + 30.0,
+            name_rect.left(),
             row_rect.center().y - galley.size().y / 2.0,
         ),
         galley,
         style.text_color,
     );
-    // Arrow for directories — shows there are children
-    if is_dir {
-        ui.painter().text(
-            egui::Pos2::new(row_rect.max.x - 10.0, row_rect.center().y),
-            Align2::RIGHT_CENTER,
-            "\u{203A}", // › single right angle quotation mark — in NotoSans
-            FontId::proportional(text_size),
-            c.text_muted,
-        );
-    }
-
     // NOTE: do NOT add_space here — allocate_rect already advanced the cursor.
     // Adding space here was the cause of double-row-height spacing.
     if elided {
