@@ -1,0 +1,15 @@
+{
+  "retired_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "regular_files": 64,
+  "retired_logical_bytes": 237143219,
+  "preserved_msix": {
+    "source_revision": "9f81685ee550695be7b6e8b2135f2aba782623b2",
+    "version": "0.1.0.23",
+    "sha256": "af1d7c7225b9a3fcc6a32841866e53d78f53d7756ec2fdc90a87abce1cf8b165",
+    "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous23.msix",
+    "original_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix",
+    "purpose": "Exact prior23 native upgrade/comparison input for new package-owned shell implementation; retire after consumer completion"
+  },
+  "verification": "Every payload byte and ZIP/NSIS/MSIX digest matches original9f receipts; exact top-level ownership, no symlinks/hardlinks/consumers, no live native guest",
+  "time": "2026-11-05T11:59:32.818012+00:00"
+}

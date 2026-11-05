@@ -4,7 +4,6 @@
   "base_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa",
   "status": "pass source checks and direct native COM contract; packaged Explorer integration not yet accepted",
   "stable_delivery": "d032 unchanged",
-  "baseline_stage": ".hermes/packaging-tmp/.windows-picker-stage",
   "scope": "MSIX folder context menus; default folder opening remains separate unresolved work",
   "next": "Build clean-source portable/NSIS and native MSIX24 candidate, then actual ordinary-user package tests",
   "native_cleanup": {
@@ -16,5 +15,9 @@
     "fixture_removed": true,
     "base_still_off": true,
     "retained_pending_volume": null
-  }
+  },
+  "implementation_revision": "569d79442a8e723990799ee50917046b0578d333",
+  "previous_msix": "previous23.msix",
+  "candidate_stage": ".hermes/packaging-tmp/.windows-picker-stage",
+  "baseline_retirement": "BASELINE_RETIREMENT.json"
 }

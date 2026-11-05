@@ -56,10 +56,12 @@ MSIX23 is an investigation candidate, not the stable delivered MSIX22.
 Both accepted cohorts are published at the stable dist paths. Superseded781
 packages/payloads and that delivery's staging, owned guests/disks/desktops/buses,
 private profiles and consumed source/result transports were removed. The newer
-9f Windows investigation baseline remains at
-`.hermes/packaging-tmp/.windows-picker-stage` (about281MiB), pending corrective
-package-context comparison. Its owned guests/disks/profiles are removed; its
-consumed source/result transports were retired after equality/consumer checks. The first
+9f Windows investigation's ZIP/NSIS/payload stage is also retired after exact
+byte/ownership/consumer checks. Only its exact MSIX23 remains at
+`.hermes/evidence/packaged-shell-current/previous23.msix` (about55MiB), pending
+corrective package update/comparison. Its owned guests/disks/profiles and consumed
+source/result transports are removed. The Windows stage path is reserved for the
+new clean-source shell candidate; stable dist deliverables are unchanged. The first
 native geometry fixture failed before daemon suspension; a corrected fresh run
 passed unchanged assertions/deadlines. Compact failure evidence and its original
 failure frame remain;16 superseded failed-case captures were retired after

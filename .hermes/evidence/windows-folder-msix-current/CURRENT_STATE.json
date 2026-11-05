@@ -11,11 +11,13 @@
   "stable_packages": "d032 preserved; diagnostic cohort not promoted",
   "native_runtime": "MSIX_RUNTIME_ACCEPTANCE.json",
   "active_native_processes": false,
-  "cleanup": "All owned guests/disks/desktops/private profiles removed. Result archive retired after member equality checks. Exact Windows baseline retained for corrective comparison.",
+  "cleanup": "All owned guests/disks/desktops/profiles removed. Superseded9f ZIP/NSIS/payload stage retired after byte/ownership/consumer checks; only exact MSIX23 retained for corrective upgrade/comparison.",
   "pending": [
     "Implement supported MSIX folder integration preserving ownership/removal guarantees",
     "Verify wrapped long status on native packaged interface",
     "Deliver verified UI fixes through relevant native/package gates",
     "Continue full independent roadmap queue"
-  ]
+  ],
+  "baseline_retirement": "../packaged-shell-current/BASELINE_RETIREMENT.json",
+  "retained_baseline": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous23.msix"
 }
