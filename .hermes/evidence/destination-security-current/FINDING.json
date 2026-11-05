@@ -1,0 +1,29 @@
+{
+  "status": "Resolved and verified in the original SYSTEM scheduled-task context and ordinary/caller roles",
+  "native": "native-diagnostic/RESULT.json",
+  "case": "D:P(A;;FA;;;OW) on SYSTEM token default DACL fallback",
+  "identity": {
+    "sid": "S-1-5-18",
+    "session": 0
+  },
+  "derived_acl": {
+    "allocated_bytes": 60,
+    "access_rule_bytes_including_header": 52,
+    "unused_bytes": 8
+  },
+  "kernel_reference_acl": {
+    "allocated_bytes": 52,
+    "access_rule_bytes_including_header": 52
+  },
+  "same": [
+    "owner",
+    "group",
+    "DACL revision/count",
+    "ordered ACE bytes and access masks",
+    "inheritance control"
+  ],
+  "fix": "Validate native ACL and allocation accounting with Windows APIs, record only AclBytesInUse and logical ACL size in evidence; retain all ordered ACE bytes. Never mutate or replay the native descriptor. Reject cached records with spare serialized capacity.",
+  "previous_goal_turn": "progress: original-caller private creation primitive implemented, native fourteen-case scope passed, owned cleanup finished and checkpoint 26957922 published",
+  "next": "Verify the canonical observation and previously failing policy in the same SYSTEM scheduled-task context, plus original-caller and ordinary regression roles. Continue full original-caller registry/recovery integration; administrator Copy remains disabled.",
+  "native_resolution": "native-fixed/RESULT.json: sixteen named passes across six invocations"
+}

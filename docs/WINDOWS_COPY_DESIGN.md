@@ -1,28 +1,35 @@
 # Native Windows Copy
 
-Status: file/directory streams, ordinary metadata, private namespace, recursive
-known-link staging, new-copy security inheritance components, paired staging
-journals, retained-candidate/private-DACL validation and durable whole-tree final
-permission planning have native component acceptance. Public Copy/Paste now
-routes through this engine in source, with single/batch Undo receipts, actual
-completed-source accounting and a per-operation Stop control. Native ordinary and
-elevated UI suites each pass 375 tests (four existing integration ignores, no
-test-name filters), including both original positive clipboard cases. Explicit
-cases cover blocked-source Stop, partial-batch Undo, directory/named streams,
-and chunk cancellation with safely ending an unpublished attempt. Strict
-Linux/Windows-GNU lint and shared Linux regressions pass. Exact source/binary
-hashes and teardown are in
-`.hermes/evidence/windows-copy-public-workflow-current/ACCEPTANCE.json`.
-Full hosted Linux/Windows workspace, strict lint and release pass on `bcd625ac`.
-Its coherent58-file portable/NSIS/MSI candidate passes actual ordinary clipboard
-Replace/Keep Both, directory/file batch Copy, single/batch Undo, cleanup and
-normal-close scopes in `windows-copy-package-current/ACCEPTANCE.json`. The
-remaining resource/alias/transaction/platform and installer lifecycle gates stay
-required. Public downloads remain unchanged; the current internal candidate is
-identified by `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Older component checkpoint
-statements below retain their recorded scopes.
+This document records the native transaction and security contracts. The current
+ordered work, deliverable sources and remaining acceptance gates are maintained
+in [the roadmap](ROADMAP.md); historical test/candidate receipts below keep their
+original source and platform scopes.
 
-## Confirmed temporary-stream isolation gap
+Ordinary-user Copy/Paste uses the native engine with single/batch Undo, retained
+recovery and per-operation Stop. Administrator Copy remains disabled until the
+original caller's registry, staging, destination security, receipt, Undo and
+cleanup authority are connected and accepted together. Authenticated caller
+context and caller-owned private entry creation are implemented components;
+they do not complete that transaction or packaged/alternate-administrator gates.
+
+## Canonical native security evidence
+
+DACL evidence contains the native ACL header and all ordered access-control entry
+bytes, with its recorded size set to the occupied byte count. Windows ACLs may
+have spare allocation capacity; `IsValidAcl` and `GetAclInformation` validate the
+native count/used/free accounting before observing only `AclBytesInUse`. Spare
+storage must not create a false permission mismatch. ACE order, payload, masks,
+flags, SIDs, owner/group and the recorded inheritance/protection controls remain
+part of equality. Cached records must consume the full recorded logical size;
+noncanonical padded or truncated evidence is refused rather than repaired.
+
+This representation is observation only. Neither cached bytes nor normalized
+observations become Windows security descriptors. Creation and permission
+application continue to use owned native descriptors, derived from live parent
+security and the authenticated token; native descriptors are never rewritten to
+make an evidence comparison pass.
+
+## Historical temporary-stream isolation finding
 
 Native probes with the earlier temporary-file access mask/private descriptor
 confirm that FILE_SHARE_READ does not exclude a second named-stream writer.
@@ -44,8 +51,9 @@ capabilities can exist. Preserve uncertain empty or partial preparations rather
 than deleting from their name or incomplete bytes. Canonical publication must
 still require a complete verified frame and allow subsequent restart admission.
 Actual factory, affected claim/journal callers and interruption cases need native
-acceptance; public Copy stays disabled. The rejected Rust candidate is archived,
-not installed. Exact controls and limits:
+acceptance; public Copy was disabled at that checkpoint. The current persistent
+claim lifecycle is described below, and the current administrator gate is in the
+roadmap. The rejected Rust candidate is archived, not installed. Exact controls and limits:
 `.hermes/evidence/windows-ephemeral-security-current/FINDINGS.md`.
 Earlier lifetime controls:
 `.hermes/evidence/windows-directory-lifetime-current/FINDINGS.md`.

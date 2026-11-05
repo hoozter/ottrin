@@ -1,0 +1,7 @@
+{
+  "reference_commit": "269579223cf1c0d03bc2406770629ef5f34fa663",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "995906f1b558db5286d52e93e4ef7085ea7b023669507045ba8314d37a071ca5"
+  },
+  "scope": "Canonical native ACL evidence and strict serialized validation; same SYSTEM scheduled-task and ordinary/original-caller regression matrix"
+}

@@ -1,0 +1,37 @@
+{
+  "status": "complete guarded removal; decoded native results and exact source/build maps retained",
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/destination-security-current/native-fixed/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup image; exact parsed results and source/build maps retained",
+      "evidence": "Sixteen named native passes with exact input binding; both owned cases fully torn down; archive transfer hash and exact flat member list verified",
+      "bytes": 5400,
+      "sha256": "5bf9c1f0e5e8d562c969071724387293ac51b949b4adeae62b3ccde43f472975"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/destination-security-current/native-fixed/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup image; exact parsed results and source/build maps retained",
+      "evidence": "Sixteen named native passes with exact input binding; both owned cases fully torn down; archive transfer hash and exact flat member list verified",
+      "bytes": 9819,
+      "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/destination-security-current/native-fixed/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup image; exact parsed results and source/build maps retained",
+      "evidence": "Sixteen named native passes with exact input binding; both owned cases fully torn down; archive transfer hash and exact flat member list verified",
+      "bytes": 955792,
+      "sha256": "53b6cef0d5f3ae26da6cfdcd87568f28349bf5e4614e3321b170d745683e183c"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/destination-security-current/native-fixed/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup image; exact parsed results and source/build maps retained",
+      "evidence": "Sixteen named native passes with exact input binding; both owned cases fully torn down; archive transfer hash and exact flat member list verified",
+      "bytes": 1696728,
+      "sha256": "32000e46506c49805ba305bef7bf394ca39a04408d579cd1cb54fdbbf84b4ba6"
+    }
+  ]
+}

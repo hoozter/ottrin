@@ -70,7 +70,7 @@ impl Parts {
             }
             at += size;
         }
-        true
+        at == acl.len()
     }
 }
 
@@ -93,10 +93,36 @@ fn parts(raw: PSECURITY_DESCRIPTOR) -> Result<Parts, PlatformError> {
     let acl = if dacl.is_null() {
         None
     } else {
-        Some(
-            unsafe { std::slice::from_raw_parts(dacl.cast::<u8>(), (*dacl).AclSize as usize) }
-                .to_vec(),
-        )
+        let mut size = ACL_SIZE_INFORMATION::default();
+        if unsafe { IsValidAcl(dacl) } == 0 {
+            return Err(io("invalid native ACL"));
+        }
+        if unsafe {
+            GetAclInformation(
+                dacl,
+                ptr::from_mut(&mut size).cast(),
+                std::mem::size_of_val(&size) as u32,
+                AclSizeInformation,
+            )
+        } == 0
+        {
+            return Err(io(std::io::Error::last_os_error()));
+        }
+        let allocated = u32::from(unsafe { (*dacl).AclSize });
+        if size.AceCount != u32::from(unsafe { (*dacl).AceCount })
+            || size.AclBytesInUse < 8
+            || size.AclBytesInUse.checked_add(size.AclBytesFree) != Some(allocated)
+        {
+            return Err(io("invalid native ACL allocation accounting"));
+        }
+        // Native APIs may reserve different spare capacity for the same ACL.
+        // Canonicalize only this observation, never the live descriptor: every
+        // ordered ACE byte is retained, and serialized evidence is never installed.
+        let mut bytes =
+            unsafe { std::slice::from_raw_parts(dacl.cast::<u8>(), size.AclBytesInUse as usize) }
+                .to_vec();
+        bytes[2..4].copy_from_slice(&(size.AclBytesInUse as u16).to_le_bytes());
+        Some(bytes)
     };
     Ok(Parts {
         owner: sid(owner),
@@ -380,6 +406,58 @@ mod tests {
     use std::io::Write;
     use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt};
     use windows_sys::Win32::System::SystemServices::ACCESS_SYSTEM_SECURITY;
+
+    #[test]
+    fn native_acl_evidence_ignores_spare_capacity_but_preserves_access_rules() {
+        let owner = windows_fs::current_owner().unwrap();
+        let observe = |capacity: u32, mask: u32| {
+            // Deliberately leave nonzero unused bytes after the native ACE.
+            let mut storage = vec![u64::MAX; (capacity as usize).div_ceil(8)];
+            let acl = storage.as_mut_ptr().cast::<ACL>();
+            assert_ne!(unsafe { InitializeAcl(acl, capacity, ACL_REVISION) }, 0);
+            assert_ne!(
+                unsafe {
+                    AddAccessAllowedAce(acl, ACL_REVISION, mask, owner.as_ptr().cast_mut().cast())
+                },
+                0
+            );
+            assert_eq!(u32::from(unsafe { (*acl).AclSize }), capacity);
+            let mut descriptor = SECURITY_DESCRIPTOR::default();
+            let raw = ptr::from_mut(&mut descriptor).cast();
+            assert_ne!(
+                unsafe {
+                    InitializeSecurityDescriptor(
+                        raw,
+                        windows_sys::Win32::System::SystemServices::SECURITY_DESCRIPTOR_REVISION,
+                    )
+                },
+                0
+            );
+            assert_ne!(
+                unsafe { SetSecurityDescriptorOwner(raw, owner.as_ptr().cast_mut().cast(), 0) },
+                0
+            );
+            assert_ne!(
+                unsafe { SetSecurityDescriptorGroup(raw, owner.as_ptr().cast_mut().cast(), 0) },
+                0
+            );
+            assert_ne!(unsafe { SetSecurityDescriptorDacl(raw, 1, acl, 0) }, 0);
+            parts(raw).unwrap()
+        };
+        let compact = observe(128, FILE_ALL_ACCESS);
+        assert_eq!(compact, observe(256, FILE_ALL_ACCESS));
+        assert!(compact.valid_record());
+        assert_ne!(compact, observe(128, FILE_GENERIC_READ));
+        let mut padded_record = compact.clone();
+        let acl = padded_record.dacl.as_mut().unwrap();
+        acl.extend_from_slice(&[0; 4]);
+        let length = acl.len() as u16;
+        acl[2..4].copy_from_slice(&length.to_le_bytes());
+        assert!(
+            !padded_record.valid_record(),
+            "serialized padding is not canonical evidence"
+        );
+    }
 
     fn parent(path: &std::path::Path) -> File {
         OpenOptions::new()
@@ -739,11 +817,23 @@ mod tests {
             dacl(&parent, sddl);
             let policy = DestinationSecurity::capture(&parent, false).unwrap();
             let reference = ordinary(&parent, "reference", false);
+            assert_eq!(
+                policy.expected,
+                observed(&reference),
+                "derived policy differs from native creation for {sddl}"
+            );
             let candidate = private(&parent, "candidate", false);
             assert_ne!(observed(&candidate), observed(&reference));
             policy
                 .apply(&parent, OsStr::new("candidate"), &candidate)
-                .unwrap();
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "{sddl}: {error}; expected={:?}; candidate={:?}; reference={:?}",
+                        policy.expected,
+                        observed(&candidate),
+                        observed(&reference)
+                    )
+                });
             assert_eq!(
                 observed(&candidate),
                 observed(&reference),

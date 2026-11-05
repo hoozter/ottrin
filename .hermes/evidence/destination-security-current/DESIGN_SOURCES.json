@@ -1,0 +1,17 @@
+{
+  "sources": [
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-acl_size_information",
+      "use": "AclBytesInUse covers header and actual ACEs; AclBytesFree is unused allocation, not permissions."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-getaclinformation",
+      "use": "Native ACL size/count accounting before copying canonical observation."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createprivateobjectsecurityex",
+      "use": "Native caller token defaults and inherited descriptor derivation remain unchanged."
+    }
+  ],
+  "scope": "Canonical evidence only. No native permission mutation, ACE reordering or weakening owner/group/DACL/control comparisons."
+}

@@ -1,0 +1,36 @@
+{
+  "status": "Pass canonical ACL evidence and resolved SYSTEM destination-default regression",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-fixed/RESULT.json",
+  "native_binding": "native-fixed/APPLICATION_INPUT.json",
+  "native_invocations": 6,
+  "named_top_level_passes": 16,
+  "unique_named_cases": 15,
+  "roles": {
+    "ordinary_user": [
+      "Original-caller client and protected caller-owned output",
+      "Eleven native security cases including real 128/256-byte ACL allocation equivalence, access-mask difference and padded cached-record refusal"
+    ],
+    "SYSTEM": [
+      "Authenticated original-caller helper, frozen owner/group checks, private creation/collision/token restoration",
+      "Native symbolic-link DACL regression",
+      "Previously failing destination default-DACL case, including actual kernel reference and later parent permission propagation",
+      "Native inherited audit-SACL case"
+    ]
+  },
+  "root_cause": "SDK-derived ACL allocated 60 bytes with 52 occupied; kernel stored the same ordered ACEs in 52 bytes. Raw allocation capacity caused a false mismatch.",
+  "implementation": "Validate native ACL, query native used/free accounting, and canonicalize only observed evidence to occupied bytes. Preserve all ordered ACEs, masks, flags, SIDs, owner/group and recorded controls. Reject noncanonical padded serialized evidence. Native descriptors and permission application unchanged.",
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "log_sha256": "2efa957ca9f6fcdef6ab1f57647333d4fa1bacb39258f35bb4d5abb052c06db7"
+  },
+  "limits": [
+    "Original-caller private reopen/registry/stage/journal/destination-token/receipt/Undo/cleanup integration still required; administrator Copy stays disabled",
+    "No alternate-administrator UAC or packaged helper acceptance",
+    "No new package delivery or whole roadmap acceptance"
+  ],
+  "earlier_failure": "native-diagnostic/RESULT.json preserves exact SYSTEM identity and native ACL capacity difference before the fix",
+  "producer_change": "Noninteractive exact native tests now record Windows identity/session in their result, rather than inferring SYSTEM solely from the guest-agent launch."
+}

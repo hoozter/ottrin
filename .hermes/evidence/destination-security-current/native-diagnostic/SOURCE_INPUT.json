@@ -1,0 +1,7 @@
+{
+  "reference_commit": "269579223cf1c0d03bc2406770629ef5f34fa663",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "6129b82b25f58c021f230fdfc6d98dc38192b7de502c89a645751eaa74b01233"
+  },
+  "scope": "Native SYSTEM destination security oracle comparison; no production policy change yet"
+}

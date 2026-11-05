@@ -1,0 +1,8 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+  "sha256": "1e83ebfdd983bb77bcabb4efc55fbecf9c923f2e14f77e57bd321fcedb4cfc3a",
+  "test_filter": "copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults",
+  "exact": true,
+  "expected_pass_count": 1,
+  "cargo_output_directory": "debug"
+}

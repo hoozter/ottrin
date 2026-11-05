@@ -1,0 +1,23 @@
+{
+  "source_revision": "269579223cf1c0d03bc2406770629ef5f34fa663",
+  "source_test_sha256": "b600217d58c5f14d6216156be34f1309577515400e92db9169f959739064fa1d",
+  "test_sha256": "5dd0fe7cff451e0f5b96047b92b766e4b9a7edbf8a3d8ee8cb2a9ba5d2840dac",
+  "source_bytes": 545359682,
+  "staged_bytes": 523900666,
+  "strip_command": [
+    "x86_64-w64-mingw32-strip",
+    "--strip-debug"
+  ],
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 408723968,
+    "sha256": "6a1b08e928791ac492da1576ed018eb9320787db03a9456c784efc55bec811b1"
+  },
+  "actor_sha256": "71bc1e9ddfb5f459465ba7465386b4a576afd32ae22313b7aa2e05da63a223b7",
+  "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+  "system_companion_sha256": "1db50faf614134fe122f4649bb38feab54e6ffbad23c4e40ae0910f275a29a59",
+  "changed_product_sources": {
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "995906f1b558db5286d52e93e4ef7085ea7b023669507045ba8314d37a071ca5"
+  },
+  "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+}

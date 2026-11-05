@@ -111,14 +111,18 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    Receipt: `caller-private-create-current/ACCEPTANCE.json`. Strict Windows
    platform/UI lint passes. All owned cases/disks/desktops/profiles/processes and
    consumed outputs are removed; stable packages remain unchanged.
-   A broader SYSTEM run additionally failed
-   `destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults`;
-   the ordinary-user version passes. This remains open in
-   `caller-private-create-current/SYSTEM_DESTINATION_FINDING.json`. The focused
-   primitive acceptance does not close that failure or establish a whole helper
-   transaction. Integrate the authenticated original token into destination
-   derivation/application and compare live kernel-reference, derived and finalized
-   security before enabling administrator Copy; never fall back to helper defaults.
+   The additional SYSTEM destination-default failure is now resolved: the SDK
+   reserved 60 ACL bytes for the same 52 bytes of rules stored by the kernel.
+   Native evidence now validates and records only occupied ACL bytes, retaining
+   all ordered ACEs, identities and control flags; serialized padding is refused.
+   Native descriptors and permission application are unchanged. Current exact-source
+   acceptance is sixteen named passes across six invocations, including native
+   allocation/mask/cache controls, the original SYSTEM scheduled-task regression,
+   later parent propagation, ordinary security, caller creation and link/audit
+   checks. Receipt: `destination-security-current/ACCEPTANCE.json`. Strict Windows
+   platform/UI lint passes; both guests and consumed outputs are removed. This
+   closes the comparison defect, not the remaining original-caller registry,
+   private reopen, staging, destination-token, receipt, Undo or cleanup integration.
    The coordinator's registry-parent security fixture still changes a group, not
    a literal DACL; the new profile-DACL test has its separate profile-only scope.
    Administrator Copy stays disabled. Original-caller registry initialization,

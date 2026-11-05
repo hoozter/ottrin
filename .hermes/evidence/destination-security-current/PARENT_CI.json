@@ -1,0 +1,31 @@
+{
+  "observed_at": "2026-11-05T23:28:30.409757+00:00",
+  "run": 42126273520,
+  "source_commit": "269579223cf1c0d03bc2406770629ef5f34fa663",
+  "status": "in_progress",
+  "conclusion": "",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/42126273520",
+  "jobs": [
+    {
+      "name": "verify (windows-latest)",
+      "status": "in_progress",
+      "conclusion": ""
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "scope": "Preceding checkpoint, not current canonical evidence change; preserve live run instead of triggering cancellation"
+}

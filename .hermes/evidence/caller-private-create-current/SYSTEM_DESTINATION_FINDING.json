@@ -1,5 +1,5 @@
 {
-  "status": "Open native SYSTEM default-destination policy mismatch; administrator Copy stays disabled",
+  "status": "Resolved by canonical native ACL evidence; original failure retained below",
   "native": "native-fixed/RESULT.json",
   "failed_case": "copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults",
   "error": "published owner/group/DACL does not match destination policy",
@@ -9,5 +9,11 @@
     "SYSTEM_broad_regressions": "10 passed; 1 failed; no broad SYSTEM destination-policy acceptance"
   },
   "required_next": "Integrate original caller token into final destination derivation/application, retain this failing native context, and compare live kernel-created reference security to the derived and finalized candidate. Do not fall back to helper defaults or weaken postconditions.",
-  "focused_next_scope": "Exact private-creation roles and all twelve security cases in their demonstrated roles: ten ordinary user, link and audit under SYSTEM. This does not close the separate SYSTEM default-destination failure."
+  "focused_next_scope": "Exact private-creation roles and all twelve security cases in their demonstrated roles: ten ordinary user, link and audit under SYSTEM. This does not close the separate SYSTEM default-destination failure.",
+  "resolution": {
+    "evidence": ".hermes/evidence/destination-security-current/ACCEPTANCE.json",
+    "native": ".hermes/evidence/destination-security-current/native-fixed/RESULT.json",
+    "cause": "Eight bytes of unused ACL capacity, not a permission difference",
+    "scope": "Resolved actual SYSTEM destination default-DACL regression; full original-caller helper transaction remains disabled and incomplete"
+  }
 }
