@@ -2107,11 +2107,22 @@ fn parse_systemd_enabled(code: Option<i32>, stdout: &[u8], stderr: &[u8]) -> Res
     match (code, state.trim()) {
         (Some(0), "enabled") => Ok(true),
         (Some(1), "disabled") => Ok(false),
-        _ => Err(format!(
-            "Could not inspect automatic startup (exit {code:?}, state {:?}): {}",
-            state.trim(),
-            String::from_utf8_lossy(stderr).trim()
-        )),
+        _ => {
+            let error = String::from_utf8_lossy(stderr);
+            let detail = match (error.trim(), state.trim()) {
+                ("", "") => "no service state returned".to_string(),
+                (error, "") => error.to_string(),
+                ("", state) => format!("unexpected service state '{state}'"),
+                (error, state) => format!("{error}; service state '{state}'"),
+            };
+            let termination = match code {
+                Some(code) => format!("exit code {code}"),
+                None => "process terminated without an exit code".to_string(),
+            };
+            Err(format!(
+                "Could not inspect automatic startup: {detail} ({termination})"
+            ))
+        }
     }
 }
 
@@ -5144,6 +5155,26 @@ mod tests {
         assert_eq!(
             set_sqlite_systemd_enabled_with(true, false, |_| Err("bus unavailable".into())),
             Err("bus unavailable".into())
+        );
+    }
+
+    #[test]
+    fn systemd_startup_probe_errors_use_readable_process_status() {
+        assert_eq!(
+            parse_systemd_enabled(Some(1), b"", b"Failed to connect to bus").unwrap_err(),
+            "Could not inspect automatic startup: Failed to connect to bus (exit code 1)"
+        );
+        assert_eq!(
+            parse_systemd_enabled(Some(0), b"masked\n", b"").unwrap_err(),
+            "Could not inspect automatic startup: unexpected service state 'masked' (exit code 0)"
+        );
+        assert_eq!(
+            parse_systemd_enabled(None, b"", b"").unwrap_err(),
+            "Could not inspect automatic startup: no service state returned (process terminated without an exit code)"
+        );
+        assert_eq!(
+            parse_systemd_enabled(Some(1), b"masked\n", b"Unit cannot be enabled\n").unwrap_err(),
+            "Could not inspect automatic startup: Unit cannot be enabled; service state 'masked' (exit code 1)"
         );
     }
 

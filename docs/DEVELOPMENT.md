@@ -34,6 +34,11 @@ Bounded single-line captions must use `widget_style::single_line_text_job` so a 
 
 Service settings distinguish what is running now from what starts at the next sign-in. Automatic startup uses an explicit On, Off or unavailable state; failed inspection must never become Off or an unchecked editable toggle. Keep probe errors visible and retain the runtime status separately. Systemd enabled-state probes must validate both the reported state and exit status rather than treating every nonzero result as disabled.
 
+Process errors shown in settings must use readable exit-code or termination wording,
+preserve the actual diagnostic and unexpected state, and omit programming-language
+debug wrappers such as `Some(1)`. Review the failed-query screen as well as the
+successful states when accepting service controls.
+
 Quick Inspector opens every file read-only. Only an explicit **Edit text** action
 may create an editor; asynchronous loading, reload of a preview, and selection
 navigation must never enable editing. Read-only previews leave arrow navigation

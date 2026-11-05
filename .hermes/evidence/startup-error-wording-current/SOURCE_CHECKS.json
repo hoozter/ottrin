@@ -1,0 +1,28 @@
+{
+  "status": "pass source-only; no new packaged/native rendering claim",
+  "base_revision": "63095cbca131b55be8531e96dc195d2df8d7b00a",
+  "source_sha256": {
+    "crates/ottrin-search/src/lib.rs": "641ffb49ede5b6ecd36cd29b5ce5e461a55533bbc9050dcb1c044532741474f5",
+    "docs/DEVELOPMENT.md": "367533fc1b044f0622d3d610f9dac674ad4fd977ca7b9753d9d5d89b0354a91c"
+  },
+  "regression": "Exact user-facing error assertion fails old Rust debug wrapper; tests preserve stderr, unexpected states, exit code and signal termination.",
+  "search_suite": {
+    "passed": 251,
+    "failed": 0,
+    "existing_ignored": 2
+  },
+  "checks": [
+    "native ottrin-search all-target strict clippy",
+    "Windows GNU ottrin-search all-target strict clippy",
+    "cargo fmt --all --check"
+  ],
+  "native_finding": "startup-status-delivery-current/CAPTURE_REVIEW.json",
+  "delivery": "Not in stable Linuxc4, staged Linuxf245 or Windows458. Batch next build and source push after exact-source CI41936995231 finishes.",
+  "cleanup": {
+    "removed_obsolete_incremental_sessions": 7,
+    "remaining_candidates": 0,
+    "initial_refusal": "Relative input paths rejected; reran inspection and apply with exact absolute roots. No safety check bypass.",
+    "disposable_profiles": "test-workspace.py finally teardown; test process terminal",
+    "retained": "Current shared compiler caches, current same-configuration test binaries, compact evidence only."
+  }
+}

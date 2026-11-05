@@ -576,7 +576,9 @@ shows Unavailable without a false unchecked toggle. All12 original captures were
 directly reviewed. This is functional Services acceptance, not a full visual audit:
 error text exposes Rust debug process status, Light ready-green contrast needs
 review, and some scrolled captures clip the section heading. A readable error
-correction is in progress separately. No fresh reboot or stable-path binary
+correction now passes251 search tests, native/Windows cross-target strict lint
+and formatting in `startup-error-wording-current/`; it remains source-only and
+is not in this f245 candidate. No fresh reboot or stable-path binary
 replacement acceptance is claimed for f245. Exact-source CI41936995231 currently
 has three passing jobs and the Windows test suite still running. The111MiB stage
 is retained for that candidate; delivered Linuxc4 and Windows458 are unchanged.

@@ -1,0 +1,25 @@
+   Compiling ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Finished `test` profile [optimized + debuginfo] target(s) in 35.36s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_search-ea268e832702de9b)
+
+running 1 test
+test tests::systemd_startup_probe_errors_use_readable_process_status ... FAILED
+
+failures:
+
+---- tests::systemd_startup_probe_errors_use_readable_process_status stdout ----
+
+thread 'tests::systemd_startup_probe_errors_use_readable_process_status' (2469877) panicked at crates/ottrin-search/src/lib.rs:5152:9:
+assertion `left == right` failed
+  left: "Could not inspect automatic startup (exit Some(1), state \"\"): Failed to connect to bus"
+ right: "Could not inspect automatic startup: Failed to connect to bus (exit code 1)"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::systemd_startup_probe_errors_use_readable_process_status
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ottrin-search --lib`
