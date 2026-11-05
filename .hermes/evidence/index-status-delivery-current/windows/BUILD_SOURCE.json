@@ -1,0 +1,5 @@
+{
+  "source_revision": "8d69ce98c7d6f25aa12025c67b205c035785d970",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "purpose": "Portable/NSIS from the same cohort; native UI/helper/lifecycle and native MSIX assembly still required; stable b020 preserved"
+}

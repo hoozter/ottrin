@@ -6,6 +6,16 @@ Updated 2026-11-05. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
+CI delivery gate: source8d69ce98 staged successfully in all four Linux formats
+and Windows portable/NSIS. Linux content/closure checks and the actual AppImage
+Dark/Light Ready→Stopped→error→Ready UI pass (16 original captures reviewed).
+These stages are not published. Hosted run41982529608 passed Linux tests/lint
+but exhausted disk during release linking; its Windows job remains independent.
+The CI storage fix disables development/test debug symbols and reports target
+storage while retaining all tests, assertions, lint and release settings. This is
+software delivery work, not an owner wait. Rebuild/verify the final source cohort
+and complete native Windows/MSIX acceptance before guarded publication.
+
 ### Usable local preview
 
 The four Linux formats in `dist/packages/` and Windows ZIP/NSIS/development

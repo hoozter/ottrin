@@ -22,6 +22,9 @@ concurrency:
 
 env:
   RUST_VERSION: "1.94.0"
+  # Keep development and test artifacts within the hosted runner's disk budget.
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  CARGO_PROFILE_TEST_DEBUG: "0"
 
 jobs:
   verify:
@@ -150,6 +153,14 @@ jobs:
 
       - name: Cargo clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Report Linux build storage
+        if: always() && runner.os == 'Linux'
+        run: |
+          df -h .
+          for tree in target/debug target/release; do
+            if [ -d "$tree" ]; then du -sh "$tree"; fi
+          done
 
       - name: Release build
         run: cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search

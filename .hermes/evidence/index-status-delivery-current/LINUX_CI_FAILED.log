@@ -1,0 +1,75 @@
+2026-11-05T06:55:25.0483163Z     v0-rust-verify-Linux-x64-668e1172-c7645301
+2026-11-05T06:55:25.0490905Z .. Prefix:
+2026-11-05T06:55:25.0503125Z   - v0-rust-verify-Linux-x64
+2026-11-05T06:55:25.0503540Z .. Environment considered:
+2026-11-05T06:55:25.0510692Z   - Rust Versions:
+2026-11-05T06:55:25.0517551Z     - 1.94.0 x86_64-unknown-linux-gnu 4a4ef493e3a1488c6e321570238084b38948f6db
+2026-11-05T06:55:25.0518672Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+2026-11-05T06:55:25.0526030Z   - CARGO_HOME
+2026-11-05T06:55:25.0533096Z   - CARGO_INCREMENTAL
+2026-11-05T06:55:25.0533440Z   - CARGO_TERM_COLOR
+2026-11-05T06:55:25.0552987Z   - RUST_VERSION
+2026-11-05T06:55:25.0553341Z .. Lockfiles considered:
+2026-11-05T06:55:25.0560446Z   - /home/runner/work/ottrin/ottrin/Cargo.lock
+2026-11-05T06:55:25.0566990Z   - /home/runner/work/ottrin/ottrin/crates/ottrin-app/Cargo.toml
+2026-11-05T06:55:25.0574152Z   - /home/runner/work/ottrin/ottrin/crates/ottrin-core/Cargo.toml
+2026-11-05T06:55:25.0580720Z   - /home/runner/work/ottrin/ottrin/crates/ottrin-platform/Cargo.toml
+2026-11-05T06:55:25.0586576Z   - /home/runner/work/ottrin/ottrin/crates/ottrin-preview/Cargo.toml
+2026-11-05T06:55:25.0595178Z   - /home/runner/work/ottrin/ottrin/crates/ottrin-search/Cargo.toml
+2026-11-05T06:55:25.0603013Z   - /home/runner/work/ottrin/ottrin/crates/ottrin-ui/Cargo.toml
+2026-11-05T06:55:25.0610931Z   - /home/runner/work/ottrin/ottrin/rust-toolchain.toml
+2026-11-05T06:55:25.0618386Z ##[endgroup]
+2026-11-05T06:55:25.0618663Z
+2026-11-05T06:55:28.7516768Z Error: The process '/home/runner/.cargo/bin/cargo' failed with exit code 101
+2026-11-05T06:55:28.7523386Z     at ExecState._setResult (file:///home/runner/work/_actions/Swatinem/rust-cache/v2/dist/cleanup-e3M0pm4f.js:30258:25)
+2026-11-05T06:55:28.7528434Z     at ExecState.CheckComplete (file:///home/runner/work/_actions/Swatinem/rust-cache/v2/dist/cleanup-e3M0pm4f.js:30241:18)
+2026-11-05T06:55:28.7533777Z     at ChildProcess.<anonymous> (file:///home/runner/work/_actions/Swatinem/rust-cache/v2/dist/cleanup-e3M0pm4f.js:30137:27)
+2026-11-05T06:55:28.7538668Z     at ChildProcess.emit (node:events:514:28)
+2026-11-05T06:55:28.7542693Z     at maybeClose (node:internal/child_process:1172:16)
+2026-11-05T06:55:28.7547509Z     at ChildProcess._handle.onexit (node:internal/child_process:335:5) {
+2026-11-05T06:55:28.7552765Z   commandFailed: {
+2026-11-05T06:55:28.7558317Z     command: 'cargo metadata --all-features --format-version 1',
+2026-11-05T06:55:28.7563093Z     stderr: '\x1B[1m\x1B[91merror\x1B[0m: failed to download `windows v0.62.2`\n' +
+2026-11-05T06:55:28.7569252Z       '\n' +
+2026-11-05T06:55:28.7569714Z       'Caused by:\n' +
+2026-11-05T06:55:28.7574063Z       '  unable to get packages from source\n' +
+2026-11-05T06:55:28.7578584Z       '\n' +
+2026-11-05T06:55:28.7582351Z       'Caused by:\n' +
+2026-11-05T06:55:28.7586008Z       '  failed to unpack package `windows v0.62.2`\n' +
+2026-11-05T06:55:28.7591283Z       '\n' +
+2026-11-05T06:55:28.7596105Z       'Caused by:\n' +
+2026-11-05T06:55:28.7596527Z       '  failed to unpack entry at `windows-0.62.2/src/Windows/ApplicationModel/Appointments/mod.rs`\n' +
+2026-11-05T06:55:28.7602475Z       '\n' +
+2026-11-05T06:55:28.7607208Z       'Caused by:\n' +
+2026-11-05T06:55:28.7613771Z       '  failed to unpack `/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/ApplicationModel/Appointments/mod.rs`\n' +
+2026-11-05T06:55:28.7618878Z       '\n' +
+2026-11-05T06:55:28.7623387Z       'Caused by:\n' +
+2026-11-05T06:55:28.7630338Z       '  failed to unpack `windows-0.62.2/src/Windows/ApplicationModel/Appointments/mod.rs` into `/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/ApplicationModel/Appointments/mod.rs`\n' +
+2026-11-05T06:55:28.7636763Z       '\n' +
+2026-11-05T06:55:28.7642262Z       'Caused by:\n' +
+2026-11-05T06:55:28.7648750Z       '  No space left on device (os error 28)\n'
+2026-11-05T06:55:28.7649026Z   }
+2026-11-05T06:55:28.7654697Z }
+2026-11-05T06:55:28.7660482Z ... Cleaning /home/runner/work/ottrin/ottrin/target ...
+2026-11-05T06:55:30.4914982Z ... Cleaning cargo registry (cache-all-crates: false) ...
+2026-11-05T06:55:33.3172699Z ... Cleaning cargo/bin ...
+2026-11-05T06:55:33.3192956Z ... Cleaning cargo git cache ...
+2026-11-05T06:55:33.3195469Z ... Saving cache ...
+2026-11-05T06:55:33.3337606Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ottrin/ottrin --files-from manifest.txt --use-compress-program zstdmt
+2026-11-05T06:55:34.0524384Z Sent 1650 of 1650 (100.0%), 0.0 MBs/sec
+2026-11-05T06:55:34.3582890Z Post job cleanup.
+2026-11-05T06:55:34.4357516Z [command]/usr/bin/git version
+2026-11-05T06:55:34.4383464Z git version 2.56.0
+2026-11-05T06:55:34.4419648Z Temporarily overriding HOME='/home/runner/work/_temp/15e59d29-0be4-4bf7-b365-69944770307c' before making global git config changes
+2026-11-05T06:55:34.4420955Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T06:55:34.4421535Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ottrin/ottrin
+2026-11-05T06:55:34.4449281Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T06:55:34.4471768Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-05T06:55:34.4747042Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T06:55:34.4762733Z http.https://github.com/.extraheader
+2026-11-05T06:55:34.4769594Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-05T06:55:34.4796895Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-05T06:55:34.5034751Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T06:55:34.5055597Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-05T06:55:34.5382172Z Cleaning up orphan processes
+2026-11-05T06:55:34.7541614Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

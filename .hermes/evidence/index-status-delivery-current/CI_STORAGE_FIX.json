@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-05T07:30:43.285780+00:00",
+  "failed_run": 41982529608,
+  "failed_linux_job": 127095683613,
+  "failure": "rustc-LLVM IO failure: No space left on device during release linking; cache post-action also failed to unpack a registry crate",
+  "verified_passes_before_failure": [
+    "Linux workspace tests",
+    "Linux strict lint",
+    "both release search performance jobs"
+  ],
+  "change": "CI development/test debug symbols disabled; source tests, assertions, optimization and release commands retained; Linux storage reported before release build",
+  "source_diff_scope": [
+    ".github/workflows/ci.yml",
+    "docs/ROADMAP.md"
+  ],
+  "preserved": "Usable b020 packages and source8d staged outputs remain unpromoted pending final source-matched gates"
+}

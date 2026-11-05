@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-05T06:51:18.442980+00:00",
+  "paths_bytes": {
+    "target/debug/deps": 25266444193,
+    "target/debug/incremental": 25263054799,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30027118181,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44548767808,
+    "target/release/deps": 4447806186,
+    "target/release/incremental": 0,
+    "target/x86_64-pc-windows-gnu/release/deps": 3997745316,
+    "target/x86_64-pc-windows-gnu/release/incremental": 0,
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage": 0,
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage": 0,
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-delivery-current": 9362
+  },
+  "available_bytes": 31730929664,
+  "cleanup_owner": "Active roadmap goal; remove owned source/staging/temp wrappers/obsolete compiler output after native acceptance and guarded publication or failure. Stable b020 packages and current useful compiler caches retained."
+}

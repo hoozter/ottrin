@@ -1,0 +1,30 @@
+{
+  "status": "pass within actual AppImage status-transition scope",
+  "at": "2026-11-05T07:28:54.770967+00:00",
+  "directly_reviewed_originals": {
+    "Dark-recovered-main.png": "2dcff660351448f524390cc1717febee4552f9d7262bcf88d187483b73c737a5",
+    "Light-stopped-main.png": "0cf240f195ac0138c3a9e0f0ed7ea47d54e44a45f4f3098ab621effaa2cd5912",
+    "Dark-ready-services.png": "190852d10f4e1acbcabba533405dad8a9ba3a619ec413f1a139cf771dbe625e1",
+    "Light-failed-services.png": "88cc39e37187857efb933593a961ada0b7cecabdb59307c8b5d742689b991cd7",
+    "Dark-failed-main.png": "2cb737ea20d715d0b4343936da2e762ab2ff5e7c259a2f06a2bf4b118795328a",
+    "Dark-stopped-main.png": "2275eb11cc54947ae3b403ce359af97647c52cdb601c19b997c30b7d08d1ada4",
+    "Light-ready-services.png": "db3d74d821a2c154e1cb9ef5a550cee606bbbff0a60816569a4cd6b652a4d4af",
+    "Light-failed-main.png": "b854cdc652e1e710af97f832116610b8dd08c82d26a05fee250e3f0a2a8d3830",
+    "Light-stopped-services.png": "16b25b623d62f997be8b49728d65f640fdb3d05d6b0b53f1debd1f8dcdd6efa9",
+    "Light-recovered-main.png": "1b5acc6b9ba4d056e4169cf3bb0d9d8f8ee975e19283397b0c313018954045f6",
+    "Dark-failed-services.png": "9424a3f929a2b0098dd36ee3eda1778b3623e991ed27859c1f504a8d8eda115c",
+    "Light-ready-main.png": "1b5acc6b9ba4d056e4169cf3bb0d9d8f8ee975e19283397b0c313018954045f6",
+    "Dark-recovered-services.png": "190852d10f4e1acbcabba533405dad8a9ba3a619ec413f1a139cf771dbe625e1",
+    "Dark-stopped-services.png": "d24e5b23b101b538457ffe58f0a94c97970ed4a59fcd633b70acdcc5421c16e7",
+    "Dark-ready-main.png": "2dcff660351448f524390cc1717febee4552f9d7262bcf88d187483b73c737a5",
+    "Light-recovered-services.png": "db3d74d821a2c154e1cb9ef5a550cee606bbbff0a60816569a4cd6b652a4d4af"
+  },
+  "findings": [
+    "Dark and Light main index icon: green Ready, muted Stopped, semantic error, green recovery",
+    "Services matches main status and remains usable through all four states",
+    "Real endpoint type/connect error details preserved; no error relabelled as stopped",
+    "Same GUI PID per theme; owned files unchanged; recovered daemon survives normal GUI close"
+  ],
+  "limits": "Software X11/default DPI and private two-file corpus; no Windows, native distribution install, physical GPU or whole-theme audit claim",
+  "temporary_dark_error_crop": "Inspected only to resolve the small error glyph; removed, originals unchanged"
+}

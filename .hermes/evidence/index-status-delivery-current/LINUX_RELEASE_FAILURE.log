@@ -1,0 +1,15 @@
+2026-11-05T06:53:28.0664270Z [1m[92m   Compiling[0m ottrin-preview v0.1.0 (/home/runner/work/ottrin/ottrin/crates/ottrin-preview)
+2026-11-05T06:53:33.6465691Z [1m[92m   Compiling[0m ottrin-ui v0.1.0 (/home/runner/work/ottrin/ottrin/crates/ottrin-ui)
+2026-11-05T06:55:21.3634567Z rustc-LLVM ERROR: IO failure on output stream: No space left on device
+2026-11-05T06:55:21.3917323Z [1m[91merror[0m: could not compile `ottrin-app` (bin "ottrin-app")
+2026-11-05T06:55:21.3917612Z
+2026-11-05T06:53:33.6465691Z [1m[92m   Compiling[0m ottrin-ui v0.1.0 (/home/runner/work/ottrin/ottrin/crates/ottrin-ui)
+2026-11-05T06:55:21.3634567Z rustc-LLVM ERROR: IO failure on output stream: No space left on device
+2026-11-05T06:55:21.3917323Z [1m[91merror[0m: could not compile `ottrin-app` (bin "ottrin-app")
+2026-11-05T06:55:21.3917612Z
+2026-11-05T06:55:21.3922399Z Caused by:
+2026-11-05T06:55:28.7636763Z       '\n' +
+2026-11-05T06:55:28.7642262Z       'Caused by:\n' +
+2026-11-05T06:55:28.7648750Z       '  No space left on device (os error 28)\n'
+2026-11-05T06:55:28.7649026Z   }
+2026-11-05T06:55:28.7654697Z }

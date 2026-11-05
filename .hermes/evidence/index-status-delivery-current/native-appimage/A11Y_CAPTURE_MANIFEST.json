@@ -1,0 +1,21 @@
+{
+  "scope": "Original native accessibility captures retained locally for the recorded AppImage transitions; compact hashes stored with source",
+  "files": {
+    "Light-ready-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Light-failed-services.a11y.txt": "de06d2dc4c98aaa6d48ac201904f40e9eeb8f3dcd16fd12d9343b4bdacaa5462",
+    "Dark-ready-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Light-stopped-services.a11y.txt": "8eab81dea50f80ddbd1436b89d652d85a3004930e477dc28a0253ee433030761",
+    "Dark-ready-services.a11y.txt": "94ec69960f2aa47ccf9c03bc074c1daf97eee48c6f71239efbee203d51ea4fd5",
+    "Dark-stopped-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Dark-recovered-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Dark-stopped-services.a11y.txt": "8eab81dea50f80ddbd1436b89d652d85a3004930e477dc28a0253ee433030761",
+    "Light-recovered-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Light-recovered-services.a11y.txt": "94ec69960f2aa47ccf9c03bc074c1daf97eee48c6f71239efbee203d51ea4fd5",
+    "Dark-failed-services.a11y.txt": "de06d2dc4c98aaa6d48ac201904f40e9eeb8f3dcd16fd12d9343b4bdacaa5462",
+    "Dark-recovered-services.a11y.txt": "94ec69960f2aa47ccf9c03bc074c1daf97eee48c6f71239efbee203d51ea4fd5",
+    "Light-failed-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Light-stopped-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Dark-failed-main.a11y.txt": "0d78498839bab35c9c1b56e9bb0358038a1c6b8404ea1af6e7056a93d5724c3a",
+    "Light-ready-services.a11y.txt": "94ec69960f2aa47ccf9c03bc074c1daf97eee48c6f71239efbee203d51ea4fd5"
+  }
+}

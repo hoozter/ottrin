@@ -1,0 +1,11 @@
+{
+  "status": "build requested; stable packages untouched",
+  "source_revision": "8d69ce98c7d6f25aa12025c67b205c035785d970",
+  "ci": "https://github.com/hoozter/ottrin/actions/runs/41982529608",
+  "native_ui_proof": "Earlier b961 Linux source-GUI proof retains its exact binary scope; fresh staged Linux/Windows package acceptance required",
+  "pending_consumers": [
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage"
+  ],
+  "rule": "No tracked edits or commits while these provenance builds run; no promotion until source-matched gates pass"
+}

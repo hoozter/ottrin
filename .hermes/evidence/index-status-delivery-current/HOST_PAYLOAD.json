@@ -1,0 +1,15 @@
+{
+  "status": "pass within host archive/content scope",
+  "source_revision": "8d69ce98c7d6f25aa12025c67b205c035785d970",
+  "payload_files": 58,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "68b8e105ddda8f84e5d92889234465426f7dfa683f989d5de12cf11b2d07e90a",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "13167f36107ebcedf1466e2d79a1869a998a542a0c67721c2a6e6c0c09b242ff"
+  },
+  "portable_nsis_payloads_identical": true,
+  "uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+  "index_controller_matches_daemon": true,
+  "transaction_script_matches_source": true,
+  "owned_extraction_removed": true,
+  "scope_limit": "Host archive/content verification; native lifecycle/rendered scopes have separate receipts"
+}
