@@ -1,0 +1,5 @@
+{
+  "failure": "Source-freeze guard correctly stopped after Cargo added the newly declared existing tempfile test dependency to Cargo.lock",
+  "product_source_changed": false,
+  "correction": "Lockfile now generated; rerun with --locked and verify source hashes after each phase as well as before it"
+}

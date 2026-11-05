@@ -1,0 +1,36 @@
+{
+  "status": "pass format, strict Windows all-target lint and native-test compilation; runtime acceptance separate",
+  "base_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa",
+  "source_files": {
+    "Cargo.toml": "563448b81efed23c72114fce8537b49ace937c517f6c6c6c9af1cce8f89fc9c1",
+    "Cargo.lock": "a1f7e66afdcd218047dfe67573ea05fa960c5f911250307fee87698ec198c66c",
+    "crates/ottrin-platform/Cargo.toml": "c1d1bf22cc36db09af5ecd160db9c76bb2877eb17ba74cdb859892b902d9e011",
+    "crates/ottrin-platform/src/windows_folder_integration.rs": "66eb1e3bce3d503053f2bda6c6fe3e98bf9eb50b3b6f401aad8137311e206626",
+    "crates/ottrin-ui/src/lib.rs": "ea41e604407f64ecc18ee0bdbafcea0f2962bd596a43faedc09ff36829ea822e",
+    "packaging/windows/msix-manifest.xml": "513862beafb6d85ea06e6890e8bb6efbbe7954c44c61457df9b519771b81b6cd",
+    "crates/ottrin-shell/Cargo.toml": "0bc0c2d2bb6eb36f14699cf318daf61ebb4686fcc93064cd760fa6665ea8dccf",
+    "crates/ottrin-shell/src/lib.rs": "bd7173e1013f2ea3ca1ec80795fb42edad9d253a77c2b682ba112d5f9afcd606",
+    "crates/ottrin-shell/src/server.rs": "b7513ff425a93d99c247562eb5553f00f7df0e5f02996e8300d98674a7901b8a",
+    "crates/ottrin-shell/src/settings.rs": "a0fffad110f4c3970a306033275bdb5e587d137669b32e5348991f77b244c757"
+  },
+  "completed": [
+    "format.log",
+    "windows-lint-final.log",
+    "native-test-build.jsonl"
+  ],
+  "phase": "native-test-build.jsonl",
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "-p",
+    "ottrin-shell",
+    "--lib",
+    "--target",
+    "x86_64-pc-windows-gnu",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "producer_pid": 2892733,
+  "producer_exit": 0
+}

@@ -28,7 +28,7 @@ $PackageVersion = $Version + '.' + $(if ($Development) { $DevelopmentRevision } 
 $Recorded = Get-Content (Join-Path $Stage 'SOURCE_REVISION.txt')
 if ($Recorded -notcontains "Version: $Version" -or $Recorded -notcontains "Git revision: $Revision") { throw 'Portable stage does not match this clean source revision/version.' }
 if (@(Get-ChildItem $Stage -Force -Recurse | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count) { throw 'MSIX stage must contain ordinary owned files, not links or junctions.' }
-foreach ($Relative in @('bin\ottrin.exe', 'bin\ottrin-indexd.exe', 'bin\ottrin-priv-helper.exe', 'bin\rg.exe', 'assets\icon.png', 'third-party-notices\MANIFEST.txt')) {
+foreach ($Relative in @('bin\ottrin.exe', 'bin\ottrin_shell.dll', 'bin\ottrin-indexd.exe', 'bin\ottrin-priv-helper.exe', 'bin\rg.exe', 'assets\icon.png', 'third-party-notices\MANIFEST.txt')) {
     if (-not (Test-Path (Join-Path $Stage $Relative) -PathType Leaf)) { throw "Incomplete portable stage: $Relative" }
 }
 foreach ($Relative in @('LICENSE', 'README.md', 'docs\USER_GUIDE.md', 'docs\DEVELOPMENT.md', 'docs\ROADMAP.md', 'docs\RELEASE_NOTES.md', 'docs\RELEASE_CHECKLIST.md', 'assets\icon.png')) {

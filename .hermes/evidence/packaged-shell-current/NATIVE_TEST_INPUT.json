@@ -1,0 +1,6 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_shell-36fcbe56ed1c0b11.exe",
+  "sha256": "daccf31eeb36aa11c563bc63987796c2927082398e137baa942ed64276c221b0",
+  "source_verification": "VERIFY_STATE.json",
+  "scope": "Direct COM factory/interfaces/metadata, manifest contract and owned Unicode folder/file selection; not packaged activation or Explorer menus"
+}

@@ -2061,18 +2061,32 @@ Windows runtime execution is separate from the direct native caller checks.
 
 Services → Desktop integration → Folder integration and the headless
 `ottrin folders enable|disable|status [--json]` commands use the same per-user
-implementation. It adds **Open in Ottrin** to folder, folder-background and drive
-menus. Windows 11 may place static verbs under **Show more options**. Existing
-`folders enable` installs menu actions without changing folder defaults; default
-opening is the separate choice described below.
+implementation. Both installation types expose **Open in Ottrin** for folders,
+folder backgrounds and drives. `folders enable` does not change folder defaults.
 
-The three registry verbs, native executable path, ownership marker and receipt
+Portable/NSIS installs use static verbs, which Windows 11 may place under
+**Show more options**. The three registry verbs, native executable path, ownership marker and receipt
 commit together in one native registry transaction. An abandoned transaction
 rolls back. Repair restores missing owned data; changed or unknown data refuses
 replacement/removal. Disable removes owned commands and only recorded empty
 parents, preserving unrelated handlers and settings. No administrator permission
 is required. Moving a portable copy requires Update / repair from its new location.
 The optional default preference shares this backend; see the section below.
+
+MSIX uses `ottrin-shell`, a native `IExplorerCommand` COM DLL registered by
+`msix-manifest.xml`. Windows owns registration, update and removal; Ottrin writes
+no host Classes verbs. One package-scoped DWORD is the complete visibility
+preference, initially Off. The app and command share its implementation;
+`GetState` reads it without directory/network inspection, and `Invoke` checks it
+again before resolving selected folders or the background's current view.
+Arguments use native Windows argv without a command shell. Metadata, COM site,
+factory/lifetime and Unicode path conversion pass the direct native contract;
+actual ordinary-user package activation, Explorer visibility/invocation and
+update/removal still require acceptance. MSIX default folder opening remains
+unfinished and does not use this menu preference.
+The [Microsoft integration contract](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/integrate-packaged-app-with-file-explorer)
+defines package-owned command registration. Current evidence is under
+`.hermes/evidence/packaged-shell-current/`.
 
 
 Desktop integration status refreshes retain the last result and action layout
@@ -2100,7 +2114,7 @@ that does not establish acceptance of a future packaged or MSVC release image.
 
 ## Optional Windows default folder opening
 
-The Windows folder backend shares one registry transaction between its static
+The unpackaged Windows folder backend shares one registry transaction between its static
 verbs, optional default selection and ownership receipt. `folders default-enable`
 selects the Ottrin verb for `Directory` and `Drive`; `default-disable` restores
 previous raw typed values only where the current value is still Ottrin's.

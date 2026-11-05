@@ -151,7 +151,7 @@ Included Mesa DLLs: opengl32.dll, libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
 }
 
 Set-Location $Root
-cargo build --release --target $Target -p ottrin-app -p ottrin-platform -p ottrin-search
+cargo build --release --target $Target -p ottrin-app -p ottrin-platform -p ottrin-search -p ottrin-shell
 if ($LASTEXITCODE -ne 0) { throw "Windows application build failed." }
 cargo build --release --target $Target -p ottrin-preview --features windows-office --bin ottrin-legacy-doc-render --bin ottrin-office-render
 if ($LASTEXITCODE -ne 0) { throw "Windows Office preview helper build failed." }
@@ -161,6 +161,7 @@ Remove-Item -Recurse -Force $StageRoot -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path "$Stage\bin", "$Stage\assets", "$Stage\docs", "$Stage\third-party-notices" | Out-Null
 
 Copy-Item "$BuildDir\ottrin-app.exe" "$Stage\bin\ottrin.exe"
+Copy-Item "$BuildDir\ottrin_shell.dll" "$Stage\bin\ottrin_shell.dll"
 Copy-Item "$BuildDir\ottrin-office-render.exe" "$Stage\bin\ottrin-office-render.exe"
 Copy-Item "$BuildDir\ottrin-legacy-doc-render.exe" "$Stage\bin\ottrin-legacy-doc-render.exe"
 Copy-Item "$BuildDir\ottrin-indexd.exe" "$Stage\bin\ottrin-indexd.exe"

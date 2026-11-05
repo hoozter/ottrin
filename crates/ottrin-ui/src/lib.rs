@@ -21066,7 +21066,7 @@ impl OttrinApp {
         appearance_editor::settings_surface(c).inner_margin(12).show(ui,|ui| {
             ui.set_min_width(ui.available_width());
             ui.label(RichText::new(if cfg!(target_os="windows"){"Folder integration"}else{"Folder opening"}).strong().color(c.text));
-            ui.label(if cfg!(target_os="windows"){ "Add Open in Ottrin to folder, drive and folder-background menus. On Windows 11, use Show more options. Default folder opening is a separate choice below." }else{ "Choose Ottrin for directory links, Show in folder and Properties requests. Ottrin opens a window only when requested. An already-running desktop file manager keeps its reveal service until it exits." });
+            ui.label(if cfg!(target_os="windows"){ "Add Open in Ottrin to folder, drive and folder-background menus. Default folder opening is a separate choice below." }else{ "Choose Ottrin for directory links, Show in folder and Properties requests. Ottrin opens a window only when requested. An already-running desktop file manager keeps its reveal service until it exits." });
             if let Some(status)=self.folder_status.clone() {
                 Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
                 ui.horizontal_wrapped(|ui| {

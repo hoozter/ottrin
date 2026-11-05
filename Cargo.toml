@@ -6,6 +6,7 @@ members = [
   "crates/ottrin-search",
   "crates/ottrin-preview",
   "crates/ottrin-ui",
+  "crates/ottrin-shell",
 ]
 resolver = "2"
 default-members = ["crates/ottrin-app"]

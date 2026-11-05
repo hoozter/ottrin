@@ -245,13 +245,18 @@ On Linux, click the lock in the status bar or open **Settings → Services**, th
 Windows portable packages bundle `ottrin-priv-helper.exe` beside the app and use the Windows UAC flow when needed.
 
 ## Folder integration
-On Windows, **Settings → Services → Folder integration → Default folder opening**
+For Windows portable and NSIS installations, **Settings → Services → Folder integration → Default folder opening**
 can select Ottrin for ordinary filesystem-folder and drive links. **Restore
 previous folder defaults** reverses that choice; removing folder integration or
 running `ottrin --uninstall` also restores settings still owned by Ottrin.
 Applications explicitly launching Explorer or choosing another verb keep their
 behavior, and virtual folders stay with Windows. The terminal equivalents are
 `ottrin folders default-enable` and `ottrin folders default-disable`.
+
+MSIX folder integration remains under development. Its package-owned Explorer
+menu command and default folder opening have separate acceptance gates; do not
+assume the portable/NSIS default-opening behavior is supported by an MSIX preview.
+See the current roadmap for the exact tested package scope.
 
 ## Cleanup And Upgrades
 

@@ -138,6 +138,7 @@ done
 
 for entry in \
   '/bin/ottrin\.exe$' \
+  '/bin/ottrin_shell\.dll$' \
   '/bin/ottrin-legacy-doc-render\.exe$' \
   '/bin/ottrin-priv-helper\.exe$' \
   '/bin/pdfium/pdfium\.dll$' \
@@ -459,6 +460,7 @@ require_installer_entry() {
 
 for entry in \
   'bin/ottrin.exe' \
+  'bin/ottrin_shell.dll' \
   'bin/ottrin-indexd.exe' \
   'bin/ottrin-priv-helper.exe' \
   'bin/pdfium/pdfium.dll' \

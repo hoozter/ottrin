@@ -1,0 +1,5 @@
+{
+  "process_exit": 1,
+  "stdout": "{\"stdout\":\"\\nrunning 1 test\\ntest server::tests::packaged_shell_com_contract ... FAILED\\n\\nfailures:\\n\\nfailures:\\n    server::tests::packaged_shell_com_contract\\n\\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s\\n\\n\",\"exitcode\":101,\"stderr\":\"\\nthread \\u0027server::tests::packaged_shell_com_contract\\u0027 (4292) panicked at crates/ottrin-shell/src/server.rs:293:13:\\nassertion `left == right` failed\\n  left: \\\"C:\\\\\\\\Windows\\\\\\\\SystemTemp\\\\\\\\.tmpgTthZR\\\\\\\\-- folder with spaces \u03a9\ud801\udc37\\\"\\n right: \\\"C:\\\\\\\\WINDOWS\\\\\\\\SystemTemp\\\\\\\\.tmpgTthZR\\\\\\\\-- folder with spaces \u03a9\ud801\udc37\\\"\\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\\n\",\"sha256\":\"A19D14403E9CD00CD41CC53FDCDE993F671381FC2CC8EB09111B008EEAD96A3C\"}\r\n",
+  "stderr": ""
+}

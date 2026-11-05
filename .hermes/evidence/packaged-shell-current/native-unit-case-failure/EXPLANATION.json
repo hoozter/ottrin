@@ -1,0 +1,6 @@
+{
+  "failure": "Owned path spelling comparison rejected Windows shell normalization C:\\Windows versus environment C:\\WINDOWS before COM metadata assertions",
+  "correction": "Compare canonical filesystem paths and exact native Unicode leaf name, retaining both requirements",
+  "product_selection_code_changed": false,
+  "cleanup": "OWNER.json records domain, fixture and both volumes removed"
+}

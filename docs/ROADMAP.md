@@ -91,6 +91,15 @@ packaged acceptance. Seven obsolete incremental sessions were retired (0.39GiB);
 private test processes/display/bus/profile are removed. Evidence:
 `.hermes/evidence/service-status-wrap-current/ACCEPTANCE.json`.
 
+A package-owned MSIX Explorer COM command now passes strict Windows
+shell/platform/UI lint and a real native COM factory/interface/site/lifetime,
+manifest and Unicode folder-selection contract test. The test runs under the
+guest-agent token; it does not prove ordinary-user package activation. Package
+activation, menu visibility, invocation and removal remain unverified. Default folder opening remains unresolved for MSIX;
+portable/NSIS integration keeps its existing registry transaction implementation.
+The stable packages are unchanged. Work evidence:
+`.hermes/evidence/packaged-shell-current/`.
+
 ### Current ordered work
 
 1. Finish Windows administrator Copy recovery: the externally anchored durable

@@ -1,0 +1,17 @@
+[package]
+name = "ottrin-shell"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-core = "0.58"
+windows = { version = "0.58", features = ["implement", "Win32_Foundation", "Win32_Storage_Packaging_Appx", "Win32_System_Com", "Win32_System_Ole", "Win32_UI_Shell"] }
+windows-sys = { version = "0.61", features = ["Win32_System_Registry", "Win32_Security"] }
+
+[target.'cfg(target_os = "windows")'.dev-dependencies]
+tempfile = "3"

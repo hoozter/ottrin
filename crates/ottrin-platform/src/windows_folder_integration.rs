@@ -326,9 +326,19 @@ impl Context {
     }
 }
 pub fn enable() -> Result<String, String> {
+    if super::windows_startup::is_packaged()? {
+        ottrin_shell::set_enabled(true)?;
+        notify_shell();
+        return Ok("Open in Ottrin enabled in Windows folder menus".into());
+    }
     Context::current().enable(&super::application_launch_path()?)
 }
 pub fn disable() -> Result<String, String> {
+    if super::windows_startup::is_packaged()? {
+        ottrin_shell::set_enabled(false)?;
+        notify_shell();
+        return Ok("Open in Ottrin hidden from Windows folder menus".into());
+    }
     Context::current().disable()
 }
 pub fn enable_default() -> Result<String, String> {
@@ -338,6 +348,19 @@ pub fn disable_default() -> Result<String, String> {
     Context::current().set_default(&super::application_launch_path()?, false)
 }
 pub fn status() -> FolderStatus {
+    match super::windows_startup::is_packaged() {
+        Ok(true) => return packaged_status(),
+        Ok(false) => {}
+        Err(detail) => {
+            return FolderStatus {
+                enabled: true,
+                ready: false,
+                detail,
+                default_enabled: false,
+                default_ready: false,
+            };
+        }
+    }
     let context = Context::current();
     let check = (|| {
         let tx = Transaction::new()?;
@@ -396,6 +419,40 @@ pub fn status() -> FolderStatus {
             enabled: true,
             ready: false,
             detail: error,
+            default_enabled: false,
+            default_ready: false,
+        },
+    }
+}
+
+fn packaged_status() -> FolderStatus {
+    let state = ottrin_shell::enabled().and_then(|enabled| {
+        let library = ottrin_shell::package_directory()?.join("bin/ottrin_shell.dll");
+        if !library.is_file() {
+            return Err(
+                "Ottrin's packaged folder command is missing; reinstall this package".into(),
+            );
+        }
+        Ok(enabled)
+    });
+    match state {
+        Ok(enabled) => FolderStatus {
+            enabled,
+            ready: enabled,
+            detail: if enabled {
+                "Enabled — Open in Ottrin is available in folder menus"
+            } else {
+                "Off — Open in Ottrin is hidden from folder menus"
+            }
+            .into(),
+            // Package-owned context commands do not change host folder defaults.
+            default_enabled: false,
+            default_ready: false,
+        },
+        Err(detail) => FolderStatus {
+            enabled: true,
+            ready: false,
+            detail,
             default_enabled: false,
             default_ready: false,
         },

@@ -3372,6 +3372,7 @@ dependencies = [
  "libc",
  "opener",
  "ottrin-core",
+ "ottrin-shell",
  "percent-encoding",
  "rustix 0.38.44",
  "same-file",
@@ -3442,6 +3443,16 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "walkdir",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "ottrin-shell"
+version = "0.1.0"
+dependencies = [
+ "tempfile",
+ "windows 0.58.0",
+ "windows-core 0.58.0",
  "windows-sys 0.61.2",
 ]
 

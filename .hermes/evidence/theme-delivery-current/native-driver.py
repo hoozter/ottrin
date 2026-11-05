@@ -54,7 +54,7 @@ def nsis_input(stage):
   assert stage==r/'.hermes/packaging-tmp/.windows-picker-stage'==Path(build['stage'])
   assert build['status'].startswith('portable and NSIS build pass') and accepted['status']=='pass within host archive/content scope'
   assert accepted['source_revision']==build['source_revision'] and accepted['artifacts']==build['artifacts']
-  revision=build['source_revision'];artifacts=build['artifacts'];payload=json.loads((e.parent/'PAYLOAD.json').read_text());assert len(payload)==accepted['payload_files']==58
+  revision=build['source_revision'];artifacts=build['artifacts'];payload=json.loads((e.parent/'PAYLOAD.json').read_text());assert len(payload)==accepted['payload_files']==59
  return revision,artifacts,payload
 assert name not in virsh('list','--all','--name').splitlines()
 if not args.use_stock_base and not args.office_installed:
@@ -221,7 +221,7 @@ with ExitStack() as stack:
   transport_expected={'title':'Ottrin \u2014 Selection proof','text':'\u00c5\u00e4\u00f6 \u6587 \U0001f680','path':'C:\\Native\u00c5\\\u6587\U0001f680.txt'}
   (fixture/'transport.json').write_text(json.dumps(transport_expected,ensure_ascii=False),encoding='utf-8');iso_inputs=[fixture/'transport.json'];save('TRANSPORT_INPUT.json',transport_expected)
  elif args.native_test:
-  executable=args.native_test.resolve();assert executable.parent in [r/'target/x86_64-pc-windows-gnu/release/deps',r/'target/x86_64-pc-windows-gnu/debug/deps'] and re.fullmatch(r'ottrin_(ui|search|core|platform|preview)-[0-9a-f]{16}\.exe',executable.name)
+  executable=args.native_test.resolve();assert executable.parent in [r/'target/x86_64-pc-windows-gnu/release/deps',r/'target/x86_64-pc-windows-gnu/debug/deps'] and re.fullmatch(r'ottrin_(ui|search|core|platform|preview|shell)-[0-9a-f]{16}\.exe',executable.name)
   with executable.open('rb') as file:digest=hashlib.file_digest(file,'sha256').hexdigest()
   os.link(executable,fixture/'native-test.exe');iso_inputs=[fixture/'native-test.exe'];save('INPUT.json',{'executable':str(executable),'sha256':digest,'test_filter':args.test_filter,'exact':not bool(args.native_helper),'expected_pass_count':5 if args.native_helper else 1,'cargo_output_directory':executable.parent.parent.name})
   if args.native_helper:
