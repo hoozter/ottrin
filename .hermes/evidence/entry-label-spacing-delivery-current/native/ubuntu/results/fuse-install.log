@@ -1,0 +1,74 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libxcb-shape0 libxv1 libxxf86dga1
+Suggested packages:
+  mesa-utils
+Recommended packages:
+  luit
+The following NEW packages will be installed:
+  libfuse2t64 libxcb-shape0 libxv1 libxxf86dga1 x11-utils
+0 upgraded, 5 newly installed, 0 to remove and 77 not upgraded.
+Need to get 307 kB of archives.
+After this operation, 1105 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/universe amd64 libfuse2t64 amd64 2.9.9-8.1build1 [89.9 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 libxcb-shape0 amd64 1.15-1ubuntu2 [6100 B]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 libxv1 amd64 2:1.0.11-1.1build1 [10.7 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/main amd64 libxxf86dga1 amd64 2:1.1.5-1build1 [11.6 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/main amd64 x11-utils amd64 7.7+6build2 [189 kB]
+Fetched 307 kB in 0s (1374 kB/s)
+Selecting previously unselected package libfuse2t64:amd64.
+(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 91475 files and directories currently installed.)
+Preparing to unpack .../libfuse2t64_2.9.9-8.1build1_amd64.deb ...
+Unpacking libfuse2t64:amd64 (2.9.9-8.1build1) ...
+Selecting previously unselected package libxcb-shape0:amd64.
+Preparing to unpack .../libxcb-shape0_1.15-1ubuntu2_amd64.deb ...
+Unpacking libxcb-shape0:amd64 (1.15-1ubuntu2) ...
+Selecting previously unselected package libxv1:amd64.
+Preparing to unpack .../libxv1_2%3a1.0.11-1.1build1_amd64.deb ...
+Unpacking libxv1:amd64 (2:1.0.11-1.1build1) ...
+Selecting previously unselected package libxxf86dga1:amd64.
+Preparing to unpack .../libxxf86dga1_2%3a1.1.5-1build1_amd64.deb ...
+Unpacking libxxf86dga1:amd64 (2:1.1.5-1build1) ...
+Selecting previously unselected package x11-utils.
+Preparing to unpack .../x11-utils_7.7+6build2_amd64.deb ...
+Unpacking x11-utils (7.7+6build2) ...
+Setting up libxcb-shape0:amd64 (1.15-1ubuntu2) ...
+Setting up libxxf86dga1:amd64 (2:1.1.5-1build1) ...
+Setting up libxv1:amd64 (2:1.0.11-1.1build1) ...
+Setting up x11-utils (7.7+6build2) ...
+Setting up libfuse2t64:amd64 (2.9.9-8.1build1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.

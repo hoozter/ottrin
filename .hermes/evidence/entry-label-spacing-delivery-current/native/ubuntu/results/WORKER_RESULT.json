@@ -1,0 +1,192 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "theme": "Dark",
+      "mode": "Miller",
+      "density": 0.75,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "miller-dark-0.75-1.0.png",
+      "row_height": 23
+    },
+    {
+      "theme": "Dark",
+      "mode": "Miller",
+      "density": 1.85,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "miller-dark-1.85-1.0.png",
+      "row_height": 34
+    },
+    {
+      "theme": "Dark",
+      "mode": "Miller",
+      "density": 1.85,
+      "backend_scale": 1.5,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "miller-dark-1.85-1.5.png",
+      "row_height": 51
+    },
+    {
+      "theme": "Dark",
+      "mode": "List",
+      "density": 0.75,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "list-dark-0.75-1.0.png",
+      "row_height": 26
+    },
+    {
+      "theme": "Dark",
+      "mode": "List",
+      "density": 1.85,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "list-dark-1.85-1.0.png",
+      "row_height": 36
+    },
+    {
+      "theme": "Dark",
+      "mode": "List",
+      "density": 1.85,
+      "backend_scale": 1.5,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "list-dark-1.85-1.5.png",
+      "row_height": 54
+    },
+    {
+      "theme": "Dark",
+      "mode": "List",
+      "density": 1.85,
+      "backend_scale": 1.0,
+      "thumbnails": true,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "thumbnails-dark.png"
+    },
+    {
+      "theme": "Light",
+      "mode": "Miller",
+      "density": 0.75,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "miller-light-0.75-1.0.png",
+      "row_height": 23
+    },
+    {
+      "theme": "Light",
+      "mode": "Miller",
+      "density": 1.85,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "miller-light-1.85-1.0.png",
+      "row_height": 34
+    },
+    {
+      "theme": "Light",
+      "mode": "Miller",
+      "density": 1.85,
+      "backend_scale": 1.5,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "miller-light-1.85-1.5.png",
+      "row_height": 51
+    },
+    {
+      "theme": "Light",
+      "mode": "List",
+      "density": 0.75,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "list-light-0.75-1.0.png",
+      "row_height": 26
+    },
+    {
+      "theme": "Light",
+      "mode": "List",
+      "density": 1.85,
+      "backend_scale": 1.0,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "list-light-1.85-1.0.png",
+      "row_height": 36
+    },
+    {
+      "theme": "Light",
+      "mode": "List",
+      "density": 1.85,
+      "backend_scale": 1.5,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "list-light-1.85-1.5.png",
+      "row_height": 54
+    },
+    {
+      "theme": "Light",
+      "mode": "List",
+      "density": 1.85,
+      "backend_scale": 1.0,
+      "thumbnails": true,
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "thumbnails-light.png"
+    }
+  ],
+  "footer_samples": [
+    {
+      "seconds": 0.08738260900000228,
+      "visible_items": 4,
+      "index_total": 5
+    },
+    {
+      "seconds": 2.094805034999993,
+      "visible_items": 4,
+      "index_total": 5
+    },
+    {
+      "seconds": 10.092098332999996,
+      "visible_items": 4,
+      "index_total": 5
+    }
+  ],
+  "services": [
+    {
+      "theme": "Dark",
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "services-dark.png"
+    },
+    {
+      "theme": "Light",
+      "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+      "capture": "services-light.png"
+    }
+  ],
+  "service_install": "Ottrin index service configured; automatic startup is enabled.\n",
+  "initial_index": {
+    "status": "Ready",
+    "loading_saved_snapshot": false,
+    "database_bytes": 28672,
+    "wal_bytes": 0,
+    "freelist_pages": 0,
+    "freelist_bytes": 0,
+    "snapshot_revision": 1,
+    "detail": "Ready \u00b7 5 indexed",
+    "indexed_items": 5,
+    "last_completed_indexed_items": 5,
+    "estimated_total_items": null,
+    "last_indexed_path": "/home/ottrinqa/fixtures/02-preview.png",
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "watcher_last_setup_unix_secs": 1793853074,
+    "watcher_last_error": null,
+    "active_root": null,
+    "active_root_index": 0,
+    "total_roots": 1,
+    "last_scan_started_unix_secs": 1793853074,
+    "last_scan_completed_unix_secs": 1793853074,
+    "last_scan_duration_ms": null,
+    "last_progress_unix_secs": 1793853074,
+    "last_error": null
+  },
+  "database_identity_preserved": true,
+  "running_pid_preserved": "4688",
+  "daemon_ready_after_normal_close": true,
+  "scope": "Actual AppImage/FUSE in owned software-X11 guest; changed visual behavior only. Original captures require direct review; no full interface/platform acceptance."
+}

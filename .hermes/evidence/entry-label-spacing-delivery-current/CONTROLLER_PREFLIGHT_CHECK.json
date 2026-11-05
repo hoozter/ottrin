@@ -1,0 +1,7 @@
+{
+  "status": "pass missing interactive input rejected before output or VM allocation",
+  "exitcode": 1,
+  "error": "AssertionError: Missing owned interactive controller: /home/campbell/Projects/Ottrin/.hermes/evidence/entry-label-spacing-delivery-current/missing-controller-check/privacy-control.py",
+  "output_created": false,
+  "driver_sha256": "79e6884f5998797d16ce8112e687b0069aafd4c4a54516276cf4ff232ee8b112"
+}

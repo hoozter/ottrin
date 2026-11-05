@@ -1,0 +1,210 @@
+{
+  "status": "pass",
+  "package_source": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "worker": {
+    "status": "pass",
+    "cases": [
+      {
+        "theme": "Dark",
+        "mode": "Miller",
+        "density": 0.75,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "miller-dark-0.75-1.0.png",
+        "row_height": 23
+      },
+      {
+        "theme": "Dark",
+        "mode": "Miller",
+        "density": 1.85,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "miller-dark-1.85-1.0.png",
+        "row_height": 34
+      },
+      {
+        "theme": "Dark",
+        "mode": "Miller",
+        "density": 1.85,
+        "backend_scale": 1.5,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "miller-dark-1.85-1.5.png",
+        "row_height": 51
+      },
+      {
+        "theme": "Dark",
+        "mode": "List",
+        "density": 0.75,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "list-dark-0.75-1.0.png",
+        "row_height": 26
+      },
+      {
+        "theme": "Dark",
+        "mode": "List",
+        "density": 1.85,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "list-dark-1.85-1.0.png",
+        "row_height": 36
+      },
+      {
+        "theme": "Dark",
+        "mode": "List",
+        "density": 1.85,
+        "backend_scale": 1.5,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "list-dark-1.85-1.5.png",
+        "row_height": 54
+      },
+      {
+        "theme": "Dark",
+        "mode": "List",
+        "density": 1.85,
+        "backend_scale": 1.0,
+        "thumbnails": true,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "thumbnails-dark.png"
+      },
+      {
+        "theme": "Light",
+        "mode": "Miller",
+        "density": 0.75,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "miller-light-0.75-1.0.png",
+        "row_height": 23
+      },
+      {
+        "theme": "Light",
+        "mode": "Miller",
+        "density": 1.85,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "miller-light-1.85-1.0.png",
+        "row_height": 34
+      },
+      {
+        "theme": "Light",
+        "mode": "Miller",
+        "density": 1.85,
+        "backend_scale": 1.5,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "miller-light-1.85-1.5.png",
+        "row_height": 51
+      },
+      {
+        "theme": "Light",
+        "mode": "List",
+        "density": 0.75,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "list-light-0.75-1.0.png",
+        "row_height": 26
+      },
+      {
+        "theme": "Light",
+        "mode": "List",
+        "density": 1.85,
+        "backend_scale": 1.0,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "list-light-1.85-1.0.png",
+        "row_height": 36
+      },
+      {
+        "theme": "Light",
+        "mode": "List",
+        "density": 1.85,
+        "backend_scale": 1.5,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "list-light-1.85-1.5.png",
+        "row_height": 54
+      },
+      {
+        "theme": "Light",
+        "mode": "List",
+        "density": 1.85,
+        "backend_scale": 1.0,
+        "thumbnails": true,
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "thumbnails-light.png"
+      }
+    ],
+    "footer_samples": [
+      {
+        "seconds": 0.08738260900000228,
+        "visible_items": 4,
+        "index_total": 5
+      },
+      {
+        "seconds": 2.094805034999993,
+        "visible_items": 4,
+        "index_total": 5
+      },
+      {
+        "seconds": 10.092098332999996,
+        "visible_items": 4,
+        "index_total": 5
+      }
+    ],
+    "services": [
+      {
+        "theme": "Dark",
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "services-dark.png"
+      },
+      {
+        "theme": "Light",
+        "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+        "capture": "services-light.png"
+      }
+    ],
+    "service_install": "Ottrin index service configured; automatic startup is enabled.\n",
+    "initial_index": {
+      "status": "Ready",
+      "loading_saved_snapshot": false,
+      "database_bytes": 28672,
+      "wal_bytes": 0,
+      "freelist_pages": 0,
+      "freelist_bytes": 0,
+      "snapshot_revision": 1,
+      "detail": "Ready \u00b7 5 indexed",
+      "indexed_items": 5,
+      "last_completed_indexed_items": 5,
+      "estimated_total_items": null,
+      "last_indexed_path": "/home/ottrinqa/fixtures/02-preview.png",
+      "configured_root_count": 1,
+      "watched_root_count": 1,
+      "watcher_ready": true,
+      "watcher_last_setup_unix_secs": 1793853074,
+      "watcher_last_error": null,
+      "active_root": null,
+      "active_root_index": 0,
+      "total_roots": 1,
+      "last_scan_started_unix_secs": 1793853074,
+      "last_scan_completed_unix_secs": 1793853074,
+      "last_scan_duration_ms": null,
+      "last_progress_unix_secs": 1793853074,
+      "last_error": null
+    },
+    "database_identity_preserved": true,
+    "running_pid_preserved": "4688",
+    "daemon_ready_after_normal_close": true,
+    "scope": "Actual AppImage/FUSE in owned software-X11 guest; changed visual behavior only. Original captures require direct review; no full interface/platform acceptance."
+  },
+  "appimage_input": {
+    "name": "Ottrin-0.1.0-x86_64.AppImage",
+    "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+    "sha256": "7c6326a4d4b80bc0e18c4dc3a03ddfada241397e246572c6a834c3cd0178032a",
+    "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+    "daemon_sha256": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3"
+  },
+  "original_fixture_hashes": {
+    "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt": "8eb2afb01e37cda3b844f078d745164d46af7397ddb05d76b777b5aa7eab078c",
+    "01-iiiiiiiiiiiiiiiiiiii.txt": "3f3b9c46c69d5c4fb524b00806f485d6b3a21328db5cedb6163225e01fefae61",
+    "02-preview.png": "6954a99f2dc7b02cb4906f98cc9d4dc9e8b2922a44b5e5d4659cdc6fab4e67b3",
+    "03-folder-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW/nested.txt": "a59fca8fb65331470f54cf9656b84f573946f5b0af47d0f8a649f59c41f3c353"
+  },
+  "sources_preserved": true
+}

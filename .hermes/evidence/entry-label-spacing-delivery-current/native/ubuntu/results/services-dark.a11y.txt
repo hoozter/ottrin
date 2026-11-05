@@ -1,0 +1,145 @@
+frame | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+push button | Manage administrator helper
+push button | Manage index service
+push button | Show hidden files
+push button | Show command bar
+label | 4 items
+image | 
+label | fixtures
+unknown | 
+push button | New tab
+push button | Close window
+push button | Maximize or restore window
+push button | Minimize window
+push button | Back
+push button | Forward
+push button | Parent folder
+push button | Menu
+push button | Switch to List view
+push button | View Options
+push button | Open /
+label | ›
+push button | Open /home
+label | ›
+push button | Open /home/ottrinqa
+label | ›
+push button | Open /home/ottrinqa/fixtures
+unknown | 
+panel | 
+push button | Expand locations rail
+push button | Home · /home/ottrinqa
+push button | Root · /
+label | Sort
+combo box | 
+push button | A-Z
+push button | 
+label | 100%
+push button | Reset current view size
+unknown | 
+toggle button | bin.usr-is-merged
+toggle button | boot
+toggle button | dev
+toggle button | etc
+toggle button | home
+toggle button | lib.usr-is-merged
+toggle button | lost+found
+toggle button | media
+toggle button | mnt
+toggle button | opt
+toggle button | proc
+toggle button | root
+toggle button | run
+toggle button | sbin.usr-is-merged
+toggle button | snap
+toggle button | srv
+toggle button | sys
+toggle button | tmp
+toggle button | usr
+toggle button | var
+toggle button | bin
+toggle button | lib
+toggle button | lib64
+toggle button | sbin
+unknown | 
+unknown | 
+unknown | 
+toggle button | ottrinqa
+unknown | 
+toggle button | __pycache__
+toggle button | fixtures
+toggle button | results
+toggle button | actor.py
+toggle button | APPIMAGE_INPUT.json
+toggle button | candidate.deb
+toggle button | linux-desktop-qa.py
+toggle button | Ottrin-0.1.0-x86_64.AppImage
+toggle button | portable.tar.gz
+toggle button | portal-probe.py
+toggle button | worker.py
+unknown | 
+toggle button | 03-folder-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+toggle button | 00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt
+toggle button | 01-iiiiiiiiiiiiiiiiiiii.txt
+toggle button | 02-preview.png
+unknown | 
+unknown | 
+unknown | 
+toggle button | Show or hide info panel
+toggle button | Show or hide drop-folder panel
+toggle button | Toggle Search
+toggle button | Show or hide Activity
+toggle button | Show or hide Trash
+frame | 
+push button | Close window
+label |  Settings
+label | Preferences
+radio button | General
+radio button | Appearance
+radio button | Files
+radio button | Services
+label | Search
+radio button | Search
+radio button | Cache
+label | Services
+label | Set up and manage Ottrin's optional system integration.
+label | Administrator helper
+label | Installed and ready
+label | Lets Ottrin request administrator permission when a file operation needs it. Setup requires your administrator password.
+label | Setup also installs the HTML preview sandbox from this package.
+push button | Update / reinstall helper
+label | HTML preview sandbox
+label | Install a supported system Chrome or Chromium browser
+label | Uses your system browser to render offline HTML with isolated files, no network and a time/memory limit. System setup requires administrator permission once.
+push button | Set up HTML sandbox
+label | Background index service
+label | Running — index ready
+label | Automatic startup at sign-in: On
+label | The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version.
+label | Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index.
+check box | Start index automatically at sign-in
+label | Controls the next sign-in. Use Start / restart or Stop indexing to change what is running now.
+push button | Update / reinstall service
+push button | Start / restart
+push button | Stop indexing
+push button | Uninstall service
+push button | Refresh status
+label | Desktop integration
+label | Application file dialogs
+label | Use Ottrin's themed picker in applications that support the Linux desktop portal. Other desktop integrations keep their existing providers.
+label | One-time desktop registration may request administrator permission. Ottrin opens a window only when a file dialog is requested.
+label | Off — applications use your desktop's file picker
+push button | Enable Ottrin picker
+push button | Apply pending change
+push button | Refresh status
+label | Folder opening
+label | Choose Ottrin for directory links, Show in folder and Properties requests. Ottrin opens a window only when requested. An already-running desktop file manager keeps its reveal service until it exits.
+label | Off — your desktop keeps its current folder handler
+push button | Use Ottrin for folders
+push button | Refresh status
+unknown | 
+unknown | 

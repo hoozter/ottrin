@@ -1,0 +1,46 @@
+{
+  "status": "pass scoped current Linux row/thumbnail/footer/status appearance",
+  "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "appimage_input": {
+    "name": "Ottrin-0.1.0-x86_64.AppImage",
+    "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+    "sha256": "7c6326a4d4b80bc0e18c4dc3a03ddfada241397e246572c6a834c3cd0178032a",
+    "gui_sha256": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+    "daemon_sha256": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3"
+  },
+  "original_captures_directly_reviewed": {
+    "miller-dark-0.75-1.0.png": "941594f5326c50489ab2b623bf93c037623a7c54188f4b256b28370706c961de",
+    "miller-dark-1.85-1.0.png": "757148939162e0d58a80b9974d4af49df44cdbf946a457b3fc9bc4cb129b5047",
+    "miller-dark-1.85-1.5.png": "479d4a0f8c3de2f75f09882e0a90e7117863c192f6087678ce76ac4b056c8cdc",
+    "list-dark-0.75-1.0.png": "7949b4b93fcf8d273a159dcf94d61d10cccb8727ef9e983962ac61ae03d8ea5c",
+    "list-dark-1.85-1.0.png": "fa62a99600874c2442e206b9a36ef7790ca366bb162468b5b8c7ca3477abbe84",
+    "list-dark-1.85-1.5.png": "71f156fdd3ecebd2aa07ca5624f6b38f561c5bf638b5d537e44e714cc929fff6",
+    "thumbnails-dark.png": "22c548d4bf7accccd387bb79f4a092e361eb5af24b5d3854eb5e22bc6c313d38",
+    "miller-light-0.75-1.0.png": "d2e0cded9ec69ac37364485751c7d8cfbf608d94682749b6cb64a17b76b094a9",
+    "miller-light-1.85-1.0.png": "d6451830483b087779552421ceec1fa1efc98d5976ebcb5013ba2fe4835c88cf",
+    "miller-light-1.85-1.5.png": "0a04186a8b4a9ad0df1e3952c41999b241fd08f960e859e1c79edea341f450e7",
+    "list-light-0.75-1.0.png": "aad975de9aaa135492f53aa50ca49e54f2a3e3bad909e371be9349d9f05b4b46",
+    "list-light-1.85-1.0.png": "d160de909edc2ebf99cd3318f294534d0817972f54d087ac67a2ae6f9081c74d",
+    "list-light-1.85-1.5.png": "4f6b2b3717bd38882b5bcbbb9afbbabb2f1abd33c8d2c6d969e6b21b8416fb4d",
+    "thumbnails-light.png": "e3cc7615c4c19c6ceb0bd1295416a5579f92fd15d5ef1f159ed16494c3cf5f65",
+    "services-dark.png": "9188cfa6cc9ded478f6243ed905ace495aee294ff7e2e26036c22f328d85410e",
+    "services-light.png": "a85fa3d6d37b59faf92ad988c05df63bac7dc8ee8a93e0015c1af2477acaf324"
+  },
+  "review_receipt": ".hermes/evidence/entry-label-spacing-delivery-current/LINUX_CAPTURE_REVIEW.json",
+  "worker_result_sha256": "b5dcdab067a75d091fccb84ee3bbd26d9ccbef6420b38193aae865840ad06c3e",
+  "visible_top_level_items": 4,
+  "indexed_items_including_nested_file": 5,
+  "daemon_pid_preserved": "4688",
+  "database_identity_preserved": true,
+  "sources_preserved": true,
+  "owned_domain_uuid": "20247043-3cf9-4753-a5ab-f39ccb22d295",
+  "owned_domain_and_volumes_removed": true,
+  "consumed_transport_removed": true,
+  "retired_transport_sha256": "fe2c0da3bc156799821402955e80fe55467c25179cc33d102f12e259a4819074",
+  "retired_transport_bytes": 1312850,
+  "scope": [
+    "Software X11 on owned Ubuntu guest; no physical/Wayland or full interface acceptance.",
+    "Partially visible ancestor columns at horizontal scroll edge are intentional clipping; no acceptance of unrelated navigation behavior.",
+    "No new startup-toggle/reboot, protected Copy, personal profile or sustained CPU claim."
+  ]
+}

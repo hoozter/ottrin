@@ -1,0 +1,60 @@
+frame | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+push button | Manage administrator helper
+push button | Manage index service
+push button | Show hidden files
+push button | Show command bar
+label | 4 items
+image | 
+label | fixtures
+unknown | 
+push button | New tab
+push button | Close window
+push button | Maximize or restore window
+push button | Minimize window
+push button | Back
+push button | Forward
+push button | Parent folder
+push button | Menu
+push button | Switch to Grid view
+push button | View Options
+push button | Open /
+label | ›
+push button | Open /home
+label | ›
+push button | Open /home/ottrinqa
+label | ›
+push button | Open /home/ottrinqa/fixtures
+unknown | 
+panel | 
+push button | Expand locations rail
+push button | Home · /home/ottrinqa
+push button | Root · /
+label | Sort
+combo box | 
+push button | A-Z
+label | 185%
+push button | Reset current view size
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+unknown | 
+toggle button | 03-folder-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+toggle button | 00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt
+toggle button | 01-iiiiiiiiiiiiiiiiiiii.txt
+toggle button | 02-preview.png
+unknown | 
+toggle button | Show or hide info panel
+toggle button | Show or hide drop-folder panel
+toggle button | Toggle Search
+toggle button | Show or hide Activity
+toggle button | Show or hide Trash

@@ -155,6 +155,20 @@ existing ignored test, plus native/Windows strict lint and formatting. Evidence:
 `entry-label-spacing-current/SOURCE_CHECKS.json`. These are source changes; current
 usable24af packages remain above until a new cohort passes its native gates.
 
+The replacement `b0203882` Linux and Windows ZIP/NSIS builds and host content
+checks pass. Current Linux AppImage/FUSE testing also passes its focused scope:
+all16 original Dark/Light Miller/List, thumbnail and Services frames were directly
+reviewed, including150% backend scaling. The small fixture has4 visible entries
+and5 indexed entries including its nested file; footer samples remain4 without
+input. Normal window closure preserves the Ready daemon PID and database identity.
+The Linux test VM/volumes and consumed transport archive are removed. Evidence:
+`entry-label-spacing-delivery-current/NATIVE_UI_ACCEPTANCE.json`. Current Windows
+native UI testing and MSIX20 assembly remain pending; this is not stable delivery
+or full-interface acceptance. The first Windows launch failed before guest boot
+because its console-helper input was absent; its domain/volumes were removed and
+the failure receipt retained. The corrected run supplies the helper, and the
+canonical controller now rejects this missing input before allocating a VM.
+
 The Windows Copy coordinator investigation is refreshed in
 `windows-cleanup-coordinator-current/CURRENT_FINDINGS.json`. The all-member
 metadata preparation barrier is already implemented. Restart authority still
