@@ -585,7 +585,12 @@ content-search failures: the Chocolatey feed returned HTTP504 and installed zero
 packages, but its step reported success, leaving rg missing. The shared pinned
 package provider now has an explicit CI/release bootstrap with hash checks, a real
 content probe and always-run cleanup; local Linux bootstrap/refusal checks pass,
-while fresh hosted Windows verification is still required. The rejected/superseded
+while fresh hosted Windows verification is still required. Its first hosted
+bootstrap correctly stopped before tests because the checkout changed a pinned
+license notice to CRLF. A real core.autocrlf=true checkout reproduces the mismatch;
+the new license byte-preservation attribute restores the upstream hash. Hash
+validation remains mandatory. Both candidates were interrupted through registered
+teardown and their owned staging removed before this source correction. The rejected/superseded
 111MiB candidate is removed after exact artifact/checksum/provenance and consumer
 checks. Delivered Linuxc4 and Windows458 are unchanged. Build one fresh Linux and
 Windows cohort from the next verified source checkpoint, including the readable

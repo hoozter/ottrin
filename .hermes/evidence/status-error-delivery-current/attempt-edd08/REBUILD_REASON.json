@@ -1,0 +1,6 @@
+{
+  "reason": "Verified Windows CI bootstrap failure on hash-pinned license after CRLF checkout. Correct source checkout attributes and rebuild clean provenance; not an observation timeout.",
+  "owned_orchestrator_pid": 2491235,
+  "source_revision": "edd08b3f18dd053214fcbb8db2ed2d8992110a41",
+  "action": "SIGTERM registered serial producer; child/staging teardown remains authoritative in producer receipts."
+}

@@ -1,0 +1,12 @@
+{
+  "status": "build interrupted or failed; inspect each producer receipt",
+  "source_revision": "edd08b3f18dd053214fcbb8db2ed2d8992110a41",
+  "rule": "No tracked edits or commits until both builds terminate; each packager reads real Git provenance.",
+  "completed": [],
+  "stable_deliverables": "Linuxc4 / Windows458 preserved",
+  "goal": "active/incomplete",
+  "phase": "Linux",
+  "producer_pid": 2491236,
+  "error": "SystemExit(143)",
+  "producer_exit": 143
+}

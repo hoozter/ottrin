@@ -1,0 +1,10 @@
+{
+  "run": 41944274196,
+  "job": 126972478834,
+  "source_revision": "edd08b3f18dd053214fcbb8db2ed2d8992110a41",
+  "job_status": "terminal failure",
+  "full_job_log_sha256": "edf887e0134f8283b1054dccb8c69461c02e81bf8fc3f19aa46880ae35ba6e1b",
+  "full_log_consumed_and_removed": true,
+  "retained": "WINDOWS_BOOTSTRAP_FAILURE.log",
+  "finding": "Pinned Windows archive and rg.exe hashes passed; vendored source notice checksum refused. Actual core.autocrlf=true Git fixture reproduces conversion and verifies -text preserves upstream bytes. Fresh hosted setup still required."
+}

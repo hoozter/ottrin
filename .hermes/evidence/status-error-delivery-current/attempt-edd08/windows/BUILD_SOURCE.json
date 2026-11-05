@@ -1,0 +1,13 @@
+{
+  "source_revision": "edd08b3f18dd053214fcbb8db2ed2d8992110a41",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "scope": "Readable Services startup errors and all committed caption/footer/transport/UI corrections; Windows also includes the natively verified metadata preparation barrier. Full roadmap remains incomplete.",
+  "pending_consumers": [
+    "Production content/provenance verification",
+    "Actual package GUI/status/caption checks",
+    "Changed-daemon runtime checks",
+    "Exact-source hosted CI",
+    "Guarded stable-path delivery"
+  ],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/status-error-delivery-current/windows"
+}

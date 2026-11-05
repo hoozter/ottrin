@@ -1,0 +1,16 @@
+2026-11-05T00:52:14.7909290Z ##[group]Run bash scripts/ci/prepare-search-runtime.sh
+2026-11-05T00:52:14.7909704Z [36;1mbash scripts/ci/prepare-search-runtime.sh[0m
+2026-11-05T00:52:14.7921260Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-05T00:52:14.7921573Z env:
+2026-11-05T00:52:14.7921733Z   RUST_VERSION: 1.94.0
+2026-11-05T00:52:14.7921922Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+2026-11-05T00:52:14.7922131Z   CARGO_INCREMENTAL: 0
+2026-11-05T00:52:14.7922304Z   CARGO_TERM_COLOR: always
+2026-11-05T00:52:14.7922480Z   CACHE_ON_FAILURE: true
+2026-11-05T00:52:14.7922650Z ##[endgroup]
+2026-11-05T00:52:16.7341627Z /tmp/tmp.5a0bGytipz/archive: OK
+2026-11-05T00:52:16.9032458Z /tmp/tmp.5a0bGytipz/extract/ripgrep-15.2.0-x86_64-pc-windows-msvc/rg.exe: OK
+2026-11-05T00:52:17.5027830Z Traceback (most recent call last):
+2026-11-05T00:52:17.5069392Z   File "<stdin>", line 5, in <module>
+2026-11-05T00:52:17.5069941Z AssertionError: PCRE2-10.45-LICENCE.md
+2026-11-05T00:52:17.5863067Z ##[error]Process completed with exit code 1.

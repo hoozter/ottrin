@@ -1,0 +1,9 @@
+{
+  "status": "pass actual Git CRLF checkout regression and byte-preserving fix",
+  "without_attributes_sha256": "47d70662fffaade91c06be7356a878a92af966eb4572ec18484d6511854ebf53",
+  "with_attributes_sha256": "9cf7ac6976099a1d856826d3ef1b093bd6b84489dc6100628ac79e740cf9885a",
+  "expected_upstream_sha256": "9cf7ac6976099a1d856826d3ef1b093bd6b84489dc6100628ac79e740cf9885a",
+  "core_autocrlf": "true",
+  "scope": "Real temporary Git checkout, not a hash bypass or newline rewrite during packaging.",
+  "temporary_repository_removed": true
+}

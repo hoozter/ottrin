@@ -1,0 +1,9 @@
+{
+  "source_revision": "edd08b3f18dd053214fcbb8db2ed2d8992110a41",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "status": "failed; owned staging retired",
+  "error": "SystemExit(143)",
+  "child_exit": -15,
+  "temporary_tool_wrappers_removed": true,
+  "staging_retained_for_pending_acceptance": false
+}
