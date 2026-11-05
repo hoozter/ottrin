@@ -1,0 +1,6 @@
+{
+  "status": "exact launched source recovered",
+  "sha256": "ee3d1f1af1f7cfe9a3755d84db34b6b1d56a08d2274356b3f9eacc32d40828a8",
+  "basis": "Restore the two known post-launch edits to the unrelated interrupted-application branch from Git; reconstructed source matches launch-time cryptographic hash",
+  "scope": "No code or state inside the running controller was changed"
+}

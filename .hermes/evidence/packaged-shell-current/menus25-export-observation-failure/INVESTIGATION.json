@@ -1,0 +1,19 @@
+{
+  "status": "native functional outcomes pass; controller export failed; no visual/full-case acceptance",
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "artifact_sha256": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0",
+  "runtime_result": "RUNTIME_RESULT.json",
+  "controller_error": "RuntimeError(\"guest-exec-status failed for ottrin-msix-runtime: error: internal error: unable to execute QEMU agent command 'guest-exec-status': PID lld does not exist\")",
+  "scope": "All native contexts, actual login and ordinary COM removal are present in terminal result, but complete originals were lost during large command-output archive export. Do not invent visual review or promote this as complete acceptance.",
+  "next_controller": "Bounded QGA file transfer with exact size/digest and durable export sidecar; salvage existing verified archive on interruption without replay",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/42054602533",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/42054602533/job/127339437033"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/42054602533/job/127339437327"
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/42054602533/job/127339437413"
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/42054602533/job/127339437505"
+    }
+  ],
+  "scope": "Hosted exact-source CI only; native runtime, package and full roadmap acceptance remain distinct"
+}

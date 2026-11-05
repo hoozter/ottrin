@@ -1,0 +1,11 @@
+{
+  "status": "pass bounded mechanical transfer fault checks",
+  "producer_sha256": "ee3d1f1af1f7cfe9a3755d84db34b6b1d56a08d2274356b3f9eacc32d40828a8",
+  "payload_bytes": 262400,
+  "checks": [
+    "Read advancing its handle before timeout is recovered by exact offset seek; every output byte matches",
+    "Digest mismatch fails, closes the handle and removes the partial output",
+    "No native VM, ordinary runtime, screenshot or package acceptance implied"
+  ],
+  "temporary_profile_removed": true
+}

@@ -5,7 +5,7 @@ r=Path.cwd();e=Path(__file__).resolve().parent
 read=lambda p:json.loads(p.read_text())
 def sha(p):
  with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
-a=read(e/'assembly/ASSEMBLY.json');b=read(e/'windows/BUILD_RESULT.json');owner=read(e/'assembly/OWNER.json');p=Path(b['stage'])/Path(a['artifact'].replace('\\','/')).name
+a=read(e/'assembly25/ASSEMBLY.json');b=read(e/'windows/BUILD_RESULT.json');owner=read(e/'assembly25/OWNER.json');p=Path(b['stage'])/Path(a['artifact'].replace('\\','/')).name
 assert a['status']=='pass' and a['source_revision']==b['source_revision'] and a['payload_files']==59 and a['rejected_revisions']==[-1,65536];assert sha(p)==a['artifact_sha256'].lower();assert a['provenance']['version']=='0.1.0.25' and not a['provenance']['signed'] and a['provenance']['development']
 assert a['source_script_sha256'].lower()==sha(r/'packaging/windows/package-msix.ps1')
 manifest=read(e/'PAYLOAD.json')
@@ -26,6 +26,6 @@ p.with_name(p.name+'.sha256').write_text(sha(p)+'  '+p.name+'\n');p.with_name(p.
 s=read(e/'SOURCE_INPUT.json');archive=Path(s['archive'])
 if archive.exists():
  assert sha(archive)==s['sha256'] and archive.stat().st_nlink==1 and subprocess.run(['fuser',str(archive)],capture_output=True).returncode==1
- archive.unlink();s.update(status='consumed by native MSIX25 assembly; owned source archive retired',archive_retired=True,cleanup_consumer='assembly/ASSEMBLY.json');(e/'SOURCE_INPUT.json').write_text(json.dumps(s,indent=2)+'\n')
+ archive.unlink();s.update(status='consumed by native MSIX25 assembly; owned source archive retired',archive_retired=True,cleanup_consumer='assembly25/ASSEMBLY.json');(e/'SOURCE_INPUT.json').write_text(json.dumps(s,indent=2)+'\n')
 else:
- assert s.get('archive_retired') and s.get('cleanup_consumer')=='assembly/ASSEMBLY.json', 'Missing archive without completed cleanup receipt'
+ assert s.get('archive_retired') and s.get('cleanup_consumer')=='assembly25/ASSEMBLY.json', 'Missing archive without completed cleanup receipt'

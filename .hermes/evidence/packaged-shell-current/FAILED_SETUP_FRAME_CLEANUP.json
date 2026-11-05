@@ -1,0 +1,36 @@
+{
+  "status": "Completed failed-run setup frames retired",
+  "removed": [
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25-metadata-eof-failure/desktop-ready.png",
+      "bytes": 2521908,
+      "sha256": "35ea7d4beec6e12fd8f9feca416b616619c47f5a3c86298a1642e6992bedfcca",
+      "purpose_completed": "Setup-only frame; actor setup completed, original run result/recipe/privacy steps retained; no visual acceptance relied on this frame"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25-metadata-eof-failure/privacy-accepted-0.png",
+      "bytes": 9384,
+      "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496",
+      "purpose_completed": "Setup-only frame; actor setup completed, original run result/recipe/privacy steps retained; no visual acceptance relied on this frame"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25-metadata-eof-failure/privacy-accepted-1.png",
+      "bytes": 1492629,
+      "sha256": "14abd2c39c5da59e51276d4ac12ca1014ea46ebb678d69e0f5132bffb2455f8a",
+      "purpose_completed": "Setup-only frame; actor setup completed, original run result/recipe/privacy steps retained; no visual acceptance relied on this frame"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25-export-observation-failure/privacy-accepted-0.png",
+      "bytes": 9384,
+      "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496",
+      "purpose_completed": "Setup-only frame; actor setup completed, original run result/recipe/privacy steps retained; no visual acceptance relied on this frame"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25-export-observation-failure/privacy-accepted-1.png",
+      "bytes": 956753,
+      "sha256": "8b1db7fbf0747f4818aa074450c7fda6698edf45f749240937759e82810900ad",
+      "purpose_completed": "Setup-only frame; actor setup completed, original run result/recipe/privacy steps retained; no visual acceptance relied on this frame"
+    }
+  ],
+  "limits": "Native functional results and controller failures remain unchanged; no absent screenshots are presented as reviewed"
+}

@@ -1,0 +1,40 @@
+{
+  "status": "pass consumed native export/setup outputs retired",
+  "removed": [
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25/RESULTS.zip",
+      "bytes": 1655630,
+      "sha256": "9bae15abd5e8ec7afa82a1c019746ab7778e40c4cae18991a2ed6257ca8257e9",
+      "replacement": "results/ exact member bytes verified"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25/desktop-ready.png",
+      "bytes": 962793,
+      "sha256": "0de0621cd33d12b22fe8b0dab8645538f22a4e2fa83c1e07dd7e80e10b3f2ec8",
+      "replacement": "Completed setup receipts; reviewed target originals retained"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25/privacy-accepted-0.png",
+      "bytes": 9384,
+      "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496",
+      "replacement": "Completed setup receipts; reviewed target originals retained"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus25/privacy-accepted-1.png",
+      "bytes": 478211,
+      "sha256": "09f3df60495ae93793473f01b444119e373fcf1d6463a4efdcc93dab16bdd8a8",
+      "replacement": "Completed setup receipts; reviewed target originals retained"
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "retained": "Exact runtime/source/transfer/capture receipts and original scoped result files"
+}

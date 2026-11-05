@@ -1,0 +1,45 @@
+{
+  "status": "Build complete; native repeat live; completed resources and ten obsolete compiler sessions removed",
+  "superseded_stage_receipt": "BASELINE24_RETIREMENT.json",
+  "native_cases_closed": [
+    "menus24-view-lookup-failure/OWNER.json",
+    "menus24/OWNER.json",
+    "sdk-drive/OWNER.json",
+    "native-unit-drive/OWNER.json",
+    "assembly25/OWNER.json",
+    "menus25-export-observation-failure/OWNER.json",
+    "menus25-metadata-eof-failure/OWNER.json",
+    "menus25-background-invocation-failure/OWNER.json"
+  ],
+  "consumed_boot_frames_removed": [
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus24-view-lookup-failure/desktop-ready.png",
+      "bytes": 964080,
+      "sha256": "5907c7f1e164e68bf8a8a99d7751656f56dda61965972d685f83329f12d4d348"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/menus24/desktop-ready.png",
+      "bytes": 2142395,
+      "sha256": "bdbd21c1f4afd3b70e96555c5ff71cf15d24a86fe737b2e3438833dca5fb192b"
+    }
+  ],
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Exact8e verified59-file current Windows candidate",
+      "consumer": "Fresh25 native contexts,24-to25 update, current NSIS Services UI and stable publication"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous24.msix",
+      "purpose": "Exact accepted24 input",
+      "consumer": "Pending24-to25 enabled-command update"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu",
+      "purpose": "Shared compiler output/cache; current binaries and newest finalized incremental sessions",
+      "consumer": "Future dependency-ready builds; ten superseded sessions already retired"
+    }
+  ],
+  "incremental_cleanup": "DRIVE_INCREMENTAL_CLEANUP.json",
+  "active_native_case": "menus25/OWNER.json; session40355"
+}

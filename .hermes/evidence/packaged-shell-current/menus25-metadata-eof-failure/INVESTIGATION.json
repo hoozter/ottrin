@@ -1,0 +1,15 @@
+{
+  "status": "Native functional pass; screenshot export not accepted",
+  "cause": "QGA short read returned complete small JSON without eof until the following empty read; controller incorrectly required eof on first read",
+  "scope": "No screenshot review or complete acceptance; native result retains exact functional scope",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

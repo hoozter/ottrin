@@ -12,8 +12,8 @@
     "freelist_pages": 1,
     "indexed_items": 1000,
     "last_completed_indexed_items": 1000,
-    "last_progress_unix_secs": 1793889282,
-    "last_scan_completed_unix_secs": 1793889282,
+    "last_progress_unix_secs": 1793896895,
+    "last_scan_completed_unix_secs": 1793896895,
     "last_scan_duration_ms": null,
     "last_scan_started_unix_secs": null,
     "snapshot_revision": 1,
@@ -27,8 +27,8 @@
   "protocol_shutdowns": 2,
   "idle": {
     "no_clients_during_sample": true,
-    "seconds": 30.016774899999998,
-    "cpu_one_core_percent": 0.26027113259259577,
+    "seconds": 30.0024229,
+    "cpu_one_core_percent": 0.3645538907459371,
     "criterion_below_one_percent": true
   },
   "source_and_preferences_preserved": true,
@@ -45,10 +45,10 @@
     "freelist_pages": 0,
     "indexed_items": 1000,
     "last_completed_indexed_items": 1000,
-    "last_progress_unix_secs": 1793889240,
-    "last_scan_completed_unix_secs": 1793889240,
+    "last_progress_unix_secs": 1793896847,
+    "last_scan_completed_unix_secs": 1793896847,
     "last_scan_duration_ms": null,
-    "last_scan_started_unix_secs": 1793889239,
+    "last_scan_started_unix_secs": 1793896846,
     "snapshot_revision": 1,
     "status": "ready",
     "total_roots": 1,
@@ -57,7 +57,7 @@
     "watcher_error": null,
     "watcher_ready": true
   },
-  "binary_sha256": "91f64a71aedce93bafa2044e00b58127a3d41d6215d383fc575f5e25cd31e21f",
+  "binary_sha256": "976ee3c12ced6c284c0f5f2414bb5d7e883ba189feae487699120c2a5c584c61",
   "watcher_mutations": [
     "create",
     "rename",
@@ -65,7 +65,7 @@
   ],
   "status": "pass scoped rebuilt daemon runtime and idle sample",
   "account_sid": "S-1-5-18",
-  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
   "owned_vm_cleanup": {
     "domain_removed": true,
     "owned_volumes_removed": [

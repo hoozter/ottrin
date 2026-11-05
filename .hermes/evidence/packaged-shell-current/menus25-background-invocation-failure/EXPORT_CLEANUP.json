@@ -1,0 +1,7 @@
+{
+  "status": "Consumed verified export retired",
+  "bytes": 958852,
+  "sha256": "694560fab400912bcb9f588d4cd3c3ea8c42d895e56c0929883e306c76b15cb8",
+  "replacement": "results/ exact member bytes verified; failed native result and scoped originals retained",
+  "scope": "No successful context acceptance"
+}

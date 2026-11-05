@@ -1,9 +1,9 @@
 {
-  "status": "pass native MSIX24 assembly and59-file equality; runtime/update/login not freshly exercised; prior MSIX21 lifecycle scope retains original source/artifacts",
-  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "status": "pass native MSIX25 assembly and59-file equality; runtime/update/login not freshly exercised; prior MSIX24 lifecycle scope retains original source/artifacts",
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
   "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix",
-  "artifact_sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
-  "version": "0.1.0.24",
+  "artifact_sha256": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0",
+  "version": "0.1.0.25",
   "native_payload_files": 59,
   "rejected_revisions": [
     -1,

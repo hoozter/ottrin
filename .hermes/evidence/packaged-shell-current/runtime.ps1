@@ -205,7 +205,7 @@ public static class PackagedShellQA {
 
 function Exercise-ExplorerFolderCommand([string]$Selection,[string]$Marker,[ValidateSet('Selection','Background','Multiple','Drive')][string]$Context='Selection'){
  $result.phase='actual Explorer context '+$Context;Save $ActorStateName $result
- if(-not('OttrinContextPointer'-as[type])){Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing -TypeDefinition 'using System;using System.Runtime.InteropServices;using System.Windows.Forms;using System.Drawing;public static class OttrinContextPointer{[DllImport("user32.dll")]static extern void mouse_event(uint flags,uint x,uint y,uint data,UIntPtr extra);public static void RightClick(int x,int y){Cursor.Position=new Point(x,y);mouse_event(8,0,0,0,UIntPtr.Zero);mouse_event(16,0,0,0,UIntPtr.Zero);}public static void Capture(string path){var r=Screen.PrimaryScreen.Bounds;using(var b=new Bitmap(r.Width,r.Height))using(var g=Graphics.FromImage(b)){g.CopyFromScreen(r.Left,r.Top,0,0,b.Size);b.Save(path,System.Drawing.Imaging.ImageFormat.Png);}}}'}
+ if(-not('OttrinContextPointer'-as[type])){Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing -TypeDefinition 'using System;using System.Runtime.InteropServices;using System.Windows.Forms;using System.Drawing;public static class OttrinContextPointer{[DllImport("user32.dll")]static extern void mouse_event(uint flags,uint x,uint y,uint data,UIntPtr extra);public static void RightClick(int x,int y){Cursor.Position=new Point(x,y);mouse_event(8,0,0,0,UIntPtr.Zero);mouse_event(16,0,0,0,UIntPtr.Zero);}public static void Click(int x,int y){Cursor.Position=new Point(x,y);if(Cursor.Position.X!=x||Cursor.Position.Y!=y)throw new Exception("Owned menu row is outside desktop");System.Threading.Thread.Sleep(100);mouse_event(2,0,0,0,UIntPtr.Zero);System.Threading.Thread.Sleep(60);mouse_event(4,0,0,0,UIntPtr.Zero);}public static void Capture(string path){var r=Screen.PrimaryScreen.Bounds;using(var b=new Bitmap(r.Width,r.Height))using(var g=Graphics.FromImage(b)){g.CopyFromScreen(r.Left,r.Top,0,0,b.Size);b.Save(path,System.Drawing.Imaging.ImageFormat.Png);}}}'}
  $targets=@(@{path=$Selection;marker=$Marker});$parent=Split-Path $Selection;$second=$null
  if($Context-eq'Background'){$parent=$Selection}
  if($Context-eq'Drive'){$parent='::{20D04FE0-3AEA-1069-A2D8-08002B30309D}'}
@@ -275,7 +275,8 @@ function Exercise-ExplorerFolderCommand([string]$Selection,[string]$Marker,[Vali
   [OttrinContextPointer]::Capture((Join-Path $Root ('results\explorer-menu-'+$Context+'.png')))
   if($rows.Count-ne1){throw ('No unique physical Open in Ottrin command for '+$Context)}
   $commands=@($rows[0].Group|Where-Object {$_.Current.IsEnabled});if(-not$commands.Count){throw 'Explorer command is disabled'}
-  $commands[0].GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+  $commandBounds=$commands[0].Current.BoundingRectangle
+  [OttrinContextPointer]::Click([int]($commandBounds.Left+$commandBounds.Width/2),[int]($commandBounds.Top+$commandBounds.Height/2))
   $deadline=[DateTime]::UtcNow.AddSeconds(60);$mapped=@()
   do{
    $mains=@()
@@ -290,6 +291,11 @@ function Exercise-ExplorerFolderCommand([string]$Selection,[string]$Marker,[Vali
    foreach($target in $targets){if(@($mains|Where-Object {$_.path-ceq$target.path}).Count-gt1){throw 'Duplicate main for one selected folder'}}
    if($mains.Count-eq$targets.Count-and@($mains|Where-Object {$_.window-eq[IntPtr]::Zero}).Count-eq0){$mapped=$mains;break};Start-Sleep -Milliseconds 200
   }while([DateTime]::UtcNow-lt$deadline)
+  $observed=@(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe}|ForEach-Object {
+   $native=Get-CimInstance Win32_Process -Filter ('ProcessId='+$_.Id)
+   @{pid=$_.Id;before_invocation=($_.Id-in$before);path=$_.Path;arguments=if($native){[PackagedShellQA]::Arguments($native.CommandLine)}else{@()};main_window=[PickerNative]::Window($_.Id,'Ottrin').ToInt64()}
+  })
+  Save ('EXPLORER_PROCESSES_'+$Context) @{context=$Context;targets=$targets;observed=$observed;mapped=$mapped.Count;invocation='one physical click on unique visible enabled row; no retry'}
   if($mapped.Count-ne$targets.Count){throw 'Explorer context did not map exactly one main per target'}
   $foreground=[PickerNative]::GetForegroundWindow();$automaticForeground=@($mapped|Where-Object {$_.window-eq$foreground}).Count-eq1
   if(-not$automaticForeground){throw 'No context-launched main acquired foreground before QA input'}

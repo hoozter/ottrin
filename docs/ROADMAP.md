@@ -62,7 +62,7 @@ private profiles and consumed source/result transports were removed. The newer
 9f Windows investigation's ZIP/NSIS/payload stage is also retired after exact
 byte/ownership/consumer checks. Its retained MSIX23 input is now retired after
 verified native23-to24 upgrade acceptance (about55MiB removed). The current
-MSIX24/59-file candidate remains in the single Windows stage, pending remaining
+MSIX25/59-file candidate remains in the single Windows stage, pending remaining
 Explorer and NSIS delivery gates. Owned guests/disks/profiles and consumed
 source/result transports are removed. Stable Windows deliverables are unchanged. The first
 native geometry fixture failed before daemon suspension; a corrected fresh run
@@ -125,14 +125,31 @@ automatic foreground, clean exit0 and unchanged daemon. Six scoped originals
 were reviewed; the background menu exceeds the captured Explorer frame, so its
 complete visual layout is not accepted. Drive context fails: no command appears.
 The dedicated Drive selector belongs to desktop10 rather than desktop5.
-The corrected source adds that declaration using the same handler; host format,
-strict Windows shell/platform/UI lint, native COM/manifest contract and real SDK
-MakeAppx control pass. It has not yet reached a corrected Ottrin package or
-native drive acceptance. Source gate: `DRIVE_SOURCE_ACCEPTANCE.json`; original
-partial/failed native scope: `menus24/FINDINGS.json` in the same evidence root.
-The source fix is being rebuilt as development MSIX25. Retaining an enabled
-MSIX24 command across that update remains a required native check; the exact
-MSIX24 input is retained for it. Default folder opening for MSIX still uses the
+The corrected source `8e805d31` adds that declaration using the same handler;
+host format, strict Windows shell/platform/UI lint, native COM/manifest contract
+and real SDK MakeAppx control pass. All four hosted jobs pass in
+[run42054602533](https://github.com/hoozter/ottrin/actions/runs/42054602533).
+The current59-file ZIP/NSIS stage and actual development MSIX25 assembly pass
+exact payload identity checks. The new daemon passes private1000-file watcher,
+restart and shutdown checks; its30-second no-client idle sample is0.36% of one
+core. These are bounded fixture results, not sustained personal acceptance.
+Fresh25 now passes all three actual Explorer contexts through one physical
+click per visible command: folder background, two selected folders and the OS
+drive. Each main has the exact target, ordinary user/package identity, automatic
+foreground and clean exit; the daemon stays unchanged. Actual reboot/login
+before any Ottrin CLI and original-user COM refusal after removal also pass.
+Seven original menu/invoked-window images were directly reviewed. Exact scope:
+`MSIX_CONTEXTS_ACCEPTANCE.json`; full theme/Settings, physical graphics and
+stable Windows delivery remain separate. Native icon contrast and supplementary
+glyph findings remain open.
+The collector now transfers owned screenshots in bounded verified chunks and
+handles split metadata reads/delayed EOF. Earlier export failures retain their
+functional-only scopes; a later UIA menu invocation produced no matching main
+and remains a failed run with an unproven cause. It is not promoted by the
+subsequent physical-click pass. Source gate: `DRIVE_SOURCE_ACCEPTANCE.json`;
+original partial/failed24 scope: `menus24/FINDINGS.json` in the same evidence root.
+Retaining an enabled MSIX24 command across the25 update is now running in
+`update24to25/`; the exact MSIX24 input is retained for that consumer. Default folder opening for MSIX still uses the
 unresolved transaction path; no default-manager acceptance is claimed. Portable/NSIS keeps its existing atomic registry implementation.
 Low-contrast native light-menu icon, supplementary U+10437 font fallback and
 Settings capture/work-area limitations remain open interface findings. No full
@@ -141,6 +158,10 @@ Owned VM/volumes/desktop/portal/profile, consumed result transports and the
 completed MSIX23 input are removed. The superseded24 ZIP/NSIS/payload stage
 (241,518,507 bytes) is retired after exact identity/ownership/consumer checks;
 only its MSIX remains at `previous24.msix` for the enabled-command update.
+Ten superseded compiler-cache sessions were retired under exact locks, retaining
+the newest finalized replacements. Completed fresh25 VM/disks/desktop/profile,
+consumed export and redundant setup frames are removed; the update owns its
+separate live resources. `CURRENT_STATE.json` is the sole live case-state record.
 Compact prior24 receipts remain in `baseline24/`; current stable Windows
 packages are unchanged. Exact current receipts:
 `.hermes/evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`,

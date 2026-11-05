@@ -1,0 +1,18 @@
+{
+  "status": "failed actual background invocation; export fixed",
+  "native_status": "failed runtime or package-removal gate",
+  "observed": "One physical menu row, UIA InvokePattern call returned; no matching main observed within unchanged 60-second deadline. No per-context OS process snapshot was recorded by this recipe. Earlier fresh25 functional runs passed; cause remains unproven.",
+  "next_action": "One physical menu-row click with per-context process observations, no automatic invocation retry",
+  "reviewed_original": "results/explorer-menu-Background.png",
+  "review_scope": "Background menu visible, native icon remains low contrast. Failure-window shows initial Home main, not an invoked target. No successful context or lifecycle acceptance.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

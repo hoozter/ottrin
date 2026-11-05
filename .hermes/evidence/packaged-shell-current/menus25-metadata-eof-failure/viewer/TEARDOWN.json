@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "profile": "/var/tmp/.ottrin-picker-qa-0p6rx32i",
+  "owned_processes_reaped": [
+    {
+      "pid": 3001695,
+      "exit": 0
+    },
+    {
+      "pid": 3001698,
+      "exit": 0
+    },
+    {
+      "pid": 3001699,
+      "exit": 15
+    },
+    {
+      "pid": 3001749,
+      "exit": -15
+    }
+  ],
+  "owned_children": {
+    "stopped": [],
+    "unreadable_foreign_processes_preserved": 3
+  },
+  "owned_mounts_unmounted": [
+    "233 34 0:70 / /var/tmp/.ottrin-picker-qa-0p6rx32i/runtime/doc rw,nosuid,nodev,relatime shared:595 - fuse.portal portal rw,user_id=1000,group_id=1000"
+  ],
+  "error": "Owned metadata exceeds16KiB or is incomplete",
+  "profile_removed": true
+}

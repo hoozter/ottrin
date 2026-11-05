@@ -1,0 +1,43 @@
+{
+  "status": "pass bounded metadata EOF and size checks",
+  "producer_sha256": "787de359baed66f975dc5100e7df514b287164a62be134c23513a327b0ef7d83",
+  "checks": [
+    {
+      "case": "short-read-before-eof",
+      "bytes": 12,
+      "reads": 2,
+      "rejected": false,
+      "handle_closed": true
+    },
+    {
+      "case": "fragmented",
+      "bytes": 19,
+      "reads": 8,
+      "rejected": false,
+      "handle_closed": true
+    },
+    {
+      "case": "exact-limit",
+      "bytes": 16384,
+      "reads": 5,
+      "rejected": false,
+      "handle_closed": true
+    },
+    {
+      "case": "over-limit",
+      "bytes": 16385,
+      "reads": 5,
+      "rejected": true,
+      "handle_closed": true
+    },
+    {
+      "case": "malformed",
+      "bytes": 1,
+      "reads": 2,
+      "rejected": true,
+      "handle_closed": true
+    }
+  ],
+  "scope": "Actual helper extracted by AST, simulated QGA protocol only; native export still required",
+  "temporary_files_created": false
+}

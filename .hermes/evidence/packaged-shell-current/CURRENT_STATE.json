@@ -1,24 +1,33 @@
 {
+  "status": "Fresh MSIX25 Explorer contexts/runtime/login/removal accepted; actual enabled24-to25 update now live",
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "build_source": "windows/BUILD_SOURCE.json",
+  "producer": "windows/build-portable.py",
+  "previous_input": "previous24.msix",
+  "stable_windows": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+  "remaining": [
+    "Enabled24-to25 upgrade/native contexts/login/removal",
+    "Current NSIS Services Dark/Light UI acceptance",
+    "Guarded Windows stable delivery and broader roadmap"
+  ],
+  "ci_run": 42054602533,
+  "push_verified": true,
+  "native_case": "update24to25/OWNER.json",
+  "assembly_acceptance": "ASSEMBLY_ACCEPTANCE.json",
+  "previous_native_case": "menus25-background-invocation-failure/FINDINGS.json",
+  "native_session": 61631,
   "goal": "active/incomplete",
-  "previous_goal_turn": "progress: wrapping fix committed/pushed and real MSIX failure isolated",
-  "status": "pass current source/direct native COM and SDK schema controls; actual product package/Explorer acceptance remains open",
-  "stable_delivery": "d032 unchanged",
-  "scope": "MSIX folder context menus; default folder opening remains separate unresolved work",
-  "next": "Deliver committed Linux UI fixes through actual package gates; rebuild corrected Windows candidate and continue ordinary-user COM/Explorer/update/removal checks",
-  "native_cleanup": {
-    "domain_removed": true,
-    "owned_volumes_removed": [
-      "ottrin-native-test.qcow2",
-      "ottrin-native-test-fixture.iso"
-    ],
-    "fixture_removed": true,
-    "base_still_off": true,
-    "retained_pending_volume": null
+  "stable_delivery": {
+    "linux_source": "bee15669",
+    "linux_receipt": "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+    "windows_source": "d0320932",
+    "windows_receipt": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
   },
-  "implementation_revision": "Source snapshot bound by SOURCE_ACCEPTANCE.json source_files; corrective implementation and receipt share a commit",
-  "previous_msix": "previous23.msix",
-  "candidate_stage": ".hermes/packaging-tmp/.windows-picker-stage",
-  "baseline_retirement": "BASELINE_RETIREMENT.json",
-  "case_base_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa",
-  "sdk_schema": "SDK_SCHEMA_ACCEPTANCE.json"
+  "next": "Finish fresh25 visuals/lifecycle, retained-enabled24-to25 native update, current NSIS Services acceptance and guarded Windows delivery; broader roadmap remains open",
+  "retired_duplicate_live_state": {
+    "path": ".hermes/evidence/packaged-shell-current/ACTIVE_STATE.json",
+    "sha256": "a58edffb2b923e77a6fe22753437ce9bc0dc8828be541329420186dfc2380dce",
+    "reason": "One authoritative live state here; historical acceptance receipts retain original scopes"
+  },
+  "fresh_acceptance": "MSIX_CONTEXTS_ACCEPTANCE.json"
 }

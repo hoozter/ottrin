@@ -1,0 +1,21 @@
+{
+  "finished": "2026-11-05T16:22:56.396939+00:00",
+  "removed_sessions": 10,
+  "before": {
+    "total": 502609965056,
+    "used": 471765663744,
+    "available": 25709592576,
+    "free": 30844301312
+  },
+  "after": {
+    "total": 502609965056,
+    "used": 471800602624,
+    "available": 25674653696,
+    "free": 30809362432
+  },
+  "filesystem_free_delta": -34938880,
+  "status": "pass exact superseded Drive-build incremental session retirement",
+  "scope": "Only10 exact obsolete sessions; newest finalized session per matching crate/configuration retained; no active compiler or consumers; VM consumes packaged binary copies",
+  "filesystem_delta_limit": "Live Windows QA writes overlap this measurement; filesystem free delta is not an attribution of reclaimed cache bytes",
+  "retained_session_count": 10
+}

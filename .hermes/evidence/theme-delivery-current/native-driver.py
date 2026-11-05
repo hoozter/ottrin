@@ -102,7 +102,7 @@ if args.use_stock_base:
  for domain in virsh('list','--all','--name').splitlines():assert backing not in {x.get('file') for x in E.fromstring(virsh('dumpxml',domain)).findall('./devices/disk/source')}
 available_vm_storage=shutil.disk_usage('/var/lib/libvirt/images').free
 assert available_vm_storage>=24*1024**3, f'Owned Windows QA requires24GiB free headroom before allocation; available {available_vm_storage} bytes. Retire verified disposable output before retrying.'
-state={'domain':name,'uuid':uid,'base_domain':'ottrin-copy-cleanup-qa' if args.office_installed else None if args.use_stock_base else 'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.native_test or args.msix_runtime or args.native_msi_builder or application_case or args.native_transport_probe else str(cache),'scope':scope,'producer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+state={'domain':name,'uuid':uid,'base_domain':'ottrin-copy-cleanup-qa' if args.office_installed else None if args.use_stock_base else 'win11ltsc','base_disk':backing,'network_interfaces':0,'volumes':[],'status':'preparing','public_compiler_cache':None if args.native_test or args.msix_runtime or args.native_msi_builder or application_case or args.native_transport_probe else str(cache),'scope':scope,'producer_sha256':hashlib.sha256((e/'DRIVER_SOURCE.py').read_bytes()).hexdigest()}
 state['storage_at_start']={'available_bytes':available_vm_storage,'minimum_headroom_bytes':24*1024**3,'path':'/var/lib/libvirt/images'}
 save('OWNER.json',state)
 def backing_chain(path):
@@ -145,23 +145,75 @@ def cleanup():
   state['cleanup']={'domain_removed':True,'owned_volumes_removed':removed,'fixture_removed':True,'base_still_off':all(backing not in virsh('dumpxml',d) for d in virsh('list','--all','--name').splitlines()) if args.use_stock_base else virsh('domstate',state['base_domain'])=='shut off','retained_pending_volume':state.get('retained_pending_volume')}
  except BaseException as error:state['cleanup_error']=repr(error);raise
  finally:save('OWNER.json',state)
+def transfer_owned_guest_file(guest_path,destination,metadata,receipt_name):
+ """Download an owned producer output with retry-safe offsets and exact identity."""
+ size=metadata['bytes'];digest=metadata['sha256'].lower()
+ assert isinstance(size,int) and 0<size<=512*1024*1024 and re.fullmatch('[0-9a-f]{64}',digest)
+ handle=g.qga('guest-file-open',{'path':guest_path,'mode':'rb'});complete=False
+ try:
+  with destination.open('xb') as output:
+   while output.tell()<size:
+    offset=output.tell()
+    while True:
+     try:
+      g.qga('guest-file-seek',{'handle':handle,'offset':offset,'whence':0})
+      block=g.qga('guest-file-read',{'handle':handle,'count':min(65536,size-offset)})
+      break
+     except RuntimeError as error:
+      if not any(part in str(error).lower() for part in ['guest agent is not responding','guest agent not available','guest agent is not connected','timed out','timeout']):raise
+      assert virsh('domuuid',name)==uid and virsh('domstate',name)=='running';time.sleep(1)
+    data=base64.b64decode(block.get('buf-b64',''));assert data and len(data)==block['count'];output.write(data)
+  assert destination.stat().st_size==size
+  with destination.open('rb') as stream:assert hashlib.file_digest(stream,'sha256').hexdigest()==digest
+  complete=True
+ finally:
+  try:g.qga('guest-file-close',{'handle':handle})
+  finally:
+   if not complete:destination.unlink(missing_ok=True)
+ save(receipt_name,{'status':'pass chunked verified owned output','guest_path':guest_path,'bytes':size,'sha256':digest,'chunk_bytes':65536,'uncertain_read_recovery':'Seek to exact original offset before retry; no process restart'})
+
+def read_owned_guest_json(guest_path):
+ handle=g.qga('guest-file-open',{'path':guest_path,'mode':'rb'});data=bytearray()
+ try:
+  while True:
+   block=g.qga('guest-file-read',{'handle':handle,'count':min(4096,16385-len(data))})
+   chunk=base64.b64decode(block.get('buf-b64',''));assert len(chunk)==block['count']
+   data.extend(chunk);assert len(data)<=16384,'Owned metadata exceeds16KiB'
+   if block.get('eof'):break
+   assert chunk,'Owned metadata read made no progress without EOF'
+  return json.loads(data.decode('utf-8-sig'))
+ finally:g.qga('guest-file-close',{'handle':handle})
+
+def preserve_existing_msix_results():
+ # The export command writes this only after closing and hashing its archive.
+ # Observe that durable output; never replay an uncertain Compress-Archive call.
+ metadata=read_owned_guest_json(r'C:\OttrinOwnedMsixRuntimeResults.zip.json')
+ transfer_owned_guest_file(r'C:\OttrinOwnedMsixRuntimeResults.zip',e/'RESULTS.zip',metadata,'ARCHIVE_TRANSFER.json')
+ import zipfile
+ with zipfile.ZipFile(e/'RESULTS.zip') as archive:assert archive.testzip() is None
+ return metadata
+
 def finish(kind,error,trace):
  if error is not None and not (isinstance(error,SystemExit) and error.code==0):
   state.update(status='failed or interrupted; see retained scope and error',error=repr(error))
   # Preserve owned actor output before destroying a cancelled application case.
   # A partial/running result is diagnostic evidence, never an acceptance result.
+  if args.msix_runtime and not (e/'RESULTS.zip').exists() and 'g' in globals():
+   try:
+    metadata=preserve_existing_msix_results();state['interrupted_output']='RESULTS.zip recovered from durable export metadata; inspect native result, not controller status';save('INTERRUPTED_MSIX_EXPORT.json',metadata)
+   except BaseException as export_error:state['interrupted_export_error']=repr(export_error)
   preparation=e/'GUEST_PREPARATION.json'
   if application_case and preparation.exists() and not (e/'RESULTS.zip').exists() and callable(globals().get('ps')):
    try:
     prepared=json.loads(preparation.read_text());guest_root=prepared['root']
     assert re.fullmatch(r'C:\\WINDOWS\\TEMP\\ottrin-msi-[a-f0-9]{32}',guest_root,re.I)
     assert name in virsh('list','--all','--name').splitlines() and virsh('domuuid',name)==uid
-    code="$ErrorActionPreference='Stop';$p='"+guest_root+"\\results';if(-not(Test-Path $p)){throw 'Owned actor result directory missing'};$zip='"+guest_root+"\\interrupted-results.zip';Compress-Archive -LiteralPath $p -DestinationPath $zip;[Convert]::ToBase64String([IO.File]::ReadAllBytes($zip))"
+    code="$ErrorActionPreference='Stop';$p='"+guest_root+"\\results';if(-not(Test-Path $p)){throw 'Owned actor result directory missing'};$zip='"+guest_root+"\\interrupted-results.zip';if(Test-Path $zip){throw 'Unexpected existing interrupted transport'};Compress-Archive -LiteralPath $p -DestinationPath $zip;$f=Get-Item $zip;@{bytes=$f.Length;sha256=(Get-FileHash $zip).Hash.ToLowerInvariant()}|ConvertTo-Json -Compress"
     exported=ps(code,25)
     save('INTERRUPTED_EXPORT_PROCESS.json',{'exitcode':exported.get('exitcode'),'stderr':base64.b64decode(exported.get('err-data','')).decode('utf-8',errors='replace'),'scope':'Owned output captured on interruption; no terminal or passing native result inferred'})
     assert exported.get('exitcode')==0
-    raw=base64.b64decode(base64.b64decode(exported['out-data']).decode('utf-8-sig').strip())
-    (e/'INTERRUPTED_RESULTS.zip').write_bytes(raw)
+    metadata=json.loads(base64.b64decode(exported['out-data']).decode('utf-8-sig'))
+    transfer_owned_guest_file(guest_root+'\\interrupted-results.zip',e/'INTERRUPTED_RESULTS.zip',metadata,'INTERRUPTED_ARCHIVE_TRANSFER.json')
     state['interrupted_output']='INTERRUPTED_RESULTS.zip; inspect exact actor status before accepting any scope'
    except BaseException as export_error:state['interrupted_export_error']=repr(export_error)
   if args.prepare_updated_base and state.get('servicing_completed') and volume in state['volumes']:
@@ -546,8 +598,15 @@ with ExitStack() as stack:
    assert time.monotonic()<deadline,'Native MSIX interactive test did not finish'
    time.sleep(3)
   save('RUNTIME_RESULT.json',runtime)
-  result=ps("$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Compress-Archive 'C:\\OttrinOwnedMsixRuntime\\results\\*' 'C:\\OttrinOwnedMsixRuntimeResults.zip';[Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\\OttrinOwnedMsixRuntimeResults.zip'))",30);save('RESULT_EXPORT_PROCESS.json',result);assert result['exitcode']==0
-  (e/'RESULTS.zip').write_bytes(base64.b64decode(base64.b64decode(result['out-data']).decode().strip()))
+  export_code="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$zip='C:\\OttrinOwnedMsixRuntimeResults.zip';if(Test-Path $zip){throw 'Unexpected existing owned export'};Compress-Archive 'C:\\OttrinOwnedMsixRuntime\\results\\*' $zip;$p=Get-Item $zip;$m=@{bytes=$p.Length;sha256=(Get-FileHash $zip).Hash.ToLowerInvariant()};[IO.File]::WriteAllText(($zip+'.json'),($m|ConvertTo-Json -Compress),[Text.UTF8Encoding]::new($false));$m|ConvertTo-Json -Compress"
+  try:
+   result=ps(export_code,30);save('RESULT_EXPORT_PROCESS.json',result);assert result['exitcode']==0
+  except RuntimeError as export_error:
+   # If guest-exec observation is lost, a completed sidecar is authoritative
+   # evidence of this one export. Do not rerun its creation.
+   save('EXPORT_OBSERVATION_INTERRUPTION.json',{'pid':state['guest_pid'],'error':repr(export_error),'process_restarted':False})
+   preserve_existing_msix_results()
+  else:preserve_existing_msix_results()
   state['status']='native MSIX runtime test finished; inspect result, not assumed accepted';save('OWNER.json',state)
   raise SystemExit(0)
  if args.update_manifest or args.msix_parse_only or args.msix_stage:
@@ -640,25 +699,6 @@ with ExitStack() as stack:
  result=ps("$ErrorActionPreference='Stop';$owner=Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw|ConvertFrom-Json;Copy-Item ($owner.root+'\\results\\*') 'C:\\OttrinMsiCleanClientResults' -Recurse;Compress-Archive 'C:\\OttrinMsiCleanClientResults\\*' 'C:\\OttrinMsiCleanClientResults.zip';$p=Get-Item 'C:\\OttrinMsiCleanClientResults.zip';@{bytes=$p.Length;sha256=(Get-FileHash $p.FullName).Hash.ToLowerInvariant()}|ConvertTo-Json -Compress",30)
  assert result['exitcode']==0
  archive=json.loads(base64.b64decode(result['out-data']).decode('utf-8-sig'));assert archive['bytes']>0
- handle=g.qga('guest-file-open',{'path':r'C:\OttrinMsiCleanClientResults.zip','mode':'rb'})
- try:
-  with (e/'RESULTS.zip').open('xb') as output:
-   while output.tell()<archive['bytes']:
-    offset=output.tell()
-    while True:
-     try:
-      # An uncertain read may advance the guest handle. Seek to the same
-      # absolute offset before retrying, so no byte can be skipped or doubled.
-      g.qga('guest-file-seek',{'handle':handle,'offset':offset,'whence':0})
-      block=g.qga('guest-file-read',{'handle':handle,'count':min(65536,archive['bytes']-offset)})
-      break
-     except RuntimeError as error:
-      if not any(part in str(error).lower() for part in ['guest agent is not responding','guest agent not available','guest agent is not connected','timed out','timeout']):raise
-      assert virsh('domuuid',name)==uid and virsh('domstate',name)=='running';time.sleep(1)
-    data=base64.b64decode(block.get('buf-b64',''));assert data and len(data)==block['count'];output.write(data)
- finally:g.qga('guest-file-close',{'handle':handle})
- assert (e/'RESULTS.zip').stat().st_size==archive['bytes']
- with (e/'RESULTS.zip').open('rb') as stream:assert hashlib.file_digest(stream,'sha256').hexdigest()==archive['sha256']
- save('ARCHIVE_TRANSFER.json',{'status':'pass chunked verified owned result archive','bytes':archive['bytes'],'sha256':archive['sha256'],'chunk_bytes':65536,'uncertain_read_recovery':'Seek to exact original offset before retry; no process restart'})
+ transfer_owned_guest_file(r'C:\OttrinMsiCleanClientResults.zip',e/'RESULTS.zip',archive,'ARCHIVE_TRANSFER.json')
  state['status']='control finished; inspect exact result, not assumed pass';save('OWNER.json',state)
 print('Clean client control and owned overlay teardown finished.',flush=True)
