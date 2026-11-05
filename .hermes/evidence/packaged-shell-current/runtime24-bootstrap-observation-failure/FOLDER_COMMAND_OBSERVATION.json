@@ -1,0 +1,47 @@
+{
+  "scope": "Normalized JSON observation; original native bytes retained separately",
+  "original": "FOLDER_COMMAND.json",
+  "original_sha256": "8fa457fbd522f3e606a0ff6a02cceafb3bd52e37e77967e1e2f669433ee967fd",
+  "observation": {
+    "host_package_identity_code": 15700,
+    "title": "Open in Ottrin",
+    "status": "running",
+    "scope": "Actual ordinary-user package COM activation/visibility/invocation; real Explorer menu surface and automatic foreground behavior remain separate",
+    "actions": [
+      {
+        "com_state": 0,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 355,
+          "top": 708,
+          "height": 17
+        },
+        "enabled": true
+      },
+      {
+        "com_state": 2,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 333,
+          "top": 708,
+          "height": 17
+        },
+        "enabled": false
+      },
+      {
+        "com_state": 0,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 355,
+          "top": 708,
+          "height": 17
+        },
+        "enabled": true
+      }
+    ],
+    "icon": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin\\ottrin.exe,0",
+    "daemon_pids_before": [
+      4620
+    ]
+  }
+}

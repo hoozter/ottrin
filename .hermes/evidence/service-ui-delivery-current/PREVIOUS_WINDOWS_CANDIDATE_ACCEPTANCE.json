@@ -1,0 +1,42 @@
+{
+  "status": "pass scoped packaged Windows index error/recovery layout; full roadmap incomplete",
+  "source_commit": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "d3af3d4e146d24c1393514bc9d5796361afb5aee6219a3e8ec03497a72d5e4a7",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "d4f116532d3dff303db93aecd2b6799d0629590f069216d64ab5170c40e80180",
+    "Ottrin-0.1.0-windows-x64-development.msix": "a62e4a6bd94217239bf310a1ef927de7995f1c32448d259b71791add89519f52"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/index-error-layout-delivery-current",
+  "hosted_source": {
+    "run": 41998168676,
+    "tested_source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+    "exact_source_all_four_jobs_success": true
+  },
+  "host_content": "HOST_PAYLOAD.json",
+  "current_native_fields": ".hermes/evidence/index-error-layout-delivery-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/index-error-layout-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "native_msix": {
+    "current_assembly": ".hermes/evidence/index-error-layout-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "historical_runtime_login_removal": ".hermes/evidence/index-status-final-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "historical_enabled_disabled_updates": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json",
+    "scope": "Current22 native assembly and58-file equality plus exact same GUI in current ordinary-user NSIS error/disclosure/geometry/recovery and uninstall acceptance. MSIX21 actual ordinary runtime/startup/reboot/login/removal remains historical781 source/artifacts. Packaging unchanged and product delta is Services layout only; no fresh21-to22 upgrade or22 runtime claim."
+  },
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "source_scope": ".hermes/evidence/index-error-layout-delivery-current/WINDOWS_SOURCE_SCOPE.json",
+  "public_release_published": false,
+  "limits": [
+    "Software guest/default DPI only; no physical GPU, signing, Store or human acceptance",
+    "Six targeted Services originals directly reviewed; whole UI/theme audit remains open",
+    "Historical service-action feedback can outlive current readiness; separate service-feedback-current source fix is not in this cohort.",
+    "Current22 assembly and exact NSIS runtime; MSIX21 startup/runtime/login/removal retains original781 source/artifacts; no current22 MSIX runtime claim",
+    "Actual21 MSIX folder-integration transaction error remains independent software work",
+    "Administrator Copy coordinator/caller registry and ordinary MSI rollback remain gated"
+  ]
+}

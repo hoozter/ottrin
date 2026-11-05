@@ -1,0 +1,6 @@
+{
+  "base": ".hermes/evidence/index-error-layout-delivery-current",
+  "base_worker_sha256": "ac1ee95bbdbec922c757041e0aff02466920778f39b57ca9bb5c1353c3c65039",
+  "current_worker_sha256": "79d610d082aa5788da13e4d45549d0fe6335145b408709a948f416866e1adac1",
+  "change": "Add real Start/restart action and qualified-history/current-health assertions from source feedback check; retain all artifact, peer PID, geometry, disclosure, scroll, original-data and teardown guards"
+}

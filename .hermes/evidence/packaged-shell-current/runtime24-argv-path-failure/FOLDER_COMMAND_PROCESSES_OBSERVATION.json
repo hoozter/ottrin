@@ -1,0 +1,14 @@
+{
+  "scope": "Normalized JSON observation; original native bytes retained separately",
+  "original": "FOLDER_COMMAND_PROCESSES.json",
+  "original_sha256": "d62c1eda7d7ac8d8ba2653217af8d4ce91336a127cd0b0a70ad91ab9cc6cba28",
+  "observation": {
+    "parent": 7732,
+    "pid": 7068,
+    "arguments": [
+      "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin/ottrin.exe",
+      "--",
+      "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+    ]
+  }
+}

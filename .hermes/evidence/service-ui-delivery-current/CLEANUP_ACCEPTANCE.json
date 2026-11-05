@@ -1,0 +1,35 @@
+{
+  "status": "pass Linux task cleanup; separate Windows test resources remain explicitly owned",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "superseded_package_bytes_removed": 115883499,
+  "stage_and_retired_removed": true,
+  "linux_desktop_teardown": "native-appimage/TEARDOWN.json",
+  "superseded_incremental_sessions_removed": 10,
+  "incremental_scope": "INCREMENTAL_CLEANUP_ACCEPTANCE.json",
+  "storage_before": "STORAGE_BEFORE.txt",
+  "storage_after": "STORAGE_AFTER.txt",
+  "preserved": [
+    "Current stable packages and their accepted Windows cohort",
+    "Personal files, preferences, database and managed index startup choice",
+    "Current compiler binaries, dependencies, newest finalized per-configuration incremental caches",
+    "Protected Windows bases and retained environments"
+  ],
+  "remaining_task_storage": [
+    {
+      "path": ".hermes/evidence/service-ui-delivery-current",
+      "purpose": "Current Linux delivery producers, compact receipts, logs and actual captures; retained acceptance evidence",
+      "consumer": "Current stable Linux cohort"
+    },
+    {
+      "path": ".hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Exact bee ZIP/NSIS/59-file payload and native MSIX24 candidate",
+      "consumer": "Active packaged runtime, pending Explorer/update/NSIS delivery gates"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/previous23.msix",
+      "purpose": "Exact prior native-proven MSIX23",
+      "consumer": "Pending real23-to24 package update comparison"
+    }
+  ],
+  "windows_followup": "Fresh MSIX24 runtime completed; owned domain/volumes/desktop/portal/profile and consumed export transports removed. Accepted raw/source/capture evidence retained separately."
+}

@@ -1,0 +1,72 @@
+{
+  "status": "diagnostic only; host controller absent after session exit143",
+  "exported": [
+    {
+      "name": "ACTOR.json",
+      "sha256": "2053ecf1621cc980eae731b647450f9134fcd1b326fdee9f4982573b319daa12",
+      "bytes": 4119
+    },
+    {
+      "name": "RESULT.json",
+      "sha256": "b9a12fd04270617a2d8221aa67b247389e5f3ef482f438e4334b25a37012358a",
+      "bytes": 5956
+    },
+    {
+      "name": "FOLDER_COMMAND.json",
+      "sha256": "6fba532ca7e4f4b6de1de1c3537ac9f35a21835e9a1f8e0cd19f97846e9eb728",
+      "bytes": 2080
+    },
+    {
+      "name": "FOLDER_COMMAND_PROCESSES.json",
+      "sha256": "d62c1eda7d7ac8d8ba2653217af8d4ce91336a127cd0b0a70ad91ab9cc6cba28",
+      "bytes": 336
+    },
+    {
+      "name": "CRASH_EVENTS.json",
+      "sha256": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+      "bytes": 111
+    },
+    {
+      "name": "DEPLOYMENT.json",
+      "sha256": "7c1f1ba4783d17efccc27538435617d371ec16f8830bb6cf1b28027b03409632",
+      "bytes": 681
+    },
+    {
+      "name": "STATE_READER_SMOKE.json",
+      "sha256": "4b057b2efe55270fc411fa613f710d3cc54faf33582e25f7937d658aa875a61d",
+      "bytes": 249
+    },
+    {
+      "name": "main.png",
+      "sha256": "f7fce59178c64afac285820efa750cba657ec15d4dcd7c98972b6761112b27cd",
+      "bytes": 57750
+    },
+    {
+      "name": "focus-failure.png",
+      "sha256": "e3c09ed3212501a1c00dd635b5a03b151ec06e6bf71d42248060cf78fdea3eb8",
+      "bytes": 35543
+    },
+    {
+      "name": "msix-folder-enabled.png",
+      "sha256": "63ac1ff10c912d12bf95dbdcf9b08300dd3723ac2981dabb5e445eb3714e407c",
+      "bytes": 111024
+    },
+    {
+      "name": "msix-folder-disabled.png",
+      "sha256": "153fbd65519c7c88c8baf148047c0b7e5326e6921156e961796328ceeaa1dfd0",
+      "bytes": 109618
+    },
+    {
+      "name": "msix-startup-disabled.png",
+      "sha256": "e79ae8675befb5efaeb7d40a48669ee82fc7ecc96f55801451e4a1810c85108f",
+      "bytes": 110654
+    },
+    {
+      "name": "msix-startup-enabled.png",
+      "sha256": "8ec38f7050f6994953db38fc01ab88f1f7df6a803b83dcdf87565fc706887c2b",
+      "bytes": 110687
+    }
+  ],
+  "missing": [],
+  "scope": "Owned result files read through separate QGA file handles; no producer guest-exec handle consumed"
+}

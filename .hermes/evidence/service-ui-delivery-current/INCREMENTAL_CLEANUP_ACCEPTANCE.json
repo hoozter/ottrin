@@ -1,0 +1,11 @@
+{
+  "status": "pass exact10 superseded sessions removed with finalized replacements retained",
+  "inspected_candidates": "INCREMENTAL_CANDIDATES.json",
+  "removed_sessions": 10,
+  "initial_refusals": [
+    "Transient vanished PID2944346",
+    "Live native driver unreaped zombie child2943784; waited for registered runtime teardown before final retry"
+  ],
+  "last_helper_run_removed_sessions": 3,
+  "scope": "Earlier safe per-session deletions remain completed despite later refusal; all ten exact original paths now absent, all ten finalized replacements exist. No blanket cache deletion."
+}

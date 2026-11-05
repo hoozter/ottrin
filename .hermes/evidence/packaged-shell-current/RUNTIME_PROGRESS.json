@@ -1,0 +1,84 @@
+{
+  "status": "pass fresh ordinary runtime, direct packaged COM invocation, real reboot/login and removal preservation",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "artifact_sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
+  "version": "0.1.0.24",
+  "runtime_script_sha256": "c88204058395521331918b77c7fd9cac40a7e9c06a2fe80cc439ba4a34153665",
+  "ordinary_actor_status": "pass",
+  "folder_command": {
+    "host_package_identity_code": 15700,
+    "title": "Open in Ottrin",
+    "status": "pass native packaged COM activation, UI preference and selected-folder invocation",
+    "daemon_pids_after": [
+      3400
+    ],
+    "scope": "Actual ordinary-user package COM activation/visibility/invocation; real Explorer menu surface and automatic foreground behavior remain separate",
+    "invocation_processes": [
+      {
+        "parent": 4308,
+        "pid": 9168,
+        "arguments": [
+          "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin/ottrin.exe",
+          "--",
+          "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "com_state": 0,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 355,
+          "top": 714,
+          "height": 17
+        },
+        "enabled": true
+      },
+      {
+        "com_state": 2,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 333,
+          "top": 714,
+          "height": 17
+        },
+        "enabled": false
+      },
+      {
+        "com_state": 0,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 355,
+          "top": 714,
+          "height": 17
+        },
+        "enabled": true
+      }
+    ],
+    "icon": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin\\ottrin.exe,0",
+    "daemon_pids_before": [
+      3400
+    ],
+    "invocation": {
+      "ordinary": true,
+      "selected_folder": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+      "pid": 9168,
+      "visible_marker": "menu-invocation-proof.txt",
+      "exit": 0,
+      "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+      "capture_focus": "Explicit private QA focus; no automatic foreground acceptance"
+    }
+  },
+  "controller_phase": "terminal; all owned VM/desktop/profile resources removed",
+  "limits": [
+    "Not final lifecycle acceptance",
+    "Real Explorer menu surface, background/drive/multiselection, update and COM unregistration remain separate"
+  ],
+  "acceptance": "MSIX_RUNTIME_ACCEPTANCE.json",
+  "remaining": [
+    "Real Explorer menu surface, background/drive/multiselection",
+    "Package upgrade and ordinary-user COM unregistration",
+    "Current NSIS UI delivery acceptance; full roadmap remains active"
+  ]
+}

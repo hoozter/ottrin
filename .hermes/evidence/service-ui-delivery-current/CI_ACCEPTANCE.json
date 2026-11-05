@@ -1,0 +1,24 @@
+{
+  "status": "pass all four exact-source hosted jobs",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "run_id": 42033104462,
+  "url": "https://github.com/hoozter/ottrin/actions/runs/42033104462",
+  "jobs": [
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "conclusion": "success"
+    }
+  ]
+}

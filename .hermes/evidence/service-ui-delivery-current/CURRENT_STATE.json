@@ -1,0 +1,11 @@
+{
+  "goal": "active/incomplete",
+  "status": "Delivered verified four-format Linux cohort to stable paths; managed daemon Ready with startup/preferences/database identity preserved",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "pending": [
+    "Real Explorer/update/NSIS acceptance and full ordered roadmap"
+  ],
+  "cleanup": "All10 inspected superseded incremental sessions removed with finalized replacements retained; initial live-process gaps respected, final retry after runtime teardown succeeded.",
+  "delivery_checkpoint": "Current metadata checkpoint records completed Linux publication and separately scoped Windows runtime"
+}

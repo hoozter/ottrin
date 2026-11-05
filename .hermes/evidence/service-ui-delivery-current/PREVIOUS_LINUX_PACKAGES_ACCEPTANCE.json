@@ -1,0 +1,65 @@
+{
+  "status": "pass scoped packaged index error/recovery layout delivery; full roadmap and UI audit incomplete",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "58395eab70cce7978a2259e9dd025bb4effcb4eb60abc3b002b0e2f9d304f19d",
+    "Ottrin-0.1.0-x86_64.AppImage": "934f564133f504f8513573a6de83bb297533c631adacb761aa2769c3da824bcb",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "c3cd5c47dc93869e16d8863c21306fa4db789e3ce08a58936db9db7bc1f43ac0",
+    "ottrin_0.1.0_amd64.deb": "77c24a133d19f774e0c0372539935e3248dcc640b6f67b513af40573ea605faa"
+  },
+  "evidence": ".hermes/evidence/index-error-layout-delivery-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "runtime_sha256": {
+    "application": "9ea27e4d68b72b11b5b561b88aaa179c58d1750b28174eea11f7e13e3deec1fe",
+    "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+    "privileged_helper": "9aed6636ff29bb70ad9c804539c3994eac307c028c80d5d2d4763f46e7507cf2",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "hosted_source": {
+    "run": 41998168676,
+    "tested_source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+    "all_four_jobs_success": true
+  },
+  "native_current_ui": ".hermes/evidence/index-error-layout-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
+  "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
+  "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/index-error-layout-delivery-current/SOURCE_SCOPE.json",
+  "daemon_identity": ".hermes/evidence/index-error-layout-delivery-current/DAEMON_IDENTITY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "daemon_runtime_scope": {
+    "freshly_rerun": false,
+    "original_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "exact_current_binary_identity": true
+  },
+  "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
+  "current_helper_read_only": [
+    ".hermes/evidence/index-status-final-delivery-current/LINUX_HELPER_CAPABILITY.json",
+    ".hermes/evidence/index-status-final-delivery-current/LINUX_HELPER_STDIO.json"
+  ],
+  "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "historical_daemon_evidence": {
+    "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+    "daemon_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "native_login": ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
+    "binary_replacement": ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_ACCEPTANCE.json",
+    "freshly_rerun": false,
+    "applies_to_current_daemon_identity": false
+  },
+  "limits": [
+    "Actual mounted AppImage on owned software X11. Six targeted Dark/Light error/collapse/scroll originals directly reviewed; automated Ready/Stopped/error/Ready, stable control geometry and full diagnostic visibility pass. No whole-interface or physical graphics acceptance.",
+    "Current daemon, helper and HTML bytes exactly match previous delivered781. Their retained native runtime/wire checks keep original source scopes; no fresh idle/large-corpus, elevated Copy or personal helper authentication claim.",
+    "Native distribution installation, startup toggle, caption/footer and theme-name acceptance retain original receipt source/artifact scopes.",
+    "Historical service-action feedback can outlive current readiness; the separate service-feedback-current source fix is not in this cohort.",
+    "No public release, signing, Store or MSI acceptance.",
+    "Packaged manuals are build-time snapshots at d0320932; repository metadata records later delivery."
+  ]
+}

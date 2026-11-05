@@ -6,24 +6,27 @@ Updated 2026-11-05. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux and Windows preview uses verified source `d0320932`.
-All four exact-source hosted verification/performance jobs passed in
-[run41998168676](https://github.com/hoozter/ottrin/actions/runs/41998168676).
-This cohort delivers complete index diagnostic details after recovery controls
-in an expanded-by-default disclosure. It retains the earlier nonblocking shared
-index observation/status and kernel original-caller helper binding. It does not
-complete administrator Copy, the full theme audit or this roadmap.
+The stable local Linux packages use verified source `bee15669`; Windows remains
+on its separately accepted source `d0320932`. All four exact-source hosted jobs
+for the current Linux source passed in
+[run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462).
+The Linux cohort delivers explicitly qualified neutral action history and
+wrapped status labels, retaining complete diagnostic disclosure after recovery
+controls. Neither cohort completes administrator Copy, the full theme audit or
+this roadmap.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
-ownership checks. Actual mounted AppImage Dark/Light Ready→Stopped→real endpoint
+ownership checks. Actual mounted AppImage Dark/Light action→Stopped→real endpoint
 error→Ready checks pass, with unchanged recovery-button geometry, diagnostic
 collapse/reopen and complete-error scrolling. Six targeted originals were
 reviewed; other transition frames are automated observations, not full interface
-acceptance. Daemon/helper/HTML bytes exactly match delivered781; their retained
+acceptance. Daemon/helper/HTML bytes exactly match delivered d032; retained
 resource/wire/elevated-Copy evidence keeps its original scopes. The personal
 managed service is Ready after actual package replacement, preserving startup
 choice, exact preferences hash and database identity. Personal installed helper
-setup still requires owner OS authentication.
+setup still requires owner OS authentication. The superseded Linux cohort
+(115,883,499 bytes), retired directory and consumed Linux stage are removed.
+Evidence: `.hermes/evidence/service-ui-delivery-current/`.
 
 Windows: portable/NSIS58-file equality and a fresh ordinary-user installed case
 pass actual daemon-thread suspension→timeout→same-process recovery in both
@@ -53,7 +56,7 @@ Four originals were directly reviewed. Evidence and exact scopes:
 `.hermes/evidence/windows-folder-msix-current/MSIX_RUNTIME_ACCEPTANCE.json`.
 MSIX23 is an investigation candidate, not the stable delivered MSIX22.
 
-Both accepted cohorts are published at the stable dist paths. Superseded781
+The accepted cohorts are published at their stable dist paths. Superseded781
 packages/payloads and that delivery's staging, owned guests/disks/desktops/buses,
 private profiles and consumed source/result transports were removed. The newer
 9f Windows investigation's ZIP/NSIS/payload stage is also retired after exact
@@ -66,9 +69,8 @@ native geometry fixture failed before daemon suspension; a corrected fresh run
 passed unchanged assertions/deadlines. Compact failure evidence and its original
 failure frame remain;16 superseded failed-case captures were retired after
 replacement/source/consumer checks. Shared caches and scoped originals remain.
-Delivery authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`,
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`, and
-`.hermes/evidence/index-error-layout-delivery-current/`.
+Delivery authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Each names its exact evidence directory.
 No public release, signing, Store, MSI or full interface acceptance is implied.
 
 The new native timeout captures exposed historical green readiness feedback
@@ -79,8 +81,8 @@ all516 UI tests pass (one existing ignored), strict native/Windows UI lint passe
 and actual source GUI success→stopped→error→Ready checks pass. Four Ready/error
 originals were reviewed. Its desktop/state are removed; five obsolete incremental
 sessions (0.33GiB) were retired with current caches retained. This correction is
-not in the delivered d032 packages and still needs relevant Windows/package
-acceptance. Evidence: `.hermes/evidence/service-feedback-current/ACCEPTANCE.json`.
+now in the delivered Linux bee cohort; Windows still needs its own relevant
+package acceptance. Evidence: `.hermes/evidence/service-feedback-current/ACCEPTANCE.json`.
 
 The MSIX23 capture also reproduced a shared status-label overflow. A newer
 source correction wraps complete diagnostics and aligns the status dot to the
@@ -88,8 +90,8 @@ first line. The rendered regression fails before correction and passes at320/760
 points and1.0/1.7 font scales afterward. All517 UI tests pass (one existing
 ignored), native/Windows UI lint and release GUI build pass, and actual Linux
 source GUI recovery checks pass in Dark/Light with stable control geometry.
-Four targeted originals were reviewed; this is not native Windows wrapping or
-packaged acceptance. Exact source `8c209530` also passes all four hosted jobs in
+Four source originals were reviewed; the later Linux bee cohort adds mounted
+package acceptance. Native Windows long-diagnostic wrapping remains separate. Exact source `8c209530` also passes all four hosted jobs in
 [run42020187483](https://github.com/hoozter/ottrin/actions/runs/42020187483). Seven obsolete incremental sessions were retired (0.39GiB);
 private test processes/display/bus/profile are removed. Evidence:
 `.hermes/evidence/service-status-wrap-current/ACCEPTANCE.json`.
@@ -111,8 +113,48 @@ component regression. Actual drive-menu behavior remains required testing.
 These failed guests and the schema/component guests are removed. Prioritize
 delivery of the committed Linux UI fixes independently of remaining Windows
 package/Explorer work.
-The stable packages are unchanged. Work evidence:
-`.hermes/evidence/packaged-shell-current/`.
+Exact source `bee15669` now passes actual clean-Git MakeAppx development
+MSIX24 assembly and independent 59-file portable equality. The exact rebuilt
+Windows daemon passes private1000-file create/rename/delete watcher, restart,
+two protocol shutdowns and a30-second idle sample (0.26% of one core). This
+noninteractive assembly-account test does not prove ordinary-user startup or
+Explorer behavior. Its owned guest, volumes and consumed source archive are
+removed. The first MSIX24 ordinary-user run passes actual COM activation,
+UI visibility toggles and disabled-invocation refusal, but fails a fixture check
+that counts all new `ottrin` processes as main windows. The GUI also starts an
+`index ensure` child. A corrected native fixture requires exact OS-parsed
+selected-folder argv, one main window, and at most one exact bootstrap child
+owned by that main; it is running against the unchanged package. The failed
+run and two reviewed status originals retain their original failed scope. A
+second fixture failure captured a valid executable path with mixed separators;
+its lexical path check was corrected to Windows-normalized equality. Both
+failed guests, volumes and desktops are removed; the interrupted second host
+controller required explicit verified orphan cleanup. The current unchanged
+MSIX24 ordinary actor passes actual COM selected-folder invocation, Unicode
+folder contents, package/ordinary identity, normal close, same-daemon continuity
+and startup Off/On. Actual new-boot sign-in starts the ordinary packaged index
+before any Ottrin CLI; removal preserves preferences, database fixture and files.
+Six current Dark originals were reviewed. Settings status text fits; taskbar
+overlap at its bottom prevents whole-window visual acceptance. The supplementary
+U+10437 folder glyph is missing in the title/breadcrumb despite correct native
+UTF16 argv/navigation; font fallback remains an interface-audit item. Owned
+VM/volumes/desktop/portal/profile and consumed result transports are removed.
+Real Explorer menu surface, background/drive/multiselection, update and ordinary
+COM unregistration remain separate acceptance requirements. Exact receipt:
+`.hermes/evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`.
+Work evidence: `.hermes/evidence/packaged-shell-current/`.
+
+The same clean source has a completed four-format Linux package cohort with
+contents/runtime closure/provenance/namespace ownership checks. Actual mounted
+AppImage Dark/Light action→error→recovery checks pass: neutral, explicitly
+qualified completed-action history stays distinct from current status; controls
+retain their geometry and the full error scrolls into view. Six originals were
+reviewed. Its owned desktop, bus, processes, mounts and profile are removed.
+All four exact-source hosted jobs in
+[run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462) pass.
+Guarded stable-path publication and managed-daemon restart are complete;
+Windows stable dist remains d032. Evidence:
+`.hermes/evidence/service-ui-delivery-current/`.
 
 ### Current ordered work
 
@@ -124,7 +166,7 @@ The stable packages are unchanged. Work evidence:
    completed original batch. Native crash/restart and changed-peer/root/case/ACL
    refusals must precede enabling administrator Copy.
 2. Finish U05–U08 interface/theme consistency and property mapping. Include the
-   source-verified historical-feedback correction in the next coherent delivery.
+   historical-feedback correction now delivered on Linux; finish its Windows delivery.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid representation, miniature corner scaling,
    inspector role ownership and whole-interface alignment/grouping remain open.

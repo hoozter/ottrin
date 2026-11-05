@@ -1,0 +1,29 @@
+{
+  "status": "pass actual mounted AppImage both-theme historical action/current error/recovery scope",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "appimage_sha256": "015e3b04d9427422a545269c4424fe92ce2bbebb576e2193b69d4ada75fc357f",
+  "gui_sha256": "4ccf340f5b1bb57e0d1a721f4189ad7f2a55d4bdeb5aed1b41cd3a500dddea4a",
+  "direct_original_captures_reviewed": {
+    "Dark-ready-services.png": "be9e0451ec56eba32dcc8a46f0bfd75cfde045bbfe675326d0a3037b1e2e2789",
+    "Dark-failed-services.png": "c971954a28435070f587c4ada6ca93b37a37c8c5759119541972d80cb7439ee5",
+    "Dark-error-details-scrolled-services.png": "ab4608a310c5663b45b214e0df8ace289370931509999ce603f5996cab8d15b7",
+    "Light-ready-services.png": "85c86e96bb684985ae7f1744c7653df342dca0a5943d1deda75c30e294fe1c5c",
+    "Light-failed-services.png": "9c64e4dbfb87a15973378706dbd13a5f013eb40ddc3b371d6442398ecc33bf70",
+    "Light-error-details-scrolled-services.png": "a6215a7493d311c1faaccab7f5938506bbb7d2b43aa575096af614c20c855e0d"
+  },
+  "checks": [
+    "Real Start/restart completion is explicitly qualified history; full outcome survives later health changes",
+    "Ready/Stopped/real wrong-type endpoint error/Ready in one GUI per theme",
+    "Recovery control geometry preserved, full error expanded by default, collapse/reopen and diagnostic scrolling pass",
+    "Normal GUI close preserves owned daemon and both original files"
+  ],
+  "observations": [
+    "Historical feedback is neutral in both themes, distinct from green Ready or red Needs attention",
+    "System helper visibly needs update and HTML sandbox needs setup; no administrator setup or elevated operation was attempted"
+  ],
+  "scope": "Main configured900x600; Settings uses production default child viewport920x640. No600-high Settings, all-size, full interface/theme, distribution installation, Windows, physical GPU or personal helper authentication acceptance",
+  "cleanup": {
+    "profile_removed": true,
+    "receipt": "native-appimage/TEARDOWN.json"
+  }
+}

@@ -36,64 +36,40 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages and Windows ZIP/NSIS/development MSIX0.1.0.20
-use verified runtime `b0203882`. Exact-source
-CI41966597535 passes all four Linux/Windows verification/performance jobs.
-Linux administrator Copy supports authenticated history loading after restart,
-freshly checked Undo and confirmed cleanup. Recovered history is distinguished
-from a known completed batch; reloading a fully undone Copy shows Copy undone
-instead of a misleading error. Helper protocol3 requires updating older helpers
-through Settings → Services → Update / reinstall helper and authenticating.
-The personal system helper is not silently replaced.
+The current Linux packages use verified source `bee15669`. All four exact-source
+Linux/Windows verification and performance jobs passed in
+[run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462).
+Mounted AppImage checks in Dark and Light cover current index status, explicitly
+qualified completed-action history, recovery controls and complete diagnostic
+scrolling. Six targeted originals were reviewed. The managed personal index
+returned Ready after replacement, preserving startup choice, preferences and
+database identity. Evidence: `.hermes/evidence/service-ui-delivery-current/`.
 
-Current delivery improves file-icon/name/thumbnail spacing and keeps wide List
-filenames clear of metadata. Footer text/wordmark honor the selected theme color;
-Ready text is readable in built-in Light/Dark themes. All32 current original
-Linux/Windows UI captures were directly reviewed, including Linux150% backend
-scaling. The personal Linux daemon returned Ready with preferences, startup choice
-and database identity preserved. Its exact daemon bytes are unchanged; previous
-Linux resource/reboot/replacement receipts retain their original scopes.
-Windows MSIX20 native assembly matches all58 ZIP/NSIS payload files. Its private
-1000-file daemon probe passes watcher/restart/shutdown and measures0.47% of one
-core over30 idle seconds. This is not personal/sustained or full-interface
-acceptance. Actual MSIX19 deployment/login/removal and17-to18 updates remain
-historical; no fresh20 MSIX lifecycle claim. Evidence:
-`.hermes/evidence/entry-label-spacing-delivery-current/`.
+The accepted Windows preview remains source `d0320932`: portable ZIP, NSIS and
+unsigned development MSIX22. Installed Dark/Light Services timeout/recovery
+checks pass on that cohort. MSIX22 assembly matches its 58-file portable payload;
+its lifecycle evidence retains the earlier source and artifact scopes recorded
+in `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. A newer package-owned Explorer
+command is under native investigation, separately from this accepted preview.
+Its current status and remaining work belong in the [roadmap](docs/ROADMAP.md).
 
-Original DAC AppImage/FUSE acceptance covers helper update/cancellation, protected Copy,
-normal restart, history loading/refresh, Undo and cleanup, with independent root
-checks. DEB normal-close/two-reboot and four aa-to-DAC AppImage/portable replacement
-cases preserve startup choice, Grid preference and database identity. The mounted
-daemon's private1000-file30-second idle sample measures0.0333% of one core; this is
-not a personal/large-corpus guarantee. The managed personal daemon is Ready on the
-matching binary with exact preferences/startup/database identity preserved.
-Evidence: `.hermes/evidence/recovery-transport-delivery-current/`.
+The Linux daemon, helper and HTML renderer retain identical accepted bytes;
+their earlier resource, service and administrator-operation receipts keep their
+original scopes. An older personal helper still requires an authenticated
+**Settings → Services → Update / reinstall helper**. It is not silently replaced.
 
-The delivered caption/footer correction uses the available single-line width
-before ellipsis, including Miller rows and saved-theme names. Actual current
-AppImage review covers those surfaces in Dark/Light100/150, normal List headers,
-Grid75/100/185 and cooperating-picker cancellation. All22 successful original
-captures were directly reviewed. An installed Ready index shows1002 items without
-input in all four samples through30seconds; the rendered regression proves the one-shot footer wakeup
-and return to idle. The unchanged helper/service scopes above retain their actual
-DAC source; their matrices were not freshly rerun. Evidence:
-`.hermes/evidence/caption-footer-delivery-current/`.
-
-The subsequent Services startup-status correction says On, Off or Unavailable,
-separate from the running-index status. It preserves query errors and does not
-show an editable unchecked toggle when inspection is unavailable.250 search and
-506 UI tests, strict Linux/Windows search/UI/app lint and formatting pass. This
-source-only follow-up is not in the deliveredc4 image and still needs native/
-package acceptance. Evidence: `.hermes/evidence/login-startup-wording-current/`.
-
-Windows direct-UAC pipe transport has focused native evidence at its original
-source scope and is not yet in Windows458. Windows administrator Copy recovery,
-full theme/interface consistency, remaining supported integration gates, MSI
-rollback, physical coverage and final user acceptance remain open. Owned test
-environments and superseded packages/staging are removed; current deliverables,
-compact evidence and useful compiler caches remain.
+Windows administrator Copy recovery, the full theme/interface audit, remaining
+supported picker/folder integration, MSI rollback, physical coverage and final
+user acceptance remain open. Current manifests distinguish tested packages from
+source fixes and investigation candidates. Superseded Linux packages and owned
+completed QA resources are removed; active candidates have explicit cleanup
+owners and pending consumers.
 
 ### Linux
+
+Installing the current DEB or RPM does not add an Ottrin update repository.
+Updates currently require installing a newer package; GitHub releases alone do
+not configure an APT or DNF update source.
 
 File-operation provenance requires Linux 6.8 or newer. Ottrin uses unique mount
 identities to reject a filesystem that changes between selection and execution.
@@ -120,7 +96,9 @@ Run the per-user installer, or unzip the portable package and run:
 .\bin\ottrin.exe
 ```
 
-Normal user-owned file operations do not require elevation. Denied operations use the bundled helper through the Windows UAC flow.
+Normal user-owned file operations do not require elevation. Supported administrator
+operations use the bundled helper through Windows UAC. Administrator Copy remains
+gated on its durable recovery and original-caller authority work.
 
 Windows packaging is designed to use WGPU when Automatic finds no compatibility
 signal and to select a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime

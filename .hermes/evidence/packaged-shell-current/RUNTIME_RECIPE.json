@@ -1,0 +1,13 @@
+{
+  "authoritative_recipe": "runtime.ps1",
+  "consumed_helper_sha256": "34f7942e51de2216ff9ae4b6b99e56ba74cb5045bdef2debc20ff6d023701505",
+  "scope": "Self-contained native ordinary-user COM probe accepted by MSIX_RUNTIME_ACCEPTANCE.json; exact OS-parsed folder argv and Windows-normalized executable path, one main window, parent-bound optional index ensure child",
+  "limits": [
+    "Real Explorer menu surface, automatic foreground, background invocation, COM registration removal/update remain separate checks"
+  ],
+  "previous_failure": "runtime24-bootstrap-observation-failure/RUNTIME_RESULT.json",
+  "previous_failures": [
+    "runtime24-bootstrap-observation-failure/INVESTIGATION.json",
+    "runtime24-argv-path-failure/RECOVERY_ACCEPTANCE.json"
+  ]
+}

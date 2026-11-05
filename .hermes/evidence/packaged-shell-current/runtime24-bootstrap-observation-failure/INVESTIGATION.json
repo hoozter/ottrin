@@ -1,0 +1,33 @@
+{
+  "status": "failed native runtime; preserved, not acceptance",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "result": "RUNTIME_RESULT.json",
+  "failure": "Fixture counted all new ottrin process names as GUI launches, including potential headless bootstrap; selected-folder invocation did not complete its assertion. No invocation, reboot/login or preference-preservation acceptance from this run.",
+  "observed_passes": [
+    "Actual ordinary installed-package startup checkbox Off/On, same existing daemon PID",
+    "Ordinary external package COM activation; title/icon; initial hidden state",
+    "UI folder menu enable/disable/enable follows COM state0/2/0",
+    "Disabled command rejects invocation with E_ACCESSDENIED and launches no process",
+    "Complete enabled/disabled status text bounds inside Settings"
+  ],
+  "direct_original_captures_reviewed": {
+    "msix-folder-enabled.png": "38bf6c44d77956ba7c6a88561028f1c70b7665491f62c01559ba79211f8b8467",
+    "msix-folder-disabled.png": "65655d783f46dbad6b652f0eab0997d9409c9e22bef8af5a33522df144ad3ff4"
+  },
+  "visual_limits": [
+    "Only the two Dark Services folder-status originals directly reviewed",
+    "Bottom controls reach the capture/taskbar edge; not full-window layout acceptance",
+    "No Light-theme, full long diagnostic, Explorer menu surface or automatic foreground acceptance"
+  ],
+  "corrective_fixture": "../runtime.ps1 identifies exact OS-parsed selected-folder argv; requires one matching main and mapped window; permits at most one exact index ensure child with that main as parent. Next native run must prove this; no product source change.",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

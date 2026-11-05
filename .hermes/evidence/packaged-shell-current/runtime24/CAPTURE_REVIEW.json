@@ -1,0 +1,21 @@
+{
+  "reviewed": true,
+  "settings_visible": true,
+  "all_captures_match_exact_hashes": true,
+  "captures": {
+    "main.png": "e753891a63e9cf30ce720c176d557f6282e7afbf7ccb684f15bf83525d4a479f",
+    "msix-startup-disabled.png": "d7019e1df8778ca393d20f8de85ff246e7e8aa40cca03204a6b8b82a6f9e0a4c",
+    "msix-startup-enabled.png": "a84b336ecd39b7ae9165e373879a08374131cf1e8e02c8f12241a03fb245f6c4",
+    "msix-folder-enabled.png": "e1a5634ae4742b6d7d81047714662da07b173cbc6f2833cfaf9c06ccda5b0dc8",
+    "msix-folder-disabled.png": "dafc596a5f3371335b89ede80e4b6706e134c6e97fb1d4948862187f909580de",
+    "msix-folder-invoked.png": "5566228593d0f76d01d1dbfc48d8cab442980b8aff847376f767d45cef000628"
+  },
+  "observations": [
+    "Directly reviewed six exact original captures, Dark software desktop only. Main window, shared Settings title/sidebar, neutral completed-action history and authoritative current green status are visible.",
+    "Startup checkbox Off/On matches the separate sign-in text while current index remains Ready; folder enable/disable status is fully visible and changes as intended.",
+    "Selected Unicode folder opens with the owned marker file. U+10437 is rendered as a missing-glyph box in the title/breadcrumb; actual native UTF16 path/argv/navigation remains verified. Font fallback belongs to the open interface audit.",
+    "Settings taskbar overlays its bottom control edge in this fixture; no complete-window layout acceptance. QA capture placement should respect the Windows working area in the next relevant fixture.",
+    "Native COM and explicit QA focus are exercised; these frames do not prove actual Explorer menu clicking or automatic foreground behavior."
+  ],
+  "scope": "Targeted fresh MSIX24 ordinary runtime captures; no Light/full interface/physical GPU/signing/Store/update acceptance."
+}

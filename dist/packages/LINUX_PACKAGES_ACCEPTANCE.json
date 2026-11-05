@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped packaged index error/recovery layout delivery; full roadmap and UI audit incomplete",
-  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "status": "pass scoped packaged historical-action/status layout delivery; full roadmap and UI audit incomplete",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "58395eab70cce7978a2259e9dd025bb4effcb4eb60abc3b002b0e2f9d304f19d",
-    "Ottrin-0.1.0-x86_64.AppImage": "934f564133f504f8513573a6de83bb297533c631adacb761aa2769c3da824bcb",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "c3cd5c47dc93869e16d8863c21306fa4db789e3ce08a58936db9db7bc1f43ac0",
-    "ottrin_0.1.0_amd64.deb": "77c24a133d19f774e0c0372539935e3248dcc640b6f67b513af40573ea605faa"
+    "ottrin-0.1.0-1.x86_64.rpm": "5ed59de7a7eac2877090ce76e12a16b9cfa39bffd41ad22a9a7402df017826cd",
+    "Ottrin-0.1.0-x86_64.AppImage": "015e3b04d9427422a545269c4424fe92ce2bbebb576e2193b69d4ada75fc357f",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "ae93dcd50ad9bcb555fef69d92a622ab471c00993ea34367f700d0cf2d9e4ec1",
+    "ottrin_0.1.0_amd64.deb": "dfcacc4cb8ffb718f5487f4481f4f7602c2c70f880ed890de8b0da6de7f6768e"
   },
-  "evidence": ".hermes/evidence/index-error-layout-delivery-current",
+  "evidence": ".hermes/evidence/service-ui-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,22 +17,22 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "9ea27e4d68b72b11b5b561b88aaa179c58d1750b28174eea11f7e13e3deec1fe",
+    "application": "4ccf340f5b1bb57e0d1a721f4189ad7f2a55d4bdeb5aed1b41cd3a500dddea4a",
     "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
     "privileged_helper": "9aed6636ff29bb70ad9c804539c3994eac307c028c80d5d2d4763f46e7507cf2",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 41998168676,
-    "tested_source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+    "run": 42033104462,
+    "tested_source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
     "all_four_jobs_success": true
   },
-  "native_current_ui": ".hermes/evidence/index-error-layout-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_current_ui": ".hermes/evidence/service-ui-delivery-current/NATIVE_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/index-error-layout-delivery-current/SOURCE_SCOPE.json",
-  "daemon_identity": ".hermes/evidence/index-error-layout-delivery-current/DAEMON_IDENTITY_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/service-ui-delivery-current/SOURCE_SCOPE.json",
+  "daemon_identity": ".hermes/evidence/service-ui-delivery-current/DAEMON_IDENTITY_ACCEPTANCE.json",
   "daemon_runtime": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
   "daemon_runtime_scope": {
     "freshly_rerun": false,
@@ -55,11 +55,11 @@
     "applies_to_current_daemon_identity": false
   },
   "limits": [
-    "Actual mounted AppImage on owned software X11. Six targeted Dark/Light error/collapse/scroll originals directly reviewed; automated Ready/Stopped/error/Ready, stable control geometry and full diagnostic visibility pass. No whole-interface or physical graphics acceptance.",
-    "Current daemon, helper and HTML bytes exactly match previous delivered781. Their retained native runtime/wire checks keep original source scopes; no fresh idle/large-corpus, elevated Copy or personal helper authentication claim.",
+    "Actual mounted AppImage on owned software X11. Six targeted Dark/Light Ready/error/full-scroll originals directly reviewed; automated Ready/Stopped/error/Ready, stable control geometry and full diagnostic visibility pass. No whole-interface or physical graphics acceptance.",
+    "Current daemon, helper and HTML bytes exactly match previous delivered d032. Their retained native runtime/wire checks keep original source scopes; no fresh idle/large-corpus, elevated Copy or personal helper authentication claim.",
     "Native distribution installation, startup toggle, caption/footer and theme-name acceptance retain original receipt source/artifact scopes.",
-    "Historical service-action feedback can outlive current readiness; the separate service-feedback-current source fix is not in this cohort.",
+    "Completed actions are explicitly qualified neutral history in this cohort; authoritative current health remains separate. Actual mounted-image action/error/recovery checks pass. Long shared status wrapping has its rendered320/760-point and1.0/1.7-scale source regression; native Windows long-label acceptance remains separate.",
     "No public release, signing, Store or MSI acceptance.",
-    "Packaged manuals are build-time snapshots at d0320932; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at bee15669; repository metadata records later delivery."
   ]
 }

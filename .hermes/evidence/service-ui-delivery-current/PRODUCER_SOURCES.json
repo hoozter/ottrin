@@ -1,0 +1,12 @@
+{
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "producers": {
+    "build.py": "71b74bafe2136e6bbfef2f81d13e5b42774cd9b2851b2658a1c10b6eb1a97ea1",
+    "verify-packages.py": "37b0e8d85c2e7f315813f4b4d766d36556077585aab56c6eb98f2bbf4b7ca684",
+    "run-native-appimage.py": "94ddb759ef586a1050e63184759d066383e6ad45de7e96047ccf826dbc64cada",
+    "native-appimage-worker.py": "79d610d082aa5788da13e4d45549d0fe6335145b408709a948f416866e1adac1",
+    "assess-source.py": "99de1a0a4b11ef3d2e078df1a0dc8df54b976ebfe8735e99bdc2dee59f3b747d",
+    "promote-linux.py": "e0e6722fbbdcbb0aa764634eb1d7d3543963d5087cf93b9337279123ece6b3e9"
+  },
+  "scope": "Exact producers for accepted Linux build/content/native-source/promotion phases; no unstated wider UI acceptance"
+}

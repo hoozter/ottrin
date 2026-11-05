@@ -1,0 +1,187 @@
+{
+  "before_login_boot_ticks": 639294873195000000,
+  "scope": "Disposable clone only; administrative unsigned deployment, then a filtered ordinary runtime token; no signing-policy changes",
+  "package_processes_removed": true,
+  "preferences_preserved": true,
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8232,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIX34aae71ac655\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B8A0000000000000000"
+    },
+    "boot_ticks": 639294874815000000,
+    "administrator": false
+  },
+  "remaining_index_tasks": [],
+  "actor": {
+    "msix_startup_checkbox": {
+      "status": "pass actual installed-package checkbox",
+      "actions": [
+        {
+          "daemon_pids_before": [
+            3400
+          ],
+          "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+          "daemon_pids_after": [
+            3400
+          ],
+          "enabled": false
+        },
+        {
+          "daemon_pids_before": [
+            3400
+          ],
+          "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+          "daemon_pids_after": [
+            3400
+          ],
+          "enabled": true
+        }
+      ],
+      "package_identity": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+    },
+    "gui_focus_and_capture": "pass",
+    "scope": "Actual packaged ordinary main-window launch, normal close and optional index registration; no upgrade acceptance yet",
+    "session_id": 1,
+    "phase": "reenabled-index-status.json",
+    "actual_process_package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "service_remove_exit": 0,
+    "service_status_exit": 0,
+    "disable_reenable": "pass",
+    "actual_process_elevated": false,
+    "folder_command": {
+      "host_package_identity_code": 15700,
+      "title": "Open in Ottrin",
+      "status": "pass native packaged COM activation, UI preference and selected-folder invocation",
+      "daemon_pids_after": [
+        3400
+      ],
+      "scope": "Actual ordinary-user package COM activation/visibility/invocation; real Explorer menu surface and automatic foreground behavior remain separate",
+      "invocation_processes": [
+        {
+          "parent": 4308,
+          "pid": 9168,
+          "arguments": [
+            "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin/ottrin.exe",
+            "--",
+            "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "com_state": 0,
+          "complete_status_bounds": {
+            "left": 345,
+            "width": 355,
+            "top": 714,
+            "height": 17
+          },
+          "enabled": true
+        },
+        {
+          "com_state": 2,
+          "complete_status_bounds": {
+            "left": 345,
+            "width": 333,
+            "top": 714,
+            "height": 17
+          },
+          "enabled": false
+        },
+        {
+          "com_state": 0,
+          "complete_status_bounds": {
+            "left": 345,
+            "width": 355,
+            "top": 714,
+            "height": 17
+          },
+          "enabled": true
+        }
+      ],
+      "icon": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin\\ottrin.exe,0",
+      "daemon_pids_before": [
+        3400
+      ],
+      "invocation": {
+        "ordinary": true,
+        "selected_folder": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+        "pid": 9168,
+        "visible_marker": "menu-invocation-proof.txt",
+        "exit": 0,
+        "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+        "capture_focus": "Explicit private QA focus; no automatic foreground acceptance"
+      }
+    },
+    "main": {
+      "path": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin\\ottrin.exe",
+      "pid": 9436,
+      "binary_sha256": "41CCBC96B725623DE2285645C0F157E033A8F00FD72221584A5CAFF98BE8DBA8",
+      "title": "Ottrin"
+    },
+    "cli_exits": {
+      "service-remove.stdout": 0,
+      "reenabled-index-status.json": 0,
+      "reenable.stdout": 0,
+      "service-status.stdout": 0,
+      "checkbox-enabled.stdout": 0,
+      "disabled-status.stdout": 0,
+      "service-install.stdout": 0,
+      "index-status.json": 0,
+      "checkbox-disabled.stdout": 0
+    },
+    "administrator": false,
+    "input_desktop": "Default",
+    "preferences_before_removal": "57EA10F35011117E648CC567E1061AD3B3B60963B577FD49612FFA682ED0D52F",
+    "service_install_exit": 0,
+    "daemon": {
+      "pid": 3400,
+      "administrator": false,
+      "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+    },
+    "index_ready": "ready",
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIX34aae71ac655\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B8A0000000000000000"
+    },
+    "window_diagnostics": {
+      "foreground": 459430,
+      "enable_lua": 1,
+      "window": 459430,
+      "cloaked": 0,
+      "process_session": 1,
+      "minimized": false,
+      "console_session": 1
+    },
+    "normal_close_exit": 0
+  },
+  "deployment": {
+    "full_name": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "location": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "version": "0.1.0.24"
+  },
+  "package_removed": true,
+  "status": "pass",
+  "fixture_preserved": true,
+  "actor_sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+}

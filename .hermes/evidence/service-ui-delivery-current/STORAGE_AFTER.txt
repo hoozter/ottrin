@@ -1,0 +1,6 @@
+24G	target/debug/deps
+24G	target/debug/incremental
+29G	target/x86_64-pc-windows-gnu/debug/deps
+42G	target/x86_64-pc-windows-gnu/debug/incremental
+2.9M	.hermes/evidence/service-ui-delivery-current
+125M	.hermes/evidence/packaged-shell-current

@@ -1,0 +1,36 @@
+{
+  "status": "owned orphan recovery complete; native case failed, not accepted",
+  "host_controller_exit": 143,
+  "controller_termination_cause": "not established",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "desktop": {
+    "status": "closed orphaned owned desktop",
+    "profile": "/var/tmp/.ottrin-picker-qa-e7jlp7cz",
+    "profile_removed": true,
+    "owned_children": {
+      "stopped": [
+        2946368,
+        2946371,
+        2946382,
+        2946409,
+        2946419
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": []
+  },
+  "diagnostics_exported": "INTERRUPTED_EXPORT.json",
+  "producer_cleanup_sha256": "3ecf9914518a1efed6aba2554597ad70e899c6eecc76e83c644548e2c2d11501",
+  "consumed_recovery_helper_sha256": "4170a5b6b98369bf833b924e2cbb3544a4935d19b0c5dc267885e11a9e1cf8f7",
+  "consumed_recovery_helper_removed": true,
+  "fixture_defect": "OS-parsed executable argv contains valid bin/ottrin.exe; lexical expected bin\\ottrin.exe comparison rejected it. Corrected recipe normalizes both with Windows GetFullPath, preserving exact selected-folder arguments and parent-bound bootstrap assertions."
+}

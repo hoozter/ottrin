@@ -1,0 +1,58 @@
+{
+  "status": "pass consumed result transport removed after exact file comparison",
+  "retired": [
+    {
+      "name": "RESULTS.zip",
+      "bytes": 511476,
+      "sha256": "c414fbddb9aac3ba6ff620de026bad739675c79f28f39a2e2cd1d6f4202e0856"
+    },
+    {
+      "name": "RESULT_EXPORT_PROCESS.json",
+      "bytes": 909378,
+      "sha256": "8664070a2e92371e14b75cc7221924a3705882540b391f8985ae6fdc67e21c13"
+    }
+  ],
+  "retained_extracted_originals": {
+    "ACTOR.json": "94b958c5a0ea60d6aa4c2d205253b8b694d989e39cf9dca05168ee28ec4fabc1",
+    "checkbox-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-disabled.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "checkbox-enabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-enabled.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "DEPLOYMENT.json": "7c1f1ba4783d17efccc27538435617d371ec16f8830bb6cf1b28027b03409632",
+    "DESKTOP_READY.json": "81bfa5e268c230992f1a1b1d43a5f26715748abe51a8a42bda5c52084b263096",
+    "DESKTOP_WAITING.json": "abebd7c1af58c08bca2c93a26e644bd496c3d40177ea7b1a0e862da6ce5b6fa2",
+    "disabled-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disabled-status.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "FOLDER_COMMAND.json": "1bd7116eba5b1f580c2436f5bc54980d79106f3f11ac3db407046cbb4153d65a",
+    "FOLDER_COMMAND_PROCESSES.json": "34bba8a233d70e68b5d0ea5db538216f3114f80caa0d1321f7f059ee6550e4f1",
+    "index-status.json": "1cf865649351611a36be96d694eba3a8be34460bc8051575b5b308db1c44c972",
+    "index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "login-index-status.json": "1f07d72c7923029d3ac996351d1fad7392c88412c67f555d357ca00248cd6069",
+    "login-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "login-service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "login-service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "LOGIN.json": "bb33ea2e67c8cafef3461a00414b87462093ab073421ea4f3ac5fbaf3a97e894",
+    "main.png": "e753891a63e9cf30ce720c176d557f6282e7afbf7ccb684f15bf83525d4a479f",
+    "mapped-main-before-focus.png": "e753891a63e9cf30ce720c176d557f6282e7afbf7ccb684f15bf83525d4a479f",
+    "msix-folder-disabled.png": "dafc596a5f3371335b89ede80e4b6706e134c6e97fb1d4948862187f909580de",
+    "msix-folder-enabled.png": "e1a5634ae4742b6d7d81047714662da07b173cbc6f2833cfaf9c06ccda5b0dc8",
+    "msix-folder-invoked.png": "5566228593d0f76d01d1dbfc48d8cab442980b8aff847376f767d45cef000628",
+    "msix-startup-disabled.png": "d7019e1df8778ca393d20f8de85ff246e7e8aa40cca03204a6b8b82a6f9e0a4c",
+    "msix-startup-enabled.png": "a84b336ecd39b7ae9165e373879a08374131cf1e8e02c8f12241a03fb245f6c4",
+    "MSIX_CHECKBOX_TRACE.json": "5a7266961278b4710a8cc5e7c6f90eb585ff288b1754442b50831ddd03ee8c57",
+    "reenable.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reenable.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "reenabled-index-status.json": "da61067e3014868a9a2b5a16f3f257bd9675310ccbd22f02ef06c384c5e0a064",
+    "reenabled-index-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "RESULT.json": "8ab407d93dda4f3dc289625bdc61807c1dbb7a253860dec2a4f4b065cc392922",
+    "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "service-remove.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-remove.stdout": "4d5486228949bc331224858758058d6ce1400ab01a7e9e69036ea5daf75d86dd",
+    "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "STATE_READER_SMOKE.json": "f5d0a829e059f9d2385747f89113a63e43b70214e8d4222d20ad60854c071e22"
+  },
+  "owner": "Completed native MSIX24 test; no live VM/desktop/process/profile remains"
+}

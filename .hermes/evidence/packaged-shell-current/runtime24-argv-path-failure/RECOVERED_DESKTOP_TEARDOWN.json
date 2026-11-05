@@ -1,0 +1,16 @@
+{
+  "status": "closed orphaned owned desktop",
+  "profile": "/var/tmp/.ottrin-picker-qa-e7jlp7cz",
+  "profile_removed": true,
+  "owned_children": {
+    "stopped": [
+      2946368,
+      2946371,
+      2946382,
+      2946409,
+      2946419
+    ],
+    "unreadable_foreign_processes_preserved": 4
+  },
+  "owned_mounts_unmounted": []
+}
