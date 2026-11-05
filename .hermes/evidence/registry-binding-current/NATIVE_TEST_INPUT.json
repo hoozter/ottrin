@@ -1,0 +1,18 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+  "sha256": "292e2127ea99056a143442b337251f2f85135e6f463dcce4f0dbe6cefcac7687",
+  "source": {
+    "reference_commit": "acb978815db4f1383cd9cf2a7319ad7a0ef7ecba",
+    "files": {
+      "Cargo.toml": "563448b81efed23c72114fce8537b49ace937c517f6c6c6c9af1cce8f89fc9c1",
+      "Cargo.lock": "a1f7e66afdcd218047dfe67573ea05fa960c5f911250307fee87698ec198c66c",
+      "crates/ottrin-platform/Cargo.toml": "c1d1bf22cc36db09af5ecd160db9c76bb2877eb17ba74cdb859892b902d9e011",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "86686b6fc76196306ba3bf4f8b2ea64e03fe88a8a126d00888ccd50a539ad02c",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "9e7dcdc67b140878332a01c77831339ef13e09f1c921f701bdf8e73024f4eb17",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "e372d7221f160df6a02a7b1f603aed9f7f3586b9b9493be7efb37944bb19c799"
+    },
+    "scope": "Registry admission binding only; no coordinator, caller registry bridge or administrator Copy enablement"
+  },
+  "build_exit": 0,
+  "compiler_profile": "Shared default test profile, platform opt0/debug0; no alternate target or compiler flags"
+}

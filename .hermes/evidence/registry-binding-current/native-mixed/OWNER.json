@@ -1,0 +1,130 @@
+{
+  "domain": "ottrin-boundary-client",
+  "uuid": "ae4b9a59-3eca-4e03-ad7f-eb2160040737",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-boundary-client-fixture.iso",
+    "ottrin-boundary-client.qcow2"
+  ],
+  "status": "control finished; inspect exact result, not assumed pass",
+  "public_compiler_cache": null,
+  "scope": "Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.",
+  "producer_sha256": "b5d3596457c1265cc97c46d8eee3557807b484d385a5a037ef553c24a8ecca93",
+  "storage_at_start": {
+    "available_bytes": 26056286208,
+    "minimum_headroom_bytes": 25769803776,
+    "path": "/var/lib/libvirt/images"
+  },
+  "uploaded_host_iso_removed_bytes": 481402880,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "absolute_pointer": "Clone-only virtual tablet present at boot; no host device passthrough",
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "privacy_control_sha256": "958e1ad3b0890090ae1863987666759697958a25cfd95d03499a0c9f54a3f848",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 3103780,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-l2uzd6n8/home"
+  },
+  "guest_pid": 1912,
+  "guest_observation_interruption": {
+    "pid": 1116,
+    "error": "guest-exec-status failed for ottrin-boundary-client: error: Guest agent is not responding: QEMU guest agent is not connected",
+    "process_restarted": false
+  },
+  "desktop_observer_pid": 3105627,
+  "actor_observation": {
+    "status": "pass native registry binding and mixed cleanup regressions",
+    "phase": "complete",
+    "runs": [
+      {
+        "exit": 0
+      },
+      {
+        "exit": 0
+      },
+      {
+        "exit": 0
+      },
+      {
+        "exit": 0
+      },
+      {
+        "exit": 0
+      },
+      {
+        "exit": 0
+      }
+    ]
+  },
+  "checked_backing_chains": [
+    {
+      "retained_domain": "ottrin-copy-cleanup-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-index-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-qa-20261011",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "win11ltsc",
+      "files": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-boundary-client-fixture.iso",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-boundary-client-fixture.iso"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-boundary-client.qcow2",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-boundary-client.qcow2",
+        "/var/lib/libvirt/images/ottrin-stock-client.qcow2"
+      ]
+    }
+  ],
+  "owned_volume_allocations_before_removal": [
+    {
+      "volume": "ottrin-boundary-client-fixture.iso",
+      "allocated_bytes": 481415168,
+      "virtual_capacity_bytes": 481402880
+    },
+    {
+      "volume": "ottrin-boundary-client.qcow2",
+      "allocated_bytes": 9341591552,
+      "virtual_capacity_bytes": 68719476736
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

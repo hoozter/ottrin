@@ -1,0 +1,25 @@
+{
+  "finished": "2026-11-05T18:25:36.033233+00:00",
+  "removed_sessions": 4,
+  "before": {
+    "total": 502609965056,
+    "used": 470045040640,
+    "available": 27430215680,
+    "free": 32564924416
+  },
+  "after": {
+    "total": 502609965056,
+    "used": 469263904768,
+    "available": 28211351552,
+    "free": 33346060288
+  },
+  "filesystem_free_delta": 781135872,
+  "total_retired_this_task": 5,
+  "partial_attempts": [
+    "Relative-root invocation refused before deletion; reinspected absolute roots.",
+    "One session retired before refusal for unreadable PID3111092. PID no longer existed at inspection; no exception added.",
+    "Retry refused for unreadable PID3112635, also absent at inspection. No exception added.",
+    "Final unchanged guarded absolute-root scan passed and retired remaining4 sessions."
+  ],
+  "status": "All5 superseded sessions absent; same-configuration finalized replacements preserved. No bypass of active-consumer or process checks."
+}

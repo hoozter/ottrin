@@ -1,0 +1,24 @@
+{
+  "source_revision": "acb978815db4f1383cd9cf2a7319ad7a0ef7ecba",
+  "source_test_sha256": "292e2127ea99056a143442b337251f2f85135e6f463dcce4f0dbe6cefcac7687",
+  "test_sha256": "b7bb395f73ecc228011685f03aa59e0472d3f3180bf918fc094a34726bee82aa",
+  "source_bytes": 501827233,
+  "staged_bytes": 480513347,
+  "strip_command": [
+    "x86_64-w64-mingw32-strip",
+    "--strip-debug"
+  ],
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 373987840,
+    "sha256": "6ee5b065a3c3606452be4c7dd8f339be87bd927419baf9bcd15ea914889e5509"
+  },
+  "actor_sha256": "121208770adf36945d7454d793a1cd30e49ea6f2f291d4a107d73b8df2c1552f",
+  "scope": "Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.",
+  "changed_product_sources": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "9e7dcdc67b140878332a01c77831339ef13e09f1c921f701bdf8e73024f4eb17",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "e372d7221f160df6a02a7b1f603aed9f7f3586b9b9493be7efb37944bb19c799",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "86686b6fc76196306ba3bf4f8b2ea64e03fe88a8a126d00888ccd50a539ad02c"
+  },
+  "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+}

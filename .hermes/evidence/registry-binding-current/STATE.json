@@ -1,0 +1,28 @@
+{
+  "status": "Source and13 scoped native assertions verified; both QA runs and5 obsolete incremental sessions cleaned. Source checkpoint ready to commit; push held while prior exact-source hosted Windows verification remains live.",
+  "source_scope": "Current component only; no new packages or enabled administrator Copy",
+  "next": [
+    "Complete original-caller pinned registry/ownership/receipt/Undo/cleanup bridge.",
+    "Extend binding with parent ACL admission and implement independently anchored external coordinator and durable pending/completed member checkpoints.",
+    "Native fresh-process crash/restart, checkpoint I/O and changed-peer/root/case/ACL refusals before enabling helper Copy.",
+    "Push verified checkpoint after prior hosted run finishes to avoid cancellation notification churn."
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/registry-binding-current",
+      "purpose": "Compact source/build/native assertion/teardown and cleanup evidence",
+      "pending_consumer": "Roadmap and next coordinator implementation; intentional retained acceptance receipts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+      "purpose": "Newest same-configuration Windows platform test binary",
+      "pending_consumer": "Next original-caller/coordinator native tests"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental",
+      "purpose": "Latest useful finalized compiler sessions only;5 superseded sessions retired",
+      "pending_consumer": "Subsequent consistent-configuration builds"
+    }
+  ],
+  "cleanup": "Both disposable domains/4volumes, private profiles/displays/buses/viewers, test fixtures, consumed archives,6 setup PNGs and duplicate raw generated controller files removed. Current deliverables, protected VMs, user data and shared caches preserved."
+}

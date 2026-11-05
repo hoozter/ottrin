@@ -1,0 +1,26 @@
+[
+  {
+    "path": ".hermes/evidence/registry-binding-current/native/RESULTS.zip",
+    "bytes": 2658,
+    "sha256": "baa2c33a3942e59aa088733096fc8c30592bd6c4369cea059ac9539e89c1b3d6",
+    "reason": "Consumed result archive or first-login setup frame; no application rendering claim"
+  },
+  {
+    "path": ".hermes/evidence/registry-binding-current/native/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "reason": "Consumed result archive or first-login setup frame; no application rendering claim"
+  },
+  {
+    "path": ".hermes/evidence/registry-binding-current/native/privacy-accepted-1.png",
+    "bytes": 1493072,
+    "sha256": "0d9c7acee8dee394dba0828bce0e87c006aa3f21fc8b5691190ffc2b3071aa18",
+    "reason": "Consumed result archive or first-login setup frame; no application rendering claim"
+  },
+  {
+    "path": ".hermes/evidence/registry-binding-current/native/desktop-ready.png",
+    "bytes": 2522911,
+    "sha256": "9e253b422198b8e5a22eaa743a38e7fd0afc8061834a0f8f7fc11c766d56790a",
+    "reason": "Consumed result archive or first-login setup frame; no application rendering claim"
+  }
+]

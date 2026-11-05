@@ -1,11 +1,12 @@
 {
   "status": "External coordinator and original-caller registry bridge still unimplemented; profile locator component separately source/native verified",
   "source_sha256": {
-    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "711989544e45368bf04afa12ef1125523e9d66bd13df33d4e1f153115638d8d8",
-    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "982990869e86f71d8a904dfbbeb09c0d4d020ddae41fcad76702a92093fc29a8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "9e7dcdc67b140878332a01c77831339ef13e09f1c921f701bdf8e73024f4eb17",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "86686b6fc76196306ba3bf4f8b2ea64e03fe88a8a126d00888ccd50a539ad02c",
     "crates/ottrin-platform/src/windows_fs/identity.rs": "3ceb5fc2832a646896e459ee3704934dd7d110a23e5aa232fc368a3200fd9c09",
     "crates/ottrin-platform/src/windows_privileged_transport.rs": "5dfa8bf28a2935e19836081b6f9904c38804d7658e7453d7fa3fba2c500f8846",
-    "crates/ottrin-platform/src/windows_pipe.rs": "18c9e391d5bdc210733a25f1689a4e30b298c1a78ec06b7fc7b52756717d1b31"
+    "crates/ottrin-platform/src/windows_pipe.rs": "18c9e391d5bdc210733a25f1689a4e30b298c1a78ec06b7fc7b52756717d1b31",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "e372d7221f160df6a02a7b1f603aed9f7f3586b9b9493be7efb37944bb19c799"
   },
   "confirmed": [
     "reclaim_all already prepares paired metadata intents for every member before first metadata deletion; do not duplicate that completed barrier",
@@ -31,5 +32,10 @@
     "Thread that context through creation/discovery/receipt/Undo/cleanup; add alternate-administrator and package-context native proof.",
     "Create the external coordinator outside the guarded registry with distinct anchor and original-registry binding; persist complete member proof and pending/completed checkpoints before metadata retirement.",
     "Prove fresh-process crash/restart, partial/checkpoint I/O and changed-peer/root/case/ACL/foreign refusals; only then enable administrator Copy."
-  ]
+  ],
+  "registry_binding_component": {
+    "evidence": ".hermes/evidence/registry-binding-current/ACCEPTANCE.json",
+    "status": "Pass13 scoped ordinary-user native assertions, strict Windows lint and formatting; initial aggregate timeout retained separately",
+    "scope": "Retained observation binding across all eight registry reopen sites. Root/marker owner/security, parent location/native ID and parent/root case rules; not original-caller authority or durable coordinator. Parent ACL digest and external coordinator binding remain future admission work."
+  }
 }

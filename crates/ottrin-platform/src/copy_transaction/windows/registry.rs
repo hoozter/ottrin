@@ -17,7 +17,7 @@ const CLAIMS_ROOT: &str = ".ottrin-copy-target-claims";
 const CLAIMS_ANCHOR: &str = ".ottrin-copy-target-claims-root";
 const MAX_ANCHOR: u64 = 65_536;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Anchor {
     protocol: String,
@@ -30,6 +30,17 @@ struct Anchor {
     security: security::PrivateSecurity,
 }
 
+/// Handle-free evidence for reopening the same admitted registry. Serialized
+/// security is compared with live handles, never installed as an ACL.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct Binding {
+    anchor: Anchor,
+    marker_security: security::PrivateSecurity,
+    parent_location: Vec<u16>,
+    cases: (bool, bool),
+}
+
 pub(super) struct AnchoredRoot {
     root: File,
     anchor_name: OsString,
@@ -40,6 +51,7 @@ pub(super) struct AnchoredRoot {
     record: Anchor,
     parent_location: PathBuf,
     path: PathBuf,
+    cases: (bool, bool),
 }
 
 pub(super) fn configured_path() -> Result<PathBuf, PlatformError> {
@@ -330,6 +342,10 @@ impl AnchoredRoot {
         )
         .map_err(io)?;
         let result = Self {
+            cases: (
+                windows_fs::directory_case_sensitive(&parent).map_err(io)?,
+                windows_fs::directory_case_sensitive(&root).map_err(io)?,
+            ),
             root,
             anchor_name: anchor_name.to_os_string(),
             expected_case,
@@ -342,6 +358,26 @@ impl AnchoredRoot {
         };
         result.validate()?;
         Ok(Some(result))
+    }
+    pub(super) fn binding(&self) -> Result<Binding, PlatformError> {
+        self.validate()?;
+        Ok(Binding {
+            anchor: self.record.clone(),
+            marker_security: self.marker_security.clone(),
+            parent_location: self.parent_location.as_os_str().encode_wide().collect(),
+            cases: self.cases,
+        })
+    }
+
+    /// A path is only a locator: fresh admission must match every original
+    /// identity, ownership/security and naming-policy proof before reuse.
+    pub(super) fn open_bound(path: &Path, binding: &Binding) -> Result<Self, PlatformError> {
+        let root =
+            Self::open_at(path, false)?.ok_or_else(|| io("Configured Copy registry is missing"))?;
+        if root.binding()? != *binding {
+            return Err(io("Copy registry differs from its original admission"));
+        }
+        Ok(root)
     }
     pub(super) fn parent_identity(&self) -> WindowsStableIdentity {
         self.record.parent
@@ -383,6 +419,8 @@ impl AnchoredRoot {
             || stable_identity_from_handle(&self.root).map_err(io)? != self.record.root
             || stable_identity_from_handle(&self.marker).map_err(io)? != self.record.marker
             || windows_fs::current_owner()? != self.record.creator
+            || windows_fs::directory_case_sensitive(&self.parent).map_err(io)? != self.cases.0
+            || windows_fs::directory_case_sensitive(&self.root).map_err(io)? != self.cases.1
         {
             return Err(io("Copy anchored root binding changed"));
         }
@@ -412,6 +450,63 @@ impl AnchoredRoot {
 mod tests {
     use super::*;
     use std::io::Write;
+
+    #[test]
+    fn windows_native_copy_registry_binding_survives_reopen_and_refuses_case_drift() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("copies");
+        let root = AnchoredRoot::open_at(&path, true).unwrap().unwrap();
+        let binding = root.binding().unwrap();
+        let encoded = serde_json::to_vec(&binding).unwrap();
+        let decoded: Binding = serde_json::from_slice(&encoded).unwrap();
+        drop(root);
+        let root = AnchoredRoot::open_bound(&path, &decoded).unwrap();
+        let writer = root.writable_root().unwrap();
+        windows_fs::set_empty_directory_case_policy(&writer, !binding.cases.1).unwrap();
+        assert!(root.validate().is_err());
+        assert!(root.writable_root().is_err());
+        drop((writer, root));
+        assert!(AnchoredRoot::open_bound(&path, &decoded).is_err());
+        let current = AnchoredRoot::open_at(&path, false).unwrap().unwrap();
+        assert_eq!(current.binding().unwrap().cases.1, !binding.cases.1);
+        assert_eq!(std::fs::read_dir(&path).unwrap().count(), 0);
+        assert_eq!(serde_json::to_vec(&decoded).unwrap(), encoded);
+    }
+
+    #[test]
+    fn windows_native_copy_registry_binding_refuses_self_consistent_new_anchor() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("copies");
+        let root = AnchoredRoot::open_at(&path, true).unwrap().unwrap();
+        let binding = root.binding().unwrap();
+        let mut record = root.record.clone();
+        drop(root);
+        let parent =
+            windows_fs::open_directory(temp.path(), FILE_GENERIC_READ | FILE_GENERIC_WRITE)
+                .unwrap();
+        let replacement = temp.path().join("replacement");
+        let mut marker =
+            windows_fs::create_private(&parent, OsStr::new("replacement"), false, FILE_SHARE_READ)
+                .unwrap();
+        record.marker = stable_identity_from_handle(&marker).unwrap();
+        assert_ne!(record.marker, binding.anchor.marker);
+        serde_json::to_writer(&mut marker, &record).unwrap();
+        marker.sync_all().unwrap();
+        drop(marker);
+        std::fs::remove_file(temp.path().join(ANCHOR)).unwrap();
+        std::fs::rename(replacement, temp.path().join(ANCHOR)).unwrap();
+        parent.sync_all().unwrap();
+        // The replacement is internally valid, but cannot extend a previous
+        // cleanup observation's authority even though the registry is unchanged.
+        let fresh = AnchoredRoot::open_at(&path, false).unwrap().unwrap();
+        assert_eq!(fresh.record.root, binding.anchor.root);
+        assert!(AnchoredRoot::open_bound(&path, &binding).is_err());
+        assert_eq!(std::fs::read_dir(&path).unwrap().count(), 0);
+        assert_eq!(
+            std::fs::read(temp.path().join(ANCHOR)).unwrap(),
+            serde_json::to_vec(&record).unwrap()
+        );
+    }
 
     #[test]
     fn windows_native_copy_claim_namespace_uses_native_volume_name_rules() {

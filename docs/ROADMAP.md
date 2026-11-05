@@ -61,7 +61,14 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    same-user native poisoned-environment/process-exit check and four existing pipe
    regressions (`caller-profile-current/ACCEPTANCE.json`). It creates no directories
    and grants no recovery-registry authority. Alternate-admin/package-context,
-   native registry ownership and coordinator binding remain required; administrator
+   original-caller registry ownership bridging and the durable coordinator remain
+   required. Cleanup observations now pin the original native registry/anchor,
+   root/marker security and parent/root case policy across every reopening; the
+   native registry and pre-start substitution checks pass, as do six individual
+   mixed-cleanup regressions. The first aggregate mixed batch exceeded its90-second
+   QA limit; its six cases subsequently passed separately without relaxed
+   assertions (`registry-binding-current/ACCEPTANCE.json`). Parent ACL admission,
+   external persistence and cross-administrator proof remain open. Administrator
    Copy stays disabled. Current downloads remain Linuxbee/Windows8e. Never interpret a
    missing member ID as completed deletion or unknown recovered history as a
    completed original batch. Native crash/restart and changed-peer/root/case/ACL

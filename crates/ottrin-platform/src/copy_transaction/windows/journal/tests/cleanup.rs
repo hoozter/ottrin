@@ -5179,6 +5179,38 @@ fn windows_native_copy_cleanup_group_mixed_midway_cancel_resumes_acknowledged_pr
 }
 
 #[test]
+fn windows_native_copy_cleanup_group_refuses_new_anchor_before_start() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut group, _) = mixed_cleanup_fixture(root.path());
+    let marker_path = root.path().join(".ottrin-copy-recovery-root");
+    let mut record: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&marker_path).unwrap()).unwrap();
+    let parent = owner(root.path());
+    let mut replacement =
+        windows_fs::create_private(&parent, OsStr::new("new-anchor"), false, FILE_SHARE_READ)
+            .unwrap();
+    record["marker"] =
+        serde_json::to_value(stable_identity_from_handle(&replacement).unwrap()).unwrap();
+    serde_json::to_writer(&mut replacement, &record).unwrap();
+    replacement.sync_all().unwrap();
+    drop(replacement);
+    std::fs::remove_file(&marker_path).unwrap();
+    std::fs::rename(root.path().join("new-anchor"), &marker_path).unwrap();
+    parent.sync_all().unwrap();
+    // This is a self-consistent new registry admission. The original cohort
+    // must refuse it before writing any cleanup intent or removing any data.
+    drop(
+        super::super::super::registry::AnchoredRoot::open_at(&root.path().join("central"), false)
+            .unwrap()
+            .unwrap(),
+    );
+    let before = namespace_contents(root.path());
+    assert!(group.start_all(|_| Ok(())).is_err());
+    assert!(group.reclaim_all(|_| Ok(())).is_err());
+    assert_eq!(namespace_contents(root.path()), before);
+}
+
+#[test]
 fn windows_native_copy_cleanup_group_mixed_refuses_foreign_changes_during_execution() {
     let root = tempfile::tempdir().unwrap();
     let (mut group, _) = mixed_cleanup_fixture(root.path());

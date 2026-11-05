@@ -1,0 +1,18 @@
+{
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Identity revalidated unchanged protected host session/authentication process; preserve. Exact obsolete incremental candidates have same-configuration finalized replacements. Native QA uses a separately copied executable, not these sessions; apply after owned guest teardown."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Identity revalidated unchanged protected host session/authentication process; preserve. Exact obsolete incremental candidates have same-configuration finalized replacements. Native QA uses a separately copied executable, not these sessions; apply after owned guest teardown."
+    }
+  ]
+}

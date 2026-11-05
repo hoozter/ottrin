@@ -1,6 +1,6 @@
 //! Bound admission and start barrier for selected cleanup cohorts. Physical
 //! removal is separate; selected IDs alone never grant mutation authority.
-use super::super::registry::AnchoredRoot;
+use super::super::registry::{AnchoredRoot, Binding};
 use super::*;
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -341,6 +341,7 @@ impl Member {
 #[derive(Clone, Debug)]
 pub(super) struct Observation {
     pub(super) registry: std::path::PathBuf,
+    registry_binding: Binding,
     pub(super) selection: Selection,
     pub(super) members: Vec<Member>,
     pub(super) references: BTreeSet<(usize, usize)>,
@@ -407,8 +408,7 @@ impl Observation {
             ));
         }
         cancel(0)?;
-        let manager = AnchoredRoot::open_at(&self.registry, false)?
-            .ok_or_else(|| io("Configured Copy group registry is missing"))?;
+        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
         let mut volumes = windows_fs::Volumes::new(&central)?;
@@ -484,8 +484,7 @@ impl Observation {
             return Err(io("Invalid or different pending shared unlink owner"));
         }
         self.start_all(&mut cancel)?;
-        let manager = AnchoredRoot::open_at(&self.registry, false)?
-            .ok_or_else(|| io("Configured Copy group registry is missing"))?;
+        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
         let owner_header = self.members[owner].header().clone();
@@ -590,8 +589,7 @@ impl Observation {
             }
             _ => self.prepare_shared_unlink(owner, &mut cancel)?,
         };
-        let manager = AnchoredRoot::open_at(&self.registry, false)?
-            .ok_or_else(|| io("Configured Copy group registry is missing"))?;
+        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
         let peers = self
@@ -746,8 +744,7 @@ impl Observation {
         }
         self.start_all(&mut cancel)?;
         loop {
-            let manager = AnchoredRoot::open_at(&self.registry, false)?
-                .ok_or_else(|| io("Configured Copy registry is missing"))?;
+            let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
             let central = manager.writable_root()?;
             self.selection.validate(&central, &mut cancel)?;
             let mut next = Vec::new();
@@ -806,8 +803,7 @@ impl Observation {
             if shared {
                 self.unlink_shared_entry(index, &mut cancel)?;
             } else {
-                let manager = AnchoredRoot::open_at(&self.registry, false)?
-                    .ok_or_else(|| io("Configured Copy registry is missing"))?;
+                let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
                 let central = manager.writable_root()?;
                 self.selection.validate(&central, &mut cancel)?;
                 let Member::Payload(admission) = &self.members[index] else {
@@ -860,8 +856,7 @@ impl Observation {
         let Member::Payload(admission) = &self.members[index] else {
             return Ok(());
         };
-        let manager = AnchoredRoot::open_at(&self.registry, false)?
-            .ok_or_else(|| io("Configured Copy registry is missing"))?;
+        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         self.selection.validate(&central, &mut cancel)?;
         let parent = if admission
@@ -915,8 +910,7 @@ impl Observation {
             return Err(io("Complete all group payloads before metadata removal"));
         }
         cancel(0)?;
-        let manager = AnchoredRoot::open_at(&self.registry, false)?
-            .ok_or_else(|| io("Configured Copy registry is missing"))?;
+        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         let header = self.members[index].header().clone();
         let parent = if header.parent.same_object(header.central) {
@@ -1009,8 +1003,7 @@ impl Observation {
             self.prepare_metadata(index, &mut cancel)?;
         }
         cancel(0)?;
-        let manager = AnchoredRoot::open_at(&self.registry, false)?
-            .ok_or_else(|| io("Configured Copy registry is missing"))?;
+        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         let header = self.members[index].header().clone();
         let parent = if header.parent.same_object(header.central) {
@@ -1182,6 +1175,7 @@ impl Observation {
         });
         Ok(Self {
             registry: manager.path().to_path_buf(),
+            registry_binding: manager.binding()?,
             selection,
             members,
             references,

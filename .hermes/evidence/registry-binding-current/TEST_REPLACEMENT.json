@@ -1,0 +1,9 @@
+{
+  "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+  "previous_sha256": "79b849cf18ab524d1dfc1b51d4aa8fe90f09d0af741715e162aa9c08b0cd053d",
+  "replacement_sha256": "292e2127ea99056a143442b337251f2f85135e6f463dcce4f0dbe6cefcac7687",
+  "replacement_bytes": 501827233,
+  "hard_links": 1,
+  "replacement": "Same compiler target/profile/test executable path rebuilt; previous bytes superseded, not retained as an obsolete second executable. Historical receipts retain original hashes.",
+  "next_consumer": "Current native registry binding case and subsequent coordinator regression work"
+}
