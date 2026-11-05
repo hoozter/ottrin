@@ -1,0 +1,21 @@
+{
+  "status": "prelaunch-failure unused inputs retired; exact failure controller source/owner retained",
+  "superseded_actor_and_identity_match_successful_native_case": true,
+  "removed": [
+    {
+      "name": "actor.ps1",
+      "bytes": 19815,
+      "sha256": "8d447f2e8a824baa7cc8d949ee3763b35f9c502c4811b851e7d70d2ffc1a0fa0"
+    },
+    {
+      "name": "APPLICATION_INPUT.json",
+      "bytes": 569,
+      "sha256": "1dc20cb3fff25722a0879d4f26c4698fa22b73cf226eb1cf157023d7b949b03d"
+    },
+    {
+      "name": "controller.ps1",
+      "bytes": 4866,
+      "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+    }
+  ]
+}

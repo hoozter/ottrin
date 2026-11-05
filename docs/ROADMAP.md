@@ -162,9 +162,20 @@ reviewed, including150% backend scaling. The small fixture has4 visible entries
 and5 indexed entries including its nested file; footer samples remain4 without
 input. Normal window closure preserves the Ready daemon PID and database identity.
 The Linux test VM/volumes and consumed transport archive are removed. Evidence:
-`entry-label-spacing-delivery-current/NATIVE_UI_ACCEPTANCE.json`. Current Windows
-native UI testing and MSIX20 assembly remain pending; this is not stable delivery
-or full-interface acceptance. The first Windows launch failed before guest boot
+`entry-label-spacing-delivery-current/NATIVE_UI_ACCEPTANCE.json`. Current Windows native NSIS testing also passes its focused scope after direct
+review of all16 original frames: Dark/Light Column/List75/100/185, actual loaded
+PNG/text thumbnails, readable footer/Ready text and installed-service actions.
+Normal close preserves the installed daemon PID; ordinary uninstall preserves
+preferences and original files. Its VM/volumes/private console and8.6MB consumed
+transport/bootstrap are removed. Evidence: `NATIVE_WINDOWS_UI_ACCEPTANCE.json`
+in the same cohort. MSIX20 native MakeAppx assembly and independent58-file payload equality also
+pass. Its private1000-file daemon watcher/restart/shutdown checks pass, with a
+30-second idle sample of0.47% of one core; this is not personal/large-corpus or
+sustained proof. The assembly VM/volumes and2.545MB source archive are removed.
+The Windows hosted verify job is still live; all three other jobs succeeded.
+Stable promotion is gated on that exact-source run41966597535. This is not
+stable delivery or full-interface acceptance; MSIX19 deployment/login/removal
+and17-to18 updates retain their original scopes, with no fresh20 lifecycle claim. The first Windows launch failed before guest boot
 because its console-helper input was absent; its domain/volumes were removed and
 the failure receipt retained. The corrected run supplies the helper, and the
 canonical controller now rejects this missing input before allocating a VM.

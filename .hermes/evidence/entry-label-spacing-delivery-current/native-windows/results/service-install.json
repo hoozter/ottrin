@@ -1,0 +1,5 @@
+{
+    "stdout":  "SUCCESS: Attempted to run the scheduled task \"Ottrin Index S-1-5-21-3790294415-2606194316-2422870471-1002\".\r\nBackground Ottrin index service enabled at login with Windows Task Scheduler. Index daemon is ready.\n",
+    "stderr":  "",
+    "exit":  0
+}

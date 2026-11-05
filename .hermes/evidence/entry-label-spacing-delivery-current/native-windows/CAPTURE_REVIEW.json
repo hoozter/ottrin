@@ -1,0 +1,34 @@
+{
+  "reviewed": true,
+  "status": "all16 original native Windows PNG captures directly reviewed",
+  "captures": {
+    "List-Dark-0.75.png": "c7cefc8913392fc7be2d40a8eaa08ad96edc09e9b0a41f0c68081ca3d5782666",
+    "List-Dark-1.85.png": "deec149e028b677cc68a049d1610c2bfdd5c3d4146bc6fa0a57a83b6e3200765",
+    "List-Dark-1.png": "e4b2e6ee618483308a1f79d2d1c1e461cf90bb6dbc50fea384d0e68fe5bfc764",
+    "List-Light-0.75.png": "c787b0f7d574726343430ccf3918a12f143544b7b6b3312b57ec7c087ce287df",
+    "List-Light-1.85.png": "607d8221a4f51f927ac36025984409b8da9e511c214b0048a2b2e15628fdabdc",
+    "List-Light-1.png": "d5b74474833190abea6d68d3e67af41f507b7e59bfe5fc24625f4cb37e429a4c",
+    "Miller-Dark-0.75.png": "c3a5dda5ce3b9126a2a4b6525289e03ade33aa9484dddbf15f0961f1d565a26f",
+    "Miller-Dark-1.85.png": "85b0f4c8faa6c17b3a4f486dcdea90c3707139adfd575414752a56ffaa31c71d",
+    "Miller-Dark-1.png": "bd5fea3f68241e9ed91fc923cb04f2e5f9093e5bbf9fdd2c92151bb6f3ce66c8",
+    "Miller-Light-0.75.png": "7cf946c93e9dcb47cfa1b011c38298a078275cbdbc416c64b4dd1b665354e1cc",
+    "Miller-Light-1.85.png": "7ea84d70240e0e65ecb949ab96da591570d6ea3976c13a0b6f8cb2a2a7343b17",
+    "Miller-Light-1.png": "b0c7ff645582964f7f77910765a64ca93224de0a8cb37b63678856ce305168f6",
+    "services-Dark.png": "c549c05711aa2aa51213f3568e931db43399759d3a8d3cea492c84435092c7c4",
+    "services-Light.png": "4ad441af1ba08a1422321d2360e99856b6667d0a6bbfd884c8a977cddf8acd10",
+    "thumbnails-Dark.png": "20d787fc9a413b7a59f5710cdad18442fee12435c941b350a0e885ef21dac19c",
+    "thumbnails-Light.png": "fdb530226c212f967e73fd3a5f66dac4040ef819ead20440017842b9cece2bbd"
+  },
+  "findings": [
+    "All12 Dark/Light Column/List density scenes at75/100/185 reviewed: filenames clear icons, folder chevrons and List metadata; filename starts align.",
+    "Both actual thumbnail scenes show blue PNG and text thumbnail surfaces with consistent leading slots; pale Light text thumbnails are real miniature documents, not a universal contrast acceptance.",
+    "Footer4items and wordmark visibly readable in both themes. Native no-input0/2/10 samples retain4items.",
+    "Both Services originals are unobscured and show green Ready administrator/index text, startup On and Update/reinstall/Stop/Uninstall controls.",
+    "Native NSIS folder-integration Off status is visible; this does not resolve separate MSIX19 transaction failure."
+  ],
+  "limits": [
+    "Owned software Windows guest/default DPI; no full role/property/interface or physical graphics acceptance",
+    "Current installed-service/main-close scope only; prior actual On/Off/On proof remains historical",
+    "No MSIX20 deployment/login/update, administrator-Copy or ordinary MSI acceptance"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "status": "Owned GUI and assembly fixtures fully removed; current staged deliverables retained for explicit pending consumer",
+  "baseline_logical_bytes": {
+    "target/debug/deps": 25262909658,
+    "target/debug/incremental": 25174074911,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070290835,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272921258,
+    "target/release": 4545256193,
+    "target/x86_64-pc-windows-gnu/release": 4005720873,
+    ".hermes/evidence/entry-label-spacing-delivery-current": 40406,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 0,
+    ".hermes/packaging-tmp/.windows-picker-stage": 0
+  },
+  "current_logical_bytes": {
+    "target/debug/deps": 25262909658,
+    "target/debug/incremental": 25174074911,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070290835,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272921258,
+    "target/release": 4545261793,
+    "target/x86_64-pc-windows-gnu/release": 4005726083,
+    ".hermes/evidence/entry-label-spacing-delivery-current": 3122055,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 115864121,
+    ".hermes/packaging-tmp/.windows-picker-stage": 294407112
+  },
+  "no_new_debug_compilation_this_turn": true,
+  "removed": [
+    "Linux VM/domain/three volumes and1.313MB result archive",
+    "Windows NSIS clone/two volumes/private console and8.584MB consumed archive/bootstrap",
+    "MSIX20 assembly clone/two volumes/consumed bootstrap and2.545MB source archive",
+    "25KB redundant failed-preflight inputs; exact failed source/owner retained"
+  ],
+  "remaining_task_created_storage": [
+    {
+      "path": ".hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Accepted Linux replacement awaiting exact-source hosted Windows verify and guarded stable promotion"
+    },
+    {
+      "path": ".hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Accepted ZIP/NSIS/MSIX20 replacement awaiting exact-source hosted Windows verify and guarded stable promotion"
+    }
+  ],
+  "preserved": [
+    "Stable Linux/Windows previews",
+    "User files/preferences/index",
+    "Shared compiler caches and useful SDK cache",
+    "Four protected shutoff QA bases"
+  ],
+  "full_roadmap_complete": false
+}

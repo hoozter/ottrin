@@ -1,0 +1,400 @@
+{
+  "thumbnail_cases": [
+    {
+      "scope": "Actual thumbnail fixture; loaded image and geometry require direct original review",
+      "capture": "thumbnails-Dark.png",
+      "theme": "Dark"
+    },
+    {
+      "scope": "Actual thumbnail fixture; loaded image and geometry require direct original review",
+      "capture": "thumbnails-Light.png",
+      "theme": "Light"
+    }
+  ],
+  "scope": "Exact NSIS, ordinary-user Native renderer; row/thumbnail/footer/status appearance and uninstall preservation; unchanged startup controls retain prior exact scope. Full theme, MSIX lifecycle and physical graphics remain separate.",
+  "sources_preserved": true,
+  "phase": "uninstall preserves preferences and files",
+  "services": [
+    {
+      "scope": "Actual installed Services Ready tone; original image review required",
+      "capture": "services-Dark.png",
+      "theme": "Dark"
+    },
+    {
+      "scope": "Actual installed Services Ready tone; original image review required",
+      "capture": "services-Light.png",
+      "theme": "Light"
+    }
+  ],
+  "preferences_preserved": true,
+  "cases": [
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Dark-0.75.png",
+      "captions": [
+        {
+          "width": 220,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 220,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Dark-1.png",
+      "captions": [
+        {
+          "width": 240,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 240,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Dark-1.85.png",
+      "captions": [
+        {
+          "width": 292,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 292,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Dark-0.75.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Dark-1.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Dark-1.85.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Light-0.75.png",
+      "captions": [
+        {
+          "width": 220,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 220,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Light-1.png",
+      "captions": [
+        {
+          "width": 240,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 240,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Light-1.85.png",
+      "captions": [
+        {
+          "width": 292,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 292,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Light-0.75.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Light-1.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Light-1.85.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Light"
+    }
+  ],
+  "no_input_footer_samples": [
+    {
+      "seconds": 0.047320299999999996,
+      "label": "4 items"
+    },
+    {
+      "seconds": 2.2812333,
+      "label": "4 items"
+    },
+    {
+      "seconds": 10.0749844,
+      "label": "4 items"
+    }
+  ],
+  "density_observation": {
+    "scales": [
+      0.75,
+      1,
+      1.85
+    ],
+    "view": "List",
+    "heights": [
+      26,
+      28,
+      36
+    ],
+    "theme": "Light"
+  },
+  "package": {
+    "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "9eb0d5803cff5b1a05d9667203e19e8e816d4c61458ad12cb808c380147cb36d"
+      }
+    ],
+    "actor_sha256": "8d447f2e8a824baa7cc8d949ee3763b35f9c502c4811b851e7d70d2ffc1a0fa0",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "density_proof": [
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Miller",
+      "heights": [
+        23,
+        25,
+        34
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "List",
+      "heights": [
+        26,
+        28,
+        36
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Miller",
+      "heights": [
+        23,
+        25,
+        34
+      ],
+      "theme": "Light"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "List",
+      "heights": [
+        26,
+        28,
+        36
+      ],
+      "theme": "Light"
+    }
+  ],
+  "installed_service_scope": {
+    "scope": "Installed/readiness/main-close checks only; prior source retains actual unchanged On/Off/On lifecycle proof",
+    "normal_close_keeps_pid": 9408,
+    "startup": "On",
+    "ready": true
+  },
+  "status": "pass native row/thumbnail/footer/status appearance and uninstall scope"
+}

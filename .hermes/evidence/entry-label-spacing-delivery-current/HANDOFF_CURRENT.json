@@ -1,0 +1,39 @@
+{
+  "status": "progress: all current local native UI/assembly checks accepted; hosted Windows verify live; stable previews unchanged",
+  "checked_utc": "2026-11-05T04:48:53.713077+00:00",
+  "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "previous_goal_turn": "progress: source tests, completed builds and Linux native measurements changed delivery evidence",
+  "completed": [
+    "Linux/Windows host build and package content checks",
+    "16 original Linux captures directly reviewed, exact-source scoped native acceptance saved",
+    "Linux owned VM/volumes and consumed transport removed",
+    "Windows12 row/density plus2 thumbnail plus2 Services original captures directly reviewed",
+    "Windows native NSIS exact58-file install and normal-close/index continuity and uninstall preservation passed",
+    "Owned Windows native VM/volumes/private console and8.6MB consumed inputs removed",
+    "Linux publication preflight passed; waiting exact-source hosted Windows verify",
+    "Native MSIX20 assembly and58-file payload equality passed",
+    "Native private1000-file daemon watcher/restart/shutdown/30second idle passed at0.4686% one core",
+    "MSIX20 assembly VM/volumes and2.545MB source archive removed"
+  ],
+  "hosted_ci": {
+    "run_id": 41966597535,
+    "state": "Linux verify and both performance jobs successful; Windows verify still running at last live query"
+  },
+  "stable_delivery": "24af31d7 unchanged pending all current delivery gates",
+  "next": [
+    "Observe same hosted run41966597535 to terminal; do not cancel/restart based on elapsed time",
+    "Refresh CI_CURRENT then run promote-linux.py preflight/--publish and promote-windows.py preflight/--publish; preserve all exact proof scopes",
+    "Update stable delivery docs, manifests, retire superseded packages/stages and commit/push",
+    "Continue dependency-ready Windows administrator Copy, theme role/property audit and supported picker/folder integration"
+  ],
+  "cleanup_remaining": [
+    {
+      "path": ".hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Accepted Linux replacement awaiting exact-source hosted Windows verify and guarded stable promotion"
+    },
+    {
+      "path": ".hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Accepted ZIP/NSIS/MSIX20 replacement awaiting exact-source hosted Windows verify and guarded stable promotion"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "artifact_sha256": "B07833B756D0D001730BB0F0AF33AE4B0C5C169927795342D9E766786A5B769B",
+  "scope": "Actual clean-source production MSIX assembly and exact portable payload comparison; no deployment, launch, index upgrade or uninstall acceptance yet.",
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "payload_files": 58,
+  "artifact": "C:\\OttrinOwnedMsixAssembly\\output\\Ottrin-0.1.0-windows-x64-development.msix",
+  "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "source_script_sha256": "84390CD3D3D8ABDE001838E56E18F8FFC3770457E393CB3335A6114D593CD0EF",
+  "provenance": {
+    "development": true,
+    "version": "0.1.0.20",
+    "signed": false,
+    "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+    "artifact": "Ottrin-0.1.0-windows-x64-development.msix",
+    "sha256": "b07833b756d0d001730bb0f0af33ae4b0c5c169927795342d9e766786a5b769b",
+    "publisher": "CN=Ottrin Development, OID.2.25.311729368913984317654407730594956997722=1",
+    "scope": "MakeAppx-validated package assembly only; deployment, runtime, index upgrade/removal and Store certification remain separate gates.",
+    "package_name": "Ottrin.Development"
+  },
+  "status": "pass",
+  "artifact_bytes": 57158745,
+  "daemon_runtime": {
+    "private_state_removed": true,
+    "restart_ready": {
+      "active_root": null,
+      "active_root_index": 0,
+      "configured_roots": 1,
+      "database_bytes": 1708032,
+      "detail": "Ready \u00b7 1000 indexed",
+      "error": null,
+      "estimated_total_items": null,
+      "freelist_bytes": 4096,
+      "freelist_pages": 1,
+      "indexed_items": 1000,
+      "last_completed_indexed_items": 1000,
+      "last_progress_unix_secs": 1793850399,
+      "last_scan_completed_unix_secs": 1793850399,
+      "last_scan_duration_ms": null,
+      "last_scan_started_unix_secs": null,
+      "snapshot_revision": 1,
+      "status": "ready",
+      "total_roots": 0,
+      "wal_bytes": 4152,
+      "watched_roots": 1,
+      "watcher_error": null,
+      "watcher_ready": true
+    },
+    "protocol_shutdowns": 2,
+    "idle": {
+      "no_clients_during_sample": true,
+      "seconds": 30.0066743,
+      "cpu_one_core_percent": 0.46864573725852715,
+      "criterion_below_one_percent": true
+    },
+    "source_and_preferences_preserved": true,
+    "scope": "Exact portable daemon in the disposable noninteractive assembly account, private1000-file corpus, content disabled; watcher/query/restart/idle sample. No ordinary-user task, installer lifecycle, GUI, Store or personal-service claim.",
+    "initial_ready": {
+      "active_root": null,
+      "active_root_index": 0,
+      "configured_roots": 1,
+      "database_bytes": 28672,
+      "detail": "Ready \u00b7 1000 indexed",
+      "error": null,
+      "estimated_total_items": null,
+      "freelist_bytes": 0,
+      "freelist_pages": 0,
+      "indexed_items": 1000,
+      "last_completed_indexed_items": 1000,
+      "last_progress_unix_secs": 1793850362,
+      "last_scan_completed_unix_secs": 1793850362,
+      "last_scan_duration_ms": null,
+      "last_scan_started_unix_secs": 1793850362,
+      "snapshot_revision": 1,
+      "status": "ready",
+      "total_roots": 1,
+      "wal_bytes": 0,
+      "watched_roots": 1,
+      "watcher_error": null,
+      "watcher_ready": true
+    },
+    "binary_sha256": "3bd76275cf41f1f1d5022eab6ab64aae19048e20c5a1042f606275a51aa6ff7f",
+    "watcher_mutations": [
+      "create",
+      "rename",
+      "delete"
+    ],
+    "status": "pass scoped rebuilt daemon runtime and idle sample",
+    "account_sid": "S-1-5-18"
+  }
+}

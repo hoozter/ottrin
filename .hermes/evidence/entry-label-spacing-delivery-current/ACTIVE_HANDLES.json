@@ -1,0 +1,10 @@
+{
+  "status": "No owned native processes/VMs remain; hosted Windows verify live",
+  "hosted_run": 41966597535,
+  "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "stable_delivery": "24af31d7 unchanged pending hosted gate",
+  "retired_exec_sessions": [
+    83063,
+    74507
+  ]
+}

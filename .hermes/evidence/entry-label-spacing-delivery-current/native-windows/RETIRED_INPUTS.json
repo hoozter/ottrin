@@ -1,0 +1,70 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/RESULTS.zip",
+          "bytes": 786083,
+          "sha256": "4af8576bae8e0c4dee9d7727fe1cb62b97b1ee404e7c0832ce6524e0f66c835a"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "3e53cd8e73f9628755f05585197164f5a47e0602820486dad9e4b6003839e7b8"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/CONTROLLER_PROCESS.json",
+          "bytes": 1940,
+          "sha256": "bc675e1f4a5e1723516fbff97829006ab049b462a1e0228886a9b0f6f4b76f88"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "6423b778780684d695975d9a4706de027993546030c4b98e64b31cb6dcadd8ee"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/readiness.log",
+          "bytes": 1117,
+          "sha256": "c0cdff7c728aeee9201905104483505fa1893c0b33135c9708efc551a7bf0832"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/desktop-ready.png",
+          "bytes": 2522462,
+          "sha256": "58b740afb2500a1b4fbe59a6e6cf4b0f55b00daf4a219c8f714217ddfff72e68"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/PRIVACY_STEPS.json",
+          "bytes": 846,
+          "sha256": "37bf5972ffb4fd6531858f0863c66e616df8d6d3602b32f1d50da4f13cd6795d"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/console-current.png",
+          "bytes": 2522391,
+          "sha256": "f31912979e8701dbb84ab4baa58615c1beeae1de489a2d5d65b3d5cb718727d8"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/application-current.png",
+          "bytes": 1241899,
+          "sha256": "6d8c51b399c3ec7aa2859560c64de910895b76126e5058ad011fb550b6bed5ba"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/privacy-accepted-0.png",
+          "bytes": 9083,
+          "sha256": "794e304b22dab6b5b93604bc86e85055b7e903ec144620cf4540a34c1ac08fbe"
+        },
+        {
+          "path": ".hermes/evidence/entry-label-spacing-delivery-current/native-windows/privacy-accepted-1.png",
+          "bytes": 1492257,
+          "sha256": "760c30f32439c3cc53bd618dd8eb6a89351510f473aab886a36cd93e8f084b01"
+        }
+      ],
+      "bytes": 8584082
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}
