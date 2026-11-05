@@ -1,0 +1,17 @@
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+    Finished `test` profile [optimized + debuginfo] target(s) in 10.45s
+     Running unittests src/lib.rs (target/debug/deps/ottrin_ui-c354643af000a7cc)
+
+running 9 tests
+test remote_index::tests::closing_the_ui_owner_cancels_active_queries_even_when_a_handle_is_retained ... ok
+test remote_index::tests::endpoint_probe_cannot_block_gui_snapshot_reads ... ok
+test remote_index::tests::long_maintenance_does_not_hold_the_status_and_query_worker ... ok
+test remote_index::tests::missing_endpoint_recovers_with_the_latest_configuration_and_no_local_scanner ... ok
+test remote_index::tests::queries_observe_configuration_order_and_control_errors_are_not_hidden ... ok
+test remote_index::tests::ready_changes_reach_a_sleeping_gui_without_repainting_unchanged_polls ... ok
+test remote_index::tests::ready_snapshot_reads_do_not_enqueue_rpc ... ok
+test remote_index::tests::stalled_configuration_cannot_block_ui_snapshot_reads_or_new_settings ... ok
+test remote_index::tests::stopped_endpoint_is_neutral_but_live_and_probe_failures_remain_errors ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 6.12s
+

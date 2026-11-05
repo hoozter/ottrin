@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-05T06:43:59.454784+00:00",
+  "before_bytes": {
+    "target/debug/deps": 25266444193,
+    "target/debug/incremental": 25263273553,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30027110841,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44548740839
+  },
+  "after_bytes": {
+    "target/debug/deps": 25266444193,
+    "target/debug/incremental": 25263054799,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30027118181,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44548767808
+  },
+  "removed": "Nine exclusively locked rustc-obsolete sessions; newest finalized session per crate/config retained",
+  "owned_processes": "Disposable UI test HOME/XDG and owned test processes removed by test-workspace; compiler handles completed",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-observation-current",
+      "purpose": "Compact source integration tests/lint/cleanup receipts and prior accepted b961 source GUI frames"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug",
+      "purpose": "Reused canonical current UI test binaries/dependencies and newest compiler cache; upcoming delivery verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug",
+      "purpose": "Canonical current native boundary actor/harness and Windows compiler cache; upcoming combined CI/native UI verification"
+    }
+  ]
+}

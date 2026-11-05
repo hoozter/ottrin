@@ -1,0 +1,42 @@
+{
+  "status": "pass owned test profiles/processes removed; exact obsolete incremental sessions retired",
+  "baseline_logical_bytes": {
+    "target/debug/deps": 25262909658,
+    "target/debug/incremental": 25174074911,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070290835,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272921258,
+    ".hermes/evidence/index-status-observation-current": 0
+  },
+  "current_logical_bytes": {
+    "target/debug/deps": 25263006505,
+    "target/debug/incremental": 25174825104,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070294366,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272725988,
+    ".hermes/evidence/index-status-observation-current": 59048
+  },
+  "incremental_cleanup": {
+    "finished": "2026-11-05T04:58:20.403488+00:00",
+    "removed_sessions": 5,
+    "before": {
+      "total": 502609965056,
+      "used": 465052631040,
+      "available": 32422625280,
+      "free": 37557334016
+    },
+    "after": {
+      "total": 502609965056,
+      "used": 464695275520,
+      "available": 32779980800,
+      "free": 37914689536
+    },
+    "filesystem_free_delta": 357355520
+  },
+  "retained_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-observation-current",
+      "purpose": "compact source checks/logs/cache-cleanup receipts; no disposable fixture or package created"
+    }
+  ],
+  "shared_caches": "newest session per exact crate/config retained; matching existing compiler flags/test binary reused",
+  "limits": "Other current b020 deliverable stages remain owned by entry-label-spacing-delivery-current, awaiting exact-source hosted CI"
+}

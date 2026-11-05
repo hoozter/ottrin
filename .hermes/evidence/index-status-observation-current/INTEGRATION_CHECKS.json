@@ -1,0 +1,25 @@
+{
+  "status": "pass within integrated-source unit/lint scope",
+  "base_revision": "1d0c724928b62134292841a404d279d84ea53bfd",
+  "merged_parent": "b961609554cdf72cd42dd9d4e059582a64eac92b",
+  "ui_files_match_verified_b961": {
+    "crates/ottrin-ui/src/lib.rs": "4de0352653d65abd61f07043d95925095e735c953b83d24151097039fd4b8c30",
+    "crates/ottrin-ui/src/remote_index.rs": "6341666793cd196cad965c48b5190a3abac033a143bd606bff493d969ff843d5"
+  },
+  "ui_tests": {
+    "passed": 514,
+    "ignored": 1,
+    "seconds": 6.14
+  },
+  "strict_lint": [
+    "native UI all targets",
+    "Windows GNU UI all targets"
+  ],
+  "native_windows_boundary_fixture": "../windows-preview-boundary-race-current/ACCEPTANCE.json; 60 passing checks",
+  "limits": [
+    "Prior b961 native Linux source GUI evidence retains its original binary/source scope",
+    "No fresh combined Windows native UI or packaged acceptance",
+    "Stable Linux and Windows b020 artifacts remain current until guarded publication",
+    "Baseline b176 CI passed all four jobs; combined-source CI must still run"
+  ]
+}
