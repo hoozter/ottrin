@@ -1,0 +1,13 @@
+{
+  "retired_stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "reason": "Superseded clean1679 investigation candidate after actual native SDK rejected its manifest command IDs; stable d032 deliverables and prior23 comparison input preserved",
+  "logical_bytes": 241522162,
+  "regular_files": 63,
+  "verification": "Exact payload/artifact hashes match prior host receipts; owned top-level paths, no links or open consumers",
+  "source_archive": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/source.zip",
+    "sha256": "3433cbbfacb3d68b9a2fff5c87046c157726754fd6ab84cf1b9c6860596cb522",
+    "bytes": 2594362,
+    "reason": "Superseded source, not consumed by actual product assembly; rejection occurred in preflight SDK schema gate"
+  }
+}

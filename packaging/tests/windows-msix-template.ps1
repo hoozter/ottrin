@@ -12,6 +12,10 @@ try {
     $Source = Join-Path $env:SystemRoot 'System32\cmd.exe'
     Copy-Item $Source (Join-Path $Work 'payload\bin\ottrin.exe')
     Copy-Item $Source (Join-Path $Work 'payload\bin\ottrin-indexd.exe')
+    # The COM declaration also requires a real native DLL at its declared path.
+    # This OS control validates SDK/schema handling, not Ottrin COM activation.
+    $DllSource = Join-Path $env:SystemRoot 'System32\shell32.dll'
+    Copy-Item $DllSource (Join-Path $Work 'payload\bin\ottrin_shell.dll')
     Add-Type -AssemblyName System.Drawing
     $Image = [Drawing.Image]::FromFile($Icon)
     try {
@@ -26,14 +30,15 @@ try {
     $Manifest.Package.Identity.SetAttribute('Publisher', 'CN=Ottrin Template QA, OID.2.25.311729368913984317654407730594956997722=1')
     $Manifest.Package.Identity.SetAttribute('Version', '1.0.0.0')
     $Manifest.Save((Join-Path $Work 'payload\AppxManifest.xml'))
-    & $MakeAppx pack /d (Join-Path $Work 'payload') /p (Join-Path $Work 'control.msix') /o | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'Native SDK rejected the actual manifest template.' }
-    & $MakeAppx unpack /p (Join-Path $Work 'control.msix') /d (Join-Path $Work 'unpacked') /o | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'Native SDK unpack failed.' }
+    $PackOutput = @(& $MakeAppx pack /d (Join-Path $Work 'payload') /p (Join-Path $Work 'control.msix') /o 2>&1)
+    if ($LASTEXITCODE -ne 0) { throw ('Native SDK rejected the actual manifest template: ' + ($PackOutput -join "`n")) }
+    $UnpackOutput = @(& $MakeAppx unpack /p (Join-Path $Work 'control.msix') /d (Join-Path $Work 'unpacked') /o 2>&1)
+    if ($LASTEXITCODE -ne 0) { throw ('Native SDK unpack failed: ' + ($UnpackOutput -join "`n")) }
     if ((Get-FileHash $Source).Hash -ne (Get-FileHash (Join-Path $Work 'unpacked\bin\ottrin.exe')).Hash) { throw 'SDK round trip altered the control executable.' }
+    if ((Get-FileHash $DllSource).Hash -ne (Get-FileHash (Join-Path $Work 'unpacked\bin\ottrin_shell.dll')).Hash) { throw 'SDK round trip altered the control DLL.' }
     @{
         status = 'pass'; template_sha256 = (Get-FileHash $Template).Hash
         makeappx_sha256 = (Get-FileHash $MakeAppx).Hash
-        scope = 'Actual template accepted by native MakeAppx and unpacked with unchanged control bytes; Windows cmd.exe fixture, not Ottrin runtime or deployment acceptance.'
+        scope = 'Actual template accepted by native MakeAppx and unpacked with unchanged Windows cmd.exe/shell32.dll control bytes; not Ottrin runtime, COM activation or deployment acceptance.'
     } | ConvertTo-Json -Compress
 } finally { if (Test-Path $Work) { Remove-Item $Work -Recurse -Force } }

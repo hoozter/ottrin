@@ -31,9 +31,9 @@
         </com:Extension>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">
           <desktop4:FileExplorerContextMenus>
-            <desktop5:ItemType Type="Directory"><desktop5:Verb Id="Ottrin.Open" Clsid="6aee96d8-191d-476c-a773-b8679c83311c" /></desktop5:ItemType>
-            <desktop5:ItemType Type="Directory\Background"><desktop5:Verb Id="Ottrin.Open" Clsid="6aee96d8-191d-476c-a773-b8679c83311c" /></desktop5:ItemType>
-            <desktop5:ItemType Type="Drive"><desktop5:Verb Id="Ottrin.Open" Clsid="6aee96d8-191d-476c-a773-b8679c83311c" /></desktop5:ItemType>
+            <desktop5:ItemType Type="Directory"><desktop5:Verb Id="OttrinOpenFolder" Clsid="6aee96d8-191d-476c-a773-b8679c83311c" /></desktop5:ItemType>
+            <desktop5:ItemType Type="Directory\Background"><desktop5:Verb Id="OttrinOpenBackground" Clsid="6aee96d8-191d-476c-a773-b8679c83311c" /></desktop5:ItemType>
+            <desktop5:ItemType Type="Drive"><desktop5:Verb Id="OttrinOpenDrive" Clsid="6aee96d8-191d-476c-a773-b8679c83311c" /></desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
         <uap5:Extension Category="windows.startupTask" Executable="bin\ottrin-indexd.exe" EntryPoint="Windows.FullTrustApplication">

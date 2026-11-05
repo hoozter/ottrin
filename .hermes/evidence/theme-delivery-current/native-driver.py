@@ -186,6 +186,8 @@ with ExitStack() as stack:
    shutil.copy2(r/'packaging/windows'/filename,fixture/filename)
   os.link(cache/'windows-sdk-buildtools.nupkg',fixture/'windows-sdk-buildtools.zip')
   shutil.copy2(r/'packaging/tests/windows-msix-template.ps1',fixture/'windows-msix-template.ps1')
+  shutil.copy2(fixture/'windows-msix-template.ps1',e/'SDK_TEMPLATE_SOURCE.ps1')
+  state['sdk_template_sha256']=hashlib.sha256((e/'SDK_TEMPLATE_SOURCE.ps1').read_bytes()).hexdigest();save('OWNER.json',state)
   shutil.copy2(r/'assets/icon.png',fixture/'icon.png')
  if args.msix_stage:
   parent=e.parent;build=json.loads((parent/'windows/BUILD_RESULT.json').read_text());source_input=json.loads((parent/'SOURCE_INPUT.json').read_text());git_input=json.loads((r/'.hermes/evidence/windows-msix-current/GIT_INPUT.json').read_text());assert build['source_revision']==source_input['source_revision']

@@ -1,0 +1,6 @@
+{
+  "status": "Native SDK rejected actual manifest before product package assembly",
+  "error": "C00CE169: desktop5:Verb Id Ottrin.Open violates alphanumeric schema pattern",
+  "correction": "Distinct alphanumeric command identifiers; add regression coverage; rebuild clean-source candidates without rewriting provenance",
+  "cleanup": "OWNER.json records domain, fixture and both volumes removed"
+}

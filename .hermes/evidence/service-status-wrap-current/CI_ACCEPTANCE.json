@@ -1,0 +1,36 @@
+{
+  "source_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa",
+  "run": 42020187483,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T11:35:25Z",
+      "completedAt": "2026-11-05T11:39:41Z"
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T11:35:25Z",
+      "completedAt": "2026-11-05T11:43:46Z"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T11:35:25Z",
+      "completedAt": "2026-11-05T12:16:01Z"
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T11:35:26Z",
+      "completedAt": "2026-11-05T11:36:53Z"
+    }
+  ],
+  "scope": "Exact8c hosted checks only; newer shell work and stable packages have separate scopes"
+}

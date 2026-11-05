@@ -1,0 +1,6 @@
+{
+  "stdout": "\nrunning 1 test\ntest server::tests::packaged_shell_com_contract ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s\n\n",
+  "exitcode": 0,
+  "stderr": null,
+  "sha256": "7C9DFAD9A27698862744D9E2A8B63A1DFD78DD0BF0247A319B77F6232401776D"
+}

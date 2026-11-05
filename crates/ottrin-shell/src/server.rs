@@ -118,7 +118,13 @@ impl FolderCommand_Impl {
         let provider: IServiceProvider = site.as_ref().ok_or(E_FAIL)?.cast()?;
         // SID_SFolderView is the SDK alias for IID_IFolderView.
         let view: IFolderView = unsafe { provider.QueryService(&IFolderView::IID)? };
-        let item: IShellItem = unsafe { view.GetFolder()? };
+        // GetFolder documents IShellItemArray for the view's folder, rather
+        // than promising that the underlying IShellFolder exposes IShellItem.
+        let folder: IShellItemArray = unsafe { view.GetFolder()? };
+        if unsafe { folder.GetCount()? } != 1 {
+            return Err(E_INVALIDARG.into());
+        }
+        let item = unsafe { folder.GetItemAt(0)? };
         Ok(vec![folder_path(&item)?])
     }
 }
@@ -249,6 +255,21 @@ mod tests {
     fn manifest_class_and_folder_contexts_match_server() {
         let manifest = include_str!("../../../packaging/windows/msix-manifest.xml");
         assert!(manifest.contains(&format!("{:?}", CLASS).to_ascii_lowercase()));
+        let verbs: Vec<_> = manifest.split("<desktop5:Verb ").skip(1).collect();
+        assert_eq!(verbs.len(), 3);
+        for verb in verbs {
+            let id = verb
+                .split_once("Id=\"")
+                .unwrap()
+                .1
+                .split('"')
+                .next()
+                .unwrap();
+            assert!(
+                !id.is_empty() && id.bytes().all(|byte| byte.is_ascii_alphanumeric()),
+                "Packaged Explorer verb identifiers must satisfy the native SDK schema: {id}"
+            );
+        }
         for context in ["Directory", "Directory\\Background", "Drive"] {
             assert!(manifest.contains(&format!("Type=\"{context}\"")));
         }

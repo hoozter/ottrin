@@ -89,7 +89,8 @@ points and1.0/1.7 font scales afterward. All517 UI tests pass (one existing
 ignored), native/Windows UI lint and release GUI build pass, and actual Linux
 source GUI recovery checks pass in Dark/Light with stable control geometry.
 Four targeted originals were reviewed; this is not native Windows wrapping or
-packaged acceptance. Seven obsolete incremental sessions were retired (0.39GiB);
+packaged acceptance. Exact source `8c209530` also passes all four hosted jobs in
+[run42020187483](https://github.com/hoozter/ottrin/actions/runs/42020187483). Seven obsolete incremental sessions were retired (0.39GiB);
 private test processes/display/bus/profile are removed. Evidence:
 `.hermes/evidence/service-status-wrap-current/ACCEPTANCE.json`.
 
@@ -99,6 +100,12 @@ manifest and Unicode folder-selection contract test. The test runs under the
 guest-agent token; it does not prove ordinary-user package activation. Package
 activation, menu visibility, invocation and removal remain unverified. Default folder opening remains unresolved for MSIX;
 portable/NSIS integration keeps its existing registry transaction implementation.
+The first native SDK gate rejected dotted command IDs (`C00CE169`). The source
+now uses distinct alphanumeric IDs and its native regression passes. The SDK
+control includes the declared DLL and retains complete rejection output. Earlier
+59-file investigation output was retired after byte/ownership/consumer checks; a
+clean rebuild is required, with no provenance rewriting. Both failed guests and
+the latest native component guest are removed.
 The stable packages are unchanged. Work evidence:
 `.hermes/evidence/packaged-shell-current/`.
 

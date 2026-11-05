@@ -1,0 +1,8 @@
+{
+  "status": "SDK smoke failed before actual clean-source MSIX assembly",
+  "evidence": "SDK_NATIVE_SMOKE.json",
+  "fixture_gap": "Manifest declares bin/ottrin_shell.dll but schema fixture originally provided only cmd.exe under GUI/daemon names",
+  "correction": "Provide explicit OS shell32.dll control, require unchanged round-trip bytes, preserve full MakeAppx output on rejection. Actual assembly still uses real Ottrin DLL.",
+  "cleanup": "OWNER.json proves domain, fixture and both owned volumes removed",
+  "artifact_scope": "Portable/NSIS1679 payload unchanged; source archive remains needed for actual assembly"
+}

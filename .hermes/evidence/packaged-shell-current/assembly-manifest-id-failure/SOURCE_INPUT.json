@@ -1,0 +1,12 @@
+{
+  "source_revision": "1679d4a5571099e8782ac1c85efea6ecd0561126",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/source.zip",
+  "status": "prepared",
+  "sha256": "3433cbbfacb3d68b9a2fff5c87046c157726754fd6ab84cf1b9c6860596cb522",
+  "archive_bytes": 2594362,
+  "real_shallow_clone": true,
+  "filter_requested": true,
+  "source_scope": "Exact Git commit and sparse packager inputs; omitted blobs are not assembly inputs. No new Git revision or forged provenance.",
+  "temporary_clone_removed": true
+}

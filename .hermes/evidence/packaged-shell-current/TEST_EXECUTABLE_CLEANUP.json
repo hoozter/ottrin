@@ -1,0 +1,31 @@
+{
+  "scope": "Superseded initial shell test executable, matching compiler profile/target; final native-tested replacement retained",
+  "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_shell-36fcbe56ed1c0b11.exe",
+  "replacement_sha256": "daccf31eeb36aa11c563bc63987796c2927082398e137baa942ed64276c221b0",
+  "removed": {
+    "target/x86_64-pc-windows-gnu/debug/deps/ottrin_shell-9ed7376e551d557b.exe": {
+      "bytes": 9717272,
+      "sha256": "2509eb680309be983bc3587e19f399a133c5809ec5f74c89d8721edb66fd8f50"
+    },
+    "target/x86_64-pc-windows-gnu/debug/deps/ottrin_shell-9ed7376e551d557b.d": {
+      "bytes": 726,
+      "sha256": "e835d1de86a03e5325fd02b83fa793e98160c9c899ee0ca123c59ef53639d2fe"
+    },
+    "target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-shell-9ed7376e551d557b/test-lib-ottrin_shell.json": {
+      "bytes": 588,
+      "sha256": "30ac3677bd83f686a78a70f47dc9b8c063e72e367f33703971403724fa6bab9c"
+    },
+    "target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-shell-9ed7376e551d557b/test-lib-ottrin_shell": {
+      "bytes": 16,
+      "sha256": "9bbd1075205ddbe1649dc025d693df1d140949e3bf336a8f13d097356929991f"
+    },
+    "target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-shell-9ed7376e551d557b/dep-test-lib-ottrin_shell": {
+      "bytes": 175,
+      "sha256": "30ac29be8ed40db26673ce5f716e45471ba3c1b8a99966c184dedc567eb84672"
+    },
+    "target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-shell-9ed7376e551d557b/invoked.timestamp": {
+      "bytes": 48,
+      "sha256": "5a109e6643e8d3e88642e3f35e85d2a83e639d07523aa6e99166c48178e965c3"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "source_revision": "1679d4a5571099e8782ac1c85efea6ecd0561126",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "purpose": "Clean package-owned Explorer shell candidate; stable d032 packages preserved; exact prior MSIX23 held for upgrade/comparison"
+}

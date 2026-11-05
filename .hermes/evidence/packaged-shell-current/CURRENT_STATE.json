@@ -1,11 +1,10 @@
 {
   "goal": "active/incomplete",
   "previous_goal_turn": "progress: wrapping fix committed/pushed and real MSIX failure isolated",
-  "base_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa",
-  "status": "pass source checks and direct native COM contract; packaged Explorer integration not yet accepted",
+  "status": "pass current source checks and direct native COM contract; SDK and packaged runtime remain separate",
   "stable_delivery": "d032 unchanged",
   "scope": "MSIX folder context menus; default folder opening remains separate unresolved work",
-  "next": "Build clean-source portable/NSIS and native MSIX24 candidate, then actual ordinary-user package tests",
+  "next": "Clean-source candidate rebuild, then actual native SDK/package and ordinary-user COM/Explorer checks",
   "native_cleanup": {
     "domain_removed": true,
     "owned_volumes_removed": [
@@ -16,8 +15,9 @@
     "base_still_off": true,
     "retained_pending_volume": null
   },
-  "implementation_revision": "569d79442a8e723990799ee50917046b0578d333",
+  "implementation_revision": "Source snapshot bound by SOURCE_ACCEPTANCE.json source_files; corrective implementation and receipt share a commit",
   "previous_msix": "previous23.msix",
   "candidate_stage": ".hermes/packaging-tmp/.windows-picker-stage",
-  "baseline_retirement": "BASELINE_RETIREMENT.json"
+  "baseline_retirement": "BASELINE_RETIREMENT.json",
+  "case_base_revision": "8c209530d5565b7962d64b6e6d0016fb7c3059fa"
 }
