@@ -1,0 +1,65 @@
+{
+  "status": "pass scoped shared index-status observation delivery; full roadmap and UI audit incomplete",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "cdec0099d94e15bee970169f7b077f215d67442d66c24d8ed76d3af9abeb047b",
+    "Ottrin-0.1.0-x86_64.AppImage": "8d5e395f583bdf1874dda7f043e2c2296e069e1660e6b5c8f76c54f83089417a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "985778ed688e51bd8815c87c3d4b8110f7e187231a066511548f7b71a5a015f4",
+    "ottrin_0.1.0_amd64.deb": "202e7dd053dcc0164041c32ed11de00482c2b2beb79a7105284cbcc65bfc4ad3"
+  },
+  "evidence": ".hermes/evidence/index-status-final-delivery-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "runtime_sha256": {
+    "application": "e94326663d174fbb040ae823846a61c332f578395b4232b9ff36b471c2d59f76",
+    "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+    "privileged_helper": "9aed6636ff29bb70ad9c804539c3994eac307c028c80d5d2d4763f46e7507cf2",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "hosted_source": {
+    "run": 41988155471,
+    "tested_source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+    "all_four_jobs_success": true
+  },
+  "native_current_ui": ".hermes/evidence/index-status-final-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
+  "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
+  "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/index-status-final-delivery-current/SOURCE_SCOPE.json",
+  "daemon_identity": ".hermes/evidence/index-status-final-delivery-current/DAEMON_IDENTITY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "daemon_runtime_scope": {
+    "freshly_rerun": false,
+    "original_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "exact_current_binary_identity": true
+  },
+  "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
+  "current_helper_read_only": [
+    "LINUX_HELPER_CAPABILITY.json",
+    "LINUX_HELPER_STDIO.json"
+  ],
+  "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "historical_daemon_evidence": {
+    "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+    "daemon_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "native_login": ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
+    "binary_replacement": ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_ACCEPTANCE.json",
+    "freshly_rerun": false,
+    "applies_to_current_daemon_identity": false
+  },
+  "limits": [
+    "Actual mounted AppImage in owned host software-X11 desktop; native distro installation retains older source scope. No physical graphics, Wayland or full interface acceptance.",
+    "All16 current main/Services status-transition originals directly reviewed. Prior captions/startup toggles keep original source scope. Long error details push recovery controls below visible scroll area; broader layout audit remains open.",
+    "Exact unchanged daemon bytes retain prior private watcher/query/restart/shutdown/idle evidence; no new sustained or large-corpus sample.",
+    "HTML bytes are unchanged. Helper bytes changed: current read-only stdio/capability checks pass; protected Copy proof retains older helper/source scope. Personal helper setup requires owner OS authentication.",
+    "No public release, signing, Store or MSI acceptance.",
+    "Packaged manuals are build-time snapshots at 781444ef; repository metadata records later delivery."
+  ]
+}

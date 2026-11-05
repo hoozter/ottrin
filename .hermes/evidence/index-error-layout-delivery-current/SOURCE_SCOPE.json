@@ -1,0 +1,16 @@
+{
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "previous_delivered_source": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "changed_product_files": [
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "unchanged_packaging_and_dependency_inputs": [
+    "packaging",
+    "scripts",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build-all.sh"
+  ],
+  "current_source_checks": "../index-error-layout-current/ACCEPTANCE.json",
+  "scope": "Recovery-control diagnostic layout only; current package acceptance does not renew unrelated native platform, elevated Copy, theme audit, distribution install, signing or Store acceptance. Unchanged daemon/helper/HTML bytes may retain prior exact-binary evidence explicitly. Current MSIX22 assembly planned; MSIX21 runtime/login/removal remains historical unless separately rerun."
+}

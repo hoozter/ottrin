@@ -1,0 +1,60 @@
+{
+  "status": "unchanged producer references and case-specific source; local copies retained for current publication/audit",
+  "references": [
+    {
+      "materialized": "build.py",
+      "authoritative_source": ".hermes/evidence/index-status-delivery-current/build.py",
+      "git_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+      "sha256": "71b74bafe2136e6bbfef2f81d13e5b42774cd9b2851b2658a1c10b6eb1a97ea1",
+      "usage": "Materialize unchanged producer under this case root so its __file__ parent binds recorded current inputs"
+    },
+    {
+      "materialized": "windows/build-portable.py",
+      "authoritative_source": ".hermes/evidence/index-status-delivery-current/windows/build-portable.py",
+      "git_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+      "sha256": "bfe95f3e37d622e0de04aee25ab1cdb9792d13b57e4caf442f9c536ec9c12856",
+      "usage": "Materialize unchanged producer under this case root so its __file__ parent binds recorded current inputs"
+    },
+    {
+      "materialized": "verify-packages.py",
+      "authoritative_source": ".hermes/evidence/index-status-delivery-current/verify-packages.py",
+      "git_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+      "sha256": "37b0e8d85c2e7f315813f4b4d766d36556077585aab56c6eb98f2bbf4b7ca684",
+      "usage": "Materialize unchanged producer under this case root so its __file__ parent binds recorded current inputs"
+    },
+    {
+      "materialized": "verify-windows-cohort.py",
+      "authoritative_source": ".hermes/evidence/index-status-delivery-current/verify-windows-cohort.py",
+      "git_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+      "sha256": "4b287a1df507c6703a90588f5e2d8211969d1bf5dc3404419fdbdbdfac83d5dc",
+      "usage": "Materialize unchanged producer under this case root so its __file__ parent binds recorded current inputs"
+    },
+    {
+      "materialized": "run-native-appimage.py",
+      "authoritative_source": ".hermes/evidence/index-status-delivery-current/run-native-appimage.py",
+      "git_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+      "sha256": "94ddb759ef586a1050e63184759d066383e6ad45de7e96047ccf826dbc64cada",
+      "usage": "Materialize unchanged producer under this case root so its __file__ parent binds recorded current inputs"
+    },
+    {
+      "materialized": "prepare-source.py",
+      "authoritative_source": ".hermes/evidence/index-status-final-delivery-current/prepare-source.py",
+      "git_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+      "sha256": "94b087c6a1f1a71060ddbc498f8263d4d6b68763c60e9433afc96b4302c36336",
+      "usage": "Materialize unchanged producer under this case root so its __file__ parent binds recorded current inputs"
+    },
+    {
+      "materialized": "privacy-control.py",
+      "authoritative_source": ".hermes/evidence/index-status-final-delivery-current/privacy-control.py",
+      "git_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+      "sha256": "958e1ad3b0890090ae1863987666759697958a25cfd95d03499a0c9f54a3f848",
+      "usage": "Materialize unchanged producer under this case root so its __file__ parent binds recorded current inputs"
+    }
+  ],
+  "case_specific_sources": [
+    {
+      "path": "build-both.py",
+      "sha256": "99ed97fafb0eaf3facce60eadf1786c149940e811756b5d5d5f7620ba467b68d"
+    }
+  ]
+}

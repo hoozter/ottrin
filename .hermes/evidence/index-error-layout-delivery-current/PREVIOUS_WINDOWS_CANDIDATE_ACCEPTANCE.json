@@ -1,0 +1,42 @@
+{
+  "status": "pass scoped native Windows index-status and fresh MSIX lifecycle delivery; full roadmap incomplete",
+  "source_commit": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "525c877fcf9904acbfe50cb10472d7d19deb76cffd527ca805e5a1162d3e48c0",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "a8878bfde190decdfb61ff2d75da2a081b9cc63ca9a2d5b12f8c0920569d6187",
+    "Ottrin-0.1.0-windows-x64-development.msix": "35c5e3b397ae42c88777098095601d844b5ce85244f753a2f108896411d4b91c"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/index-status-final-delivery-current",
+  "hosted_source": {
+    "run": 41988155471,
+    "tested_source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+    "exact_source_all_four_jobs_success": true
+  },
+  "host_content": "HOST_PAYLOAD.json",
+  "current_native_fields": ".hermes/evidence/index-status-final-delivery-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/index-status-final-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "native_msix": {
+    "current_assembly": ".hermes/evidence/index-status-final-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/index-status-final-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "historical_runtime_login_removal": ".hermes/evidence/list-density-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "historical_enabled_disabled_updates": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json",
+    "scope": "Current21 has native assembly/58-file equality, current NSIS installed UI/service stop/restart/uninstall and fresh MSIX21 ordinary runtime, visible startup control, real reboot/login and removal. Earlier update proof retains original source/artifact scope; no fresh20-to21 upgrade claim."
+  },
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "source_scope": ".hermes/evidence/index-status-final-delivery-current/WINDOWS_SOURCE_SCOPE.json",
+  "public_release_published": false,
+  "limits": [
+    "Software guest/default DPI only; no physical graphics, signing, Store or final human acceptance",
+    "Full UI/theme role/property audit remains open",
+    "Actual21 folder-integration transaction failure remains independent software work",
+    "Administrator Copy durable coordinator/caller registry remains gated",
+    "Current21 native assembly, fresh runtime/login/removal and current NSIS GUI/service/uninstall;17-to18 updates retain original source/artifacts"
+  ]
+}

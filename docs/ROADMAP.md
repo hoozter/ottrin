@@ -46,17 +46,48 @@ Delivery authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`,
 `.hermes/evidence/index-status-final-delivery-current/`.
 No public release, signing, Store, MSI or full interface acceptance is implied.
 
-A newer source-only layout correction places complete index diagnostic details
-in an expanded-by-default section after recovery controls. All515 UI tests pass
-(one existing ignored), including original error visibility and a new rendered
-geometry regression; strict native/Windows UI lint passes. Actual source GUI
-Dark/Light error controls retain Ready geometry; diagnostic collapse/reopen,
-full text scrolling and returning to recovery controls pass. Six targeted
-original captures were reviewed. Both private desktops/state are removed;
-13 obsolete incremental sessions (0.57GiB) and45 replaced capture/log files were
-retired. This correction is not yet in the stable packages and needs final-source
-package delivery. Evidence: `.hermes/evidence/index-error-layout-current/`.
-The broader theme/property/role and whole-window layout audit remains open.
+The newer committed layout correction `d0320932` is built and locally verified,
+but **is not yet promoted to the stable paths**. Complete index diagnostics now
+follow recovery controls in an expanded-by-default disclosure. All515 UI tests
+pass (one existing ignored), with original error visibility and a rendered
+geometry regression; strict native/Windows UI lint passes. Four Linux formats
+pass contents/provenance/runtime closure. The actual staged AppImage passes both
+themes' Ready→Stopped→real endpoint error→Ready, identical recovery-button
+geometry, disclosure and complete-error scrolling. Six targeted originals were
+reviewed; the private desktop and state are removed.
+
+Current Windows ZIP/NSIS58-file equality passes. A fresh ordinary-user installed
+case passes actual daemon-thread suspension→timeout→same-process recovery in
+both themes. Recovery controls remain at the same geometry, startup stays On,
+and normal close/uninstall preserve files/preferences. Six targeted Services
+originals were reviewed. Native development MSIX22 assembly/58-file equality and
+current daemon1000-file watcher/restart/shutdown checks pass; its30-second idle
+sample is0.26% of one core. MSIX21 ordinary runtime/login/removal keeps its
+original781 scope; no fresh22 runtime or21-to22 upgrade claim is made. All owned
+VMs, disks, desktops, profiles and consumed source/result transports are removed.
+The first native fixture's scalar-array arithmetic bug occurred before daemon
+suspension; its corrected fresh run passed unchanged assertions and deadlines.
+Compact failure evidence and the original failure frame remain;16 superseded
+failed-case captures were retired after replacement/source/consumer checks.
+
+Hosted run41998168676 has passed Linux verification and both performance jobs;
+Windows workspace verification remains active. Guarded publication waits for all
+four exact-source jobs, then restarts the managed Linux service with startup,
+preferences and database-identity checks. Both stable781 cohorts are preserved.
+Staging is retained only for that publication consumer at
+`.hermes/packaging-tmp/.linux-native-desktop-stage` and
+`.hermes/packaging-tmp/.windows-picker-stage`. Evidence and producer ownership:
+`.hermes/evidence/index-error-layout-delivery-current/CURRENT_STATE.json`.
+No obsolete incremental sessions remain in the exact native/Windows debug roots;
+rounded cache sizes match the recorded baseline.
+
+The native timeout captures expose another software UI defect: a persistent
+historical green "restarted and ready" action message remains above the newer
+live Needs attention status. Current recovery layout is verified; that
+contradictory feedback and the broader theme/property/role audit remain open.
+See `index-error-layout-delivery-current/OPEN_UI_FINDINGS.json`. This is not an
+owner-dependent wait. Source-only layout evidence remains under
+`.hermes/evidence/index-error-layout-current/`.
 
 ### Usable local preview
 

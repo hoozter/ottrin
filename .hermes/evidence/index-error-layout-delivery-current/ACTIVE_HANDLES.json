@@ -1,0 +1,14 @@
+{
+  "status": "both builds terminal; staged acceptance required",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "rule": "No tracked edits or commits until both builds terminate; each packager reads real Git provenance.",
+  "completed": [
+    "Linux",
+    "Windows"
+  ],
+  "stable_deliverables": "Linux/Windows781 stable deliverables preserved",
+  "goal": "active/incomplete",
+  "phase": "Windows",
+  "producer_pid": 2805085,
+  "producer_exit": 0
+}

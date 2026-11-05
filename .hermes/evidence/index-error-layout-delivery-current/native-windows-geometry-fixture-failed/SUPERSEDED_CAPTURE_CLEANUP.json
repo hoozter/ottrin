@@ -1,0 +1,102 @@
+{
+  "status": "pass replacement/source/actor-delta/consumer checks; compact failure and original failure window retained",
+  "removed": [
+    {
+      "path": "results/List-Light-1.png",
+      "bytes": 37021,
+      "sha256": "5c9dc6db2daf481b96955510a322355d1c3a130a54dfb3cf90dc3befd2b52397",
+      "replacement": "native-windows/results/List-Light-1.png"
+    },
+    {
+      "path": "results/thumbnails-Dark.png",
+      "bytes": 57110,
+      "sha256": "d18fcea9980a427aed2cb3bb49a78e1fe0748ea534fb0f2f1aa59f6e6f219863",
+      "replacement": "native-windows/results/thumbnails-Dark.png"
+    },
+    {
+      "path": "results/Miller-Light-1.85.png",
+      "bytes": 51165,
+      "sha256": "9191397bd0e6fe1b0049024545ff384a54c786729b81b0e61acc46873696b6b9",
+      "replacement": "native-windows/results/Miller-Light-1.85.png"
+    },
+    {
+      "path": "results/thumbnails-Light.png",
+      "bytes": 43233,
+      "sha256": "ac7dfc0bac765df7ccbbd934dae32214b406018519f2ab0a8cff31f40049e561",
+      "replacement": "native-windows/results/thumbnails-Light.png"
+    },
+    {
+      "path": "results/Miller-Dark-0.75.png",
+      "bytes": 62562,
+      "sha256": "84b805787a644ce4458b0e170ce10be760624fe892e7747f6f2515ac8e93a848",
+      "replacement": "native-windows/results/Miller-Dark-0.75.png"
+    },
+    {
+      "path": "results/List-Dark-0.75.png",
+      "bytes": 46947,
+      "sha256": "c0fa902979a9071fb2379f54ac30e96dd35131b2eb9539a9628f5bf1bc7a8a75",
+      "replacement": "native-windows/results/List-Dark-0.75.png"
+    },
+    {
+      "path": "results/List-Dark-1.png",
+      "bytes": 48442,
+      "sha256": "c2de0f6381c39d14cdf7834d9f2f17442df79959fdf4e91ebddef8a6bcdbad83",
+      "replacement": "native-windows/results/List-Dark-1.png"
+    },
+    {
+      "path": "results/Miller-Light-1.png",
+      "bytes": 53483,
+      "sha256": "7eea2343bc626dc4537a3825992df23a7393a429818c91305a192f6f5e87c456",
+      "replacement": "native-windows/results/Miller-Light-1.png"
+    },
+    {
+      "path": "results/List-Light-1.85.png",
+      "bytes": 43809,
+      "sha256": "4951c7cb0e879040dfe6e009e4218f084f23f6cba4cad495420e4aa936c05369",
+      "replacement": "native-windows/results/List-Light-1.85.png"
+    },
+    {
+      "path": "results/services-Dark-stopped.png",
+      "bytes": 119152,
+      "sha256": "5950c0d468b32a1eecf3b2c66a1fdc5f8e010258ebcfbf4db05784a95c7fe0bc",
+      "replacement": "native-windows/results/services-Dark-stopped.png"
+    },
+    {
+      "path": "results/Miller-Dark-1.png",
+      "bytes": 65210,
+      "sha256": "f4e1f5a02f050b9037c1f845894f1f9cb376b0be0951a03d04cc27bbae675f70",
+      "replacement": "native-windows/results/Miller-Dark-1.png"
+    },
+    {
+      "path": "results/Miller-Light-0.75.png",
+      "bytes": 51507,
+      "sha256": "46a40ef3277e004392a6902127d93e0a820331ecd3f9a25db7fdba6e1c6f86c0",
+      "replacement": "native-windows/results/Miller-Light-0.75.png"
+    },
+    {
+      "path": "results/Miller-Dark-1.85.png",
+      "bytes": 64200,
+      "sha256": "ffe98060ce012272c63c79bc75de1caf194d9178cef2c14461e199a3f90d2a05",
+      "replacement": "native-windows/results/Miller-Dark-1.85.png"
+    },
+    {
+      "path": "results/List-Dark-1.85.png",
+      "bytes": 57550,
+      "sha256": "a5b824e0d78d6673d72d7da444043328463a98eee27eade6d3d6899f95b0b1ec",
+      "replacement": "native-windows/results/List-Dark-1.85.png"
+    },
+    {
+      "path": "results/services-Dark.png",
+      "bytes": 103468,
+      "sha256": "9a74804cf4b0fdd7f27314c7bd5de059a52ab1e89f174f342a304cce37a5fdd1",
+      "replacement": "native-windows/results/services-Dark.png"
+    },
+    {
+      "path": "results/List-Light-0.75.png",
+      "bytes": 35630,
+      "sha256": "bcbb1c4e36a5b1a6cb8c269e39b40dbc3eccb8906a9487d32dd82b261c9529e1",
+      "replacement": "native-windows/results/List-Light-0.75.png"
+    }
+  ],
+  "bytes": 940489
+}

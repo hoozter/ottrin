@@ -1,0 +1,22 @@
+{
+  "status": "direct targeted original review complete",
+  "captures": {
+    "services-Dark-live-error.png": "a72f94bfaa3171bfef6a960e847f53c871adf5391d16910c2cf16cb85c20966c",
+    "services-Dark-error-collapsed.png": "3282e6504895c5941aca1a8a8c09d8ad04c20da0b18337335f4403b4633b6aca",
+    "services-Dark-recovered.png": "8bb317ecd4f82798ec113e13bf24f9652f3c1bc6e66f91602bd87d688acfdc01",
+    "services-Light-live-error.png": "55bb677112153d5ef0844a47c8ef804fd1ddcd4ae31d4f998a5c4918ebfafe65",
+    "services-Light-error-collapsed.png": "178be7baf9a325b0e1cda3580142c6583d52cd9cd2b0cef0097c0ef9a6a7e361",
+    "services-Light-recovered.png": "a5e5361d0c2d8f012f0526c338cda025a3f9bb026c7b654d988952755d4707d8"
+  },
+  "observations": [
+    "Both themes keep recovery buttons aligned and visible; actual UIA geometry is unchanged at y441 in the600-point viewport",
+    "Complete Local pipe I/O timed out diagnostic is readable by default; collapsed/reopened disclosure retains controls and full error",
+    "Same owned daemon resumes to Ready; automatic startup stays On; normal GUI close and uninstall preservation are independently asserted",
+    "A historical green restarted-and-ready action message remains above current Needs attention. This is a recorded open status-consistency defect, not accepted whole-screen behavior",
+    "Lower desktop-integration settings extend below this viewport; no whole-window/property audit claim"
+  ],
+  "limits": [
+    "Six targeted Services originals only; automated density/thumbnail cases do not establish full appearance acceptance",
+    "No current MSIX22 runtime, MSI, protected Copy, physical graphics or final human acceptance"
+  ]
+}

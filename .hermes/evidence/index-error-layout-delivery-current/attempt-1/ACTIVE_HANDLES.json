@@ -1,0 +1,12 @@
+{
+  "status": "build interrupted or failed; inspect each producer receipt",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "rule": "No tracked edits or commits until both builds terminate; each packager reads real Git provenance.",
+  "completed": [],
+  "stable_deliverables": "Linux/Windows781 stable deliverables preserved",
+  "goal": "active/incomplete",
+  "phase": "Linux",
+  "producer_pid": 2794207,
+  "error": "AssertionError(('Linux', 1))",
+  "producer_exit": 1
+}

@@ -1,0 +1,99 @@
+{
+  "run_id": 41998168676,
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "observed_utc": "2026-11-05T09:44:00.046351+00:00",
+  "status": "in_progress",
+  "conclusion": "",
+  "jobs": [
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "passed_steps": [
+        "Set up job",
+        "Checkout",
+        "Setup Rust",
+        "Cache Rust build",
+        "Release benchmark smoke test",
+        "Upload benchmark artifact",
+        "Post Cache Rust build",
+        "Post Checkout",
+        "Complete job"
+      ],
+      "active_steps": []
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "passed_steps": [
+        "Set up job",
+        "Checkout",
+        "Setup Rust",
+        "Cache Rust build",
+        "Install Linux system dependencies",
+        "Prepare Linux process isolation",
+        "Prepare pinned search provider",
+        "Cargo fmt",
+        "Cargo check",
+        "Prepare production Linux HTML sandbox",
+        "Verify production HTML pixels and executable mapping policy",
+        "Cargo test",
+        "Verify production Linux desktop integration",
+        "Upload Linux portal evidence",
+        "Cargo clippy",
+        "Report Linux build storage",
+        "Release build",
+        "Prepare release-build artifact",
+        "Upload release-build artifact",
+        "Retire production Linux HTML integration",
+        "Retire pinned search provider",
+        "Upload Linux HTML sandbox evidence",
+        "Post Cache Rust build",
+        "Post Checkout",
+        "Complete job"
+      ],
+      "active_steps": []
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "passed_steps": [
+        "Set up job",
+        "Checkout",
+        "Setup Rust",
+        "Cache Rust build",
+        "Release benchmark smoke test",
+        "Upload benchmark artifact",
+        "Post Cache Rust build",
+        "Post Checkout",
+        "Complete job"
+      ],
+      "active_steps": []
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "in_progress",
+      "conclusion": "",
+      "passed_steps": [
+        "Set up job",
+        "Checkout",
+        "Setup Rust",
+        "Cache Rust build",
+        "Prepare pinned search provider",
+        "Verify native MSIX manifest template",
+        "Cargo fmt",
+        "Cargo check",
+        "Check Windows Move ownership before workspace suite",
+        "Check Windows Office contracts before workspace suite",
+        "Check Windows native preview boundary before workspace suite",
+        "Check Windows Move UI recovery before workspace suite",
+        "Check Windows index transport before workspace suite"
+      ],
+      "active_steps": [
+        "Cargo test"
+      ]
+    }
+  ]
+}

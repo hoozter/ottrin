@@ -1,0 +1,65 @@
+{
+  "status": "Current d032 Linux and Windows installed layout acceptance and native MSIX22 assembly pass; all owned guests/desktops/state removed; exact-source hosted Windows workspace suite remains live, stable781 retained",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "hosted_ci": {
+    "id": 41998168676,
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41998168676"
+  },
+  "stable_deliverables": "781 at dist/packages and dist/windows-candidate, preserved",
+  "goal": "active/incomplete",
+  "source_acceptance": "../index-error-layout-current/ACCEPTANCE.json",
+  "pending": [
+    "Exact-source hosted Windows workspace/lint/release completion",
+    "Guarded stable publication and managed Linux service restart with preference/database/startup preservation",
+    "Delivery documentation/checkpoint push"
+  ],
+  "cleanup_owner": "Serial build producers use shared caches, register subprocess teardown and remove failed owned staging; successful staging is retained only for current acceptance and guarded replacement",
+  "retained_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Current committed-source Linux build and upcoming package acceptance; owned producer cleans failures, guarded publication removes success staging"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Upcoming same-cohort Windows portable/NSIS build and native acceptance; same teardown contract"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current",
+      "purpose": "Current build receipts/logs and acceptance inputs; active producer handle in ACTIVE_HANDLES.json"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current",
+      "purpose": "Published781 acceptance and original captures/failure diagnostics; compact receipts committed, originals retained for current-deliverable audit"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-current",
+      "purpose": "Verified source-layout original captures and build/test evidence; compact receipts committed, current package build consumes the same source change"
+    }
+  ],
+  "previous_attempt": "attempt-1: Linux AppStream homepage reachability HTTP504, failed staging retired; Windows not started",
+  "linux_current_acceptance": "NATIVE_UI_ACCEPTANCE.json: six targeted originals directly reviewed; no full UI audit claim",
+  "active_native_owner": null,
+  "previous_goal_turn_classification": "progress: committed/pushed d032 source and completed source QA; terminal first packaging attempt recorded GitHub HTTP504 rather than a stalled live build",
+  "windows_fixture_attempts": [
+    {
+      "path": "native-windows-geometry-fixture-failed",
+      "status": "terminal QA arithmetic error before daemon suspension; owned VM/disks/profile/processes removed",
+      "correction": "Parenthesize scalar subtraction in PowerShell array; application and assertions unchanged"
+    },
+    {
+      "path": "native-windows",
+      "status": "live fresh owned driver; inspect OWNER.json and native-windows-driver.log",
+      "host_session": 33189
+    }
+  ],
+  "cleanup_current": {
+    "incremental_inspection": "incremental-inspection.log: zero obsolete/unpublished sessions",
+    "cache_sizes": "Native debug deps24GiB/incremental24GiB; Windows GNU debug deps28GiB/incremental42GiB, same rounded baseline",
+    "linux_content_extraction_removed": true,
+    "linux_native_desktop_removed": true,
+    "failed_windows_fixture_and_duplicate_result_archive_removed": true,
+    "active_native_resources": "native-windows/OWNER.json: registered private guest, console, disk and actor teardown"
+  },
+  "msix_current_scope": "Actual22 assembly/58-file equality and fresh daemon1000-file/idle checks;21 ordinary runtime/login/removal keeps original781 source scope",
+  "open_ui_findings": "OPEN_UI_FINDINGS.json: stale historical success banner remains above newer live error; next coherent UI work, not owner-dependent"
+}

@@ -1,0 +1,38 @@
+{
+  "status": "pass owned completed fixture/transport/process/display/VM cleanup; accepted staging retained for live CI/publication consumer",
+  "profiles": [
+    {
+      "receipt": "native-appimage/TEARDOWN.json",
+      "profile": "/var/tmp/.ottrin-picker-qa-mvw0_tnb",
+      "removed": true
+    },
+    {
+      "receipt": "native-windows/viewer/TEARDOWN.json",
+      "profile": "/var/tmp/.ottrin-picker-qa-q8c9i7_t",
+      "removed": true
+    },
+    {
+      "receipt": "native-windows-geometry-fixture-failed/viewer/TEARDOWN.json",
+      "profile": "/var/tmp/.ottrin-picker-qa-5wgw3cdj",
+      "removed": true
+    }
+  ],
+  "no_running_libvirt_guests": true,
+  "source_archive_clone_and_content_extractions_removed": true,
+  "duplicate_windows_result_transport_removed": true,
+  "incremental_inspection": "zero obsolete sessions; shared caches preserved",
+  "retained_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "Verified d032 four-format cohort awaiting all-green exact-source CI and guarded publication"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+      "purpose": "Verified d032 ZIP/NSIS/MSIX22/payload awaiting same consumer"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current",
+      "purpose": "Current scoped originals, compact failure diagnostics, producer source and publication receipts; not a second usable build"
+    }
+  ]
+}

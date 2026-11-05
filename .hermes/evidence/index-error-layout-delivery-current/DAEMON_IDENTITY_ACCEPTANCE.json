@@ -1,0 +1,14 @@
+{
+  "status": "pass exact current Linux daemon identity; previous runtime proof retained with original source scope",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "current_binary_sha256": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+  "historical_runtime_source": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "historical_runtime_receipt": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "retained_copy": null,
+  "freshly_rerun": false,
+  "basis": "Current four-format contents plus actual mounted AppImage prove identical daemon bytes; original runtime source remains explicit",
+  "limits": [
+    "Previous private1000-file idle/watcher/persistence/shutdown numbers retain original artifact/source scope",
+    "No new personal, large-corpus or sustained-workload claim"
+  ]
+}

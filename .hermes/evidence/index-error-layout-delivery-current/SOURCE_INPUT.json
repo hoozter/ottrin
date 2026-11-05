@@ -1,0 +1,14 @@
+{
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current/source.zip",
+  "status": "consumed by native MSIX22 assembly; owned source archive retired",
+  "sha256": "d2cba2267283403bcfcb5ae339550851d94dd39d060631419bd5ebc7233d051a",
+  "archive_bytes": 2580074,
+  "real_shallow_clone": true,
+  "filter_requested": true,
+  "source_scope": "Exact Git commit and sparse packager inputs; omitted blobs are not assembly inputs. No new Git revision or forged provenance.",
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

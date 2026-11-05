@@ -1,0 +1,161 @@
+{
+  "status": "pass scoped ordinary-user installed Windows timeout and recovery layout; whole interface audit remains open",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "d3af3d4e146d24c1393514bc9d5796361afb5aee6219a3e8ec03497a72d5e4a7",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "d4f116532d3dff303db93aecd2b6799d0629590f069216d64ab5170c40e80180"
+  },
+  "actor_sha256": "3eaf94f82e7fac79b37b55ee97670e5ccc793abce72fa110e26cd41185f7b8ac",
+  "capture_review": {
+    "status": "direct targeted original review complete",
+    "captures": {
+      "services-Dark-live-error.png": "a72f94bfaa3171bfef6a960e847f53c871adf5391d16910c2cf16cb85c20966c",
+      "services-Dark-error-collapsed.png": "3282e6504895c5941aca1a8a8c09d8ad04c20da0b18337335f4403b4633b6aca",
+      "services-Dark-recovered.png": "8bb317ecd4f82798ec113e13bf24f9652f3c1bc6e66f91602bd87d688acfdc01",
+      "services-Light-live-error.png": "55bb677112153d5ef0844a47c8ef804fd1ddcd4ae31d4f998a5c4918ebfafe65",
+      "services-Light-error-collapsed.png": "178be7baf9a325b0e1cda3580142c6583d52cd9cd2b0cef0097c0ef9a6a7e361",
+      "services-Light-recovered.png": "a5e5361d0c2d8f012f0526c338cda025a3f9bb026c7b654d988952755d4707d8"
+    },
+    "observations": [
+      "Both themes keep recovery buttons aligned and visible; actual UIA geometry is unchanged at y441 in the600-point viewport",
+      "Complete Local pipe I/O timed out diagnostic is readable by default; collapsed/reopened disclosure retains controls and full error",
+      "Same owned daemon resumes to Ready; automatic startup stays On; normal GUI close and uninstall preservation are independently asserted",
+      "A historical green restarted-and-ready action message remains above current Needs attention. This is a recorded open status-consistency defect, not accepted whole-screen behavior",
+      "Lower desktop-integration settings extend below this viewport; no whole-window/property audit claim"
+    ],
+    "limits": [
+      "Six targeted Services originals only; automated density/thumbnail cases do not establish full appearance acceptance",
+      "No current MSIX22 runtime, MSI, protected Copy, physical graphics or final human acceptance"
+    ]
+  },
+  "live_faults": [
+    {
+      "ready_geometry": {
+        "Start / restart": [
+          365,
+          441,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          441,
+          105,
+          28
+        ]
+      },
+      "error_geometry": {
+        "Start / restart": [
+          365,
+          441,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          441,
+          105,
+          28
+        ]
+      },
+      "collapsed_capture": "services-Dark-error-collapsed.png",
+      "error_capture": "services-Dark-live-error.png",
+      "scope": "Actual retained ordinary-user daemon temporarily unresponsive; same process must recover after resume",
+      "theme": "Dark",
+      "diagnostics": [
+        "Local pipe I/O timed out"
+      ],
+      "pid": 800,
+      "suspended_threads": 6
+    },
+    {
+      "ready_geometry": {
+        "Start / restart": [
+          365,
+          441,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          441,
+          105,
+          28
+        ]
+      },
+      "error_geometry": {
+        "Start / restart": [
+          365,
+          441,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          441,
+          105,
+          28
+        ]
+      },
+      "collapsed_capture": "services-Light-error-collapsed.png",
+      "error_capture": "services-Light-live-error.png",
+      "scope": "Actual retained ordinary-user daemon temporarily unresponsive; same process must recover after resume",
+      "theme": "Light",
+      "diagnostics": [
+        "Local pipe I/O timed out"
+      ],
+      "pid": 10004,
+      "suspended_threads": 6
+    }
+  ],
+  "transitions": [
+    {
+      "stopped_capture": "services-Dark-stopped.png",
+      "scope": "Actual installed service UI stop/restart plus retained-daemon live timeout, stable recovery geometry and same-process recovery",
+      "startup_preserved": true,
+      "states": [
+        "Ready",
+        "Stopped",
+        "Ready"
+      ],
+      "recovered_capture": "services-Dark-recovered.png",
+      "theme": "Dark"
+    },
+    {
+      "stopped_capture": "services-Light-stopped.png",
+      "scope": "Actual installed service UI stop/restart plus retained-daemon live timeout, stable recovery geometry and same-process recovery",
+      "startup_preserved": true,
+      "states": [
+        "Ready",
+        "Stopped",
+        "Ready"
+      ],
+      "recovered_capture": "services-Light-recovered.png",
+      "theme": "Light"
+    }
+  ],
+  "installed_service_scope": {
+    "scope": "Installed/readiness/main-close checks only; prior source retains actual unchanged On/Off/On lifecycle proof",
+    "normal_close_keeps_pid": 10004,
+    "startup": "On",
+    "ready": true
+  },
+  "preferences_preserved": true,
+  "sources_preserved": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "Actual exact NSIS install, temporary suspension of authenticated owned daemon threads, bounded timeout status, recovery geometry/disclosure, same-process resume and On startup preservation in both themes. Automated density/thumbnail cases pass; six targeted Services originals directly reviewed. No whole-theme, physical GPU, MSI or MSIX runtime claim.",
+  "consumed_transport": {
+    "sha256": "7dfe311018aa62161f82163df6092241ecb86669bf08c94c9c85605c4582e653",
+    "bytes": 1533702,
+    "removed_after_extraction_and_guest_teardown": true
+  }
+}

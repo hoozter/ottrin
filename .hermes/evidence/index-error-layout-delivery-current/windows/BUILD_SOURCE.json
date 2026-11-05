@@ -1,0 +1,5 @@
+{
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "purpose": "Same-source portable/NSIS for diagnostic-layout correction; stable781 ZIP/NSIS/MSIX21 preserved; current-source acceptance still required"
+}

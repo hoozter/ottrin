@@ -1,0 +1,18 @@
+{
+  "status": "failed QA geometry expression before daemon suspension; no application change",
+  "error": "Method invocation failed because [System.Object[]] does not contain a method named 'op_Subtraction'.",
+  "archive_sha256": "412ece5fce1a98e10e6fdc462333d41e53f7d26e8350575ec76f1e2ba8f3f4f1",
+  "archive_removed_after_extraction": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "correction": "Parenthesize scalar subtraction in PowerShell comma-separated geometry array; preserve all geometry assertions and deadlines",
+  "next": "Fresh owned native fixture, same exact packages"
+}

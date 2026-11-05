@@ -1,0 +1,18 @@
+{
+  "status": "pass actual AppImage recovery geometry and diagnostic visibility in both themes",
+  "source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "appimage_sha256": "934f564133f504f8513573a6de83bb297533c631adacb761aa2769c3da824bcb",
+  "gui_sha256": "9ea27e4d68b72b11b5b561b88aaa179c58d1750b28174eea11f7e13e3deec1fe",
+  "direct_original_captures_reviewed": {
+    "Dark-failed-services.png": "1b2302159052419ecc348bc87ae3388f15d734eda688cfcfa78ed9a80e957a2f",
+    "Dark-error-collapsed-services.png": "4cb8b4838cc6397682ee5cfb25c1fda9f897abc13e21dbd555c6ae7535be6c35",
+    "Dark-error-details-scrolled-services.png": "17a5fd89ee24bfb38e21d867462fa6ec6e9bccad7678fa1e7cf8ba3d57f1aea8",
+    "Light-failed-services.png": "b91e4807e6c682059979ff33123b964bb0ec5b1eec51310f175711b2016ab92b",
+    "Light-error-collapsed-services.png": "4dcd4833d7b1a49359e022133e4cf26bb01b3d478d4a8e615048ed61f046f3fd",
+    "Light-error-details-scrolled-services.png": "5442696161f0f305813c1e5a8ff66b9f86fbd4dffad76f7196ff9e7018107453"
+  },
+  "runtime_receipt": "native-appimage/RESULT.json",
+  "teardown_receipt": "native-appimage/TEARDOWN.json",
+  "scope": "Actual mounted clean-source AppImage Ready/Stopped/real wrong-type endpoint/Ready; recovery buttons stay in place with errors expanded or collapsed; complete error scrolls into view. Six targeted error/scroll originals directly reviewed; other transition frames are automated observations, not a full interface audit.",
+  "private_state_and_processes_removed": true
+}
