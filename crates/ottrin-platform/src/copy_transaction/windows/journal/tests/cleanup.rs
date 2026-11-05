@@ -3185,6 +3185,135 @@ fn observed_chain_group(
 }
 
 #[test]
+fn windows_native_copy_cleanup_group_metadata_preparation_keeps_all_controls_reopenable() {
+    use super::super::cleanup_group::{Member, Observation};
+    for registry_destination in [false, true] {
+        for directory in [false, true] {
+            for overwrite in [false, true] {
+                for prepared in 0..=2 {
+                    let root = tempfile::tempdir().unwrap();
+                    let (mut group, headers) = observed_chain_group(
+                        root.path(),
+                        registry_destination,
+                        directory,
+                        overwrite,
+                    );
+                    for index in [1, 0] {
+                        group.reclaim_payload(index, |_| Ok(())).unwrap();
+                    }
+                    for index in 0..prepared {
+                        group.prepare_metadata(index, |_| Ok(())).unwrap();
+                        assert!(matches!(group.members[index], Member::Metadata(_)));
+                        let after = namespace_contents(root.path());
+                        group.prepare_metadata(index, |_| Ok(())).unwrap();
+                        assert_eq!(namespace_contents(root.path()), after);
+                    }
+                    drop(group);
+                    let before = namespace_contents(root.path());
+                    let ids = headers
+                        .iter()
+                        .map(|header| header.transaction.clone())
+                        .collect::<Vec<_>>();
+                    let mut reopened =
+                        Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
+                            .unwrap();
+                    assert_eq!(namespace_contents(root.path()), before);
+                    for (index, member) in reopened.members.iter().enumerate() {
+                        assert_eq!(matches!(member, Member::Metadata(_)), index < prepared);
+                    }
+                    reopened.reclaim_all(|_| Ok(())).unwrap();
+                    assert!(
+                        reopened
+                            .members
+                            .iter()
+                            .all(|m| matches!(m, Member::Complete(_)))
+                    );
+                    let destination = root.path().join(if registry_destination {
+                        "central"
+                    } else {
+                        "destination"
+                    });
+                    assert_eq!(
+                        std::fs::read(destination.join(if directory {
+                            "copy/next"
+                        } else {
+                            "copy"
+                        }))
+                        .unwrap(),
+                        b"second publication"
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_first_unlink() {
+    for registry_destination in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, headers) =
+            observed_chain_group(root.path(), registry_destination, false, true);
+        for index in [1, 0] {
+            group.reclaim_payload(index, |_| Ok(())).unwrap();
+        }
+        let destination = root.path().join(if registry_destination {
+            "central"
+        } else {
+            "destination"
+        });
+        let sequence = Snapshot::load(
+            &owner(&destination),
+            &owner(&root.path().join("central")),
+            &headers[0].stage_name(),
+            SnapshotAccess::Read,
+        )
+        .unwrap()
+        .sequence
+            + 1;
+        FAULT.with(|slot| {
+            slot.set(Some((
+                sequence,
+                Step::CleanupMetadata {
+                    role: CleanupMetadataRole::Local,
+                    point: CleanupMetadataPoint::DispositionSet,
+                },
+                false,
+            )))
+        });
+        let result = group.reclaim_all(|_| Ok(()));
+        FAULT.with(|slot| slot.set(None));
+        assert!(
+            matches!(result, Err(PlatformError::CleanupPending { .. })),
+            "{result:?}"
+        );
+        {
+            let central = owner(&root.path().join("central"));
+            for header in &headers {
+                let record =
+                    discovery::RegisteredJournal::open(&central, &header.central_name()).unwrap();
+                assert!(
+                    record
+                        .state
+                        .cleanup
+                        .as_ref()
+                        .unwrap()
+                        .metadata_removal_intent
+                );
+            }
+        }
+        let before = namespace_contents(root.path());
+        assert!(group.prepare_metadata(1, |_| Ok(())).is_err());
+        assert_eq!(namespace_contents(root.path()), before);
+        group.reclaim_all(|_| Ok(())).unwrap();
+        assert_eq!(
+            std::fs::read(destination.join("copy")).unwrap(),
+            b"second publication"
+        );
+    }
+}
+
+#[test]
 fn windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalog_handoffs() {
     use super::super::cleanup_group::{Member, Observation};
     for registry_destination in [false, true] {

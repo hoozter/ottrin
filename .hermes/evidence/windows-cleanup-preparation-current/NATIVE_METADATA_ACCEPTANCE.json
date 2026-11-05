@@ -1,0 +1,62 @@
+{
+  "status": "pass native metadata preparation and configured API scopes; durable coordinator incomplete",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "711989544e45368bf04afa12ef1125523e9d66bd13df33d4e1f153115638d8d8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "489139d83e22db0b71524fc5637d4613408548b55676f9d6e6e38ee76d155fe4"
+  },
+  "binary": {
+    "test_crate": "ottrin_platform",
+    "test_arguments": "windows_native_copy_cleanup_group_metadata --nocapture --test-threads=1",
+    "watchdog_ms": 600000,
+    "compiler_profile": {
+      "opt_level": "0",
+      "debuginfo": 0,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "compiler_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.exe",
+    "compiler_sha256": "1df4df6ebcbefb07256f4b22e1f085f3daa4aabea1a251e6dacf346220aadf94",
+    "transferred_sha256": "0d99dc27781db4812e3187cbabb43068b2ef3c2e84926c3688c06dbb84d04d18",
+    "retained_sections": {
+      ".text": "d76855e76ee464af0d4c45ba2be0c49394d7e740adc233d26ef2bd4401e5274a",
+      ".data": "58bbabf40fefe8825dfa090c6e0f72189efcbf4064178b41cfe63ea34db1275d",
+      ".rdata": "bdc60c18c57fd5d134592d2c6ef14c5185fe2e4f8d0bedb85c33a9dbdc84d2c8",
+      ".pdata": "b0a0218b921be8ee540b90df3bafdc01a60b61a1173865bf38b2169fc653ab04",
+      ".xdata": "8eabf4163b42c7a04aef9c933afeba1d4af4c1990f13b80d131e3db9bc5e66c5",
+      ".bss": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".idata": "e4dbe44d42b973e6653948aa9d27f09d86240c8636f752f7468f47b7771956a4",
+      ".CRT": "26f67bd9f9620f5c3e88b6cd7e6b3ffbe6a3e5f7659840798c84e722dea1e3ef",
+      ".tls": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      ".reloc": "025e9095b0e769d9244f8a81bac59bc788004ca38432234a781cb8e90f66427c"
+    }
+  },
+  "metadata_suite": {
+    "passed": 5,
+    "failed": 0,
+    "seconds": 112.76,
+    "native_result": "METADATA_RESULTS.json",
+    "controller_result": "METADATA_CONTROLLER_RESULT.json"
+  },
+  "new_coverage": [
+    "24 combinations: zero/one/two prepared members, registry-as-destination, file/directory and overwrite; idempotent preparation, retained canonical controls and read-only re-admission before completion.",
+    "Two registry placements: stop after the first local-journal disposition; both canonical records already contain paired metadata-removal intent. Pending removal blocks another preparation. Same proof resumes and preserves published contents."
+  ],
+  "existing_coverage": [
+    "Bound catalog handoffs in both member orders",
+    "Uncertain local/stage/central deletion retries",
+    "Foreign-change refusal while metadata removal is pending"
+  ],
+  "limits": [
+    "No durable coordinator or fresh-process recovery after a missing central record implemented.",
+    "No administrator Copy enablement, UAC/caller-registry, package or complete roadmap acceptance.",
+    "Test profile opt-level0/debug0, not a release-performance measurement."
+  ],
+  "configured_api": {
+    "passed": 2,
+    "failed": 0,
+    "result": "RESULTS.json",
+    "controller": "CONTROLLER_RESULT.json",
+    "same_test_binary": true
+  }
+}

@@ -954,6 +954,17 @@ Windows QA VM stopped during compilation on memory-constrained hosts, then start
 it for native execution. Optimized resource measurements are a separate scope;
 do not spend an optimized backend test build on ordinary correctness fixtures.
 
+Windows Copy group cleanup completes all selected payloads, then persists paired
+metadata-removal intent for every selected transaction before removing the first
+local journal, stage or central record. Preparation uses the existing bound
+writer acknowledgements and advances peer catalog proofs; it never removes
+metadata. A partial preparation prefix must leave every canonical control
+discoverable and support read-only re-admission without changing journal bytes.
+An uncertain metadata unlink freezes other members until its retained proof is
+reconciled. This preparation barrier does not provide fresh-process authority
+after a central record disappears: the durable coordinator and caller-bound
+administrator registry remain required before enabling administrator Copy.
+
 Windows Copy candidates use `windows_fs::PerObjectFile` for the documented
 `MAXIMUM_ALLOWED` per-object permission-update contract. Keep its constructor
 private and preserve the contract through cloning; do not add production

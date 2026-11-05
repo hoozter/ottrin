@@ -1,0 +1,14 @@
+{
+    "exit":  0,
+    "native_started_utc":  "2026-11-05T00:37:38.7801797Z",
+    "native_finished_utc":  "2026-11-05T00:39:31.6208381Z",
+    "test_arguments":  "windows_native_copy_cleanup_group_metadata --nocapture --test-threads=1",
+    "ordinary_user":  true,
+    "stdout_sha256":  "9989759844acf1266fce206bffb58d75c045eb45e9023be2c5881e1dafd06c90",
+    "stderr_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_process_id":  3616,
+    "temporary_entries":  0,
+    "status":  "pass",
+    "test_binary_hash":  "0d99dc27781db4812e3187cbabb43068b2ef3c2e84926c3688c06dbb84d04d18",
+    "dispatch_id":  "1f0ba9782299ff5e5da57cf648191757"
+}

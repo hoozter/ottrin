@@ -1,0 +1,6 @@
+{
+  "domain": "ottrin-copy-cleanup-qa",
+  "initial_state": "shut off",
+  "new_domains_or_volumes": false,
+  "cleanup": "Remove only this dispatch executable, actor, private temp, transport and baseline; restore shut-off state and unchanged definition."
+}

@@ -1,0 +1,4 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `test` profile [optimized + debuginfo] target(s) in 3m 50s

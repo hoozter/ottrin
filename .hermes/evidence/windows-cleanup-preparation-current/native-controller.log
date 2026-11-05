@@ -1,0 +1,18 @@
+native PID 3612
+native PID 4696
+uploaded platform.gz
+native PID 8112
+uploaded actor.ps1
+native PID 7468
+Native cleanup observation dispatched
+native PID 7732
+Native PID 7732 remains live; poll same PID
+native PID 7732
+native PID 7380
+{
+    "status":  "pass",
+    "owned_temp_and_exports_removed":  true,
+    "owned_processes":  0,
+    "original_preferences_and_uninstaller_preserved":  true
+}
+

@@ -1,0 +1,10 @@
+{
+  "status": "pass within native metadata scope",
+  "scope": "ordinary-user metadata preparation and existing metadata fault matrix",
+  "guest_teardown": {
+    "exitcode": 0,
+    "out-data": "ew0KICAgICJzdGF0dXMiOiAgInBhc3MiLA0KICAgICJvd25lZF90ZW1wX2FuZF9leHBvcnRzX3JlbW92ZWQiOiAgdHJ1ZSwNCiAgICAib3duZWRfcHJvY2Vzc2VzIjogIDAsDQogICAgIm9yaWdpbmFsX3ByZWZlcmVuY2VzX2FuZF91bmluc3RhbGxlcl9wcmVzZXJ2ZWQiOiAgdHJ1ZQ0KfQ0K",
+    "exited": true
+  },
+  "retained_guest_shut_off_and_definition_preserved": true
+}

@@ -1,0 +1,7 @@
+{
+  "status": "design constraint verified from current registry implementation, not coordinator implementation",
+  "source": "crates/ottrin-platform/src/copy_transaction/windows/registry.rs",
+  "finding": "AnchoredRoot::open_at always uses the same external ANCHOR name under the parent. A cleanup sibling cannot be opened through that default API: its anchor would collide with the existing recovery-root marker. Add a dedicated typed cleanup namespace entry point and distinct external marker, analogous to claims(), preserving open_under validation.",
+  "constraint": "Do not create the coordinator in the Copy registry or omit root/peer namespace/version checks. Bind the distinct private coordinator root to the original canonical registry native identity in its manifest.",
+  "first_implemented_step": "Metadata preparation/removal separation and group-wide preparation barrier; native verification pending."
+}

@@ -1,0 +1,17 @@
+{
+  "status": "pass seven focused native ordinary-user Windows tests, strict all-target Windows lint and formatting; coordinator incomplete",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "711989544e45368bf04afa12ef1125523e9d66bd13df33d4e1f153115638d8d8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "489139d83e22db0b71524fc5637d4613408548b55676f9d6e6e38ee76d155fe4"
+  },
+  "native_acceptance": "NATIVE_METADATA_ACCEPTANCE.json",
+  "scope": "All-member metadata preparation barrier; no protocol/schema change or administrator Copy enablement.",
+  "cleanup": {
+    "guest_shut_off": true,
+    "guest_definition_preserved": true,
+    "owned_processes_profiles_exports_removed": true,
+    "consumed_pid_scratch_removed": true,
+    "obsolete_incremental_sessions_removed": 1,
+    "remaining": "Compact evidence plus current shared test executable/cache for the next durable-coordinator work; no new target tree or VM."
+  }
+}

@@ -821,6 +821,9 @@ impl Observation {
             }
         }
         for index in 0..self.members.len() {
+            self.prepare_metadata(index, &mut cancel)?;
+        }
+        for index in 0..self.members.len() {
             self.finish_metadata(index, &mut cancel)?;
         }
         Ok(())
@@ -880,6 +883,97 @@ impl Observation {
         manager.validate()
     }
 
+    /// Persist paired metadata-removal intent without removing any member's
+    /// journals or stage. Preparing the whole cohort first leaves every control
+    /// discoverable if execution stops before any metadata is removed.
+    pub(super) fn prepare_metadata(
+        &mut self,
+        index: usize,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if self.pending_unlink.is_some() {
+            return Err(io(
+                "Finish the prepared shared unlink before another group action",
+            ));
+        }
+        if index >= self.members.len() {
+            return Err(io("Copy group member index is invalid"));
+        }
+        if self.pending_metadata.is_some() {
+            return Err(io(
+                "Finish the pending Copy metadata member before another group action",
+            ));
+        }
+        if matches!(self.members[index], Member::Complete(_)) {
+            return Ok(());
+        }
+        if self
+            .members
+            .iter()
+            .any(|member| matches!(member, Member::Payload(_)))
+        {
+            return Err(io("Complete all group payloads before metadata removal"));
+        }
+        cancel(0)?;
+        let manager = AnchoredRoot::open_at(&self.registry, false)?
+            .ok_or_else(|| io("Configured Copy registry is missing"))?;
+        let central = manager.writable_root()?;
+        let header = self.members[index].header().clone();
+        let parent = if header.parent.same_object(header.central) {
+            central.try_clone().map_err(io)?
+        } else {
+            windows_fs::Volumes::new(&central)?.resolve(
+                header.parent,
+                FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
+                &mut cancel,
+            )?
+        };
+        self.selection.validate(&central, &mut cancel)?;
+        // The entire surviving cohort is still bound before any intent.
+        for member in &self.members {
+            if matches!(member, Member::Complete(_)) {
+                continue;
+            }
+            let peer_parent = windows_fs::Volumes::new(&central)?.resolve(
+                member.header().parent,
+                FILE_GENERIC_READ,
+                &mut cancel,
+            )?;
+            match member {
+                Member::Completion(completion) => completion.validate_in_group(
+                    &peer_parent,
+                    &central,
+                    &self.selection,
+                    &mut cancel,
+                )?,
+                Member::Metadata(plan) => {
+                    plan.validate_in_group(&peer_parent, &central, &self.selection, &mut cancel)?
+                }
+                Member::Payload(_) | Member::Complete(_) => unreachable!(),
+            }
+        }
+        if let Member::Completion(completion) = &self.members[index] {
+            let authorized = completion.begin_with_ack(&parent, &central, &mut cancel)?;
+            let mut selection = self.selection.clone();
+            selection.accept_control(
+                authorized.plan.header(),
+                authorized.before_journal,
+                authorized.plan.journal_digest(),
+                &authorized.control_version,
+            )?;
+            let mut members = self.members.clone();
+            for (other, member) in members.iter_mut().enumerate() {
+                if other != index {
+                    member.advance_catalog(&self.selection, &selection)?;
+                }
+            }
+            members[index] = Member::Metadata(authorized.plan);
+            self.members = members;
+            self.selection = selection;
+        }
+        manager.validate()
+    }
+
     pub(super) fn finish_metadata(
         &mut self,
         index: usize,
@@ -911,6 +1005,9 @@ impl Observation {
         {
             return Err(io("Complete all group payloads before metadata removal"));
         }
+        if self.pending_metadata.is_none() {
+            self.prepare_metadata(index, &mut cancel)?;
+        }
         cancel(0)?;
         let manager = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Configured Copy registry is missing"))?;
@@ -925,55 +1022,7 @@ impl Observation {
                 &mut cancel,
             )?
         };
-        if self.pending_metadata.is_none() {
-            self.selection.validate(&central, &mut cancel)?;
-            // The entire surviving cohort is still bound before any intent.
-            for member in &self.members {
-                if matches!(member, Member::Complete(_)) {
-                    continue;
-                }
-                let peer_parent = windows_fs::Volumes::new(&central)?.resolve(
-                    member.header().parent,
-                    FILE_GENERIC_READ,
-                    &mut cancel,
-                )?;
-                match member {
-                    Member::Completion(completion) => completion.validate_in_group(
-                        &peer_parent,
-                        &central,
-                        &self.selection,
-                        &mut cancel,
-                    )?,
-                    Member::Metadata(plan) => plan.validate_in_group(
-                        &peer_parent,
-                        &central,
-                        &self.selection,
-                        &mut cancel,
-                    )?,
-                    Member::Payload(_) | Member::Complete(_) => unreachable!(),
-                }
-            }
-            if let Member::Completion(completion) = &self.members[index] {
-                let authorized = completion.begin_with_ack(&parent, &central, &mut cancel)?;
-                let mut selection = self.selection.clone();
-                selection.accept_control(
-                    authorized.plan.header(),
-                    authorized.before_journal,
-                    authorized.plan.journal_digest(),
-                    &authorized.control_version,
-                )?;
-                let mut members = self.members.clone();
-                for (other, member) in members.iter_mut().enumerate() {
-                    if other != index {
-                        member.advance_catalog(&self.selection, &selection)?;
-                    }
-                }
-                members[index] = Member::Metadata(authorized.plan);
-                self.members = members;
-                self.selection = selection;
-            }
-            self.pending_metadata = Some(index);
-        }
+        self.pending_metadata = Some(index);
         let Member::Metadata(plan) = &self.members[index] else {
             return Err(io("Copy group member lacks metadata authority"));
         };

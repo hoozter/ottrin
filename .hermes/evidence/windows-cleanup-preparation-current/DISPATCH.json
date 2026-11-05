@@ -1,0 +1,7 @@
+{
+  "id": "9b03b7abd64e960edad9e1f037b8aa4f",
+  "status": "dispatched",
+  "test_arguments": "windows_native_copy_cleanup_configured --nocapture --test-threads=1",
+  "transferred_sha256": "0d99dc27781db4812e3187cbabb43068b2ef3c2e84926c3688c06dbb84d04d18",
+  "watchdog_ms": 600000
+}

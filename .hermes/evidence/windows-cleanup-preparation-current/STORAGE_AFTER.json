@@ -1,0 +1,12 @@
+{
+  "bytes": {
+    "target/debug/deps": 25231286902,
+    "target/debug/incremental": 24781051844,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070286849,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 43768943330,
+    ".hermes/evidence/windows-cleanup-preparation-current": 114974
+  },
+  "remaining": "Compact verification evidence and current shared compiler/test configuration for next durable-coordinator work. No owned guest, export, test temp, new target tree or transport archive remains.",
+  "new_test_executable": "target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.exe",
+  "purpose": "Current verified Windows platform test configuration; next native coordinator verification consumer."
+}

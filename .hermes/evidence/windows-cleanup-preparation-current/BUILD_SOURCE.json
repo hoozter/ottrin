@@ -1,0 +1,10 @@
+{
+  "base_revision": "8c30c4b1f116377c2211a72889e810ddecc9242c",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "711989544e45368bf04afa12ef1125523e9d66bd13df33d4e1f153115638d8d8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "489139d83e22db0b71524fc5637d4613408548b55676f9d6e6e38ee76d155fe4"
+  },
+  "scope": "Metadata preparation barrier, not durable restart coordinator or enabled administrator Copy",
+  "native_selection": "windows_native_copy_cleanup_group_metadata",
+  "compiler": "existing profile.test.package.ottrin-platform opt-level0/debug0; shared target and dependencies"
+}
