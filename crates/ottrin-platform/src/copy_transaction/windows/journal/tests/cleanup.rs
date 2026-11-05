@@ -1679,25 +1679,21 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                                 "{same_root} {directory} {overwrite} {undone} {role:?}"
                             );
                             assert!(!plan.complete());
-                            assert!(plan.requires_retained_retry());
+                            assert!(!plan.requires_retained_retry());
                             let before_retry = namespace_contents(root.path());
                             let fresh = RetainedCopyCleanupPlan::observe_at(
                                 &path,
                                 std::slice::from_ref(&header.transaction),
                                 |_| Ok(()),
                             );
-                            if role == CleanupMetadataRole::Central {
-                                assert!(
-                                    fresh.is_err(),
-                                    "absent IDs must not manufacture cleanup authority"
-                                );
-                            } else {
-                                assert!(fresh.is_ok(), "{fresh:?}");
-                            }
+                            assert!(
+                                fresh.is_ok(),
+                                "durable original cohort must resume after {role:?}: {fresh:?}"
+                            );
                             assert_eq!(namespace_contents(root.path()), before_retry);
                             drop(fresh);
-                            // The same admitted action keeps its metadata proof,
-                            // including after final central unlink.
+                            // Both the retained action and a fresh reader have
+                            // the same durable original-cohort metadata proof.
                             plan.reclaim(|_| Ok(())).unwrap();
                         } else {
                             result.unwrap();
@@ -3366,10 +3362,12 @@ fn windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalo
                         .iter()
                         .map(|header| header.transaction.clone())
                         .collect::<Vec<_>>();
-                    assert!(
+                    let mut fresh =
                         Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
-                            .is_err()
-                    );
+                            .unwrap();
+                    assert!(!fresh.complete(), "final cohort retirement still pending");
+                    fresh.reclaim_all(|_| Ok(())).unwrap();
+                    assert!(fresh.complete());
                     assert_eq!(
                         std::fs::read(
                             root.path()
@@ -3426,7 +3424,7 @@ fn windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertai
                     )
                     .unwrap()
                     .sequence
-                        + 1;
+                        + u64::from(!peer_finished);
                     FAULT.with(|slot| {
                         slot.set(Some((
                             sequence,
@@ -3457,7 +3455,7 @@ fn windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertai
                             .collect::<Vec<_>>();
                         assert!(
                             Observation::observe_at(&root.path().join("central"), &ids, |_| Ok(()))
-                                .is_err()
+                                .is_ok()
                         );
                     }
                     group.finish_metadata(0, |_| Ok(())).unwrap();
@@ -5387,7 +5385,7 @@ fn run_group_exit_case(root: &Path, mode: &str, index: usize) {
     assert!(surviving.iter().all(|id| ids.contains(id)));
     let fresh = super::super::cleanup_group::Observation::observe_at(
         &root.join("central"),
-        &surviving,
+        if mode == "metadata" { &ids } else { &surviving },
         |_| Ok(()),
     );
     if step == Step::LocalFlushed {
@@ -5503,4 +5501,417 @@ fn windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort() {
         assert_public_copy_and_claim_namespace(&root.path().join(directory));
     }
     plan.reclaim(|_| Ok(())).unwrap();
+}
+
+#[test]
+#[ignore = "owned cohort crash worker; parent owns fixture and waits"]
+fn windows_native_copy_cohort_exit_worker() {
+    let root = std::path::PathBuf::from(std::env::var_os("OTTRIN_COHORT_ROOT").unwrap());
+    let ids: Vec<String> =
+        serde_json::from_str(&std::env::var("OTTRIN_COHORT_IDS").unwrap()).unwrap();
+    let mut group =
+        super::super::cleanup_group::Observation::observe_at(&root.join("central"), &ids, |_| {
+            Ok(())
+        })
+        .unwrap();
+    group.reclaim_all(|_| Ok(())).unwrap();
+    panic!("cohort worker did not exit at requested boundary");
+}
+
+fn crash_cohort(root: &Path, ids: &[String], point: &str) {
+    let status = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_exit_worker", "--ignored", "--nocapture"])
+        .env("OTTRIN_COHORT_ROOT", root)
+        .env("OTTRIN_COHORT_IDS", serde_json::to_string(ids).unwrap())
+        .env("OTTRIN_TEST_COHORT_EXIT_AT", point)
+        .status().unwrap();
+    assert_eq!(status.code(), Some(86), "{point}");
+}
+
+fn cohort_exit_case(point: &str) {
+    let root = tempfile::tempdir().unwrap();
+    let (group, ids) = mixed_cleanup_fixture(root.path());
+    drop(group);
+    crash_cohort(root.path(), &ids, point);
+    let before = namespace_contents(root.path());
+    let pending = super::super::cleanup_action::RetainedCopyCleanupPlan::pending_at(
+        &root.path().join("central"),
+        |_| Ok(()),
+    )
+    .unwrap();
+    assert_eq!(
+        namespace_contents(root.path()),
+        before,
+        "pending discovery must be read-only"
+    );
+    if point == "retired" {
+        assert!(pending.is_none());
+        assert!(
+            super::super::cleanup_group::Observation::observe_at(
+                &root.path().join("central"),
+                &ids,
+                |_| Ok(())
+            )
+            .is_err(),
+            "missing history cannot prove original batch completion"
+        );
+        for directory in ["destination", "second-destination", "third-destination"] {
+            assert!(
+                root.path()
+                    .join(directory)
+                    .join("copy/nested/file")
+                    .is_file()
+            );
+        }
+    } else {
+        if point != "header-unpublished" {
+            assert!(pending.is_some());
+        }
+        let mut fresh = super::super::cleanup_action::RetainedCopyCleanupPlan::observe_at(
+            &root.path().join("central"),
+            &ids,
+            |_| Ok(()),
+        )
+        .unwrap();
+        assert!(!fresh.complete());
+        assert_eq!(
+            fresh.transaction_ids().into_iter().collect::<BTreeSet<_>>(),
+            ids.iter().map(String::as_str).collect()
+        );
+        assert!(!fresh.requires_retained_retry());
+        fresh.reclaim(|_| Ok(())).unwrap();
+        assert!(fresh.complete());
+        assert!(
+            super::super::cleanup_action::RetainedCopyCleanupPlan::pending_at(
+                &root.path().join("central"),
+                |_| Ok(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+    assert_eq!(
+        std::fs::read(root.path().join("outside")).unwrap(),
+        b"old original data"
+    );
+}
+
+#[test]
+fn windows_native_copy_cohort_crash_before_snapshot_publication() {
+    cohort_exit_case("header-unpublished");
+}
+#[test]
+fn windows_native_copy_cohort_crash_after_snapshot_publication() {
+    cohort_exit_case("header-published");
+}
+#[test]
+fn windows_native_copy_cohort_crash_after_pending_checkpoint() {
+    cohort_exit_case("pending");
+}
+#[test]
+fn windows_native_copy_cohort_crash_after_completed_checkpoint() {
+    cohort_exit_case("done");
+}
+#[test]
+fn windows_native_copy_cohort_crash_after_retirement_keeps_unknown_history_unknown() {
+    cohort_exit_case("retired");
+}
+
+#[test]
+fn windows_native_copy_cohort_replays_later_pending_member() {
+    for index in [1, 2] {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, ids) = mixed_cleanup_fixture(root.path());
+        let control = root
+            .path()
+            .join("central")
+            .join(group.members[index].header().central_name());
+        assert!(
+            group
+                .reclaim_all(|_| {
+                    if control.exists() {
+                        Ok(())
+                    } else {
+                        Err(io("Injected stop after later member unlink"))
+                    }
+                })
+                .is_err()
+        );
+        drop(group);
+        let before = namespace_contents(root.path());
+        let mut fresh = super::super::cleanup_group::Observation::pending_at(
+            &root.path().join("central"),
+            |_| Ok(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert!(matches!(
+            fresh.members[index],
+            super::super::cleanup_group::Member::Metadata(_)
+        ));
+        assert!(matches!(
+            fresh.members[0],
+            super::super::cleanup_group::Member::Complete(_)
+        ));
+        assert_eq!(namespace_contents(root.path()), before);
+        assert_eq!(
+            fresh
+                .members
+                .iter()
+                .map(|member| member.header().transaction.as_str())
+                .collect::<BTreeSet<_>>(),
+            ids.iter().map(String::as_str).collect()
+        );
+        fresh.reclaim_all(|_| Ok(())).unwrap();
+        assert!(fresh.complete());
+        assert_mixed_cleanup_complete(root.path(), &fresh);
+    }
+}
+
+#[test]
+fn windows_native_copy_cohort_torn_checkpoint_replays_only_validated_prefix() {
+    for done in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, ids) = mixed_cleanup_fixture(root.path());
+        super::super::cleanup_group::cohort::TORN.with(|slot| slot.set(Some(done)));
+        assert!(group.reclaim_all(|_| Ok(())).is_err());
+        assert!(
+            super::super::cleanup_group::cohort::TORN
+                .with(|slot| slot.get())
+                .is_none()
+        );
+        drop(group);
+        let before = namespace_contents(root.path());
+        let mut fresh = super::super::cleanup_action::RetainedCopyCleanupPlan::pending_at(
+            &root.path().join("central"),
+            |_| Ok(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            namespace_contents(root.path()),
+            before,
+            "discovery must not truncate even an admitted torn tail"
+        );
+        assert_eq!(
+            fresh.transaction_ids().into_iter().collect::<BTreeSet<_>>(),
+            ids.iter().map(String::as_str).collect()
+        );
+        fresh.reclaim(|_| Ok(())).unwrap();
+        assert!(fresh.complete());
+        assert_eq!(
+            std::fs::read(root.path().join("outside")).unwrap(),
+            b"old original data"
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl() {
+    for change in 0..3 {
+        let root = tempfile::tempdir().unwrap();
+        let (mut group, ids) = mixed_cleanup_fixture(root.path());
+        super::super::cleanup_group::cohort::TORN.with(|slot| slot.set(Some(false)));
+        assert!(group.reclaim_all(|_| Ok(())).is_err());
+        if change == 0 {
+            let log = root
+                .path()
+                .join(".ottrin-copy-cleanup-cohorts/active.cohort-journal");
+            let mut bytes = std::fs::read(&log).unwrap();
+            bytes[84] ^= 1;
+            std::fs::write(&log, bytes).unwrap();
+        } else if change == 1 {
+            std::fs::remove_file(
+                root.path()
+                    .join("central")
+                    .join(group.members[1].header().central_name()),
+            )
+            .unwrap();
+        } else {
+            use std::os::windows::io::AsRawHandle;
+            let parent = windows_fs::open_directory(
+                root.path(),
+                windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
+            )
+            .unwrap();
+            let before = super::super::super::security::owner_group_dacl_digest(&parent).unwrap();
+            let mut owner = windows_fs::current_owner().unwrap();
+            // Owned fixture only: valid borrowed SID and a live native handle.
+            assert_eq!(
+                unsafe {
+                    windows_sys::Win32::Security::Authorization::SetSecurityInfo(
+                        parent.as_raw_handle().cast(),
+                        windows_sys::Win32::Security::Authorization::SE_FILE_OBJECT,
+                        windows_sys::Win32::Security::GROUP_SECURITY_INFORMATION,
+                        std::ptr::null_mut(),
+                        owner.as_mut_ptr().cast(),
+                        std::ptr::null_mut(),
+                        std::ptr::null_mut(),
+                    )
+                },
+                0
+            );
+            assert_ne!(
+                super::super::super::security::owner_group_dacl_digest(&parent).unwrap(),
+                before
+            );
+        }
+        drop(group);
+        let before = namespace_contents(root.path());
+        assert!(
+            super::super::cleanup_action::RetainedCopyCleanupPlan::pending_at(
+                &root.path().join("central"),
+                |_| Ok(())
+            )
+            .is_err()
+        );
+        assert!(
+            super::super::cleanup_group::Observation::observe_at(
+                &root.path().join("central"),
+                &ids,
+                |_| Ok(())
+            )
+            .is_err()
+        );
+        assert_eq!(
+            namespace_contents(root.path()),
+            before,
+            "foreign changes must be retained without repair"
+        );
+    }
+}
+
+#[test]
+fn windows_native_copy_cohort_preserves_lossless_native_paths() {
+    use std::os::windows::ffi::OsStringExt;
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp
+        .path()
+        .join(OsString::from_wide(&[0x66, 0xd800, 0x104]));
+    std::fs::create_dir(&root).unwrap();
+    let (mut group, ids) = mixed_cleanup_fixture(&root);
+    super::super::cleanup_group::cohort::TORN.with(|slot| slot.set(Some(true)));
+    assert!(group.reclaim_all(|_| Ok(())).is_err());
+    drop(group);
+    let mut fresh = super::super::cleanup_action::RetainedCopyCleanupPlan::observe_at(
+        &root.join("central"),
+        &ids,
+        |_| Ok(()),
+    )
+    .unwrap();
+    fresh.reclaim(|_| Ok(())).unwrap();
+    assert!(fresh.complete());
+    assert_eq!(
+        std::fs::read(root.join("outside")).unwrap(),
+        b"old original data"
+    );
+}
+
+#[test]
+fn windows_native_copy_cohort_crash_after_all_completed_checkpoints() {
+    cohort_exit_case("done-all");
+}
+
+#[test]
+fn windows_native_copy_cohort_refuses_tail_after_completed_prefix() {
+    let root = tempfile::tempdir().unwrap();
+    let (group, ids) = mixed_cleanup_fixture(root.path());
+    drop(group);
+    crash_cohort(root.path(), &ids, "done-all");
+    let log = root
+        .path()
+        .join(".ottrin-copy-cleanup-cohorts/active.cohort-journal");
+    let mut file = std::fs::OpenOptions::new().append(true).open(&log).unwrap();
+    file.write_all(b"OTCCW001").unwrap();
+    file.sync_all().unwrap();
+    drop(file);
+    let before = namespace_contents(root.path());
+    assert!(
+        super::super::cleanup_action::RetainedCopyCleanupPlan::pending_at(
+            &root.path().join("central"),
+            |_| Ok(())
+        )
+        .is_err()
+    );
+    assert!(
+        super::super::cleanup_group::Observation::observe_at(
+            &root.path().join("central"),
+            &ids,
+            |_| Ok(())
+        )
+        .is_err()
+    );
+    assert_eq!(namespace_contents(root.path()), before);
+}
+
+#[test]
+fn windows_native_copy_cohort_fences_new_copy_and_unselected_undo() {
+    use crate::{ConflictAction, DefaultPlatform, PlatformOps};
+    const ROOT: &str = "OTTRIN_TEST_COHORT_FENCE_ROOT";
+    const SELF: &str = "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_fences_new_copy_and_unselected_undo";
+    if let Some(root) = std::env::var_os(ROOT) {
+        let root = std::path::PathBuf::from(root);
+        let destination = root.join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let sources: Vec<_> = ["a.txt", "b.txt", "c.txt"]
+            .iter()
+            .map(|name| root.join(name))
+            .collect();
+        for path in &sources {
+            std::fs::write(path, path.file_name().unwrap().to_str().unwrap()).unwrap();
+        }
+        let copy = |source: &Path| {
+            DefaultPlatform.execute_copy_with_undo_receipt(
+                source,
+                &destination,
+                ConflictAction::Overwrite,
+                &mut |_| Ok(()),
+            )
+        };
+        let first = copy(&sources[0]).unwrap().unwrap();
+        let second = copy(&sources[1]).unwrap().unwrap();
+        let id = first.copy_transaction_id().unwrap().to_owned();
+        let mut cleanup = super::super::cleanup_action::RetainedCopyCleanupPlan::observe(
+            std::slice::from_ref(&id),
+            |_| Ok(()),
+        )
+        .unwrap();
+        super::super::cleanup_group::cohort::TORN.with(|slot| slot.set(Some(false)));
+        assert!(cleanup.reclaim(|_| Ok(())).is_err());
+        let before = namespace_contents(&root);
+        assert!(copy(&sources[2]).is_err());
+        assert!(
+            DefaultPlatform
+                .undo_copy_with_receipt(&second, &mut |_| Ok(()))
+                .is_err()
+        );
+        assert_eq!(
+            namespace_contents(&root),
+            before,
+            "other writers must not invalidate a saved cohort"
+        );
+        cleanup.reclaim(|_| Ok(())).unwrap();
+        assert!(cleanup.complete());
+        copy(&sources[2]).unwrap().unwrap();
+        DefaultPlatform
+            .undo_copy_with_receipt(&second, &mut |_| Ok(()))
+            .unwrap();
+        assert_eq!(std::fs::read(destination.join("a.txt")).unwrap(), b"a.txt");
+        assert_eq!(std::fs::read(destination.join("c.txt")).unwrap(), b"c.txt");
+        assert!(!destination.join("b.txt").exists());
+        return;
+    }
+    let root = tempfile::tempdir().unwrap();
+    let output = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", SELF, "--nocapture"])
+        .env(ROOT, root.path())
+        .env("LOCALAPPDATA", root.path().join("profile"))
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
 }

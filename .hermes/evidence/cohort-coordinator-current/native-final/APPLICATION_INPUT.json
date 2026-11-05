@@ -1,0 +1,27 @@
+{
+  "source_revision": "26d5c9ba31bc97fbdfb9de81472db27b9e1a5381",
+  "source_test_sha256": "c896682ff855feedb006d31b2b182ec1c24dec59c5eec94bdd7a4e1fb87c6481",
+  "test_sha256": "7a0112c82198cf447ccb197fd523ea3c07951e51669b157e78d1ae833dac878a",
+  "source_bytes": 533949780,
+  "staged_bytes": 512635894,
+  "strip_command": [
+    "x86_64-w64-mingw32-strip",
+    "--strip-debug"
+  ],
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 399864832,
+    "sha256": "4e71cb9e02c77a940218dc033d8a7565b79b2ee038ad964e81320b6b58a7b827"
+  },
+  "actor_sha256": "0c51054a64ab02dea2785cadad22f0921c4f6d6e20dad55aaeb84f1cb1018046",
+  "scope": "Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.",
+  "changed_product_sources": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "b367962ef0be8ec21515eeec32bab904cc1480f805bc2ee55ead8a390cd47bc2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "4380ee193bb861ff4a3e3d79aad5fbff62fe70a6258dcd29e2b2a0be41a54f55",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "879ae0a898e1f871fee588d22b71933352213461fdd330e5fb7aa2023436a539",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group/cohort.rs": "edf303754cbbcb6999820b414e49e27dc2f35aa61a902e59e1c3f9d577fb92bf",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "661e28c1e9136711532f2ede226c2e06a4b0e1d5e377f2fd61e36e9d7f935613",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "89e7e01b6ac9b42e56950d15a0e989e4e4928ff8a77bb96f39f959697423026a"
+  },
+  "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+}

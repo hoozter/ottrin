@@ -11,6 +11,21 @@ pub struct RetainedCopyCleanupPlan {
 }
 
 impl RetainedCopyCleanupPlan {
+    pub fn pending(
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Option<Self>, PlatformError> {
+        Self::pending_at(&configured_path()?, progress)
+    }
+
+    /// Read the complete original cohort even after selected journals vanish.
+    /// This never creates state, repairs a partial tail or performs cleanup.
+    pub fn pending_at(
+        root: &Path,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Option<Self>, PlatformError> {
+        cleanup_group::Observation::pending_at(root, progress)
+            .map(|group| group.map(|group| Self { group }))
+    }
     pub fn observe(
         transaction_ids: &[String],
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
@@ -48,14 +63,11 @@ impl RetainedCopyCleanupPlan {
     }
 
     pub fn complete(&self) -> bool {
-        self.group
-            .members
-            .iter()
-            .all(|member| matches!(member, cleanup_group::Member::Complete(_)))
+        self.group.complete()
     }
 
-    /// Losing this proof can lose authority to finish a known metadata removal
-    /// after the final control disappears. Such retries must retain this object.
+    /// Payload transitions may still need retained retry. Metadata authority is
+    /// durably coordinated before any selected journal can disappear.
     pub fn requires_retained_retry(&self) -> bool {
         self.group.requires_retained_retry()
     }

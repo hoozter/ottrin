@@ -1,0 +1,92 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6b61eb1d64dde180",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-987f16c652a12bbc; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6b61eb1d64dde180.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-987f16c652a12bbc; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-6b61eb1d64dde180",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-987f16c652a12bbc; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-f782c95013d7b443",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-f782c95013d7b443.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-f782c95013d7b443",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-ui-f3b0bade265a72b9",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-d1588445e089e3c2",
+      "kind": "build-cache",
+      "reason": "Superseded standalone Ottrin test artifact with verified newer same-configuration replacement",
+      "evidence": "Replacement /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe; compiler/fingerprint settings match, single-link binaries; native replacement --list or Windows PE verified. Exact references only historical completed evidence; current native UI actor uses new pair. No source, libraries, production outputs or current packages selected."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    }
+  ]
+}

@@ -1605,6 +1605,8 @@ impl RestoredCopyActivity {
     fn title(&self) -> &'static str {
         if self.ownership.transactions.is_empty() {
             "Copy recovery record needs review"
+        } else if self.ownership.finalization.is_some() {
+            "Interrupted Copy cleanup"
         } else {
             "Copy from previous session"
         }
@@ -1648,44 +1650,88 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
 
 #[cfg(target_os = "windows")]
 fn load_retained_copy_activity() -> RetainedCopySnapshot {
-    match ottrin_platform::discover_retained_copy_transactions() {
-        Ok(entries) => (
-            entries
-                .into_iter()
-                .map(|entry| {
-                    let admission = entry
-                        .transaction_id
-                        .as_deref()
-                        .filter(|_| windows_copy_can_admit(&entry))
-                        .map(ottrin_platform::restore_retained_copy_undo_plan);
-                    let recovery = entry.transaction_id.as_deref().and_then(|id| {
-                        if entry.evidence
-                            == ottrin_platform::WindowsCopyRecoveryEvidence::PendingNameRelease
-                        {
-                            Some(
-                                ottrin_platform::restore_retained_copy_name_release_plan(id)
-                                    .map(CopyRecoveryAction::NameRelease),
-                            )
-                        } else if windows_copy_can_resume(&entry) {
-                            Some(
-                                ottrin_platform::restore_retained_copy_resume_plan(id)
-                                    .map(CopyRecoveryAction::Forward),
-                            )
-                        } else if windows_copy_can_abort(&entry) {
-                            Some(
-                                ottrin_platform::restore_retained_copy_abort_plan(id)
-                                    .map(CopyRecoveryAction::Abort),
-                            )
-                        } else {
-                            None
-                        }
-                    });
-                    windows_retained_copy_activity(entry, admission, recovery)
-                })
-                .collect(),
-            None,
-        ),
+    let result = (|| -> Result<Vec<RestoredCopyActivity>, PlatformError> {
+        let pending = ottrin_platform::RetainedCopyCleanupPlan::pending(|_| Ok(()))?;
+        let owned: HashSet<String> = pending
+            .as_ref()
+            .map(|plan| {
+                plan.transaction_ids()
+                    .into_iter()
+                    .map(str::to_owned)
+                    .collect()
+            })
+            .unwrap_or_default();
+        let mut activity = ottrin_platform::discover_retained_copy_transactions()?
+            .into_iter()
+            .filter(|entry| {
+                entry
+                    .transaction_id
+                    .as_ref()
+                    .is_none_or(|id| !owned.contains(id))
+            })
+            .map(|entry| {
+                let admission = entry
+                    .transaction_id
+                    .as_deref()
+                    .filter(|_| windows_copy_can_admit(&entry))
+                    .map(ottrin_platform::restore_retained_copy_undo_plan);
+                let recovery = entry.transaction_id.as_deref().and_then(|id| {
+                    if entry.evidence
+                        == ottrin_platform::WindowsCopyRecoveryEvidence::PendingNameRelease
+                    {
+                        Some(
+                            ottrin_platform::restore_retained_copy_name_release_plan(id)
+                                .map(CopyRecoveryAction::NameRelease),
+                        )
+                    } else if windows_copy_can_resume(&entry) {
+                        Some(
+                            ottrin_platform::restore_retained_copy_resume_plan(id)
+                                .map(CopyRecoveryAction::Forward),
+                        )
+                    } else if windows_copy_can_abort(&entry) {
+                        Some(
+                            ottrin_platform::restore_retained_copy_abort_plan(id)
+                                .map(CopyRecoveryAction::Abort),
+                        )
+                    } else {
+                        None
+                    }
+                });
+                windows_retained_copy_activity(entry, admission, recovery)
+            })
+            .collect::<Vec<_>>();
+        if let Some(plan) = pending {
+            activity.push(windows_retained_cleanup_activity(&plan));
+        }
+        Ok(activity)
+    })();
+    match result {
+        Ok(activity) => (activity, None),
         Err(error) => (Vec::new(), Some(error.to_string())),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_retained_cleanup_activity(
+    plan: &ottrin_platform::RetainedCopyCleanupPlan,
+) -> RestoredCopyActivity {
+    let transactions: Vec<_> = plan
+        .transaction_ids()
+        .into_iter()
+        .map(str::to_owned)
+        .collect();
+    let first = transactions
+        .first()
+        .expect("admitted cleanup cohort has a member");
+    let id = format!("windows:{first}");
+    RestoredCopyActivity {
+        detail: format!("Interrupted Copy cleanup · {} recorded item{} · recovery bookkeeping remains", transactions.len(), plural_s(transactions.len())),
+        ownership: RetainedCopyOwnership {
+            key: format!("cleanup:{id}"), transactions, blocked_by: Vec::new(), restored: true,
+            finalization: Some(id), recovery: None, cleanup_phase: Some(ottrin_platform::WindowsCopyPhase::CleaningUp), recovery_location: None,
+        },
+        undo: PathMoveUndoState::Unavailable { reason: "This saved cleanup selection has already discarded its Undo data. Finish cleanup to remove its remaining recovery records.".into() },
+        receipt: None,
     }
 }
 
@@ -6111,6 +6157,9 @@ impl OttrinApp {
                     continue;
                 }
                 record.message = None;
+                if group.ownership.finalization.is_some() {
+                    record.title = title.into();
+                }
                 record.detail = group.detail;
                 record.status = restored_copy_status(&group.undo);
                 record.undo_kind = Some(PathMoveUndoKind::Copy);

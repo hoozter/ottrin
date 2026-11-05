@@ -1,0 +1,53 @@
+{
+  "status": "Owned QA resources and consumed transports removed; current deliverables preserved",
+  "available_bytes": 26353090560,
+  "standalone_output_cleanup": "TEST_OUTPUT_CLEANUP.json",
+  "latest_incremental_cleanup": "UI_FIXED_INCREMENTAL_CLEANUP.json",
+  "baseline": "STORAGE_BEFORE.txt",
+  "before_ui": "STORAGE_UI_BEFORE.txt",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "bytes": 772062278,
+      "purpose": "Newest matching-configuration Windows native test input for subsequent original-caller/recovery work; shared compiler output, not disposable staging"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "bytes": 545109345,
+      "purpose": "Newest matching-configuration Windows native test input for subsequent original-caller/recovery work; shared compiler output, not disposable staging"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc",
+      "bytes": 813421816,
+      "purpose": "Newest matching-configuration Linux UI test executable; reusable shared compiler output"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps",
+      "bytes": 23815171724,
+      "purpose": "Shared authoritative compiler cache/current dependencies; newest finalized sessions retained, no extra target tree"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental",
+      "bytes": 25263960526,
+      "purpose": "Shared authoritative compiler cache/current dependencies; newest finalized sessions retained, no extra target tree"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps",
+      "bytes": 31112066124,
+      "purpose": "Shared authoritative compiler cache/current dependencies; newest finalized sessions retained, no extra target tree"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental",
+      "bytes": 48834386191,
+      "purpose": "Shared authoritative compiler cache/current dependencies; newest finalized sessions retained, no extra target tree"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/cohort-coordinator-current",
+      "bytes": 1915623,
+      "purpose": "Compact source/build/native acceptance and failure receipts, frozen QA sources and current actor/controller for next verification; no guest images, executables, package staging or test data"
+    }
+  ],
+  "owned_guests_disks_profiles_displays_remaining": [],
+  "task_created_disposable_storage_remaining": [],
+  "limits": "Scoped Ottrin QA cleanup, not a new whole-machine inventory; existing unrelated numbered cleanup choices unchanged"
+}

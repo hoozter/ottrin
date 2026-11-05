@@ -86,6 +86,7 @@ impl RetainedCopyNameReleasePlan {
         progress(0)?;
         let registry = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Copy registry disappeared"))?;
+        super::super::registry::require_uncoordinated(registry.root())?;
         if registry.anchor_identity() != self.registry_anchor
             || stable_identity_from_handle(registry.root()).map_err(io)? != self.header.central
             || windows_fs::location(registry.root()).map_err(io)? != self.registry

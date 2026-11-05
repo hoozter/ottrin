@@ -96,6 +96,7 @@ pub(crate) fn copy_configured(
     source.reject_overlap(&registry_path, true, &mut progress)?;
     let registry = super::registry::AnchoredRoot::open_at(&registry_path, true)?
         .ok_or_else(|| io("Copy registry initialization returned no registry"))?;
+    super::registry::require_uncoordinated(registry.root())?;
     copy_admitted_source(
         source,
         destination,

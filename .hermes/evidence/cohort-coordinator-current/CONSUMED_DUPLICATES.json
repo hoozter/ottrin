@@ -1,0 +1,32 @@
+[
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/actor.ps1",
+    "bytes": 8063,
+    "sha256": "3ed6be1e848ab07220938cb4267e87458c3f71f13863a9db6451ba9a2782fd74",
+    "reason": "Consumed duplicate transport/build record; exact retained copy .hermes/evidence/cohort-coordinator-current/native-fixed/actor.ps1"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/legacy-actor.ps1",
+    "bytes": 5833,
+    "sha256": "e6a0d5bc5654dafa9e0a79413abd28f062fb89532c08cff1740ed7db5ec83fcc",
+    "reason": "Consumed duplicate transport/build record; exact retained copy .hermes/evidence/cohort-coordinator-current/native-legacy/actor.ps1"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/final-actor.ps1",
+    "bytes": 10166,
+    "sha256": "0c51054a64ab02dea2785cadad22f0921c4f6d6e20dad55aaeb84f1cb1018046",
+    "reason": "Consumed duplicate transport/build record; exact retained copy .hermes/evidence/cohort-coordinator-current/native-final/actor.ps1"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/test-build.jsonl",
+    "bytes": 64178,
+    "sha256": "e086942d56f0f0b09d22af2615491f651a00fe9897fce97d84a683f107db5637",
+    "reason": "Consumed duplicate transport/build record; exact retained copy .hermes/evidence/cohort-coordinator-current/native-final/test-build.jsonl"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/test-build.log",
+    "bytes": 164,
+    "sha256": "8b915684e0346ea22d2eedc9e8540b913b90b663eb4ea251721bb6c405366f08",
+    "reason": "Consumed duplicate transport/build record; exact retained copy .hermes/evidence/cohort-coordinator-current/native-final/test-build.log"
+  }
+]

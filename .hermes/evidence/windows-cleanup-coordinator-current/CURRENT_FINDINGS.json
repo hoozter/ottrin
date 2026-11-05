@@ -1,13 +1,5 @@
 {
-  "status": "External coordinator and original-caller registry bridge still unimplemented; profile locator component separately source/native verified",
-  "source_sha256": {
-    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "9e7dcdc67b140878332a01c77831339ef13e09f1c921f701bdf8e73024f4eb17",
-    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "86686b6fc76196306ba3bf4f8b2ea64e03fe88a8a126d00888ccd50a539ad02c",
-    "crates/ottrin-platform/src/windows_fs/identity.rs": "3ceb5fc2832a646896e459ee3704934dd7d110a23e5aa232fc368a3200fd9c09",
-    "crates/ottrin-platform/src/windows_privileged_transport.rs": "5dfa8bf28a2935e19836081b6f9904c38804d7658e7453d7fa3fba2c500f8846",
-    "crates/ottrin-platform/src/windows_pipe.rs": "18c9e391d5bdc210733a25f1689a4e30b298c1a78ec06b7fc7b52756717d1b31",
-    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "e372d7221f160df6a02a7b1f603aed9f7f3586b9b9493be7efb37944bb19c799"
-  },
+  "status": "Scoped ordinary-user durable coordinator and native Activity restart bridge accepted; original-caller registry/ownership bridge remains unimplemented and administrator Copy disabled.",
   "confirmed": [
     "reclaim_all already prepares paired metadata intents for every member before first metadata deletion; do not duplicate that completed barrier",
     "Selection freezes central registry names/root version and peer control bytes/security; coordinator writes must be outside that guarded registry",
@@ -16,26 +8,33 @@
     "HelperChannel now retains the authenticated original process/token and checks TokenUser independently of TokenOwner. A lazy explicit-token Windows registered Local AppData locator passes ordinary same-user poisoned-environment and process-exit checks. It is a read-only locator, not a pinned registry, original-user file-ownership bridge or alternate-admin UAC proof."
   ],
   "next_required": [
-    "Implement canonical externally anchored cohort snapshot and pending/completed metadata checkpoints; never recover deletion authority from missing IDs",
-    "Require crash/fault/native fresh-process recovery and changed-peer/root/case/ACL/foreign identity refusals before enabling helper Copy",
-    "Use the original principal and registered profile locator to build a separately pinned native registry/receipt/Undo/cleanup authority; preserve file-owner semantics, add alternate-admin/package-context proof, and keep Windows administrator Copy disabled until all coordinator/recovery gates pass."
+    "Build separately pinned original-caller registry/receipt/Undo/cleanup authority from authenticated TokenUser and registered profile; preserve TokenOwner semantics.",
+    "Prove alternate-administrator and package-context recovery before enabling administrator Copy."
   ],
   "current_delivery": "Linuxbee and Windows8e stay delivered separately; profile component source is not a shipped enabled Copy feature",
-  "reference_commit": "88cbc6e98b68cf461f69636e0e31e0c0cea16ebe",
+  "reference_commit": "26d5c9ba31bc97fbdfb9de81472db27b9e1a5381",
   "profile_locator_component": ".hermes/evidence/caller-profile-current/ACCEPTANCE.json",
-  "current_platform_test_input": ".hermes/evidence/caller-profile-current/NATIVE_TEST_INPUT.json",
+  "current_platform_test_input": ".hermes/evidence/cohort-coordinator-current/UI_FIXED_TEST_INPUT.json",
   "prior_test_retirement": ".hermes/evidence/caller-profile-current/TEST_EXECUTABLE_CLEANUP.json",
   "profile_path_limit": "Windows registered folder paths can be redirected. The locator is data, not trusted filesystem authority; future admission must bind the original TokenUser separately from TokenOwner and pin/revalidate native directory/anchor/security identities.",
   "implementation_sequence": [
     "Retain original process/token and resolve registered profile without environment authority (component proven; no Copy enablement).",
     "Construct explicit original-caller recovery context: authenticated TokenUser, original default file owner and pinned native registry/anchor. Do not globally change file-owner semantics, rewrite environment or impersonate away elevation needed for the actual Copy.",
     "Thread that context through creation/discovery/receipt/Undo/cleanup; add alternate-administrator and package-context native proof.",
-    "Create the external coordinator outside the guarded registry with distinct anchor and original-registry binding; persist complete member proof and pending/completed checkpoints before metadata retirement.",
+    "External coordinator and ordinary-user Activity restart recovery implemented and scoped native-verified; preserve original selection and native-proof admission.",
     "Prove fresh-process crash/restart, partial/checkpoint I/O and changed-peer/root/case/ACL/foreign refusals; only then enable administrator Copy."
   ],
   "registry_binding_component": {
     "evidence": ".hermes/evidence/registry-binding-current/ACCEPTANCE.json",
     "status": "Pass13 scoped ordinary-user native assertions, strict Windows lint and formatting; initial aggregate timeout retained separately",
-    "scope": "Retained observation binding across all eight registry reopen sites. Root/marker owner/security, parent location/native ID and parent/root case rules; not original-caller authority or durable coordinator. Parent ACL digest and external coordinator binding remain future admission work."
+    "scope": "Observation reopen bindings include root/marker security, parent native ID/location/case and now parent owner/group/DACL digest. New native group-change refusal is not literal parent-DACL mutation proof. Original-caller ownership bridging remains separate."
+  },
+  "coordinator_worktree": {
+    "source": ".hermes/evidence/cohort-coordinator-current/UI_FIXED_SOURCE_INPUT.json",
+    "acceptance": ".hermes/evidence/cohort-coordinator-current/ACCEPTANCE.json",
+    "initial_core": "28 named native passes across 21 invocations, exact pre-bridge source in native-final",
+    "activity_failure": ".hermes/evidence/cohort-coordinator-current/NATIVE_UI_FAILURE.json",
+    "source_fix": "Later pending intent resolved first; five corrected-build native invocations pass, including 29-scenario Activity integration and the uncertain-removal refusal matrix.",
+    "native_result": ".hermes/evidence/cohort-coordinator-current/native-ui-fixed/RESULT.json"
   }
 }

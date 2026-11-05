@@ -4,7 +4,7 @@ from contextlib import ExitStack
 import argparse, base64, re, hashlib, importlib.util, json, os, shutil, signal, subprocess, sys, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-helper',type=Path);parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);parser.add_argument('--application-native-test',type=Path);parser.add_argument('--boundary-fixture',type=Path);parser.add_argument('--display-resolution',choices=['2560x1600']);parser.add_argument('--display-driver',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-helper',type=Path);parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);parser.add_argument('--application-native-test',type=Path);parser.add_argument('--boundary-fixture',type=Path);parser.add_argument('--platform-fixture-test',type=Path);parser.add_argument('--display-resolution',choices=['2560x1600']);parser.add_argument('--display-driver',type=Path);args=parser.parse_args()
 assert not args.office_worksheet or args.office_installed,'Worksheet surface requires the installed Office fixture'
 assert not args.office_installed or (args.application_nsis_stage and args.output and not args.use_stock_base and not args.use_updated_base),'Installed Office uses its exact declared retained-provider clone'
 assert not args.application_actor or ((args.application_nsis_stage or args.application_native_test) and args.use_stock_base and args.output and not args.office_installed),'Explicit actor requires a receipt-bound package and stock-client case'
@@ -18,6 +18,7 @@ assert not args.application_uia_stage or (args.use_stock_base and args.output an
 assert not args.application_nsis_stage or ((args.use_stock_base or args.office_installed) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'NSIS requires its own stock ordinary-user case'
 assert not args.application_msi or ((args.use_stock_base or args.use_updated_base) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])),'Application MSI requires a fresh declared stock or prepared updated ordinary-user case'
 assert not args.boundary_fixture or args.application_native_test
+assert not args.platform_fixture_test or (args.application_native_test and args.application_actor and args.use_stock_base and args.output and not args.boundary_fixture), 'UI platform fixture requires an explicit native UI actor and its isolated stock case'
 assert not args.application_native_test or (args.use_stock_base and args.output and args.application_actor and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test,args.native_helper])), 'Native boundary test requires an explicit isolated ordinary-user actor'
 assert not args.native_elevated or args.native_msi_builder,'Elevated diagnostic requires the native file-only builder; never an application deployment mode'
 assert not args.native_helper or (args.native_test and args.test_filter=='windows_privileged_transport::tests::windows_helper_pipe_'), 'Helper input only supports the explicit production-helper test'
@@ -364,7 +365,7 @@ with ExitStack() as stack:
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
   if args.application_native_test:
-   executable=args.application_native_test.resolve();assert executable.parent==r/'target/x86_64-pc-windows-gnu/debug/deps' and re.fullmatch(r'(windows_job_native|ottrin_platform)-[0-9a-f]{16}\.exe',executable.name) and not args.application_native_test.is_symlink()
+   executable=args.application_native_test.resolve();assert executable.parent==r/'target/x86_64-pc-windows-gnu/debug/deps' and re.fullmatch(r'(windows_job_native|ottrin_platform|ottrin_ui)-[0-9a-f]{16}\.exe',executable.name) and not args.application_native_test.is_symlink()
    with executable.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
    # GNU embeds debug sections in the executable; copying hundreds of MB per
    # case changes the test workload. Retain the canonical compiler output and
@@ -393,10 +394,19 @@ with ExitStack() as stack:
     with companion.open('rb') as stream:companion_source_sha=hashlib.file_digest(stream,'sha256').hexdigest()
     with staged_companion.open('rb') as stream:companion_sha=hashlib.file_digest(stream,'sha256').hexdigest()
     identity['fixture']={'source_sha256':companion_source_sha,'sha256':companion_sha,'source_bytes':companion.stat().st_size,'staged_bytes':staged_companion.stat().st_size,'unchanged_executable_text':companion_code}
-   changed=subprocess.check_output(['git','diff','--name-only','HEAD','--','Cargo.toml','Cargo.lock','crates'],text=True).splitlines()
-   identity['changed_product_sources']={path:hashlib.sha256((r/path).read_bytes()).hexdigest() for path in changed}
+   if args.platform_fixture_test:
+    assert executable.name.startswith('ottrin_ui-'), 'Only the UI integration tests use a platform fixture compiler executable'
+    companion=args.platform_fixture_test.resolve();assert companion.parent==r/'target/x86_64-pc-windows-gnu/debug/deps' and re.fullmatch(r'ottrin_platform-[0-9a-f]{16}\.exe',companion.name) and not args.platform_fixture_test.is_symlink()
+    staged_companion=fixture/'platform-fixture-test.exe';subprocess.run(['x86_64-w64-mingw32-strip','--strip-debug','-o',str(staged_companion),str(companion)],check=True)
+    companion_code=executable_text(companion);assert executable_text(staged_companion)==companion_code
+    with companion.open('rb') as stream:companion_source_sha=hashlib.file_digest(stream,'sha256').hexdigest()
+    with staged_companion.open('rb') as stream:companion_sha=hashlib.file_digest(stream,'sha256').hexdigest()
+    identity['platform_fixture']={'source_sha256':companion_source_sha,'sha256':companion_sha,'source_bytes':companion.stat().st_size,'staged_bytes':staged_companion.stat().st_size,'unchanged_executable_text':companion_code}
+   changed=set(subprocess.check_output(['git','diff','--name-only','HEAD','--','Cargo.toml','Cargo.lock','crates'],text=True).splitlines())
+   changed.update(subprocess.check_output(['git','ls-files','--others','--exclude-standard','--','Cargo.toml','Cargo.lock','crates'],text=True).splitlines())
+   identity['changed_product_sources']={path:hashlib.sha256((r/path).read_bytes()).hexdigest() if (r/path).is_file() else None for path in sorted(changed)}
    identity['source_scope']='Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test.'
-   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity);application_files=['boundary-test.exe','application-input.json']+(['boundary-fixture.exe'] if args.boundary_fixture else [])
+   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity);application_files=['boundary-test.exe','application-input.json']+(['boundary-fixture.exe'] if args.boundary_fixture else [])+(['platform-fixture-test.exe'] if args.platform_fixture_test else [])
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
   if args.application_nsis_stage and args.application_actor:
@@ -698,7 +708,7 @@ with ExitStack() as stack:
    if result.get('exitcode')==0:
     actor_result=json.loads(base64.b64decode(result.get('out-data','e30=')).decode('utf-8-sig'))
     observation={k:actor_result[k] for k in ['status','phase','error'] if k in actor_result}
-    if isinstance(actor_result.get('runs'),list):observation['runs']=[{k:run[k] for k in ['threads','run','exit','all_ten_pass'] if k in run} for run in actor_result['runs']]
+    if isinstance(actor_result.get('runs'),list):observation['runs']=[{k:run[k] for k in ['case','threads','run','exit','elapsed_ms','timed_out','all_ten_pass'] if k in run} for run in actor_result['runs']]
     if observation and observation!=state.get('actor_observation'):
      state['actor_observation']=observation;save('OWNER.json',state)
     if actor_result.get('status') not in [None,'running']:break

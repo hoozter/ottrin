@@ -1,0 +1,6 @@
+24G	target/debug/deps
+24G	target/debug/incremental
+29G	target/x86_64-pc-windows-gnu/debug/deps
+43G	target/x86_64-pc-windows-gnu/debug/incremental
+8.0K	.hermes/evidence/cohort-coordinator-current
+72K	.hermes/packaging-tmp

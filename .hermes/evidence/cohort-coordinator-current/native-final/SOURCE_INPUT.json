@@ -1,0 +1,12 @@
+{
+  "reference_commit": "26d5c9ba31bc97fbdfb9de81472db27b9e1a5381",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "b367962ef0be8ec21515eeec32bab904cc1480f805bc2ee55ead8a390cd47bc2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "4380ee193bb861ff4a3e3d79aad5fbff62fe70a6258dcd29e2b2a0be41a54f55",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "879ae0a898e1f871fee588d22b71933352213461fdd330e5fb7aa2023436a539",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group/cohort.rs": "edf303754cbbcb6999820b414e49e27dc2f35aa61a902e59e1c3f9d577fb92bf",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "661e28c1e9136711532f2ede226c2e06a4b0e1d5e377f2fd61e36e9d7f935613",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "89e7e01b6ac9b42e56950d15a0e989e4e4928ff8a77bb96f39f959697423026a"
+  },
+  "scope": "Ordinary-user durable metadata cohort coordinator; original-caller registry bridge and enabled administrator Copy remain separate"
+}

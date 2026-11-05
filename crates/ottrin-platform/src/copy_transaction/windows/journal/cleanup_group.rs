@@ -6,8 +6,10 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 type Object = (u64, [u8; 16]);
+pub(super) mod cohort;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Control {
     digest: [u8; 32],
     version: EntryVersion,
@@ -17,14 +19,37 @@ struct Control {
 
 /// The initial catalog, including unselected peers. Only this module constructs
 /// a selection from held native records; callers cannot supply exclusion IDs.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct Selection {
     selected: BTreeSet<String>,
+    #[serde(with = "control_records")]
     records: BTreeMap<OsString, Control>,
     names: Vec<OsString>,
     root: EntryVersion,
     security: security::PrivateSecurity,
     creator: Vec<u8>,
+}
+
+mod control_records {
+    use super::*;
+    pub fn serialize<S: serde::Serializer>(
+        v: &BTreeMap<OsString, Control>,
+        s: S,
+    ) -> Result<S::Ok, S::Error> {
+        v.iter().collect::<Vec<_>>().serialize(s)
+    }
+    pub fn deserialize<'de, D: serde::Deserializer<'de>>(
+        d: D,
+    ) -> Result<BTreeMap<OsString, Control>, D::Error> {
+        let rows = Vec::<(OsString, Control)>::deserialize(d)?;
+        let count = rows.len();
+        let map: BTreeMap<_, _> = rows.into_iter().collect();
+        if map.len() != count {
+            return Err(serde::de::Error::custom("Duplicate cohort control name"));
+        }
+        Ok(map)
+    }
 }
 
 impl Selection {
@@ -348,6 +373,7 @@ pub(super) struct Observation {
     pub(super) shared: BTreeMap<Object, Vec<(usize, usize)>>,
     pending_metadata: Option<usize>,
     pending_unlink: Option<(usize, super::cleanup_peer::Intent)>,
+    cohort: Option<cohort::Receipt>,
 }
 
 impl Observation {
@@ -359,7 +385,7 @@ impl Observation {
     }
 
     pub(super) fn requires_retained_retry(&self) -> bool {
-        self.pending_metadata.is_some() || self.pending_unlink.as_ref().is_some_and(|(owner, _)| {
+        (self.pending_metadata.is_some() && self.cohort.is_none()) || self.pending_unlink.as_ref().is_some_and(|(owner, _)| {
             matches!(&self.members[*owner], Member::Payload(admission) if admission.pending_entry_absent())
         })
     }
@@ -735,6 +761,12 @@ impl Observation {
         &mut self,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if self.complete() {
+            return Ok(());
+        }
+        if self.cohort.is_some() {
+            return self.finish_cohort(&mut cancel);
+        }
         if let Some(index) = self.pending_metadata {
             self.finish_metadata(index, &mut cancel)?;
         }
@@ -819,10 +851,7 @@ impl Observation {
         for index in 0..self.members.len() {
             self.prepare_metadata(index, &mut cancel)?;
         }
-        for index in 0..self.members.len() {
-            self.finish_metadata(index, &mut cancel)?;
-        }
-        Ok(())
+        self.finish_cohort(&mut cancel)
     }
 
     /// Reclaim one member through the ordinary physical writer. This retains
@@ -973,6 +1002,77 @@ impl Observation {
         index: usize,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        if index >= self.members.len() {
+            return Err(io("Copy group member index is invalid"));
+        }
+        if self
+            .pending_metadata
+            .is_some_and(|pending| pending != index)
+        {
+            return Err(io(
+                "Finish the pending Copy metadata member before another group action",
+            ));
+        }
+        if matches!(self.members[index], Member::Complete(_)) {
+            return Ok(());
+        }
+        let mut log = self.open_cohort(&mut cancel)?;
+        self.finish_metadata_logged(index, &mut log, &mut cancel)
+    }
+
+    fn open_cohort(
+        &mut self,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<cohort::Log, PlatformError> {
+        if self.cohort.is_none() {
+            for index in 0..self.members.len() {
+                self.prepare_metadata(index, &mut *cancel)?;
+            }
+        }
+        let log = cohort::Log::open(self, cancel)?;
+        *self = log.observation(cancel)?;
+        Ok(log)
+    }
+
+    fn finish_cohort(
+        &mut self,
+        cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        if cohort::retry_retirement(self, cancel)? {
+            self.cohort = None;
+            return Ok(());
+        }
+        let mut log = self.open_cohort(cancel)?;
+        // A replay can have completed earlier members and a later member with
+        // an uncertain unlink. Resolve that pending intent before visiting any
+        // other member; the per-member gate deliberately refuses that ordering.
+        if let Some(index) = self.pending_metadata {
+            self.finish_metadata_logged(index, &mut log, &mut *cancel)?;
+        }
+        for index in 0..self.members.len() {
+            if !matches!(self.members[index], Member::Complete(_)) {
+                self.finish_metadata_logged(index, &mut log, &mut *cancel)?;
+            }
+        }
+        log.retire(cancel)?;
+        self.cohort = None;
+        Ok(())
+    }
+
+    pub(super) fn complete(&self) -> bool {
+        self.cohort.is_none()
+            && self
+                .members
+                .iter()
+                .all(|m| matches!(m, Member::Complete(_)))
+    }
+
+    fn finish_metadata_logged(
+        &mut self,
+        index: usize,
+        log: &mut cohort::Log,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
         if self.pending_unlink.is_some() {
             return Err(io(
                 "Finish the prepared shared unlink before another group action",
@@ -999,9 +1099,8 @@ impl Observation {
         {
             return Err(io("Complete all group payloads before metadata removal"));
         }
-        if self.pending_metadata.is_none() {
-            self.prepare_metadata(index, &mut cancel)?;
-        }
+        log.pending(index, &mut cancel)?;
+        self.cohort = Some(log.receipt());
         cancel(0)?;
         let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
@@ -1045,6 +1144,8 @@ impl Observation {
         self.selection = selection;
         result?;
         manager.validate()?;
+        log.done(index, &self.selection.root, &mut cancel)?;
+        self.cohort = Some(log.receipt());
         self.members[index] = Member::Complete(Box::new(header));
         self.pending_metadata = None;
         Ok(())
@@ -1056,6 +1157,9 @@ impl Observation {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         cancel(0)?;
+        if let Some(group) = cohort::observe_at(path, ids, &mut cancel)? {
+            return Ok(group);
+        }
         let manager = AnchoredRoot::open_at(path, false)?
             .ok_or_else(|| io("Configured Copy registry is missing"))?;
         let central = manager.root();
@@ -1182,6 +1286,14 @@ impl Observation {
             shared: retained,
             pending_metadata: None,
             pending_unlink: None,
+            cohort: None,
         })
+    }
+
+    pub(super) fn pending_at(
+        path: &Path,
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Option<Self>, PlatformError> {
+        cohort::pending_at(path, &mut cancel)
     }
 }

@@ -1,0 +1,11 @@
+{
+  "command": "python3 scripts/test-workspace.py -p ottrin-ui --lib copy_activity_cleanup::tests::background_copy_cleanup_success_retry_chain_and_restart_use_private_processes -- --exact --nocapture",
+  "exit": 0,
+  "binary": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_ui-c354643af000a7cc",
+  "sha256": "9b1d90455cbc00771f75bb2467aa9ab7e86af4e637118a8c79fbcd4c246402d6",
+  "result": "1 parent test passed; four private cases: success, changed, chain, finalization",
+  "source": "UI_SOURCE_INPUT.json",
+  "scope": "Linux ordinary-user Activity cleanup regression; no package or native-window visual acceptance",
+  "owned_profile": "Disposable runner removed its HOME/XDG profile and stopped its owned process group",
+  "subsequent_change_scope": "Later pending replay correction affects Windows-only module/tests; generic Linux title source is unchanged."
+}

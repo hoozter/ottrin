@@ -1,0 +1,66 @@
+{
+  "status": "Pass scoped ordinary-user durable cleanup coordinator and native Activity restart recovery; administrator Copy remains disabled",
+  "core": {
+    "result": "native-final/RESULT.json",
+    "invocations": 21,
+    "named_passes": 28,
+    "source": "native-final/SOURCE_INPUT.json",
+    "binary": "native-final/NATIVE_TEST_INPUT.json",
+    "scope": "Ordinary-user native NTFS core metadata retirement and fresh-process replay; not the later Activity bridge or mutation fence"
+  },
+  "limitations": [
+    "Administrator Copy remains disabled; original-caller recovery authority/ownership bridge is unimplemented",
+    "Parent security refusal fixture changes the group; literal parent-DACL native mutation is not proven by that case",
+    "No new package or native-window visual acceptance",
+    "Missing IDs never license deletion or completed original-batch history"
+  ],
+  "storage_cleanup": {
+    "receipt": "TEST_OUTPUT_CLEANUP.json",
+    "purpose": "Retire four obsolete standalone test executables and their exact fingerprint/dep-info companions; keep same-configuration replacements and current packages"
+  },
+  "failure": "NATIVE_UI_FAILURE.json",
+  "linux_regression": "LINUX_UI_ACCEPTANCE.json",
+  "current_native_result": {
+    "result": "native-ui-fixed/RESULT.json",
+    "invocations": 5,
+    "named_passes": 5,
+    "activity_private_scenarios": 29,
+    "cases": [
+      {
+        "case": "later-pending",
+        "exit": 0,
+        "elapsed_ms": 31881
+      },
+      {
+        "case": "uncertain-removal",
+        "exit": 0,
+        "elapsed_ms": 87950
+      },
+      {
+        "case": "mutation-fence",
+        "exit": 0,
+        "elapsed_ms": 2037
+      },
+      {
+        "case": "activity",
+        "exit": 0,
+        "elapsed_ms": 39399
+      },
+      {
+        "case": "readonly",
+        "exit": 0,
+        "elapsed_ms": 185
+      }
+    ],
+    "source": "UI_FIXED_SOURCE_INPUT.json",
+    "binaries": "UI_FIXED_TEST_INPUT.json",
+    "scope": "Ordinary-user native NTFS/controller and real egui action input; no new package, native-window visual, alternate-administrator or original-caller ownership acceptance"
+  },
+  "windows_lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "log": "windows-ui-fixed-lint.log"
+  },
+  "teardown": "native-ui-fixed/OWNER.json",
+  "stable_packages": "PRESERVED_PACKAGES.json"
+}

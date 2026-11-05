@@ -1,0 +1,26 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+  "sha256": "c896682ff855feedb006d31b2b182ec1c24dec59c5eec94bdd7a4e1fb87c6481",
+  "source": {
+    "reference_commit": "26d5c9ba31bc97fbdfb9de81472db27b9e1a5381",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "b367962ef0be8ec21515eeec32bab904cc1480f805bc2ee55ead8a390cd47bc2",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "4380ee193bb861ff4a3e3d79aad5fbff62fe70a6258dcd29e2b2a0be41a54f55",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "879ae0a898e1f871fee588d22b71933352213461fdd330e5fb7aa2023436a539",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group/cohort.rs": "edf303754cbbcb6999820b414e49e27dc2f35aa61a902e59e1c3f9d577fb92bf",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "661e28c1e9136711532f2ede226c2e06a4b0e1d5e377f2fd61e36e9d7f935613",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "89e7e01b6ac9b42e56950d15a0e989e4e4928ff8a77bb96f39f959697423026a"
+    },
+    "scope": "Ordinary-user durable metadata cohort coordinator; original-caller registry bridge and enabled administrator Copy remain separate"
+  },
+  "compiler_inputs": {
+    "Cargo.toml": "563448b81efed23c72114fce8537b49ace937c517f6c6c6c9af1cce8f89fc9c1",
+    "Cargo.lock": "a1f7e66afdcd218047dfe67573ea05fa960c5f911250307fee87698ec198c66c",
+    "crates/ottrin-platform/Cargo.toml": "c1d1bf22cc36db09af5ecd160db9c76bb2877eb17ba74cdb859892b902d9e011"
+  },
+  "build_exit": 0,
+  "profile": "Shared default test profile, platform opt0/debug0; no alternate target/compiler flags",
+  "previous_input": ".hermes/evidence/registry-binding-current/NATIVE_TEST_INPUT.json",
+  "initial_probe": "native/RESULT.json",
+  "prior_guard_probe": "native-legacy/RESULT.json"
+}

@@ -15,6 +15,8 @@ use windows_sys::Win32::Storage::FileSystem::*;
 const ANCHOR: &str = ".ottrin-copy-recovery-root";
 const CLAIMS_ROOT: &str = ".ottrin-copy-target-claims";
 const CLAIMS_ANCHOR: &str = ".ottrin-copy-target-claims-root";
+const COHORTS_ROOT: &str = ".ottrin-copy-cleanup-cohorts";
+const COHORTS_ANCHOR: &str = ".ottrin-copy-cleanup-cohorts-root";
 const MAX_ANCHOR: u64 = 65_536;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -38,6 +40,7 @@ pub(super) struct Binding {
     anchor: Anchor,
     marker_security: security::PrivateSecurity,
     parent_location: Vec<u16>,
+    parent_security: [u8; 32],
     cases: (bool, bool),
 }
 
@@ -52,6 +55,7 @@ pub(super) struct AnchoredRoot {
     parent_location: PathBuf,
     path: PathBuf,
     cases: (bool, bool),
+    parent_security: [u8; 32],
 }
 
 pub(super) fn configured_path() -> Result<PathBuf, PlatformError> {
@@ -84,6 +88,50 @@ fn child(
             },
         )
     }
+}
+
+/// Other Copy writers must not invalidate an interrupted cohort's frozen
+/// catalog. This is a refusal gate, never authority to mutate or repair state.
+pub(super) fn require_uncoordinated(central: &File) -> Result<(), PlatformError> {
+    let path = windows_fs::location(central).map_err(io)?;
+    let parent = windows_fs::open_directory(
+        path.parent()
+            .ok_or_else(|| io("Copy registry has no parent"))?,
+        FILE_GENERIC_READ,
+    )
+    .map_err(io)?;
+    match child(
+        &parent,
+        OsStr::new(COHORTS_ROOT),
+        true,
+        FILE_GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    ) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(io(error)),
+        Ok(file) => drop(file),
+    }
+    let manager = AnchoredRoot::open_at(&path, false)?
+        .ok_or_else(|| io("Copy registry admission is missing"))?;
+    if stable_identity_from_handle(manager.root()).map_err(io)?
+        != stable_identity_from_handle(central).map_err(io)?
+    {
+        return Err(io(
+            "Copy registry changed while checking interrupted cleanup",
+        ));
+    }
+    let coordinator = manager
+        .cohorts(false)?
+        .ok_or_else(|| io("Copy coordinator admission is missing"))?;
+    if !windows_fs::directory_children_limited(coordinator.root(), 1)
+        .map_err(io)?
+        .is_empty()
+    {
+        return Err(PlatformError::CopyCleanupRefused(
+            "Finish the interrupted Copy cleanup in Activity before starting another Copy or recovery action.".into(),
+        ));
+    }
+    manager.validate()
 }
 
 fn parent_directory(path: &Path, initialize: bool) -> Result<Option<File>, PlatformError> {
@@ -173,6 +221,38 @@ impl AnchoredRoot {
             Some(expected),
             initialize,
         )
+    }
+
+    /// Coordinator writes must never change the guarded registry's namespace
+    /// or epoch. Its sibling has a distinct anchor and no deletion authority
+    /// until a cohort record binds both admitted roots.
+    pub(super) fn cohorts(&self, initialize: bool) -> Result<Option<Self>, PlatformError> {
+        self.validate()?;
+        let parent = if initialize {
+            windows_fs::open_directory(
+                &self.parent_location,
+                FILE_GENERIC_READ | FILE_GENERIC_WRITE,
+            )
+            .map_err(io)?
+        } else {
+            self.parent.try_clone().map_err(io)?
+        };
+        if stable_identity_from_handle(&parent).map_err(io)? != self.record.parent
+            || security::owner_group_dacl_digest(&parent)? != self.parent_security
+        {
+            return Err(io(
+                "Copy coordinator parent differs from registry admission",
+            ));
+        }
+        let result = Self::open_under(
+            parent,
+            OsStr::new(COHORTS_ROOT),
+            OsStr::new(COHORTS_ANCHOR),
+            Some(self.cases.0),
+            initialize,
+        )?;
+        self.validate()?;
+        Ok(result)
     }
 
     pub(super) fn claim_bucket(
@@ -342,6 +422,7 @@ impl AnchoredRoot {
         )
         .map_err(io)?;
         let result = Self {
+            parent_security: security::owner_group_dacl_digest(&parent)?,
             cases: (
                 windows_fs::directory_case_sensitive(&parent).map_err(io)?,
                 windows_fs::directory_case_sensitive(&root).map_err(io)?,
@@ -365,6 +446,7 @@ impl AnchoredRoot {
             anchor: self.record.clone(),
             marker_security: self.marker_security.clone(),
             parent_location: self.parent_location.as_os_str().encode_wide().collect(),
+            parent_security: self.parent_security,
             cases: self.cases,
         })
     }
@@ -419,6 +501,7 @@ impl AnchoredRoot {
             || stable_identity_from_handle(&self.root).map_err(io)? != self.record.root
             || stable_identity_from_handle(&self.marker).map_err(io)? != self.record.marker
             || windows_fs::current_owner()? != self.record.creator
+            || security::owner_group_dacl_digest(&self.parent)? != self.parent_security
             || windows_fs::directory_case_sensitive(&self.parent).map_err(io)? != self.cases.0
             || windows_fs::directory_case_sensitive(&self.root).map_err(io)? != self.cases.1
         {

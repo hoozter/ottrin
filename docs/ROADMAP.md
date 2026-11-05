@@ -53,26 +53,30 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-1. Finish Windows administrator Copy recovery: the externally anchored durable
-   cohort coordinator and original caller's canonical registry/profile/receipt,
-   Undo and cleanup bridge. Kernel process/TokenUser binding is implemented;
-   original-caller registry authority is still separate work. The explicit-token
-   registered Local AppData locator now passes strict Windows lint, an ordinary
-   same-user native poisoned-environment/process-exit check and four existing pipe
-   regressions (`caller-profile-current/ACCEPTANCE.json`). It creates no directories
-   and grants no recovery-registry authority. Alternate-admin/package-context,
-   original-caller registry ownership bridging and the durable coordinator remain
-   required. Cleanup observations now pin the original native registry/anchor,
-   root/marker security and parent/root case policy across every reopening; the
-   native registry and pre-start substitution checks pass, as do six individual
-   mixed-cleanup regressions. The first aggregate mixed batch exceeded its90-second
-   QA limit; its six cases subsequently passed separately without relaxed
-   assertions (`registry-binding-current/ACCEPTANCE.json`). Parent ACL admission,
-   external persistence and cross-administrator proof remain open. Administrator
-   Copy stays disabled. Current downloads remain Linuxbee/Windows8e. Never interpret a
-   missing member ID as completed deletion or unknown recovered history as a
-   completed original batch. Native crash/restart and changed-peer/root/case/ACL
-   refusals must precede enabling administrator Copy.
+1. Finish Windows administrator Copy recovery: original caller's canonical
+   registry/profile ownership, receipt, Undo and cleanup bridge. The ordinary-user
+   durable metadata coordinator is implemented; 28 focused native core checks pass
+   across 21 invocations, including process exits at publication/checkpoint/retirement,
+   torn checkpoint replay, strict original-selection recovery, changed/corrupt
+   evidence refusal and existing registry/claim regressions. Evidence:
+   `cohort-coordinator-current/ACCEPTANCE.json`. The later Activity restart bridge
+   and Copy/Undo mutation fence now pass five corrected-build native invocations,
+   including the full 29-scenario Activity integration. Its first run found a
+   later-member replay ordering defect; recovery now finishes the saved pending
+   member before visiting remaining members. New middle/final-member interruption
+   regressions and the existing uncertain-removal matrix pass without weakening
+   the per-member refusal gate. Strict Windows platform/UI lint and the focused
+   four-case Linux Activity cleanup regression pass. Owned guests, disks, desktops,
+   profiles and consumed transports are removed. This is source/controller
+   acceptance, not a new package or a complete administrator-Copy gate. Parent owner/group/DACL evidence is pinned, but
+   the new parent-security refusal fixture changes the group, not a literal DACL.
+   Administrator Copy stays disabled. Kernel process/TokenUser binding and the
+   explicit-token registered Local AppData locator have bounded same-user native
+   acceptance (`caller-profile-current/ACCEPTANCE.json`); that read-only locator
+   grants no filesystem recovery authority. Original-caller registry ownership,
+   alternate-administrator and package-context proof remain required before helper
+   enablement. Current downloads remain Linuxbee/Windows8e. Missing member IDs
+   never license deletion or a completed original-batch history claim.
 2. Finish U05–U08 interface/theme consistency and property mapping. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.

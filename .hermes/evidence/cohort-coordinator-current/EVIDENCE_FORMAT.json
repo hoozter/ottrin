@@ -1,0 +1,32 @@
+[
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/linux-ui-test.log",
+    "raw_sha256": "772bc1122c91aa57402bc78dbcf59b5c2b44f613002920e4815e59e89136ee1d",
+    "normalized_sha256": "4079c0597a34365dfc3bf26ec03c14f67c2eafa410ee3e5a19e04613cf82268d",
+    "change": "CRLF to LF and final blank-line removal; JSON values/native stdout/stderr unchanged"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-final/RESULT.json",
+    "raw_sha256": "9a034b2a46e1cef7fc9b8f6cf2195f0d8f1780af916235822cee71075eff4178",
+    "normalized_sha256": "00828494b0b6c64b883b12d065aa845d1f48844b4b980140a0069194197e1239",
+    "change": "CRLF to LF and final blank-line removal; JSON values/native stdout/stderr unchanged"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui-fixed/DESKTOP_READY.json",
+    "raw_sha256": "435a7e269c304b4f475446af7370115822ad7d2c52f09b819370228d0f9607a2",
+    "normalized_sha256": "410e14d5f5fa648da908eb720c97d1fb4393093b2815b9665f4bf7d2b5090189",
+    "change": "CRLF to LF and final blank-line removal; JSON values/native stdout/stderr unchanged"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui-fixed/RESULT.json",
+    "raw_sha256": "daf406f024c297544c62b37dcbddaa8cbeef30f909701250518d688b02aa05e6",
+    "normalized_sha256": "b9604e18badd34beda1a5c457ad348678c80c73fee809da2eb49aa2a2ec45e72",
+    "change": "CRLF to LF and final blank-line removal; JSON values/native stdout/stderr unchanged"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui/RESULT.json",
+    "raw_sha256": "e298ddee0b316ab9d037e717850087c47d02cbdca7a1229fb2f37d5bb39326c0",
+    "normalized_sha256": "82e21f08b1bfa96e679f4197386d674672d649e704b033737b438f1bc7300d41",
+    "change": "CRLF to LF and final blank-line removal; JSON values/native stdout/stderr unchanged"
+  }
+]

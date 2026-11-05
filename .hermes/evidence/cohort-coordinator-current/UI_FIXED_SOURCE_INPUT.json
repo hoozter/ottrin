@@ -1,0 +1,18 @@
+{
+  "reference_commit": "26d5c9ba31bc97fbdfb9de81472db27b9e1a5381",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "1c5eee50d4e803faf7b36e7293e7ce8ece86eda5586ca3b130eff38365eb843a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ea8e836d264bb822aef28993dbdcda28c66dc3b2fc3fff61342116be0aa185e7",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/abort.rs": "976b29a8c88931ae0d296eed3c19e793ac5f8abb0068e15a84d53e83e8d2854e",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "fb05d9ad9539018963a7766a44d04f50074d2db72fc61e34a36967d7b83c87d2",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "4380ee193bb861ff4a3e3d79aad5fbff62fe70a6258dcd29e2b2a0be41a54f55",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "18d57a2f01ead8268bd4588ed8a15397cda26db85229ef8f33c7aecaeeab8794",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group/cohort.rs": "edf303754cbbcb6999820b414e49e27dc2f35aa61a902e59e1c3f9d577fb92bf",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "3ce5f71c52600a7e581579c068af59f40ba45c3b9efc05b8ea8e21db7467ce9d",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "23c0ef0159cbc9e1ecd59703577ce8b2dfcf1fe546558dda8665b55d4c0c3fe0",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "2f55de018f832309508dd5266fc5b7be88127e9f41e64ede2d610cbd918b162f",
+    "crates/ottrin-ui/src/copy_activity_cleanup.rs": "186b7235a0196121310139ca25e81db8393c61e45f077d41b16df6f6a6670319",
+    "crates/ottrin-ui/src/lib.rs": "d6f3fadf39ffa30b982b33338b6032a9981876454997b74e8fbdcc34dba55a8c"
+  },
+  "scope": "Ordinary-user durable coordinator, later-pending replay fix, Activity restart bridge and mutation fence; no administrator Copy enablement"
+}

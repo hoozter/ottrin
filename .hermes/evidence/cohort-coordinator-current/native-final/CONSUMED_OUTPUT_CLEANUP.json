@@ -1,0 +1,26 @@
+[
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-final/RESULTS.zip",
+    "bytes": 3580,
+    "sha256": "c097baeb38194a192f6a9001a9c10a3506f06e954c614a75a298532b8a93acd7",
+    "reason": "Consumed final platform acceptance archive or setup frame"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-final/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "reason": "Consumed final platform acceptance archive or setup frame"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-final/privacy-accepted-1.png",
+    "bytes": 1492907,
+    "sha256": "6ddd9449d84582a916390819e292157efb43dd92439bd3e8d31bcc6c38aeab7c",
+    "reason": "Consumed final platform acceptance archive or setup frame"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-final/desktop-ready.png",
+    "bytes": 2523043,
+    "sha256": "213e3ec01137f681f42ab41db24c1e6b846e09972efabcd40eb5eb3cd5ed8daa",
+    "reason": "Consumed final platform acceptance archive or setup frame"
+  }
+]

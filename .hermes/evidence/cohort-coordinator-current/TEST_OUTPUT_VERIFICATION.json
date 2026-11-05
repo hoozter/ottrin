@@ -1,0 +1,74 @@
+[
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-6b61eb1d64dde180",
+    "old_sha256": "4153d3416f618d375b9a16d51d32d6f355822e6c97e1aa92e825db3810c81266",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-987f16c652a12bbc",
+    "replacement_sha256": "4e27c236f62171e19260da706f6631e93d4e28f375e9a24d47c7393e29c25d76",
+    "verification": "tests::administrator_mode_uses_only_protected_fixed_paths: test\nwindows_launch_tests::installer_actions_are_explicit_and_preserve_unicode_snapshot_paths: test\n\n2 tests, 0 benchmarks\n",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 18214513505635217009,
+      "profile": 1169666772337208464,
+      "path": 1633295891744245168,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    }
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-f782c95013d7b443",
+    "old_sha256": "5cc9ec1dc0a51c889aefe79c8472bc09b2b5ca4e1c73580c112d79b7b0ef50fb",
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec",
+    "replacement_sha256": "8d197966bfd3d84e976feb7dcb622f6d387743063eeb5cc20aa50c7a1c36aa85",
+    "verification": "file_manager::tests::methods_validate_the_entire_native_batch_before_launching: test\nportal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply: test\nportal::tests::file_chooser_version_property_matches_the_desktop_portal_contract: test\nportal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser: test\nportal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd: test\nportal_options::tests::cancelled_responses_disclose_no_paths_or_choice_results: test\nportal_options::tests::file_uris_encode_raw_units_metacharacters_and_unicode_without_loss: test\nportal_options::tests::invalid_byte_paths_filters_and_choices_are_refused_before_ui: test\nportal_options::tests::native_current_file_wins_over_other_save_hints: test\nportal_options::tests::open_filters_choices_and_labels_follow_portal_types: test\nportal_options::tests::save_files_keep_order_avoid_existing_and_duplicate_names_and_create_nothing: test\ntests::administrator_gui_launch_does_not_start_index: test\ntests::administrator_window_title_identifies_the_privileged_session: test\ntests::caller_lease_blocks_without_polling_retries_interrupts_and_wakes_on_eof: test\ntests::canonical_drop_actions_are_recognized_before_the_gui_starts: test\ntests::canonical_preview_command_and_alias_preserve_the_requested_path: test\ntests::canonical_search_and_index_commands_are_recognized_before_the_gui_starts: test\ntests::cargo_helper_artifact_parser_rejects_missing_or_wrong_artifacts: test\ntests::cargo_helper_artifact_parser_uses_cargo_reported_executable_for_all_target_modes: test\ntests::command_separator_preserves_literal_options_and_help_queries: test\ntests::direct_directory_argument_is_a_gui_open_path: test\ntests::direct_file_argument_opens_quick_inspector_without_an_index_command: test\ntests::direct_path_resolution_distinguishes_files_and_directories: test\ntests::disconnect_protocol_has_one_bounded_request_frame_and_keeps_the_lease: test\ntests::folder_commands_are_headless_and_reject_unowned_modifiers: test\ntests::global_gui_options_preserve_target_and_action_in_either_position: test\ntests::global_gui_options_reject_missing_unsupported_or_repeated_values: test\ntests::graphics_recovery_override_accepts_both_cli_forms: test\ntests::graphics_recovery_override_can_select_opengl_without_changing_windows_default: test\ntests::index_startup_broker_is_headless_and_rejects_ambiguous_arguments: test\ntests::index_startup_failure_is_a_ui_result_instead_of_a_process_exit: test\ntests::initial_viewport_fits_taskbar_work_area_at_normal_and_scaled_dpi: test\ntests::invalid_renderer_override_is_rejected_instead_of_silently_using_wgpu: test\ntests::native_cli_paths_survive_open_reveal_preview_drop_and_helper_options: test\ntests::native_renderer_uses_wgpu_on_windows_and_glow_elsewhere: test\ntests::picker_requests_are_bounded_and_validated_before_graphics_startup: test\ntests::portal_entry_is_headless_and_rejects_unowned_arguments: test\ntests::preview_path_resolution_rejects_missing_and_non_file_paths: test\ntests::properties_accepts_native_batches_and_reveal_accepts_folders_and_roots: test\ntests::reveal_selects_a_link_in_its_parent_instead_of_following_the_target: test\ntests::search_page_options_are_validated_before_query_execution: test\ntests::select_option_reveals_exactly_one_file_in_the_main_window: test\ntests::slow_index_startup_returns_control_before_the_daemon_is_ready: test\ntests::standalone_inspector_keeps_a_mapped_root_for_secondary_viewport_painting: test\ntests::startup_failure_diagnostic_is_durable_and_names_its_location: test\ntests::text_only_cli_options_reject_native_non_text_without_panicking: test\ntests::unknown_cli_syntax_is_rejected_instead_of_opening_the_gui: test\ntests::unowned_index_modifiers_are_rejected: test\ntests::windows_composition_is_opaque_while_other_platforms_keep_transparency: test\n\n49 tests, 0 benchmarks\n",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 17573561801879140266,
+      "profile": 1169666772337208464,
+      "path": 3586702553900163283,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    }
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-f3b0bade265a72b9.exe",
+    "old_sha256": "d5d9de0f89443ebbfc91e9755ce473d1c53df1686d74b2a49b071cb06cb74e7d",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+    "replacement_sha256": "b49166789a605da6804c98f448ed9d14915fd69fc68739fd19908e22c57c10e6",
+    "verification": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x0000000140001410\n\n",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 11039074169040111439,
+      "profile": 4539089746505721204,
+      "path": 6664036055190131545,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    }
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+    "old_sha256": "c896682ff855feedb006d31b2b182ec1c24dec59c5eec94bdd7a4e1fb87c6481",
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+    "replacement_sha256": "6fa7b5fac98f3c3b616f0780c7104d3175d8e7a3926b70020552add472721be6",
+    "verification": "\n/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe:     file format pei-x86-64\narchitecture: i386:x86-64, flags 0x0000013b:\nHAS_RELOC, EXEC_P, HAS_DEBUG, HAS_SYMS, HAS_LOCALS, D_PAGED\nstart address 0x0000000140001410\n\n",
+    "same_compiler_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "declared_features": "[]",
+      "target": 11464258118835825082,
+      "profile": 4539089746505721204,
+      "path": 6118933154843934985,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 8200324069407742093
+    }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui-fixed/RESULTS.zip",
+    "bytes": 3251,
+    "sha256": "b20d31a399631240f6566bd7f7405c1046d9c6afb516127e1a33c07baefff03d",
+    "reason": "Consumed passing native archive/setup frame; extracted result, frozen source/actor/input and cleanup proof retained"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui-fixed/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "reason": "Consumed passing native archive/setup frame; extracted result, frozen source/actor/input and cleanup proof retained"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui-fixed/privacy-accepted-1.png",
+    "bytes": 480275,
+    "sha256": "a616c0d30c691e1c90c99e41dbd9b0c47a6d5fe2948540f5dd14ca94dab63389",
+    "reason": "Consumed passing native archive/setup frame; extracted result, frozen source/actor/input and cleanup proof retained"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui-fixed/desktop-ready.png",
+    "bytes": 964470,
+    "sha256": "7090e11de09330fdc035771ae2d1caba12ede66b5fa41d765df870c158ff7ee9",
+    "reason": "Consumed passing native archive/setup frame; extracted result, frozen source/actor/input and cleanup proof retained"
+  }
+]

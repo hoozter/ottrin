@@ -296,10 +296,19 @@ fn run(
     }
     if !retain {
         progress("Checking retained Copy data…".into());
-        match ottrin_platform::RetainedCopyCleanupPlan::observe(
-            &selected.into_iter().collect::<Vec<_>>(),
-            &mut native_progress,
-        ) {
+        let admitted = match ottrin_platform::RetainedCopyCleanupPlan::pending(&mut native_progress)
+        {
+            Ok(Some(plan)) if windows_selection_matches(&plan, &selected) => Ok(plan),
+            Ok(Some(_)) => Err(PlatformError::CopyCleanupRefused(
+                "Finish the complete saved Copy cleanup selection first.".into(),
+            )),
+            Ok(None) => ottrin_platform::RetainedCopyCleanupPlan::observe(
+                &selected.into_iter().collect::<Vec<_>>(),
+                &mut native_progress,
+            ),
+            Err(error) => Err(error),
+        };
+        match admitted {
             Ok(plan) => *guard = Some(plan),
             Err(error) => {
                 outcome.error = Some(error.to_string());
@@ -313,11 +322,13 @@ fn run(
         .reclaim(&mut native_progress)
         .err()
         .map(|error| error.to_string());
-    outcome.completed.extend(
-        plan.completed_transaction_ids()
-            .into_iter()
-            .map(str::to_owned),
-    );
+    // Keep the whole original selection owned until its durable coordinator
+    // is retired, including when every per-transaction journal is already gone.
+    if plan.complete() {
+        outcome
+            .completed
+            .extend(plan.transaction_ids().into_iter().map(str::to_owned));
+    }
     if plan.complete() || !plan.requires_retained_retry() {
         *guard = None;
     }
@@ -956,6 +967,10 @@ pub(super) fn windows_test_case(root: &Path) {
         })
         .collect::<Vec<_>>();
     controls.sort();
+    let original_transactions: std::collections::BTreeSet<_> = controls
+        .iter()
+        .map(|path| path.file_stem().unwrap().to_str().unwrap().to_owned())
+        .collect();
     let control = if case == "cleanup-cohort-partial" {
         controls.pop().unwrap()
     } else {
@@ -1127,7 +1142,10 @@ pub(super) fn windows_test_case(root: &Path) {
         {
             assert_eq!(
                 app.operation_history.len(),
-                if case == "cleanup-cohort-partial" {
+                if matches!(
+                    case.as_str(),
+                    "cleanup-stopped-metadata" | "cleanup-cohort" | "cleanup-cohort-partial"
+                ) {
                     1
                 } else {
                     count
@@ -1146,13 +1164,43 @@ pub(super) fn windows_test_case(root: &Path) {
                         .unwrap()
                         .lock()
                         .unwrap()
-                        .as_ref()
-                        .unwrap()
-                        .requires_retained_retry()
+                        .is_none(),
+                    "metadata retry must not depend on retained process memory"
+                );
+                // Recreate the controller with no retained plan; only the saved
+                // cohort can restore members whose journals have disappeared.
+                app = OttrinApp::default();
+                app.operation_history.clear();
+                app.retained_copy_activity_loader =
+                    RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+                app.refresh_retained_copy_activity();
+                wait(&mut app);
+                assert_eq!(app.operation_history.len(), 1);
+                let record = &app.operation_history[0];
+                assert_eq!(record.title, "Interrupted Copy cleanup");
+                assert_eq!(record.status, OperationStatus::NeedsReview);
+                assert!(record.path_move_undo_token.is_none());
+                let owner = record.retained_copy.as_ref().unwrap();
+                assert!(owner.finalization.is_some());
+                assert_eq!(
+                    owner
+                        .transactions
+                        .iter()
+                        .cloned()
+                        .collect::<std::collections::BTreeSet<_>>(),
+                    original_transactions
                 );
             }
             drop(busy);
-            click(&mut app, "Retry Copy cleanup");
+            let action = if matches!(
+                case.as_str(),
+                "cleanup-stopped-metadata" | "cleanup-cohort" | "cleanup-cohort-partial"
+            ) {
+                "Finish Copy cleanup"
+            } else {
+                "Retry Copy cleanup"
+            };
+            click(&mut app, action);
             assert!(app.copy_cleanup.confirmation.is_none());
             assert!(app.copy_cleanup.running());
             wait(&mut app);

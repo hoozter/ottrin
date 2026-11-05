@@ -2691,6 +2691,7 @@ fn resume_bound_copy(
     binding: &CopyResumeBinding,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
+    super::registry::require_uncoordinated(central)?;
     let mut binding = binding.clone();
     let mut retained =
         RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
@@ -3823,6 +3824,7 @@ fn undo_bound_copy(
     binding: Option<&CopyUndoBinding>,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
+    super::registry::require_uncoordinated(central)?;
     let snapshot = read_undo_snapshot(parent, central, name, &mut progress)?;
     if let Some(binding) = binding {
         let (copy, original) = pending_undo_epochs(parent, &snapshot)?;

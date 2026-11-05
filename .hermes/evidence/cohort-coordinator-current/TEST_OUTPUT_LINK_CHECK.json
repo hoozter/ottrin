@@ -1,0 +1,9 @@
+{
+  "incoming_links": [],
+  "roots": [
+    "project excluding .git",
+    "user systemd",
+    "user applications"
+  ],
+  "protected_vms": "all four shut off; no owned QA guest live"
+}

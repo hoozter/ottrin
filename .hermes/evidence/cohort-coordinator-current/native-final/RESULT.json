@@ -1,0 +1,211 @@
+{
+    "input":  {
+                  "source_revision":  "26d5c9ba31bc97fbdfb9de81472db27b9e1a5381",
+                  "source_test_sha256":  "c896682ff855feedb006d31b2b182ec1c24dec59c5eec94bdd7a4e1fb87c6481",
+                  "test_sha256":  "7a0112c82198cf447ccb197fd523ea3c07951e51669b157e78d1ae833dac878a",
+                  "source_bytes":  533949780,
+                  "staged_bytes":  512635894,
+                  "strip_command":  [
+                                        "x86_64-w64-mingw32-strip",
+                                        "--strip-debug"
+                                    ],
+                  "unchanged_executable_text":  {
+                                                    "entry_rva":  5136,
+                                                    "bytes":  399864832,
+                                                    "sha256":  "4e71cb9e02c77a940218dc033d8a7565b79b2ee038ad964e81320b6b58a7b827"
+                                                },
+                  "actor_sha256":  "0c51054a64ab02dea2785cadad22f0921c4f6d6e20dad55aaeb84f1cb1018046",
+                  "scope":  "Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.",
+                  "changed_product_sources":  {
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs":  "b367962ef0be8ec21515eeec32bab904cc1480f805bc2ee55ead8a390cd47bc2",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs":  "4380ee193bb861ff4a3e3d79aad5fbff62fe70a6258dcd29e2b2a0be41a54f55",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs":  "879ae0a898e1f871fee588d22b71933352213461fdd330e5fb7aa2023436a539",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group/cohort.rs":  "edf303754cbbcb6999820b414e49e27dc2f35aa61a902e59e1c3f9d577fb92bf",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs":  "661e28c1e9136711532f2ede226c2e06a4b0e1d5e377f2fd61e36e9d7f935613",
+                                                  "crates/ottrin-platform/src/copy_transaction/windows/registry.rs":  "89e7e01b6ac9b42e56950d15a0e989e4e4928ff8a77bb96f39f959697423026a"
+                                              },
+                  "source_scope":  "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+              },
+    "failures":  [
+
+                 ],
+    "phase":  "complete",
+    "scope":  "Twenty-one ordinary-user coordinator and legacy matrix invocations covering28 named native tests, each with a600-second terminal limit; no original-caller registry bridge, alternate-admin or enabled administrator Copy acceptance",
+    "identity":  {
+                     "local_app_data":  "C:\\Users\\OTMSI8816ed0628c0\\AppData\\Local",
+                     "sid":  "S-1-5-21-3790294415-2606194316-2422870471-1002",
+                     "administrator":  false,
+                     "session":  1
+                 },
+    "status":  "pass native external cohort and cleanup regressions",
+    "runs":  [
+                 {
+                     "elapsed_ms":  18254,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_group_mixed_finishes_ordinary_shared_and_nested_entries",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_mixed_finishes_ordinary_shared_and_nested_entries ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 18.24s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  16842,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_crash_before_snapshot_publication",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_crash_before_snapshot_publication ... \nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 16.79s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  14042,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_crash_after_snapshot_publication",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_crash_after_snapshot_publication ... \nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 13.91s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  15611,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_crash_after_pending_checkpoint",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_crash_after_pending_checkpoint ... \nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 15.57s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  16124,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_crash_after_completed_checkpoint",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_crash_after_completed_checkpoint ... \nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 16.08s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  9035,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_crash_after_retirement_keeps_unknown_history_unknown",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_crash_after_retirement_keeps_unknown_history_unknown ... \nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 8.99s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  19076,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_torn_checkpoint_replays_only_validated_prefix",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_torn_checkpoint_replays_only_validated_prefix ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 19.04s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  20874,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 20.84s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  7928,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_preserves_lossless_native_paths",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_preserves_lossless_native_paths ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 7.89s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  7706,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_crash_after_all_completed_checkpoints",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_crash_after_all_completed_checkpoints ... \nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 7.67s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  8007,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cohort_refuses_tail_after_completed_prefix",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_refuses_tail_after_completed_prefix ... \nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 7.97s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  34088,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalog_handoffs",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_finishes_members_with_bound_catalog_handoffs ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 34.04s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  5488,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pending",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pending ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 5.45s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  8214,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 8.17s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  70242,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 70.18s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  102573,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 102.54s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  95893,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_group_process_exit_metadata_and_history_recovery",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_process_exit_metadata_and_history_recovery ... \nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 95.85s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  11022,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_first_unlink",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_first_unlink ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 10.99s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  52069,
+                     "timed_out":  false,
+                     "case":  "windows_native_copy_cleanup_group_metadata_preparation_keeps_all_controls_reopenable",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_preparation_keeps_all_controls_reopenable ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 572 filtered out; finished in 52.03s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  867,
+                     "timed_out":  false,
+                     "case":  "registry",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 6 tests\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_refuses_self_consistent_new_anchor ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_survives_reopen_and_refuses_case_drift ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_configured_dispatch_discovery_and_source_free_undo ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_provisions_once_and_readers_hold_the_binding ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_refuses_unanchored_partial_and_foreign_state_without_repair ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_rejects_replaced_root_marker_and_parent ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 567 filtered out; finished in 0.84s\n\n"
+                 },
+                 {
+                     "elapsed_ms":  408,
+                     "timed_out":  false,
+                     "case":  "claims",
+                     "exit":  0,
+                     "stderr":  "",
+                     "stdout":  "\nrunning 3 tests\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_refuses_policy_drift_and_unanchored_data ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_uses_native_volume_name_rules ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 570 filtered out; finished in 0.38s\n\n"
+                 }
+             ]
+}

@@ -420,14 +420,34 @@ pub(super) struct Authorized {
 
 /// A completed paired metadata intent grants only these exact native objects.
 /// Retaining this opaque proof permits an idempotent retry after central unlink.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct Plan {
     header: Header,
     digest: [u8; 32],
     retained: Option<OsString>,
+    #[serde(with = "native_location")]
     parent_location: std::path::PathBuf,
+    #[serde(with = "native_location")]
     central_location: std::path::PathBuf,
     parent_security: [u8; 32],
+}
+
+mod native_location {
+    use super::*;
+    pub fn serialize<S: serde::Serializer>(
+        path: &std::path::Path,
+        s: S,
+    ) -> Result<S::Ok, S::Error> {
+        NativePath::encode(path).serialize(s)
+    }
+    pub fn deserialize<'de, D: serde::Deserializer<'de>>(
+        d: D,
+    ) -> Result<std::path::PathBuf, D::Error> {
+        NativePath::deserialize(d)?
+            .decode()
+            .map_err(serde::de::Error::custom)
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -450,6 +470,15 @@ impl Action {
 }
 
 impl Plan {
+    pub(super) fn valid_saved(&self) -> bool {
+        self.header.valid()
+            && self.header.parent_location.decode().as_ref() == Ok(&self.parent_location)
+            && self.central_location.is_absolute()
+            && self
+                .retained
+                .as_ref()
+                .is_none_or(|name| windows_fs::valid_component(name).is_ok())
+    }
     pub(super) fn header(&self) -> &Header {
         &self.header
     }
@@ -545,6 +574,7 @@ impl Plan {
     }
 
     fn bindings(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
+        self.header.validate_parent_policy(parent)?;
         if stable_identity_from_handle(parent).map_err(io)? != self.header.parent
             || stable_identity_from_handle(central).map_err(io)? != self.header.central
             || windows_fs::location(parent).map_err(io)? != self.parent_location

@@ -1,0 +1,7 @@
+{
+  "status": "Failed partial-cohort Activity recovery; mutation fence and read-only worker pass",
+  "result": "native-ui/RESULT.json",
+  "cause": "finish_cohort iterated an earlier completed member before the later pending metadata intent, triggering the required out-of-order gate",
+  "fix": "Resolve the saved pending member first, then remaining unfinished members; retain per-member refusal gate",
+  "replacement_verification": "Pass all five replacement invocations, including 29-scenario Activity integration; native-ui-fixed/RESULT.json"
+}

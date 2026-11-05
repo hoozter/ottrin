@@ -1,0 +1,26 @@
+[
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui/RESULTS.zip",
+    "bytes": 3441,
+    "sha256": "86c2683b617c7d63196b99c43eaa2fb94d3ee6bd45a52f5f029ed8fe9264855e",
+    "reason": "Consumed failed native UI archive/setup image; exact result and source provenance retained"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "reason": "Consumed failed native UI archive/setup image; exact result and source provenance retained"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui/privacy-accepted-1.png",
+    "bytes": 1323284,
+    "sha256": "58a2755b10dcae9997cf3c958afeeab4fc9a9e9dcddbdf93682dbc0fca8a3eb7",
+    "reason": "Consumed failed native UI archive/setup image; exact result and source provenance retained"
+  },
+  {
+    "path": ".hermes/evidence/cohort-coordinator-current/native-ui/desktop-ready.png",
+    "bytes": 1323495,
+    "sha256": "ddb9365334827e95237ae40565c2a7002f91804a64d91dd6ae88f26f9812fb4a",
+    "reason": "Consumed failed native UI archive/setup image; exact result and source provenance retained"
+  }
+]
