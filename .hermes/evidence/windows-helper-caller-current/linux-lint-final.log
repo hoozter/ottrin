@@ -1,0 +1,5 @@
+    Checking glib v0.20.12
+    Checking gio v0.20.12
+    Checking ottrin-core v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-core)
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 32.39s

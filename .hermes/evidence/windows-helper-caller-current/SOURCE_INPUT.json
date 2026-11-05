@@ -1,0 +1,5 @@
+{
+  "base_revision": "bf8f8262660c6a8c07f6dcf995b99f0a3273ca13",
+  "platform_patch_sha256": "b2a9195af83b609cfa0f15f61152e36cf97ed0e3e870c648982de6002094d0cc",
+  "scope": "Uncommitted platform source applied to base; native helper verification, not packaged delivery"
+}

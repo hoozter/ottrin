@@ -1,0 +1,5 @@
+{
+  "process_exit": 0,
+  "stdout": "{\"stdout\":\"\\nrunning 5 tests\\ntest windows_privileged_transport::tests::windows_helper_pipe_binds_creation_time_before_connecting ... ok\\ntest windows_privileged_transport::tests::windows_helper_pipe_native_helper_round_trip_and_parent_rejection ... ok\\ntest windows_privileged_transport::tests::windows_helper_pipe_rejects_wrong_peer_before_receiving_authority ... ok\\ntest windows_privileged_transport::tests::windows_helper_pipe_retains_original_process_and_refuses_its_exit ... ok\\ntest windows_privileged_transport::tests::windows_helper_pipe_truncated_frame_is_not_a_request ... ok\\n\\ntest result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 552 filtered out; finished in 5.48s\\n\\n\",\"exitcode\":0,\"stderr\":\"Failed to deliver helper response: Helper pipe was not connected\\nFailed to deliver helper response: Helper pipe was not connected\\n\",\"sha256\":\"4D092123BD574422253CC0805F151DD202F2547ED161A39CA5D3A9EEE8768B56\"}\r\n",
+  "stderr": ""
+}

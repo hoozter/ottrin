@@ -33,24 +33,47 @@ pub(crate) fn current_owner() -> Result<Vec<u8>, PlatformError> {
     owner_for_token(&current_token()?)
 }
 pub(crate) fn owner_for_token(token: &OwnedHandle) -> Result<Vec<u8>, PlatformError> {
+    let storage = token_information(token, TokenOwner, std::mem::size_of::<TOKEN_OWNER>())?;
+    // SAFETY: aligned output was validated against the requested structure size.
+    let sid = unsafe { &*storage.as_ptr().cast::<TOKEN_OWNER>() }.Owner;
+    token_sid(&storage, sid)
+}
+
+/// The token's user is the application principal, independently of the default
+/// file owner. Elevated tokens can have a group as TokenOwner; do not conflate it
+/// with the original application's TokenUser when binding helper authority.
+pub(crate) fn user_for_token(token: &OwnedHandle) -> Result<Vec<u8>, PlatformError> {
+    let storage = token_information(token, TokenUser, std::mem::size_of::<TOKEN_USER>())?;
+    // SAFETY: aligned output was validated against the requested structure size.
+    let sid = unsafe { &*storage.as_ptr().cast::<TOKEN_USER>() }.User.Sid;
+    token_sid(&storage, sid)
+}
+
+fn token_information(
+    token: &OwnedHandle,
+    class: TOKEN_INFORMATION_CLASS,
+    minimum: usize,
+) -> Result<Vec<u64>, PlatformError> {
     let mut needed = 0;
+    // SAFETY: the sizing call writes only needed; no output buffer is supplied.
     unsafe {
         GetTokenInformation(
             token.as_raw_handle().cast(),
-            TokenOwner,
+            class,
             ptr::null_mut(),
             0,
             &mut needed,
         );
     }
-    if needed == 0 || needed > 65536 {
-        return Err(io("invalid effective token owner size"));
+    if (needed as usize) < minimum || needed > 65536 {
+        return Err(io("invalid token identity information size"));
     }
     let mut storage = vec![0u64; (needed as usize).div_ceil(8)];
+    // SAFETY: the aligned initialized allocation covers the requested byte count.
     if unsafe {
         GetTokenInformation(
             token.as_raw_handle().cast(),
-            TokenOwner,
+            class,
             storage.as_mut_ptr().cast(),
             needed,
             &mut needed,
@@ -59,15 +82,41 @@ pub(crate) fn owner_for_token(token: &OwnedHandle) -> Result<Vec<u8>, PlatformEr
     {
         return Err(io(std::io::Error::last_os_error()));
     }
-    let owner = unsafe { &*storage.as_ptr().cast::<TOKEN_OWNER>() }.Owner;
-    if owner.is_null() {
-        return Err(io("effective token has no default owner"));
+    if (needed as usize) < minimum || needed as usize > storage.len() * 8 {
+        return Err(io("token identity information changed size"));
     }
-    let sid =
-        unsafe { std::slice::from_raw_parts(owner.cast::<u8>(), GetLengthSid(owner) as usize) }
-            .to_vec();
-    if !valid_sid(&sid) {
-        return Err(io("effective token owner SID is invalid"));
+    Ok(storage)
+}
+
+fn token_sid(storage: &[u64], sid: PSID) -> Result<Vec<u8>, PlatformError> {
+    // GetTokenInformation returns SID data inside its caller-owned output.
+    // Bound the header and subauthorities before reading through that pointer.
+    let offset = (sid as usize)
+        .checked_sub(storage.as_ptr() as usize)
+        .ok_or_else(|| io("token identity SID is outside its output buffer"))?;
+    // SAFETY: the entire u64 allocation is initialized and borrowed for this read.
+    let bytes = unsafe {
+        std::slice::from_raw_parts(
+            storage.as_ptr().cast::<u8>(),
+            std::mem::size_of_val(storage),
+        )
+    };
+    let header = bytes
+        .get(
+            offset
+                ..offset
+                    .checked_add(8)
+                    .ok_or_else(|| io("invalid token SID offset"))?,
+        )
+        .ok_or_else(|| io("token identity SID header is truncated"))?;
+    let end = offset
+        .checked_add(8 + usize::from(header[1]) * 4)
+        .ok_or_else(|| io("invalid token SID length"))?;
+    let value = bytes
+        .get(offset..end)
+        .ok_or_else(|| io("token identity SID is truncated"))?;
+    if !valid_sid(value) {
+        return Err(io("token identity SID is invalid"));
     }
-    Ok(sid)
+    Ok(value.to_vec())
 }

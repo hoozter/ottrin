@@ -1,0 +1,5 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-priv-helper.exe",
+  "sha256": "6746304a848ea2ebaa030d2501bb913e6598fb39dae687e78762320902e79be8",
+  "scope": "Production helper protocol negotiation and kernel caller binding; guest-agent token, no interactive UAC"
+}

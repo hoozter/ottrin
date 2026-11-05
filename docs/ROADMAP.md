@@ -47,6 +47,23 @@ captures are removed. Source evidence is `index-status-observation-current/`.
 This follow-up is not merged or included in current b020 packages. Hosted,
 native Windows and packaged acceptance remain required before delivery.
 
+Windows helper caller binding now retains the original kernel process and primary
+token, validates its creation time and TokenUser before request admission, and
+rejects exited/reused callers. File ownership still uses TokenOwner. Windows
+stdio mutation mode is removed; readiness requires `--bound-local-pipe`.
+447 Linux platform,11 helper,5 documentation and5 native Windows transport
+tests pass, with strict native/Windows platform lint. Native tests include the
+actual production helper in a Unicode/spaced path under the guest-agent SYSTEM
+token; interactive UAC, durable recovery and administrator Copy remain open.
+No package promotion is claimed. The owned VM/two disks and11 superseded
+incremental sessions were removed (1.27GiB filesystem recovery). Evidence:
+`.hermes/evidence/windows-helper-caller-current/`.
+
+Hosted b961 run41971204224 finished with Linux verification and both performance
+jobs passing; Windows verification failed in Office AppContainer creation and
+child readiness tests. Preserve those failures as software work, not an owner
+wait or an accepted branch.
+
 ### Previous delivery receipts — historical source and artifact scopes
 
 The superseded `7fa0e46c` candidate is retired. Its directly reviewed native
@@ -763,8 +780,8 @@ remains gated. Both controllers removed their exports/private temp and restored
 the guest's shut-off state and exact definition. One obsolete incremental session
 was retired. Receipt: `windows-cleanup-preparation-current/`.
 
-1. The current Linux/Windows24af transport, caption/density and Services cohort is
-   delivered. Finish administrator Copy recovery, including the Windows canonical
+1. The current Linux/Windows b020 appearance, row-spacing and Services cohort is
+   delivered at the stable dist paths (Linux packages and Windows portable/NSIS/MSIX20). Finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted
@@ -773,13 +790,17 @@ was retired. Receipt: `windows-cleanup-preparation-current/`.
    OS authentication; that does not stall these software changes.
 2. Finish the theme/interface consistency audit and implementation. The source
    now reuses live navigation/menu/view/breadcrumb widgets in the editor, delivered
-   in current Linuxaa with bounded native acceptance; Windows458 retains its exact
-   earlier artifact/acceptance scope. U08 remains unfinished:
+   in the current b020 Linux/Windows cohort with bounded native acceptance.
+   U08 remains unfinished:
    tabs, window buttons and Miller file rows now share production presenters in
    source. Status controls, List/Grid representation, miniature corner scaling and
    inspector role ownership remain open. All affected controls need native visual
    verification. The exact458 Nord dark/light checks above cover preview row,
    tab and window-control selection; they do not close the full consistency audit.
+   The b961 stopped-state source fix has 514 passing UI tests and native Linux
+   source-GUI evidence, but remains outside current packages: its Windows hosted
+   verification failed in two Office AppContainer native tests (run 41971204224).
+   Investigate those failures before treating that branch as accepted.
    Include the main search indicator's stopped-state color, settled startup count/
    readiness and resize observation; replace ambiguous automatic-startup wording
    and review Grid caption width/truncation against actual tile space. Verify every supported control/role, text/icon alignment and

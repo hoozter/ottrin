@@ -12,9 +12,15 @@ use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::path::Path;
 use std::ptr;
 use std::time::{Duration, Instant};
-use windows_sys::Win32::Foundation::{ERROR_CANCELLED, WAIT_OBJECT_0, WAIT_TIMEOUT};
+use windows_sys::Win32::Foundation::{
+    ERROR_CANCELLED, FILETIME, HANDLE, WAIT_OBJECT_0, WAIT_TIMEOUT,
+};
+use windows_sys::Win32::Security::TOKEN_QUERY;
 use windows_sys::Win32::System::Com::{COINIT_APARTMENTTHREADED, CoInitializeEx, CoUninitialize};
-use windows_sys::Win32::System::Threading::{GetProcessId, WaitForSingleObject};
+use windows_sys::Win32::System::Threading::{
+    GetCurrentProcess, GetProcessId, GetProcessTimes, OpenProcess, OpenProcessToken,
+    PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE, WaitForSingleObject,
+};
 use windows_sys::Win32::UI::Shell::{
     SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW,
     ShellExecuteExW,
@@ -68,23 +74,121 @@ fn read_json<T: DeserializeOwned>(stream: &mut LocalPipeStream) -> io::Result<T>
     Ok(value)
 }
 
-/// Helper-side connection. Authenticate the application before reading a request.
-pub struct HelperChannel(LocalPipeStream);
+fn process_start_time(process: HANDLE) -> io::Result<u64> {
+    let zero = FILETIME {
+        dwLowDateTime: 0,
+        dwHighDateTime: 0,
+    };
+    let (mut created, mut exited, mut kernel, mut user) = (zero, zero, zero, zero);
+    // SAFETY: process is a borrowed live handle and all four outputs remain valid.
+    if unsafe { GetProcessTimes(process, &mut created, &mut exited, &mut kernel, &mut user) } == 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let value = (u64::from(created.dwHighDateTime) << 32) | u64::from(created.dwLowDateTime);
+    if value == 0 {
+        return Err(io::Error::other("Application process has no creation time"));
+    }
+    Ok(value)
+}
+
+fn process_token(process: &OwnedHandle) -> io::Result<OwnedHandle> {
+    let mut token = ptr::null_mut();
+    // SAFETY: the retained process is queryable; success transfers one token handle.
+    if unsafe { OpenProcessToken(process.as_raw_handle(), TOKEN_QUERY, &mut token) } == 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(unsafe { OwnedHandle::from_raw_handle(token) })
+}
+
+/// Retain the original process object and its primary token. The creation time
+/// binds the launch-time identity even if the numeric PID was reused before the
+/// helper opened it. TokenUser is independent of either side's default file owner.
+struct CallerProcess {
+    process: OwnedHandle,
+    token: OwnedHandle,
+}
+impl CallerProcess {
+    fn capture(pid: u32, expected_start: u64) -> io::Result<Self> {
+        if pid == 0 || expected_start == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Invalid application process identity",
+            ));
+        }
+        // SAFETY: no pointers are supplied; success transfers a non-inheritable handle.
+        let raw = unsafe {
+            OpenProcess(
+                PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SYNCHRONIZE,
+                0,
+                pid,
+            )
+        };
+        if raw.is_null() {
+            return Err(io::Error::last_os_error());
+        }
+        let process = unsafe { OwnedHandle::from_raw_handle(raw) };
+        if process_start_time(process.as_raw_handle())? != expected_start {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Application process creation time does not match its launch identity",
+            ));
+        }
+        let token = process_token(&process)?;
+        let caller = Self { process, token };
+        caller.validate()?;
+        Ok(caller)
+    }
+    fn validate(&self) -> io::Result<()> {
+        // SAFETY: capture retained the exact process with SYNCHRONIZE rights.
+        match unsafe { WaitForSingleObject(self.process.as_raw_handle(), 0) } {
+            WAIT_TIMEOUT => {}
+            WAIT_OBJECT_0 => {
+                return Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "Original application process has exited",
+                ));
+            }
+            _ => return Err(io::Error::last_os_error()),
+        }
+        let original = crate::windows_fs::user_for_token(&self.token).map_err(io::Error::other)?;
+        let current = crate::windows_fs::user_for_token(&process_token(&self.process)?)
+            .map_err(io::Error::other)?;
+        if current != original {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Original application token user changed",
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Helper-side connection. Bind the kernel application identity before reading
+/// request bytes; no caller SID, profile or elevated environment is trusted.
+pub struct HelperChannel {
+    stream: LocalPipeStream,
+    caller: CallerProcess,
+}
 impl HelperChannel {
-    pub fn connect(nonce: &str, parent_pid: u32) -> io::Result<Self> {
-        LocalPipeStream::connect(&endpoint(nonce)?, CONNECT_TIMEOUT, |pid| {
-            verify_pid(pid, parent_pid)
-        })
-        .map(Self)
+    pub fn connect(nonce: &str, parent_pid: u32, parent_start: u64) -> io::Result<Self> {
+        let name = endpoint(nonce)?;
+        let caller = CallerProcess::capture(parent_pid, parent_start)?;
+        let stream = LocalPipeStream::connect(&name, CONNECT_TIMEOUT, |pid| {
+            verify_pid(pid, parent_pid)?;
+            caller.validate()
+        })?;
+        Ok(Self { stream, caller })
     }
     pub fn read_request(&mut self) -> Result<PrivilegedRequest, String> {
+        self.caller.validate().map_err(|error| error.to_string())?;
         let request: PrivilegedRequest =
-            read_json(&mut self.0).map_err(|error| error.to_string())?;
+            read_json(&mut self.stream).map_err(|error| error.to_string())?;
+        self.caller.validate().map_err(|error| error.to_string())?;
         request.validate_protocol().map_err(str::to_owned)?;
         Ok(request)
     }
     pub fn write_response(&mut self, response: &PrivilegedResponse) -> io::Result<()> {
-        write_json(&mut self.0, response)
+        write_json(&mut self.stream, response)
     }
 }
 
@@ -126,8 +230,9 @@ fn launch(helper: &Path, nonce: &str) -> io::Result<OwnedHandle> {
     // executable path is a separate native UTF-16 field, including spaces.
     endpoint(nonce)?;
     let args = wide(OsStr::new(&format!(
-        "--local-pipe {nonce} --parent-pid {}",
-        std::process::id()
+        "--local-pipe {nonce} --parent-pid {} --parent-start {}",
+        std::process::id(),
+        process_start_time(unsafe { GetCurrentProcess() })?
     )))?;
     // SAFETY: zero initializes optional ShellExecute fields; pointers stay live.
     let mut info: SHELLEXECUTEINFOW = unsafe { std::mem::zeroed() };
@@ -236,6 +341,86 @@ mod tests {
     }
 
     #[test]
+    fn windows_helper_pipe_binds_creation_time_before_connecting() {
+        let nonce = nonce();
+        let mut listener = LocalPipeListener::bind(&endpoint(&nonce).unwrap(), ACL).unwrap();
+        let started = process_start_time(unsafe { GetCurrentProcess() }).unwrap();
+        let error = match HelperChannel::connect(&nonce, std::process::id(), started + 1) {
+            Err(error) => error,
+            _ => panic!("Wrong process generation admitted"),
+        };
+        assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+        assert!(
+            listener
+                .accept(Duration::from_millis(20), |_| Ok(()))
+                .unwrap()
+                .is_none()
+        );
+        let mut channel = HelperChannel::connect(&nonce, std::process::id(), started).unwrap();
+        let mut server = listener
+            .accept(Duration::from_secs(1), |pid| {
+                verify_pid(pid, std::process::id())
+            })
+            .unwrap()
+            .unwrap();
+        let directory = tempfile::tempdir().unwrap();
+        let request = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+            command: PrivilegedCommand::ListDirectory {
+                path: directory.path().into(),
+                show_hidden: false,
+            },
+            context: PrivilegedContext {
+                reason: None,
+                cwd: None,
+            },
+        };
+        write_json(&mut server, &request).unwrap();
+        assert_eq!(
+            serde_json::to_value(channel.read_request().unwrap()).unwrap(),
+            serde_json::to_value(request).unwrap()
+        );
+    }
+
+    #[test]
+    fn windows_helper_pipe_retains_original_process_and_refuses_its_exit() {
+        let command = std::path::PathBuf::from(std::env::var_os("SystemRoot").unwrap())
+            .join("System32/cmd.exe");
+        let mut child = Child(
+            std::process::Command::new(command)
+                .args(["/d", "/q", "/c", "set /p OTTRIN_QA_WAIT="])
+                .stdin(std::process::Stdio::piped())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .spawn()
+                .unwrap(),
+        );
+        let started = process_start_time(child.0.as_raw_handle()).unwrap();
+        let caller = CallerProcess::capture(child.0.id(), started).unwrap();
+        caller.validate().unwrap();
+        let user = crate::windows_fs::user_for_token(&caller.token).unwrap();
+        assert!(crate::windows_fs::valid_sid(&user));
+        // Existing file-owner admission still reads its own TokenOwner contract.
+        assert!(crate::windows_fs::valid_sid(
+            &crate::windows_fs::current_owner().unwrap()
+        ));
+        child.0.kill().unwrap();
+        child.0.wait().unwrap();
+        assert_eq!(
+            process_start_time(caller.process.as_raw_handle()).unwrap(),
+            started
+        );
+        assert_eq!(
+            crate::windows_fs::user_for_token(&caller.token).unwrap(),
+            user
+        );
+        assert_eq!(
+            caller.validate().unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+    }
+
+    #[test]
     fn windows_helper_pipe_rejects_wrong_peer_before_receiving_authority() {
         let name = endpoint(&nonce()).unwrap();
         let mut listener = LocalPipeListener::bind(&name, ACL).unwrap();
@@ -288,10 +473,36 @@ mod tests {
         let helper = std::env::var_os("OTTRIN_QA_PRIV_HELPER").expect("Owned helper fixture path");
         assert!(helper.to_string_lossy().contains(' '));
         assert!(!helper.to_string_lossy().is_ascii());
+        let version = ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION.to_string();
+        for (arguments, expected) in [
+            (vec!["--check-protocol", &version, "--bound-local-pipe"], 0),
+            (vec!["--check-protocol", &version, "--local-pipe"], 69),
+            (vec!["--stdio-json"], 2),
+            (
+                vec![
+                    "--local-pipe",
+                    "0123456789abcdef0123456789abcdef",
+                    "--parent-pid",
+                    "1",
+                ],
+                2,
+            ),
+        ] {
+            let output = std::process::Command::new(&helper)
+                .args(&arguments)
+                .stdin(std::process::Stdio::null())
+                .output()
+                .unwrap();
+            assert_eq!(
+                output.status.code(),
+                Some(expected),
+                "{arguments:?}: {output:?}"
+            );
+        }
         let dir = tempfile::tempdir().unwrap();
         let item = dir.path().join("visible Å.txt");
         std::fs::write(&item, b"owner data").unwrap();
-        for wrong_parent in [false, true] {
+        for (wrong_parent, wrong_start) in [(false, false), (true, false), (false, true)] {
             let nonce = nonce();
             let name = endpoint(&nonce).unwrap();
             let mut listener = LocalPipeListener::bind(&name, ACL).unwrap();
@@ -306,6 +517,10 @@ mod tests {
                         } else {
                             std::process::id()
                         }
+                        .to_string(),
+                        "--parent-start",
+                        &(process_start_time(unsafe { GetCurrentProcess() }).unwrap()
+                            + u64::from(wrong_start))
                         .to_string(),
                     ])
                     .spawn()
@@ -325,13 +540,13 @@ mod tests {
                 if let Some(status) = child.0.try_wait().unwrap() {
                     // A rejecting client may close before ConnectNamedPipe
                     // observes it. That is refusal, not a failed connection test.
-                    assert!(wrong_parent);
+                    assert!(wrong_parent || wrong_start);
                     assert_eq!(status.code(), Some(1));
                     break None;
                 }
             };
             if let Some(mut stream) = stream {
-                if wrong_parent {
+                if wrong_parent || wrong_start {
                     let mut byte = [0];
                     assert_eq!(stream.read(&mut byte).unwrap(), 0);
                 } else {

@@ -1,0 +1,21 @@
+{
+  "source": {
+    "base_revision": "bf8f8262660c6a8c07f6dcf995b99f0a3273ca13",
+    "platform_patch_sha256": "b2a9195af83b609cfa0f15f61152e36cf97ed0e3e870c648982de6002094d0cc",
+    "scope": "Uncommitted platform source applied to base; native helper verification, not packaged delivery"
+  },
+  "compiler": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.0\nLLVM version: 21.1.8\n",
+  "artifacts": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.exe",
+      "sha256": "4d092123bd574422253cc0805f151dd202f2547ed161a39ca5d3a9eee8768b56",
+      "bytes": 493002341
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-priv-helper.exe",
+      "sha256": "6746304a848ea2ebaa030d2501bb913e6598fb39dae687e78762320902e79be8",
+      "bytes": 90088534
+    }
+  ],
+  "scope": "Canonical shared target debug profile, cross-compiled Windows GNU; runtime acceptance recorded separately"
+}

@@ -1,0 +1,90 @@
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8098059Z running 1 test
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8106987Z test legacy_doc_extraction_is_bounded_isolated_and_sanitized ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8125158Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8126190Z running 1 test
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8146527Z test installed_libreoffice_probe_refuses_a_missing_windows_adapter ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8148958Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8153312Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8155027Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8172706Z test office_rendering_uses_deterministic_fallback_order_and_provider_cache_identity ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8186007Z test installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_formats ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8187024Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8187769Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.01s
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8189401Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8211160Z test production_page_orchestration_renders_only_the_validated_provider_pdf_and_reports_provenance ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8213036Z test production_provider_format_mapping_accepts_only_the_bounded_office_contract ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8257977Z test provider_output_rejects_encrypted_pdf_before_falling_back ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8260512Z test provider_probe_exposes_capability_only_when_available ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8261576Z test installed_libreoffice_probe_refuses_a_missing_windows_adapter ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8291706Z test provider_timeout_is_typed_and_falls_back_without_losing_attempt_evidence ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.8292501Z test installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_formats ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9664331Z test native_legacy_doc_rendering_uses_an_isolated_helper_and_rejects_oversized_pdf_output ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9664802Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9665094Z test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9665622Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9687621Z [1m[92m     Running[0m tests\pdf_visual.rs (target\debug\deps\pdf_visual-f33dc474c28a4770.exe)
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9789493Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9789863Z running 6 tests
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9791770Z test debug_runtime_discovers_packaged_pdfium_automatically ... ignored, requires the development package produced by build-all.sh
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9793155Z test packaged_runtime_renders_a_selected_page_and_rejects_out_of_bounds_page ... ignored, requires the pinned packaged PDFium runtime
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9794040Z test packaged_runtime_renders_bounded_non_blank_first_page_png ... ignored, requires the pinned packaged PDFium runtime
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9794815Z test packaged_runtime_renders_more_than_one_pdf_per_process ... ignored, requires the pinned packaged PDFium runtime
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9806070Z test packaged_pdfium_test_lock_recovers_from_poison ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9806734Z test explicit_missing_runtime_fails_closed ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9807004Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9807279Z test result: ok. 2 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9807853Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9825378Z [1m[92m     Running[0m tests\video_thumbnail_contract.rs (target\debug\deps\video_thumbnail_contract-1841a63fff58b9cd.exe)
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9985805Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9986347Z running 8 tests
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9993124Z test compressed_video_source_size_is_hard_bounded_at_admission ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9994438Z test source_dimensions_are_bounded_before_scaling_and_output_allocation ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9995467Z test user_facing_video_fallback_distinguishes_missing_system_support_from_bad_media ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9996451Z test validated_video_frame_normalizes_bgra_and_rejects_bad_shape_or_bounds ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9998391Z test windows_native_thumbnail_decodes_and_preserves_admitted_source ... ignored, requires OTTRIN_NATIVE_VIDEO_FIXTURE: a 64x48 red H.264 MP4 and installed OS decoder
+verify (windows-latest)	Cargo test	2026-11-05T05:39:52.9999776Z test validated_video_frame_normalizes_padded_and_signed_stride_orientation ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0000967Z test video_cache_identity_includes_generation_and_target_dimension ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0006666Z test windows_source_admission_rejects_an_oversize_retained_handle ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0007424Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0008010Z test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0033951Z [1m[92m     Running[0m tests\windows_job_native.rs (target\debug\deps\windows_job_native-602ed88c84b3752c.exe)
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0034781Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0149771Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0150238Z running 13 tests
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0151236Z test fixture_descendant ... ignored, subprocess fixture selected explicitly by fixture_root
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0153375Z test fixture_environment_parent ... ignored, subprocess fixture with a deliberately contaminated parent environment
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0156338Z test fixture_root ... ignored, subprocess fixture selected explicitly by native_job tests
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.0519705Z test native_job_captures_output_and_cleans_diagnostics ... FAILED
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.2303273Z test native_job_does_not_inherit_parent_environment ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.3522798Z test native_job_enforces_aggregate_memory_across_descendants ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.4010338Z test native_job_enforces_memory_and_process_limits ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.4492987Z test native_job_enforces_output_budget ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.5290059Z test native_job_isolates_ipc_pipe_namespace ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:53.5659433Z test native_job_restricts_inherited_handles ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:54.1932744Z test native_job_denies_private_files_source_writes_and_network ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:58.0364592Z test native_job_cancellation_kills_parent_and_descendant ... FAILED
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5943290Z test native_job_timeout_kills_descendant_after_parent_exit ... ok
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5943829Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5943965Z failures:
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5944117Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5944338Z ---- native_job_captures_output_and_cleans_diagnostics stdout ----
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5944774Z Office AppContainer creation failed: 0x8007000a
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5945018Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5945452Z thread 'native_job_captures_output_and_cleans_diagnostics' (6504) panicked at crates\ottrin-preview\tests\windows_job_native.rs:279:10:
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5946132Z called `Result::unwrap()` on an `Err` value: Unavailable
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5946594Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5946907Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5947115Z ---- native_job_cancellation_kills_parent_and_descendant stdout ----
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5947382Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5947802Z thread 'native_job_cancellation_kills_parent_and_descendant' (1032) panicked at crates\ottrin-preview\tests\windows_job_native.rs:329:9:
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5948722Z fixture did not publish its PID: "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\ottrin native job 5140 1793857193015232400\\profile with spaces\\descendant.pid"
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5950916Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5950962Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5951194Z failures:
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5951722Z     native_job_cancellation_kills_parent_and_descendant
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5952474Z     native_job_captures_output_and_cleans_diagnostics
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5953186Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5953631Z test result: FAILED. 8 passed; 2 failed; 3 ignored; 0 measured; 0 filtered out; finished in 6.58s
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5954243Z
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.5999904Z [1m[91merror[0m: test failed, to rerun pass `-p ottrin-preview --test windows_job_native`
+verify (windows-latest)	Cargo test	2026-11-05T05:39:59.7328539Z ##[error]Process completed with exit code 1.

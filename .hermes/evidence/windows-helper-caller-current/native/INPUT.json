@@ -1,0 +1,8 @@
+{
+  "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.exe",
+  "sha256": "4d092123bd574422253cc0805f151dd202f2547ed161a39ca5d3a9eee8768b56",
+  "test_filter": "windows_privileged_transport::tests::windows_helper_pipe_",
+  "exact": false,
+  "expected_pass_count": 5,
+  "cargo_output_directory": "debug"
+}

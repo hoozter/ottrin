@@ -1,0 +1,45 @@
+{
+  "verified_at": "2026-11-05T05:48:02.673353+00:00",
+  "before_bytes": {
+    "target/debug/deps": 25263006505,
+    "target/debug/incremental": 25174825104,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070294366,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44272725988,
+    ".hermes/evidence/windows-helper-caller-current": 0
+  },
+  "after_bytes": {
+    "target/debug/deps": 25266377773,
+    "target/debug/incremental": 25261810571,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29070382886,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 44270182049,
+    ".hermes/evidence/windows-helper-caller-current": 477194
+  },
+  "delta_bytes": {
+    "target/debug/deps": 3371268,
+    "target/debug/incremental": 86985467,
+    "target/x86_64-pc-windows-gnu/debug/deps": 88520,
+    "target/x86_64-pc-windows-gnu/debug/incremental": -2543939,
+    ".hermes/evidence/windows-helper-caller-current": 477194
+  },
+  "removed": [
+    "owned native VM and both libvirt volumes",
+    "native transport hardlinks and fixture",
+    "task-created native-driver pyc",
+    "11 locked obsolete incremental sessions retaining newest exact configuration"
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-caller-current",
+      "purpose": "Compact source, build, CI failure, native test and teardown evidence"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.exe",
+      "purpose": "Current canonical platform test executable, retained for subsequent coordinator/native security verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/ottrin-priv-helper.exe",
+      "purpose": "Current canonical source helper; pending interactive UAC/coordinator integration verification"
+    }
+  ],
+  "preserved": "Stable b020 Linux/Windows previews, all four protected VMs, user data, current compiler outputs and newest useful caches"
+}

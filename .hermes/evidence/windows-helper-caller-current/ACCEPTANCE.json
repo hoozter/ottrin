@@ -1,0 +1,41 @@
+{
+  "status": "pass within declared helper transport source scope",
+  "source": {
+    "base_revision": "bf8f8262660c6a8c07f6dcf995b99f0a3273ca13",
+    "platform_patch_sha256": "b2a9195af83b609cfa0f15f61152e36cf97ed0e3e870c648982de6002094d0cc",
+    "scope": "Uncommitted platform source applied to base; native helper verification, not packaged delivery"
+  },
+  "linux_platform": {
+    "passed": 447,
+    "ignored": 4
+  },
+  "linux_helper": {
+    "passed": 11
+  },
+  "linux_documentation": {
+    "passed": 5
+  },
+  "native_windows_helper_transport": {
+    "passed": 5,
+    "test_executable_sha256": "4d092123bd574422253cc0805f151dd202f2547ed161a39ca5d3a9eee8768b56",
+    "helper_sha256": "6746304a848ea2ebaa030d2501bb913e6598fb39dae687e78762320902e79be8",
+    "cases": [
+      "kernel process birth time",
+      "retained original primary-token user and process exit",
+      "actual helper framed request in Unicode/spaced path",
+      "old CLI/capability rejection",
+      "wrong pipe peer",
+      "truncated frame"
+    ]
+  },
+  "strict_lint": [
+    "native platform all targets",
+    "Windows GNU platform all targets"
+  ],
+  "limits": [
+    "Native Windows guest-agent SYSTEM token; no interactive UAC acceptance",
+    "Windows administrator Copy remains disabled; durable coordinator still required",
+    "Not merged with b961 UI branch; no new packaged delivery",
+    "UI branch Windows hosted CI remains failed in Office native tests; see UI_BRANCH_CI.json"
+  ]
+}

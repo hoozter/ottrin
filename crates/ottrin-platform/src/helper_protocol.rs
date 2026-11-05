@@ -101,7 +101,7 @@ fn check_with_timeout(
         command.arg("--copy-recovery");
     }
     #[cfg(target_os = "windows")]
-    command.arg("--local-pipe");
+    command.arg("--bound-local-pipe");
     let mut child = command.spawn().map_err(|_| guidance().to_owned())?;
     let deadline = Instant::now() + timeout;
     loop {

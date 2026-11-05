@@ -1,0 +1,40 @@
+{
+  "conclusion": "failure",
+  "headSha": "b961609554cdf72cd42dd9d4e059582a64eac92b",
+  "jobs": [
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41971204224/job/127059650976",
+      "startedAt": "2026-11-05T05:00:04Z",
+      "completedAt": "2026-11-05T05:11:11Z"
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41971204224/job/127059651218",
+      "startedAt": "2026-11-05T05:00:04Z",
+      "completedAt": "2026-11-05T05:01:29Z"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41971204224/job/127059651226",
+      "startedAt": "2026-11-05T05:00:05Z",
+      "completedAt": "2026-11-05T05:40:06Z"
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/hoozter/ottrin/actions/runs/41971204224/job/127059651243",
+      "startedAt": "2026-11-05T05:00:06Z",
+      "completedAt": "2026-11-05T05:04:34Z"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/41971204224"
+}

@@ -3,15 +3,19 @@ use ottrin_core::{
     PrivilegedResponse, PrivilegedStatus, SystemLocateMaintenance,
 };
 use ottrin_platform::{DefaultPlatform, PlatformOps};
-use std::io::{Read as _, Write as _};
+#[cfg(not(target_os = "windows"))]
+use std::io::Read as _;
+use std::io::Write as _;
 use std::path::Path;
 
 enum IoMode {
+    #[cfg(not(target_os = "windows"))]
     Stdio,
     #[cfg(target_os = "windows")]
     Pipe {
         nonce: String,
         parent_pid: u32,
+        parent_start: u64,
         channel: Option<ottrin_platform::windows_privileged_transport::HelperChannel>,
     },
 }
@@ -122,7 +126,7 @@ fn protocol_check(args: &[String]) -> Option<i32> {
     if args[2..].iter().any(|feature| {
         !matches!(feature.as_str(),
             "--copy-recovery" if cfg!(target_os = "linux"))
-            && !matches!(feature.as_str(), "--local-pipe" if cfg!(target_os = "windows"))
+            && !matches!(feature.as_str(), "--bound-local-pipe" if cfg!(target_os = "windows"))
     }) {
         return Some(69);
     }
@@ -131,47 +135,74 @@ fn protocol_check(args: &[String]) -> Option<i32> {
 
 fn parse_mode(args: Vec<String>) -> Result<IoMode, String> {
     match args.as_slice() {
+        #[cfg(not(target_os = "windows"))]
         [mode] if mode == "--stdio-json" => Ok(IoMode::Stdio),
         #[cfg(target_os = "windows")]
-        [flag, nonce, parent_flag, parent] if flag == "--local-pipe" && parent_flag == "--parent-pid" => {
-            let parent_pid = parent.parse::<u32>().map_err(|_| "Invalid helper parent PID")?;
-            if parent_pid == 0 || nonce.len() != 32 || !nonce.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+        [flag, nonce, parent_flag, parent, start_flag, start]
+            if flag == "--local-pipe"
+                && parent_flag == "--parent-pid"
+                && start_flag == "--parent-start" =>
+        {
+            let parent_pid = parent
+                .parse::<u32>()
+                .map_err(|_| "Invalid helper parent PID")?;
+            let parent_start = start
+                .parse::<u64>()
+                .map_err(|_| "Invalid helper parent creation time")?;
+            if parent_pid == 0
+                || parent_start == 0
+                || nonce.len() != 32
+                || !nonce.bytes().all(|byte| byte.is_ascii_hexdigit())
+            {
                 return Err("Invalid helper pipe identity".into());
             }
-            Ok(IoMode::Pipe { nonce: nonce.clone(), parent_pid, channel: None })
-        },
-        _ => Err("Usage: ottrin-priv-helper --stdio-json (Linux) or --local-pipe <nonce> --parent-pid <PID> (Windows)".into()),
+            Ok(IoMode::Pipe {
+                nonce: nonce.clone(),
+                parent_pid,
+                parent_start,
+                channel: None,
+            })
+        }
+        _ => {
+            #[cfg(target_os = "windows")]
+            let usage = "Usage: ottrin-priv-helper --local-pipe <nonce> --parent-pid <PID> --parent-start <creation-time>";
+            #[cfg(not(target_os = "windows"))]
+            let usage = "Usage: ottrin-priv-helper --stdio-json";
+            Err(usage.into())
+        }
     }
 }
 
 fn read_request(mode: &mut IoMode) -> Result<PrivilegedRequest, String> {
-    let input = match mode {
+    match mode {
+        #[cfg(not(target_os = "windows"))]
         IoMode::Stdio => {
-            let mut b = Vec::new();
+            let mut input = Vec::new();
             std::io::stdin()
-                .read_to_end(&mut b)
+                .read_to_end(&mut input)
                 .map_err(|_| "Failed to read request from stdin".to_string())?;
-            b
+            let request: PrivilegedRequest =
+                serde_json::from_slice(&input).map_err(|e| format!("Invalid request JSON: {e}"))?;
+            request.validate_protocol().map_err(str::to_owned)?;
+            Ok(request)
         }
         #[cfg(target_os = "windows")]
         IoMode::Pipe {
             nonce,
             parent_pid,
+            parent_start,
             channel,
         } => {
             let connected = ottrin_platform::windows_privileged_transport::HelperChannel::connect(
                 nonce,
                 *parent_pid,
+                *parent_start,
             )
             .map_err(|error| error.to_string())?;
             *channel = Some(connected);
-            return channel.as_mut().unwrap().read_request();
+            channel.as_mut().unwrap().read_request()
         }
-    };
-    let request: PrivilegedRequest =
-        serde_json::from_slice(&input).map_err(|e| format!("Invalid request JSON: {}", e))?;
-    request.validate_protocol().map_err(str::to_owned)?;
-    Ok(request)
+    }
 }
 
 fn run_file_command(platform: &DefaultPlatform, cmd: &FileCommand) -> PrivilegedResponse {
@@ -416,6 +447,7 @@ fn remove_system_locate_daily_job(path: &Path) -> Result<String, String> {
 
 fn write_response(mode: &mut IoMode, resp: PrivilegedResponse) {
     let result = match mode {
+        #[cfg(not(target_os = "windows"))]
         IoMode::Stdio => serde_json::to_vec(&resp)
             .map_err(std::io::Error::other)
             .and_then(|bytes| {
@@ -680,5 +712,62 @@ mod tests {
 
         assert_eq!(response.status, PrivilegedStatus::Success);
         assert!(called);
+    }
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod windows_mode_tests {
+    use super::*;
+    fn args(values: &[&str]) -> Vec<String> {
+        values.iter().map(|x| (*x).to_owned()).collect()
+    }
+    #[test]
+    fn windows_helper_requires_bound_pipe_mode() {
+        let nonce = "a".repeat(32);
+        for input in [
+            args(&["--stdio-json"]),
+            args(&["--local-pipe", &nonce, "--parent-pid", "1"]),
+            args(&[
+                "--local-pipe",
+                &nonce,
+                "--parent-pid",
+                "1",
+                "--parent-start",
+                "0",
+            ]),
+            args(&[
+                "--local-pipe",
+                &nonce,
+                "--parent-pid",
+                "1",
+                "--parent-start",
+                "bad",
+            ]),
+        ] {
+            assert!(parse_mode(input).is_err());
+        }
+        assert!(matches!(
+            parse_mode(args(&[
+                "--local-pipe",
+                &nonce,
+                "--parent-pid",
+                "1",
+                "--parent-start",
+                "123"
+            ])),
+            Ok(IoMode::Pipe {
+                parent_start: 123,
+                ..
+            })
+        ));
+        let version = ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION.to_string();
+        assert_eq!(
+            protocol_check(&args(&["--check-protocol", &version, "--bound-local-pipe"])),
+            Some(0)
+        );
+        assert_eq!(
+            protocol_check(&args(&["--check-protocol", &version, "--local-pipe"])),
+            Some(69)
+        );
     }
 }

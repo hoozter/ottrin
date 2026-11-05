@@ -1,7 +1,9 @@
 //! Native single-entry operations shared by Windows file transactions.
 mod identity;
 mod recovery;
-pub(crate) use identity::{current_owner, current_token, owner_for_token, valid_sid};
+pub(crate) use identity::{
+    current_owner, current_token, owner_for_token, user_for_token, valid_sid,
+};
 pub(crate) mod journal_access;
 pub(crate) use recovery::Volumes;
 use std::ffi::{OsStr, OsString, c_void};
