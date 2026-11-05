@@ -1,0 +1,70 @@
+{
+  "status": "pass current Linux helper stdio read-only boundary",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "binary_sha256": "9aed6636ff29bb70ad9c804539c3994eac307c028c80d5d2d4763f46e7507cf2",
+  "cases": [
+    {
+      "version": 3,
+      "show_hidden": false,
+      "response": {
+        "status": "Success",
+        "message": null,
+        "payload": {
+          "Entries": [
+            {
+              "name": "visible.txt",
+              "path": "/tmp/ot-helper-wire-348gans4/corpus/visible.txt",
+              "kind": "File",
+              "is_executable": false,
+              "symlink_target_is_dir": null,
+              "size_bytes": 16,
+              "modified_unix_secs": 1793865442
+            }
+          ]
+        }
+      }
+    },
+    {
+      "version": 3,
+      "show_hidden": true,
+      "response": {
+        "status": "Success",
+        "message": null,
+        "payload": {
+          "Entries": [
+            {
+              "name": ".hidden",
+              "path": "/tmp/ot-helper-wire-348gans4/corpus/.hidden",
+              "kind": "File",
+              "is_executable": false,
+              "symlink_target_is_dir": null,
+              "size_bytes": 15,
+              "modified_unix_secs": 1793865442
+            },
+            {
+              "name": "visible.txt",
+              "path": "/tmp/ot-helper-wire-348gans4/corpus/visible.txt",
+              "kind": "File",
+              "is_executable": false,
+              "symlink_target_is_dir": null,
+              "size_bytes": 16,
+              "modified_unix_secs": 1793865442
+            }
+          ]
+        }
+      }
+    },
+    {
+      "version": 2,
+      "show_hidden": true,
+      "response": {
+        "status": "Failed",
+        "message": "Administrator helper protocol does not match Ottrin. Update the application and helper together.",
+        "payload": null
+      }
+    }
+  ],
+  "fixture_bytes_unchanged": true,
+  "owned_profile_removed": true,
+  "scope": "Exact current packaged helper bytes; ordinary user, read-only directory listing, hidden-file semantics and mismatched-protocol refusal. No elevated Copy or system setup acceptance."
+}

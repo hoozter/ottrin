@@ -1,0 +1,15 @@
+{
+  "status": "pass scoped source tests/lint/release build and native Linux layout/diagnostic interaction; package delivery pending",
+  "source_head": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "changed_file": "crates/ottrin-ui/src/lib.rs",
+  "source_sha256": "c4502f96b74c78ef647619cb673f7c7b75a6e8c0637a42ee698cbd91d3fcd507",
+  "change": "Place full startup/runtime error details in one expandable section after recovery controls; preserve semantic status and error text.",
+  "next_verification": [
+    "Focused rendered Services regression and existing Services tests",
+    "Actual source GUI failure at default window size: controls visible and details expandable",
+    "Package and deliver only after relevant checks; current staged781 cohort remains independent"
+  ],
+  "packaged": false,
+  "default_error_visibility": "Expanded by default; original error visibility test retained and passes",
+  "rejected_attempt": "services-tests-collapsed-rejected.log"
+}

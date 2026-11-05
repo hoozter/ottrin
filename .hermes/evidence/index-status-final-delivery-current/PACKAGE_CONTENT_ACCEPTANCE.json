@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "qa_fixture_sha256": "dd7f85ebdb8645d615c8056bbd68b20c4de68a79faa6f4b5ebc8ae6fd64450c6",
+  "verification_head": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "cdec0099d94e15bee970169f7b077f215d67442d66c24d8ed76d3af9abeb047b",
+    "Ottrin-0.1.0-x86_64.AppImage": "8d5e395f583bdf1874dda7f043e2c2296e069e1660e6b5c8f76c54f83089417a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "985778ed688e51bd8815c87c3d4b8110f7e187231a066511548f7b71a5a015f4",
+    "ottrin_0.1.0_amd64.deb": "202e7dd053dcc0164041c32ed11de00482c2b2beb79a7105284cbcc65bfc4ad3"
+  },
+  "verifier_sha256": "33b60ba8802056bee6c466454e1e69fc53bab4d69472dc4413e72990b5b731cc",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "scope": "package contents and scoped native namespace checks; GUI, resource and actual distribution installation remain separate",
+  "extraction": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-desktop-extract",
+  "pending_consumer": null,
+  "runtime_sha256": {
+    "application": "e94326663d174fbb040ae823846a61c332f578395b4232b9ff36b471c2d59f76",
+    "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+    "privileged_helper": "9aed6636ff29bb70ad9c804539c3994eac307c028c80d5d2d4763f46e7507cf2",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "content_extraction_removed": true
+}

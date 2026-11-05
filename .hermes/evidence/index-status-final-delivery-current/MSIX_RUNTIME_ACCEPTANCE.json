@@ -1,0 +1,117 @@
+{
+  "capture_review": {
+    "reviewed": true,
+    "settings_visible": true,
+    "all_captures_match_exact_hashes": true,
+    "captures": {
+      "main.png": "66f144503c9e4408d237d453092e5e931ff87ce653c510d879afb4ecf9527c57",
+      "msix-startup-enabled.png": "15847c0c79455f5bd861cb58df22c82c82ff75c4507c14929cdc644994becfe1",
+      "msix-startup-disabled.png": "f3fdf9167a1335c572da7cfdca4239fa91e29824b8631ad882aabb49f3619f88",
+      "mapped-main-before-focus.png": "66f144503c9e4408d237d453092e5e931ff87ce653c510d879afb4ecf9527c57"
+    },
+    "observations": [
+      "Actual21 packaged ordinary main window has coherent dark title/tab/sidebar/file grid and readable footer; mapped frame before focus matches final main frame.",
+      "Actual package startup checkbox off/on updates the visible sign-in line; current index remains green/Ready as promised.",
+      "This repeated case acquired foreground using unchanged assertions; earlier failure remains recorded and is not explained away.",
+      "Settings capture includes guest taskbar overlay at its lower edge; startup controls remain visible. Full Settings work-area/layout audit remains open.",
+      "Visible lower folder-integration transaction-resource failure persists in actual21. Successful startup and lifecycle do not establish folder integration."
+    ],
+    "scope": "Four actual original captures reviewed; fresh21 functional startup/login/removal is established separately by actor/result and native package identity checks. No full theme, physical GPU, Store or signing acceptance."
+  },
+  "status": "pass exact MSIX21 functional runtime, real reboot/login and removal; visual scope requires capture review",
+  "package": {
+    "runtime_script_sha256": "5b00a8a438f081e879beca5245a1bd3ba0e41d0e7cdde5646702211923ed5868",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "35c5e3b397ae42c88777098095601d844b5ce85244f753a2f108896411d4b91c",
+    "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+    "version": "0.1.0.21",
+    "startup_enabled": true
+  },
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "runtime_result": ".hermes/evidence/index-status-final-delivery-current/runtime21/RUNTIME_RESULT.json",
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          6572
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          6572
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          6572
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          6572
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.21_x64__vs01n017nxmbr"
+  },
+  "real_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 7772,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.21_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXec89f8b40320\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "9E9485EC9485C76D:000200000001B6FA0000000000000000"
+    },
+    "boot_ticks": 639294599005000000,
+    "administrator": false
+  },
+  "removal": {
+    "package_removed": true,
+    "package_processes_removed": true,
+    "fixture_preserved": true,
+    "preferences_preserved": true,
+    "remaining_index_tasks": []
+  },
+  "state_reader_native_smoke": {
+    "transient_milliseconds": 171.7978,
+    "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed": true,
+    "persistent_lock_seconds": 2.0165835
+  },
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/index-status-final-delivery-current/runtime21/results/main.png": "66f144503c9e4408d237d453092e5e931ff87ce653c510d879afb4ecf9527c57",
+    ".hermes/evidence/index-status-final-delivery-current/runtime21/results/msix-startup-disabled.png": "f3fdf9167a1335c572da7cfdca4239fa91e29824b8631ad882aabb49f3619f88",
+    ".hermes/evidence/index-status-final-delivery-current/runtime21/results/msix-startup-enabled.png": "15847c0c79455f5bd861cb58df22c82c82ff75c4507c14929cdc644994becfe1"
+  },
+  "fixture_recovery": null,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Fresh MSIX21 only; no MSIX20-to-21 upgrade acceptance",
+    "Unsigned development deployment in disposable software desktop; no signing, Store or physical hardware acceptance",
+    "Windows native preview pointer check and full theme audit remain open",
+    "Stable-path delivery has its own authoritative Windows candidate manifest; this receipt proves only the stated native runtime scope"
+  ]
+}

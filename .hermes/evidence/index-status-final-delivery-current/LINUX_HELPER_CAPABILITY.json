@@ -1,0 +1,46 @@
+{
+  "status": "pass actual current release helper read-only capability scope",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "binary_sha256": "9aed6636ff29bb70ad9c804539c3994eac307c028c80d5d2d4763f46e7507cf2",
+  "cases": [
+    {
+      "args": [
+        "--check-protocol",
+        "3"
+      ],
+      "exit": 0
+    },
+    {
+      "args": [
+        "--check-protocol",
+        "3",
+        "--copy-recovery"
+      ],
+      "exit": 0
+    },
+    {
+      "args": [
+        "--check-protocol",
+        "2"
+      ],
+      "exit": 78
+    },
+    {
+      "args": [
+        "--check-protocol",
+        "3",
+        "--bound-local-pipe"
+      ],
+      "exit": 69
+    },
+    {
+      "args": [
+        "--check-protocol",
+        "3",
+        "--local-pipe"
+      ],
+      "exit": 69
+    }
+  ],
+  "scope": "Exact helper bytes from all four verified packages; no stdin, mutations, setup or administrator prompt. Native protected Copy retains its original older helper/source scope."
+}

@@ -1,0 +1,120 @@
+{
+  "status": "pass actual staged AppImage transition scope; original captures require direct review",
+  "themes": [
+    {
+      "theme": "Dark",
+      "same_gui_pid_across_transitions": 2750248,
+      "stopped_daemon_pid": 2750236,
+      "recovered_daemon_pid_survives_gui_close": 2750423,
+      "originals_preserved": true,
+      "transitions": [
+        "Ready",
+        "Stopped",
+        "Needs attention",
+        "Ready"
+      ]
+    },
+    {
+      "theme": "Light",
+      "same_gui_pid_across_transitions": 2750511,
+      "stopped_daemon_pid": 2750423,
+      "recovered_daemon_pid_survives_gui_close": 2750777,
+      "originals_preserved": true,
+      "transitions": [
+        "Ready",
+        "Stopped",
+        "Needs attention",
+        "Ready"
+      ]
+    }
+  ],
+  "scope": "Actual staged AppImage GUI and daemon on owned software X11 desktop with private state; native distribution installation, Windows and personal-profile acceptance remain separate",
+  "settings_close_query_control": [
+    {
+      "theme": "Dark",
+      "phase": "ready",
+      "settings_window": "12582921",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    },
+    {
+      "theme": "Dark",
+      "phase": "stopped",
+      "settings_window": "12582926",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    },
+    {
+      "theme": "Dark",
+      "phase": "failed",
+      "settings_window": "12582939",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    },
+    {
+      "theme": "Dark",
+      "phase": "recovered",
+      "settings_window": "12582944",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    },
+    {
+      "theme": "Light",
+      "phase": "ready",
+      "settings_window": "12582925",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    },
+    {
+      "theme": "Light",
+      "phase": "stopped",
+      "settings_window": "12582934",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    },
+    {
+      "theme": "Light",
+      "phase": "failed",
+      "settings_window": "12582939",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    },
+    {
+      "theme": "Light",
+      "phase": "recovered",
+      "settings_window": "12582944",
+      "settings_closed_exact_pid_and_name": true,
+      "main_window_still_visible": "12582915",
+      "superseded_any_match_query_still_finds_main": true
+    }
+  ],
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "gui_sha256": "e94326663d174fbb040ae823846a61c332f578395b4232b9ff36b471c2d59f76",
+  "index_daemon_sha256": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+  "appimage_sha256": "8d5e395f583bdf1874dda7f043e2c2296e069e1660e6b5c8f76c54f83089417a",
+  "captures": {
+    "Dark-recovered-main.png": "fe641423e693beb566c89a4b54c9ae1f634dd512e375b4c4c4f7f4e6d7c5d718",
+    "Light-stopped-main.png": "5d7cc3cb2658c77751079f8f2b41098543106b17d6ea9f339a4ca33b81373c3e",
+    "Dark-ready-services.png": "190852d10f4e1acbcabba533405dad8a9ba3a619ec413f1a139cf771dbe625e1",
+    "Light-failed-services.png": "1a1a39d31bc16770702f8a410d673b84ebcc8f3117a45800fac64fad18207532",
+    "Dark-failed-main.png": "abd5a28eb98d70139df8dddfa356e794e88a25b91fa365188435c9914e3d03d7",
+    "Dark-stopped-main.png": "d244240c41513ef6c09586ff31bcf7133ca25869116fb8d005d928a7966a530a",
+    "Light-ready-services.png": "db3d74d821a2c154e1cb9ef5a550cee606bbbff0a60816569a4cd6b652a4d4af",
+    "Light-failed-main.png": "213b97332b8fafc88cc5f1cf4733abb4006adec416100bd6804ad42225fec236",
+    "Light-stopped-services.png": "16b25b623d62f997be8b49728d65f640fdb3d05d6b0b53f1debd1f8dcdd6efa9",
+    "Light-recovered-main.png": "a7321e5e29d90b1f386ce2a0ae2488832d2179b5f1077ebf80e7b333d86221f8",
+    "Dark-failed-services.png": "f6b168e8b68a1eff54b839abb64de94252799597dd13dbf52e8172fd642c7537",
+    "Light-ready-main.png": "a7321e5e29d90b1f386ce2a0ae2488832d2179b5f1077ebf80e7b333d86221f8",
+    "Dark-recovered-services.png": "190852d10f4e1acbcabba533405dad8a9ba3a619ec413f1a139cf771dbe625e1",
+    "Dark-stopped-services.png": "d24e5b23b101b538457ffe58f0a94c97970ed4a59fcd633b70acdcc5421c16e7",
+    "Dark-ready-main.png": "fe641423e693beb566c89a4b54c9ae1f634dd512e375b4c4c4f7f4e6d7c5d718",
+    "Light-recovered-services.png": "db3d74d821a2c154e1cb9ef5a550cee606bbbff0a60816569a4cd6b652a4d4af"
+  }
+}

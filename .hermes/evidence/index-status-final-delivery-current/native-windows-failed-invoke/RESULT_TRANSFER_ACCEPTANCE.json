@@ -1,0 +1,7 @@
+{
+  "archive_sha256": "08f179a7e2d961f4ff66c1aaad4a4cc8576d448d4873256013bf0df9487f348d",
+  "unpacked_files": 24,
+  "status": "failed",
+  "error": "Exception calling \"Invoke\" with \"0\" argument(s): \"Unrecognized error.\"",
+  "transport_retired": true
+}

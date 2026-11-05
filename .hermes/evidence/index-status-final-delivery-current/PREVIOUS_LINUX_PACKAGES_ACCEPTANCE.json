@@ -1,0 +1,60 @@
+{
+  "status": "pass scoped row/thumbnail/footer/status appearance delivery; full roadmap and UI audit incomplete",
+  "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "809571e8aa57cd82121354ffbcf0e0f3d77882077d51dc5c16b792a181b93115",
+    "Ottrin-0.1.0-x86_64.AppImage": "7c6326a4d4b80bc0e18c4dc3a03ddfada241397e246572c6a834c3cd0178032a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2c0efc3612c31c9315a30e316ea40bdcd59b929f7ca0cf749bc2f2d558988245",
+    "ottrin_0.1.0_amd64.deb": "3446d804a720b906ca6073c77b00d147ca358c4b3cb4442c8faa951197ec5ad8"
+  },
+  "evidence": ".hermes/evidence/entry-label-spacing-delivery-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "runtime_sha256": {
+    "application": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
+    "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+    "privileged_helper": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "hosted_source": {
+    "run": 41966597535,
+    "tested_source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+    "all_four_jobs_success": true
+  },
+  "native_current_ui": ".hermes/evidence/entry-label-spacing-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
+  "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
+  "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/entry-label-spacing-delivery-current/SOURCE_SCOPE.json",
+  "daemon_identity": ".hermes/evidence/entry-label-spacing-delivery-current/DAEMON_IDENTITY_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "daemon_runtime_scope": {
+    "freshly_rerun": false,
+    "original_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "exact_current_binary_identity": true
+  },
+  "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
+  "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+  "historical_daemon_evidence": {
+    "source_revision": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
+    "daemon_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+    "native_login": ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
+    "binary_replacement": ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_ACCEPTANCE.json",
+    "freshly_rerun": false,
+    "applies_to_current_daemon_identity": false
+  },
+  "limits": [
+    "Actual AppImage software-X11 Ubuntu guest only; no physical graphics, Wayland or full interface acceptance.",
+    "All16 current original row/thumbnail/footer/Services frames directly reviewed. Prior captions/startup toggles keep original source scope.",
+    "Exact unchanged daemon bytes retain prior private watcher/query/restart/shutdown/idle evidence; no new sustained or large-corpus sample.",
+    "Unchanged helper/HTML bytes retain original protected-Copy scope. Personal helper setup requires owner OS authentication.",
+    "No public release, signing, Store or MSI acceptance.",
+    "Packaged manuals are build-time snapshots at b0203882; repository metadata records later delivery."
+  ]
+}

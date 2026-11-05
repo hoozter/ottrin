@@ -1,0 +1,34 @@
+{
+  "status": "failed21 foreground gate; not accepted runtime",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "artifact_sha256": "35c5e3b397ae42c88777098095601d844b5ce85244f753a2f108896411d4b91c",
+  "error": "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+  "ordinary_package": "Ottrin.Development_0.1.0.21_x64__vs01n017nxmbr",
+  "actual_gui_sha256": "39DD56D37072017FB6743F530E89A1A8BFE5FF95DA623ECC70C373D48C46B936",
+  "window_diagnostics": {
+    "foreground": 65994,
+    "enable_lua": 1,
+    "window": 197126,
+    "cloaked": 0,
+    "process_session": 1,
+    "minimized": false,
+    "console_session": 1
+  },
+  "focus_attempts": 25,
+  "normal_close_exit": 0,
+  "package_removed": true,
+  "package_processes_removed": true,
+  "fixture_preserved": true,
+  "preferences_preserved": false,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "subsequent_scope": "Fresh repeat retained assertions/deadlines and passed; original root cause is not established."
+}

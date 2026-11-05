@@ -1,0 +1,21 @@
+{
+  "status": "six targeted original diagnostic/layout captures directly reviewed",
+  "captures": {
+    "Dark-failed-services.png": "65595b6f096412beb4298be130d4a8b5be07efb739e5c2ccd71f94fbddaf8d04",
+    "Dark-error-collapsed-services.png": "6ff2885984326126b2c4212e1ef8196c3684a5e0a31167eedfa5c3a19175f407",
+    "Dark-error-details-scrolled-services.png": "62d751c60f0217159dec2f5f045a8d9cd209abd726924bc9a12d3a09f1aa6889",
+    "Light-failed-services.png": "43b12742c00747f6a9e6180bcb0614f306e28fe9b60e550f8d8bdc03638882b0",
+    "Light-error-collapsed-services.png": "cf01b5835542c645ddc68adb7d55d7931973e6cd27142e83fdbcb98f5ba72b9f",
+    "Light-error-details-scrolled-services.png": "9b57b3bffc1aad1a44a22bcb083717ef9708a202523615da772626418fb52e24"
+  },
+  "observations": [
+    "Default error state leaves recovery controls visible at the same position as Ready.",
+    "Diagnostic section starts expanded, can be collapsed and reopened, and preserves complete endpoint failure text.",
+    "At default window height the diagnostic body starts below the fold; user scrolling exposes the complete readable text. Native bounds prove full diagnostic text fits after scrolling, and scrolling back restores original control positions.",
+    "Dark/Light status/error/header styling remains coherent in this narrow scope. Developer/source helper discovery is separate from personal installed-helper setup."
+  ],
+  "limits": [
+    "Other status captures record functional transitions; this review covers six targeted originals only.",
+    "Source GUI and portable egui geometry tests; no packaged/new Windows native layout or complete theme acceptance."
+  ]
+}

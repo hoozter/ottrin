@@ -21175,10 +21175,6 @@ impl OttrinApp {
                 None => "Unavailable",
             };
             ui.label(format!("Automatic startup at sign-in: {startup}"));
-            if status.enabled.is_none() {
-                ui.label(RichText::new(&status.detail).color(c.error));
-            }
-            if !stopped && let Some(error) = &diag.last_error { ui.label(RichText::new(error).color(c.error)); }
             ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Indexing starts when you open Ottrin and continues after closing its windows. Enable automatic startup to also start indexing when you sign in." });
             ui.label(if package_managed { "Windows manages this package's login startup and removes it with Ottrin. Stopping indexing or disabling automatic startup keeps your saved index and preferences." } else { "Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index." });
             ui.add_space(6.0);
@@ -21214,6 +21210,18 @@ impl OttrinApp {
                     self.privileged_availability = self.platform.privileged_availability();
                 }
             });
+            if status.enabled.is_none() || (!stopped && diag.last_error.is_some()) {
+                egui::CollapsingHeader::new("Index service error details")
+                    .default_open(true)
+                    .show(ui, |ui| {
+                        if status.enabled.is_none() {
+                            ui.label(RichText::new(&status.detail).color(c.error));
+                        }
+                        if !stopped && let Some(error) = &diag.last_error {
+                            ui.label(RichText::new(error).color(c.error));
+                        }
+                    });
+            }
             #[cfg(any(target_os="linux",target_os="windows"))]
             {
                 ui.add_space(16.0);
@@ -27522,6 +27530,73 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[test]
+    fn long_service_diagnostics_do_not_displace_recovery_controls() {
+        let render = |detail: &str| {
+            let mut app = OttrinApp::default();
+            app.search_ui.sqlite_schedule_status = Some(ottrin_search::LocateScheduleStatus {
+                source: "none".into(),
+                enabled: None,
+                detail: detail.into(),
+            });
+            let ctx = Context::default();
+            #[cfg(target_os = "linux")]
+            ctx.data_mut(|data| {
+                data.insert_temp(
+                    egui::Id::new("html-sandbox-status"),
+                    (
+                        std::time::Instant::now(),
+                        ottrin_preview::HtmlPreviewRuntimeStatus::Ready,
+                    ),
+                );
+            });
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(740.0, 600.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let colors = app.colors;
+                        app.render_services_settings(ui, colors);
+                    });
+                },
+            )
+        };
+        let short = render("Startup status could not be read.");
+        let long =
+            render(&"Startup status could not be read at /very/long/service/path. ".repeat(80));
+        for name in ["Start / restart", "Stop indexing", "Refresh status"] {
+            let geometry = |frame: &egui::FullOutput| {
+                frame
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == name => {
+                            let rect = Rect::from_min_size(text.pos, text.galley.size());
+                            Some((rect, shape.clip_rect))
+                        }
+                        _ => None,
+                    })
+                    .unwrap_or_else(|| panic!("Missing service action: {name}"))
+            };
+            let (before, _) = geometry(&short);
+            let (after, clip) = geometry(&long);
+            assert_eq!(before, after, "Diagnostic length moved {name}");
+            assert!(
+                clip.contains_rect(after),
+                "Recovery action is clipped: {name}: {after:?}"
+            );
+        }
+        assert!(long.shapes.iter().any(|shape| {
+            matches!(&shape.shape, egui::Shape::Text(text) if text.galley.job.text == "Index service error details")
+        }));
     }
 
     #[test]

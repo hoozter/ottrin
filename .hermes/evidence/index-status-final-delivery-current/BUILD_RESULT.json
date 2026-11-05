@@ -1,0 +1,14 @@
+{
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "status": "four-format build pass; staged for content and GUI acceptance",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "cdec0099d94e15bee970169f7b077f215d67442d66c24d8ed76d3af9abeb047b",
+    "Ottrin-0.1.0-x86_64.AppImage": "8d5e395f583bdf1874dda7f043e2c2296e069e1660e6b5c8f76c54f83089417a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "985778ed688e51bd8815c87c3d4b8110f7e187231a066511548f7b71a5a015f4",
+    "ottrin_0.1.0_amd64.deb": "202e7dd053dcc0164041c32ed11de00482c2b2beb79a7105284cbcc65bfc4ad3"
+  },
+  "child_exit": 0,
+  "temporary_tool_wrappers_removed": true,
+  "staging_retained_for_pending_acceptance": true
+}

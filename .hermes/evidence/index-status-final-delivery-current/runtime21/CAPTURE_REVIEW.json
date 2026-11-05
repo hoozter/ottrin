@@ -1,0 +1,19 @@
+{
+  "reviewed": true,
+  "settings_visible": true,
+  "all_captures_match_exact_hashes": true,
+  "captures": {
+    "main.png": "66f144503c9e4408d237d453092e5e931ff87ce653c510d879afb4ecf9527c57",
+    "msix-startup-enabled.png": "15847c0c79455f5bd861cb58df22c82c82ff75c4507c14929cdc644994becfe1",
+    "msix-startup-disabled.png": "f3fdf9167a1335c572da7cfdca4239fa91e29824b8631ad882aabb49f3619f88",
+    "mapped-main-before-focus.png": "66f144503c9e4408d237d453092e5e931ff87ce653c510d879afb4ecf9527c57"
+  },
+  "observations": [
+    "Actual21 packaged ordinary main window has coherent dark title/tab/sidebar/file grid and readable footer; mapped frame before focus matches final main frame.",
+    "Actual package startup checkbox off/on updates the visible sign-in line; current index remains green/Ready as promised.",
+    "This repeated case acquired foreground using unchanged assertions; earlier failure remains recorded and is not explained away.",
+    "Settings capture includes guest taskbar overlay at its lower edge; startup controls remain visible. Full Settings work-area/layout audit remains open.",
+    "Visible lower folder-integration transaction-resource failure persists in actual21. Successful startup and lifecycle do not establish folder integration."
+  ],
+  "scope": "Four actual original captures reviewed; fresh21 functional startup/login/removal is established separately by actor/result and native package identity checks. No full theme, physical GPU, Store or signing acceptance."
+}

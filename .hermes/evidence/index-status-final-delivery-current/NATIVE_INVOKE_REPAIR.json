@@ -1,0 +1,17 @@
+{
+  "status": "fixture corrected; fresh native repeat pending",
+  "failure_evidence": "native-windows-failed-invoke/results/RESULT.json",
+  "confirmed": "Stopped label and stopped owned daemon observed; invoking restart while Services busy raised UIA Unrecognized error",
+  "change": "Wait for unique enabled UIA button before invoking. No action retry, swallowed failure, test deadline or product change.",
+  "owned_failed_guest_and_volumes_removed": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "pending_consumer": "native-windows/actor.ps1 on fresh isolated guest"
+}

@@ -1,0 +1,24 @@
+{
+  "status": "investigation; root cause not established",
+  "current_manifest": {
+    "runtime_behavior": "packagedClassicApp",
+    "trust_level": "mediumIL",
+    "capabilities": [
+      "runFullTrust"
+    ],
+    "registry_virtualization_exclusions": []
+  },
+  "current_implementation": "windows_folder_integration.rs enlists all HKCU registry prefixes including Software and its owned receipt in one native transaction. Native NSIS scopes pass; MSIX19 reported unavailable transaction resource manager.",
+  "primary_sources": [
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes",
+      "finding": "Microsoft documents package registry writes being redirected to a private per-user hive for virtualized applications."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/msix/desktop/flexible-virtualization",
+      "finding": "Windows11 supports selected HKCU exclusions; older supported systems require broader opt-out. Both require the restricted unvirtualizedResources capability."
+    }
+  ],
+  "inference": "Virtualized registry behavior is a plausible package-specific factor, but the failure is not yet isolated from guest environment or registry container behavior. Do not remove transaction guarantees or add broad capabilities on this inference.",
+  "next_control": "Compare exact API failure and owned-key rollback/commit under packaged versus ordinary identity on the same clean guest, capturing operation and numeric error. Then verify external shell visibility and uninstall restoration with the chosen supported integration."
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+    "source_revision": "8d69ce98c7d6f25aa12025c67b205c035785d970",
+    "artifacts": {
+      "ottrin-0.1.0-1.x86_64.rpm": "e4a15a1c44843edbe36555d1d01417d3de7736cc532347e3b854d35419f6d2ea",
+      "Ottrin-0.1.0-x86_64.AppImage": "6ac869eb7cdb047c1e6446219695df91cf72390f2fa27dca00ba01f2783fda57",
+      "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "e43513f394dbf65961819617e8a75cf9648887738bfa58284d6ea9e7cb29e2fa",
+      "ottrin_0.1.0_amd64.deb": "edc86a3fb4a188d64e4f234ca7b2ce1b418719711b634b5cf6dbfbf1a2be595b"
+    },
+    "bytes": 115879678,
+    "reason": "Unpromoted cohort superseded by final CI infrastructure commit; evidence retained; no consumers or hard links"
+  },
+  {
+    "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+    "source_revision": "8d69ce98c7d6f25aa12025c67b205c035785d970",
+    "artifacts": {
+      "Ottrin-0.1.0-windows-x64-portable.zip": "68b8e105ddda8f84e5d92889234465426f7dfa683f989d5de12cf11b2d07e90a",
+      "Ottrin-0.1.0-windows-x64-setup.exe": "13167f36107ebcedf1466e2d79a1869a998a542a0c67721c2a6e6c0c09b242ff"
+    },
+    "bytes": 237135961,
+    "reason": "Unpromoted cohort superseded by final CI infrastructure commit; evidence retained; no consumers or hard links"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "status": "pass scoped native Windows row/thumbnail/footer/status appearance; full roadmap incomplete",
+  "source_commit": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "working_tree_at_build": "clean",
+  "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "1bc9cab5e7dc435c098ffc0d1a629b2a0b63bac7a097ac1f3c63b69b1eae4d09",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "9eb0d5803cff5b1a05d9667203e19e8e816d4c61458ad12cb808c380147cb36d",
+    "Ottrin-0.1.0-windows-x64-development.msix": "b07833b756d0d001730bb0f0af33ae4b0c5c169927795342d9e766786a5b769b"
+  },
+  "payload_files": 58,
+  "evidence_directory": ".hermes/evidence/entry-label-spacing-delivery-current",
+  "hosted_source": {
+    "run": 41966597535,
+    "tested_source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+    "exact_source_all_four_jobs_success": true
+  },
+  "host_content": "HOST_PAYLOAD.json",
+  "current_native_fields": ".hermes/evidence/entry-label-spacing-delivery-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/entry-label-spacing-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "native_msix": {
+    "current_assembly": ".hermes/evidence/entry-label-spacing-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "historical_runtime_login_removal": ".hermes/evidence/list-density-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "historical_enabled_disabled_updates": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json",
+    "scope": "Current20 has native assembly/58-file equality and current NSIS GUI/uninstall checks. Only three UI source files changed since fully native-tested19. Actual19 ordinary runtime, visible startup Settings, reboot/login and removal retain original source/artifact scope; no fresh20 deployment or upgrade claim."
+  },
+  "native_msi_rollback": {
+    "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
+    "release_accepted": false,
+    "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
+  },
+  "source_scope": ".hermes/evidence/entry-label-spacing-delivery-current/WINDOWS_SOURCE_SCOPE.json",
+  "public_release_published": false,
+  "limits": [
+    "Software guest/default DPI only; no physical graphics, signing, Store or final human acceptance",
+    "Full UI/theme role/property audit remains open",
+    "Actual19 folder-integration transaction failure remains independent software work",
+    "Administrator Copy durable coordinator/caller registry remains gated",
+    "Current20 native assembly plus current NSIS GUI;19 lifecycle and17-to18 updates retain original source/artifacts"
+  ]
+}

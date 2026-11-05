@@ -1,0 +1,21 @@
+{
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "historical_lifecycle_source": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "changed_product_files_since_previous_delivery": [
+    "crates/ottrin-platform/src/bin/ottrin-priv-helper.rs",
+    "crates/ottrin-platform/src/helper_protocol.rs",
+    "crates/ottrin-platform/src/windows_fs.rs",
+    "crates/ottrin-platform/src/windows_fs/identity.rs",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs",
+    "crates/ottrin-preview/Cargo.toml",
+    "crates/ottrin-preview/tests/fixtures/windows_job_actor.rs",
+    "crates/ottrin-preview/tests/fixtures/windows_job_common.rs",
+    "crates/ottrin-preview/tests/windows_job_native.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/remote_index.rs"
+  ],
+  "lifecycle_basis": "Current21 has native assembly/58-file equality, current NSIS installed UI/service stop/restart/uninstall and fresh MSIX21 ordinary runtime, visible startup control, real reboot/login and removal. Earlier update proof retains original source/artifact scope; no fresh20-to21 upgrade claim.",
+  "current_runtime_receipt": ".hermes/evidence/index-status-final-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+  "previous_runtime_receipt": ".hermes/evidence/list-density-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+  "previous_update_receipt": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json"
+}

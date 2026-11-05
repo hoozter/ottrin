@@ -1,0 +1,13 @@
+{
+  "status": "ready for guarded publication",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "ci_run": 41988155471,
+  "ci_ready": true,
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "current_managed_unit": {
+    "MainPID": "2663314",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/ottrin-index.service",
+    "ActiveState": "active"
+  },
+  "mutation_performed": false
+}

@@ -1,0 +1,110 @@
+{
+  "domain": "ottrin-nsis-client",
+  "uuid": "42028515-e79e-4e75-9fd0-a634892787f2",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-nsis-client-fixture.iso",
+    "ottrin-nsis-client.qcow2"
+  ],
+  "status": "control finished; inspect exact result, not assumed pass",
+  "public_compiler_cache": null,
+  "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance.",
+  "producer_sha256": "f9e8a6561aeedff1b257136b957d772e9545c557d744abdf7112e5bfbea08830",
+  "storage_at_start": {
+    "available_bytes": 31233486848,
+    "minimum_headroom_bytes": 25769803776,
+    "path": "/var/lib/libvirt/images"
+  },
+  "uploaded_host_iso_removed_bytes": 40792064,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "absolute_pointer": "Clone-only virtual tablet present at boot; no host device passthrough",
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "privacy_control_sha256": "958e1ad3b0890090ae1863987666759697958a25cfd95d03499a0c9f54a3f848",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 2760878,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-w8mdyfss/home"
+  },
+  "guest_pid": 6660,
+  "guest_observation_interruption": {
+    "pid": 4516,
+    "error": "guest-exec-status failed for ottrin-nsis-client: error: Guest agent is not responding: QEMU guest agent is not connected",
+    "process_restarted": false
+  },
+  "desktop_observer_pid": 2761930,
+  "actor_observation": {
+    "status": "pass native row/thumbnail/footer/status appearance and uninstall scope",
+    "phase": "uninstall preserves preferences and files"
+  },
+  "checked_backing_chains": [
+    {
+      "retained_domain": "ottrin-copy-cleanup-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-index-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-qa-20261011",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "win11ltsc",
+      "files": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-nsis-client-fixture.iso",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-nsis-client-fixture.iso"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-nsis-client.qcow2",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-nsis-client.qcow2",
+        "/var/lib/libvirt/images/ottrin-stock-client.qcow2"
+      ]
+    }
+  ],
+  "owned_volume_allocations_before_removal": [
+    {
+      "volume": "ottrin-nsis-client-fixture.iso",
+      "allocated_bytes": 40796160,
+      "virtual_capacity_bytes": 40792064
+    },
+    {
+      "volume": "ottrin-nsis-client.qcow2",
+      "allocated_bytes": 10213666816,
+      "virtual_capacity_bytes": 68719476736
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

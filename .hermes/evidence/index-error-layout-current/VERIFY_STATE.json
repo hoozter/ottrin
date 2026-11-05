@@ -1,0 +1,26 @@
+{
+  "status": "pass full UI tests, strict native/Windows lint and source GUI build; native layout verification pending",
+  "source_head": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "dirty_source_file_sha256": "c4502f96b74c78ef647619cb673f7c7b75a6e8c0637a42ee698cbd91d3fcd507",
+  "packaged": false,
+  "completed": [
+    "ui-tests.log",
+    "native-lint.log",
+    "windows-lint.log",
+    "gui-build.log"
+  ],
+  "phase": "gui-build.log",
+  "command": [
+    "cargo",
+    "build",
+    "--release",
+    "-p",
+    "ottrin-app",
+    "--bin",
+    "ottrin-app"
+  ],
+  "producer_pid": 2786751,
+  "gui_sha256": "9ea27e4d68b72b11b5b561b88aaa179c58d1750b28174eea11f7e13e3deec1fe",
+  "index_daemon_sha256": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+  "producer_exit": 0
+}

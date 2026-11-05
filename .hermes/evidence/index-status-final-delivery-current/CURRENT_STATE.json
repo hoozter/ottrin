@@ -1,0 +1,45 @@
+{
+  "status": "pass scoped781 Linux/Windows delivery; full roadmap active/incomplete",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "goal": "active/incomplete",
+  "active_native_driver": null,
+  "hosted_ci": {
+    "id": 41988155471,
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41988155471"
+  },
+  "completed": [
+    "Linux four-format content and runtime-closure acceptance",
+    "Actual AppImage16 directly reviewed status-transition captures and teardown",
+    "Windows portable/NSIS58-file host equality",
+    "Owned superseded8d stages retired; shared caches preserved; incremental inspect found zero obsolete sessions",
+    "Native MSIX21 assembly and58-file equality; assembly VM/disks and source archive removed",
+    "Native exact Windows daemon watcher/restart/shutdown and30-second private idle0.42% one core",
+    "Exact current Linux helper capability and stdio read-only/protocol refusal checks; owned fixtures removed",
+    "Hosted Linux full verification/release passed; both performance jobs passed",
+    "Corrected NSIS ordinary-user UI and service stop/restart in both themes; normal-close daemon continuity; uninstall preserves settings/files;20 originals directly reviewed; native guest/disks and transport removed",
+    "Linux guarded promotion preflight passes without mutation; exact-source full CI gate still pending",
+    "Fresh exact MSIX21 runtime/startup/login/removal acceptance and4 reviewed originals; all owned runtime guests/disks/transports removed",
+    "All four exact-source hosted jobs success",
+    "Guarded Linux/Windows publication; current managed daemon Ready and preferences/startup/database preserved; retired packages/stages removed"
+  ],
+  "pending": [
+    "Package newer independently verified diagnostic-layout source correction",
+    "Continue canonical Windows administrator Copy, full theme/role audit, supported picker/folder integration and clause inventory"
+  ],
+  "retained_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current",
+      "purpose": "Current compact acceptance/provenance and original captures; failed observer/control evidence retained with scoped failures"
+    }
+  ],
+  "stable_deliverables": "781 cohort at stable dist paths; superseded b020 and owned staging retired",
+  "native_windows_status": "pass corrected installed NSIS UI/status/lifecycle;20 originals directly reviewed, guest/disks and transport removed",
+  "msix_runtime_status": "pass fresh21 ordinary runtime, visible off/on startup control, actual reboot/login, package removal and preserved prefs/files;4 originals directly reviewed. All owned guest/disks and result transport removed. Earlier focus failure retains separate scope.",
+  "next_source_work": {
+    "evidence": "../index-error-layout-current/VERIFY_STATE.json",
+    "scope": "New source-only expanded diagnostic section below recovery controls, with rendered-geometry regression",
+    "verified": "515 UI tests pass,1existing ignored; strict native/Windows lint; actual source GUI error/control/scroll checks in both themes pass",
+    "packaged": false,
+    "acceptance": "../index-error-layout-current/ACCEPTANCE.json"
+  }
+}

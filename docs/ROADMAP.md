@@ -6,87 +6,66 @@ Updated 2026-11-05. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-CI delivery gate: source8d69ce98 staged successfully in all four Linux formats
-and Windows portable/NSIS. Linux content/closure checks and the actual AppImage
-Dark/Light Ready→Stopped→error→Ready UI pass (16 original captures reviewed).
-These stages are not published. Hosted run41982529608 passed Linux tests/lint
-but exhausted disk during release linking; its Windows job remains independent.
-The CI storage fix disables development/test debug symbols and reports target
-storage while retaining all tests, assertions, lint and release settings. This is
-software delivery work, not an owner wait. Rebuild/verify the final source cohort
-and complete native Windows/MSIX acceptance before guarded publication.
+The stable local Linux and Windows preview now uses verified source `781444ef`.
+All four exact-source hosted verification/performance jobs passed in
+run41988155471. This cohort delivers the shared nonblocking index observation,
+consistent Ready/Stopped/error status in Services and the main footer, Windows
+original-caller helper binding and the lightweight Windows native test actor.
+It does not complete administrator Copy, the full theme audit or this roadmap.
+
+Linux: all four formats pass content, runtime-closure and provenance checks.
+Actual mounted AppImage Dark/Light Ready→Stopped→error→Ready checks pass, with
+all16 originals directly reviewed. The daemon bytes remain identical to the
+previous accepted daemon; its older resource/lifecycle evidence keeps its
+original scope. Current helper capability and read-only stdio/protocol-refusal
+checks pass; elevated Copy evidence retains its older helper/source scope.
+The personal managed service is Ready after replacement, preserving startup
+choice, exact preferences hash and database identity. Personal system-helper
+setup still requires owner OS authentication.
+
+Windows: portable/NSIS58-file equality and ordinary-user installed UI/service
+stop/restart/main-close/uninstall preservation pass; all20 originals were
+reviewed. Native MakeAppx development MSIX21 assembly and58-file equality pass.
+Fresh21 ordinary runtime, visible startup off/on with unchanged current daemon,
+real reboot/login and removal preserve settings/files. Four MSIX originals were
+reviewed. The exact current Windows daemon passes private1000-file watcher,
+restart and two shutdown checks;30-second idle is0.42% of one core. Earlier
+update proof retains its original source/artifact scope. Actual21 Settings still
+reports the folder-integration transaction-resource failure: that is software
+work, not an owner wait. One earlier runtime focus failure is retained; a fresh
+repeat passed unchanged assertions/deadlines with added diagnostics. No crash
+was reported. The first NSIS actor's busy-button invocation failure is also
+retained; waiting for an enabled button resolved the fixture without action
+retries or relaxed assertions.
+
+Superseded8d/b020 packages/stages, all owned native guests/disks/displays/buses,
+private fixtures and consumed source/result transports are removed. Current
+stable deliverables, useful shared caches and scoped evidence remain.
+Delivery authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`,
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` and
+`.hermes/evidence/index-status-final-delivery-current/`.
+No public release, signing, Store, MSI or full interface acceptance is implied.
+
+A newer source-only layout correction places complete index diagnostic details
+in an expanded-by-default section after recovery controls. All515 UI tests pass
+(one existing ignored), including original error visibility and a new rendered
+geometry regression; strict native/Windows UI lint passes. Actual source GUI
+Dark/Light error controls retain Ready geometry; diagnostic collapse/reopen,
+full text scrolling and returning to recovery controls pass. Six targeted
+original captures were reviewed. Both private desktops/state are removed;
+13 obsolete incremental sessions (0.57GiB) and45 replaced capture/log files were
+retired. This correction is not yet in the stable packages and needs final-source
+package delivery. Evidence: `.hermes/evidence/index-error-layout-current/`.
+The broader theme/property/role and whole-window layout audit remains open.
 
 ### Usable local preview
 
-The four Linux formats in `dist/packages/` and Windows ZIP/NSIS/development
-MSIX0.1.0.20 in `dist/windows-candidate/` use verified runtime
-`b02038821b90c0ef0553e09aafb48b475f2b4d2a`. Exact-source hosted
-run41966597535 passed all four verification/performance jobs. The stable AppImage
-is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`7c6326a4d4b80bc0e18c4dc3a03ddfada241397e246572c6a834c3cd0178032a`.
-`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind hashes and exact scopes.
-
-Current delivery fixes icon/name/thumbnail spacing, footer/wordmark theme colors
-and readable Ready status. All16 current Linux and16 Windows original captures
-were directly reviewed. Linux150% backend scaling is included. Exact Windows
-MSIX20 assembly/58-file payload equality and private1000-file daemon
-watcher/restart/shutdown pass;30-second idle is0.47% of one core. Actual19 MSIX
-runtime/login/removal and17-to18 updates retain original scopes; no fresh20
-lifecycle claim. The unchanged Linux daemon identity retains prior runtime
-proof; current GUI-close continuity is independently verified. The personal
-service returned Ready after package replacement, with startup choice,
-preferences and database identity preserved. Superseded24af packages, staging,
-owned native VMs/volumes and consumed source/transports are removed.
-Evidence: `.hermes/evidence/entry-label-spacing-delivery-current/`.
-No public release, signing, Store, MSI or whole-interface acceptance is implied.
-
-A separate source follow-up is pushed on `branch/index-status-observation`,
-commit `b9616095`, with hosted run41971204224 still in progress. It unifies
-Services/main-index status through one background observation and removes
-render-thread endpoint probes. All514 UI tests and native/Windows strict lint
-pass. Current production-source GUI testing also passes Dark/Light
-Ready → Stopped → real endpoint error → Ready, with all16 original main/Services
-frames directly reviewed. Same-app transitions, unchanged fixture files and
-normal-close daemon continuity pass. Three earlier observer attempts remain
-failed: the old any-match window query still found the main window after Settings
-closed. The corrected exact PID/name query and scoped accessible Close action
-prove all8 Settings closes; the false-positive query is retained as a native
-control. All4 private displays/buses/profiles/process trees and consumed failed
-captures are removed. Source evidence is `index-status-observation-current/`.
-This follow-up is now integrated in the current source together with the
-standalone Windows boundary-test actor. Current b020 packages do not include it.
-Combined-source hosted, native Windows UI and packaged acceptance remain required
-before delivery.
-
-Windows helper caller binding now retains the original kernel process and primary
-token, validates its creation time and TokenUser before request admission, and
-rejects exited/reused callers. File ownership still uses TokenOwner. Windows
-stdio mutation mode is removed; readiness requires `--bound-local-pipe`.
-447 Linux platform,11 helper,5 documentation and5 native Windows transport
-tests pass, with strict native/Windows platform lint. Native tests include the
-actual production helper in a Unicode/spaced path under the guest-agent SYSTEM
-token; interactive UAC, durable recovery and administrator Copy remain open.
-No package promotion is claimed. The owned VM/two disks and11 superseded
-incremental sessions were removed (1.27GiB filesystem recovery). Evidence:
-`.hermes/evidence/windows-helper-caller-current/`.
-
-Hosted b961 run41971204224 finished with Linux verification and both performance
-jobs passing; Windows verification failed in Office AppContainer creation and
-child readiness tests. Preserve those failures as software work, not an owner
-wait or an accepted branch.
-
-The Windows preview boundary tests now use a standalone process actor instead of
-copying and launching the preview-linked test harness. The original GNU harness
-was447MB; debug stripping alone reduced it to55MB but did not resolve readiness
-failures. The standalone actor is1.24MB after verified debug stripping. All ten
-existing boundaries pass in three concurrent and three serial ordinary-user
-native runs (60 checks), retaining the five-second readiness deadline and all
-containment/resource assertions. Native/Windows lint pass. Production sandbox
-code and current packages are unchanged; hosted AppContainer creation failure
-still needs the combined-source CI gate. Four owned VMs/eight volumes/private
-consoles, the superseded harness/dep-info/fingerprint and15 obsolete incremental
-sessions were retired. Evidence: `windows-preview-boundary-race-current/`.
+Linux formats are in `dist/packages/`. The stable AppImage is
+`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`8d5e395f583bdf1874dda7f043e2c2296e069e1660e6b5c8f76c54f83089417a`.
+Windows ZIP/NSIS and unsigned development MSIX0.1.0.21 are in
+`dist/windows-candidate/`. All use `781444efd5ed4f67c6848127935366356be5b6d1`;
+acceptance manifests bind exact hashes and original scopes. macOS remains deferred.
 
 ### Previous delivery receipts — historical source and artifact scopes
 
@@ -825,8 +804,9 @@ remains gated. Both controllers removed their exports/private temp and restored
 the guest's shut-off state and exact definition. One obsolete incremental session
 was retired. Receipt: `windows-cleanup-preparation-current/`.
 
-1. The current Linux/Windows b020 appearance, row-spacing and Services cohort is
-   delivered at the stable dist paths (Linux packages and Windows portable/NSIS/MSIX20). Finish administrator Copy recovery, including the Windows canonical
+1. Deliver the newer verified diagnostic-layout source correction after the
+   current781 cohort at the stable dist paths (Linux packages and Windows
+   portable/NSIS/MSIX21). Then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted
@@ -842,16 +822,15 @@ was retired. Receipt: `windows-cleanup-preparation-current/`.
    inspector role ownership remain open. All affected controls need native visual
    verification. The exact458 Nord dark/light checks above cover preview row,
    tab and window-control selection; they do not close the full consistency audit.
-   The b961 stopped-state source fix has 514 passing UI tests and native Linux
-   source-GUI evidence, but remains outside current packages: its Windows hosted
-   verification failed in two Office AppContainer native tests (run 41971204224).
-   Investigate those failures before treating that branch as accepted.
+   The shared stopped/error status observation and native boundary-test actor
+   are now integrated, exactly hosted-verified and delivered in781. The old b961
+   Windows failures retain their historical scope; all four current jobs pass.
    Include the main search indicator's stopped-state color, settled startup count/
    readiness and resize observation; replace ambiguous automatic-startup wording
    and review Grid caption width/truncation against actual tile space. Verify every supported control/role, text/icon alignment and
    window styling; field-map/test counts do not prove whole-interface consistency.
 3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
-   Windows folder-integration software/caller gaps. Fresh MSIX19 Settings still
+   Windows folder-integration software/caller gaps. Fresh MSIX21 Settings still
    reports unavailable transaction support for folder integration: isolate the
    actual failing registry API and supported MSIX behavior; preserve atomic
    ownership/rollback guarantees rather than treating this as an owner wait. Existing real browser/Flatpak,

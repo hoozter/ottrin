@@ -1,0 +1,31 @@
+{
+  "status": "pass for index status transition and semantic color scope",
+  "direct_original_captures_reviewed": {
+    "Dark-failed-main.png": "abd5a28eb98d70139df8dddfa356e794e88a25b91fa365188435c9914e3d03d7",
+    "Dark-failed-services.png": "f6b168e8b68a1eff54b839abb64de94252799597dd13dbf52e8172fd642c7537",
+    "Dark-ready-main.png": "fe641423e693beb566c89a4b54c9ae1f634dd512e375b4c4c4f7f4e6d7c5d718",
+    "Dark-ready-services.png": "190852d10f4e1acbcabba533405dad8a9ba3a619ec413f1a139cf771dbe625e1",
+    "Dark-recovered-main.png": "fe641423e693beb566c89a4b54c9ae1f634dd512e375b4c4c4f7f4e6d7c5d718",
+    "Dark-recovered-services.png": "190852d10f4e1acbcabba533405dad8a9ba3a619ec413f1a139cf771dbe625e1",
+    "Dark-stopped-main.png": "d244240c41513ef6c09586ff31bcf7133ca25869116fb8d005d928a7966a530a",
+    "Dark-stopped-services.png": "d24e5b23b101b538457ffe58f0a94c97970ed4a59fcd633b70acdcc5421c16e7",
+    "Light-failed-main.png": "213b97332b8fafc88cc5f1cf4733abb4006adec416100bd6804ad42225fec236",
+    "Light-failed-services.png": "1a1a39d31bc16770702f8a410d673b84ebcc8f3117a45800fac64fad18207532",
+    "Light-ready-main.png": "a7321e5e29d90b1f386ce2a0ae2488832d2179b5f1077ebf80e7b333d86221f8",
+    "Light-ready-services.png": "db3d74d821a2c154e1cb9ef5a550cee606bbbff0a60816569a4cd6b652a4d4af",
+    "Light-recovered-main.png": "a7321e5e29d90b1f386ce2a0ae2488832d2179b5f1077ebf80e7b333d86221f8",
+    "Light-recovered-services.png": "db3d74d821a2c154e1cb9ef5a550cee606bbbff0a60816569a4cd6b652a4d4af",
+    "Light-stopped-main.png": "5d7cc3cb2658c77751079f8f2b41098543106b17d6ea9f339a4ca33b81373c3e",
+    "Light-stopped-services.png": "16b25b623d62f997be8b49728d65f640fdb3d05d6b0b53f1debd1f8dcdd6efa9"
+  },
+  "observations": [
+    "Ready is green, Stopped muted, actual endpoint error uses error tone, recovery restores green in both Services and main footer",
+    "Same GUI process remains usable across each transition; private fixture files unchanged; daemon survives normal GUI close",
+    "Services error detail at default window size pushes control row below visible scroll area; retain for broader layout audit",
+    "Personal installed administrator helper predates stage and correctly reports Update needed; no privileged setup attempted"
+  ],
+  "scope_limit": "Software X11 default-DPI private corpus; not whole-theme, native distro installation or Windows acceptance",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1",
+  "worker_receipt": "native-appimage/RESULT.json",
+  "teardown": "native-appimage/TEARDOWN.json"
+}

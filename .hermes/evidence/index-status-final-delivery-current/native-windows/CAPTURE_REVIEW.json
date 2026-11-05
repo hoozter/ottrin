@@ -1,0 +1,36 @@
+{
+  "status": "direct original review complete",
+  "captures": {
+    "List-Dark-0.75.png": "ab57817bcfe3a939c6a1aecf6188fc416c91d455dad443252f7794be72bb3301",
+    "List-Dark-1.85.png": "b187fed6f87bcc8bc3ac8d166320ef54bdd6ce7e6b125088e36be9b94e1cd4f4",
+    "List-Dark-1.png": "74819504f060f7c2f9dacf8ecd60a589cd657a8db760aaff30ee39f2fae2497a",
+    "List-Light-0.75.png": "27ec774735f3549a82d8738c4a3a34e4807ab594d96632eec02b3658b0229220",
+    "List-Light-1.85.png": "e4c0c7d1d1609951de27fab2f2a25533d59973266325bea15c75ad447fa6ba4c",
+    "List-Light-1.png": "f8d02c0150ad77cf9c0386dca8cf2e42a2fb6750b855bf2a3ff8d8ebbcd8948c",
+    "Miller-Dark-0.75.png": "0e03ef70c0dd768adb943af366b7e815d7044f4bf9af0f6192909ab4b049684b",
+    "Miller-Dark-1.85.png": "a60b77869a0f2a85c76c498789b402d0c2d81ac55466e35ec5cb0b968efe6172",
+    "Miller-Dark-1.png": "922c75650ece9e931c3447ab680dbca658273c8cdcd2f10d609edaf13b730780",
+    "Miller-Light-0.75.png": "3d74fa7877693110d1c51a46f6b003631e449c20fb4ad4071f9c71dabb00a8b5",
+    "Miller-Light-1.85.png": "763abc9ec523ccef5e896809f8a570b5e490c9c896a8442bc789b8e3c1dc0051",
+    "Miller-Light-1.png": "b7e5de165794269cfcb9c92776f121fec3d131e76fe0c9ba8bf60a3bfc784cee",
+    "services-Dark-recovered.png": "848c02a7173c0fb39dd9395e6de8b64a31a93cb523d3b0fcdbf082af77e19850",
+    "services-Dark-stopped.png": "06f40b5833463fb33c7f351fa04673319a8271b224978cb056f163068f3a7635",
+    "services-Dark.png": "c549c05711aa2aa51213f3568e931db43399759d3a8d3cea492c84435092c7c4",
+    "services-Light-recovered.png": "2c7694387ded072546fbd88754b937890ceeb92588a82e23bb9c40f0b556680a",
+    "services-Light-stopped.png": "1bd9f25e5611ae99dd3ec137c4dcd0de3be704ddf90cb1d3804940e6009fa74c",
+    "services-Light.png": "4ad441af1ba08a1422321d2360e99856b6667d0a6bbfd884c8a977cddf8acd10",
+    "thumbnails-Dark.png": "ab71bcbe033a0f5d8bb61eae614b95a13ee517f1cd9ec22156c826d34ccf2ca4",
+    "thumbnails-Light.png": "337635911c074d1826eb1282727271d16f22da17c1585c4a634a9ce9f6e7fff9"
+  },
+  "observations": [
+    "All12 actual Miller/List Dark/Light density captures retain aligned icons/labels, readable names and footer. Actual density geometry is independently measured by fixture.",
+    "Both actual PNG thumbnail captures show the blue synthetic image; text-file fallback tiles retain spacing.",
+    "Services Ready/recovered status is green and Stopped muted in both themes; startup preference remains On. Dark stopped image captures the transient disabled Working state; enabled-button wait separately proves restart becomes actionable.",
+    "Sidebar/title bar themes and service controls remain coherent in this scoped set. Scrollable lower folder settings are clipped at current viewport; this is not whole-interface acceptance.",
+    "Folder integration Off status in unpackaged NSIS does not resolve separate MSIX transaction failure."
+  ],
+  "limits": [
+    "No Grid, whole-theme property mapping, physical GPU or MSIX runtime acceptance in these captures.",
+    "No Windows main-footer stopped/error capture; Linux directly covers shared main/Services transition presentation."
+  ]
+}

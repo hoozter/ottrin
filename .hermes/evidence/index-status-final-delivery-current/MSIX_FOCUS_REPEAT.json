@@ -1,0 +1,11 @@
+{
+  "status": "fresh diagnostic repeat prepared",
+  "failed_evidence": "runtime21-focus-failure/RUNTIME_RESULT.json",
+  "confirmed": [
+    "Actual21 package/GUI runs ordinary in active Default desktop/session; unminimized and uncloaked",
+    "Foreground check failed25 attempts, before startup controls; no application crash events",
+    "Package/processes/test disks removed; no runtime/login acceptance claimed"
+  ],
+  "repeat_change": "Preserve exact runtime and focus assertions/deadlines. Add original frame before focus and on failure plus actual foreground title and cursor coordinates. Apply previously accepted native desktop focus gesture including Escape after direct observation. No policy change or repeated application action.",
+  "source_revision": "781444efd5ed4f67c6848127935366356be5b6d1"
+}
