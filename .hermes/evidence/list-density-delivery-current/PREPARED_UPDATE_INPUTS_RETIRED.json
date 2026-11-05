@@ -1,0 +1,23 @@
+{
+  "status": "unused prepared17-to19 fixture closed; no run or acceptance claimed",
+  "previous_package": {
+    "retained_input": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
+    "sha256": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9",
+    "version": "0.1.0.17",
+    "source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+    "scope": "Current stable deliverable retained unchanged as exact update input"
+  },
+  "removed_prepared_files": [
+    {
+      "name": "PREVIOUS_PACKAGE.json",
+      "sha256": "3caad73b436be2311bab45e7bcc45f1cbc0eff42d493d19c7cdbc7b15402e89b",
+      "bytes": 374
+    },
+    {
+      "name": "assess-upgrade.py",
+      "sha256": "1de543e16894884b17f0e9bc88614432f5966f512042caea5c4fc2a4ef5a3a19",
+      "bytes": 4707
+    }
+  ],
+  "basis": "Current product delta since fully native17-to18 update tests is only UI renderer. Fresh19 exact runtime/login/removal and complete payload checks accepted. Earlier update tests retain exact source/hash scope; no redundant new matrix or additional retained package folder. See WINDOWS_SOURCE_SCOPE.json."
+}

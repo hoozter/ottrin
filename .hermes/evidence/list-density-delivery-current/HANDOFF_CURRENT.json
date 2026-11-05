@@ -1,0 +1,70 @@
+{
+  "goal": "active/incomplete",
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "source_status": "runtime24af all4 exact hosted jobs pass; current Linux and Windows ZIP/NSIS/MSIX19 delivered; final metadata checkpoint pending",
+  "previous_goal_turn": "progress: current exact-source CI green, native Linux/Windows delivery and cleanup complete; actual19 native focus defect addressed in fixture; no source, native, packaging or cleanup result promoted beyond explicit scope",
+  "completed": [
+    "508 UI tests and1 existing ignored; source red/green filename and independent-density regressions; native/Windows strict lint",
+    "Prior7fa MSIX18 fresh functional lifecycle and both17-to18 startup-choice updates; eight upgrade captures directly reviewed",
+    "Current24af four-format Linux plus Windows ZIP/NSIS builds terminal pass",
+    "Current Linux content/runtime closure and Windows58-file ZIP/NSIS equality pass; owned extractions removed",
+    "Current actual AppImage daemon private1000-file watcher/query/restart/idle/two-shutdown fixture passed; private state and FUSE mounts removed",
+    "Actual24af Linux26 caption/density/footer/picker captures directly reviewed; retired owned VM and consumed archive",
+    "Actual24af AppImage Services12 captures directly reviewed; startup On/Off/Unavailable separated from Ready, PID/DB/roots preserved; owned VM/volumes/keys and consumed archive removed",
+    "Current Windows native NSIS18 own-density cases and two Services captures directly reviewed; native UIA, real Task Scheduler, default-view persistence and uninstall preservation pass; owned VM/volumes/bootstrap/archive removed",
+    "Native Microsoft MakeAppx MSIX19 assembly accepted,58 files exact host/portable equality; private Windows daemon watcher/restart/two shutdowns/30s idle pass; owned VM/volumes/bootstrap and consumed2.527MB source archive removed",
+    "Guarded stable-path Linux24af publication passed; managed daemonPID2600010 Ready, exact binary and startup/preferences/database identity preserved;30s normal personal filesystem CPU0.83% one core; superseded packages/stage removed",
+    "Fresh current MSIX19 ordinary main/startup controls/real reboot/login/removal pass; all3 originals directly reviewed and unobscured; owned clone/volumes/bootstrap and consumed archive removed",
+    "Windows24af ZIP/NSIS/MSIX19 promoted after current native gates; all58 payload and3 artifact hashes rechecked, older packages/stage removed; held MSI and Linux authority preserved"
+  ],
+  "live": {},
+  "retired": [
+    "Superseded Linux7fa stage115853261 bytes",
+    "Consumed Windows7fa stage294393540 bytes, after exact65-file/ZIP-prefix/hash/link/consumer checks; initial prefix mismatch refused before mutation",
+    "Prior Linux/assembly/NSIS/fresh18/enabled and disabled update clone resources and private transport/bootstrap removed; protected bases preserved"
+  ],
+  "next_required": [
+    "Implement canonical Windows administrator Copy durable cleanup coordinator and kernel-anchored caller registry/Undo/history bridge; administrator Copy remains gated",
+    "Finish actual theme/interface role/property audit, including high-density icon/text spacing, Light contrast and faithful List/Grid/status/editor/inspector states",
+    "Investigate actual current MSIX19 folder-integration transaction failure; retain atomic ownership/rollback guarantees, do not classify as owner-only wait; close supported picker/caller/resource gaps",
+    "Reconcile every54 roadmap and15 user-requirement clause against exact evidence; preserve explicit owner/external waits; no whole-roadmap completion inferred"
+  ],
+  "owner_waits": [
+    "Personal privileged-helper OS authentication",
+    "Signing identity/key and release-ready Store account/submission",
+    "Unavailable physical/proprietary/user corpus acceptance",
+    "Final human acceptance"
+  ],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/list-density-delivery-current",
+      "purpose": "Current successful original captures, compact acceptance/failed-case receipts and fixture producers",
+      "pending_consumer": "Required current-delivery provenance and subsequent roadmap audit; not disposable staging"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/packages",
+      "purpose": "Four current accepted local Linux deliverables and scoped manifests",
+      "pending_consumer": "Current user preview and final human acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Three current accepted local Windows preview artifacts and exact58-file payload",
+      "pending_consumer": "Current user preview and final platform/human acceptance"
+    }
+  ],
+  "failed_not_accepted": {
+    "case": "native-captions-density-assertion-failure",
+    "status": "terminal failed fixture assertion; original18 captures retained; private bootstrap/archive removed, owned VM and volumes removed",
+    "retry_fix": "Explicit numeric dictionary scale ordering and persisted assertion operands; actual app unchanged"
+  },
+  "hosted_ci": {
+    "run": 41956606124,
+    "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "status": "completed success all4 jobs including Windows release/icon verification"
+  },
+  "failed_not_accepted_msix19": {
+    "case": "runtime19-focus-failure",
+    "status": "terminal failed native foreground activation; normal close/package/process/VM cleanup complete; preference preservation not accepted",
+    "next": "Live retry12348; if desktop OCR stops at normal wallpaper, directly view owned console, then one guest-canvas focus click and Escape before ready helper; previous recovery omitted that input. Never restart merely for observer timeout."
+  }
+}

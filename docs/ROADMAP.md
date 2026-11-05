@@ -10,7 +10,7 @@ not complete a broader native, platform or user-acceptance requirement.
 
 The four Linux formats in `dist/packages/` use runtime
 `24af31d70cb9950527b6fcb113c466213f3a2422`. Windows ZIP/NSIS/development
-MSIX0.1.0.17 retain accepted runtime `45830098` in `dist/windows-candidate/`.
+MSIX0.1.0.19 use the same runtime in `dist/windows-candidate/`.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
 `d771c7bd863bcdfa1b2bce1b0761d356a42bccafaa44ad76b9912f42d5f06a47`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
@@ -27,8 +27,8 @@ The rebuilt `24af31d7` four-format Linux cohort is delivered at the stable paths
 The managed daemon returned Ready on the exact new binary with preferences, startup
 choice and database identity preserved; a30-second personal sample measured0.83%
 of one core under normal filesystem activity (not strict idle or sustained proof).
-Superseded Linux packages and staging are removed. Windows candidates remain
-outside stable paths pending remaining exact-package gates. Linux package
+Superseded Linux packages and staging are removed. Windows ZIP/NSIS/MSIX19 are also delivered at their stable paths after the
+exact current native gates below. Linux package
 contents/runtime closure, private1000-file daemon watcher/restart/idle checks,
 26 directly reviewed caption/density/footer/picker captures and twelve Services
 captures pass their bounded scopes. Own-density Column row heights are23/25/34;
@@ -51,11 +51,20 @@ images are retired with exact hashes and compact failure measurements retained.
 Native Microsoft MakeAppx MSIX19 assembly and58-file payload equality pass,
 including private daemon watcher/restart/shutdown/idle checks. Its clone/volumes
 and consumed2.527MB source archive are removed. Fresh19 installed-package
-launch/startup/reboot/login/removal attempt failed ordinary foreground activation;
-its package/processes/clone/volumes/bootstrap are removed and no runtime pass is
-claimed. A revised fixture requests focus through the actual accessible Menu
-control, retains the foreground assertion, and preserves the original GUI error
-after normal close. Its retry is running; Windows stable delivery remains pending. Fresh prior MSIX18 functional runtime/login/removal and both enabled and
+launch, unobscured Settings startup checkbox, normal close, real reboot/login and
+removal pass with preserved preferences, files and database identity. The earlier
+foreground-focus failure is retained as a failure; its package/processes/clone and
+volumes were removed. The corrected fixture requests focus through the accessible
+Menu control, retains the native foreground assertion and propagates original GUI
+errors after close. Direct recovery focused the visually verified guest canvas
+once before signalling readiness; no guest or actor restart was used. All three
+original successful captures were directly reviewed. Current MSIX19 still shows
+unavailable folder-integration transaction support; this remains an independent
+software defect, not an owner-only wait. The current native/fresh19 and historical
+17-to18 update scopes remain distinct: only UI renderer source changed since the
+prior update proof; no fresh17-to19 upgrade is claimed. Both stable directories
+now hold24af; superseded artifacts, staging and owned native fixtures are removed.
+Fresh prior MSIX18 functional runtime/login/removal and both enabled and
 disabled17-to18 updates passed; the disabled login observation lasted180seconds
 without a daemon before any Ottrin CLI. Those packages were retired. Pre-update17
 Settings captures and updated18 main/login captures retain distinct scopes;
@@ -66,7 +75,7 @@ run41956606124, including Windows tests, strict lint and release build. Evidence
 `.hermes/evidence/list-density-delivery-current/` (current staged cohort),
 `.hermes/evidence/list-caption-current/` (source regressions), and
 `.hermes/evidence/status-error-delivery-current/` (retired prior cohort).
-Linux is delivered; stable Windows458/MSIX17 remains unchanged.
+Linux and Windows24af previews are delivered. Full roadmap acceptance is open.
 
 Earlierc4 run41929773433 passed all four hosted jobs. Current Linux retains
 restored administrator history provenance/refresh and typed completed-Undo state,
@@ -78,7 +87,7 @@ inferred. Receipts: `.hermes/evidence/recovery-transport-delivery-current/`.
 The managed personal daemon is Ready on the matching binary with exact preferences,
 startup choice and database identity preserved. Superseded packages and consumed
 staging are removed. The personal system helper still needs owner authentication
-through Services to update. Windows458 remains unchanged.
+through Services to update. Windows24af now has its own exact current delivery scope above.
 
 The caption/footer correction is delivered with22 directly reviewed successful
 AppImage captures, including Dark/Light100/150 Miller rows and saved-theme names,
@@ -669,7 +678,8 @@ remains gated. Both controllers removed their exports/private temp and restored
 the guest's shut-off state and exact definition. One obsolete incremental session
 was retired. Receipt: `windows-cleanup-preparation-current/`.
 
-1. Package and verify the subsequent Windows transport and Grid source fixes, then finish administrator Copy recovery, including the Windows canonical
+1. The current Linux/Windows24af transport, caption/density and Services cohort is
+   delivered. Finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.
    Read-only history must not imply an unknown original batch completed. Versioned helper feature/readiness
    checks and their native old-helper upgrade workflow are implemented and accepted
@@ -690,7 +700,10 @@ was retired. Receipt: `windows-cleanup-preparation-current/`.
    and review Grid caption width/truncation against actual tile space. Verify every supported control/role, text/icon alignment and
    window styling; field-map/test counts do not prove whole-interface consistency.
 3. Close remaining supported picker, Linux FileChooser/FileManager1 and reversible
-   Windows folder-integration software/caller gaps. Existing real browser/Flatpak,
+   Windows folder-integration software/caller gaps. Fresh MSIX19 Settings still
+   reports unavailable transaction support for folder integration: isolate the
+   actual failing registry API and supported MSIX behavior; preserve atomic
+   ownership/rollback guarantees rather than treating this as an owner wait. Existing real browser/Flatpak,
    DEB/RPM and cooperating Windows caller receipts retain their exact scopes.
    MSIX17 startup-checkbox installed-package off/on and unchanged-daemon checks pass.
    Do not infer universal Windows dialog replacement or repeat fulfilled matrices

@@ -1,0 +1,133 @@
+{
+  "capture_review": {
+    "reviewed": true,
+    "settings_visible": true,
+    "all_captures_match_exact_hashes": true,
+    "captures": {
+      "main.png": "109e0c3a100d5ffe53fc9a8b15868703515ee106cf40ebdd4e9d2102040867e9",
+      "msix-startup-disabled.png": "ddb4bc4b0262c9723bea1be0621e7639edd0f69bf16b6994ee5529e23b10b0ee",
+      "msix-startup-enabled.png": "a7121630a166a8cabaf3d9d0e69deb78c7b62242e721cb2d0403f5c77235f8be"
+    },
+    "scope": "Three original freshMSIX19 native screenshots directly reviewed; actual full main and unobscured Settings windows",
+    "findings": [
+      "Actual main Grid window renders correct custom title bar, file labels and Ottrin icon",
+      "Both Settings captures are unobscured, with startup Off unchecked and On checked while index remains Ready",
+      "MSIX Services correctly offers Windows startup settings, no ordinary-service Install/Uninstall actions",
+      "Current19 Folder integration shows Transaction support within the specified resource manager is not started or was shut down due to an error; Update/repair and Remove actions shown. This is an open supported-integration software defect, not accepted integration or an owner-only wait"
+    ],
+    "limits": [
+      "No whole-interface, folder integration, physical GPU, Store/signing or universal Windows-picker acceptance"
+    ]
+  },
+  "status": "pass exact MSIX19 functional runtime, real reboot/login and removal; visual scope requires capture review",
+  "package": {
+    "runtime_script_sha256": "3a38ea475710d8a5f48c2eb4acb900a2610cd4f5b3f15505313c1a2bdba69091",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "315d134affb461c799176086a7f19e5cfcdb041c6e886a89a8583bce792dbf60",
+    "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "version": "0.1.0.19",
+    "startup_enabled": true
+  },
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "runtime_result": ".hermes/evidence/list-density-delivery-current/runtime19/RUNTIME_RESULT.json",
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          1956
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          1956
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          1956
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          1956
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.19_x64__vs01n017nxmbr"
+  },
+  "real_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8060,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.19_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIX6a33e8e1c27d\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "9E9485EC9485C76D:000200000001B7180000000000000000"
+    },
+    "boot_ticks": 639294429485000000,
+    "administrator": false
+  },
+  "removal": {
+    "package_removed": true,
+    "package_processes_removed": true,
+    "fixture_preserved": true,
+    "preferences_preserved": true,
+    "remaining_index_tasks": []
+  },
+  "state_reader_native_smoke": {
+    "transient_milliseconds": 163.6559,
+    "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed": true,
+    "persistent_lock_seconds": 2.0055758
+  },
+  "original_captures_directly_reviewed": {
+    ".hermes/evidence/list-density-delivery-current/runtime19/results/main.png": "109e0c3a100d5ffe53fc9a8b15868703515ee106cf40ebdd4e9d2102040867e9",
+    ".hermes/evidence/list-density-delivery-current/runtime19/results/msix-startup-disabled.png": "ddb4bc4b0262c9723bea1be0621e7639edd0f69bf16b6994ee5529e23b10b0ee",
+    ".hermes/evidence/list-density-delivery-current/runtime19/results/msix-startup-enabled.png": "a7121630a166a8cabaf3d9d0e69deb78c7b62242e721cb2d0403f5c77235f8be"
+  },
+  "fixture_recovery": {
+    "status": "pass directly observed normal desktop, one native guest focus gesture, owned account readiness verified",
+    "observed_sha256": "07f54e0e2fb67c82dade839abebe5f821b984b4f44d35022ca5ab5a5599498cf",
+    "observed": "Actual ordinary desktop, Recycle Bin and taskbar; no security or privacy dialog",
+    "actions": [
+      "Stop only known finite OCR observer if still live to avoid concurrent input",
+      "One click1161,450 in observed blank guest canvas",
+      "Escape",
+      "Capture actual desktop",
+      "Exact owned account check and readiness signal"
+    ],
+    "observer_stopped": false,
+    "guest_restarted": false,
+    "actor_restarted": false,
+    "policy_changed": false
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Fresh MSIX19 only; no MSIX17-to-19 upgrade acceptance",
+    "Unsigned development deployment in disposable software desktop; no signing, Store or physical hardware acceptance",
+    "Windows native preview pointer check and full theme audit remain open",
+    "Stable-path delivery has its own authoritative Windows candidate manifest; this receipt proves only the stated native runtime scope"
+  ]
+}

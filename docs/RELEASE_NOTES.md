@@ -4,8 +4,8 @@ Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Fina
 
 ## Current local preview
 
-Linux AppImage/portable/DEB/RPM use runtime `24af31d7`; Windows ZIP/NSIS and
-unsigned development MSIX17 retain accepted runtime `45830098`. Exact-source
+Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/unsigned development
+MSIX19 use verified runtime `24af31d7`. Exact-source
 CI41956606124 passes all four Linux/Windows verification/performance jobs.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and

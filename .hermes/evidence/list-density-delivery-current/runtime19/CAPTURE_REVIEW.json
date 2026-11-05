@@ -1,0 +1,20 @@
+{
+  "reviewed": true,
+  "settings_visible": true,
+  "all_captures_match_exact_hashes": true,
+  "captures": {
+    "main.png": "109e0c3a100d5ffe53fc9a8b15868703515ee106cf40ebdd4e9d2102040867e9",
+    "msix-startup-disabled.png": "ddb4bc4b0262c9723bea1be0621e7639edd0f69bf16b6994ee5529e23b10b0ee",
+    "msix-startup-enabled.png": "a7121630a166a8cabaf3d9d0e69deb78c7b62242e721cb2d0403f5c77235f8be"
+  },
+  "scope": "Three original freshMSIX19 native screenshots directly reviewed; actual full main and unobscured Settings windows",
+  "findings": [
+    "Actual main Grid window renders correct custom title bar, file labels and Ottrin icon",
+    "Both Settings captures are unobscured, with startup Off unchecked and On checked while index remains Ready",
+    "MSIX Services correctly offers Windows startup settings, no ordinary-service Install/Uninstall actions",
+    "Current19 Folder integration shows Transaction support within the specified resource manager is not started or was shut down due to an error; Update/repair and Remove actions shown. This is an open supported-integration software defect, not accepted integration or an owner-only wait"
+  ],
+  "limits": [
+    "No whole-interface, folder integration, physical GPU, Store/signing or universal Windows-picker acceptance"
+  ]
+}

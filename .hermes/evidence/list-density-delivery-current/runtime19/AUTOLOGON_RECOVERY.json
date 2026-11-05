@@ -1,0 +1,16 @@
+{
+  "status": "pass directly observed normal desktop, one native guest focus gesture, owned account readiness verified",
+  "observed_sha256": "07f54e0e2fb67c82dade839abebe5f821b984b4f44d35022ca5ab5a5599498cf",
+  "observed": "Actual ordinary desktop, Recycle Bin and taskbar; no security or privacy dialog",
+  "actions": [
+    "Stop only known finite OCR observer if still live to avoid concurrent input",
+    "One click1161,450 in observed blank guest canvas",
+    "Escape",
+    "Capture actual desktop",
+    "Exact owned account check and readiness signal"
+  ],
+  "observer_stopped": false,
+  "guest_restarted": false,
+  "actor_restarted": false,
+  "policy_changed": false
+}

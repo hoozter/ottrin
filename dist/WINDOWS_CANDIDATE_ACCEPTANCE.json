@@ -1,42 +1,41 @@
 {
-  "status": "pass scoped shared-widget Windows preview delivery; full roadmap incomplete",
-  "source_commit": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
+  "status": "pass scoped native Windows filename/density/Services preview; full roadmap incomplete",
+  "source_commit": "24af31d70cb9950527b6fcb113c466213f3a2422",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "967a1e157356533bb151ad6463c5ebbc8f57d6f348e2238b91faac4c446d878b",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "e5e99978b9d99cff7e1f8d1d7151163db6a08f51ff0beb77873198995d41b4a6",
-    "Ottrin-0.1.0-windows-x64-development.msix": "ad60d47726724df948c4896f3330310ca94e18a3ff02645cc1179e3eaf2a53f9"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "bc5387befaf588b0c3f71da1fd1b951b633e972e36b33576d4be5f5c65a63c71",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "9287b23d5f897fcb0ee71dbacdb4693f04dcc50407ad7c2bd947908d43d85e15",
+    "Ottrin-0.1.0-windows-x64-development.msix": "315d134affb461c799176086a7f19e5cfcdb041c6e886a89a8583bce792dbf60"
   },
   "payload_files": 58,
-  "evidence_directory": ".hermes/evidence/theme-delivery-current",
+  "evidence_directory": ".hermes/evidence/list-density-delivery-current",
   "hosted_source": {
-    "run": 41809847269,
-    "tested_source_revision": "45830098b6d58eeb8a08252f8d8b9c6fe35d9eef",
-    "all_four_jobs_success": true
+    "run": 41956606124,
+    "tested_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "exact_source_all_four_jobs_success": true
   },
-  "host_content": ".hermes/evidence/theme-delivery-current/HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/theme-delivery-current/WINDOWS_NATIVE_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/theme-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "host_content": "HOST_PAYLOAD.json",
+  "current_native_fields": ".hermes/evidence/list-density-delivery-current/NATIVE_WINDOWS_CAPTION_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/list-density-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/theme-delivery-current/ASSEMBLY_ACCEPTANCE.json",
-    "fresh_runtime": ".hermes/evidence/theme-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
-    "enabled_disabled_upgrade": ".hermes/evidence/theme-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/list-density-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/list-density-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "historical_enabled_disabled_updates": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json",
+    "scope": "Actual enabled/disabled17-to18 updates retain exact previous source/artifacts. Only UI renderer source changed since those tests; current19 has exact assembly plus fresh ordinary runtime/reboot/login/removal, without claiming a fresh17-to19 update."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_only_followup": {
-    "source": "50a78015b8e23b6da558a12cc5d8536ce538e1d2",
-    "scope": "Breadcrumb directory classification source-tested, not included in this458 package"
-  },
+  "source_scope": ".hermes/evidence/list-density-delivery-current/WINDOWS_SOURCE_SCOPE.json",
+  "public_release_published": false,
   "limits": [
-    "NSIS Dark144DPI Native/OpenGL settings and preview selection only; not every field/theme/scale",
-    "MSIX17 unsigned development deployment, fresh runtime and same-identity16-to17 updates; no Store/signing/physical acceptance",
-    "Previous full Services matrices retain original source/artifact scopes",
-    "Full U08 audit, Linux local-seat elevation, remaining picker/folder integration, MSI rollback and owner acceptance remain open"
-  ],
-  "public_release_published": false
+    "Software guest/default DPI only; no physical graphics, signing, Store or final human acceptance",
+    "Full UI/theme audit open: high-density icon/text padding and Light footer/logo/status contrast",
+    "Fresh19 Settings shows unavailable folder-integration transaction support; independent software investigation remains open",
+    "Administrator Copy durable coordinator/caller registry remains gated; focused metadata preparation tests are not full acceptance",
+    "Fresh19 lifecycle and previous17-to18 update scopes are distinct; no17-to19 update claim"
+  ]
 }

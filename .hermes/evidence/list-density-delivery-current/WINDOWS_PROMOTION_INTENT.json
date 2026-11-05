@@ -1,0 +1,9 @@
+{
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "from": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "to": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+  "retired": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-candidate-retired",
+  "all_current_native_consumers_terminal": true,
+  "previous17_update_input_consumer_closed": "No redundant17-to19 matrix: update implementation unchanged from fully native-tested7fa; exact older update proof retained with original scope",
+  "held_msi_preserved": "deffb28ad8b151508798db4df39b2c5b6097058367937821952b63607b2203f9"
+}

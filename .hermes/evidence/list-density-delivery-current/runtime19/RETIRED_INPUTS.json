@@ -1,0 +1,70 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/RESULTS.zip",
+          "bytes": 256952,
+          "sha256": "fc64e81860060f6ad400f9831a9318b43e8662c1406ee28ef6a6264a58b8e4f6"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/RESULT_EXPORT_PROCESS.json",
+          "bytes": 456864,
+          "sha256": "4c4581aacdbff26927341b8dd1b0e0cdf5db9f7f459883b868200ec74946f66c"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/PREPARATION.json",
+          "bytes": 318,
+          "sha256": "dd6a0e2c4d8e3106af68d63b2d8ac3c59f8f07e7ea6823e58f222f89c782da96"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "203e1e22410d4f7fba4aae47db99e83b73b65134c2762d6b6e949c82fd042781"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/readiness.log",
+          "bytes": 464,
+          "sha256": "845432e57ebe782647cb58574aa8c71630ead67e02cd40677368b71f0a242f8e"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/desktop-ready.png",
+          "bytes": 1688742,
+          "sha256": "35535ad5050db84b98f944800982e2c8243488eb50962c178d104a206182cec1"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/privacy-accepted-5.png",
+          "bytes": 1689190,
+          "sha256": "07f54e0e2fb67c82dade839abebe5f821b984b4f44d35022ca5ab5a5599498cf"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/privacy-accepted-4.png",
+          "bytes": 181380,
+          "sha256": "267468f0c13e85e60d47f3b0890d97aa565ad3f7ee318f676d88c189a58318ba"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/privacy-accepted-2.png",
+          "bytes": 169661,
+          "sha256": "784a8454b1c5c90c3c4550fd66e12544bb4a542361c37e44fd1ae96bf9bf025f"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/privacy-accepted-0.png",
+          "bytes": 9384,
+          "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/privacy-accepted-3.png",
+          "bytes": 174172,
+          "sha256": "fa6d2d73f7413ddee069a5b81e0e859a455de8d493afc9b797594912d67f7c41"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/runtime19/privacy-accepted-1.png",
+          "bytes": 177007,
+          "sha256": "1d7c1178a9dba2bd466f6cc0a9569d43d3af09476cc6838a24787060224470bb"
+        }
+      ],
+      "bytes": 4804389
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

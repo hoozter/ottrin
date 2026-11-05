@@ -1,0 +1,20 @@
+{
+  "status": "ready for guarded Windows publication",
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "bc5387befaf588b0c3f71da1fd1b951b633e972e36b33576d4be5f5c65a63c71",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "9287b23d5f897fcb0ee71dbacdb4693f04dcc50407ad7c2bd947908d43d85e15",
+    "Ottrin-0.1.0-windows-x64-development.msix": "315d134affb461c799176086a7f19e5cfcdb041c6e886a89a8583bce792dbf60"
+  },
+  "mutation_performed": false,
+  "all_current_native_consumers_terminal": true,
+  "historical_update_scope": {
+    "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "previous_native_update_source": "7fa0e46cd8ead5e5a4e6a83d6439953109a731b4",
+    "changed_product_files_since_native_update": [
+      "crates/ottrin-ui/src/lib.rs"
+    ],
+    "update_basis": "Actual enabled/disabled17-to18 updates retain exact previous source/artifacts. Only UI renderer source changed since those tests; current19 has exact assembly plus fresh ordinary runtime/reboot/login/removal, without claiming a fresh17-to19 update.",
+    "previous_update_receipt": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json"
+  }
+}

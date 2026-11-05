@@ -36,8 +36,8 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages use runtime `24af31d7`; Windows ZIP/NSIS and unsigned
-development MSIX0.1.0.17 retain accepted runtime `45830098`. Exact-source
+The four Linux packages and Windows ZIP/NSIS/development MSIX0.1.0.19
+use verified runtime `24af31d7`. Exact-source
 CI41956606124 passes all four Linux/Windows verification/performance jobs.
 Linux administrator Copy supports authenticated history loading after restart,
 freshly checked Undo and confirmed cleanup. Recovered history is distinguished
