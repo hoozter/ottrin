@@ -1,0 +1,12 @@
+{
+  "status": "Independent fixture follow-up; no product text acceptance inferred",
+  "items": [
+    {
+      "id": "legacy-child-stdout-encoding",
+      "producer": "nsis-services.ps1 Run",
+      "observed": "ordinary_folder_status.detail captured Off ΓÇö while native UI correctly shows Off —",
+      "required": "Set explicit UTF8 StandardOutputEncoding and StandardErrorEncoding in the next native actor revision and observe a Unicode CLI detail on the next meaningful native run",
+      "scope": "Current Services capture/accessibility assertions and semantic CLI booleans are accepted; redirected Unicode CLI text is not"
+    }
+  ]
+}

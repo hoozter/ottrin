@@ -1,33 +1,35 @@
 {
-  "status": "Fresh MSIX25 Explorer contexts/runtime/login/removal accepted; actual enabled24-to25 update now live",
+  "status": "Current scoped Windows ZIP/NSIS/MSIX25 delivered; all owned native consumers terminal and cleaned",
   "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
   "build_source": "windows/BUILD_SOURCE.json",
   "producer": "windows/build-portable.py",
-  "previous_input": "previous24.msix",
+  "previous_input": "Retired; PREVIOUS24_RETIREMENT.json",
   "stable_windows": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
   "remaining": [
-    "Enabled24-to25 upgrade/native contexts/login/removal",
-    "Current NSIS Services Dark/Light UI acceptance",
-    "Guarded Windows stable delivery and broader roadmap"
+    "Windows administrator Copy coordinator and canonical caller registry/profile/Undo/cleanup bridge",
+    "Complete U05\u2013U08 theme/property and interface audit",
+    "Remaining supported picker/folder integration, lower-build MSIX drive audit and MSIX default-folder KTM failure",
+    "Ordinary-user MSI rollback control and54-clause/15-requirement closure"
   ],
   "ci_run": 42054602533,
   "push_verified": true,
-  "native_case": "update24to25/OWNER.json",
+  "native_case": "All complete; WINDOWS_DELIVERY.json",
   "assembly_acceptance": "ASSEMBLY_ACCEPTANCE.json",
   "previous_native_case": "menus25-background-invocation-failure/FINDINGS.json",
-  "native_session": 61631,
   "goal": "active/incomplete",
   "stable_delivery": {
     "linux_source": "bee15669",
     "linux_receipt": "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
-    "windows_source": "d0320932",
+    "windows_source": "8e805d31",
     "windows_receipt": "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
   },
-  "next": "Finish fresh25 visuals/lifecycle, retained-enabled24-to25 native update, current NSIS Services acceptance and guarded Windows delivery; broader roadmap remains open",
+  "next": "Continue priority1 Windows administrator Copy durable coordinator/original-caller registry; other dependency-ready theme/integration/MSI work remains independent",
   "retired_duplicate_live_state": {
     "path": ".hermes/evidence/packaged-shell-current/ACTIVE_STATE.json",
     "sha256": "a58edffb2b923e77a6fe22753437ce9bc0dc8828be541329420186dfc2380dce",
     "reason": "One authoritative live state here; historical acceptance receipts retain original scopes"
   },
-  "fresh_acceptance": "MSIX_CONTEXTS_ACCEPTANCE.json"
+  "fresh_acceptance": "MSIX_CONTEXTS_ACCEPTANCE.json",
+  "upgrade_acceptance": "MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
+  "delivery": "WINDOWS_DELIVERY.json"
 }

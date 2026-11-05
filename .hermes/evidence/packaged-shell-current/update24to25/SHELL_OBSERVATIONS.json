@@ -1,0 +1,81 @@
+{
+  "CRASH_EVENTS.json": {
+    "original_sha256": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "value": {
+      "events": [],
+      "scope": "Only events naming this owned package installation"
+    }
+  },
+  "STATE_READER_SMOKE.json": {
+    "original_sha256": "ff2ffbedef369091e4e8126cc89d979214ac64ac2399425910c3fb6671fab40a",
+    "value": {
+      "transient_milliseconds": 224.2209,
+      "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+      "private_fixture_removed": true,
+      "persistent_lock_seconds": 2.0088679
+    }
+  },
+  "EXPLORER_PROCESSES_Background.json": {
+    "original_sha256": "a2a5f899e2fb332483f36b6d79fdb81da651b599a09dd369b35c5ca2d7dea90e",
+    "value": {
+      "context": "Background",
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 6380,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces Ω𐐷",
+          "marker": "menu-invocation-proof.txt",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "automatic_foreground": true
+    }
+  },
+  "EXPLORER_PROCESSES_Multiple.json": {
+    "original_sha256": "19a05c02a0694574603b82f1f84f3dc2dbc568e22e25917168dfa6e22c65a980",
+    "value": {
+      "context": "Multiple",
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 2912,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\second folder Ω",
+          "marker": "second-menu-proof.txt",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        },
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 6316,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces Ω𐐷",
+          "marker": "menu-invocation-proof.txt",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "automatic_foreground": true
+    }
+  },
+  "EXPLORER_PROCESSES_Drive.json": {
+    "original_sha256": "91a263a1206dd502260dcb028ecc89f803c804fbc7b1f7910a97729784fff41d",
+    "value": {
+      "context": "Drive",
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 7496,
+          "path": "C:\\",
+          "marker": "Windows",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "automatic_foreground": true
+    }
+  }
+}

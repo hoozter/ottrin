@@ -1,0 +1,23 @@
+{
+  "reviewed": true,
+  "all_captures_match_exact_hashes": true,
+  "explorer_menu_visible": true,
+  "invoked_main_visible": true,
+  "captures": {
+    "explorer-menu-Background.png": "41a82c15c665b2e30dab518dae9d77986240acd2ab46d40c3c4dd613df2f0bc6",
+    "explorer-menu-Multiple.png": "37d818b4f3cf09b4cb7705ed95f983de17b7ee0da0abf1e0086a623a28a0c8e1",
+    "explorer-menu-Drive.png": "a67bd78e18586245f48a9ffaa9d26bc63de1bee37f0dc9a50333fbcd910df578",
+    "explorer-invoked-Background-0.png": "ed729852a82249ee2f250af0a271c3d3137164b1978b0de08221089cb38e7e50",
+    "explorer-invoked-Multiple-0.png": "02761daeb661237660e3f5eea1eb766842c06261f2ba066bc72a44963acc1abe",
+    "explorer-invoked-Multiple-1.png": "ed729852a82249ee2f250af0a271c3d3137164b1978b0de08221089cb38e7e50",
+    "explorer-invoked-Drive-0.png": "c6aa36fbc09ed0c95eace60d4f8cc8dccb490b8e5bedb93cd04f20d0307cbe5f"
+  },
+  "observations": [
+    "All three full-private-screen Explorer captures show one Open in Ottrin row with surrounding menu visible",
+    "Background and both selected-folder Ottrin windows show corresponding marker contents; full first marker name is independently verified through accessibility despite grid caption truncation",
+    "Drive Ottrin window visibly opens C:\\ with Windows and other root folders",
+    "Native icon is still nearly invisible on light menus; supplementary U+10437 still lacks a displayed glyph in Ottrin title/breadcrumb",
+    "Settings behind Explorer now fits above the taskbar; no complete Settings or theme audit inferred from this occluded view"
+  ],
+  "scope": "Seven directly inspected updated-package originals; prior enabled24 choice, exact targets, runtime/login/removal depend on separate native result assertions; no physical GPU, Store, signing or full interface acceptance"
+}

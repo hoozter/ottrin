@@ -1,0 +1,8 @@
+{
+  "status": "pass completed exact24-to25 input retired",
+  "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous24.msix",
+  "sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
+  "bytes": 58062120,
+  "consumer": "MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
+  "basis": "Actual retained-enabled24-to25 update, all three native Explorer contexts/login/removal and seven original reviews pass; owned old case VM/fixture/profile removed; no remaining consumer/link"
+}

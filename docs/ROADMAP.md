@@ -6,8 +6,8 @@ Updated 2026-11-05. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `bee15669`; Windows remains
-on its separately accepted source `d0320932`. All four exact-source hosted jobs
+The stable local Linux packages use verified source `bee15669`; Windows now uses
+its separately accepted source `8e805d31`. All four exact-source hosted jobs
 for the current Linux source passed in
 [run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462).
 The Linux cohort delivers explicitly qualified neutral action history and
@@ -28,19 +28,93 @@ setup still requires owner OS authentication. The superseded Linux cohort
 (115,883,499 bytes), retired directory and consumed Linux stage are removed.
 Evidence: `.hermes/evidence/service-ui-delivery-current/`.
 
-Windows: portable/NSIS58-file equality and a fresh ordinary-user installed case
-pass actual daemon-thread suspension→timeout→same-process recovery in both
-themes. Recovery controls stay in place, diagnostics collapse/reopen, startup
-stays On, normal close keeps the daemon, and uninstall preserves files/settings.
-Six targeted Services originals were reviewed. Native MakeAppx development
-MSIX22 assembly/58-file equality passes. The exact current Windows daemon passes
-private1000-file watcher/restart/two-shutdown checks; its30-second idle sample
-is0.26% of one core without clients. MSIX21 ordinary runtime/startup/reboot/login/
-removal and earlier update proofs retain original source/artifact scopes; no
-fresh22 runtime or21-to22 upgrade acceptance is claimed. Actual21 folder
-integration still reports a transaction-resource error: independent software
-work, not an owner wait.
-Newer source `9f81685e` adds API names, HKCU paths and numeric Windows errors
+Windows: the59-file portable ZIP, NSIS and unsigned development MSIX25 are
+published at `dist/windows-candidate/`. All four exact-source hosted jobs pass
+in [run42054602533](https://github.com/hoozter/ottrin/actions/runs/42054602533).
+Installed Dark/Light Services checks pass actual daemon suspension→timeout→same
+process recovery, qualified neutral action history, full current timeout text,
+unchanged recovery controls, disclosure, On startup and uninstall preservation.
+Six targeted originals were reviewed. The owned Settings window fits its work
+area; complete page contents still scroll. Arbitrary long native diagnostics
+and the whole theme/property audit remain separate.
+Fresh25 and enabled24-to25 upgrade checks pass all three actual Explorer contexts,
+ordinary package/user identity, automatic foreground, clean exit, unchanged daemon,
+exact preferences/index identity, real reboot/login and original-user COM refusal
+after removal. Seven originals per case were reviewed. Actual MakeAppx assembly,
+59-file equality and the current daemon's private1000-file watcher/restart/two
+shutdowns pass; its30-second no-client idle sample is0.36% of one core. This does
+not establish sustained personal resource acceptance. Native icon contrast,
+supplementary glyph fallback, lower-build MSIX drive integration and default
+folder opening remain open. The latter still reaches the unresolved KTM path.
+The superseded Windows cohort, consumed stage/old24 input and all completed QA
+VMs/disks/desktops/profiles/transports are removed. Current authority:
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`; evidence:
+`.hermes/evidence/packaged-shell-current/WINDOWS_DELIVERY.json`.
+
+### Current ordered work
+
+1. Finish Windows administrator Copy recovery: the externally anchored durable
+   cohort coordinator and original caller's canonical registry/profile/receipt,
+   Undo and cleanup bridge. Kernel process/TokenUser binding is implemented;
+   original-caller registry authority is still separate work. Never interpret a
+   missing member ID as completed deletion or unknown recovered history as a
+   completed original batch. Native crash/restart and changed-peer/root/case/ACL
+   refusals must precede enabling administrator Copy.
+2. Finish U05–U08 interface/theme consistency and property mapping. Include the
+   historical-feedback correction now delivered on Linux and Windows; finish the
+   remaining complete interface/property audit.
+   Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
+   have bounded acceptance; List/Grid representation, miniature corner scaling,
+   inspector role ownership and whole-interface alignment/grouping remain open.
+   Verify every supported role/control against the actual interface and logical
+   hierarchy; field-map/test/capture counts do not close this audit.
+3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
+   reversible Windows folder-integration caller/software gaps. Keep the accepted
+   Windows-owned declarative Explorer context-menu route; it does not resolve
+   MSIX default-folder opening's KTM failure or establish lower-build drive support.
+   Retain atomic ownership/rollback and uninstall guarantees; do not bypass the
+   failure by dropping transactions or broadening virtualization. Existing
+   browser/Flatpak, native-package and cooperating Windows caller receipts keep
+   exact scopes. Do not infer universal Windows dialog replacement or repeat
+   fulfilled matrices without changed inputs or a reproduced defect.
+4. Resolve ordinary-user MSI registration rollback, including the failed independent
+   file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
+   changes and manual registry compensation are not a working installer. This
+   gate must not stall dependency-ready implementation or other package formats.
+5. Audit every remaining clause in
+   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` (54 roadmap bullets)
+   and `release-audit-current/USER_REQUIREMENTS.json` (15 overlapping user
+   requirements), reconcile release documentation, and leave only genuine
+   [owner/external waits](#ownerexternal-waiting-list). These inventories are not
+   a completion percentage.
+
+Personal administrator authentication, signing identity/key choices, release-ready
+Store account/submission, unavailable physical/proprietary environments/corpora
+and final human acceptance remain waits. They must not stall independent work.
+macOS and paid Windows signing remain outside the requested scope.
+
+### Usable local preview
+
+Linux formats are in `dist/packages/`, from source `bee15669e83353b043350a099b9041ccdd14e5c8`.
+The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`015e3b04d9427422a545269c4424fe92ce2bbebb576e2193b69d4ada75fc357f`.
+Windows ZIP/NSIS and unsigned development MSIX0.1.0.25 are in
+`dist/windows-candidate/`, from source `8e805d318557d3248ebf090aa8088dd86194b593`.
+Their acceptance manifests bind exact artifact hashes and scoped receipts;
+packaged manuals are build-time snapshots. The repository's delivery metadata
+records later verification/promotion. No public release or complete roadmap
+acceptance is implied.
+
+### Earlier scoped investigations — historical notes
+
+The following notes retain earlier source/artifact scopes. Their historical
+"current", "pending" and "unchanged" descriptions do not override the delivery,
+ordered work and usable paths above. Current25 acceptance and delivery receipts
+are `MSIX_CONTEXTS_ACCEPTANCE.json`, `MSIX_ENABLED_UPDATE_ACCEPTANCE.json`,
+`NATIVE_WINDOWS_UI_ACCEPTANCE.json` and `WINDOWS_DELIVERY.json` in
+`.hermes/evidence/packaged-shell-current/`.
+
+Earlier investigation source `9f81685e` adds API names, HKCU paths and numeric Windows errors
 at transaction boundaries; all four exact-source hosted jobs passed in
 [run42012178068](https://github.com/hoozter/ottrin/actions/runs/42012178068).
 A fresh development MSIX23 native ordinary-user case passes main-window launch,
@@ -54,7 +128,8 @@ a successful integration fix. The original Settings diagnostic overflows the
 right edge; the actor's vertical-bounds check did not prove full visibility.
 Four originals were directly reviewed. Evidence and exact scopes:
 `.hermes/evidence/windows-folder-msix-current/MSIX_RUNTIME_ACCEPTANCE.json`.
-MSIX23 is an investigation candidate, not the stable delivered MSIX22.
+That historical MSIX23 was an investigation candidate; current stable delivery
+is the separately accepted MSIX25 described above.
 
 The accepted cohorts are published at their stable dist paths. Superseded781
 packages/payloads and that delivery's staging, owned guests/disks/desktops/buses,
@@ -62,8 +137,8 @@ private profiles and consumed source/result transports were removed. The newer
 9f Windows investigation's ZIP/NSIS/payload stage is also retired after exact
 byte/ownership/consumer checks. Its retained MSIX23 input is now retired after
 verified native23-to24 upgrade acceptance (about55MiB removed). The current
-MSIX25/59-file candidate remains in the single Windows stage, pending remaining
-Explorer and NSIS delivery gates. Owned guests/disks/profiles and consumed
+MSIX25/59-file cohort is now delivered after its separate Explorer, update and
+NSIS gates; the consumed stage is removed. Owned guests/disks/profiles and consumed
 source/result transports are removed. Stable Windows deliverables are unchanged. The first
 native geometry fixture failed before daemon suspension; a corrected fresh run
 passed unchanged assertions/deadlines. Compact failure evidence and its original
@@ -81,8 +156,7 @@ all516 UI tests pass (one existing ignored), strict native/Windows UI lint passe
 and actual source GUI success→stopped→error→Ready checks pass. Four Ready/error
 originals were reviewed. Its desktop/state are removed; five obsolete incremental
 sessions (0.33GiB) were retired with current caches retained. This correction is
-now in the delivered Linux bee cohort; Windows still needs its own relevant
-package acceptance. Evidence: `.hermes/evidence/service-feedback-current/ACCEPTANCE.json`.
+now in the delivered Linux bee cohort; Windows now has its own relevant8e NSIS package acceptance. Evidence: `.hermes/evidence/service-feedback-current/ACCEPTANCE.json`.
 
 The MSIX23 capture also reproduced a shared status-label overflow. A newer
 source correction wraps complete diagnostics and aligns the status dot to the
@@ -124,7 +198,12 @@ folders, including each target's ordinary package/user identity, contents,
 automatic foreground, clean exit0 and unchanged daemon. Six scoped originals
 were reviewed; the background menu exceeds the captured Explorer frame, so its
 complete visual layout is not accepted. Drive context fails: no command appears.
-The dedicated Drive selector belongs to desktop10 rather than desktop5.
+The dedicated Drive selector belongs to desktop10 rather than desktop5. Microsoft
+[documents](https://learn.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/element-desktop10-itemtype)
+its minimum as Windows11 22H2/build22621. The package still advertises a19041
+application floor; this native Windows11 result does not prove drive-menu support
+on every advertised lower build. Lower-build integration behavior remains a
+software/compatibility audit, without silently raising the application floor.
 The corrected source `8e805d31` adds that declaration using the same handler;
 host format, strict Windows shell/platform/UI lint, native COM/manifest contract
 and real SDK MakeAppx control pass. All four hosted jobs pass in
@@ -148,8 +227,15 @@ functional-only scopes; a later UIA menu invocation produced no matching main
 and remains a failed run with an unproven cause. It is not promoted by the
 subsequent physical-click pass. Source gate: `DRIVE_SOURCE_ACCEPTANCE.json`;
 original partial/failed24 scope: `menus24/FINDINGS.json` in the same evidence root.
-Retaining an enabled MSIX24 command across the25 update is now running in
-`update24to25/`; the exact MSIX24 input is retained for that consumer. Default folder opening for MSIX still uses the
+Actual24-to25 upgrade now also passes with the menu already enabled: the new
+package preserves that choice, exact preferences and index identity, replaces
+the old daemon, passes all three Explorer contexts and actual reboot/login,
+then refuses original-user COM activation after removal. Seven upgrade originals
+were directly reviewed. Receipt: `MSIX_ENABLED_UPDATE_ACCEPTANCE.json`.
+The consumed24 MSIX (58,062,120 bytes), upgrade guest/disks/profile and export/setup
+transports are removed. Current NSIS Dark/Light Services acceptance and guarded publication are complete.
+The59-file ZIP/NSIS/MSIX25 cohort is delivered at the stable Windows path; the
+superseded cohort and consumed stage are removed. Default folder opening for MSIX still uses the
 unresolved transaction path; no default-manager acceptance is claimed. Portable/NSIS keeps its existing atomic registry implementation.
 Low-contrast native light-menu icon, supplementary U+10437 font fallback and
 Settings capture/work-area limitations remain open interface findings. No full
@@ -157,13 +243,13 @@ UI/theme, physical graphics, signing, Store or stable Windows delivery claim.
 Owned VM/volumes/desktop/portal/profile, consumed result transports and the
 completed MSIX23 input are removed. The superseded24 ZIP/NSIS/payload stage
 (241,518,507 bytes) is retired after exact identity/ownership/consumer checks;
-only its MSIX remains at `previous24.msix` for the enabled-command update.
+its remaining MSIX at `previous24.msix` is now retired after the accepted
+enabled-command update.
 Ten superseded compiler-cache sessions were retired under exact locks, retaining
 the newest finalized replacements. Completed fresh25 VM/disks/desktop/profile,
-consumed export and redundant setup frames are removed; the update owns its
-separate live resources. `CURRENT_STATE.json` is the sole live case-state record.
+consumed export and redundant setup frames are removed; the NSIS case also completed and removed its separate owned resources. `CURRENT_STATE.json` is the sole live case-state record.
 Compact prior24 receipts remain in `baseline24/`; current stable Windows
-packages are unchanged. Exact current receipts:
+packages are the separately accepted8e cohort. Exact current receipts:
 `.hermes/evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`,
 `MSIX_UPDATE_ACCEPTANCE.json`, `OPEN_UI_FINDINGS.json`, and
 `UPDATE_CLEANUP_ACCEPTANCE.json` in the same evidence directory.
@@ -177,60 +263,8 @@ reviewed. Its owned desktop, bus, processes, mounts and profile are removed.
 All four exact-source hosted jobs in
 [run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462) pass.
 Guarded stable-path publication and managed-daemon restart are complete;
-Windows stable dist remains d032. Evidence:
+Windows stable dist now has its separate accepted8e cohort. Evidence:
 `.hermes/evidence/service-ui-delivery-current/`.
-
-### Current ordered work
-
-1. Finish Windows administrator Copy recovery: the externally anchored durable
-   cohort coordinator and original caller's canonical registry/profile/receipt,
-   Undo and cleanup bridge. Kernel process/TokenUser binding is implemented;
-   original-caller registry authority is still separate work. Never interpret a
-   missing member ID as completed deletion or unknown recovered history as a
-   completed original batch. Native crash/restart and changed-peer/root/case/ACL
-   refusals must precede enabling administrator Copy.
-2. Finish U05–U08 interface/theme consistency and property mapping. Include the
-   historical-feedback correction now delivered on Linux; finish its Windows delivery.
-   Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
-   have bounded acceptance; List/Grid representation, miniature corner scaling,
-   inspector role ownership and whole-interface alignment/grouping remain open.
-   Verify every supported role/control against the actual interface and logical
-   hierarchy; field-map/test/capture counts do not close this audit.
-3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
-   reversible Windows folder-integration caller/software gaps. Isolate the exact
-   MSIX packaged behavior now that the first failing API is isolated, while
-   retaining atomic ownership/rollback and uninstall guarantees. Windows-owned
-   [declarative Explorer registration](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/integrate-packaged-app-with-file-explorer) is a supported integration route to evaluate;
-   do not bypass the failure by dropping transactions or broadening virtualization. Existing browser/Flatpak, native-package
-   and cooperating Windows caller receipts keep exact scopes. Do not infer
-   universal Windows dialog replacement or repeat fulfilled matrices without
-   changed inputs or a reproduced defect.
-4. Resolve ordinary-user MSI registration rollback, including the failed independent
-   file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
-   changes and manual registry compensation are not a working installer. This
-   gate must not stall dependency-ready implementation or other package formats.
-5. Audit every remaining clause in
-   `windows-preview-safety-current/AUDIT_REQUIREMENTS.json` (54 roadmap bullets)
-   and `release-audit-current/USER_REQUIREMENTS.json` (15 overlapping user
-   requirements), reconcile release documentation, and leave only genuine
-   [owner/external waits](#ownerexternal-waiting-list). These inventories are not
-   a completion percentage.
-
-Personal administrator authentication, signing identity/key choices, release-ready
-Store account/submission, unavailable physical/proprietary environments/corpora
-and final human acceptance remain waits. They must not stall independent work.
-macOS and paid Windows signing remain outside the requested scope.
-
-### Usable local preview
-
-Linux formats are in `dist/packages/`. The stable AppImage is
-`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`934f564133f504f8513573a6de83bb297533c631adacb761aa2769c3da824bcb`.
-Windows ZIP/NSIS and unsigned development MSIX0.1.0.22 are in
-`dist/windows-candidate/`. All use
-`d0320932932b1dfcd70d8200dc4872d7aa08b813`; acceptance manifests bind exact hashes
-and original scopes. Packaged manuals are build-time source snapshots; the
-repository's current delivery metadata records later verification/promotion.
 
 ### Previous delivery receipts — historical source and artifact scopes
 

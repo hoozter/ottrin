@@ -1,0 +1,24 @@
+{
+  "reviewed": true,
+  "complete_window_visible": true,
+  "history_distinct_from_live_status": true,
+  "captures": {
+    "services-Dark.png": "40744d553df939145b6c36f5b61541f04d3ae08eb26c3b87cefa26c77e8850af",
+    "services-Dark-live-error.png": "b3c1abe1f0f002932f26c135633693e11c6f6be3d4b5a17316308a581b678394",
+    "services-Dark-recovered.png": "4bfb90a03f3659293dc5cf469d1008e467f4f25bcd54a1358582c3e070a98bed",
+    "services-Light.png": "283251fa92ab70caefccf4ae692ef65ed2d44e7c330e983307720b5335e1a1eb",
+    "services-Light-live-error.png": "02106c20cd6399dbca44c2a0f11b11f77d988d6bb7454e1fd386ece9aed15ebc",
+    "services-Light-recovered.png": "a9a73a361112ccd881bdd40bcbc863dc20023ce143bbe80af952cef13308f9c6"
+  },
+  "observations": [
+    "All six original Settings frames show the complete native window; page contents scroll below the viewport, with no whole-page visibility claim",
+    "Both themes show neutral Last completed action text distinctly above live readiness; the live timeout is red and fully readable",
+    "Both themes recover from the suspended daemon to green Running \u2014 index ready; recovery controls keep their positions between error and recovery",
+    "Sidebar grouping, current title and controls are visible within the targeted Services view; no whole-interface or property-mapping acceptance inferred"
+  ],
+  "limits": [
+    "Six targeted original Services frames only; other transition/collapse frames remain automated scope",
+    "Native timeout is one fully visible local-pipe diagnostic; arbitrary long diagnostics rely on their separate rendered source regression, not these six frames",
+    "Ordinary CLI status booleans observed; its textual detail was decoded by the legacy PowerShell child reader and is not Unicode CLI-text acceptance"
+  ]
+}

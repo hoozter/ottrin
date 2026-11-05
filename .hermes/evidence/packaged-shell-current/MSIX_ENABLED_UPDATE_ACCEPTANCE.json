@@ -1,0 +1,515 @@
+{
+  "status": "pass exact MSIX24-to25 update, retained enabled command, native Explorer contexts and COM unregistration",
+  "package": {
+    "runtime_script_sha256": "189c59367b6bb2859d310f51a9595272936959a567125db6bcf2d50c55b9d2f7",
+    "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+    "sha256": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0",
+    "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+    "version": "0.1.0.25",
+    "startup_enabled": true,
+    "previous": {
+      "sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
+      "version": "0.1.0.24",
+      "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8"
+    }
+  },
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "runtime_result": ".hermes/evidence/packaged-shell-current/update24to25/RUNTIME_RESULT.json",
+  "folder_command": {
+    "host_package_identity_code": 15700,
+    "initial_enabled": true,
+    "title": "Open in Ottrin",
+    "status": "pass native packaged COM activation, UI preference and selected-folder invocation",
+    "daemon_pids_after": [
+      6244
+    ],
+    "scope": "Actual ordinary-user package COM activation/visibility/invocation; real Explorer menu surface and automatic foreground behavior remain separate",
+    "invocation_processes": [
+      {
+        "parent": 1940,
+        "pid": 7468,
+        "arguments": [
+          "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr\\bin/ottrin.exe",
+          "--",
+          "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "com_state": 2,
+        "complete_status_bounds": {
+          "left": 293,
+          "width": 333,
+          "top": 656,
+          "height": 17
+        },
+        "enabled": false
+      },
+      {
+        "com_state": 0,
+        "complete_status_bounds": {
+          "left": 293,
+          "width": 355,
+          "top": 656,
+          "height": 17
+        },
+        "enabled": true
+      }
+    ],
+    "icon": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr\\bin\\ottrin.exe,0",
+    "daemon_pids_before": [
+      6244
+    ],
+    "contexts": [
+      {
+        "processes": [
+          {
+            "closed": true,
+            "exit_code": 0,
+            "pid": 6380,
+            "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+            "marker": "menu-invocation-proof.txt",
+            "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+            "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+          }
+        ],
+        "providers": [
+          {
+            "left": 768,
+            "width": 256,
+            "top": 429,
+            "height": 32,
+            "runtime_id": "42,66484,4,126",
+            "native_window": 0,
+            "process": 5816
+          },
+          {
+            "left": 768,
+            "width": 256,
+            "top": 429,
+            "height": 32,
+            "runtime_id": "42,66484,4,126",
+            "native_window": 0,
+            "process": 5816
+          }
+        ],
+        "daemon_after": [
+          6244
+        ],
+        "automatic_foreground": true,
+        "targets": [
+          {
+            "marker": "menu-invocation-proof.txt",
+            "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+          }
+        ],
+        "daemon_before": [
+          6244
+        ],
+        "context": "Background",
+        "status": "pass actual Explorer context"
+      },
+      {
+        "processes": [
+          {
+            "closed": true,
+            "exit_code": 0,
+            "pid": 2912,
+            "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\second folder \u03a9",
+            "marker": "second-menu-proof.txt",
+            "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+            "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+          },
+          {
+            "closed": true,
+            "exit_code": 0,
+            "pid": 6316,
+            "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+            "marker": "menu-invocation-proof.txt",
+            "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+            "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+          }
+        ],
+        "providers": [
+          {
+            "left": 201,
+            "width": 282,
+            "top": 443,
+            "height": 32,
+            "runtime_id": "42,328468,4,145",
+            "native_window": 0,
+            "process": 5816
+          },
+          {
+            "left": 201,
+            "width": 282,
+            "top": 443,
+            "height": 32,
+            "runtime_id": "42,328468,4,145",
+            "native_window": 0,
+            "process": 5816
+          }
+        ],
+        "daemon_after": [
+          6244
+        ],
+        "automatic_foreground": true,
+        "targets": [
+          {
+            "marker": "menu-invocation-proof.txt",
+            "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+          },
+          {
+            "marker": "second-menu-proof.txt",
+            "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\second folder \u03a9"
+          }
+        ],
+        "daemon_before": [
+          6244
+        ],
+        "context": "Multiple",
+        "status": "pass actual Explorer context"
+      },
+      {
+        "processes": [
+          {
+            "closed": true,
+            "exit_code": 0,
+            "pid": 7496,
+            "path": "C:\\",
+            "marker": "Windows",
+            "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+            "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+          }
+        ],
+        "providers": [
+          {
+            "left": 217,
+            "width": 266,
+            "top": 524,
+            "height": 32,
+            "runtime_id": "42,132124,4,134",
+            "native_window": 0,
+            "process": 5816
+          },
+          {
+            "left": 217,
+            "width": 266,
+            "top": 524,
+            "height": 32,
+            "runtime_id": "42,132124,4,134",
+            "native_window": 0,
+            "process": 5816
+          }
+        ],
+        "daemon_after": [
+          6244
+        ],
+        "automatic_foreground": true,
+        "targets": [
+          {
+            "marker": "Windows",
+            "path": "C:\\"
+          }
+        ],
+        "daemon_before": [
+          6244
+        ],
+        "context": "Drive",
+        "status": "pass actual Explorer context"
+      }
+    ],
+    "invocation": {
+      "ordinary": true,
+      "selected_folder": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+      "pid": 7468,
+      "visible_marker": "menu-invocation-proof.txt",
+      "exit": 0,
+      "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+      "capture_focus": "Explicit private QA focus; no automatic foreground acceptance"
+    }
+  },
+  "contexts": [
+    {
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 6380,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+          "marker": "menu-invocation-proof.txt",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "providers": [
+        {
+          "left": 768,
+          "width": 256,
+          "top": 429,
+          "height": 32,
+          "runtime_id": "42,66484,4,126",
+          "native_window": 0,
+          "process": 5816
+        },
+        {
+          "left": 768,
+          "width": 256,
+          "top": 429,
+          "height": 32,
+          "runtime_id": "42,66484,4,126",
+          "native_window": 0,
+          "process": 5816
+        }
+      ],
+      "daemon_after": [
+        6244
+      ],
+      "automatic_foreground": true,
+      "targets": [
+        {
+          "marker": "menu-invocation-proof.txt",
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+        }
+      ],
+      "daemon_before": [
+        6244
+      ],
+      "context": "Background",
+      "status": "pass actual Explorer context"
+    },
+    {
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 2912,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\second folder \u03a9",
+          "marker": "second-menu-proof.txt",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        },
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 6316,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+          "marker": "menu-invocation-proof.txt",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "providers": [
+        {
+          "left": 201,
+          "width": 282,
+          "top": 443,
+          "height": 32,
+          "runtime_id": "42,328468,4,145",
+          "native_window": 0,
+          "process": 5816
+        },
+        {
+          "left": 201,
+          "width": 282,
+          "top": 443,
+          "height": 32,
+          "runtime_id": "42,328468,4,145",
+          "native_window": 0,
+          "process": 5816
+        }
+      ],
+      "daemon_after": [
+        6244
+      ],
+      "automatic_foreground": true,
+      "targets": [
+        {
+          "marker": "menu-invocation-proof.txt",
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+        },
+        {
+          "marker": "second-menu-proof.txt",
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\second folder \u03a9"
+        }
+      ],
+      "daemon_before": [
+        6244
+      ],
+      "context": "Multiple",
+      "status": "pass actual Explorer context"
+    },
+    {
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 7496,
+          "path": "C:\\",
+          "marker": "Windows",
+          "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "providers": [
+        {
+          "left": 217,
+          "width": 266,
+          "top": 524,
+          "height": 32,
+          "runtime_id": "42,132124,4,134",
+          "native_window": 0,
+          "process": 5816
+        },
+        {
+          "left": 217,
+          "width": 266,
+          "top": 524,
+          "height": 32,
+          "runtime_id": "42,132124,4,134",
+          "native_window": 0,
+          "process": 5816
+        }
+      ],
+      "daemon_after": [
+        6244
+      ],
+      "automatic_foreground": true,
+      "targets": [
+        {
+          "marker": "Windows",
+          "path": "C:\\"
+        }
+      ],
+      "daemon_before": [
+        6244
+      ],
+      "context": "Drive",
+      "status": "pass actual Explorer context"
+    }
+  ],
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          6244
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          6244
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          6244
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          6244
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr"
+  },
+  "real_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 6536,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIXdd0d9651e545\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B980000000000000000"
+    },
+    "boot_ticks": 639294969945000000,
+    "administrator": false
+  },
+  "com_unregistration": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "status": "pass",
+    "administrator": false,
+    "activation_hresult": -2147221164
+  },
+  "removal": {
+    "package_removed": true,
+    "package_processes_removed": true,
+    "fixture_preserved": true,
+    "preferences_preserved": true,
+    "remaining_index_tasks": []
+  },
+  "state_reader_native_smoke": {
+    "transient_milliseconds": 224.2209,
+    "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed": true,
+    "persistent_lock_seconds": 2.0088679
+  },
+  "capture_review": {
+    "reviewed": true,
+    "all_captures_match_exact_hashes": true,
+    "explorer_menu_visible": true,
+    "invoked_main_visible": true,
+    "captures": {
+      "explorer-menu-Background.png": "41a82c15c665b2e30dab518dae9d77986240acd2ab46d40c3c4dd613df2f0bc6",
+      "explorer-menu-Multiple.png": "37d818b4f3cf09b4cb7705ed95f983de17b7ee0da0abf1e0086a623a28a0c8e1",
+      "explorer-menu-Drive.png": "a67bd78e18586245f48a9ffaa9d26bc63de1bee37f0dc9a50333fbcd910df578",
+      "explorer-invoked-Background-0.png": "ed729852a82249ee2f250af0a271c3d3137164b1978b0de08221089cb38e7e50",
+      "explorer-invoked-Multiple-0.png": "02761daeb661237660e3f5eea1eb766842c06261f2ba066bc72a44963acc1abe",
+      "explorer-invoked-Multiple-1.png": "ed729852a82249ee2f250af0a271c3d3137164b1978b0de08221089cb38e7e50",
+      "explorer-invoked-Drive-0.png": "c6aa36fbc09ed0c95eace60d4f8cc8dccb490b8e5bedb93cd04f20d0307cbe5f"
+    },
+    "observations": [
+      "All three full-private-screen Explorer captures show one Open in Ottrin row with surrounding menu visible",
+      "Background and both selected-folder Ottrin windows show corresponding marker contents; full first marker name is independently verified through accessibility despite grid caption truncation",
+      "Drive Ottrin window visibly opens C:\\ with Windows and other root folders",
+      "Native icon is still nearly invisible on light menus; supplementary U+10437 still lacks a displayed glyph in Ottrin title/breadcrumb",
+      "Settings behind Explorer now fits above the taskbar; no complete Settings or theme audit inferred from this occluded view"
+    ],
+    "scope": "Seven directly inspected updated-package originals; prior enabled24 choice, exact targets, runtime/login/removal depend on separate native result assertions; no physical GPU, Store, signing or full interface acceptance"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Actual named physical folder background, two selected folders and OS drive on owned software desktop; no arbitrary virtual namespace acceptance",
+    "Dark targeted originals only; no full theme/interface, physical graphics, Store, signing, owner or stable Windows delivery acceptance"
+  ],
+  "update": {
+    "old_pids": [
+      4372
+    ],
+    "startup_enabled": true,
+    "previous_daemon_count": 1,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.25_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+  },
+  "previous_folder_command": {
+    "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+    "com_state": 0,
+    "version": "0.1.0.24",
+    "enabled": true
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "status": "pass current Windows delivery bytes and completed phase cleanup",
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "aab76d67165f5773eac8bb78a4285d72859a1f204e4a28b766ddf75e007d2ffb",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "20928027b9d797c8a1253c872786c5ae45f4a89de78aeaf6386cddb2fee6d24d",
+    "Ottrin-0.1.0-windows-x64-development.msix": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0"
+  },
+  "payload_files": 59,
+  "superseded_windows_bytes_removed": 294284006,
+  "previous24_bytes_removed": 58062120,
+  "owned_native_resources_removed": true,
+  "stage_and_retired_paths_removed": true,
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Latest usable current Windows deliverables/payload; user preview and later acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current",
+      "purpose": "Compact current and historical source/native/capture/cleanup evidence,31MiB; roadmap audit/provenance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Shared current compiler binaries/dependencies/newest finalized caches for remaining roadmap; ten superseded incremental sessions removed"
+    }
+  ]
+}

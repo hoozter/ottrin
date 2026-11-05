@@ -1,5 +1,5 @@
 {
-  "status": "Build complete; native repeat live; completed resources and ten obsolete compiler sessions removed",
+  "status": "Completed Drive/Windows delivery phase cleaned; no owned native process, VM, profile or stage remains",
   "superseded_stage_receipt": "BASELINE24_RETIREMENT.json",
   "native_cases_closed": [
     "menus24-view-lookup-failure/OWNER.json",
@@ -9,7 +9,10 @@
     "assembly25/OWNER.json",
     "menus25-export-observation-failure/OWNER.json",
     "menus25-metadata-eof-failure/OWNER.json",
-    "menus25-background-invocation-failure/OWNER.json"
+    "menus25-background-invocation-failure/OWNER.json",
+    "menus25/OWNER.json",
+    "update24to25/OWNER.json",
+    "native-nsis/OWNER.json"
   ],
   "consumed_boot_frames_removed": [
     {
@@ -25,21 +28,23 @@
   ],
   "retained": [
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
-      "purpose": "Exact8e verified59-file current Windows candidate",
-      "consumer": "Fresh25 native contexts,24-to25 update, current NSIS Services UI and stable publication"
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
+      "purpose": "Latest verified59-file Windows deliverables and payload",
+      "consumer": "Daily preview/use and later acceptance; stable current output"
     },
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous24.msix",
-      "purpose": "Exact accepted24 input",
-      "consumer": "Pending24-to25 enabled-command update"
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current",
+      "purpose": "Compact native/source/capture/cleanup acceptance receipts; no package/source/result transports",
+      "consumer": "Roadmap audit and exact delivery provenance"
     },
     {
       "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu",
-      "purpose": "Shared compiler output/cache; current binaries and newest finalized incremental sessions",
-      "consumer": "Future dependency-ready builds; ten superseded sessions already retired"
+      "purpose": "Shared compiler outputs/cache; current binaries and newest finalized sessions",
+      "consumer": "Remaining dependency-ready roadmap work; ten obsolete sessions retired"
     }
   ],
   "incremental_cleanup": "DRIVE_INCREMENTAL_CLEANUP.json",
-  "active_native_case": "menus25/OWNER.json; session40355"
+  "active_native_case": null,
+  "windows_delivery": "WINDOWS_DELIVERY.json",
+  "previous24_retirement": "PREVIOUS24_RETIREMENT.json"
 }

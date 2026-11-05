@@ -1,0 +1,36 @@
+{
+  "status": "pass consumed NSIS result transport/setup retired",
+  "removed": [
+    {
+      "path": ".hermes/evidence/packaged-shell-current/native-nsis/RESULTS.zip",
+      "bytes": 929028,
+      "sha256": "37ecbf9fe45d16df9cd6ffcab7310ce651dc7648fbb9158ddd7cebe631dff076"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/native-nsis/desktop-ready.png",
+      "bytes": 1694551,
+      "sha256": "4ffcd75a87ba7f823eb6d1bc350902baf99813e47d120389d1836503dbdaad86"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/native-nsis/privacy-accepted-0.png",
+      "bytes": 9083,
+      "sha256": "794e304b22dab6b5b93604bc86e85055b7e903ec144620cf4540a34c1ac08fbe"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/native-nsis/privacy-accepted-1.png",
+      "bytes": 954856,
+      "sha256": "c1c131070cd7be8ebbf1a6024b78a19ce08c141ee32b276b955cb059f7feac3c"
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "retained": "Frozen producer/actor/controls, native result files and scoped originals"
+}

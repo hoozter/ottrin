@@ -1,0 +1,107 @@
+{
+  "domain": "ottrin-msix-runtime",
+  "uuid": "d26e1b97-b60f-4372-bf69-8e3d9865e06a",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-msix-runtime-fixture.iso",
+    "ottrin-msix-runtime.qcow2"
+  ],
+  "status": "native MSIX runtime test finished; inspect result, not assumed accepted",
+  "public_compiler_cache": null,
+  "scope": "Actual same-identity development MSIX upgrade, ordinary runtime, retained configuration/index and real login/removal for the declared startup choice; Store acceptance remains separate",
+  "producer_sha256": "787de359baed66f975dc5100e7df514b287164a62be134c23513a327b0ef7d83",
+  "storage_at_start": {
+    "available_bytes": 29963710464,
+    "minimum_headroom_bytes": 25769803776,
+    "path": "/var/lib/libvirt/images"
+  },
+  "uploaded_host_iso_removed_bytes": 117086208,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "absolute_pointer": "Clone-only virtual tablet present at boot; no host device passthrough",
+  "graphics_scope": "Owned software-only SPICE desktop; interactive applications use explicit bundled OpenGL; no physical adapter acceptance",
+  "privacy_control_sha256": "958e1ad3b0890090ae1863987666759697958a25cfd95d03499a0c9f54a3f848",
+  "private_console_viewer_start_exit": null,
+  "private_console": {
+    "pid": 3014165,
+    "display": ":2",
+    "home": "/var/tmp/.ottrin-picker-qa-owacct3r/home"
+  },
+  "guest_pid": 6680,
+  "guest_observation_interruption": {
+    "pid": 3848,
+    "error": "guest-exec-status failed for ottrin-msix-runtime: error: Guest agent is not responding: QEMU guest agent is not connected",
+    "process_restarted": false
+  },
+  "desktop_observer_pid": 3015157,
+  "login_reboot_requested": true,
+  "checked_backing_chains": [
+    {
+      "retained_domain": "ottrin-copy-cleanup-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-index-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-qa-20261011",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "win11ltsc",
+      "files": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-msix-runtime-fixture.iso",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-msix-runtime-fixture.iso"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-msix-runtime.qcow2",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-msix-runtime.qcow2",
+        "/var/lib/libvirt/images/ottrin-stock-client.qcow2"
+      ]
+    }
+  ],
+  "owned_volume_allocations_before_removal": [
+    {
+      "volume": "ottrin-msix-runtime-fixture.iso",
+      "allocated_bytes": 117092352,
+      "virtual_capacity_bytes": 117086208
+    },
+    {
+      "volume": "ottrin-msix-runtime.qcow2",
+      "allocated_bytes": 9723838464,
+      "virtual_capacity_bytes": 68719476736
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

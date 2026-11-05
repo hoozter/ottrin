@@ -1,0 +1,6 @@
+{
+  "status": "Exact launched controls input retained from owned fixture while actor runs",
+  "sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+  "basis": "Byte equality of owned copied ISO input, unchanged canonical source and independently frozen native24-to25 controls input",
+  "scope": "Preserved during run; not represented as prelaunch freezing or independent UI acceptance"
+}

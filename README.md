@@ -31,7 +31,7 @@ macOS construction and acceptance are deferred outside the Linux/Windows goal.
 The stable Linux AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 Windows candidates are at `dist/windows-candidate/`. Verified replacements use
 these stable paths; superseded packages and owned temporary QA resources are
-retired after consumers. The current Windows 58-file payload is retained with its
+retired after consumers. The current Windows 59-file payload is retained with its
 candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
@@ -45,13 +45,18 @@ scrolling. Six targeted originals were reviewed. The managed personal index
 returned Ready after replacement, preserving startup choice, preferences and
 database identity. Evidence: `.hermes/evidence/service-ui-delivery-current/`.
 
-The accepted Windows preview remains source `d0320932`: portable ZIP, NSIS and
-unsigned development MSIX22. Installed Dark/Light Services timeout/recovery
-checks pass on that cohort. MSIX22 assembly matches its 58-file portable payload;
-its lifecycle evidence retains the earlier source and artifact scopes recorded
-in `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. A newer package-owned Explorer
-command is under native investigation, separately from this accepted preview.
-Its current status and remaining work belong in the [roadmap](docs/ROADMAP.md).
+The accepted Windows preview now uses source `8e805d31`: portable ZIP, NSIS and
+unsigned development MSIX25, with identical59-file payloads. Installed Dark/Light
+Services checks pass for qualified action history, real daemon timeout, visible
+diagnostics, stable recovery controls, startup retention and uninstall preservation.
+Fresh25 and enabled24-to25 upgrade checks pass actual Explorer folder-background,
+two-selected-folder and drive invocation, ordinary user/package identity, automatic
+foreground, real reboot/login and COM removal. Six Services and seven originals per
+MSIX case were reviewed. All four exact-source hosted jobs passed in
+[run42054602533](https://github.com/hoozter/ottrin/actions/runs/42054602533).
+MSIX default-folder opening, native icon contrast and supplementary glyph fallback
+remain open; the Windows11 drive result does not accept every lower advertised OS
+build. Evidence: `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` and the [roadmap](docs/ROADMAP.md).
 
 The Linux daemon, helper and HTML renderer retain identical accepted bytes;
 their earlier resource, service and administrator-operation receipts keep their

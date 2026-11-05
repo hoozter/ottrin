@@ -1,20 +1,24 @@
 # Current Windows preview
 
-Source `d0320932932b1dfcd70d8200dc4872d7aa08b813`: verified ZIP/NSIS and unsigned development MSIX22.
-Actual installed Services Ready/Stopped/error/Ready, stable recovery-control
-geometry, collapsible diagnostics, retained-daemon resume, sign-in choice and
-uninstall preservation pass in Dark and Light. Six targeted Services originals
-were directly reviewed. Automated Miller/List density and thumbnail fixtures
-pass; full UI/theme property mapping remains open.
+Source 8e805d318557d3248ebf090aa8088dd86194b593: verified59-file ZIP/NSIS and unsigned development MSIX25.
+Actual installed Services Ready/Stopped/error/Ready pass in Dark and Light:
+completed actions remain qualified neutral history, errors stay distinct,
+recovery controls retain their geometry, complete diagnostics remain visible,
+startup stays On and normal close keeps the daemon. Uninstall preserves files
+and preferences. Six targeted Services originals were directly reviewed.
 
-MSIX22 has native MakeAppx assembly and58-file equality. MSIX21 ordinary runtime,
-startup controls, reboot/login and removal retain their original781 scope;
-no fresh22 runtime or21-to22 upgrade acceptance is claimed. The current Windows
-daemon has its own native private1000-file watcher/restart/shutdown and idle
-receipt. Actual21 MSIX folder-integration failure remains software work.
-Historical service-action feedback may still imply readiness after a later error;
-the separately verified source feedback correction is not in this cohort.
+Current MSIX25 fresh runtime and actual enabled24-to25 upgrade pass folder
+background, two selected folders and OS drive invocation, ordinary user/package
+identity, automatic foreground, normal exit, real reboot/login before any
+Ottrin CLI, preferences/index preservation and COM refusal after removal.
+Seven originals per case were reviewed. The daemon has a separate native
+private1000-file watcher/restart/shutdown check and30-second idle sample.
 
-Administrator Copy durable coordinator/caller registry and ordinary MSI rollback
-remain gated. No public release, Store, signing, physical GPU or human acceptance.
-See ../WINDOWS_CANDIDATE_ACCEPTANCE.json for evidence and exact limits.
+Default folder opening under MSIX still has an unresolved registry-transaction
+error; context-menu acceptance does not close default-manager integration.
+MSIX drive-menu schema requires Windows11 build22621; current native evidence
+is from Windows11. Lower advertised package builds require their own integration
+audit. Native light-menu icon contrast, supplementary glyph fallback, the full theme
+property audit, administrator Copy and ordinary MSI rollback remain open.
+No public release, Store, signing, physical GPU or human acceptance is implied.
+See ../WINDOWS_CANDIDATE_ACCEPTANCE.json for exact evidence and limits.

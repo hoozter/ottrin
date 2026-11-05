@@ -1,0 +1,36 @@
+{
+  "status": "pass consumed upgrade export/setup outputs retired",
+  "removed": [
+    {
+      "path": ".hermes/evidence/packaged-shell-current/update24to25/RESULTS.zip",
+      "bytes": 3170915,
+      "sha256": "edbcf172977f77a1f4ba85abd2889eb28a969a03e36fe784abaa7c41b4752c6a"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/update24to25/desktop-ready.png",
+      "bytes": 1694994,
+      "sha256": "694958e59a8429d04fa4950377b674e3cf930be12a48b0ff4bae7cf409a79085"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/update24to25/privacy-accepted-0.png",
+      "bytes": 9384,
+      "sha256": "0cf1d0c99900a6e4ad1a6e0732604b6f380b7bf665807595cdee86a48a909496"
+    },
+    {
+      "path": ".hermes/evidence/packaged-shell-current/update24to25/privacy-accepted-1.png",
+      "bytes": 955524,
+      "sha256": "c65126eea4d6d6aae8c645567677a060e171d24085d4b8601816a5d16ff9428d"
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "retained": "Exact native result, recipes, receipts and scoped originals"
+}

@@ -1,0 +1,39 @@
+{
+  "status": "ready for guarded Windows publication",
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "aab76d67165f5773eac8bb78a4285d72859a1f204e4a28b766ddf75e007d2ffb",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "20928027b9d797c8a1253c872786c5ae45f4a89de78aeaf6386cddb2fee6d24d",
+    "Ottrin-0.1.0-windows-x64-development.msix": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0"
+  },
+  "mutation_performed": false,
+  "all_current_native_consumers_terminal": true,
+  "scope": {
+    "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+    "previous_delivered_source": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+    "changed_product_files": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "crates/ottrin-platform/Cargo.toml",
+      "crates/ottrin-platform/src/windows_folder_integration.rs",
+      "crates/ottrin-shell/Cargo.toml",
+      "crates/ottrin-shell/src/lib.rs",
+      "crates/ottrin-shell/src/server.rs",
+      "crates/ottrin-shell/src/settings.rs",
+      "crates/ottrin-ui/src/lib.rs",
+      "packaging/tests/windows-msix-template.ps1",
+      "packaging/verify-release-artifacts.sh",
+      "packaging/windows/msix-manifest.xml",
+      "packaging/windows/package-msix.ps1",
+      "packaging/windows/package-portable.ps1",
+      "packaging/windows/package-portable.sh"
+    ],
+    "current_nsis_receipt": "NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+    "current_msix_receipts": [
+      "ASSEMBLY_ACCEPTANCE.json",
+      "MSIX_CONTEXTS_ACCEPTANCE.json",
+      "MSIX_ENABLED_UPDATE_ACCEPTANCE.json"
+    ],
+    "basis": "Exact current59-file ZIP/NSIS equality, current ordinary-user NSIS Services, current fresh25 and enabled24-to25 native contexts/login/removal; all four exact-source hosted jobs pass. No historical package result substituted for current acceptance."
+  }
+}

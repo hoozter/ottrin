@@ -4,5 +4,8 @@
   "sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
   "retained_input": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/previous24.msix",
   "original_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix",
-  "purpose": "Pending24-to25 update of an enabled existing folder command, including new drive registration; retire after this consumer"
+  "purpose": "Consumed exact24 input for accepted enabled24-to25 upgrade; no remaining consumer",
+  "status": "Retired after completed exact enabled24-to25 native consumer",
+  "retired": true,
+  "retirement_receipt": "PREVIOUS24_RETIREMENT.json"
 }

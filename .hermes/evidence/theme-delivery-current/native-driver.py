@@ -459,6 +459,12 @@ with ExitStack() as stack:
   state['display_driver_input']=manifest;save('OWNER.json',state)
  large_file_flags=['-allow-limited-size'] if args.update_manifest else []
  assert name==state['domain'],'VM allocation name changed during fixture preparation'
+ controls_input=fixture/'native-controls.ps1'
+ if controls_input.is_file():
+  frozen=e/'NATIVE_CONTROLS_SOURCE.ps1'
+  if frozen.exists():assert frozen.read_bytes()==controls_input.read_bytes()
+  else:shutil.copy2(controls_input,frozen)
+  save('NATIVE_CONTROLS_INPUT.json',{'sha256':hashlib.sha256(frozen.read_bytes()).hexdigest(),'scope':'Exact owned ISO input frozen before VM allocation; not runtime acceptance'})
  subprocess.run(['genisoimage','-quiet','-udf',*large_file_flags,'-iso-level','3','-J','-joliet-long','-r','-V','OTMSICONTROL','-o',str(fixture/'inputs.iso'),*map(str,iso_inputs)],check=True)
  virsh('vol-create-as','default',iso_volume,str((fixture/'inputs.iso').stat().st_size),'--format','raw');state['volumes'].append(iso_volume);save('OWNER.json',state)
  virsh('vol-upload','--pool','default',iso_volume,str(fixture/'inputs.iso'))

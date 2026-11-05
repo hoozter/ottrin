@@ -1,0 +1,191 @@
+{
+  "status": "pass current ordinary-user installed Services history, timeout/recovery and uninstall scope",
+  "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "aab76d67165f5773eac8bb78a4285d72859a1f204e4a28b766ddf75e007d2ffb",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "20928027b9d797c8a1253c872786c5ae45f4a89de78aeaf6386cddb2fee6d24d"
+  },
+  "payload_files": 59,
+  "actor_sha256": "7ca08b4f61a7f7d3ce2eed70d70ded89a97ada38f3f2708284867d930a2b85e0",
+  "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+  "capture_review": {
+    "reviewed": true,
+    "complete_window_visible": true,
+    "history_distinct_from_live_status": true,
+    "captures": {
+      "services-Dark.png": "40744d553df939145b6c36f5b61541f04d3ae08eb26c3b87cefa26c77e8850af",
+      "services-Dark-live-error.png": "b3c1abe1f0f002932f26c135633693e11c6f6be3d4b5a17316308a581b678394",
+      "services-Dark-recovered.png": "4bfb90a03f3659293dc5cf469d1008e467f4f25bcd54a1358582c3e070a98bed",
+      "services-Light.png": "283251fa92ab70caefccf4ae692ef65ed2d44e7c330e983307720b5335e1a1eb",
+      "services-Light-live-error.png": "02106c20cd6399dbca44c2a0f11b11f77d988d6bb7454e1fd386ece9aed15ebc",
+      "services-Light-recovered.png": "a9a73a361112ccd881bdd40bcbc863dc20023ce143bbe80af952cef13308f9c6"
+    },
+    "observations": [
+      "All six original Settings frames show the complete native window; page contents scroll below the viewport, with no whole-page visibility claim",
+      "Both themes show neutral Last completed action text distinctly above live readiness; the live timeout is red and fully readable",
+      "Both themes recover from the suspended daemon to green Running \u2014 index ready; recovery controls keep their positions between error and recovery",
+      "Sidebar grouping, current title and controls are visible within the targeted Services view; no whole-interface or property-mapping acceptance inferred"
+    ],
+    "limits": [
+      "Six targeted original Services frames only; other transition/collapse frames remain automated scope",
+      "Native timeout is one fully visible local-pipe diagnostic; arbitrary long diagnostics rely on their separate rendered source regression, not these six frames",
+      "Ordinary CLI status booleans observed; its textual detail was decoded by the legacy PowerShell child reader and is not Unicode CLI-text acceptance"
+    ]
+  },
+  "live_faults": [
+    {
+      "ready_geometry": {
+        "Start / restart": [
+          365,
+          439,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          439,
+          105,
+          28
+        ]
+      },
+      "error_geometry": {
+        "Start / restart": [
+          365,
+          439,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          439,
+          105,
+          28
+        ]
+      },
+      "collapsed_capture": "services-Dark-error-collapsed.png",
+      "diagnostic_bounds": [
+        {
+          "y": 501,
+          "width": 159,
+          "name": "Local pipe I/O timed out",
+          "height": 17,
+          "x": 202
+        }
+      ],
+      "error_capture": "services-Dark-live-error.png",
+      "scope": "Actual retained ordinary-user daemon temporarily unresponsive; same process must recover after resume",
+      "theme": "Dark",
+      "diagnostics": [
+        "Local pipe I/O timed out"
+      ],
+      "pid": 2312,
+      "suspended_threads": 5,
+      "completed_action_history": "Last completed action: Background Ottrin index service restarted and ready."
+    },
+    {
+      "ready_geometry": {
+        "Start / restart": [
+          365,
+          439,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          439,
+          105,
+          28
+        ]
+      },
+      "error_geometry": {
+        "Start / restart": [
+          365,
+          439,
+          103,
+          28
+        ],
+        "Stop indexing": [
+          477,
+          439,
+          105,
+          28
+        ]
+      },
+      "collapsed_capture": "services-Light-error-collapsed.png",
+      "diagnostic_bounds": [
+        {
+          "y": 501,
+          "width": 159,
+          "name": "Local pipe I/O timed out",
+          "height": 17,
+          "x": 202
+        }
+      ],
+      "error_capture": "services-Light-live-error.png",
+      "scope": "Actual retained ordinary-user daemon temporarily unresponsive; same process must recover after resume",
+      "theme": "Light",
+      "diagnostics": [
+        "Local pipe I/O timed out"
+      ],
+      "pid": 7900,
+      "suspended_threads": 6,
+      "completed_action_history": "Last completed action: Background Ottrin index service restarted and ready."
+    }
+  ],
+  "transitions": [
+    {
+      "stopped_capture": "services-Dark-stopped.png",
+      "scope": "Actual installed service UI stop/restart plus retained-daemon live timeout, stable recovery geometry and same-process recovery",
+      "startup_preserved": true,
+      "states": [
+        "Ready",
+        "Stopped",
+        "Ready"
+      ],
+      "recovered_capture": "services-Dark-recovered.png",
+      "theme": "Dark"
+    },
+    {
+      "stopped_capture": "services-Light-stopped.png",
+      "scope": "Actual installed service UI stop/restart plus retained-daemon live timeout, stable recovery geometry and same-process recovery",
+      "startup_preserved": true,
+      "states": [
+        "Ready",
+        "Stopped",
+        "Ready"
+      ],
+      "recovered_capture": "services-Light-recovered.png",
+      "theme": "Light"
+    }
+  ],
+  "installed_service_scope": {
+    "scope": "Installed/readiness/main-close checks only; prior source retains actual unchanged On/Off/On lifecycle proof",
+    "normal_close_keeps_pid": 7900,
+    "startup": "On",
+    "ready": true
+  },
+  "preferences_preserved": true,
+  "sources_preserved": true,
+  "ordinary_folder_status": {
+    "enabled": false,
+    "ready": false,
+    "detail": "Off \u0393\u00c7\u00f6 Windows folder menus keep their current actions",
+    "default_enabled": false,
+    "default_ready": false
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Dark/Light targeted installed Services only; no complete theme/property or physical graphics acceptance",
+    "Exact same-process fault recovery and On startup retention; other scopes retain their own receipts",
+    "No administrator Copy, MSI rollback, signing, Store or whole roadmap acceptance"
+  ]
+}

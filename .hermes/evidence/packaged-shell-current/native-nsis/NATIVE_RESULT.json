@@ -1,0 +1,172 @@
+{
+  "original_sha256": "5b778c630eb9114a71ab9cff05deefa457e4210bdc7fe063645f2e7b7b3ab1f4",
+  "value": {
+    "transitions": [
+      {
+        "stopped_capture": "services-Dark-stopped.png",
+        "scope": "Actual installed service UI stop/restart plus retained-daemon live timeout, stable recovery geometry and same-process recovery",
+        "startup_preserved": true,
+        "states": [
+          "Ready",
+          "Stopped",
+          "Ready"
+        ],
+        "recovered_capture": "services-Dark-recovered.png",
+        "theme": "Dark"
+      },
+      {
+        "stopped_capture": "services-Light-stopped.png",
+        "scope": "Actual installed service UI stop/restart plus retained-daemon live timeout, stable recovery geometry and same-process recovery",
+        "startup_preserved": true,
+        "states": [
+          "Ready",
+          "Stopped",
+          "Ready"
+        ],
+        "recovered_capture": "services-Light-recovered.png",
+        "theme": "Light"
+      }
+    ],
+    "live_faults": [
+      {
+        "ready_geometry": {
+          "Start / restart": [
+            365,
+            439,
+            103,
+            28
+          ],
+          "Stop indexing": [
+            477,
+            439,
+            105,
+            28
+          ]
+        },
+        "error_geometry": {
+          "Start / restart": [
+            365,
+            439,
+            103,
+            28
+          ],
+          "Stop indexing": [
+            477,
+            439,
+            105,
+            28
+          ]
+        },
+        "collapsed_capture": "services-Dark-error-collapsed.png",
+        "diagnostic_bounds": [
+          {
+            "y": 501,
+            "width": 159,
+            "name": "Local pipe I/O timed out",
+            "height": 17,
+            "x": 202
+          }
+        ],
+        "error_capture": "services-Dark-live-error.png",
+        "scope": "Actual retained ordinary-user daemon temporarily unresponsive; same process must recover after resume",
+        "theme": "Dark",
+        "diagnostics": [
+          "Local pipe I/O timed out"
+        ],
+        "pid": 2312,
+        "suspended_threads": 5,
+        "completed_action_history": "Last completed action: Background Ottrin index service restarted and ready."
+      },
+      {
+        "ready_geometry": {
+          "Start / restart": [
+            365,
+            439,
+            103,
+            28
+          ],
+          "Stop indexing": [
+            477,
+            439,
+            105,
+            28
+          ]
+        },
+        "error_geometry": {
+          "Start / restart": [
+            365,
+            439,
+            103,
+            28
+          ],
+          "Stop indexing": [
+            477,
+            439,
+            105,
+            28
+          ]
+        },
+        "collapsed_capture": "services-Light-error-collapsed.png",
+        "diagnostic_bounds": [
+          {
+            "y": 501,
+            "width": 159,
+            "name": "Local pipe I/O timed out",
+            "height": 17,
+            "x": 202
+          }
+        ],
+        "error_capture": "services-Light-live-error.png",
+        "scope": "Actual retained ordinary-user daemon temporarily unresponsive; same process must recover after resume",
+        "theme": "Light",
+        "diagnostics": [
+          "Local pipe I/O timed out"
+        ],
+        "pid": 7900,
+        "suspended_threads": 6,
+        "completed_action_history": "Last completed action: Background Ottrin index service restarted and ready."
+      }
+    ],
+    "ordinary_folder_status": {
+      "enabled": false,
+      "ready": false,
+      "detail": "Off ΓÇö Windows folder menus keep their current actions",
+      "default_enabled": false,
+      "default_ready": false
+    },
+    "package": {
+      "source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
+      "files": [
+        {
+          "name": "current-setup.exe",
+          "sha256": "20928027b9d797c8a1253c872786c5ae45f4a89de78aeaf6386cddb2fee6d24d"
+        }
+      ],
+      "actor_sha256": "7ca08b4f61a7f7d3ce2eed70d70ded89a97ada38f3f2708284867d930a2b85e0",
+      "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+    },
+    "phase": "uninstall preserves preferences and files",
+    "scope": "Exact current NSIS ordinary-user Services: Dark/Light completed-action history, real daemon timeout, recovery-control geometry, diagnostic disclosure, startup and uninstall preservation; no full interface acceptance.",
+    "installed_service_scope": {
+      "scope": "Installed/readiness/main-close checks only; prior source retains actual unchanged On/Off/On lifecycle proof",
+      "normal_close_keeps_pid": 7900,
+      "startup": "On",
+      "ready": true
+    },
+    "sources_preserved": true,
+    "status": "pass current NSIS Services recovery and uninstall scope",
+    "preferences_preserved": true,
+    "services": [
+      {
+        "scope": "Actual installed Services Ready tone; original image review required",
+        "capture": "services-Dark.png",
+        "theme": "Dark"
+      },
+      {
+        "scope": "Actual installed Services Ready tone; original image review required",
+        "capture": "services-Light.png",
+        "theme": "Light"
+      }
+    ]
+  }
+}

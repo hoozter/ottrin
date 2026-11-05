@@ -1,5 +1,5 @@
 {
-  "status": "open scoped findings; full theme audit remains in roadmap",
+  "status": "Native icon/glyph findings open; work-area QA finding closed within targeted scope",
   "findings": [
     {
       "id": "native-menu-icon-contrast",
@@ -19,9 +19,11 @@
     {
       "id": "settings-capture-workarea",
       "surface": "Private native Settings QA capture",
-      "evidence": "runtime24/CAPTURE_REVIEW.json",
+      "evidence": "native-nsis/CAPTURE_REVIEW.json",
       "observed": "Taskbar overlays bottom controls; current Place only moves the window into the working area without constraining its size",
-      "required": "Fit the owned QA window within its working area and verify resulting bounds in the next relevant native UI case; do not infer complete-window acceptance from current targeted screenshots"
+      "required": "Fit the owned QA window within its working area and verify resulting bounds in the next relevant native UI case; do not infer complete-window acceptance from current targeted screenshots",
+      "status": "closed within targeted QA window-placement scope",
+      "resolution": "Canonical Place now clamps owned window dimensions to working area and checks actual bounds; native24-to25 and Dark/Light NSIS Services runs pass; six Services originals show complete native window. Scrollable whole-page/full-interface acceptance is separate"
     }
   ]
 }

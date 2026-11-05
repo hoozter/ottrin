@@ -1,42 +1,42 @@
 {
-  "status": "pass scoped packaged Windows index error/recovery layout; full roadmap incomplete",
-  "source_commit": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+  "status": "pass scoped current Windows Services and packaged Explorer integration; full roadmap incomplete",
+  "source_commit": "8e805d318557d3248ebf090aa8088dd86194b593",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "d3af3d4e146d24c1393514bc9d5796361afb5aee6219a3e8ec03497a72d5e4a7",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "d4f116532d3dff303db93aecd2b6799d0629590f069216d64ab5170c40e80180",
-    "Ottrin-0.1.0-windows-x64-development.msix": "a62e4a6bd94217239bf310a1ef927de7995f1c32448d259b71791add89519f52"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "aab76d67165f5773eac8bb78a4285d72859a1f204e4a28b766ddf75e007d2ffb",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "20928027b9d797c8a1253c872786c5ae45f4a89de78aeaf6386cddb2fee6d24d",
+    "Ottrin-0.1.0-windows-x64-development.msix": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0"
   },
-  "payload_files": 58,
-  "evidence_directory": ".hermes/evidence/index-error-layout-delivery-current",
+  "payload_files": 59,
+  "evidence_directory": ".hermes/evidence/packaged-shell-current",
   "hosted_source": {
-    "run": 41998168676,
-    "tested_source_revision": "d0320932932b1dfcd70d8200dc4872d7aa08b813",
+    "run": 42054602533,
+    "tested_source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
     "exact_source_all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/index-error-layout-delivery-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/index-error-layout-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "current_native_fields": ".hermes/evidence/packaged-shell-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/packaged-shell-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/index-error-layout-delivery-current/ASSEMBLY_ACCEPTANCE.json",
-    "historical_runtime_login_removal": ".hermes/evidence/index-status-final-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
-    "historical_enabled_disabled_updates": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json",
-    "scope": "Current22 native assembly and58-file equality plus exact same GUI in current ordinary-user NSIS error/disclosure/geometry/recovery and uninstall acceptance. MSIX21 actual ordinary runtime/startup/reboot/login/removal remains historical781 source/artifacts. Packaging unchanged and product delta is Services layout only; no fresh21-to22 upgrade or22 runtime claim."
+    "current_assembly": ".hermes/evidence/packaged-shell-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/packaged-shell-current/MSIX_CONTEXTS_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/packaged-shell-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
+    "scope": "Exact current59-file ZIP/NSIS equality, current ordinary-user NSIS Services, current fresh25 and enabled24-to25 native contexts/login/removal; all four exact-source hosted jobs pass. No historical package result substituted for current acceptance."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/index-error-layout-delivery-current/WINDOWS_SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/packaged-shell-current/WINDOWS_SOURCE_SCOPE.json",
   "public_release_published": false,
   "limits": [
     "Software guest/default DPI only; no physical GPU, signing, Store or human acceptance",
-    "Six targeted Services originals directly reviewed; whole UI/theme audit remains open",
-    "Historical service-action feedback can outlive current readiness; separate service-feedback-current source fix is not in this cohort.",
-    "Current22 assembly and exact NSIS runtime; MSIX21 startup/runtime/login/removal retains original781 source/artifacts; no current22 MSIX runtime claim",
-    "Actual21 MSIX folder-integration transaction error remains independent software work",
+    "Targeted Services and Explorer originals only; full theme/interface property audit remains open",
+    "MSIX default folder opening transaction error remains separate software work",
+    "MSIX drive-menu schema requires Windows11 build22621; lower advertised package builds are not accepted by this Windows11 case",
+    "Native light-menu icon contrast and supplementary glyph fallback remain open",
     "Administrator Copy coordinator/caller registry and ordinary MSI rollback remain gated"
   ]
 }
