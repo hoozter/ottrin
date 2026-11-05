@@ -1,0 +1,7 @@
+{
+  "exit": 0,
+  "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.10s\n\n",
+  "stderr": "",
+  "scope": "Owned SYSTEM-side native mechanism observation; no UAC or enabled Copy acceptance",
+  "status": "pass owned SYSTEM companion"
+}

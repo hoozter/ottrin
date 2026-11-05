@@ -1,0 +1,12 @@
+{
+  "status": "Native mechanism observation passed, but receipt export exited nonzero",
+  "native_result": "native-fixed/GUEST_RESULT.json",
+  "producer_exit": 1,
+  "creation_observed": false,
+  "creation_error": 5,
+  "positive_control_and_handle_io": true,
+  "limits": "The previous producer did not retain export command stderr, so its exact failing command diagnostic is unavailable. Caller-private control data was located inside the recursively exported receipt tree.",
+  "fix": "Separate owned probe payload from exported receipts, and retain the exporter command result before validation. No ACL relaxation or privileged read workaround.",
+  "replacement_native": "native-export-fixed/RESULT.json",
+  "replacement_export": "pass exit 0 with exact transferred archive hash; see native-export-fixed/ARCHIVE_TRANSFER.json"
+}

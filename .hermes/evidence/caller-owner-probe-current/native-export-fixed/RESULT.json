@@ -1,0 +1,154 @@
+{
+  "input": {
+    "source_revision": "8d5e8d750c0573b4d3a3d236cad4d506afeb8839",
+    "source_test_sha256": "b87021507e8edf7919ea05cfe45ddcd932a959fd8a3704561ebc06157fefe8d5",
+    "test_sha256": "8698514fd9466e84dc2b86329f56727a562872b9fe61acdae09aa3a36e80e59b",
+    "source_bytes": 545352400,
+    "staged_bytes": 523893384,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 408743424,
+      "sha256": "81cd4759c24b241391f45e114473328ac387ba2f57b7aea92e95c55b319a5646"
+    },
+    "actor_sha256": "a31ac871478c7c08dcd133146c496f86acefb758ff4ba5eadea5b557371dd9fe",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "797005ef7e7a8fdfed1ae58a5dd590cc0223f48c0e41117260596e493a4b33e5",
+    "changed_product_sources": {
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "1a36535d8aab85beb974853b878ec648e6c7a115617647ef002bc71fb1c0ae9e",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "a2e5bb5021472ccd2eac263ee5ca5192f951872816fd6f2f3ab4e730d5a6712d"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "system": {
+    "exit": 0,
+    "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.10s\n\n",
+    "stderr": "",
+    "scope": "Owned SYSTEM-side native mechanism observation; no UAC or enabled Copy acceptance",
+    "status": "pass owned SYSTEM companion"
+  },
+  "observation": {
+    "caller_owner": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      234,
+      3,
+      0,
+      0
+    ],
+    "caller_profile": "C:\\Users\\OTMSI2599d30a9e83\\AppData\\Local",
+    "caller_user": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      234,
+      3,
+      0,
+      0
+    ],
+    "control_creation_owner_matches_caller": true,
+    "creation_with_original_token_and_elevated_parent_handle": {
+      "created": false,
+      "message": "Access is denied. (os error 5)",
+      "native_error": 5
+    },
+    "helper_user": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      18,
+      0,
+      0,
+      0
+    ],
+    "profile_still_valid": true,
+    "protected_parent_dacl_verified": true,
+    "protected_parent_owner": [
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      32,
+      0,
+      0,
+      0,
+      32,
+      2,
+      0,
+      0
+    ],
+    "scope": "Distinct SYSTEM helper mechanism observation; no alternate-administrator UAC or enabled Copy acceptance",
+    "thread_identity_restored": true
+  },
+  "phase": "complete",
+  "scope": "Ordinary-client/SYSTEM-companion original-caller and owner-creation mechanism observation; no alternate-administrator UAC, production Copy, registry bridge or package acceptance",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "pass cross-principal native mechanism observation",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::client ... Native mechanism observation recorded; this does not enable privileged Copy\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 1.61s\n\n",
+      "case": "ordinary client",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

@@ -473,6 +473,7 @@ fn io_error(error: io::Error) -> PlatformError {
 mod tests {
     use super::*;
     use ottrin_core::{PrivilegedCommand, PrivilegedContext, PrivilegedPayload};
+    mod caller_owner;
 
     const ACL: &str = "D:P(A;;GA;;;OW)(A;;GA;;;BA)(A;;GA;;;SY)";
 

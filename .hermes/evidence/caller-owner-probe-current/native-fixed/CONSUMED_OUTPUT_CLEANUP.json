@@ -1,0 +1,20 @@
+[
+  {
+    "path": ".hermes/evidence/caller-owner-probe-current/native-fixed/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "reason": "Consumed setup frame; native result and export failure scope retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-owner-probe-current/native-fixed/privacy-accepted-1.png",
+    "bytes": 955984,
+    "sha256": "abb6084f6dc75693599909ba9428915c2b6451f7b19143700b968f87c68b372c",
+    "reason": "Consumed setup frame; native result and export failure scope retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-owner-probe-current/native-fixed/desktop-ready.png",
+    "bytes": 1696861,
+    "sha256": "b5b8f46d23a37735892ab0d0ee9d6d397c97474e222b735548b85bf3f270c453",
+    "reason": "Consumed setup frame; native result and export failure scope retained"
+  }
+]

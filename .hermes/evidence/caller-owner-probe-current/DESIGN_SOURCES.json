@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-impersonateloggedonuser",
+      "use": "Check impersonation success and token access rights; a failed call must not continue with elevated authority."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-reverttoself",
+      "use": "Restore the thread identity; terminate the owned test process if restoration fails."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile",
+      "use": "A root handle supplies a relative namespace; this documentation alone is not proof of caller access under impersonation."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-setsecurityinfo",
+      "use": "Separate permission-setting and inheritance behavior from creation/owner admission."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createprivateobjectsecurityex",
+      "use": "Next implementation candidate: native descriptor derives original token owner/group without bypassing native owner validation; not implemented or accepted by this experiment."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights",
+      "use": "Next implementation must explicitly prove any required scoped backup/restore privilege and original-owner private reopen; no ACL relaxation or automatic privilege assumption."
+    }
+  ],
+  "decision": "Measure the actual canonical create_private behavior before selecting the ownership bridge. Do not infer protected creation rights solely from a directory handle."
+}

@@ -1,0 +1,42 @@
+{
+  "source": {
+    "reference_commit": "8d5e8d750c0573b4d3a3d236cad4d506afeb8839",
+    "files": {
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "1a36535d8aab85beb974853b878ec648e6c7a115617647ef002bc71fb1c0ae9e",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "864af6112d4f14778811a2968b2aed5b90bad4b8024238701407db9f9288911a"
+    },
+    "scope": "Two-principal native mechanism observation only. No production registry bridge or administrator Copy enablement."
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "11b9cb1569fd059ddb8e91e2164131729e4c9cb21f43d32b3812d712519bed6f",
+      "bytes": 772082893,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": []
+    },
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "8155d39cae2e49189c1a7f83ed3c26ef25053c7b86e13242cd326603393a0679",
+      "bytes": 545352400,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": []
+    }
+  ],
+  "build_exit": 0,
+  "command": "cargo test -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --lib --no-run --message-format=json"
+}

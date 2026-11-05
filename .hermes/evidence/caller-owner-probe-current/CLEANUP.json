@@ -1,0 +1,45 @@
+{
+  "status": "Complete owned native teardown and consumed-output cleanup",
+  "baseline": "STORAGE_BEFORE.json",
+  "incremental_receipts": [
+    "INCREMENTAL_CLEANUP.json",
+    "FIXED_INCREMENTAL_CLEANUP.json",
+    "EXPORT_FIXED_INCREMENTAL_CLEANUP.json"
+  ],
+  "latest_incremental_recovered_gib": 0.79,
+  "native": "native-export-fixed/OWNER.json",
+  "consumed": "native-export-fixed/CONSUMED_OUTPUT_CLEANUP.json",
+  "available_bytes": 26251776000,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps",
+      "bytes": 23815171724,
+      "baseline_bytes": 23815171724,
+      "purpose": "Shared authoritative compiler output/cache; newest matching platform/UI tests retained for next ownership bridge; obsolete finalized sessions removed with locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental",
+      "bytes": 24985261298,
+      "baseline_bytes": 25263960526,
+      "purpose": "Shared authoritative compiler output/cache; newest matching platform/UI tests retained for next ownership bridge; obsolete finalized sessions removed with locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps",
+      "bytes": 31112604683,
+      "baseline_bytes": 31112395043,
+      "purpose": "Shared authoritative compiler output/cache; newest matching platform/UI tests retained for next ownership bridge; obsolete finalized sessions removed with locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental",
+      "bytes": 48274191680,
+      "baseline_bytes": 48837088353,
+      "purpose": "Shared authoritative compiler output/cache; newest matching platform/UI tests retained for next ownership bridge; obsolete finalized sessions removed with locked helper"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-owner-probe-current",
+      "bytes_before_final_receipts": 840793,
+      "purpose": "Compact source/build/native/failure/teardown evidence and reproducible owned QA scripts; no guest payload, disk, runtime profile or package staging"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

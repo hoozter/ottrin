@@ -4,7 +4,7 @@ from contextlib import ExitStack
 import argparse, base64, re, hashlib, importlib.util, json, os, shutil, signal, subprocess, sys, time, urllib.request, uuid, xml.etree.ElementTree as E
 def cancelled(signum, frame):raise SystemExit(128+signum)
 for sig in [signal.SIGTERM,signal.SIGINT]:signal.signal(sig,cancelled)
-parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-helper',type=Path);parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);parser.add_argument('--application-native-test',type=Path);parser.add_argument('--boundary-fixture',type=Path);parser.add_argument('--platform-fixture-test',type=Path);parser.add_argument('--display-resolution',choices=['2560x1600']);parser.add_argument('--display-driver',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--update-manifest',type=Path);parser.add_argument('--output',type=Path);parser.add_argument('--msix-parse-only',action='store_true');parser.add_argument('--msix-stage',type=Path);parser.add_argument('--msix-runtime',type=Path);parser.add_argument('--msix-upgrade-from',type=Path);parser.add_argument('--msix-startup-disabled',action='store_true');parser.add_argument('--prepare-updated-base',action='store_true');parser.add_argument('--use-updated-base',action='store_true');parser.add_argument('--use-stock-base',action='store_true');parser.add_argument('--native-test',type=Path);parser.add_argument('--test-filter');parser.add_argument('--native-helper',type=Path);parser.add_argument('--native-msi-builder',type=Path);parser.add_argument('--native-elevated',action='store_true');parser.add_argument('--application-msi',type=Path);parser.add_argument('--application-nsis-stage',type=Path);parser.add_argument('--application-uia-stage',type=Path);parser.add_argument('--native-transport-probe',action='store_true');parser.add_argument('--office-installed',action='store_true');parser.add_argument('--office-worksheet',action='store_true');parser.add_argument('--application-actor',type=Path);parser.add_argument('--application-native-test',type=Path);parser.add_argument('--boundary-fixture',type=Path);parser.add_argument('--platform-fixture-test',type=Path);parser.add_argument('--application-system-companion',type=Path);parser.add_argument('--display-resolution',choices=['2560x1600']);parser.add_argument('--display-driver',type=Path);args=parser.parse_args()
 assert not args.office_worksheet or args.office_installed,'Worksheet surface requires the installed Office fixture'
 assert not args.office_installed or (args.application_nsis_stage and args.output and not args.use_stock_base and not args.use_updated_base),'Installed Office uses its exact declared retained-provider clone'
 assert not args.application_actor or ((args.application_nsis_stage or args.application_native_test) and args.use_stock_base and args.output and not args.office_installed),'Explicit actor requires a receipt-bound package and stock-client case'
@@ -19,6 +19,7 @@ assert not args.application_nsis_stage or ((args.use_stock_base or args.office_i
 assert not args.application_msi or ((args.use_stock_base or args.use_updated_base) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])),'Application MSI requires a fresh declared stock or prepared updated ordinary-user case'
 assert not args.boundary_fixture or args.application_native_test
 assert not args.platform_fixture_test or (args.application_native_test and args.application_actor and args.use_stock_base and args.output and not args.boundary_fixture), 'UI platform fixture requires an explicit native UI actor and its isolated stock case'
+assert not args.application_system_companion or (args.application_native_test and args.application_native_test.name.startswith('ottrin_platform-') and args.application_actor and args.use_stock_base and args.output and not any([args.boundary_fixture,args.platform_fixture_test])), 'SYSTEM companion requires a declared platform test and explicit ordinary actor on its owned stock clone'
 assert not args.application_native_test or (args.use_stock_base and args.output and args.application_actor and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test,args.native_helper])), 'Native boundary test requires an explicit isolated ordinary-user actor'
 assert not args.native_elevated or args.native_msi_builder,'Elevated diagnostic requires the native file-only builder; never an application deployment mode'
 assert not args.native_helper or (args.native_test and args.test_filter=='windows_privileged_transport::tests::windows_helper_pipe_'), 'Helper input only supports the explicit production-helper test'
@@ -39,6 +40,8 @@ assert not args.output or not (e/'OWNER.json').exists(),'Do not replace an exist
 if interactive_case:
  helper=e.parent/'privacy-control.py'
  assert helper.is_file() and not helper.is_symlink(), f'Missing owned interactive controller: {helper}'
+if args.application_system_companion:
+ assert args.application_system_companion.is_file() and not args.application_system_companion.is_symlink() and args.application_system_companion.resolve().parent==args.application_actor.resolve().parent==e.parent
 e.mkdir(parents=True,exist_ok=True)
 (e/'DRIVER_SOURCE.py').write_bytes(Path(__file__).read_bytes())
 name='ottrin-boundary-client' if args.application_native_test else 'ottrin-uia-client' if args.application_uia_stage else 'ottrin-transport-probe' if args.native_transport_probe else 'ottrin-nsis-client' if args.application_nsis_stage else 'ottrin-native-test' if args.native_test else 'ottrin-msix-runtime' if args.msix_runtime else 'ottrin-msix-assembly' if args.msix_stage else 'ottrin-msix-parser' if args.msix_parse_only else 'ottrin-msi-updated-client' if args.update_manifest else 'ottrin-msi-clean-client';uid=str(uuid.uuid4());volume=name+'.qcow2';iso_volume=name+'-fixture.iso'
@@ -83,6 +86,7 @@ if args.native_elevated:scope='Diagnostic elevated owned QA account, same native
 if args.office_installed:scope='Current NSIS installed Office main/Inspector render and fallback on ordinary native WGPU/OpenGL; private clone of retained verified-provider QA base, not a clean stock installation'
 if args.application_actor:scope='Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance.'
 if args.application_native_test:scope='Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.'
+if args.application_system_companion:scope='Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
 if args.office_installed:
  assert virsh('domstate','ottrin-copy-cleanup-qa')=='shut off' and virsh('domuuid','ottrin-copy-cleanup-qa')=='9b2e795f-fb04-4adb-95a7-8832f8894c67'
@@ -402,13 +406,34 @@ with ExitStack() as stack:
     with companion.open('rb') as stream:companion_source_sha=hashlib.file_digest(stream,'sha256').hexdigest()
     with staged_companion.open('rb') as stream:companion_sha=hashlib.file_digest(stream,'sha256').hexdigest()
     identity['platform_fixture']={'source_sha256':companion_source_sha,'sha256':companion_sha,'source_bytes':companion.stat().st_size,'staged_bytes':staged_companion.stat().st_size,'unchanged_executable_text':companion_code}
+   if args.application_system_companion:
+    shutil.copyfile(args.application_system_companion,fixture/'system-companion.ps1');shutil.copyfile(args.application_system_companion,e/'SYSTEM_COMPANION_SOURCE.ps1');identity['system_companion_sha256']=hashlib.sha256(args.application_system_companion.read_bytes()).hexdigest()
    changed=set(subprocess.check_output(['git','diff','--name-only','HEAD','--','Cargo.toml','Cargo.lock','crates'],text=True).splitlines())
    changed.update(subprocess.check_output(['git','ls-files','--others','--exclude-standard','--','Cargo.toml','Cargo.lock','crates'],text=True).splitlines())
    identity['changed_product_sources']={path:hashlib.sha256((r/path).read_bytes()).hexdigest() if (r/path).is_file() else None for path in sorted(changed)}
    identity['source_scope']='Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test.'
-   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity);application_files=['boundary-test.exe','application-input.json']+(['boundary-fixture.exe'] if args.boundary_fixture else [])+(['platform-fixture-test.exe'] if args.platform_fixture_test else [])
+   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity);application_files=['boundary-test.exe','application-input.json']+(['boundary-fixture.exe'] if args.boundary_fixture else [])+(['platform-fixture-test.exe'] if args.platform_fixture_test else [])+(['system-companion.ps1'] if args.application_system_companion else [])
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
+  if args.application_system_companion:
+   # The sole additional elevated role lives entirely inside this owned clone.
+   # The ordinary actor and real pipe still define request/caller admission.
+   companion_setup=r''' $companion=Join-Path $root 'system-companion.ps1'
+ $tokens=$null;$parseErrors=$null;$null=[Management.Automation.Language.Parser]::ParseFile($companion,[ref]$tokens,[ref]$parseErrors);if($parseErrors.Count){throw ($parseErrors|Out-String)}
+ $probeData=Join-Path $root 'probe-data';New-Item -ItemType Directory $probeData|Out-Null;Grant $probeData $user.SID 'FullControl'
+ $protected=Join-Path $root 'system-only';New-Item -ItemType Directory $protected|Out-Null
+ $protectedAcl=[Security.AccessControl.DirectorySecurity]::new();$protectedAcl.SetAccessRuleProtection($true,$false)
+ foreach($sid in @('S-1-5-18','S-1-5-32-544')){$protectedAcl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new($sid),'FullControl','ContainerInherit,ObjectInherit','None','Allow'))};Set-Acl $protected $protectedAcl
+ $invokeCompanion="& ([ScriptBlock]::Create([IO.File]::ReadAllText('$companion'))) -Root '$root' -ExpectedSid '$($user.SID.Value)'"
+ $companionArguments='-NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand '+[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($invokeCompanion))
+ $companionAction=New-ScheduledTaskAction -Execute "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -Argument $companionArguments
+ $companionPrincipal=New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+ $companionTask='OttrinOwnedCallerCompanion';Register-ScheduledTask -TaskName $companionTask -Action $companionAction -Trigger (New-ScheduledTaskTrigger -AtStartup) -Principal $companionPrincipal -Force|Out-Null
+ $state.system_companion_task=$companionTask
+'''
+   insertion=" $credential=[Management.Automation.PSCredential]::new"
+   assert script.count(insertion)==1
+   script=script.replace(insertion,companion_setup+insertion)
   if args.application_nsis_stage and args.application_actor:
    stage=args.application_nsis_stage.resolve();revision,artifacts,payload=nsis_input(args.application_nsis_stage)
    setup=stage/'Ottrin-0.1.0-windows-x64-setup.exe';digest=hashlib.sha256(setup.read_bytes()).hexdigest();assert digest==artifacts[setup.name];os.link(setup,fixture/'current-setup.exe')
@@ -717,7 +742,8 @@ with ExitStack() as stack:
   time.sleep(3)
  save('GUEST_RESULT.json',actor_result)
  result=ps("$ErrorActionPreference='Stop';$owner=Get-Content 'C:\\OttrinMsiCleanClientResults\\OWNER.json' -Raw|ConvertFrom-Json;Copy-Item ($owner.root+'\\results\\*') 'C:\\OttrinMsiCleanClientResults' -Recurse;Compress-Archive 'C:\\OttrinMsiCleanClientResults\\*' 'C:\\OttrinMsiCleanClientResults.zip';$p=Get-Item 'C:\\OttrinMsiCleanClientResults.zip';@{bytes=$p.Length;sha256=(Get-FileHash $p.FullName).Hash.ToLowerInvariant()}|ConvertTo-Json -Compress",30)
- assert result['exitcode']==0
+ save('EXPORT_PREPARATION.json',result)
+ assert result['exitcode']==0,'Owned receipt export failed; inspect EXPORT_PREPARATION.json'
  archive=json.loads(base64.b64decode(result['out-data']).decode('utf-8-sig'));assert archive['bytes']>0
  transfer_owned_guest_file(r'C:\OttrinMsiCleanClientResults.zip',e/'RESULTS.zip',archive,'ARCHIVE_TRANSFER.json')
  state['status']='control finished; inspect exact result, not assumed pass';save('OWNER.json',state)

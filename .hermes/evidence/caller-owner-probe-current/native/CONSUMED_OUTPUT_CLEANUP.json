@@ -1,0 +1,26 @@
+[
+  {
+    "path": ".hermes/evidence/caller-owner-probe-current/native/RESULTS.zip",
+    "bytes": 3708,
+    "sha256": "f333bee9dc48cd80032f9c819ece0ba606b659322793cb94919e4655ea68d0cb",
+    "reason": "Consumed failed native transport/setup image; exact result, SYSTEM diagnostic, source and input retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-owner-probe-current/native/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "reason": "Consumed failed native transport/setup image; exact result, SYSTEM diagnostic, source and input retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-owner-probe-current/native/privacy-accepted-1.png",
+    "bytes": 956528,
+    "sha256": "164a1209125f26dcded2b7a9a253f224a79977cefe14550a751ba52178922342",
+    "reason": "Consumed failed native transport/setup image; exact result, SYSTEM diagnostic, source and input retained"
+  },
+  {
+    "path": ".hermes/evidence/caller-owner-probe-current/native/desktop-ready.png",
+    "bytes": 1693457,
+    "sha256": "61707bd282631dc76e19f152c903fe69a6561dcf394eae2b66f5b2a116ac4846",
+    "reason": "Consumed failed native transport/setup image; exact result, SYSTEM diagnostic, source and input retained"
+  }
+]

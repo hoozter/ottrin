@@ -1,0 +1,5 @@
+{
+  "pid": 3492,
+  "status": "Diagnostic observation failed; guest agent later reported handle missing. No successful diagnostic result inferred.",
+  "scope": "Additional read-only readiness query, separate from the original native actor; actor was not restarted and completed successfully. Owned guest is now removed."
+}

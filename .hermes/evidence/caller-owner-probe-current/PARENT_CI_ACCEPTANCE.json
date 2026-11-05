@@ -1,0 +1,33 @@
+{
+  "status": "All four hosted jobs passed for the prior coordinator checkpoint",
+  "source_commit": "c920153277f8a76c2e89570f1ce8c43b2eeeea36",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/42105264888",
+  "jobs": [
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "consumed_windows_log": {
+    "bytes": 368261,
+    "sha256": "fd05f82f03bd3803bddfd18a4b60d8b3019757c69acee5b75b538f89882a0f63",
+    "reason": "Completed hosted job log consumed; source-bound job/result metadata retained"
+  },
+  "scope": "c9201532 only; not the queued caller-context/probe source"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "Initial probe failed at a fixture assumption before private creation",
+  "result": "native/SYSTEM_RESULT.json",
+  "actual": "Protected parent is owned by BUILTIN Administrators; helper token default owner is SYSTEM. These need not match.",
+  "fix": "Validate the actual protected native DACL (only SYSTEM/Administrators full access), allowed parent owner and caller denial independently; require unchanged parent policy after the probe.",
+  "creation_observation": "None; original probe stopped before the creation call.",
+  "replacement_native": "pending"
+}

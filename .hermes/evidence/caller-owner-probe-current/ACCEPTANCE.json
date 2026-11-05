@@ -1,0 +1,36 @@
+{
+  "status": "Pass cross-principal native mechanism observation and producer lifecycle",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-export-fixed/RESULT.json",
+  "native_inputs": "native-export-fixed/APPLICATION_INPUT.json",
+  "roles": [
+    "windows_privileged_transport::tests::caller_owner::client",
+    "windows_privileged_transport::tests::caller_owner::system_helper"
+  ],
+  "verified": [
+    "Distinct original ordinary user and SYSTEM helper authenticated through the production bound pipe",
+    "Native registered original profile selected despite poisoned helper environment; original caller/profile context remains valid",
+    "Protected directory DACL independently verified as SYSTEM/Administrators only; original user cannot list it",
+    "Canonical private directory/file creation succeeds in caller-writable storage with original default native owner",
+    "Helper writes through original-user private handle after restoring its identity, without changing its owner or permissions",
+    "Canonical private creation with original token and preopened elevated protected parent returns Access denied (5)",
+    "Native report export and exact hash transfer succeed after separating private payload from reports; VM, disks, fixture, private desktop and processes removed"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "log_sha256": "a960c0b88a70814594250987f210ad61339fac57fc7d39398ff37b49652629f0"
+  },
+  "limits": [
+    "Test-only mechanism observation, not production original-caller registry/receipt/Undo/cleanup integration",
+    "No alternate-administrator UAC or packaged helper acceptance",
+    "No actual TokenOwner mutation or caller group-owner variant proven",
+    "Administrator Copy remains disabled; stable packages unchanged"
+  ],
+  "earlier_runs": {
+    "native": "Failed fixture owner assumption; not accepted",
+    "native-fixed": "Native assertions passed; export failed, stderr unavailable in old producer",
+    "native-export-fixed": "Two native roles and report export passed; owned lifecycle verified"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "format": "Decoded native JSON normalized to UTF-8 without BOM and LF. Parsed values are unchanged; exact archive transfer hash is retained separately.",
+  "normalized": [
+    {
+      "path": "native/SYSTEM_PROCESS.json",
+      "original_bytes": 192,
+      "original_sha256": "afd3a5cf5054b0d343351891bfd98482b114c515590a8c129786550e47fa1411"
+    },
+    {
+      "path": "native/SYSTEM_RESULT.json",
+      "original_bytes": 1127,
+      "original_sha256": "9e1067df7e56886b5bb98592bfee63ac60ef5871dd41929078e6ee47bb4c4b5c"
+    },
+    {
+      "path": "native/DESKTOP_READY.json",
+      "original_bytes": 280,
+      "original_sha256": "14f792c44e5fe842167e8890fa7f4a393309c3de9c26cda2501ca8803b10e707"
+    },
+    {
+      "path": "native/RESULT.json",
+      "original_bytes": 3748,
+      "original_sha256": "83827ffebfdb0321828bd324c6addaf9538c39c0e2cd8bc5eab4e590969da6e0"
+    }
+  ]
+}

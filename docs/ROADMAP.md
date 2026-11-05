@@ -78,6 +78,24 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    `caller-context-current/ACCEPTANCE.json`. This read-only context grants no
    recovery-registry or file-mutation authority. Alternate-administrator, package
    identity and actual in-place TokenOwner mutation are not proven by these cases.
+   A separate ordinary-client/SYSTEM-companion experiment now exercises the real
+   authenticated pipe with distinct kernel principals and a poisoned helper
+   environment. The canonical private creator succeeds in caller-writable storage,
+   and the helper can write through the already granted caller-owned handle after
+   restoring its identity. In the protected SYSTEM/Administrators-only directory,
+   creation under the original token fails with native Access denied (5), despite
+   a preopened elevated parent handle. Whole-operation caller impersonation is
+   therefore not the protected-creation bridge. Atomic caller-owned creation and
+   authenticated reopen of private recovery files remain to implement and prove.
+   The first fixture incorrectly assumed the parent owner equalled SYSTEM's default
+   owner; it now verifies the actual restrictive native DACL and allowed owner.
+   A subsequent native pass exposed a receipt-export failure. Private payload is
+   now separate from reports, exporter diagnostics are retained, and the corrected
+   case passes both native roles and exact report transfer. All owned guest disks,
+   processes, desktops, profiles and consumed transports are removed. This remains
+   mechanism evidence; no production Copy or alternate-administrator acceptance.
+   Evidence: `caller-owner-probe-current/`. The preceding coordinator checkpoint
+   passed all four hosted jobs in run42105264888; that does not cover this probe.
    The coordinator's registry-parent security fixture still changes a group, not
    a literal DACL; the new profile-DACL test has its separate profile-only scope.
    Administrator Copy stays disabled. Original-caller registry initialization,

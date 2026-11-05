@@ -1,0 +1,8 @@
+{
+  "reference_commit": "8d5e8d750c0573b4d3a3d236cad4d506afeb8839",
+  "files": {
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "1a36535d8aab85beb974853b878ec648e6c7a115617647ef002bc71fb1c0ae9e",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "f41936b77945da80da18def1c2a3cc3a5914ebc6f740beb6c9800d431c74e298"
+  },
+  "scope": "Two-principal native mechanism observation only. No production registry bridge or administrator Copy enablement."
+}
