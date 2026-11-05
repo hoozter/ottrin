@@ -1,0 +1,18 @@
+{
+  "bytes": {
+    "target/debug/deps": 25231286902,
+    "target/debug/incremental": 24781051844,
+    "target/x86_64-pc-windows-gnu/debug/deps": 28572967859,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 42282080502,
+    ".hermes/evidence/startup-error-wording-current": 35494,
+    ".hermes/evidence/startup-status-delivery-current": 3211134,
+    ".hermes/packaging-tmp/.linux-native-desktop-stage": 115844966
+  },
+  "remaining_task_storage": {
+    "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage": "single candidate pending exact-source CI/guarded delivery",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/startup-status-delivery-current": "retained compact native/package verification and scoped review",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/startup-error-wording-current": "retained source checks and completed cleanup evidence"
+  },
+  "compiler_caches": "Reused native and Windows roots; no new target tree. Retained current configurations;7 superseded sessions removed. Red and green tests used the same ea268e832702de9b executable path.",
+  "disposable_runtime": "No owned guest, profile, test process, mount or consumed transport archive remains."
+}

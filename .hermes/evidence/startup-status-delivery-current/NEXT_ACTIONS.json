@@ -1,6 +1,6 @@
 {
   "ordered": [
-    "Finish readable startup error correction from native review; retain Light-theme contrast finding for semantic/theme audit.",
+    "Readable startup error correction is verified and locally committed in2516d8c4; push after CI41936995231 reaches terminal to avoid cancellation. Light semantic-color/contrast audit remains open.",
     "Observe the same exact-source CI41936995231 to terminal; no restart or source push while active.",
     "Prepare guarded f245 delivery with fresh changed-daemon runtime/Services scope and explicitly retained historical reboot/replacement scope; do not claim full visual acceptance.",
     "Continue Windows canonical caller-bound registry and durable cleanup coordinator implementation, then native crash/refusal fixtures.",

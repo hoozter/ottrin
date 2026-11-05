@@ -32,5 +32,10 @@
     ]
   },
   "stable_deliverables": "Linuxc4 / Windows458; preserve until accepted replacement",
-  "goal": "active/incomplete"
+  "goal": "active/incomplete",
+  "local_source_checkpoint": {
+    "revision": "2516d8c49a8392b04b939fe62eddcf661c182584",
+    "scope": "readable process errors;251 search tests plus strict native/Windows GNU lint pass; source-only",
+    "push": "held until existing exact-source CI terminates"
+  }
 }
