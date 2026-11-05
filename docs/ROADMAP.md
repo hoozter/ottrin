@@ -37,6 +37,9 @@ removal and earlier update proofs retain original source/artifact scopes; no
 fresh22 runtime or21-to22 upgrade acceptance is claimed. Actual21 folder
 integration still reports a transaction-resource error: independent software
 work, not an owner wait.
+A newer source checkpoint adds API names, HKCU paths and numeric Windows errors
+at transaction boundaries. Strict Windows platform lint and workspace formatting
+pass; the first failing packaged API still needs actual native observation.
 
 Both accepted cohorts are published at the stable dist paths. Superseded781
 packages/payloads and all current staging, owned guests/disks/desktops/buses,

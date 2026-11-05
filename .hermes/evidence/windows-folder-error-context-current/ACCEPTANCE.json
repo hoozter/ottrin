@@ -1,0 +1,46 @@
+{
+  "status": "pass scoped source diagnostics and workspace formatting; native MSIX failure API still unproven",
+  "source_head_at_verification": "2f9e1c5f5a90caae1e930d36d9a16856e44ae2f0",
+  "source_sha256": {
+    "crates/ottrin-platform/src/windows_folder_integration.rs": "5852b70fdaa0fc57ce8a49f474cccdaa19c9cf63fbfb0ac999d0d2d8e484c451",
+    "crates/ottrin-ui/src/lib.rs": "175c9ec3d1500a4485884d8c4a24fa59c025968488b67ecc92681bd91b80c516"
+  },
+  "changes": [
+    "Transaction creation, registry open/create/delete and transaction commit failures report exact API, HKCU path where relevant and numeric Windows error",
+    "Missing-key and success handling, access flags, transaction ownership and commit order retained",
+    "Correct the UI regression formatting wrap rejected by both hosted fmt jobs"
+  ],
+  "checks": [
+    "cargo fmt --all --check: exact workspace gate passed,exit0",
+    "Windows GNU platform all-target strict Clippy passed; final subsequent formatting-only macro wrap changes no behavior"
+  ],
+  "hosted_failure": {
+    "run": 42010460579,
+    "source": "2f9e1c5f5a90caae1e930d36d9a16856e44ae2f0",
+    "failed_jobs": [
+      "verify (ubuntu-latest)",
+      "verify (windows-latest)"
+    ],
+    "failed_step": "Cargo fmt",
+    "failure": "One wrapped Rect::from_min_size call in newly added UI regression",
+    "performance_jobs": "both passed",
+    "failure_log_sha256": "57c4840e0b1206f2b2b2b9aba6278436029630defab26f4975b20fed252302e5"
+  },
+  "limits": [
+    "No native execution of these new diagnostic messages yet",
+    "MSIX folder integration remains a software gate; no root-cause or functional fix claim",
+    "Current d032 usable packages unchanged, retaining all-green source CI; this checkpoint is not packaged"
+  ],
+  "next_action": "Build the next coherent Windows cohort including feedback and error context, then collect actual folders status under MSIX identity to identify first failing API/code",
+  "cleanup": {
+    "obsolete_windows_incremental_sessions_removed": 4,
+    "filesystem_free_delta": 106651648,
+    "no_QA_guests_or_profiles_created": true,
+    "retained_storage": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-folder-error-context-current",
+        "purpose": "Compact lint/format failure/correction evidence and cleanup receipt for upcoming native MSIX failure diagnosis"
+      }
+    ]
+  }
+}

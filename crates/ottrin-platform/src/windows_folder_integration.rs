@@ -489,6 +489,13 @@ fn result(code: u32) -> Result<(), String> {
         Err(std::io::Error::from_raw_os_error(code as i32).to_string())
     }
 }
+fn transaction_error(operation: &str, path: Option<&str>, error: std::io::Error) -> String {
+    let target = path.map_or(String::new(), |path| format!(" for HKCU\\{path}"));
+    match error.raw_os_error() {
+        Some(code) => format!("{operation}{target} failed (Windows error {code}): {error}"),
+        None => format!("{operation}{target} failed: {error}"),
+    }
+}
 struct Transaction(OwnedHandle);
 impl Transaction {
     fn new() -> Result<Self, String> {
@@ -505,20 +512,24 @@ impl Transaction {
             )
         };
         if handle.is_null() || handle == INVALID_HANDLE_VALUE {
-            return Err(std::io::Error::last_os_error().to_string());
+            return Err(transaction_error(
+                "CreateTransaction",
+                None,
+                std::io::Error::last_os_error(),
+            ));
         }
         // SAFETY: successful CreateTransaction transfers the owned handle. Closing
         // an uncommitted transaction aborts its registry changes.
         Ok(Self(unsafe { OwnedHandle::from_raw_handle(handle) }))
     }
     fn open(&self, path: &str) -> Result<Option<Key>, String> {
-        let path = wide(OsStr::new(path));
+        let name = wide(OsStr::new(path));
         let mut key = std::ptr::null_mut();
         // SAFETY: terminated path/output remain live and transaction stays owned.
         let code = unsafe {
             RegOpenKeyTransactedW(
                 HKEY_CURRENT_USER,
-                path.as_ptr(),
+                name.as_ptr(),
                 0,
                 KEY_READ | KEY_WRITE | KEY_WOW64_64KEY,
                 &mut key,
@@ -529,7 +540,13 @@ impl Transaction {
         if matches!(code, ERROR_FILE_NOT_FOUND | ERROR_PATH_NOT_FOUND) {
             return Ok(None);
         }
-        result(code)?;
+        if code != ERROR_SUCCESS {
+            return Err(transaction_error(
+                "RegOpenKeyTransactedW",
+                Some(path),
+                std::io::Error::from_raw_os_error(code as i32),
+            ));
+        }
         Ok(Some(Key(key)))
     }
     fn ensure(&self, path: &str, volatile: bool, created: &mut Vec<String>) -> Result<Key, String> {
@@ -548,7 +565,7 @@ impl Transaction {
             let mut disposition = 0;
             // SAFETY: buffers/outputs remain live; every key explicitly enlists
             // in this transaction, including children (which do not inherit it).
-            result(unsafe {
+            let code = unsafe {
                 RegCreateKeyTransactedW(
                     HKEY_CURRENT_USER,
                     name.as_ptr(),
@@ -566,7 +583,14 @@ impl Transaction {
                     self.0.as_raw_handle(),
                     std::ptr::null(),
                 )
-            })?;
+            };
+            if code != ERROR_SUCCESS {
+                return Err(transaction_error(
+                    "RegCreateKeyTransactedW",
+                    Some(&prefix),
+                    std::io::Error::from_raw_os_error(code as i32),
+                ));
+            }
             drop(Key(key));
             if disposition == REG_CREATED_NEW_KEY && !created.contains(&prefix) {
                 created.push(prefix);
@@ -576,29 +600,40 @@ impl Transaction {
             .ok_or("Registry key disappeared in transaction".into())
     }
     fn delete(&self, path: &str) -> Result<(), String> {
-        let path = wide(OsStr::new(path));
+        let name = wide(OsStr::new(path));
         // SAFETY: terminated path and owned transaction remain live. Only empty
         // keys are removed; unknown children are never recursively deleted.
         let code = unsafe {
             RegDeleteKeyTransactedW(
                 HKEY_CURRENT_USER,
-                path.as_ptr(),
+                name.as_ptr(),
                 KEY_WOW64_64KEY,
                 0,
                 self.0.as_raw_handle(),
                 std::ptr::null(),
             )
         };
-        if matches!(code, ERROR_FILE_NOT_FOUND | ERROR_PATH_NOT_FOUND) {
+        if matches!(
+            code,
+            ERROR_SUCCESS | ERROR_FILE_NOT_FOUND | ERROR_PATH_NOT_FOUND
+        ) {
             Ok(())
         } else {
-            result(code)
+            Err(transaction_error(
+                "RegDeleteKeyTransactedW",
+                Some(path),
+                std::io::Error::from_raw_os_error(code as i32),
+            ))
         }
     }
     fn commit(self) -> Result<(), String> {
         // SAFETY: this transaction is owned; all key writes used its handle.
         if unsafe { CommitTransaction(self.0.as_raw_handle()) } == 0 {
-            Err(std::io::Error::last_os_error().to_string())
+            Err(transaction_error(
+                "CommitTransaction",
+                None,
+                std::io::Error::last_os_error(),
+            ))
         } else {
             Ok(())
         }

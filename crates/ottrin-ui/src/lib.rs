@@ -27657,7 +27657,10 @@ mod tests {
                 });
                 let output = ctx.run(
                     egui::RawInput {
-                        screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, Vec2::splat(1800.0))),
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::splat(1800.0),
+                        )),
                         ..Default::default()
                     },
                     |ctx| {
