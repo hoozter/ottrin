@@ -1,0 +1,12 @@
+{
+  "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
+  "historical_lifecycle_source": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "changed_product_files_since_native_lifecycle": [
+    "crates/ottrin-ui/src/file_row.rs",
+    "crates/ottrin-ui/src/lib.rs",
+    "crates/ottrin-ui/src/theme_colors.rs"
+  ],
+  "lifecycle_basis": "Current20 has native assembly/58-file equality and current NSIS GUI/uninstall checks. Only three UI source files changed since fully native-tested19. Actual19 ordinary runtime, visible startup Settings, reboot/login and removal retain original source/artifact scope; no fresh20 deployment or upgrade claim.",
+  "previous_runtime_receipt": ".hermes/evidence/list-density-delivery-current/MSIX_RUNTIME_ACCEPTANCE.json",
+  "previous_update_receipt": ".hermes/evidence/status-error-delivery-current/MSIX_UPGRADE_ACCEPTANCE.json"
+}

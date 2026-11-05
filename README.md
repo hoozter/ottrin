@@ -36,9 +36,9 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The four Linux packages and Windows ZIP/NSIS/development MSIX0.1.0.19
-use verified runtime `24af31d7`. Exact-source
-CI41956606124 passes all four Linux/Windows verification/performance jobs.
+The four Linux packages and Windows ZIP/NSIS/development MSIX0.1.0.20
+use verified runtime `b0203882`. Exact-source
+CI41966597535 passes all four Linux/Windows verification/performance jobs.
 Linux administrator Copy supports authenticated history loading after restart,
 freshly checked Undo and confirmed cleanup. Recovered history is distinguished
 from a known completed batch; reloading a fully undone Copy shows Copy undone
@@ -46,16 +46,19 @@ instead of a misleading error. Helper protocol3 requires updating older helpers
 through Settings → Services → Update / reinstall helper and authenticating.
 The personal system helper is not silently replaced.
 
-Current Linux delivery fixes wide List filenames spilling into metadata columns
-and ensures Column/List density each uses its own saved setting. Services shows
-startup On/Off/Unavailable independently of the running index. Exact native
-verification includes26 caption/density/footer/picker and12 Services captures.
-The managed daemon returned Ready after replacement with preferences, startup
-choice and database identity preserved. Its30-second personal sample measured
-0.83% of one core under normal filesystem activity; this is not a strict idle or
-sustained-workload guarantee. High-density icon/text padding and Light-theme
-contrast remain open UI-audit findings. Evidence:
-`.hermes/evidence/list-density-delivery-current/`.
+Current delivery improves file-icon/name/thumbnail spacing and keeps wide List
+filenames clear of metadata. Footer text/wordmark honor the selected theme color;
+Ready text is readable in built-in Light/Dark themes. All32 current original
+Linux/Windows UI captures were directly reviewed, including Linux150% backend
+scaling. The personal Linux daemon returned Ready with preferences, startup choice
+and database identity preserved. Its exact daemon bytes are unchanged; previous
+Linux resource/reboot/replacement receipts retain their original scopes.
+Windows MSIX20 native assembly matches all58 ZIP/NSIS payload files. Its private
+1000-file daemon probe passes watcher/restart/shutdown and measures0.47% of one
+core over30 idle seconds. This is not personal/sustained or full-interface
+acceptance. Actual MSIX19 deployment/login/removal and17-to18 updates remain
+historical; no fresh20 MSIX lifecycle claim. Evidence:
+`.hermes/evidence/entry-label-spacing-delivery-current/`.
 
 Original DAC AppImage/FUSE acceptance covers helper update/cancellation, protected Copy,
 normal restart, history loading/refresh, Undo and cleanup, with independent root

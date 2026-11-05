@@ -1,7 +1,7 @@
 {
   "status": "pass native MSIX20 assembly and58-file equality; runtime/update/login not freshly exercised; prior MSIX19 lifecycle scope retains original source/artifacts",
   "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
-  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
   "artifact_sha256": "b07833b756d0d001730bb0f0af33ae4b0c5c169927795342d9e766786a5b769b",
   "version": "0.1.0.20",
   "native_payload_files": 58,
@@ -19,5 +19,6 @@
     "base_still_off": true,
     "retained_pending_volume": null
   },
-  "scope": "Actual clean Git source/production MakeAppx assembly, then native unpack and independent host ZIP comparison; no Store/signing/runtime acceptance"
+  "scope": "Actual clean Git source/production MakeAppx assembly, then native unpack and independent host ZIP comparison; no Store/signing/runtime acceptance",
+  "assembled_artifact_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage/Ottrin-0.1.0-windows-x64-development.msix"
 }

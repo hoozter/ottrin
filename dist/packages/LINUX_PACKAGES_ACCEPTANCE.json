@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped filename/density and Services delivery; full roadmap and UI audit incomplete",
-  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "status": "pass scoped row/thumbnail/footer/status appearance delivery; full roadmap and UI audit incomplete",
+  "source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "7d478e3c56c62e6a65e708ce2e1581c550ca16691f1cae756f3a98f88169526a",
-    "Ottrin-0.1.0-x86_64.AppImage": "d771c7bd863bcdfa1b2bce1b0761d356a42bccafaa44ad76b9912f42d5f06a47",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "75062ded8642fbcbe53b7a05e86e2bb6dd2d683736c306872344e602deb44378",
-    "ottrin_0.1.0_amd64.deb": "eb9d3f4ce6668c705772e7099475e3d537dbeeff09b965e9e895f3ac016ba5e2"
+    "ottrin-0.1.0-1.x86_64.rpm": "809571e8aa57cd82121354ffbcf0e0f3d77882077d51dc5c16b792a181b93115",
+    "Ottrin-0.1.0-x86_64.AppImage": "7c6326a4d4b80bc0e18c4dc3a03ddfada241397e246572c6a834c3cd0178032a",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "2c0efc3612c31c9315a30e316ea40bdcd59b929f7ca0cf749bc2f2d558988245",
+    "ottrin_0.1.0_amd64.deb": "3446d804a720b906ca6073c77b00d147ca358c4b3cb4442c8faa951197ec5ad8"
   },
-  "evidence": ".hermes/evidence/list-density-delivery-current",
+  "evidence": ".hermes/evidence/entry-label-spacing-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,21 +17,28 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "4f0aaf44c9f0fa7510b392f1aa67653d65df86ff248259167c1c1c9f425e3bbc",
+    "application": "d25a3abb5a9ddc4753ab3bbed798f55d4f1e49c246b72f2054e1f7c400ddffa8",
     "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
     "privileged_helper": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 41956606124,
-    "tested_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "run": 41966597535,
+    "tested_source_revision": "b02038821b90c0ef0553e09aafb48b475f2b4d2a",
     "all_four_jobs_success": true
   },
+  "native_current_ui": ".hermes/evidence/entry-label-spacing-delivery-current/NATIVE_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/list-density-delivery-current/SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/entry-label-spacing-delivery-current/SOURCE_SCOPE.json",
+  "daemon_identity": ".hermes/evidence/entry-label-spacing-delivery-current/DAEMON_IDENTITY_ACCEPTANCE.json",
   "daemon_runtime": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "daemon_runtime_scope": {
+    "freshly_rerun": false,
+    "original_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "exact_current_binary_identity": true
+  },
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "historical_daemon_evidence": {
@@ -44,11 +51,10 @@
   },
   "limits": [
     "Actual AppImage software-X11 Ubuntu guest only; no physical graphics, Wayland or full interface acceptance.",
-    "Own-density filename/row/caption checks and Services startup registration/error controls retain their exact original capture scopes.",
-    "High-density icon/text padding and Light footer/logo/Ready-text contrast remain explicit full UI audit findings.",
-    "Fresh daemon watcher/query/restart/shutdown/idle and installed-service GUI-close pass. Earlier reboot/replacement evidence remains historical.",
+    "All16 current original row/thumbnail/footer/Services frames directly reviewed. Prior captions/startup toggles keep original source scope.",
+    "Exact unchanged daemon bytes retain prior private watcher/query/restart/shutdown/idle evidence; no new sustained or large-corpus sample.",
     "Unchanged helper/HTML bytes retain original protected-Copy scope. Personal helper setup requires owner OS authentication.",
-    "Windows remains458/MSIX17; no public release, signing, Store or MSI acceptance.",
-    "Packaged manuals are build-time snapshots at 24af31d7; repository metadata records later delivery."
+    "No public release, signing, Store or MSI acceptance.",
+    "Packaged manuals are build-time snapshots at b0203882; repository metadata records later delivery."
   ]
 }

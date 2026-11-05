@@ -1,15 +1,15 @@
 # Current Windows preview
 
-Source `24af31d70cb9950527b6fcb113c466213f3a2422`: verified ZIP/NSIS and unsigned development MSIX19.
-Native filename containment, own-density75/100/185, default-view persistence,
-actual startup controls and ordinary uninstall preservation pass. MSIX19 has
-fresh ordinary runtime, visible startup Settings, actual reboot/login and
-removal acceptance. Earlier enabled/disabled17-to18 update evidence retains
-its original source/artifact scope; no fresh17-to19 update is claimed.
+Source `b02038821b90c0ef0553e09aafb48b475f2b4d2a`: verified ZIP/NSIS and unsigned development MSIX20.
+Current native row/icon/thumbnail spacing, readable footer/Ready status,
+75/100/185 density, default-view persistence and ordinary NSIS uninstall
+preservation pass. MSIX20 has exact native assembly/58-file payload equality.
+Actual MSIX19 ordinary runtime, visible startup Settings, reboot/login/removal
+and earlier17-to18 update proof retain original source/artifact scope.
+No fresh20 MSIX deployment, login or upgrade is claimed.
 
-Full theme/role audit remains open, including high-density icon/text padding
-and Light contrast. MSIX folder integration reports unavailable transaction
-support and remains an explicit software investigation. Administrator Copy
-recovery is gated. Ordinary-user MSI rollback remains held separately.
-No public release, Store/signing, physical GPU or final human acceptance.
-See ../WINDOWS_CANDIDATE_ACCEPTANCE.json for exact hashes and evidence.
+The full UI/theme audit remains open. MSIX19 folder integration reports
+unavailable transaction support and remains independent software work.
+Administrator Copy durable recovery is gated. Ordinary MSI rollback remains
+held separately. No public release, Store/signing, physical GPU or final human
+acceptance. See ../WINDOWS_CANDIDATE_ACCEPTANCE.json for exact evidence.

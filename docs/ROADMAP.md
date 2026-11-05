@@ -8,14 +8,40 @@ not complete a broader native, platform or user-acceptance requirement.
 
 ### Usable local preview
 
-The four Linux formats in `dist/packages/` use runtime
-`24af31d70cb9950527b6fcb113c466213f3a2422`. Windows ZIP/NSIS/development
-MSIX0.1.0.19 use the same runtime in `dist/windows-candidate/`.
-The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`d771c7bd863bcdfa1b2bce1b0761d356a42bccafaa44ad76b9912f42d5f06a47`.
+The four Linux formats in `dist/packages/` and Windows ZIP/NSIS/development
+MSIX0.1.0.20 in `dist/windows-candidate/` use verified runtime
+`b02038821b90c0ef0553e09aafb48b475f2b4d2a`. Exact-source hosted
+run41966597535 passed all four verification/performance jobs. The stable AppImage
+is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
+`7c6326a4d4b80bc0e18c4dc3a03ddfada241397e246572c6a834c3cd0178032a`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
-No public release, signing, Store submission or MSI acceptance is implied.
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind hashes and exact scopes.
+
+Current delivery fixes icon/name/thumbnail spacing, footer/wordmark theme colors
+and readable Ready status. All16 current Linux and16 Windows original captures
+were directly reviewed. Linux150% backend scaling is included. Exact Windows
+MSIX20 assembly/58-file payload equality and private1000-file daemon
+watcher/restart/shutdown pass;30-second idle is0.47% of one core. Actual19 MSIX
+runtime/login/removal and17-to18 updates retain original scopes; no fresh20
+lifecycle claim. The unchanged Linux daemon identity retains prior runtime
+proof; current GUI-close continuity is independently verified. The personal
+service returned Ready after package replacement, with startup choice,
+preferences and database identity preserved. Superseded24af packages, staging,
+owned native VMs/volumes and consumed source/transports are removed.
+Evidence: `.hermes/evidence/entry-label-spacing-delivery-current/`.
+No public release, signing, Store, MSI or whole-interface acceptance is implied.
+
+A separate source follow-up is pushed on `branch/index-status-observation`,
+commit `b9616095`, with hosted run41971204224 still in progress. It unifies
+Services/main-index status through one background observation and removes
+render-thread endpoint probes. All514 UI tests and native/Windows strict lint
+pass. Its native source-GUI fixture reached Ready but stopped at the Settings
+close step; both attempts are unaccepted and their private displays/buses/state
+were removed. The next check must close the exact Settings accessible control,
+then verify stopped/error/recovery in both themes. This follow-up is not merged
+or included in current b020 packages. Its branch roadmap/evidence retain details.
+
+### Previous delivery receipts — historical source and artifact scopes
 
 The superseded `7fa0e46c` candidate is retired. Its directly reviewed native
 Windows captures exposed wide List filenames painting across metadata columns.
@@ -136,7 +162,7 @@ Packaged manuals are build-time snapshots. `SOURCE_REVISION.txt` identifies the
 runtime; repository acceptance manifests and this queue record later progress.
 Documentation/evidence checkpoints do not require rebuilding unchanged runtime.
 
-### File-row spacing and status-color follow-up — source checkpoint
+### File-row spacing and status-color follow-up — delivered b020 cohort
 
 Actual renderer tests reproduce insufficient icon/name separation at enlarged
 text and density. Shared Column/chooser rows now reserve measured icon/chevron
@@ -152,8 +178,8 @@ Actual Ready text passes4.5 contrast against panel/raised/content surfaces for a
 seven built-in Light/Dark themes. Arbitrary custom-color contrast and complete
 role/property/native acceptance are not inferred. All512 UI tests pass with one
 existing ignored test, plus native/Windows strict lint and formatting. Evidence:
-`entry-label-spacing-current/SOURCE_CHECKS.json`. These are source changes; current
-usable24af packages remain above until a new cohort passes its native gates.
+`entry-label-spacing-current/SOURCE_CHECKS.json`. These source changes are now
+included in the delivered b020 cohort above; full-interface acceptance remains open.
 
 The replacement `b0203882` Linux and Windows ZIP/NSIS builds and host content
 checks pass. Current Linux AppImage/FUSE testing also passes its focused scope:
@@ -172,10 +198,11 @@ in the same cohort. MSIX20 native MakeAppx assembly and independent58-file paylo
 pass. Its private1000-file daemon watcher/restart/shutdown checks pass, with a
 30-second idle sample of0.47% of one core; this is not personal/large-corpus or
 sustained proof. The assembly VM/volumes and2.545MB source archive are removed.
-The Windows hosted verify job is still live; all three other jobs succeeded.
-Stable promotion is gated on that exact-source run41966597535. This is not
-stable delivery or full-interface acceptance; MSIX19 deployment/login/removal
-and17-to18 updates retain their original scopes, with no fresh20 lifecycle claim. The first Windows launch failed before guest boot
+All four hosted jobs now passed in exact-source run41966597535, and guarded
+Linux/Windows stable promotion is complete. Superseded packages and both stage
+directories are removed. This is scoped current delivery, not full-interface
+acceptance; MSIX19 deployment/login/removal and17-to18 updates retain their
+original scopes, with no fresh20 lifecycle claim. The first Windows launch failed before guest boot
 because its console-helper input was absent; its domain/volumes were removed and
 the failure receipt retained. The corrected run supplies the helper, and the
 canonical controller now rejects this missing input before allocating a VM.
