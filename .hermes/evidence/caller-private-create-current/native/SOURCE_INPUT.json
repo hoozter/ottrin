@@ -1,0 +1,16 @@
+{
+  "reference_commit": "ce2f4db27ffb3b7b2d6e7fe5f26c631139eb8316",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "4f381a60dfee9e8a8f6fb3d2c796c166eaa28dad8f0c779ae3d5b2e216466608",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "181deb8e0d3ecd5c896a8d21826d2467cf1ee04bd1d7cf4697a1cf6042a91e8e",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "dc52ad5901422d7d7ac0d773a7cd286add1670b83203e3a08c1ea4b441ea851c",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/caller_creation.rs": "46d2920f5e611293b48d11f572b632a3a003350a145c4c03b5875490bb1f1156",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "be9952aa2addb141c26f0dcad96785c6534988f5087ba03040513bf769227737",
+    "crates/ottrin-platform/src/windows_fs.rs": "6c16e8acf6b0f82d0e8f1d18cfab2e2745f67f73e2450666926c9c59f66806b3",
+    "crates/ottrin-platform/src/windows_fs/identity.rs": "6efbd661176ca89b1eb91eb2c608d4f1adfa7be103fbf56767c1121af4a0d5db",
+    "crates/ottrin-platform/src/windows_fs/privileges.rs": "db841d258085b67fa4bd7411beebecfa3ae70759fc6eddb7c052ce8542e49b73",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "eafb1fb069db88b6955fd4eb62bd7e4375c1330c745843c1b30c3b8f87feecb0",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "101f5af489ea4eec09a30c7e6e379c1a08cd0b4cb5f6445a40e8574bde844516"
+  },
+  "scope": "Atomic authenticated original-caller private creation primitive, scoped thread privileges and native regressions; not registry/receipt/Undo/cleanup integration or helper enablement"
+}

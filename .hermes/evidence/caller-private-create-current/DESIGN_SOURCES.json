@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createprivateobjectsecurityex",
+      "use": "Native owner/group from authenticated caller token and protected private creator DACL; native owner validation remains enabled."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-duplicatetokenex",
+      "use": "Duplicate effective helper token; never adjust the shared process or prior impersonation token."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadtoken",
+      "use": "Install only the duplicated helper token for a synchronous operation, then restore the exact previous token; abort if restoration fails."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile",
+      "use": "Handle-relative backup-intent OPEN_IF and explicit FILE_CREATED native outcome gate. Existing entries never yield a creation handle."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew",
+      "use": "Existing-file open ignores proposed security descriptor. The primitive additionally requires the native created outcome before any content operation."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_se_exports",
+      "use": "Distinct backup/read and restore/write/owner rights; privilege availability and native behavior must be verified, not assumed."
+    }
+  ],
+  "scope": "Implementation references, not substitutes for the owned native test or complete transaction/alternate-administrator/package acceptance."
+}

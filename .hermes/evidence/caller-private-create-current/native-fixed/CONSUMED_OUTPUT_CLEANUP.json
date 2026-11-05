@@ -1,0 +1,37 @@
+{
+  "status": "complete guarded removal; mixed pass/failure native report and exact source/build maps retained",
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-fixed/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed native transport/setup frame; exact parsed mixed pass/failure reports and source maps retained",
+      "evidence": "Terminal producer; native private creation passed but broad SYSTEM destination test failed; exact archive and complete owned teardown verified",
+      "bytes": 5942,
+      "sha256": "506815633a5f87d92eaebe8bee6ee85779c9426c8a22eb5ac94452cc8ebb9ef4"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-fixed/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed native transport/setup frame; exact parsed mixed pass/failure reports and source maps retained",
+      "evidence": "Terminal producer; native private creation passed but broad SYSTEM destination test failed; exact archive and complete owned teardown verified",
+      "bytes": 9819,
+      "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-fixed/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed native transport/setup frame; exact parsed mixed pass/failure reports and source maps retained",
+      "evidence": "Terminal producer; native private creation passed but broad SYSTEM destination test failed; exact archive and complete owned teardown verified",
+      "bytes": 955677,
+      "sha256": "24860001fae6b84839bc43ec4a57d68be23a39f15d40447eec676b89c20200f3"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-fixed/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed native transport/setup frame; exact parsed mixed pass/failure reports and source maps retained",
+      "evidence": "Terminal producer; native private creation passed but broad SYSTEM destination test failed; exact archive and complete owned teardown verified",
+      "bytes": 1695391,
+      "sha256": "5adda30916c9160191a9fda69e7a0f79edfcf5b75df0b4a9501558d5b6b8bd50"
+    }
+  ]
+}

@@ -39,6 +39,16 @@ pub(crate) fn owner_for_token(token: &OwnedHandle) -> Result<Vec<u8>, PlatformEr
     token_sid(&storage, sid)
 }
 
+pub(crate) fn group_for_token(token: &OwnedHandle) -> Result<Vec<u8>, PlatformError> {
+    let storage = token_information(
+        token,
+        TokenPrimaryGroup,
+        std::mem::size_of::<TOKEN_PRIMARY_GROUP>(),
+    )?;
+    let sid = unsafe { &*storage.as_ptr().cast::<TOKEN_PRIMARY_GROUP>() }.PrimaryGroup;
+    token_sid(&storage, sid)
+}
+
 /// The token's user is the application principal, independently of the default
 /// file owner. Elevated tokens can have a group as TokenOwner; do not conflate it
 /// with the original application's TokenUser when binding helper authority.

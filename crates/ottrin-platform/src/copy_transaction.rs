@@ -13,8 +13,10 @@ use std::path::{Path, PathBuf};
 // Windows uses the native handle-bound stream, publication and recovery engine.
 #[cfg(target_os = "windows")]
 mod windows;
+#[cfg(all(test, target_os = "windows"))]
+pub(crate) use windows::owner_group_dacl_digest;
 #[cfg(target_os = "windows")]
-pub(crate) use windows::CallerProfile;
+pub(crate) use windows::{CallerCreationSecurity, CallerProfile};
 #[cfg(target_os = "windows")]
 pub(super) use windows::{MAX_COPY_ENTRIES, copy_configured};
 #[cfg(target_os = "windows")]

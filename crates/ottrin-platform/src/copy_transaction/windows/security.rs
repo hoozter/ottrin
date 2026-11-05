@@ -14,7 +14,9 @@ use windows_sys::Win32::Security::Authorization::{SE_FILE_OBJECT, SetSecurityInf
 use windows_sys::Win32::Security::*;
 use windows_sys::Win32::Storage::FileSystem::*;
 
+mod caller_creation;
 mod caller_profile;
+pub(crate) use caller_creation::CallerCreationSecurity;
 mod tree;
 pub(crate) use caller_profile::CallerProfile;
 pub(super) use tree::{
@@ -137,7 +139,7 @@ fn capture(file: &File) -> Result<Vec<u64>, PlatformError> {
 
 /// Observation only: never replay cached ACLs. This deliberately describes
 /// owner/group/DACL evidence, not a complete audit-SACL or mandatory-label proof.
-pub(super) fn owner_group_dacl_digest(file: &File) -> Result<[u8; 32], PlatformError> {
+pub(crate) fn owner_group_dacl_digest(file: &File) -> Result<[u8; 32], PlatformError> {
     let mut raw = capture(file)?;
     let observed = parts(raw.as_mut_ptr().cast())?;
     if !observed.valid_record() {
@@ -207,8 +209,10 @@ impl Drop for Derived {
 // All descriptors here are owned native API outputs, never deserialized bytes.
 fn derive(
     parent: PSECURITY_DESCRIPTOR,
+    creator: PSECURITY_DESCRIPTOR,
     token: &OwnedHandle,
     directory: bool,
+    inherit_flags: u32,
 ) -> Result<(Derived, Parts), PlatformError> {
     let mapping = GENERIC_MAPPING {
         GenericRead: FILE_GENERIC_READ,
@@ -220,11 +224,11 @@ fn derive(
     if unsafe {
         CreatePrivateObjectSecurityEx(
             parent,
-            ptr::null_mut(),
+            creator,
             &mut raw,
             ptr::null(),
             i32::from(directory),
-            SEF_DACL_AUTO_INHERIT,
+            inherit_flags,
             token.as_raw_handle().cast(),
             &mapping,
         )
@@ -267,7 +271,13 @@ impl DestinationSecurity {
         }
         let mut security = capture(parent)?;
         let parent_security = parts(security.as_mut_ptr().cast())?;
-        let (derived, expected) = derive(security.as_mut_ptr().cast(), token, directory)?;
+        let (derived, expected) = derive(
+            security.as_mut_ptr().cast(),
+            ptr::null_mut(),
+            token,
+            directory,
+            SEF_DACL_AUTO_INHERIT,
+        )?;
         let result = Self {
             parent: identity,
             parent_security,

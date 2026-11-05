@@ -1,0 +1,53 @@
+{
+  "observed_at": "2026-11-05T22:58:28.079861+00:00",
+  "run": 42118015893,
+  "url": "https://github.com/hoozter/ottrin/actions/runs/42118015893",
+  "source_commit": "ce2f4db27ffb3b7b2d6e7fe5f26c631139eb8316",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "search-performance (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 127562690395,
+      "current_step": null
+    },
+    {
+      "name": "verify (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 127562690990,
+      "current_step": null
+    },
+    {
+      "name": "search-performance (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 127562691097,
+      "current_step": null
+    },
+    {
+      "name": "verify (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 127562691102,
+      "current_step": null
+    }
+  ],
+  "previous_successful_windows_job": {
+    "run": 42105264888,
+    "job_started": "2026-11-05T20:38:33Z",
+    "job_completed": "2026-11-05T21:18:02Z",
+    "cargo_test_started": "2026-11-05T20:46:14Z",
+    "cargo_test_completed": "2026-11-05T21:13:17Z"
+  },
+  "active_log_query": {
+    "http": 404,
+    "body": "Azure BlobNotFound; live job log archive unavailable",
+    "bytes": 215,
+    "sha256": "bb06327d8bd3cc235e5648b3e68166dc1896bc1863fc2b4044902e3797cf81fd",
+    "scope": "Observation failure, not a terminal workflow failure; preserve the same job/run"
+  },
+  "next_action": "Prior exact-source branch CI passed all four jobs. Commit/push this verified source checkpoint without cancelling it; new checkpoint still requires its own hosted CI."
+}

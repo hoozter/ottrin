@@ -1,0 +1,9 @@
+{
+  "exit": 101,
+  "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::system_helper\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.17s\n\n",
+  "error": "SYSTEM native assertions failed",
+  "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (7968) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:405:10:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"Created caller-owned entry has unexpected native owner/group/DACL; data retained\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+  "scope": "Owned SYSTEM-side native mechanism observation; no UAC or enabled Copy acceptance",
+  "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 29\r\nat <ScriptBlock>, <No file>: line 1",
+  "status": "failed"
+}

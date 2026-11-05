@@ -1,0 +1,62 @@
+{
+  "status": "Complete owned teardown and consumed-output cleanup",
+  "baseline": "STORAGE_BEFORE.json",
+  "incremental_receipts": [
+    "INCREMENTAL_CLEANUP.json",
+    "DIAGNOSTIC_INCREMENTAL_CLEANUP.json",
+    "FIXED_INCREMENTAL_CLEANUP.json",
+    "BOUND_INCREMENTAL_CLEANUP.json"
+  ],
+  "removed_obsolete_sessions": 44,
+  "measured_incremental_free_delta_bytes": 5744750592,
+  "available_bytes": 26133745664,
+  "native_cases": [
+    "native/OWNER.json",
+    "native-diagnostic/OWNER.json",
+    "native-fixed/OWNER.json",
+    "native-bound/OWNER.json"
+  ],
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps",
+      "bytes": 23815171724,
+      "baseline_bytes": 23815171724,
+      "purpose": "Authoritative shared compiler output/cache; newest same-configuration Windows platform/UI tests retained for original-caller registry/recovery integration"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/incremental",
+      "bytes": 24985261298,
+      "baseline_bytes": 24985261298,
+      "purpose": "Authoritative shared compiler output/cache; newest same-configuration Windows platform/UI tests retained for original-caller registry/recovery integration"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps",
+      "bytes": 31112938391,
+      "baseline_bytes": 31112604683,
+      "purpose": "Authoritative shared compiler output/cache; newest same-configuration Windows platform/UI tests retained for original-caller registry/recovery integration"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental",
+      "bytes": 48277657862,
+      "baseline_bytes": 48274191680,
+      "purpose": "Authoritative shared compiler output/cache; newest same-configuration Windows platform/UI tests retained for original-caller registry/recovery integration"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "bytes": 772098669,
+      "purpose": "Newest paired Windows native test output, verified current-source input for next original-caller registry/recovery tests; counted within shared deps above"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "bytes": 545350019,
+      "purpose": "Newest paired Windows native test output, verified current-source input for next original-caller registry/recovery tests; counted within shared deps above"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current",
+      "bytes_before_final_receipts": 1099804,
+      "purpose": "Compact native/source/build/teardown evidence, retained failure findings and owned reproducible test actors; no disposable VM, payload, profile, screenshot, archive or package stage remains"
+    }
+  ],
+  "owned_disposable_storage_remaining": [],
+  "observed_at": "2026-11-05T23:00:42.202978+00:00"
+}

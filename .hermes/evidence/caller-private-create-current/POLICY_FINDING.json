@@ -1,0 +1,17 @@
+{
+  "status": "Exact native mismatch identified",
+  "native": "native-diagnostic/RESULT.json",
+  "helper": "native-diagnostic/SYSTEM_RESULT.json",
+  "matched": [
+    "original caller owner",
+    "original primary group",
+    "protected OWNER RIGHTS DACL"
+  ],
+  "difference": {
+    "derived_control": "0x1400",
+    "kernel_control": "0x1000"
+  },
+  "fix": "Derive protected private policy with no auto-inheritance request; ordinary destination derivation retains SEF_DACL_AUTO_INHERIT. Full post-create owner/group/DACL/control comparison remains required.",
+  "ordinary_security_result": "10 passed; native symlink setup requires an absent standard-user privilege. Move link test to owned SYSTEM role and also run the SACL audit there; do not change OS policy or weaken tests.",
+  "next_native": "native-bound/RESULT.json: protected-policy correction and frozen-identity checks pass"
+}

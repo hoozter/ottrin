@@ -173,12 +173,14 @@ struct CallerProcess {
 struct CallerIdentity {
     user: Vec<u8>,
     owner: Vec<u8>,
+    group: Vec<u8>,
 }
 impl CallerIdentity {
     fn capture(token: &OwnedHandle) -> io::Result<Self> {
         Ok(Self {
             user: crate::windows_fs::user_for_token(token).map_err(io::Error::other)?,
             owner: crate::windows_fs::owner_for_token(token).map_err(io::Error::other)?,
+            group: crate::windows_fs::group_for_token(token).map_err(io::Error::other)?,
         })
     }
 }
@@ -231,7 +233,7 @@ impl CallerProcess {
         if CallerIdentity::capture(&token)? != self.identity {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
-                "Caller token user or default owner changed before profile lookup",
+                "Caller token user, default owner or primary group changed before profile lookup",
             ));
         }
         let path = local_app_data(&token)?;
@@ -256,16 +258,17 @@ impl CallerProcess {
         {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
-                "Original application token user or default owner changed",
+                "Original application token user, default owner or primary group changed",
             ));
         }
         Ok(())
     }
 }
 
-/// Authenticated, read-only original-caller profile context. This pins the
-/// native directory and both distinct token principals. It does not create or
-/// admit a recovery registry, install permissions or authorize Copy/Undo/cleanup.
+/// Authenticated original-caller context pins the profile and distinct native
+/// token principals. Private entry creation is a primitive for the helper's
+/// transaction engine; it does not admit recovery history or authorize Copy,
+/// Undo or cleanup without that engine's namespace/journal validation.
 pub struct CallerCopyContext {
     caller: Arc<CallerProcess>,
     profile: crate::copy_transaction::CallerProfile,
@@ -299,6 +302,43 @@ impl CallerCopyContext {
     pub fn default_file_owner_sid(&self) -> io::Result<&[u8]> {
         self.validate()?;
         Ok(&self.caller.identity.owner)
+    }
+    pub fn default_file_group_sid(&self) -> io::Result<&[u8]> {
+        self.validate()?;
+        Ok(&self.caller.identity.group)
+    }
+    /// Create one caller-owned private entry relative to an already admitted
+    /// parent handle. The caller supplies neither a SID nor saved permissions.
+    /// The transaction engine must journal its intent before invoking this.
+    pub fn create_private_entry(
+        &self,
+        parent: &std::fs::File,
+        name: &OsStr,
+        directory: bool,
+        sharing: u32,
+    ) -> io::Result<std::fs::File> {
+        self.validate()?;
+        let token = process_token(
+            &self.caller.process,
+            TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_IMPERSONATE,
+        )?;
+        if CallerIdentity::capture(&token)? != self.caller.identity {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Caller token changed before private creation",
+            ));
+        }
+        let policy = crate::copy_transaction::CallerCreationSecurity::capture(
+            &token,
+            &self.caller.identity.owner,
+            &self.caller.identity.group,
+            directory,
+        )
+        .map_err(io::Error::other)?;
+        self.validate()?;
+        let file = policy.create(parent, name, sharing)?;
+        self.validate()?;
+        Ok(file)
     }
 }
 

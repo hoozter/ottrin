@@ -1,0 +1,222 @@
+{
+  "input": {
+    "source_revision": "ce2f4db27ffb3b7b2d6e7fe5f26c631139eb8316",
+    "source_test_sha256": "846c2498b951dee16120acf6d4111c65cec3ab100d23c5d9f6b67e8c09b57375",
+    "test_sha256": "ab67c157119d67de1cf2e92e17459987fbe5933d3f3a23774c90e2ae805e85a6",
+    "source_bytes": 545350019,
+    "staged_bytes": 523891003,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 408719360,
+      "sha256": "6186a211d7eb187ef89ccfe260b7f8c2dd810150f2119dacca49cbe429424eb4"
+    },
+    "actor_sha256": "34aaf63e95aa0160abee91fff88a2ac90a0a439fe5c3b6bb596db9b35d179e96",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "8ab5c10b01ac25fbcee9e6cfde849143355378201701481fabfad65a90bbf606",
+    "changed_product_sources": {
+      "crates/ottrin-platform/src/copy_transaction.rs": "291e8efaf9da61ea00a9b519919f1a9f3cb0fe2bacb9de1e2371e78ecb97440e",
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "6d818934a321a4e892f1954cea076f5784af6f32372350c37c45f0abff1abfd4",
+      "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "637dd3217201d1a2b5b464a2415e9120e2e4f92079fdb578c288f1b13e3a0852",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/caller_creation.rs": "1ca27db8b8c7a0a6f993f0e416bc5b80625c97d8ac0ee8269ded9015a0c7723d",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "e11aab97b1fa5ccfd7a5c4abd1dfd10e71893ea617d9cfc12f3230d34d58e2ae",
+      "crates/ottrin-platform/src/windows_fs.rs": "8d161a8cb14d08cb479d40dc8e9718d3a1ab174a9dc7aec5b2d35a72f77c5c4d",
+      "crates/ottrin-platform/src/windows_fs/identity.rs": "6efbd661176ca89b1eb91eb2c608d4f1adfa7be103fbf56767c1121af4a0d5db",
+      "crates/ottrin-platform/src/windows_fs/privileges.rs": "db841d258085b67fa4bd7411beebecfa3ae70759fc6eddb7c052ce8542e49b73",
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "7b0e433a50fa02527e7f071b293e81ee5ffa8348839c12b10d11e52ffd7fa9b4",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "937982d2a48e52f2b9a6495a77deb79dbab2dc564dc4274b95a318166b82eb27"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "system": {
+    "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+    "status": "pass owned SYSTEM companion",
+    "runs": [
+      {
+        "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.32s\n\n",
+        "case": "caller private helper",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::windows_native_copy_final_link_dacl_does_not_change_populated_targets ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.14s\n\n",
+        "case": "SYSTEM native symbolic-link security",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.12s\n\n",
+        "case": "SYSTEM native audit-SACL security",
+        "stderr": "",
+        "exit": 0
+      }
+    ]
+  },
+  "observation": {
+    "atomic_private_creation_owner_matches_caller": true,
+    "caller_group": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      1,
+      2,
+      0,
+      0
+    ],
+    "caller_owner": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      234,
+      3,
+      0,
+      0
+    ],
+    "caller_profile": "C:\\Users\\OTMSI8c1f314c0a2c\\AppData\\Local",
+    "caller_user": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      234,
+      3,
+      0,
+      0
+    ],
+    "control_creation_owner_matches_caller": true,
+    "creation_with_original_token_and_elevated_parent_handle": {
+      "created": false,
+      "message": "Access is denied. (os error 5)",
+      "native_error": 5
+    },
+    "derived_policy_refuses_owner_or_group_outside_admitted_identity": true,
+    "exact_thread_token_and_privileges_restored": true,
+    "existing_private_entry_refused_unchanged": true,
+    "foreign_owner_entry_refused_without_data_or_security_change": true,
+    "helper_user": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      18,
+      0,
+      0,
+      0
+    ],
+    "nested_privileged_thread_restored": true,
+    "ordinary_helper_reopen_refused": true,
+    "profile_still_valid": true,
+    "protected_parent_dacl_verified": true,
+    "protected_parent_owner": [
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      32,
+      0,
+      0,
+      0,
+      32,
+      2,
+      0,
+      0
+    ],
+    "scope": "Distinct SYSTEM helper mechanism observation; no alternate-administrator UAC or enabled Copy acceptance",
+    "thread_identity_restored": true
+  },
+  "phase": "complete",
+  "scope": "Ordinary-client/SYSTEM-companion original-caller and owner-creation mechanism observation; no alternate-administrator UAC, production Copy, registry bridge or package acceptance",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "pass atomic caller-owned creation and native security regressions",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::client ... Native mechanism observation recorded; this does not enable privileged Copy\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 2.15s\n\n",
+      "case": "ordinary cross-principal client",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 11 tests\ntest copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults ... ok\ntest copy_transaction::windows::security::tests::destination_directory_dacl_and_child_inheritance_match_native_creation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_changed_parent_permissions_without_mutation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_private_stage_as_publication_parent ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_wrong_name_identity_and_type ... ok\ntest copy_transaction::windows::security::tests::destination_security_reports_write_dac_denial_without_changing_bytes_or_acl ... ok\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ignored, requires SeSecurityPrivilege; selected explicitly in the native SYSTEM audit lane\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_mandatory_label ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_maximum_allowed_dacl_is_per_object_after_handle_clone ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_permission_handle_rights_do_not_expand_journals_or_sources ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_private_group_drift_is_detected_without_payload_mutation ... ok\n\ntest result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 567 filtered out; finished in 1.07s\n\n",
+      "case": "native Copy security regressions",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

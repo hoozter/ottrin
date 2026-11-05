@@ -75,8 +75,8 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    and case policy. Six focused native checks pass: actual owned-directory/DACL
    substitution refusal, ordinary content changes, poisoned environment, process
    exit and existing transport identity/frame regressions. Receipt:
-   `caller-context-current/ACCEPTANCE.json`. This read-only context grants no
-   recovery-registry or file-mutation authority. Alternate-administrator, package
+   `caller-context-current/ACCEPTANCE.json`. That snapshot was read-only and granted
+   no recovery-registry or file-mutation authority. Alternate-administrator, package
    identity and actual in-place TokenOwner mutation are not proven by these cases.
    A separate ordinary-client/SYSTEM-companion experiment now exercises the real
    authenticated pipe with distinct kernel principals and a poisoned helper
@@ -85,8 +85,8 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    restoring its identity. In the protected SYSTEM/Administrators-only directory,
    creation under the original token fails with native Access denied (5), despite
    a preopened elevated parent handle. Whole-operation caller impersonation is
-   therefore not the protected-creation bridge. Atomic caller-owned creation and
-   authenticated reopen of private recovery files remain to implement and prove.
+   therefore not the protected-creation bridge. Authenticated private-file reopen
+   and full transaction integration remain required.
    The first fixture incorrectly assumed the parent owner equalled SYSTEM's default
    owner; it now verifies the actual restrictive native DACL and allowed owner.
    A subsequent native pass exposed a receipt-export failure. Private payload is
@@ -96,10 +96,33 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    mechanism evidence; no production Copy or alternate-administrator acceptance.
    Evidence: `caller-owner-probe-current/`. The preceding coordinator checkpoint
    passed all four hosted jobs in run42105264888; that does not cover this probe.
+   Atomic original-caller private entry creation is now implemented. The context
+   also freezes the native primary group. A native descriptor derived from the
+   original token must match that admitted owner/group; only a temporary duplicate
+   helper thread token enables backup/restore rights. All full native private
+   owner/group/DACL/control postconditions remain enforced. Private descriptors
+   request no auto-inheritance; the first run exposed an incorrect auto-inheritance
+   request (derived 0x1400 versus kernel 0x1000), corrected at descriptor creation.
+   Current exact-source acceptance is fourteen named passes across five native
+   invocations: client/helper protected creation, frozen identity mismatch refusal,
+   unchanged existing own/foreign entries, caller-readable output, no ordinary
+   helper reopen, exact/nested thread-token restoration and thread isolation;
+   ten ordinary Copy security cases, plus native link/audit cases under SYSTEM.
+   Receipt: `caller-private-create-current/ACCEPTANCE.json`. Strict Windows
+   platform/UI lint passes. All owned cases/disks/desktops/profiles/processes and
+   consumed outputs are removed; stable packages remain unchanged.
+   A broader SYSTEM run additionally failed
+   `destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults`;
+   the ordinary-user version passes. This remains open in
+   `caller-private-create-current/SYSTEM_DESTINATION_FINDING.json`. The focused
+   primitive acceptance does not close that failure or establish a whole helper
+   transaction. Integrate the authenticated original token into destination
+   derivation/application and compare live kernel-reference, derived and finalized
+   security before enabling administrator Copy; never fall back to helper defaults.
    The coordinator's registry-parent security fixture still changes a group, not
    a literal DACL; the new profile-DACL test has its separate profile-only scope.
    Administrator Copy stays disabled. Original-caller registry initialization,
-   private-file ownership, receipt/Undo/cleanup bridging and cross-administrator/
+   transaction-wide private-file ownership, receipt/Undo/cleanup bridging and cross-administrator/
    package-context proof remain required before helper enablement. Current downloads remain Linuxbee/Windows8e. Missing member IDs
    never license deletion or a completed original-batch history claim.
 2. Finish U05–U08 interface/theme consistency and property mapping. Include the

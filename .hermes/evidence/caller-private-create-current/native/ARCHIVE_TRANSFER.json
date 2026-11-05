@@ -1,0 +1,8 @@
+{
+  "status": "pass chunked verified owned output",
+  "guest_path": "C:\\OttrinMsiCleanClientResults.zip",
+  "bytes": 4030,
+  "sha256": "cb3b350c19cff15f2238c67a8c7c4ffe411e9dc6ddea3202d4603f4a74b719eb",
+  "chunk_bytes": 65536,
+  "uncertain_read_recovery": "Seek to exact original offset before retry; no process restart"
+}

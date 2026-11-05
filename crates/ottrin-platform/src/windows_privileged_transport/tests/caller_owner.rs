@@ -2,6 +2,7 @@
 //! disposable guest; authority-bearing requests still use the real bound pipe.
 use super::*;
 use serde_json::{Value, json};
+use std::io::Seek;
 use windows_sys::Win32::Security::{
     ACCESS_ALLOWED_ACE,
     Authorization::{GetSecurityInfo, SE_FILE_OBJECT},
@@ -68,6 +69,60 @@ fn file_owner(file: &std::fs::File) -> Vec<u8> {
             .to_vec();
     assert!(crate::windows_fs::valid_sid(&sid));
     sid
+}
+
+fn token_state() -> (u32, i32, Vec<u8>) {
+    use windows_sys::Win32::Security::{
+        GetTokenInformation, TOKEN_STATISTICS, TokenPrivileges, TokenStatistics,
+    };
+    let token = crate::windows_fs::current_token().unwrap();
+    let mut statistics = TOKEN_STATISTICS::default();
+    let mut length = 0;
+    assert_ne!(
+        unsafe {
+            GetTokenInformation(
+                token.as_raw_handle().cast(),
+                TokenStatistics,
+                ptr::from_mut(&mut statistics).cast(),
+                std::mem::size_of_val(&statistics) as u32,
+                &mut length,
+            )
+        },
+        0
+    );
+    unsafe {
+        GetTokenInformation(
+            token.as_raw_handle().cast(),
+            TokenPrivileges,
+            ptr::null_mut(),
+            0,
+            &mut length,
+        );
+    }
+    assert!((4..=65536).contains(&length));
+    let mut storage = vec![0u64; (length as usize).div_ceil(8)];
+    let capacity = storage.len() * 8;
+    assert_ne!(
+        unsafe {
+            GetTokenInformation(
+                token.as_raw_handle().cast(),
+                TokenPrivileges,
+                storage.as_mut_ptr().cast(),
+                capacity as u32,
+                &mut length,
+            )
+        },
+        0
+    );
+    assert!(length as usize <= capacity);
+    let privileges =
+        unsafe { std::slice::from_raw_parts(storage.as_ptr().cast::<u8>(), length as usize) }
+            .to_vec();
+    (
+        statistics.TokenId.LowPart,
+        statistics.TokenId.HighPart,
+        privileges,
+    )
 }
 
 fn system_parent_policy(file: &std::fs::File) -> Vec<u8> {
@@ -145,6 +200,11 @@ fn client() {
     let token = crate::windows_fs::current_token().unwrap();
     let user = crate::windows_fs::user_for_token(&token).unwrap();
     let owner = crate::windows_fs::owner_for_token(&token).unwrap();
+    let group = crate::windows_fs::group_for_token(&token).unwrap();
+    let original_token_state = token_state();
+    let denied = crate::windows_fs::with_file_privileges(|| Ok(())).unwrap_err();
+    assert_eq!(denied.raw_os_error(), Some(1300)); // ERROR_NOT_ALL_ASSIGNED.
+    assert_eq!(token_state(), original_token_state);
     let profile = {
         let start = process_start_time(unsafe { GetCurrentProcess() }).unwrap();
         CallerProcess::capture(std::process::id(), start)
@@ -186,6 +246,7 @@ fn client() {
     let observation: Value = serde_json::from_str(response.message.as_ref().unwrap()).unwrap();
     assert_eq!(observation["caller_user"], json!(user));
     assert_eq!(observation["caller_owner"], json!(owner));
+    assert_eq!(observation["caller_group"], json!(group));
     assert_eq!(observation["caller_profile"], json!(profile));
     assert_ne!(observation["helper_user"], json!(user));
     assert_eq!(
@@ -199,6 +260,25 @@ fn client() {
         observation["control_creation_owner_matches_caller"]
             .as_bool()
             .unwrap()
+    );
+    assert!(
+        observation["atomic_private_creation_owner_matches_caller"]
+            .as_bool()
+            .unwrap()
+    );
+    assert!(
+        observation["existing_private_entry_refused_unchanged"]
+            .as_bool()
+            .unwrap()
+    );
+    assert!(
+        observation["ordinary_helper_reopen_refused"]
+            .as_bool()
+            .unwrap()
+    );
+    assert_eq!(
+        std::fs::read(root.join("system-only/atomic-owner Ω/file.txt")).unwrap(),
+        b"original caller owns protected private file"
     );
     assert_eq!(
         std::fs::read(root.join("probe-data/caller-control Ω/handle-proof.txt")).unwrap(),
@@ -244,6 +324,7 @@ fn system_helper() {
     // Directory ownership belongs to its creating context; it need not equal
     // this helper process's default owner. Verify the actual protected policy.
     let parent_owner = system_parent_policy(&parent);
+    let original_helper_state = token_state();
     let control_parent = crate::windows_fs::open_directory(
         &root.join("probe-data"),
         FILE_GENERIC_READ | FILE_GENERIC_WRITE,
@@ -255,6 +336,25 @@ fn system_helper() {
     )
     .unwrap();
     assert!(CallerIdentity::capture(&token).unwrap() == channel.caller.identity);
+    assert!(
+        crate::copy_transaction::CallerCreationSecurity::capture(
+            &token,
+            &helper_owner,
+            context.default_file_group_sid().unwrap(),
+            false
+        )
+        .is_err()
+    );
+    assert_ne!(context.default_file_group_sid().unwrap(), helper_owner);
+    assert!(
+        crate::copy_transaction::CallerCreationSecurity::capture(
+            &token,
+            &caller_owner,
+            &helper_owner,
+            false
+        )
+        .is_err()
+    );
     struct Revert;
     impl Drop for Revert {
         fn drop(&mut self) {
@@ -318,14 +418,119 @@ fn system_helper() {
     control_file.sync_all().unwrap();
     assert_eq!(file_owner(&control_file), caller_owner);
     assert_eq!(system_parent_policy(&parent), parent_owner);
+    let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    let atomic = context
+        .create_private_entry(&parent, OsStr::new("atomic-owner Ω"), true, sharing)
+        .unwrap();
+    assert_eq!(token_state(), original_helper_state);
+    assert_eq!(file_owner(&atomic), caller_owner);
+    let mut atomic_file = context
+        .create_private_entry(&atomic, OsStr::new("file.txt"), false, sharing)
+        .unwrap();
+    assert_eq!(file_owner(&atomic_file), caller_owner);
+    atomic_file
+        .write_all(b"original caller owns protected private file")
+        .unwrap();
+    atomic_file.sync_all().unwrap();
+    let id = crate::move_recovery::stable_identity_from_handle(&atomic_file).unwrap();
+    crate::windows_fs::with_file_privileges(|| {
+        let outer_state = token_state();
+        assert_eq!(
+            std::thread::spawn(token_state).join().unwrap(),
+            original_helper_state
+        );
+        let nested =
+            context.create_private_entry(&atomic, OsStr::new("nested.txt"), false, sharing)?;
+        assert_eq!(file_owner(&nested), caller_owner);
+        assert_eq!(token_state(), outer_state);
+        assert_eq!(
+            context
+                .create_private_entry(&atomic, OsStr::new("nested.txt"), false, sharing)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::AlreadyExists
+        );
+        assert_eq!(token_state(), outer_state);
+        Ok(())
+    })
+    .unwrap();
+    assert_eq!(token_state(), original_helper_state);
+    let foreign_path = root.join("system-only/existing-system-owned.txt");
+    std::fs::write(&foreign_path, b"existing foreign data stays intact").unwrap();
+    let foreign = std::fs::File::open(&foreign_path).unwrap();
+    let foreign_id = crate::move_recovery::stable_identity_from_handle(&foreign).unwrap();
+    let foreign_security = crate::copy_transaction::owner_group_dacl_digest(&foreign).unwrap();
+    assert_ne!(file_owner(&foreign), caller_owner);
+    assert_eq!(
+        context
+            .create_private_entry(
+                &parent,
+                OsStr::new("existing-system-owned.txt"),
+                false,
+                sharing
+            )
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::AlreadyExists
+    );
+    assert_eq!(
+        crate::move_recovery::stable_identity_from_handle(&foreign).unwrap(),
+        foreign_id
+    );
+    assert_eq!(
+        crate::copy_transaction::owner_group_dacl_digest(&foreign).unwrap(),
+        foreign_security
+    );
+    assert_eq!(
+        std::fs::read(&foreign_path).unwrap(),
+        b"existing foreign data stays intact"
+    );
+    assert_eq!(token_state(), original_helper_state);
+    assert_eq!(
+        context
+            .create_private_entry(&atomic, OsStr::new("file.txt"), false, sharing)
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::AlreadyExists
+    );
+    assert_eq!(
+        crate::move_recovery::stable_identity_from_handle(&atomic_file).unwrap(),
+        id
+    );
+    atomic_file.rewind().unwrap();
+    let mut bytes = Vec::new();
+    atomic_file.read_to_end(&mut bytes).unwrap();
+    assert_eq!(bytes, b"original caller owns protected private file");
+    assert_eq!(file_owner(&atomic_file), caller_owner);
+    assert_eq!(token_state(), original_helper_state);
+    assert_eq!(
+        std::fs::read(root.join("system-only/atomic-owner Ω/file.txt"))
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::PermissionDenied
+    );
+    assert_eq!(crate::windows_fs::current_owner().unwrap(), helper_owner);
+    assert_eq!(
+        crate::windows_fs::user_for_token(&crate::windows_fs::current_token().unwrap()).unwrap(),
+        helper_user
+    );
+    assert_eq!(system_parent_policy(&parent), parent_owner);
     context.validate().unwrap();
     channel.write_response(&PrivilegedResponse {
         status:PrivilegedStatus::Success, payload:None,
         message:Some(json!({
             "caller_user":context.user_sid().unwrap(),"caller_owner":caller_owner,
+            "caller_group":context.default_file_group_sid().unwrap(),
             "caller_profile":context.local_app_data().unwrap(),"helper_user":helper_user,
             "protected_parent_owner":parent_owner,"protected_parent_dacl_verified":true,
             "control_creation_owner_matches_caller":true,
+            "atomic_private_creation_owner_matches_caller":true,
+            "existing_private_entry_refused_unchanged":true,
+            "ordinary_helper_reopen_refused":true,
+            "exact_thread_token_and_privileges_restored":true,
+            "nested_privileged_thread_restored":true,
+            "foreign_owner_entry_refused_without_data_or_security_change":true,
+            "derived_policy_refuses_owner_or_group_outside_admitted_identity":true,
             "creation_with_original_token_and_elevated_parent_handle":creation,
             "thread_identity_restored":true,"profile_still_valid":true,
             "scope":"Distinct SYSTEM helper mechanism observation; no alternate-administrator UAC or enabled Copy acceptance",

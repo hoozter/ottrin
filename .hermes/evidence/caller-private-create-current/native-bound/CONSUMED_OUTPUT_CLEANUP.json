@@ -1,0 +1,37 @@
+{
+  "status": "complete guarded removal; exact decoded native JSON/source/build maps retained",
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-bound/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup frame; exact parsed JSON and compact setup facts retained",
+      "evidence": "All fourteen named native checks passed, source/build/transport hashes matched, all four owned case lifecycles gone",
+      "bytes": 5738,
+      "sha256": "56d0b7dd365ed047eb45eaeda1847d090f99309be392038bfdbd488affd83ca5"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-bound/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup frame; exact parsed JSON and compact setup facts retained",
+      "evidence": "All fourteen named native checks passed, source/build/transport hashes matched, all four owned case lifecycles gone",
+      "bytes": 9819,
+      "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-bound/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup frame; exact parsed JSON and compact setup facts retained",
+      "evidence": "All fourteen named native checks passed, source/build/transport hashes matched, all four owned case lifecycles gone",
+      "bytes": 478223,
+      "sha256": "9696a7c7027d3fc61bebc6b0dc78de94942543caa56830f492f359862b84bcbc"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-bound/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed accepted native transport/setup frame; exact parsed JSON and compact setup facts retained",
+      "evidence": "All fourteen named native checks passed, source/build/transport hashes matched, all four owned case lifecycles gone",
+      "bytes": 964499,
+      "sha256": "2cdf8d0cc1e7ea0fc3342b5ad6b31d0ccbbfdc5fec84201723715995e2a3c383"
+    }
+  ]
+}

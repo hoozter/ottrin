@@ -1,0 +1,7 @@
+{
+  "status": "Native creation policy mismatch correctly refused; no acceptance",
+  "native": "native/RESULT.json",
+  "helper": "native/SYSTEM_RESULT.json",
+  "finding": "The PrivateSecurity native owner/OWNER RIGHTS validation succeeded, but full expected-vs-observed owner/group/DACL/control comparison failed. Initial error did not identify the differing component.",
+  "next": "Add component diagnostics, preserve unknown native status as InvalidData, and verify foreign-owned collision and thread isolation cases. No ACL normalization/relaxation or helper enablement."
+}

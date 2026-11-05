@@ -239,7 +239,13 @@ impl TreeSecurityPlan {
                 namespace::validate_binding(&p.handle, &input.name, before.identity)?;
                 let mut actual = capture(&p.handle)?;
                 let original_parent = parts(actual.as_mut_ptr().cast())?;
-                let (derived, expected) = derive(p.policy.derived.0, &token, input.directory)?;
+                let (derived, expected) = derive(
+                    p.policy.derived.0,
+                    ptr::null_mut(),
+                    &token,
+                    input.directory,
+                    SEF_DACL_AUTO_INHERIT,
+                )?;
                 let policy = DestinationSecurity {
                     parent: p.before.identity,
                     // The future apply must see the parent's FINAL permissions.

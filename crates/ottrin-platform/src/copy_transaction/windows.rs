@@ -33,7 +33,9 @@ mod links;
 mod metadata;
 mod namespace;
 mod security;
-pub(crate) use security::CallerProfile;
+#[cfg(test)]
+pub(crate) use security::owner_group_dacl_digest;
+pub(crate) use security::{CallerCreationSecurity, CallerProfile};
 mod tree;
 
 use super::PlatformError;

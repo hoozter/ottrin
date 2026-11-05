@@ -1,0 +1,40 @@
+{
+  "status": "Pass scoped authenticated caller-owned private creation primitive and role-appropriate native security regressions",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-bound/RESULT.json",
+  "native_binding": "native-bound/APPLICATION_INPUT.json",
+  "native_invocations": 5,
+  "named_top_level_passes": 14,
+  "roles": {
+    "ordinary_user": [
+      "Cross-principal caller/client, unchanged source and owner-readable new protected file",
+      "Ten existing native Copy security cases; link requires unavailable ordinary privilege and audit has its explicit SYSTEM lane"
+    ],
+    "SYSTEM": [
+      "Real authenticated caller helper: original owner/group/protected DACL, private directory/file creation, refused existing own/foreign files, unchanged foreign ID/data/owner/group/DACL",
+      "Frozen admitted owner/group mismatch refusal; exact current and nested token/privilege restoration; separate thread retains original token",
+      "Native symbolic-link final DACL case",
+      "Native inherited audit-SACL case"
+    ]
+  },
+  "creation_policy": "Native caller-token-derived owner/group and protected OWNER RIGHTS DACL installed during creation. Backup/restore privileges are enabled on a duplicate effective helper thread token for one synchronous operation. No shared token adjustment or permission repair. OPEN_IF requires the explicit FILE_CREATED native outcome before returning a handle; existing entries are closed and refused.",
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "log_sha256": "29496c1125c0a6c2d70bb99e0738c863304311e47e02c5e7671aec82e33c13d8"
+  },
+  "limitations": [
+    "No original-caller registry/private reopen/stage/journal/receipt/Undo/cleanup integration; administrator Copy remains disabled",
+    "Separate SYSTEM default-destination security case failed in the broader run; remains open in SYSTEM_DESTINATION_FINDING.json and roadmap. Focused role-appropriate pass does not close it",
+    "No alternate-administrator UAC, packaged helper or full Copy acceptance",
+    "Actual in-place original TokenOwner/primary-group mutation and group-default owner variant not exercised; native policy mismatches against frozen identity were refused",
+    "Stable downloadable packages unchanged"
+  ],
+  "earlier_runs": {
+    "native": "Private owner/group/DACL validation succeeded, but generic complete policy comparison refused; no acceptance",
+    "native-diagnostic": "Native comparison identified only control expected 0x1400 vs kernel 0x1000; ten ordinary regressions passed and ordinary symbolic-link setup lacked privilege",
+    "native-fixed": "Private creation/collision/restoration and ten ordinary cases passed; broader SYSTEM destination-default policy failed",
+    "native-bound": "Current exact source: 14 named passes / five invocations, exact export transfer and complete owned teardown"
+  }
+}

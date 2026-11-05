@@ -1,0 +1,37 @@
+{
+  "status": "complete guarded removal; exact parsed failure and source/build maps retained",
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-diagnostic/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed diagnostic native transport/setup frame; decoded result and exact source/build maps retained",
+      "evidence": "Native run terminal with failed native assertions; complete VM/disks/profile teardown recorded and exact archive transfer verified",
+      "bytes": 4842,
+      "sha256": "5a3dfc11af73dd09d85874a3dcb1ac9f248d635df269ddd5f7e6a2ed1f3ab473"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-diagnostic/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed diagnostic native transport/setup frame; decoded result and exact source/build maps retained",
+      "evidence": "Native run terminal with failed native assertions; complete VM/disks/profile teardown recorded and exact archive transfer verified",
+      "bytes": 9819,
+      "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-diagnostic/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed diagnostic native transport/setup frame; decoded result and exact source/build maps retained",
+      "evidence": "Native run terminal with failed native assertions; complete VM/disks/profile teardown recorded and exact archive transfer verified",
+      "bytes": 1492947,
+      "sha256": "c2dccf2ad91ab7548b97df2835aed64fbd3d6792d37423e4353880ab72ce6ae5"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-create-current/native-diagnostic/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed diagnostic native transport/setup frame; decoded result and exact source/build maps retained",
+      "evidence": "Native run terminal with failed native assertions; complete VM/disks/profile teardown recorded and exact archive transfer verified",
+      "bytes": 2523243,
+      "sha256": "fdf956277e8c86e85e634a07ad1ba522271f10e467831baf7efc78bc6bdbdb14"
+    }
+  ]
+}

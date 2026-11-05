@@ -1,0 +1,52 @@
+{
+  "input": {
+    "source_revision": "ce2f4db27ffb3b7b2d6e7fe5f26c631139eb8316",
+    "source_test_sha256": "90ec8c1382d285f983f9a1c620844925e78c78b17237873328b468cac27113e8",
+    "test_sha256": "168f8657c5a9ca8dd6ea2289d54b837af2e24d1be8d7bf13dff4e158bf3cc617",
+    "source_bytes": 545327837,
+    "staged_bytes": 523868821,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 408706048,
+      "sha256": "fd60ee6e816d1669f319aa0224d7920fa94d69b56affa5edb538095e2f20764c"
+    },
+    "actor_sha256": "534b1673460c5896a2b4c6678cbce3f7e44d729e959548becd65f15678ca58cc",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "797005ef7e7a8fdfed1ae58a5dd590cc0223f48c0e41117260596e493a4b33e5",
+    "changed_product_sources": {
+      "crates/ottrin-platform/src/copy_transaction.rs": "4f381a60dfee9e8a8f6fb3d2c796c166eaa28dad8f0c779ae3d5b2e216466608",
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "181deb8e0d3ecd5c896a8d21826d2467cf1ee04bd1d7cf4697a1cf6042a91e8e",
+      "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "dc52ad5901422d7d7ac0d773a7cd286add1670b83203e3a08c1ea4b441ea851c",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/caller_creation.rs": "46d2920f5e611293b48d11f572b632a3a003350a145c4c03b5875490bb1f1156",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "be9952aa2addb141c26f0dcad96785c6534988f5087ba03040513bf769227737",
+      "crates/ottrin-platform/src/windows_fs.rs": "6c16e8acf6b0f82d0e8f1d18cfab2e2745f67f73e2450666926c9c59f66806b3",
+      "crates/ottrin-platform/src/windows_fs/identity.rs": "6efbd661176ca89b1eb91eb2c608d4f1adfa7be103fbf56767c1121af4a0d5db",
+      "crates/ottrin-platform/src/windows_fs/privileges.rs": "db841d258085b67fa4bd7411beebecfa3ae70759fc6eddb7c052ce8542e49b73",
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "eafb1fb069db88b6955fd4eb62bd7e4375c1330c745843c1b30c3b8f87feecb0",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "101f5af489ea4eec09a30c7e6e379c1a08cd0b4cb5f6445a40e8574bde844516"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "stack": "at Require, <No file>: line 5\r\nat <ScriptBlock>, <No file>: line 27\r\nat <ScriptBlock>, <No file>: line 1",
+  "error": "Native assertions failed: ordinary cross-principal client",
+  "phase": "ordinary cross-principal client",
+  "scope": "Ordinary-client/SYSTEM-companion original-caller and owner-creation mechanism observation; no alternate-administrator UAC, production Copy, registry bridge or package acceptance",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "failed",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::client ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::client\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 577 filtered out; finished in 1.48s\n\n",
+      "case": "ordinary cross-principal client",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::client' (8556) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:243:61:\ncalled `Result::unwrap()` on an `Err` value: Error { kind: UnexpectedEof, message: \"failed to fill whole buffer\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 101
+    }
+  ]
+}

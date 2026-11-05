@@ -1,0 +1,4 @@
+{
+  "format": "Native JSON normalized to UTF-8 without BOM and LF with unchanged parsed values; exact original archive hashes retained in transfer receipts",
+  "normalized": []
+}

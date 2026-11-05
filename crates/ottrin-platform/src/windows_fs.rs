@@ -1,9 +1,11 @@
 //! Native single-entry operations shared by Windows file transactions.
 mod identity;
+mod privileges;
 mod recovery;
 pub(crate) use identity::{
-    current_owner, current_token, owner_for_token, user_for_token, valid_sid,
+    current_owner, current_token, group_for_token, owner_for_token, user_for_token, valid_sid,
 };
+pub(crate) use privileges::with_file_privileges;
 pub(crate) mod journal_access;
 pub(crate) use recovery::Volumes;
 use std::ffi::{OsStr, OsString, c_void};
@@ -184,6 +186,21 @@ unsafe fn open_relative_options(
     options: RelativeOptions,
     create_options: u32,
 ) -> io::Result<File> {
+    let disposition = if options.create_new {
+        FILE_CREATE
+    } else {
+        FILE_OPEN
+    };
+    unsafe { open_relative_native(parent, name, options, create_options, disposition) }
+}
+
+unsafe fn open_relative_native(
+    parent: &File,
+    name: &OsStr,
+    options: RelativeOptions,
+    create_options: u32,
+    disposition: u32,
+) -> io::Result<File> {
     let mut wide = valid_component(name)?;
     let unicode = UNICODE_STRING {
         Length: (wide.len() * 2) as u16,
@@ -208,11 +225,7 @@ unsafe fn open_relative_options(
             ptr::null(),
             FILE_ATTRIBUTE_NORMAL,
             options.sharing,
-            if options.create_new {
-                FILE_CREATE
-            } else {
-                FILE_OPEN
-            },
+            disposition,
             FILE_OPEN_REPARSE_POINT
                 | create_options
                 | FILE_SYNCHRONOUS_IO_NONALERT
@@ -230,7 +243,23 @@ unsafe fn open_relative_options(
             unsafe { RtlNtStatusToDosError(result) } as i32,
         ));
     }
-    Ok(unsafe { File::from_raw_handle(raw.cast()) })
+    let file = unsafe { File::from_raw_handle(raw.cast()) };
+    // Restore creation uses OPEN_IF to obtain backup read access in the same
+    // operation. Only FILE_CREATED admits the returned handle; an existing entry
+    // is closed without installing security, writing, truncating or deleting it.
+    const NATIVE_FILE_CREATED: usize = 2; // IO_STATUS_BLOCK.Information, FILE_CREATED.
+    if options.create_new && status.Information != NATIVE_FILE_CREATED {
+        return Err(if disposition == FILE_OPEN_IF && status.Information == 1 {
+            // FILE_OPENED.
+            io::Error::new(io::ErrorKind::AlreadyExists, "native entry already exists")
+        } else {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "unexpected native creation outcome; data retained",
+            )
+        });
+    }
+    Ok(file)
 }
 
 /// Reopen an ordinary directory by native ID, with normal access checks and no
@@ -459,6 +488,54 @@ fn create_private_with_access(
     access: u32,
     create_options: u32,
 ) -> io::Result<File> {
+    let security = LocalSecurity::private()?;
+    create_private_native(
+        parent,
+        name,
+        RelativeOptions {
+            directory: Some(directory),
+            create_new: true,
+            access,
+            sharing,
+            security: security.as_raw().cast(),
+        },
+        create_options,
+        FILE_CREATE,
+    )
+}
+
+/// # Safety
+/// `security` must be a live native descriptor derived from an authenticated
+/// token, never serialized permissions or a caller-supplied SID/descriptor.
+pub(crate) unsafe fn create_private_for_caller(
+    parent: &File,
+    name: &OsStr,
+    directory: bool,
+    sharing: u32,
+    security: *const SECURITY_DESCRIPTOR,
+) -> io::Result<File> {
+    create_private_native(
+        parent,
+        name,
+        RelativeOptions {
+            directory: Some(directory),
+            create_new: true,
+            access: FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
+            sharing,
+            security,
+        },
+        FILE_OPEN_FOR_BACKUP_INTENT,
+        FILE_OPEN_IF,
+    )
+}
+
+fn create_private_native(
+    parent: &File,
+    name: &OsStr,
+    options: RelativeOptions,
+    create_options: u32,
+    disposition: u32,
+) -> io::Result<File> {
     let identity =
         crate::move_recovery::stable_identity_from_handle(parent).map_err(io::Error::other)?;
     if !identity.is_directory_without_reparse() {
@@ -489,24 +566,8 @@ fn create_private_with_access(
             "private staging requires filesystem ACL support",
         ));
     }
-    let security = LocalSecurity::private()?;
     // The owned descriptor remains alive until NtCreateFile returns.
-    unsafe {
-        open_relative_options(
-            parent,
-            name,
-            RelativeOptions {
-                directory: Some(directory),
-                create_new: true,
-                access,
-                // Sharing is part of the caller's operation contract. In
-                // particular, Windows rename into a directory needs write sharing.
-                sharing,
-                security: security.as_raw().cast(),
-            },
-            create_options,
-        )
-    }
+    unsafe { open_relative_native(parent, name, options, create_options, disposition) }
 }
 
 /// Diagnostic/recovery location of this actual object, never namespace authority.

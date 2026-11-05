@@ -1,0 +1,20 @@
+{
+  "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+  "status": "failed",
+  "error": "SYSTEM native assertions failed: SYSTEM native security regressions",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.12s\n\n",
+      "case": "caller private helper",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 11 tests\ntest copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults ... FAILED\ntest copy_transaction::windows::security::tests::destination_directory_dacl_and_child_inheritance_match_native_creation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_changed_parent_permissions_without_mutation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_private_stage_as_publication_parent ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_wrong_name_identity_and_type ... ok\ntest copy_transaction::windows::security::tests::destination_security_reports_write_dac_denial_without_changing_bytes_or_acl ... ok\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ok\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_mandatory_label ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_final_link_dacl_does_not_change_populated_targets ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_maximum_allowed_dacl_is_per_object_after_handle_clone ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_permission_handle_rights_do_not_expand_journals_or_sources ... ok\n\nfailures:\n\nfailures:\n    copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults\n\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 567 filtered out; finished in 0.36s\n\n",
+      "case": "SYSTEM native security regressions",
+      "stderr": "\nthread 'copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults' (7172) panicked at crates/ottrin-platform/src/copy_transaction/windows/security.rs:746:18:\ncalled `Result::unwrap()` on an `Err` value: Io(\"Windows Copy stream staging: published owner/group/DACL does not match destination policy\")\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 101
+    }
+  ],
+  "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 30\r\nat <ScriptBlock>, <No file>: line 1"
+}
