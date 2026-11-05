@@ -1,0 +1,12 @@
+{
+  "status": "failed; no package acceptance",
+  "error": "Own density did not change actual Miller widgets in Dark",
+  "observed_actual_Miller_Dark_heights": [
+    23,
+    25,
+    34
+  ],
+  "diagnosis": "Aggregate fixture sorting of dictionary entries used Sort-Object property syntax; retry uses explicit numeric script expression and persists observed values before assertion. Raw failed run retained. Actual original captures remain separate review.",
+  "retry_source_sha256": "33c661b49b9f66efa2ba957f3f731e2c959b92d780137ac06970913e170eb1b7",
+  "capture_disposition": "18 superseded images retired after all20 successful same-artifact replacement captures were directly reviewed; exact hashes/removal receipt retained. Original failed measurements and assertion source remain."
+}

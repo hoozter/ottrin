@@ -1,0 +1,13 @@
+{
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "purpose": "Pending native MSIX assembly using real Git and exact current stage",
+  "archive": "/home/campbell/Projects/Ottrin/.hermes/evidence/list-density-delivery-current/source.zip",
+  "status": "consumed by native MSIX19 assembly; owned source archive retired",
+  "sha256": "652daade929bf19ff00a665c1db10e52c600f045aa62087fb014bd457113ed69",
+  "archive_bytes": 2527004,
+  "real_filtered_shallow_clone": true,
+  "source_scope": "Exact Git commit and sparse packager inputs; omitted blobs are not assembly inputs. No new Git revision or forged provenance.",
+  "temporary_clone_removed": true,
+  "archive_retired": true,
+  "cleanup_consumer": "assembly/ASSEMBLY.json"
+}

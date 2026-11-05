@@ -1,0 +1,149 @@
+{
+  "members": [
+    {
+      "name": "cleanup-service-remove.json",
+      "bytes": 134,
+      "sha256": "3aae809e9d642c3382a23301c5c1262d86e76776c0f74ffd798877934a8ff846",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "DESKTOP_READY.json",
+      "bytes": 280,
+      "sha256": "7fcd977bc6da9b0a2738def81accb2dbfd8b8b9fdd9a5e537c0dec6c9ac48c48",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "Grid-Dark-0.75.png",
+      "bytes": 27949,
+      "sha256": "417250ff3e4716c7d28092f9ea4b10ab3d3d121fd2d74475feea744c3dcf1930",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Grid-Dark-1.85.png",
+      "bytes": 30634,
+      "sha256": "16e918f52879b1ffc782224d85a7ad5e792a65232bd96d46d329b8b13c4031e8",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Grid-Dark-1.png",
+      "bytes": 29047,
+      "sha256": "77bd473f5a0f158c9a3282ef211450eed02456a3a28d464676347e1265562025",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Grid-Light-0.75.png",
+      "bytes": 24803,
+      "sha256": "c901c45e64bb4451115e2bd3d7573eb223e9c888f9ca23c673b31c5d0f2a9ad3",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Grid-Light-1.85.png",
+      "bytes": 27280,
+      "sha256": "20a033f221e2b6a1707e66e4ae85c407fbaaac81f82d446f2d766b9e59853924",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Grid-Light-1.png",
+      "bytes": 25647,
+      "sha256": "359a92b02f58864b6d3c42f9aa1913973641d197551fb2e70441a1d04cf16994",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "initial-service-remove.json",
+      "bytes": 220,
+      "sha256": "105951620a1a47d79d32e62aa0299a6da85b866f05de4934132956e3011bab29",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "install.json",
+      "bytes": 60,
+      "sha256": "6b36b6d707ac0235381a0d65160bcca92d85982538e7bf2cabcac994f0d0857a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "List-Dark-0.75.png",
+      "bytes": 38609,
+      "sha256": "f652983aed95e8159a891c165bd914be81f1d19d13b2960de492b6dc51ab5c3a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "List-Dark-1.85.png",
+      "bytes": 45839,
+      "sha256": "f6a1b79a42e8858cf8e455a6e0004c63aefca891158f640e2b7c16e0e9919ff9",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "List-Dark-1.png",
+      "bytes": 39583,
+      "sha256": "a906859b1cbf26f7e75858cf0ff33c2e9f5b60aac39c513211a7f7f8a9d330f2",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "List-Light-0.75.png",
+      "bytes": 31165,
+      "sha256": "065762aa482e36136b2a88821a5ef838ea5244cc173f8bbaebbb0c5c8f2305fd",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "List-Light-1.85.png",
+      "bytes": 36734,
+      "sha256": "4d7843994e0715b5e7c7b0096421087f21508723da33c60e334074b15679794b",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "List-Light-1.png",
+      "bytes": 32043,
+      "sha256": "1347de548a427a5b3c17fa986c153203d797171a47c58f6a0038493fcdb1042e",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Miller-Dark-0.75.png",
+      "bytes": 59240,
+      "sha256": "080ce83ce5f1d5b925f0218e4552a6afb323545851c2ca69ef60fe6e69e92504",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Miller-Dark-1.85.png",
+      "bytes": 56921,
+      "sha256": "879c0834fb081123997936762fdd6e1ff5ff1221712c352f58535aa9a79731b7",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Miller-Dark-1.png",
+      "bytes": 61823,
+      "sha256": "7da6349aad5814a85444cf535a616cdc37bce7ae0f7d2f4f905d630743567a10",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Miller-Light-0.75.png",
+      "bytes": 49017,
+      "sha256": "d948bba6b7fa4515d9c4046f4b22049413ab2911cff5e9c69e3cfa41668a786a",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Miller-Light-1.85.png",
+      "bytes": 45228,
+      "sha256": "c4eb529b450dca3cb29332d8e77ce60ed0add8320236efba10739027d9fdcfa0",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "Miller-Light-1.png",
+      "bytes": 50985,
+      "sha256": "aa15d17192e1d2dc114329261a52d397fc46f177542ce560c5cfe3b9d824875f",
+      "private_bootstrap_not_extracted": false
+    },
+    {
+      "name": "OWNER.json",
+      "bytes": 1076,
+      "sha256": "5daebc7e61047ad5831e8754ab031d76c0c9b014118722698634c1fc1f2f1de6",
+      "private_bootstrap_not_extracted": true
+    },
+    {
+      "name": "RESULT.json",
+      "bytes": 23268,
+      "sha256": "42431761beb72037a2e0b47236f735422ef189c553c7cc0edb0b363df73824de",
+      "private_bootstrap_not_extracted": false
+    }
+  ],
+  "private_bootstrap_excluded": true
+}

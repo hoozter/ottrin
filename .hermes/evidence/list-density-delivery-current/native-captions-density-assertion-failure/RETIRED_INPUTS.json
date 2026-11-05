@@ -1,0 +1,60 @@
+{
+  "batches": [
+    {
+      "removed": [
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/RESULTS.zip",
+          "bytes": 589947,
+          "sha256": "505b3aee16ea757b8117b7c3f2fa32bbd26dd9f8bf402b9631fef22b3ed55813"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/controller.ps1",
+          "bytes": 4866,
+          "sha256": "8c1515ae4a596de70d497eafb3b8f000209513134d1f6cffabfae085ebb05cd4"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/GUEST_PREPARATION.json",
+          "bytes": 883,
+          "sha256": "c5fe9976507b937788efe16353058880d4c7a7d9a05b8a4d170640e16abd6f8a"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/CONTROLLER_PROCESS.json",
+          "bytes": 1938,
+          "sha256": "a08c7918e25a513094afed05e4d0e94088d5ac3cd3b9b64af943578a103cb7ac"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/DESKTOP_SIGNAL.json",
+          "bytes": 255,
+          "sha256": "e0cbcd612ec8e153f5d06a04a6a8ee2c4493c0aabe6cd1d235403a08a6bd4afb"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/readiness.log",
+          "bytes": 1117,
+          "sha256": "c8b675459be307eb441f07ab0c989ca90e39323009142a78d4139568280c9913"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/desktop-ready.png",
+          "bytes": 2523093,
+          "sha256": "0ff9b264cf29a2e59c6f36e32cd85d05470233c3d854f8f3791c266794c302ce"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/PRIVACY_STEPS.json",
+          "bytes": 846,
+          "sha256": "d30457bba37ada79ec1c4c2c87a697db2e7802726e613b1c887423139f054a2f"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/privacy-accepted-0.png",
+          "bytes": 9083,
+          "sha256": "794e304b22dab6b5b93604bc86e85055b7e903ec144620cf4540a34c1ac08fbe"
+        },
+        {
+          "path": ".hermes/evidence/list-density-delivery-current/native-captions/privacy-accepted-1.png",
+          "bytes": 1492614,
+          "sha256": "ba78adc2647d7c5481007b4ab747f75de2f6be4cab3ddf0a427fc88aee257242"
+        }
+      ],
+      "bytes": 4624642
+    }
+  ],
+  "scope": "Exact terminal case with exported safe results and consumed private bootstrap; other live clone/current packages/base disks untouched"
+}

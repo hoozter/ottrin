@@ -1,0 +1,536 @@
+{
+  "no_input_footer_samples": [
+    {
+      "seconds": 0.0294835,
+      "label": "3 items"
+    },
+    {
+      "seconds": 2.0732391,
+      "label": "3 items"
+    },
+    {
+      "seconds": 10.0740669,
+      "label": "3 items"
+    }
+  ],
+  "sources_preserved": true,
+  "density_observation": {
+    "scales": [
+      0.75,
+      1,
+      1.85
+    ],
+    "view": "Grid",
+    "heights": [
+      81,
+      98,
+      150
+    ],
+    "theme": "Light"
+  },
+  "package": {
+    "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "9287b23d5f897fcb0ee71dbacdb4693f04dcc50407ad7c2bd947908d43d85e15"
+      }
+    ],
+    "actor_sha256": "33c661b49b9f66efa2ba957f3f731e2c959b92d780137ac06970913e170eb1b7",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "phase": "uninstall preserves preferences and files",
+  "scope": "Exact NSIS, ordinary-user Native renderer; caption/default-view, no-input footer, real Task Scheduler startup controls and uninstall preservation. Full theme, MSIX lifecycle and physical graphics remain separate.",
+  "preferences_preserved": true,
+  "service_round_trip": {
+    "running_pid_preserved": 7208,
+    "os_task_inspected": true,
+    "normal_close_keeps_daemon": true,
+    "registration": "On -> Off -> On"
+  },
+  "status": "pass native caption/default-view, service startup and uninstall scope",
+  "density_proof": [
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Miller",
+      "heights": [
+        23,
+        25,
+        34
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "List",
+      "heights": [
+        26,
+        28,
+        36
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Grid",
+      "heights": [
+        81,
+        98,
+        150
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Miller",
+      "heights": [
+        23,
+        25,
+        34
+      ],
+      "theme": "Light"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "List",
+      "heights": [
+        26,
+        28,
+        36
+      ],
+      "theme": "Light"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Grid",
+      "heights": [
+        81,
+        98,
+        150
+      ],
+      "theme": "Light"
+    }
+  ],
+  "cases": [
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Dark-0.75.png",
+      "captions": [
+        {
+          "width": 220,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 220,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Dark-1.png",
+      "captions": [
+        {
+          "width": 240,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 240,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Dark-1.85.png",
+      "captions": [
+        {
+          "width": 292,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 292,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Dark-0.75.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Dark-1.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Dark-1.85.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "Grid-Dark-0.75.png",
+      "captions": [
+        {
+          "width": 84,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 81,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 84,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 81,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "Grid-Dark-1.png",
+      "captions": [
+        {
+          "width": 84,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 84,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "Grid-Dark-1.85.png",
+      "captions": [
+        {
+          "width": 105,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 150,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 105,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 150,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Dark"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Light-0.75.png",
+      "captions": [
+        {
+          "width": 220,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 220,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 23,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Light-1.png",
+      "captions": [
+        {
+          "width": 240,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 240,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 25,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "Miller-Light-1.85.png",
+      "captions": [
+        {
+          "width": 292,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 292,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 34,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Miller",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Light-0.75.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 26,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Light-1.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 28,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "List-Light-1.85.png",
+      "captions": [
+        {
+          "width": 820,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 820,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 36,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "List",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 0.75,
+      "actual_view_toggle_verified": true,
+      "capture": "Grid-Light-0.75.png",
+      "captions": [
+        {
+          "width": 84,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 81,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 84,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 81,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1,
+      "actual_view_toggle_verified": true,
+      "capture": "Grid-Light-1.png",
+      "captions": [
+        {
+          "width": 84,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 84,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 98,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Light"
+    },
+    {
+      "view_scale": 1.85,
+      "actual_view_toggle_verified": true,
+      "capture": "Grid-Light-1.85.png",
+      "captions": [
+        {
+          "width": 105,
+          "name": "00-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.txt",
+          "height": 150,
+          "type": "ControlType.Button"
+        },
+        {
+          "width": 105,
+          "name": "01-iiiiiiiiiiiiiiiiiiii.txt",
+          "height": 150,
+          "type": "ControlType.Button"
+        }
+      ],
+      "geometry": "client=900x600 origin=0,0 dpi=96",
+      "view": "Grid",
+      "theme": "Light"
+    }
+  ]
+}

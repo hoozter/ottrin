@@ -1,0 +1,179 @@
+{
+  "status": "pass exact native NSIS filename/density/default-view/startup/uninstall scope; full UI audit incomplete",
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "bc5387befaf588b0c3f71da1fd1b951b633e972e36b33576d4be5f5c65a63c71",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "9287b23d5f897fcb0ee71dbacdb4693f04dcc50407ad7c2bd947908d43d85e15"
+  },
+  "native_input": {
+    "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "9287b23d5f897fcb0ee71dbacdb4693f04dcc50407ad7c2bd947908d43d85e15"
+      }
+    ],
+    "actor_sha256": "33c661b49b9f66efa2ba957f3f731e2c959b92d780137ac06970913e170eb1b7",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "density_proof": [
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Miller",
+      "heights": [
+        23,
+        25,
+        34
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "List",
+      "heights": [
+        26,
+        28,
+        36
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Grid",
+      "heights": [
+        81,
+        98,
+        150
+      ],
+      "theme": "Dark"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Miller",
+      "heights": [
+        23,
+        25,
+        34
+      ],
+      "theme": "Light"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "List",
+      "heights": [
+        26,
+        28,
+        36
+      ],
+      "theme": "Light"
+    },
+    {
+      "scales": [
+        0.75,
+        1,
+        1.85
+      ],
+      "view": "Grid",
+      "heights": [
+        81,
+        98,
+        150
+      ],
+      "theme": "Light"
+    }
+  ],
+  "service_round_trip": {
+    "running_pid_preserved": 7208,
+    "os_task_inspected": true,
+    "normal_close_keeps_daemon": true,
+    "registration": "On -> Off -> On"
+  },
+  "no_input_footer_samples": [
+    {
+      "seconds": 0.0294835,
+      "label": "3 items"
+    },
+    {
+      "seconds": 2.0732391,
+      "label": "3 items"
+    },
+    {
+      "seconds": 10.0740669,
+      "label": "3 items"
+    }
+  ],
+  "preferences_preserved": true,
+  "sources_preserved": true,
+  "capture_review": {
+    "reviewed": true,
+    "status": "all20 original native Windows PNG captures directly reviewed",
+    "captures": {
+      "Miller-Dark-0.75.png": "4a4f7d9d8071bb7732d858ad48dd29a9cebb815660533f801cdf93fb494ee738",
+      "Miller-Dark-1.png": "3a35dd86d9a74fc7b3a9940fc5979907286666b2cae8f500f1f2190a6959c6a5",
+      "Miller-Dark-1.85.png": "bbc19c2a37af7541db17b623d3300e9b359e53ba9b98ff2371716b8ef815c437",
+      "List-Dark-0.75.png": "1d35db8961cf55d46b4a479ec1c3be1d4ade1f5ecfabbd1c358f96dac53038db",
+      "List-Dark-1.png": "af982f837fe9406cd657d10b4006119d3018f4393318d7910a78b63169b8ed61",
+      "List-Dark-1.85.png": "da59d86ff422b680e455f6e444471ccbf93962c033f5c16441377c7c4433c119",
+      "Grid-Dark-0.75.png": "3d984594ba882656951972fd9079fdab5be1a05b80d9e4d0718c513a12c44282",
+      "Grid-Dark-1.png": "4927c0f74b8d6961e1e9f2d8c95aaeee501f02468e4f08e72f2977bb7448761e",
+      "Grid-Dark-1.85.png": "103fc25b8b53262caa6f680c59ae9dabc0233fd4b35c3ab86701f8c0a55fadbb",
+      "Miller-Light-0.75.png": "3818fdf79087b84e7e4ac8d965e3d61783d2e0f34556b6242ee601e4ae639d78",
+      "Miller-Light-1.png": "3cb74e22a51a9d3da632694ee181a98f43101a38556c214ed1f32d921b6a8dad",
+      "Miller-Light-1.85.png": "7122acee71f01dd8fc119d322f14007d3962b509978c3b33fbf458d6a013830d",
+      "List-Light-0.75.png": "bc10d14a43735926fc915dfd497ccbe5ceb23ea5156d5067f8feea3e42bea36b",
+      "List-Light-1.png": "b1b9ef04e6acbd29ac7451b68a364c02c6365dac33f982a445364d0406d35523",
+      "List-Light-1.85.png": "f587112f01911907ae0d53eb3f955d3ff764bc5ee611f64dfe0f93190d58a1cd",
+      "Grid-Light-0.75.png": "4f448f40504549ee273462c3f765f4f37ebb3456442d50da4b4838456e12a82b",
+      "Grid-Light-1.png": "21a9ea90cfecb4d074aef9c72ac38eacbde75747a600fdec88865f4cfcf11983",
+      "Grid-Light-1.85.png": "8f282994b0b6e467cbfff6de06a03543c4598b60cdb04371cc16b1662ddf7f95",
+      "services-on.png": "e1aa853649fb1cc035f48ba4feeea8de19280bd9b7170f1a470600fb92b8100b",
+      "services-off.png": "19caa683ec87d0391c6142bd345988a64620539e27a7d1913e4736fb94cc9b19"
+    },
+    "findings": [
+      "All six List cases contain wide filenames within Name and clear of Type/Size/Modified",
+      "Column filenames stay inside their columns; Grid labels remain within actual tiles",
+      "Own-density size changes are visible in both themes at75/100/185 percent",
+      "Settings shows installed-service actions and Ready state independently of checked On/unchecked Off startup",
+      "High-density Column/List icon-to-text padding is visibly too tight; remains full UI audit work",
+      "Light footer/logo contrast is weak; remains full theme audit work"
+    ],
+    "limits": [
+      "No full theme/property/role, physical graphics, MSIX, index upgrade or administrator-Copy acceptance"
+    ]
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "No full theme/property/role, physical graphics, MSIX, index upgrade or administrator-Copy acceptance",
+    "High-density Column/List icon-to-text padding is visibly too tight; remains full UI audit work",
+    "Light footer/logo contrast is weak; remains full theme audit work"
+  ]
+}

@@ -37,8 +37,17 @@ remain explicit full-interface audit findings, not accepted UI completion.
 The first current Windows18-case capture run stopped at its aggregate fixture
 assertion after recording all18 cases. Actual raw Column heights are23/25/34 and
 List26/28/36. Its failed result is retained; the retry explicitly sorts numeric
-scales and saves the assertion operands. No Windows candidate promotion follows
-from the failed fixture. Current native MSIX19 assembly/runtime/update gates remain
+scales and saves the assertion operands. That retry passes all18 cases, real
+Task Scheduler On/Off/On without changing daemon PID, normal-close persistence
+and uninstall preference/file preservation. All20 original successful captures
+were directly reviewed. Wide List filenames stay clear of metadata; tight185%
+icon/text padding and Light footer/logo contrast remain open. Both owned clones,
+volumes and consumed transports/bootstrap are removed; superseded failed-fixture
+images are retired with exact hashes and compact failure measurements retained.
+Native Microsoft MakeAppx MSIX19 assembly and58-file payload equality pass,
+including private daemon watcher/restart/shutdown/idle checks. Its clone/volumes
+and consumed2.527MB source archive are removed. Fresh19 installed-package
+launch/startup/reboot/login/removal acceptance is running; stable delivery remains
 pending. Fresh prior MSIX18 functional runtime/login/removal and both enabled and
 disabled17-to18 updates passed; the disabled login observation lasted180seconds
 without a daemon before any Ottrin CLI. Those packages were retired. Pre-update17
@@ -47,7 +56,8 @@ previous fresh18 Settings images were occluded, requiring newly visible19 captur
 
 All four hosted jobs passed for `7fa0e46c` and `fb717b03`. Current24af run41956606124
 has passed Linux verification and both performance jobs; Windows verification is
-still running. Avoid cancelling that run. Evidence:
+still running after its Cargo tests passed and moved to strict lint. Avoid
+cancelling that run. Evidence:
 `.hermes/evidence/list-density-delivery-current/` (current staged cohort),
 `.hermes/evidence/list-caption-current/` (source regressions), and
 `.hermes/evidence/status-error-delivery-current/` (retired prior cohort).
