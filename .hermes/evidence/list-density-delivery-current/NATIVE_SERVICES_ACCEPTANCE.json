@@ -1,0 +1,140 @@
+{
+  "status": "pass within actual AppImage Services startup-control and controlled-query-error scope",
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "appimage_input": {
+    "name": "Ottrin-0.1.0-x86_64.AppImage",
+    "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+    "sha256": "d771c7bd863bcdfa1b2bce1b0761d356a42bccafaa44ad76b9912f42d5f06a47",
+    "gui_sha256": "4f0aaf44c9f0fa7510b392f1aa67653d65df86ff248259167c1c1c9f425e3bbc",
+    "daemon_sha256": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3"
+  },
+  "worker": {
+    "status": "pass",
+    "cases": [
+      {
+        "theme": "Dark",
+        "backend_scale": 1.0,
+        "gui_sha256": "4f0aaf44c9f0fa7510b392f1aa67653d65df86ff248259167c1c1c9f425e3bbc",
+        "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4691",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-dark-1.0-on.png",
+          "startup-dark-1.0-off.png",
+          "startup-dark-1.0-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      },
+      {
+        "theme": "Light",
+        "backend_scale": 1.0,
+        "gui_sha256": "4f0aaf44c9f0fa7510b392f1aa67653d65df86ff248259167c1c1c9f425e3bbc",
+        "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4691",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-light-1.0-on.png",
+          "startup-light-1.0-off.png",
+          "startup-light-1.0-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      },
+      {
+        "theme": "Dark",
+        "backend_scale": 1.5,
+        "gui_sha256": "4f0aaf44c9f0fa7510b392f1aa67653d65df86ff248259167c1c1c9f425e3bbc",
+        "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4691",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-dark-1.5-on.png",
+          "startup-dark-1.5-off.png",
+          "startup-dark-1.5-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      },
+      {
+        "theme": "Light",
+        "backend_scale": 1.5,
+        "gui_sha256": "4f0aaf44c9f0fa7510b392f1aa67653d65df86ff248259167c1c1c9f425e3bbc",
+        "settings_geometry": "WINDOW=2097169\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4691",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-light-1.5-on.png",
+          "startup-light-1.5-off.png",
+          "startup-light-1.5-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      }
+    ],
+    "scope": "Owned guest AppImage/FUSE, installed enabled service, controlled software X11; query failure is explicitly simulated.",
+    "install": "Ottrin index service configured; automatic startup is enabled.\n",
+    "initial_index": {
+      "status": "Ready",
+      "loading_saved_snapshot": false,
+      "database_bytes": 28672,
+      "wal_bytes": 0,
+      "freelist_pages": 0,
+      "freelist_bytes": 0,
+      "snapshot_revision": 1,
+      "detail": "Ready \u00b7 1002 indexed",
+      "indexed_items": 1002,
+      "last_completed_indexed_items": 1002,
+      "estimated_total_items": null,
+      "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+      "configured_root_count": 1,
+      "watched_root_count": 1,
+      "watcher_ready": true,
+      "watcher_last_setup_unix_secs": 1793847275,
+      "watcher_last_error": null,
+      "active_root": null,
+      "active_root_index": 0,
+      "total_roots": 1,
+      "last_scan_started_unix_secs": 1793847275,
+      "last_scan_completed_unix_secs": 1793847275,
+      "last_scan_duration_ms": null,
+      "last_progress_unix_secs": 1793847275,
+      "last_error": null
+    },
+    "daemon_sha256": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
+    "database_identity_preserved": true,
+    "saved_roots_preserved": true,
+    "sources_preserved": true,
+    "daemon_running_after_normal_gui_close": true
+  },
+  "captures": {
+    "startup-dark-1.0-on.png": "abfbb3301d9c6f412c88b59c4b19ca0a83996eeb401f564b3ccfd2a6a3528010",
+    "startup-dark-1.0-off.png": "a62ac16cd789877e74989517fb2339ba8b93a9888bb72734929f811ecbce95bb",
+    "startup-dark-1.0-unavailable.png": "8db86f4933c6b6a0490e89197af33a402e4ba328d818564f8fcd9e38df90a9c5",
+    "startup-light-1.0-on.png": "225234d7fe84f164d9b63f76e2499d43d21d80d92d77f0451afd7a6ef960f56b",
+    "startup-light-1.0-off.png": "63d5e85d6539bae1a1db36e0d317c27bbd4f55a5d3689ae6dbb51b79731d7e0a",
+    "startup-light-1.0-unavailable.png": "9d72b13086cca1a90a2e848f4b04ee3c0b761f8fa6ff4c8f4df89657ed70b04d",
+    "startup-dark-1.5-on.png": "9d162950df51fffc75e625f262797c253bbd894ceccd54999ed45965c919f0e9",
+    "startup-dark-1.5-off.png": "696d14913f887e6c3d1090bdcd076f3825eccb01478134c52f8f8f7265bdf238",
+    "startup-dark-1.5-unavailable.png": "eeb03fc53c7aab4e4a771d746249e851890e5b2fa5629436aaf9a331d9ff4d44",
+    "startup-light-1.5-on.png": "1b0426f70abc15d367ea6d70ea8f51815de78ea088073996372b43ec46dab09f",
+    "startup-light-1.5-off.png": "0be26ecb5403ac499a91353bcfa4912e957b04be8ad0af9e13b5a7e2f1ac49da",
+    "startup-light-1.5-unavailable.png": "a1805c5256ba863ca34e70bb46eb1b6cd758f3f12c429044b1cc0b4be6c07a0f"
+  },
+  "cleanup": {
+    "retired_uuid": "3e1d9851-5c91-417a-afc6-74b36b1439ec",
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ],
+    "seed_and_keys_removed": true
+  },
+  "limits": [
+    "Controlled is-enabled failure is simulated; installed service and checkbox operations are real",
+    "No full UI, physical desktop or personal-profile acceptance",
+    "Light theme green Ready text has weak contrast; full theme audit remains open"
+  ],
+  "consumed_transport_removed": true
+}

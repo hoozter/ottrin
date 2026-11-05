@@ -1,0 +1,19 @@
+{
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "previous_source_revision": "c4a7b46b8bc77c66f62b112689fa6b382a51ddb8",
+  "changed_crate_files": [
+    "crates/ottrin-app/src/main.rs",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs",
+    "crates/ottrin-search/src/lib.rs",
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "source_checks_verified_against_git_objects": {
+    "crates/ottrin-app/src/main.rs": "62ea28794ecd42e614501b3f5baad7542c4b061f00de869a415a36a2329aedb7",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "711989544e45368bf04afa12ef1125523e9d66bd13df33d4e1f153115638d8d8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "489139d83e22db0b71524fc5637d4613408548b55676f9d6e6e38ee76d155fe4",
+    "crates/ottrin-search/src/lib.rs": "641ffb49ede5b6ecd36cd29b5ce5e461a55533bbc9050dcb1c044532741474f5",
+    "crates/ottrin-ui/src/lib.rs": "f682fa8b6e41c34fd492ea17648c5b957e844c622cd3f7da4f39ae0ac44e6bae"
+  },
+  "scope": "Measured filename containment and independent densities, readable Services startup state, prior Windows-only cleanup preparation. No whole-interface or Windows administrator-Copy completion."
+}

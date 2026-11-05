@@ -1,0 +1,14 @@
+{
+  "source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "scope": "Measured List filename containment and independent Column/List density, including prior Services/transport fixes; roadmap remains incomplete",
+  "pending_consumers": [
+    "Production content/provenance verification",
+    "Actual package GUI/status/caption checks",
+    "Changed-daemon runtime checks",
+    "Exact-source hosted CI",
+    "Guarded stable-path delivery"
+  ],
+  "cleanup_owner": "/home/campbell/Projects/Ottrin/.hermes/evidence/list-density-delivery-current",
+  "rebuild_reason": "Original native Windows captures exposed actual List overlap; actual renderer regressions also exposed crossed view-density settings. Both source corrections verified; rebuild required before distribution."
+}

@@ -1,0 +1,17 @@
+{
+  "setup_control": false,
+  "distro": "ubuntu",
+  "domain": "ottrin-native-ubuntu-desktop-qa",
+  "mac": "52:54:00:6f:74:48",
+  "source": "24af31d70cb9950527b6fcb113c466213f3a2422",
+  "status": "pass within actor scope",
+  "package_sha256": "eb9d3f4ce6668c705772e7099475e3d537dbeeff09b965e9e895f3ac016ba5e2",
+  "uuid": "4a91b2b2-2c78-4fcf-a4b4-5d5fc61463c2",
+  "cloud_init": {
+    "exit": 0,
+    "status": "done",
+    "recoverable_errors": {},
+    "scope": "Provisioning warnings retained separately; product gates unchanged"
+  },
+  "temporary_seed_and_ssh_keys_removed": true
+}

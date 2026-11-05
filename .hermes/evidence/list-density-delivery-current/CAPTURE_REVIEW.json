@@ -1,0 +1,39 @@
+{
+  "scope": "Original complete-window captures directly reviewed",
+  "captures": {
+    "miller-dark-1.0.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "grid-light-1.0.png": "2f92558a4aabb4c673985805092144a4d9d799b7951df65ae821d80f6bc4da30",
+    "list-dark-0.75.png": "c689097df25f4b7188bdbce6710c4c1d40e5f2bf7be884499ae8bcad896150d2",
+    "grid-dark-1.85.png": "6e6743e6f2033c97354d98e08cf19262a2a4ee2f70f310f06a10a32404b70975",
+    "list-light-1.0.png": "fca935ef145ca94502bc85e176782187d0b79fc6b242a4fbdccddbc11b673381",
+    "miller150-dark.png": "ebcba2c1793ab6f66ca1f578d2dd74839a5ca1b606235815b0d1c5a80cbf89a3",
+    "cold-10.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "cold-0.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "picker-grid-dark.png": "6955674e24d5ad352eafed68e323178ae4e61a7d6c15e81a126bad20f9e3407a",
+    "cold-30.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "cold-2.png": "ca2258be7546519635220c40504320f8ec99be173839fe010380f2d5ad317512",
+    "list-light-0.75.png": "2603858108ef5304f57ed8885f3ed7f8e825ebae2a942b62f7aa4221265997c2",
+    "list-dark-1.0.png": "a1d2eec3583933ed5a203f77816f1fc0f060dae4844f138ee8b1d6a03c9104e9",
+    "list-dark-1.85.png": "e92afa4edb6300989cc61ca91c1af88d1e3008980814c344b387d4efc34b1fce",
+    "grid-light-1.85.png": "c9c9384e89f4e40ca10faec115828e95e6e007be552011ad844cff47eff20478",
+    "grid-dark-1.0.png": "8e07aaf3186e7fa55519961a00691facc9187d9c30cbd5a7dfdd63966605da0a",
+    "miller-light-1.85.png": "2fdea291ec19cbad20389a0255e2c0c414192114097c2e86d233a15330210c43",
+    "miller-dark-1.85.png": "5b03a6d9cbf19f061bdb5c817d750df3e9b26b74428e384a63471fa1f743d965",
+    "picker-grid-light.png": "426c42a1ac124fb42963d76975bc30d1399ca6c61d348efd6a500b874c79b47a",
+    "list-light-1.85.png": "b46f903ee956f79b42f613f6e9121e9489b2398c88cc7002cb12d534b44d82e1",
+    "grid-light-0.75.png": "ff2a304a2b6de0c272763fffabaa5339a01dd29c71c4f75a57d45e9d400cb30a",
+    "miller150-light.png": "d7b272499791a10308ff8d7f3abd9f5e1d58632a85a20a15e687cdadf53a88c8",
+    "miller-dark-0.75.png": "02e31f9aaa29a68f4fd4344822ac1618692a62a5254493ffb24610d47b71e1de",
+    "miller-light-1.0.png": "bab94771fd9b884683bfc941e330f72b2cd9b9d0857ed8ce68a39d2915078592",
+    "grid-dark-0.75.png": "5547da46778a62c9d7426d2ef1f0a28a434de519d5662ea73b63b4367d177b65",
+    "miller-light-0.75.png": "c42f4fcfd65efc9baeee4ad30472f22c170e77977b9f9bd4895e52d338beccd0"
+  },
+  "findings": [
+    "List wide glyph filenames remain inside Name and clear of Type/Size/Modified in all six Dark/Light own-density cases.",
+    "Column and List actual row heights change with their own scale; 150% backend Column supplement shows correct text/count.",
+    "Dark/Light Grid75/100/185 and cooperating picker bodies render their stated file labels; picker Escape returns accepted=false with no paths.",
+    "No-input installed Ready-index footer remains1002 items across0/2/10/30-second captures.",
+    "Largest own density leaves tight icon-to-label spacing in Column/List; keep open for full interface spacing audit.",
+    "Light footer/logo weak contrast remains open for full theme/role audit."
+  ]
+}

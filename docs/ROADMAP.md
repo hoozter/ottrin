@@ -17,32 +17,41 @@ The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` are authoritative for hashes and scopes.
 No public release, signing, Store submission or MSI acceptance is implied.
 
-The staged `7fa0e46c` cohort is **not ready for promotion**. Linux package
-contents, private daemon runtime and twelve directly reviewed Services captures
-pass their bounded scopes. Windows ZIP/NSIS payload equality, native MSIX18
-assembly, private daemon runtime, default-view persistence, startup On/Off/On
-and uninstall preservation pass. Direct review of the ten Windows NSIS captures
-found that a wide filename in List view paints across Type/Size in both themes;
-the automated control checks had not detected it. Fix measured text containment
-and repeat packaged native visual checks before delivery. The source regression
-reproduces the overlap and passes with measured filename elision and cell clipping;
-The same review exposed crossed view-density settings: List read Column density,
-and Column rows read Grid density. Both now use their own saved settings; an
-actual-renderer regression verifies that other view settings have no effect.
+The superseded `7fa0e46c` candidate is retired. Its directly reviewed native
+Windows captures exposed wide List filenames painting across metadata columns.
+Source `24af31d7` fixes measured filename elision/clipping and crossed density
+settings: List now reads List density and Column rows read Column density.
 508 UI tests pass with one existing ignored test, plus native/Windows strict lint.
-Both corrections require a rebuilt cohort and directly reviewed native captures.
-Fresh MSIX18 functional
-runtime/login/removal passes, including an OS-started daemon observed before any
-Ottrin CLI after real reboot. Two startup screenshots were occluded by the main
-viewport: their painted-state acceptance is incomplete. The fixture now refocuses
-Settings after CLI inspection before capturing. The enabled17-to18 update passes
-with four directly reviewed captures; its Settings captures exercise17 and its
-updated main/login exercise18. The disabled17-to18 update is in progress.
-All four exact7fa hosted jobs pass; the `fb717b03` source checkpoint is pushed,
-and its hosted Windows suite is still running. Avoid cancelling that live run.
-Evidence: `.hermes/evidence/status-error-delivery-current/`, especially
-`NATIVE_CAPTION_REVIEW.json`; the filename regression work is in
-`.hermes/evidence/list-caption-current/`. Stable packages above remain unchanged.
+
+The rebuilt `24af31d7` four-format Linux and Windows ZIP/NSIS candidates remain
+outside the stable paths pending the remaining exact-package gates. Linux package
+contents/runtime closure, private1000-file daemon watcher/restart/idle checks,
+26 directly reviewed caption/density/footer/picker captures and twelve Services
+captures pass their bounded scopes. Own-density Column row heights are23/25/34;
+List heights are26/28/36 at75/100/185 percent in both themes. The installed Ready
+index remains independent of startup On/Off/Unavailable; actual checkbox changes
+and normal GUI closure preserve the daemon PID, database identity and saved roots.
+High-density icon/text spacing and Light-theme footer/logo/Ready-text contrast
+remain explicit full-interface audit findings, not accepted UI completion.
+
+The first current Windows18-case capture run stopped at its aggregate fixture
+assertion after recording all18 cases. Actual raw Column heights are23/25/34 and
+List26/28/36. Its failed result is retained; the retry explicitly sorts numeric
+scales and saves the assertion operands. No Windows candidate promotion follows
+from the failed fixture. Current native MSIX19 assembly/runtime/update gates remain
+pending. Fresh prior MSIX18 functional runtime/login/removal and both enabled and
+disabled17-to18 updates passed; the disabled login observation lasted180seconds
+without a daemon before any Ottrin CLI. Those packages were retired. Pre-update17
+Settings captures and updated18 main/login captures retain distinct scopes;
+previous fresh18 Settings images were occluded, requiring newly visible19 captures.
+
+All four hosted jobs passed for `7fa0e46c` and `fb717b03`. Current24af run41956606124
+has passed Linux verification and both performance jobs; Windows verification is
+still running. Avoid cancelling that run. Evidence:
+`.hermes/evidence/list-density-delivery-current/` (current staged cohort),
+`.hermes/evidence/list-caption-current/` (source regressions), and
+`.hermes/evidence/status-error-delivery-current/` (retired prior cohort).
+Stable packages above remain unchanged.
 
 Exactc4 run41929773433 passes all four hosted jobs. Current Linux packages include
 restored administrator history provenance/refresh and typed completed-Undo state,
