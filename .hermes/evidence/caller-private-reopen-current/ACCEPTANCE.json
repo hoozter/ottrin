@@ -1,0 +1,27 @@
+{
+  "status": "pass identity-bound original-caller private reopen primitive",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/RESULT.json",
+  "binding_and_transfer": "VERIFICATION.json",
+  "native_invocations": 6,
+  "named_top_level_passes": 16,
+  "unique_named_cases": 15,
+  "coverage": [
+    "Authenticated ordinary-client/SYSTEM-helper protected private directory and file reopen with independently admitted native identity",
+    "Read-only handle rejects writes; writable reopen succeeds",
+    "Missing entry is not created; replaced identity, non-directory parent, foreign owner, nonprivate and changed DACL are refused",
+    "Rejected changed-DACL entry retains exact data/security; existing creation/collision and exact thread-token/privilege restoration assertions remain enforced",
+    "Eleven ordinary security cases and SYSTEM destination default-DACL, symbolic-link and audit-SACL regressions"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "583be7269680acb28a308660826f425e8aa9a44bedec80ecaf38e068c939bcf8"
+  },
+  "limits": [
+    "Primitive only: registry anchors, journal/stream/link/phase validation and complete caller authority propagation remain required",
+    "No actual alternate-administrator UAC or packaged helper acceptance; administrator Copy remains disabled",
+    "No new package delivery, whole-roadmap or whole-interface acceptance"
+  ]
+}

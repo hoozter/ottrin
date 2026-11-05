@@ -1,0 +1,47 @@
+{
+  "source": {
+    "reference_commit": "c0caa31102b5db23c5668b9b06393fc2fafb4265",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction.rs": "66a6c8cae914b6e5805897e9028b8220a1122f4614fc39d8881d358f5d22c189",
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "45affde2f9a01053e3be681592f5ea012faf522eaa099715facc3fa0806d23bb",
+      "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "9646fdabfb717e47dab6000b82bac8a49f56e802aa2bd6c9d06e9b4417ff280b",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/caller_private.rs": "3b5e7d820d1d6ed5dbae71e12364d5c7b53e055dd3f98b9a8dd851440e6e3280",
+      "crates/ottrin-platform/src/windows_fs.rs": "359e1d03839b52258637beec25909872d2d2aaa19c3ef3b2b4dc2e2caf305e09",
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "5f4b28e1bb3cf909d556d32a1fc84bd9edb1916ee1072e0fed24ff9733b40df7",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "1d8c9b9141e6ab651d7005dd542a23742ff993bdbf751fe2e812b7a9a06eb3ee"
+    },
+    "scope": "Identity-bound authenticated caller private entry reopen primitive, read-only/write capability and refusal cases; no recovery registry or helper Copy enablement"
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "8b4d11f231db31e34fbda1f052cc6b9e6019f40292a6e1eea2b3e3e40fa880ec",
+      "bytes": 772106890,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": []
+    },
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "2eb2367ce5e372403a1bf781c9c6ee87e3cb8cd9f754c4eb351f1b91b6045ec2",
+      "bytes": 545378249,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": []
+    }
+  ],
+  "build_exit": 0,
+  "command": "cargo test -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --lib --no-run --message-format=json"
+}

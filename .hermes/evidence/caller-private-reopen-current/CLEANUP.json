@@ -1,0 +1,34 @@
+{
+  "status": "owned teardown and consumed-output cleanup complete",
+  "observed_at": "2026-11-05T23:46:38.103034+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "current_shared_root_bytes": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 31112998487,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48836716042
+  },
+  "removed_obsolete_incremental_sessions": 11,
+  "measured_incremental_free_delta_bytes": 1385594880,
+  "available_bytes": 26019123200,
+  "owned_native_resources": "native/OWNER.json; independently verified domains/volumes/processes/private HOME absent",
+  "consumed_outputs_removed": [
+    "native/RESULTS.zip",
+    "native/desktop-ready.png",
+    "native/privacy-accepted-0.png",
+    "native/privacy-accepted-1.png"
+  ],
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-private-reopen-current",
+      "purpose": "Compact source/build/native/teardown receipts and reproducible actors; no disposable guest/profile/payload/staging; local compiler JSONL inventory and native viewer logs retain exact build/teardown diagnostics for the pending registry integration",
+      "bytes_before_final_receipts": 570320
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Shared compiler caches and newest paired Windows platform/UI tests for continuing original-caller registry integration; no new test configuration introduced"
+    }
+  ],
+  "owned_disposable_storage_remaining": [],
+  "final_incremental_review": "FINAL_INCREMENTAL_CANDIDATES.json: zero obsolete or unpublished sessions; no compiler or native QA producer remains"
+}

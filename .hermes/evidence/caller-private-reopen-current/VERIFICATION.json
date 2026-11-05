@@ -1,0 +1,20 @@
+{
+  "status": "pass exact exported result, current source/build binding and host teardown",
+  "archive_sha256": "2f6b138895c53192f7348f996b83d61e5a495b691a140820e8d58b53cccad2be",
+  "archive_bytes": 5827,
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "result_equal_guest_export": true,
+  "source_build_sha256_verified": true,
+  "native_invocations": 6,
+  "named_passes": 16,
+  "unique_named_cases": 15,
+  "host_processes_and_private_home_absent": true
+}

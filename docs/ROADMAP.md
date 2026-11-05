@@ -85,8 +85,8 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    restoring its identity. In the protected SYSTEM/Administrators-only directory,
    creation under the original token fails with native Access denied (5), despite
    a preopened elevated parent handle. Whole-operation caller impersonation is
-   therefore not the protected-creation bridge. Authenticated private-file reopen
-   and full transaction integration remain required.
+   therefore not the protected-creation bridge. Authenticated private-file reopen was still missing at that snapshot; its later
+   primitive acceptance is recorded below. Full transaction integration remains required.
    The first fixture incorrectly assumed the parent owner equalled SYSTEM's default
    owner; it now verifies the actual restrictive native DACL and allowed owner.
    A subsequent native pass exposed a receipt-export failure. Private payload is
@@ -122,7 +122,17 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    checks. Receipt: `destination-security-current/ACCEPTANCE.json`. Strict Windows
    platform/UI lint passes; both guests and consumed outputs are removed. This
    closes the comparison defect, not the remaining original-caller registry,
-   private reopen, staging, destination-token, receipt, Undo or cleanup integration.
+   staging, destination-token, receipt, Undo or cleanup integration.
+   Identity-bound authenticated private reopen now passes the ordinary-client/SYSTEM
+   fixture. Read-only handles refuse writes; writable reopen succeeds. Missing,
+   replaced, foreign/nonprivate or changed-DACL entries are refused without creating
+   or repairing them. Caller/profile liveness and exact token restoration remain
+   enforced. Six invocations retain sixteen named passes, including the existing
+   native security regressions. Receipt: `caller-private-reopen-current/ACCEPTANCE.json`.
+   This primitive does not admit serialized identities by themselves: canonical
+   anchors, complete journals and transaction authority still require integration.
+   Strict paired Windows platform/UI lint passes; owned guest/desktop/profile,
+   volumes, consumed transports and superseded incremental sessions are removed.
    The coordinator's registry-parent security fixture still changes a group, not
    a literal DACL; the new profile-DACL test has its separate profile-only scope.
    Administrator Copy stays disabled. Original-caller registry initialization,

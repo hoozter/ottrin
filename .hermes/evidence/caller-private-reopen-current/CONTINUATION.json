@@ -1,0 +1,15 @@
+{
+  "next": "Propagate authenticated original-caller authority into canonical registry initialization/reopen and transaction engine, then stage/journal/destination security/receipt/Undo/cleanup; retain disabled administrator Copy until complete acceptance",
+  "other_ready_work": "U05-U08 theme audit; themed picker and supported folder integration; independent MSI rollback failure",
+  "owner_waits": "Personal helper OS authentication, signing identity/keys, release-ready Store submission, unavailable hardware/corpora and final user acceptance",
+  "packages": "Unchanged current Linux bee15669 and Windows 8e805d31; no helper Copy delivery claimed",
+  "verified_integration_sites": {
+    "registry.rs": "configured_path still selects ordinary-process LOCALAPPDATA; open_under and validate still use current_owner; writable_root/cohorts reopen with ordinary child/open_directory. Retain one AnchoredRoot implementation while adding explicit caller authority.",
+    "dispatch.rs": "copy_configured freezes source and rejects registry overlap before provisioning; preserve that order for caller-root initialization.",
+    "journal/discovery.rs": "discover/restore_undo/restore_resume still use ordinary configured root; explicit caller context must persist into returned recovery plans, not disappear after a locator call.",
+    "journal/cleanup_group.rs and cleanup_group/cohort.rs": "Repeated open_bound/open_at calls must preserve original caller authority with live original-binding validation.",
+    "journal/claims.rs": "Destination claim-root/bucket admission and private writes also need the same caller authority; registry-only conversion cannot enable helper Copy.",
+    "security/caller_profile.rs": "Pinned profile handle and registered path exist; caller State ancestry must bind to that admitted root while preserving existing application/preferences/index directories.",
+    "bin/ottrin-priv-helper.rs": "run_file_command returns Unsupported for non-Linux Copy and copy_recovery_command refuses non-Linux recovery. Keep these refusal gates until full accepted integration."
+  }
+}

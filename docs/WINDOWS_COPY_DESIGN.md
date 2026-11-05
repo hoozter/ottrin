@@ -9,8 +9,25 @@ Ordinary-user Copy/Paste uses the native engine with single/batch Undo, retained
 recovery and per-operation Stop. Administrator Copy remains disabled until the
 original caller's registry, staging, destination security, receipt, Undo and
 cleanup authority are connected and accepted together. Authenticated caller
-context and caller-owned private entry creation are implemented components;
+context and caller-owned private entry creation/reopen are implemented components;
 they do not complete that transaction or packaged/alternate-administrator gates.
+
+## Authenticated private reopen
+
+`CallerCopyContext::open_private_entry` reopens an existing single native component
+through a held ordinary parent directory. It never creates, truncates or repairs
+an entry. The returned handle must match the independently admitted native identity,
+ordinary file/directory type, frozen caller owner/group and protected private DACL.
+Read-only and writable access remain distinct. Scoped backup/restore privileges use
+only a duplicate helper thread token; caller/profile validation surrounds the open.
+
+This is a private-handle primitive, not transaction admission. Serialized identity
+or a matching filename alone grants no mutation/cleanup authority. Canonical registry
+anchors, naming/location/security, complete journals, links/streams and phase rules
+remain mandatory. The ordinary-client/SYSTEM native fixture verifies successful
+reopen, read-only write denial and unchanged refusal cases; it does not establish
+alternate-administrator UAC or packaged Copy acceptance. See
+`.hermes/evidence/caller-private-reopen-current/ACCEPTANCE.json`.
 
 ## Canonical native security evidence
 
@@ -374,17 +391,22 @@ Publication remains no-replace, so a late occupant is retained with the staged
 copy rather than overwritten. Late changes to an approved original also refuse.
 
 The explicit-registry dispatcher takes an already owned handle. The configured
-entry point supplies that handle through the registry admission below. Public
-single/batch workflow wiring and the complete release gates remain unfinished.
-Focused native cases and the full platform regression suite are recorded in
-`.hermes/evidence/windows-copy-dispatch-current/ACCEPTANCE.json`.
+entry point supplies that handle through the registry admission below. Ordinary
+single/batch Copy is wired through the native engine; complete release and
+administrator-Copy gates remain open in the roadmap. The historical dispatcher
+fixture is `.hermes/evidence/windows-copy-dispatch-current/ACCEPTANCE.json`;
+its original scope does not describe current whole-product acceptance.
 
 ### Configured registry admission
 
-The configured registry is `%LOCALAPPDATA%\Ottrin\State\copies`. Its external
+The ordinary-process configured registry is
+`%LOCALAPPDATA%\Ottrin\State\copies`. This locator currently reads that process
+environment; it must not be called under the helper to select the original caller
+registry. The authenticated context resolves and pins the original profile, but
+its explicit registry/transaction authority is not yet connected. Its external
 `.ottrin-copy-recovery-root` marker sits in `State`, so replacing the entire
-registry cannot also replace its identity proof. The bounded `OTCRW01` record
-binds marker, parent and root native identities, root name, creator and initial
+registry cannot also replace its identity proof. The bounded `OTCRW02` record
+binds marker, parent and root native identities, root name, creator, expected case policy and initial
 root security. Marker admission requires an ordinary, single-link private file;
 the root must be an ordinary private directory with the recorded security.
 
@@ -404,7 +426,10 @@ namespace. After provisioning it uses the same admitted-source dispatcher;
 configured discovery and recovery also require registry admission. Explicit-root
 APIs still require the caller's separate registry authority and retain native
 journal admission; they do not act as a fallback for failed configured admission.
-Public Copy is still gated.
+Ordinary Copy is enabled; administrator Copy remains disabled until the original
+caller authority is carried through registry, staging, destination security and
+retained recovery. No ambient helper environment or temporary process-wide
+identity switch is a substitute for that integration.
 
 ### Session receipt integration
 

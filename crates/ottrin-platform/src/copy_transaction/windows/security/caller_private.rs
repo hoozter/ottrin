@@ -1,11 +1,56 @@
-//! Atomic private creation from an authenticated native token. Owner/group and
-//! protected OWNER RIGHTS DACL are installed by creation, never repaired later.
+//! Private entry creation and identity-bound reopen for an authenticated caller.
+//! Native permissions are never repaired to admit an existing entry.
 use super::*;
 
 pub(crate) struct CallerCreationSecurity {
     descriptor: Derived,
     expected: Parts,
     directory: bool,
+}
+
+pub(crate) fn open_caller_private_entry(
+    parent: &File,
+    name: &OsStr,
+    expected: WindowsStableIdentity,
+    owner: &[u8],
+    group: &[u8],
+    writable: bool,
+    sharing: u32,
+) -> std::io::Result<File> {
+    let directory = expected.is_directory_without_reparse();
+    if (!directory && !expected.is_regular_file_without_reparse())
+        || !stable_identity_from_handle(parent)
+            .map_err(std::io::Error::other)?
+            .is_directory_without_reparse()
+    {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "private reopen requires ordinary native entry and parent identities",
+        ));
+    }
+    let access = FILE_GENERIC_READ
+        | if writable {
+            FILE_GENERIC_WRITE | DELETE | WRITE_DAC
+        } else {
+            0
+        };
+    let file = windows_fs::with_file_privileges(|| {
+        windows_fs::open_existing_for_caller(parent, name, directory, access, sharing)
+    })?;
+    if stable_identity_from_handle(&file).map_err(std::io::Error::other)? != expected {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "private entry identity changed; data retained",
+        ));
+    }
+    let observed = PrivateSecurity::capture(&file, owner).map_err(std::io::Error::other)?;
+    if observed.0.group != group {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "private caller group changed; data retained",
+        ));
+    }
+    Ok(file)
 }
 impl CallerCreationSecurity {
     pub(crate) fn capture(

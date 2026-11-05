@@ -1,0 +1,10 @@
+{
+  "status": "unchanged exact stable package hashes verified",
+  "artifacts": {
+    "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-portable.zip": "aab76d67165f5773eac8bb78a4285d72859a1f204e4a28b766ddf75e007d2ffb",
+    "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-setup.exe": "20928027b9d797c8a1253c872786c5ae45f4a89de78aeaf6386cddb2fee6d24d",
+    "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0",
+    "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage": "015e3b04d9427422a545269c4424fe92ce2bbebb576e2193b69d4ada75fc357f"
+  },
+  "scope": "Current stable packages unchanged after identity-bound caller private reopen source/native verification"
+}

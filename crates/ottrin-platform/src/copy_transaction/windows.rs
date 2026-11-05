@@ -35,7 +35,7 @@ mod namespace;
 mod security;
 #[cfg(test)]
 pub(crate) use security::owner_group_dacl_digest;
-pub(crate) use security::{CallerCreationSecurity, CallerProfile};
+pub(crate) use security::{CallerCreationSecurity, CallerProfile, open_caller_private_entry};
 mod tree;
 
 use super::PlatformError;

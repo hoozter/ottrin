@@ -433,6 +433,137 @@ fn system_helper() {
         .unwrap();
     atomic_file.sync_all().unwrap();
     let id = crate::move_recovery::stable_identity_from_handle(&atomic_file).unwrap();
+    let directory_id = crate::move_recovery::stable_identity_from_handle(&atomic).unwrap();
+    let reopened_directory = context
+        .open_private_entry(
+            &parent,
+            OsStr::new("atomic-owner Ω"),
+            directory_id,
+            true,
+            sharing,
+        )
+        .unwrap();
+    assert_eq!(
+        crate::move_recovery::stable_identity_from_handle(&reopened_directory).unwrap(),
+        directory_id
+    );
+    let mut readonly = context
+        .open_private_entry(
+            &reopened_directory,
+            OsStr::new("file.txt"),
+            id,
+            false,
+            sharing,
+        )
+        .unwrap();
+    let mut reopened_bytes = Vec::new();
+    readonly.read_to_end(&mut reopened_bytes).unwrap();
+    assert_eq!(
+        reopened_bytes,
+        b"original caller owns protected private file"
+    );
+    assert_eq!(
+        readonly.write_all(b"must not write").unwrap_err().kind(),
+        io::ErrorKind::PermissionDenied
+    );
+    let mut reopened_writer = context
+        .open_private_entry(&atomic, OsStr::new("file.txt"), id, true, sharing)
+        .unwrap();
+    reopened_writer
+        .write_all(b"original caller owns protected private file")
+        .unwrap();
+    reopened_writer.sync_all().unwrap();
+    let replacement = context
+        .create_private_entry(&atomic, OsStr::new("other.txt"), false, sharing)
+        .unwrap();
+    assert_ne!(
+        crate::move_recovery::stable_identity_from_handle(&replacement).unwrap(),
+        id
+    );
+    assert_eq!(
+        context
+            .open_private_entry(&atomic, OsStr::new("other.txt"), id, true, sharing)
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::PermissionDenied
+    );
+    assert_eq!(
+        context
+            .open_private_entry(&atomic, OsStr::new("missing.txt"), id, true, sharing)
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::NotFound
+    );
+    assert_eq!(
+        context
+            .open_private_entry(&atomic_file, OsStr::new("file.txt"), id, true, sharing)
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::InvalidInput
+    );
+    let source_file = std::fs::File::open(root.join("probe-data/caller-source.txt")).unwrap();
+    let source_id = crate::move_recovery::stable_identity_from_handle(&source_file).unwrap();
+    assert!(
+        context
+            .open_private_entry(
+                &control_parent,
+                OsStr::new("caller-source.txt"),
+                source_id,
+                false,
+                sharing
+            )
+            .is_err()
+    );
+    let changed = context
+        .create_private_entry(&atomic, OsStr::new("changed-policy.txt"), false, sharing)
+        .unwrap();
+    let changed_id = crate::move_recovery::stable_identity_from_handle(&changed).unwrap();
+    let policy =
+        crate::windows_fs::LocalSecurity::from_sddl("D:P(A;;FA;;;OW)(A;;FR;;;WD)").unwrap();
+    let (mut present, mut defaulted, mut dacl) = (0, 0, ptr::null_mut());
+    assert_ne!(
+        unsafe {
+            windows_sys::Win32::Security::GetSecurityDescriptorDacl(
+                policy.as_raw(),
+                &mut present,
+                &mut dacl,
+                &mut defaulted,
+            )
+        },
+        0
+    );
+    assert_eq!(
+        unsafe {
+            windows_sys::Win32::Security::Authorization::SetSecurityInfo(
+                changed.as_raw_handle().cast(),
+                SE_FILE_OBJECT,
+                DACL_SECURITY_INFORMATION
+                    | windows_sys::Win32::Security::PROTECTED_DACL_SECURITY_INFORMATION,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                dacl,
+                ptr::null(),
+            )
+        },
+        0
+    );
+    let changed_security = crate::copy_transaction::owner_group_dacl_digest(&changed).unwrap();
+    assert!(
+        context
+            .open_private_entry(
+                &atomic,
+                OsStr::new("changed-policy.txt"),
+                changed_id,
+                true,
+                sharing
+            )
+            .is_err()
+    );
+    assert_eq!(
+        crate::copy_transaction::owner_group_dacl_digest(&changed).unwrap(),
+        changed_security
+    );
+    assert_eq!(token_state(), original_helper_state);
     crate::windows_fs::with_file_privileges(|| {
         let outer_state = token_state();
         assert_eq!(
@@ -461,6 +592,17 @@ fn system_helper() {
     let foreign_id = crate::move_recovery::stable_identity_from_handle(&foreign).unwrap();
     let foreign_security = crate::copy_transaction::owner_group_dacl_digest(&foreign).unwrap();
     assert_ne!(file_owner(&foreign), caller_owner);
+    assert!(
+        context
+            .open_private_entry(
+                &parent,
+                OsStr::new("existing-system-owned.txt"),
+                foreign_id,
+                true,
+                sharing
+            )
+            .is_err()
+    );
     assert_eq!(
         context
             .create_private_entry(
@@ -531,6 +673,10 @@ fn system_helper() {
             "nested_privileged_thread_restored":true,
             "foreign_owner_entry_refused_without_data_or_security_change":true,
             "derived_policy_refuses_owner_or_group_outside_admitted_identity":true,
+            "identity_bound_private_reopen":true,
+            "read_only_reopen_denies_writes":true,
+            "foreign_nonprivate_changed_policy_reopen_refused":true,
+            "reopen_refuses_replacement_or_missing":true,
             "creation_with_original_token_and_elevated_parent_handle":creation,
             "thread_identity_restored":true,"profile_still_valid":true,
             "scope":"Distinct SYSTEM helper mechanism observation; no alternate-administrator UAC or enabled Copy acceptance",

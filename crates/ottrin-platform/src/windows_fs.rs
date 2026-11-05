@@ -529,6 +529,32 @@ pub(crate) unsafe fn create_private_for_caller(
     )
 }
 
+/// Open an existing single component without following its reparse target or
+/// creating anything. The caller validates native identity and private policy
+/// before exposing this privileged handle to its transaction engine.
+pub(crate) fn open_existing_for_caller(
+    parent: &File,
+    name: &OsStr,
+    directory: bool,
+    access: u32,
+    sharing: u32,
+) -> io::Result<File> {
+    unsafe {
+        open_relative_options(
+            parent,
+            name,
+            RelativeOptions {
+                directory: Some(directory),
+                create_new: false,
+                access,
+                sharing,
+                security: ptr::null(),
+            },
+            FILE_OPEN_FOR_BACKUP_INTENT,
+        )
+    }
+}
+
 fn create_private_native(
     parent: &File,
     name: &OsStr,

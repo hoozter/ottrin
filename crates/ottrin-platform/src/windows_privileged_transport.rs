@@ -340,6 +340,32 @@ impl CallerCopyContext {
         self.validate()?;
         Ok(file)
     }
+    /// Reopen one private entry whose native identity the transaction engine
+    /// independently admitted. A serialized identity alone is not admission.
+    /// This checks caller/profile liveness, identity/type and private owner/group/
+    /// DACL policy; registry anchors, journal contents, links and streams still
+    /// require the engine's normal validation before any mutation or cleanup.
+    pub fn open_private_entry(
+        &self,
+        parent: &std::fs::File,
+        name: &OsStr,
+        expected: crate::move_recovery::WindowsStableIdentity,
+        writable: bool,
+        sharing: u32,
+    ) -> io::Result<std::fs::File> {
+        self.validate()?;
+        let file = crate::copy_transaction::open_caller_private_entry(
+            parent,
+            name,
+            expected,
+            &self.caller.identity.owner,
+            &self.caller.identity.group,
+            writable,
+            sharing,
+        )?;
+        self.validate()?;
+        Ok(file)
+    }
 }
 
 /// Helper-side connection. Bind the kernel application identity before reading

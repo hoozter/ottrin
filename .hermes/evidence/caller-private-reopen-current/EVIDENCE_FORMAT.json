@@ -1,0 +1,9 @@
+{
+  "encoding": "UTF-8 LF JSON",
+  "parsed_values_unchanged": true,
+  "normalized": [],
+  "text_normalization": {
+    "native/controller.ps1": "Trailing line whitespace and blank EOF removed; PowerShell statements unchanged. This is a generated controller snapshot, not the bound application actor.",
+    "native/readiness.log": "CRLF and trailing line whitespace normalized to UTF-8 LF; diagnostic text unchanged."
+  }
+}
