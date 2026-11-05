@@ -1,0 +1,7 @@
+{
+  "name": "Ottrin-0.1.0-x86_64.AppImage",
+  "source_revision": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+  "sha256": "ef4f44c29b585dc00d050149ced2d1646d5924964b1c6230a26c1e470c916a98",
+  "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+  "daemon_sha256": "93e36357f1b68a4effff725a1d9087056ad822123e4e6fc3a6ac683ce21cf18c"
+}

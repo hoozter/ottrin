@@ -33,7 +33,9 @@ The caption/footer correction is delivered with22 directly reviewed successful
 AppImage captures, including Dark/Light100/150 Miller rows and saved-theme names,
 normal List headers, Grid75/100/185 and cooperating-picker cancellation. The
 installed Ready-index no-input footer remains correct through30seconds. The
-subsequent Services startup wording correction remains source-only. The ordered queue below records all remaining work. Earlier
+subsequent Services startup wording correction has a four-format f245 candidate and
+scoped native acceptance, but remains outside the delivered c4 packages. The ordered
+queue below records all remaining work. Earlier
 checkpoints retain their historical source/artifact scopes.
 
 The current Linux packages correct Services showing a false red error for an
@@ -564,7 +566,25 @@ Task Scheduler/package and CLI status carry an explicit unknown value. SQLite
 startup inspection no longer queries current runtime. The rendered regression
 fails the old wording and passes all three states;250 search and506 UI tests,
 strict native/Windows all-target lint for search/UI/app, and formatting pass.
-This is not in deliveredc4 and still needs native/package acceptance.
+This is not in deliveredc4. The subsequent clean f245 four-format candidate passes
+production content verification and actual AppImage watcher/query/restart/shutdown.
+Its changed daemon measures0.1333% of one core over30seconds on a private1000-file
+root. An owned Ubuntu desktop passes real On -> Off -> On registration changes
+with unchanged running daemon PID, preserved roots/database identity, and normal
+GUI close in Dark/Light at100/150 scaling. A controlled is-enabled-only failure
+shows Unavailable without a false unchecked toggle. All12 original captures were
+directly reviewed. This is functional Services acceptance, not a full visual audit:
+error text exposes Rust debug process status, Light ready-green contrast needs
+review, and some scrolled captures clip the section heading. A readable error
+correction is in progress separately. No fresh reboot or stable-path binary
+replacement acceptance is claimed for f245. Exact-source CI41936995231 currently
+has three passing jobs and the Windows test suite still running. The111MiB stage
+is retained for that candidate; delivered Linuxc4 and Windows458 are unchanged.
+Receipts: `startup-status-delivery-current/`. The owned guest/three volumes, private
+profile/FUSE mounts and consumed2.6MB transport archive are removed. Read-only
+personal delivered-daemon samples show0.93% and0.77% one-core CPU over30seconds
+with about199k entries and ongoing changes; these are not strict idle or sustained
+large-corpus acceptance.
 Receipt: `login-startup-wording-current/SOURCE_CHECKS.json`. Owned disposable tests
 are removed;32 superseded incremental sessions were retired with newest per-
 configuration caches retained (1.00GiB reported). Current all-target check caches

@@ -1,0 +1,23 @@
+{
+  "status": "12 original captures directly reviewed; functional scope passes, visual polish incomplete",
+  "captures_sha256": {
+    "startup-dark-1.0-on.png": "03a447d90b42f6e755ac0707fa901e28378d4c080296ca191e81977259ce4984",
+    "startup-dark-1.0-off.png": "4c60280448a8c7c4c26ed45b31258ecb63687c65abd034739defdba54cb6c213",
+    "startup-dark-1.0-unavailable.png": "154c4b6eaa948e964116868597b5d9837adbc1eb7cd26742a20919a84f7cb09c",
+    "startup-light-1.0-on.png": "d2de8af871b06aa3d4287b19a839753298a00593e8dca616a9cbb0c20506836d",
+    "startup-light-1.0-off.png": "8976146f9ea6bdb7674bf09a352a7fa55440466434cd5f4c63a45475e50129c9",
+    "startup-light-1.0-unavailable.png": "2e22597d6e1b12781881decca3c85ed2e2677b16408eb066db32e9f67331f8cf",
+    "startup-dark-1.5-on.png": "33a0c93fd4f0444245364155e2552dede24d2a1b4abfdfd42285562b0ad245ad",
+    "startup-dark-1.5-off.png": "6aed76e98e5bdbd97fa852c2b2febfab22808afa76e0b1dd23d40b899daff945",
+    "startup-dark-1.5-unavailable.png": "7df57ee6fb82c96ef1c96303b3b7e2ef4d01fbddc254e5cfcbb0b30161fbac08",
+    "startup-light-1.5-on.png": "4054d34d1a0f7fd993ce2945457e699f0fe46c6d0cf2e2a4c26eda690de72016",
+    "startup-light-1.5-off.png": "ca06d2a85b3c47b5b8b4860af8c72038979e913c81943a457613fded23f26f35",
+    "startup-light-1.5-unavailable.png": "9efadeb8f2159a8e0add9f0ade6f11250505a000c7e290692825f5d8606ed5e0"
+  },
+  "findings": [
+    "Unavailable error exposes Rust debug exit Some(1) and an empty state; correct the process-status wording.",
+    "Ready green text on Light needs semantic-color and contrast review; no all-theme contrast acceptance.",
+    "On captures are scrolled far enough to clip the section heading; runtime identity is independently verified, but these are not complete status-overview captures."
+  ],
+  "scope": "Dark/Light at backend scaling 100/150; actual mounted AppImage in owned Ubuntu desktop. Earlier direct review survives compaction; Light100 unavailable and Dark100 off additionally re-viewed in continuation."
+}

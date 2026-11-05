@@ -1,0 +1,37 @@
+{
+  "status": "owned guest and disposable runtime teardown verified",
+  "vm": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-native-ubuntu-desktop-qa-base.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-work.qcow2",
+      "ottrin-native-ubuntu-desktop-qa-seed.iso"
+    ]
+  },
+  "consumed_archive": {
+    "path": ".hermes/evidence/startup-status-delivery-current/native/ubuntu/VM_RESULTS.tar.gz",
+    "sha256": "48e54796152b4cdd571311991f4dc3f298470572f5ea549a202dd91604625bdb",
+    "bytes": 2625224,
+    "consumer": "validated extracted worker results and 12 reviewed captures",
+    "removed": true
+  },
+  "runtime_profile_removed": true,
+  "runtime_fuse_mounts_removed": true,
+  "content_extraction_removed": true,
+  "remaining": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+      "purpose": "single four-format candidate awaiting exact-source CI and guarded delivery; preserve current stable c4 packages"
+    },
+    {
+      "path": ".hermes/evidence/startup-status-delivery-current",
+      "purpose": "compact package/runtime/native verification evidence"
+    }
+  ],
+  "protected_domains_preserved": [
+    "win11ltsc",
+    "ottrin-copy-cleanup-qa",
+    "ottrin-index-qa",
+    "ottrin-qa-20261011"
+  ]
+}

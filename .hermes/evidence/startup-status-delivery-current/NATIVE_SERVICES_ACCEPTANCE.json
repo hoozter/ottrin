@@ -1,0 +1,85 @@
+{
+  "status": "pass within functional Services scope; visual findings remain open",
+  "source_revision": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+  "artifact_sha256": "ef4f44c29b585dc00d050149ced2d1646d5924964b1c6230a26c1e470c916a98",
+  "runtime_sha256": {
+    "application": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+    "index_daemon": "93e36357f1b68a4effff725a1d9087056ad822123e4e6fc3a6ac683ce21cf18c",
+    "privileged_helper": "20311a1a8767ddedb25223f8744568909f17cbcbe53f5e40d299276d41d04c48",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "cases": [
+    {
+      "theme": "Dark",
+      "backend_scale": 1.0,
+      "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+      "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n",
+      "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+      "running_pid_preserved": "4692",
+      "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+      "captures": [
+        "startup-dark-1.0-on.png",
+        "startup-dark-1.0-off.png",
+        "startup-dark-1.0-unavailable.png"
+      ],
+      "normal_settings_and_main_close": true
+    },
+    {
+      "theme": "Light",
+      "backend_scale": 1.0,
+      "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+      "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n",
+      "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+      "running_pid_preserved": "4692",
+      "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+      "captures": [
+        "startup-light-1.0-on.png",
+        "startup-light-1.0-off.png",
+        "startup-light-1.0-unavailable.png"
+      ],
+      "normal_settings_and_main_close": true
+    },
+    {
+      "theme": "Dark",
+      "backend_scale": 1.5,
+      "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+      "settings_geometry": "WINDOW=2097169\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n",
+      "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+      "running_pid_preserved": "4692",
+      "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+      "captures": [
+        "startup-dark-1.5-on.png",
+        "startup-dark-1.5-off.png",
+        "startup-dark-1.5-unavailable.png"
+      ],
+      "normal_settings_and_main_close": true
+    },
+    {
+      "theme": "Light",
+      "backend_scale": 1.5,
+      "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+      "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n",
+      "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+      "running_pid_preserved": "4692",
+      "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+      "captures": [
+        "startup-light-1.5-on.png",
+        "startup-light-1.5-off.png",
+        "startup-light-1.5-unavailable.png"
+      ],
+      "normal_settings_and_main_close": true
+    }
+  ],
+  "preserved": {
+    "database_identity_preserved": true,
+    "saved_roots_preserved": true,
+    "sources_preserved": true,
+    "daemon_running_after_normal_gui_close": true
+  },
+  "scope": "Owned guest AppImage/FUSE, installed enabled service, controlled software X11; query failure is explicitly simulated.",
+  "limits": [
+    "Not a full theme or Services action audit.",
+    "No fresh reboot, stable-path binary replacement, physical GPU or Windows native acceptance.",
+    "Unavailable state is a deliberately failed is-enabled query, not an observed OS failure."
+  ]
+}

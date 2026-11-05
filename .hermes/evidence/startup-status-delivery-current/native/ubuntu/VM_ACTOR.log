@@ -1,0 +1,110 @@
+{
+  "status": "pass",
+  "package_source": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+  "worker": {
+    "status": "pass",
+    "cases": [
+      {
+        "theme": "Dark",
+        "backend_scale": 1.0,
+        "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+        "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4692",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-dark-1.0-on.png",
+          "startup-dark-1.0-off.png",
+          "startup-dark-1.0-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      },
+      {
+        "theme": "Light",
+        "backend_scale": 1.0,
+        "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+        "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=920\nHEIGHT=640\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4692",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-light-1.0-on.png",
+          "startup-light-1.0-off.png",
+          "startup-light-1.0-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      },
+      {
+        "theme": "Dark",
+        "backend_scale": 1.5,
+        "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+        "settings_geometry": "WINDOW=2097169\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4692",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-dark-1.5-on.png",
+          "startup-dark-1.5-off.png",
+          "startup-dark-1.5-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      },
+      {
+        "theme": "Light",
+        "backend_scale": 1.5,
+        "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+        "settings_geometry": "WINDOW=2097161\nX=0\nY=0\nWIDTH=1380\nHEIGHT=960\nSCREEN=0\n",
+        "registration_round_trip": "On -> Off -> On through real checkbox and systemctl inspection",
+        "running_pid_preserved": "4692",
+        "error_scope": "Owned systemctl wrapper fails is-enabled only; all other commands use /usr/bin/systemctl",
+        "captures": [
+          "startup-light-1.5-on.png",
+          "startup-light-1.5-off.png",
+          "startup-light-1.5-unavailable.png"
+        ],
+        "normal_settings_and_main_close": true
+      }
+    ],
+    "scope": "Owned guest AppImage/FUSE, installed enabled service, controlled software X11; query failure is explicitly simulated.",
+    "install": "Ottrin index service configured; automatic startup is enabled.\n",
+    "initial_index": {
+      "status": "Ready",
+      "loading_saved_snapshot": false,
+      "database_bytes": 28672,
+      "wal_bytes": 0,
+      "freelist_pages": 0,
+      "freelist_bytes": 0,
+      "snapshot_revision": 1,
+      "detail": "Ready \u00b7 1002 indexed",
+      "indexed_items": 1002,
+      "last_completed_indexed_items": 1002,
+      "estimated_total_items": null,
+      "last_indexed_path": "/home/ottrinqa/fixtures/owned-0135.txt",
+      "configured_root_count": 1,
+      "watched_root_count": 1,
+      "watcher_ready": true,
+      "watcher_last_setup_unix_secs": 1793837252,
+      "watcher_last_error": null,
+      "active_root": null,
+      "active_root_index": 0,
+      "total_roots": 1,
+      "last_scan_started_unix_secs": 1793837252,
+      "last_scan_completed_unix_secs": 1793837253,
+      "last_scan_duration_ms": null,
+      "last_progress_unix_secs": 1793837253,
+      "last_error": null
+    },
+    "daemon_sha256": "93e36357f1b68a4effff725a1d9087056ad822123e4e6fc3a6ac683ce21cf18c",
+    "database_identity_preserved": true,
+    "saved_roots_preserved": true,
+    "sources_preserved": true,
+    "daemon_running_after_normal_gui_close": true
+  },
+  "appimage_input": {
+    "name": "Ottrin-0.1.0-x86_64.AppImage",
+    "source_revision": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+    "sha256": "ef4f44c29b585dc00d050149ced2d1646d5924964b1c6230a26c1e470c916a98",
+    "gui_sha256": "1d0c977cd47a5548859287d7233ff5e473d01e133ef72d5842a5817cecf0c6ca",
+    "daemon_sha256": "93e36357f1b68a4effff725a1d9087056ad822123e4e6fc3a6ac683ce21cf18c"
+  }
+}

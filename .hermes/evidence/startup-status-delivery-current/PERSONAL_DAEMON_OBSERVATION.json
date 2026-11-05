@@ -1,0 +1,26 @@
+{
+  "scope": "Read-only personal managed daemon on currently deliveredc4/f37; not the stagedf245/93 daemon and not sustained-workload acceptance. No host GUI, preference or service mutation. Paths and file names omitted.",
+  "pid": 2448604,
+  "binary_sha256": "f37dfcc8aec9f0e1743c5bb1c876fa672c0857626777410b5f9b2677eb9310a2",
+  "before_diagnostics": {
+    "status": "Ready",
+    "indexed_items": 199439,
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "loading_saved_snapshot": false
+  },
+  "after_diagnostics": {
+    "status": "Ready",
+    "indexed_items": 199444,
+    "configured_root_count": 1,
+    "watched_root_count": 1,
+    "watcher_ready": true,
+    "loading_saved_snapshot": false
+  },
+  "seconds": 30.000385575986,
+  "cpu_one_core_percent": 0.9333213377901641,
+  "rss_before_bytes": 27934720,
+  "rss_after_bytes": 29376512,
+  "process_identity_preserved": true
+}

@@ -1,0 +1,26 @@
+{
+  "source_revision": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+  "changed_crate_files_from_delivered_c4": [
+    "crates/ottrin-app/src/main.rs",
+    "crates/ottrin-search/src/lib.rs",
+    "crates/ottrin-ui/src/lib.rs"
+  ],
+  "source_checks_verified_against_git_objects": {
+    "crates/ottrin-search/src/lib.rs": "9446700434ca09371c0414c89251793ea95d1030a6089042341b4a94c370a340",
+    "crates/ottrin-ui/src/lib.rs": "bb28be39230d5d181fd443b90d4085643af85dd34c4a9f291b1a8bba7f5b2175",
+    "crates/ottrin-app/src/main.rs": "62ea28794ecd42e614501b3f5baad7542c4b061f00de869a415a36a2329aedb7",
+    "docs/DEVELOPMENT.md": "841df86b73233d9c44e640ab7fd0d88736135f47305da153dc4fe8aee733b2b5"
+  },
+  "fresh_daemon_scope": [
+    "actual AppImage watcher/query/restart/protocol shutdown/private idle",
+    "owned installed-service On/Off/Unavailable and normal GUI close"
+  ],
+  "inherited_scopes": [
+    "Caption/footer production presenters unchanged from c4; original 22-capture receipt retains c4 scope.",
+    "Helper and HTML payload hashes unchanged; original protected Copy/UAC receipts retain their original source scopes."
+  ],
+  "not_fresh": [
+    "No f245 reboot or stable-path binary replacement acceptance.",
+    "No new Windows package or native acceptance."
+  ]
+}
