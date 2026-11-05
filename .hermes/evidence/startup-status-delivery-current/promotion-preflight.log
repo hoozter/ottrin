@@ -1,0 +1,13 @@
+{
+  "status": "scoped preflight passes; exact-source CI still pending",
+  "source_revision": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+  "ci_run": 41936995231,
+  "ci_ready": false,
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
+  "current_managed_unit": {
+    "MainPID": "2448604",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/ottrin-index.service",
+    "ActiveState": "active"
+  },
+  "mutation_performed": false
+}

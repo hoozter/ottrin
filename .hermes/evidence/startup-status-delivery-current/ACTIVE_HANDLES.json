@@ -1,41 +1,12 @@
 {
   "source_revision": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
-  "build": "terminal pass; four-format staging retained",
-  "native_fixture": "terminal functional pass; guest and three volumes removed",
-  "daemon_fixture": "terminal scoped pass; private profile and FUSE mounts removed",
   "ci": {
-    "status": "in_progress",
-    "conclusion": "",
-    "headSha": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
-    "url": "https://github.com/hoozter/ottrin/actions/runs/41936995231",
-    "jobs": [
-      {
-        "name": "verify (ubuntu-latest)",
-        "status": "completed",
-        "conclusion": "success"
-      },
-      {
-        "name": "verify (windows-latest)",
-        "status": "in_progress",
-        "conclusion": ""
-      },
-      {
-        "name": "search-performance (windows-latest)",
-        "status": "completed",
-        "conclusion": "success"
-      },
-      {
-        "name": "search-performance (ubuntu-latest)",
-        "status": "completed",
-        "conclusion": "success"
-      }
-    ]
+    "status": "completed",
+    "conclusion": "failure",
+    "run": 41936995231
   },
-  "stable_deliverables": "Linuxc4 / Windows458; preserve until accepted replacement",
-  "goal": "active/incomplete",
-  "local_source_checkpoint": {
-    "revision": "2516d8c49a8392b04b939fe62eddcf661c182584",
-    "scope": "readable process errors;251 search tests plus strict native/Windows GNU lint pass; source-only",
-    "push": "held until existing exact-source CI terminates"
-  }
+  "candidate": "retired after failed verification; STAGE_RETIRED.json",
+  "stable_deliverables": "Linuxc4 / Windows458 preserved",
+  "next": "Push pinned-provider CI fix with verified source checkpoints, then build fresh Linux/Windows candidates.",
+  "goal": "active/incomplete"
 }

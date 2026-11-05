@@ -1,0 +1,13 @@
+{
+  "actual_pinned_linux_provider": "download hashes, executable launch, content probe, future-step PATH export and cleanup passed",
+  "foreign_stage_refused_without_removal": true,
+  "local_temp_removed_on_exit": true,
+  "status": "pass local Linux provider bootstrap and refusal; actual Windows setup awaits hosted run",
+  "root_cause": "Chocolatey community feed returned HTTP504; dependency step reported success with zero installed packages, then16 content tests failed with program not found.",
+  "source_sha256": {
+    "scripts/ci/prepare-search-runtime.sh": "94c4fbe39784c111eb5e3e70f34977fffe930a7fb61b290a686716d8bf12b020",
+    ".github/workflows/ci.yml": "c996463966c0afd45767c63be927d30745cfe02831ef1cdd12e1de3d078c9cb9",
+    ".github/workflows/release.yml": "6b9f1f81c3b8bcfb30f06129b5e210237becb5e8d1364fcddf01e7d308d6db2e",
+    "packaging/tests/verify-release-workflow-dependencies.sh": "2c06408de81f9bc86a1f1594d11f3cd5e3d6a86b742c2511e2e48e8baf57f8e4"
+  }
+}

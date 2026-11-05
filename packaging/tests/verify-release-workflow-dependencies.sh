@@ -10,6 +10,8 @@ WORKFLOW="${1:-$ROOT/.github/workflows/release.yml}"
 for verification in "$WORKFLOW" "${2:-$ROOT/.github/workflows/ci.yml}"; do
   verify_job="$(awk '/^  verify:/ { active=1; next } active && /^  [a-zA-Z_-]+:/ { exit } active { print }' "$verification")"
   for literal in \
+    'bash scripts/ci/prepare-search-runtime.sh' \
+    'bash scripts/ci/prepare-search-runtime.sh cleanup' \
     'cache-on-failure: true' \
     'python3 scripts/ci/linux-html-sandbox.py prepare' \
     '/usr/bin/python3 scripts/ci/verify-linux-html-sandbox.py' \

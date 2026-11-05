@@ -1,0 +1,20 @@
+verify (windows-latest)	Install Windows test dependencies	﻿2026-11-04T23:53:44.4716041Z ##[group]Run choco install ripgrep --yes --no-progress
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.4716472Z [36;1mchoco install ripgrep --yes --no-progress[0m
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5651167Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5651479Z env:
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5651645Z   RUST_VERSION: 1.94.0
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5651832Z   CARGO_HOME: C:\Users\runneradmin\.cargo
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5652055Z   CARGO_INCREMENTAL: 0
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5652227Z   CARGO_TERM_COLOR: always
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5652412Z   CACHE_ON_FAILURE: true
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:44.5652586Z ##[endgroup]
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:52.9318220Z Chocolatey v2.7.5
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:54.0281047Z Installing the following packages:
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:54.0285867Z ripgrep
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:53:54.0288824Z By installing, you accept licenses for the packages.
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:54:28.8627678Z Failed to fetch results from V2 feed at 'https://community.chocolatey.org/api/v2/Packages(Id='ripgrep',Version='15.2.0')' with following message : Response status code does not indicate success: 504 (Gateway Timeout).
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:54:28.9682761Z Need to add specific handling for exception type NuGetResolverInputException
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:54:28.9686133Z Unable to find package 'ripgrep'. Existing packages must be restored before performing an install or update.
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:54:28.9746250Z 
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:54:28.9746712Z Chocolatey installed 0/0 packages. 
+verify (windows-latest)	Install Windows test dependencies	2026-11-04T23:54:28.9747140Z  See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).

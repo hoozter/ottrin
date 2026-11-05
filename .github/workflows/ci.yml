@@ -52,16 +52,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libxkbcommon-dev libssl-dev libgtk-3-dev desktop-file-utils ripgrep \
+            libxkbcommon-dev libssl-dev libgtk-3-dev desktop-file-utils \
             bubblewrap dbus-user-session apparmor-profiles python3-pil python3-gi xdg-desktop-portal
 
       - name: Prepare Linux process isolation
         if: runner.os == 'Linux'
         run: ./scripts/ci/prepare-linux-isolation.sh
 
-      - name: Install Windows test dependencies
-        if: runner.os == 'Windows'
-        run: choco install ripgrep --yes --no-progress
+      - name: Prepare pinned search provider
+        shell: bash
+        run: bash scripts/ci/prepare-search-runtime.sh
 
       - name: Verify native MSIX manifest template
         if: runner.os == 'Windows'
@@ -192,6 +192,11 @@ jobs:
       - name: Retire production Linux HTML integration
         if: always() && runner.os == 'Linux'
         run: python3 scripts/ci/linux-html-sandbox.py cleanup
+
+      - name: Retire pinned search provider
+        if: always()
+        shell: bash
+        run: bash scripts/ci/prepare-search-runtime.sh cleanup
 
       - name: Upload Linux HTML sandbox evidence
         if: always() && runner.os == 'Linux'

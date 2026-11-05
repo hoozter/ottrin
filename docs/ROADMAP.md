@@ -33,8 +33,9 @@ The caption/footer correction is delivered with22 directly reviewed successful
 AppImage captures, including Dark/Light100/150 Miller rows and saved-theme names,
 normal List headers, Grid75/100/185 and cooperating-picker cancellation. The
 installed Ready-index no-input footer remains correct through30seconds. The
-subsequent Services startup wording correction has a four-format f245 candidate and
-scoped native acceptance, but remains outside the delivered c4 packages. The ordered
+subsequent Services startup wording correction passed scoped native acceptance
+on a four-format f245 candidate, but that candidate was retired after hosted
+verification failed on a missing CI dependency. It remains outside delivered c4. The ordered
 queue below records all remaining work. Earlier
 checkpoints retain their historical source/artifact scopes.
 
@@ -579,9 +580,16 @@ review, and some scrolled captures clip the section heading. A readable error
 correction now passes251 search tests, native/Windows cross-target strict lint
 and formatting in `startup-error-wording-current/`; it remains source-only and
 is not in this f245 candidate. No fresh reboot or stable-path binary
-replacement acceptance is claimed for f245. Exact-source CI41936995231 currently
-has three passing jobs and the Windows test suite still running. The111MiB stage
-is retained for that candidate; delivered Linuxc4 and Windows458 are unchanged.
+replacement acceptance is claimed for f245. Exact-source CI41936995231 terminated with three passing jobs and16 Windows
+content-search failures: the Chocolatey feed returned HTTP504 and installed zero
+packages, but its step reported success, leaving rg missing. The shared pinned
+package provider now has an explicit CI/release bootstrap with hash checks, a real
+content probe and always-run cleanup; local Linux bootstrap/refusal checks pass,
+while fresh hosted Windows verification is still required. The rejected/superseded
+111MiB candidate is removed after exact artifact/checksum/provenance and consumer
+checks. Delivered Linuxc4 and Windows458 are unchanged. Build one fresh Linux and
+Windows cohort from the next verified source checkpoint, including the readable
+error correction, rather than revive this superseded runtime.
 Receipts: `startup-status-delivery-current/`. The owned guest/three volumes, private
 profile/FUSE mounts and consumed2.6MB transport archive are removed. Read-only
 personal delivered-daemon samples show0.93% and0.77% one-core CPU over30seconds
@@ -591,6 +599,19 @@ Receipt: `login-startup-wording-current/SOURCE_CHECKS.json`. Owned disposable te
 are removed;32 superseded incremental sessions were retired with newest per-
 configuration caches retained (1.00GiB reported). Current all-target check caches
 and the same configured, newly verified test binaries remain.
+
+The Windows metadata-preparation step now passes seven ordinary-user native tests
+on the retained Windows guest: five metadata/fault/refusal cases and two configured
+cleanup API cases. The executor prepares paired metadata-removal intent for every
+selected member before the first metadata unlink. Twenty-four partial-preparation
+combinations keep all controls discoverable and support read-only re-admission;
+two first-unlink fault cases verify the peer preparation barrier. Existing
+uncertain-removal and foreign-change tests remain passing. Strict Windows lint
+and formatting pass. This does not implement the durable coordinator or grant
+fresh-process authority after a central journal disappears; administrator Copy
+remains gated. Both controllers removed their exports/private temp and restored
+the guest's shut-off state and exact definition. One obsolete incremental session
+was retired. Receipt: `windows-cleanup-preparation-current/`.
 
 1. Package and verify the subsequent Windows transport and Grid source fixes, then finish administrator Copy recovery, including the Windows canonical
    receipt/Undo/cleanup bridge and guarded refresh/provenance for restored records.

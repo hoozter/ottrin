@@ -20,10 +20,6 @@
   "content_extraction_removed": true,
   "remaining": [
     {
-      "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-native-desktop-stage",
-      "purpose": "single four-format candidate awaiting exact-source CI and guarded delivery; preserve current stable c4 packages"
-    },
-    {
       "path": ".hermes/evidence/startup-status-delivery-current",
       "purpose": "compact package/runtime/native verification evidence"
     }
@@ -33,5 +29,6 @@
     "ottrin-copy-cleanup-qa",
     "ottrin-index-qa",
     "ottrin-qa-20261011"
-  ]
+  ],
+  "candidate_stage_retired": "STAGE_RETIRED.json"
 }
