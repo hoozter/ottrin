@@ -1,0 +1,57 @@
+{
+  "status": "pass consumed failed-case transport removed",
+  "retired": [
+    {
+      "name": "RESULTS.zip",
+      "sha256": "499c0eeba4e283dd9ab1dfd45101f8dee077b6b7c2b17477a480e00afd87ed90",
+      "bytes": 844209
+    },
+    {
+      "name": "RESULT_EXPORT_PROCESS.json",
+      "sha256": "ebea57a650bb3c5cf23de87d6cd30893ce642030ea0dfb7ac42dc86cab8d655a",
+      "bytes": 1500902
+    }
+  ],
+  "retained_originals": {
+    "ACTOR.json": "ff9e92f529d1609e565e6fb6382fde9a3d33cb29c135b594981de846aa7fbcb6",
+    "checkbox-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-disabled.stdout": "e6c1a64de64fe0d3bfb3668aa59dc822503e29d9d97cc25b57ffb736b25b5ff5",
+    "checkbox-enabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkbox-enabled.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "CRASH_EVENTS.json": "2ee31b08c929cc934fa3febf94c91292a6fe222bac68cbe8815e9bb772dc3782",
+    "DEPLOYMENT.json": "7c1f1ba4783d17efccc27538435617d371ec16f8830bb6cf1b28027b03409632",
+    "DESKTOP_READY.json": "70f3649789f8ceaa73f72091a6c407f4709d76e4ee5549410538c462254d50a4",
+    "DESKTOP_WAITING.json": "85f2872914bda2087142f5af213ad08c3c130e38b6fc90001278b63c20378841",
+    "explorer-background-before-menu.png": "4ff1976a9ef3220e3be71f6954bad484bcb9bbdd9404d318cc5a6605af59ce71",
+    "explorer-invoked-Background-0.png": "34956c56ae8a353bded4e3cb368e13d064d394e73b887e4564696f5fad655b28",
+    "explorer-invoked-Multiple-0.png": "e37702978f9e11e99b07b1f702bab6253a2f89277a54039f62104c7c3447f7c3",
+    "explorer-invoked-Multiple-1.png": "34956c56ae8a353bded4e3cb368e13d064d394e73b887e4564696f5fad655b28",
+    "explorer-menu-Background.png": "ff487aa2d6535e1316b8e7c00ea3b9891ec06fb6205bf6d27cf3fc54206bbfa0",
+    "explorer-menu-Drive.png": "573316bae8e82c0cb316ccb88953c700f260905df2026566566a4b16cf087804",
+    "explorer-menu-Multiple.png": "3632befe5840d16d95f964f10df0404119096cfe6a1f4634121271d561164296",
+    "EXPLORER_BACKGROUND_VIEW.json": "0fd34e8e3a405fb2d30ad0b021f56072dcf31220db23f934df414d6d115ada07",
+    "EXPLORER_MENU_Background.json": "a69361ce3924b1ab6bd88bcb65ffb82a699f679115a7ad1d8a95ae041e15e3b2",
+    "EXPLORER_MENU_Drive.json": "e71e30a931c76c8a38d0fb35b49eac10f28849f4d0f1b895de41d7d558b76392",
+    "EXPLORER_MENU_Multiple.json": "ed9423984cece1a248e8cbcc1696da710adfe26c53eef0e84d525abedccfe431",
+    "EXPLORER_PROCESSES_Background.json": "d964cb1254a9e152204b1ca4ee0ce36f86200b2cdd85df9aa453eb2726525bd5",
+    "EXPLORER_PROCESSES_Multiple.json": "7026118aaa66698e891ec5b65e5cb4bfa16333e12c798c9542e3f561b91637f0",
+    "focus-failure.png": "72e21b4a6ecf255b1b1a485270ac08a2ad57a86d1e8c8d159d0f6d1c5d8e4bad",
+    "FOLDER_COMMAND.json": "855822d84bbf93e321b3a016cd7c376ea2e45751fdcab79718bf5981c5026487",
+    "FOLDER_COMMAND_PROCESSES.json": "dafc9f44f3c8db23c114e52c53dfbb263a6378188a27c4d20762192213d8ccb2",
+    "main.png": "004f547b1108e783f01680a1d9bea53cb46274a15c0684e0b08bbb75e34f4634",
+    "mapped-main-before-focus.png": "72e21b4a6ecf255b1b1a485270ac08a2ad57a86d1e8c8d159d0f6d1c5d8e4bad",
+    "msix-folder-disabled.png": "21de1cac2d1f15db0c602937f70097583697b91180b6f5b576ddc6a601d7c96c",
+    "msix-folder-enabled.png": "114654488525208b6eb2ded8fabbc4c883d8c8cc52a96ff384f9df13f57fd7a2",
+    "msix-folder-invoked.png": "b25b7f6d04e81d89fa7c95fdf9527475cadce3aa861bb6deb6caf4db10c22b8e",
+    "msix-startup-disabled.png": "e06989afd4f1e8147459223aa169af64328c275414a73517a5e9f52c8b762460",
+    "msix-startup-enabled.png": "e758adf10ca7ca2af0280574cdd55193377a267b3bfc5e04f30cab247fe5ede6",
+    "msix-startup-failure.png": "9c04b81135e0416342b1bd7a2d717a9e9432377aa94185c56fae354328c372c2",
+    "MSIX_CHECKBOX_TRACE.json": "5a7266961278b4710a8cc5e7c6f90eb585ff288b1754442b50831ddd03ee8c57",
+    "RESULT.json": "8f458bfbf455703e3be26b3cb0db4e97f63765f542ffa3267b62dde8a5d9a2c1",
+    "service-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-install.stdout": "5ff68923ecde1277712fe9592537fe012838ad91a70b884327ad10154302af2c",
+    "service-status.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "service-status.stdout": "7afd0f39c83d26c58d74eab7fbbce9fdb93644a3c0f341565e42888bb5ecf811",
+    "STATE_READER_SMOKE.json": "0ca43f0db151e12f58e34bfc538e2a09b2976243f44ebebfa4aacb7c501dab16"
+  }
+}

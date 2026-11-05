@@ -1,0 +1,5 @@
+{
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-stage",
+  "purpose": "Corrected SDK-validated folder selectors; native product package/COM/Explorer acceptance next. Independent Linux UI delivery is already staged and does not depend on this candidate."
+}

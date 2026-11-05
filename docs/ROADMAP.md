@@ -119,15 +119,30 @@ Duplicate UIA entries have identical runtime ID/process/rectangle and represent
 one physical row. Failed fixture assumptions and the stronger final checks are
 retained separately; none of those failed runs is promoted to acceptance.
 
-Background/drive/multiselection and retaining an already enabled command across
-a later feature-bearing update remain open. Default folder opening for MSIX
-still uses the unresolved transaction path; no default-manager acceptance is
-claimed. Portable/NSIS keeps its existing atomic registry implementation.
+The next actual MSIX24 case passes folder-background invocation and two selected
+folders, including each target's ordinary package/user identity, contents,
+automatic foreground, clean exit0 and unchanged daemon. Six scoped originals
+were reviewed; the background menu exceeds the captured Explorer frame, so its
+complete visual layout is not accepted. Drive context fails: no command appears.
+The dedicated Drive selector belongs to desktop10 rather than desktop5.
+The corrected source adds that declaration using the same handler; host format,
+strict Windows shell/platform/UI lint, native COM/manifest contract and real SDK
+MakeAppx control pass. It has not yet reached a corrected Ottrin package or
+native drive acceptance. Source gate: `DRIVE_SOURCE_ACCEPTANCE.json`; original
+partial/failed native scope: `menus24/FINDINGS.json` in the same evidence root.
+The source fix is being rebuilt as development MSIX25. Retaining an enabled
+MSIX24 command across that update remains a required native check; the exact
+MSIX24 input is retained for it. Default folder opening for MSIX still uses the
+unresolved transaction path; no default-manager acceptance is claimed. Portable/NSIS keeps its existing atomic registry implementation.
 Low-contrast native light-menu icon, supplementary U+10437 font fallback and
 Settings capture/work-area limitations remain open interface findings. No full
 UI/theme, physical graphics, signing, Store or stable Windows delivery claim.
 Owned VM/volumes/desktop/portal/profile, consumed result transports and the
-completed MSIX23 input are removed. Exact current receipts:
+completed MSIX23 input are removed. The superseded24 ZIP/NSIS/payload stage
+(241,518,507 bytes) is retired after exact identity/ownership/consumer checks;
+only its MSIX remains at `previous24.msix` for the enabled-command update.
+Compact prior24 receipts remain in `baseline24/`; current stable Windows
+packages are unchanged. Exact current receipts:
 `.hermes/evidence/packaged-shell-current/MSIX_RUNTIME_ACCEPTANCE.json`,
 `MSIX_UPDATE_ACCEPTANCE.json`, `OPEN_UI_FINDINGS.json`, and
 `UPDATE_CLEANUP_ACCEPTANCE.json` in the same evidence directory.

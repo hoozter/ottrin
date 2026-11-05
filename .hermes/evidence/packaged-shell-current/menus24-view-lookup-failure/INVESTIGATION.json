@@ -1,0 +1,28 @@
+{
+  "status": "fixture failed before background invocation",
+  "result": "Unique actual Explorer items view required for background click",
+  "scope": "Ordinary initial runtime and direct COM steps precede failure; no Explorer background/multiple/drive or full lifecycle acceptance",
+  "next_fixture": "Find actual marker ListItem, walk to its List ancestor, record real names/types/rectangles before background click",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "consumed_result_transports_retired": [
+    {
+      "name": "RESULTS.zip",
+      "sha256": "5971189dbfff0701ed4b20753acf527fcb16455e2eadd184b633a9e18c45fd92",
+      "bytes": 596763
+    },
+    {
+      "name": "RESULT_EXPORT_PROCESS.json",
+      "sha256": "032a592cc0a7037f9ed82f8e37a3c01a864f7e991a6e85bf13342c4de5bd3176",
+      "bytes": 1060998
+    }
+  ]
+}

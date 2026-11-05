@@ -255,8 +255,12 @@ mod tests {
     fn manifest_class_and_folder_contexts_match_server() {
         let manifest = include_str!("../../../packaging/windows/msix-manifest.xml");
         assert!(manifest.contains(&format!("{:?}", CLASS).to_ascii_lowercase()));
-        let verbs: Vec<_> = manifest.split("<desktop5:Verb ").skip(1).collect();
-        assert_eq!(verbs.len(), 2);
+        let verbs: Vec<_> = manifest
+            .split("<desktop5:Verb ")
+            .skip(1)
+            .chain(manifest.split("<desktop10:Verb ").skip(1))
+            .collect();
+        assert_eq!(verbs.len(), 3);
         for verb in verbs {
             let id = verb
                 .split_once("Id=\"")
@@ -270,6 +274,11 @@ mod tests {
                 "Packaged Explorer verb identifiers must satisfy the native SDK schema: {id}"
             );
         }
+        // Drive is a desktop10 context; desktop5 rejects it in the native SDK.
+        assert!(manifest.contains(
+            "xmlns:desktop10=\"http://schemas.microsoft.com/appx/manifest/desktop/windows10/10\""
+        ));
+        assert!(manifest.contains("<desktop10:ItemType Type=\"Drive\"><desktop10:Verb "));
         for context in ["Directory", "Directory\\Background"] {
             assert!(manifest.contains(&format!("Type=\"{context}\"")));
         }

@@ -203,76 +203,122 @@ public static class PackagedShellQA {
 '@
 }
 
-function Exercise-ExplorerFolderCommand([string]$Selection,[string]$Marker){
- $result.phase='actual Explorer folder context menu';Save $ActorStateName $result
- $parent=Split-Path $Selection;$leaf=Split-Path $Selection -Leaf
+function Exercise-ExplorerFolderCommand([string]$Selection,[string]$Marker,[ValidateSet('Selection','Background','Multiple','Drive')][string]$Context='Selection'){
+ $result.phase='actual Explorer context '+$Context;Save $ActorStateName $result
+ if(-not('OttrinContextPointer'-as[type])){Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing -TypeDefinition 'using System;using System.Runtime.InteropServices;using System.Windows.Forms;using System.Drawing;public static class OttrinContextPointer{[DllImport("user32.dll")]static extern void mouse_event(uint flags,uint x,uint y,uint data,UIntPtr extra);public static void RightClick(int x,int y){Cursor.Position=new Point(x,y);mouse_event(8,0,0,0,UIntPtr.Zero);mouse_event(16,0,0,0,UIntPtr.Zero);}public static void Capture(string path){var r=Screen.PrimaryScreen.Bounds;using(var b=new Bitmap(r.Width,r.Height))using(var g=Graphics.FromImage(b)){g.CopyFromScreen(r.Left,r.Top,0,0,b.Size);b.Save(path,System.Drawing.Imaging.ImageFormat.Png);}}}'}
+ $targets=@(@{path=$Selection;marker=$Marker});$parent=Split-Path $Selection;$second=$null
+ if($Context-eq'Background'){$parent=$Selection}
+ if($Context-eq'Drive'){$parent='::{20D04FE0-3AEA-1069-A2D8-08002B30309D}'}
+ if($Context-eq'Multiple'){
+  $second=Join-Path $parent 'second folder Ω';[IO.Directory]::CreateDirectory($second)|Out-Null
+  [IO.File]::WriteAllText((Join-Path $second 'second-menu-proof.txt'),'Owned second menu fixture')
+  $targets+=@{path=$second;marker='second-menu-proof.txt'}
+ }
  $shell=New-Object -ComObject Shell.Application;$browser=$null;$windows=$null
  $before=@(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe}|ForEach-Object {$_.Id})
+ $daemonExe=Join-Path $package.InstallLocation 'bin\ottrin-indexd.exe'
+ $daemonBefore=@(Get-Process ottrin-indexd|Where-Object {$_.Path-ieq$daemonExe}|ForEach-Object {$_.Id})
+ if($daemonBefore.Count-ne1){throw 'Explorer context requires one current daemon'}
  try{
   $windows=$shell.Windows()
-  foreach($existing in $windows){if($existing.Document.Folder.Self.Path-ieq$parent){throw 'Unexpected preexisting Explorer window on owned fixture'}}
-  $shell.Open($parent);$deadline=[DateTime]::UtcNow.AddSeconds(30)
+  foreach($existing in $windows){if($existing.Document.Folder.Self.Path-ieq$parent){throw 'Unexpected preexisting Explorer window on fixture'}}
+  if($Context-eq'Drive'){$shell.Open(17)}else{$shell.Open($parent)}
+  $deadline=[DateTime]::UtcNow.AddSeconds(30)
   do{
-   foreach($candidate in $shell.Windows()){
-    try{if($candidate.Document.Folder.Self.Path-ieq$parent){$browser=$candidate;break}}catch{}
-   }
+   foreach($candidate in $shell.Windows()){try{if($candidate.Document.Folder.Self.Path-ieq$parent){$browser=$candidate;break}}catch{}}
    if($browser){break};Start-Sleep -Milliseconds 200
   }while([DateTime]::UtcNow-lt$deadline)
-  if(-not$browser){throw 'Owned Explorer folder window did not appear'}
+  if(-not$browser){throw 'Owned Explorer context window did not appear'}
   $hwnd=[IntPtr][long]$browser.HWND;[PickerNative]::Place($hwnd);[PickerNative]::Focus($hwnd)
+  if($Context-eq'Background'){
+
+   $deadline=[DateTime]::UtcNow.AddSeconds(15);$view=$null
+   do{
+    $rootElement=[Windows.Automation.AutomationElement]::FromHandle($hwnd)
+    $nodes=@($rootElement.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.Condition]::TrueCondition))
+    $anchors=@($nodes|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::ListItem-and-not$_.Current.IsOffscreen-and($_.Current.Name-ceq$Marker-or$_.Current.Name-ceq[IO.Path]::GetFileNameWithoutExtension($Marker))})
+    if($anchors.Count){
+     $ancestor=$anchors[0]
+     for($depth=0;$depth-lt12-and$ancestor;$depth++){
+      if($ancestor.Current.ControlType-eq[Windows.Automation.ControlType]::List){$view=$ancestor;break}
+      $ancestor=[Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($ancestor)
+     }
+    }
+    if($view){break};Start-Sleep -Milliseconds 200
+   }while([DateTime]::UtcNow-lt$deadline)
+   Save 'EXPLORER_BACKGROUND_VIEW' @{anchors=$anchors.Count;controls=@($nodes|Select-Object -First 300|ForEach-Object {$c=$_.Current;$b=$c.BoundingRectangle;@{name=$c.Name;type=$c.ControlType.ProgrammaticName;visible=(-not$c.IsOffscreen);left=$b.Left;top=$b.Top;width=$b.Width;height=$b.Height}})}
+   [PickerNative]::Shot($hwnd,(Join-Path $Root 'results\explorer-background-before-menu.png'))
+   if(-not$view){throw 'Owned marker has no actual Explorer items-list ancestor'}
+   $bounds=$view.Current.BoundingRectangle
+   if($bounds.Width-lt100-or$bounds.Height-lt100){throw 'Actual Explorer list is too small for a blank background click'}
+   [OttrinContextPointer]::RightClick([int]($bounds.Right-30),[int]($bounds.Bottom-30))
+  }else{
+   $first=$null
+   foreach($target in $targets){
+    $leaf=Split-Path $target.path -Leaf
+    if($Context-eq'Drive'){$drive=@($browser.Document.Folder.Items()|Where-Object {$_.Path-ieq$Selection});if($drive.Count-ne1){throw 'Expected one real drive in This PC'};$leaf=$drive[0].Name}
+    $deadline=[DateTime]::UtcNow.AddSeconds(15)
+    do{$items=@(UiNodes $hwnd $leaf|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::ListItem-and-not$_.Current.IsOffscreen});if($items.Count-eq1){break};Start-Sleep -Milliseconds 200}while([DateTime]::UtcNow-lt$deadline)
+    if($items.Count-ne1){throw ('Explorer lacks unique selected item '+$leaf)}
+    $pattern=$items[0].GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern)
+    if(-not$first){$pattern.Select();$first=$items[0]}else{$pattern.AddToSelection()}
+   }
+   $first.SetFocus();$selected=@($browser.Document.SelectedItems()|ForEach-Object {$_.Path})
+   if($selected.Count-ne$targets.Count-or@($selected|Where-Object {$_-inotIn@($targets|ForEach-Object {$_.path})}).Count){throw 'Actual Explorer selection does not match all declared target folders'}
+   [Windows.Forms.SendKeys]::SendWait('+{F10}')
+  }
   $deadline=[DateTime]::UtcNow.AddSeconds(15)
-  do{$items=@(UiNodes $hwnd $leaf|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::ListItem-and-not$_.Current.IsOffscreen});if($items.Count-eq1){break};Start-Sleep -Milliseconds 200}while([DateTime]::UtcNow-lt$deadline)
-  if($items.Count-ne1){throw 'Explorer did not expose the unique owned selected folder'}
-  $items[0].GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select();$items[0].SetFocus()
-  [Windows.Forms.SendKeys]::SendWait('+{F10}');$deadline=[DateTime]::UtcNow.AddSeconds(15)
-  do{
-   $commands=@([Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty,'Open in Ottrin'))|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::MenuItem-and-not$_.Current.IsOffscreen-and$_.Current.BoundingRectangle.Width-gt0-and$_.Current.BoundingRectangle.Height-gt0})
-   if($commands.Count){break};Start-Sleep -Milliseconds 200
-  }while([DateTime]::UtcNow-lt$deadline)
-  $menu=@([Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty,[Windows.Automation.ControlType]::MenuItem))|Where-Object {-not$_.Current.IsOffscreen}|ForEach-Object {$_.Current.Name})
-  $providers=@($commands|ForEach-Object {$c=$_.Current;$b=$c.BoundingRectangle;@{runtime_id=($_.GetRuntimeId()-join',');process=$c.ProcessId;native_window=$c.NativeWindowHandle;left=$b.Left;top=$b.Top;width=$b.Width;height=$b.Height;enabled=$c.IsEnabled}})
+  do{$commands=@([Windows.Automation.AutomationElement]::RootElement.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty,'Open in Ottrin'))|Where-Object {$_.Current.ControlType-eq[Windows.Automation.ControlType]::MenuItem-and-not$_.Current.IsOffscreen-and$_.Current.BoundingRectangle.Width-gt0-and$_.Current.BoundingRectangle.Height-gt0});if($commands.Count){break};Start-Sleep -Milliseconds 200}while([DateTime]::UtcNow-lt$deadline)
+  $providers=@($commands|ForEach-Object {$c=$_.Current;$b=$c.BoundingRectangle;@{runtime_id=($_.GetRuntimeId()-join',');process=$c.ProcessId;native_window=$c.NativeWindowHandle;left=$b.Left;top=$b.Top;width=$b.Width;height=$b.Height}})
   $rows=@($commands|Group-Object {$c=$_.Current;$b=$c.BoundingRectangle;'{0}:{1}:{2}:{3}:{4}'-f$c.ProcessId,$b.Left,$b.Top,$b.Width,$b.Height})
-  Save 'EXPLORER_MENU' @{items=$menu;selected=$Selection;commands=$commands.Count;physical_rows=$rows.Count;command_providers=$providers;explorer_hwnd=$hwnd.ToInt64()}
-  [PickerNative]::Shot($hwnd,(Join-Path $Root 'results\explorer-folder-menu.png'))
-  if($rows.Count-ne1){throw 'Actual Explorer context menu has no unique physical Open in Ottrin row'}
-  $commands=@($rows[0].Group|Where-Object {$_.Current.IsEnabled});if(-not$commands.Count){throw 'Actual Explorer command is disabled'}
+  Save ('EXPLORER_MENU_'+$Context) @{context=$Context;targets=$targets;physical_rows=$rows.Count;providers=$providers;explorer_hwnd=$hwnd.ToInt64()}
+  [OttrinContextPointer]::Capture((Join-Path $Root ('results\explorer-menu-'+$Context+'.png')))
+  if($rows.Count-ne1){throw ('No unique physical Open in Ottrin command for '+$Context)}
+  $commands=@($rows[0].Group|Where-Object {$_.Current.IsEnabled});if(-not$commands.Count){throw 'Explorer command is disabled'}
   $commands[0].GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
-  $deadline=[DateTime]::UtcNow.AddSeconds(60);$child=$null;$window=[IntPtr]::Zero
+  $deadline=[DateTime]::UtcNow.AddSeconds(60);$mapped=@()
   do{
    $mains=@()
    foreach($candidate in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe-and$_.Id-notin$before})){
     $native=Get-CimInstance Win32_Process -Filter ('ProcessId='+$candidate.Id);if(-not$native){continue}
     $argv=[PackagedShellQA]::Arguments($native.CommandLine)
-    if($argv.Count-eq3-and[IO.Path]::GetFullPath($argv[0])-ieq[IO.Path]::GetFullPath($exe)-and$argv[1]-ceq'--'-and$argv[2]-ceq$Selection){$mains+=,$candidate}
-    elseif(-not($argv.Count-eq3-and$argv[1]-ceq'index'-and$argv[2]-ceq'ensure')){throw 'Unexpected process from Explorer invocation'}
+    if($argv.Count-eq3-and[IO.Path]::GetFullPath($argv[0])-ieq[IO.Path]::GetFullPath($exe)-and$argv[1]-ceq'--'-and$argv[2]-cin@($targets|ForEach-Object {$_.path})){
+     $null=$candidate.Handle;$mains+=@{process=$candidate;path=$argv[2];window=[PickerNative]::Window($candidate.Id,'Ottrin')}
+    }elseif(-not($argv.Count-eq3-and$argv[1]-ceq'index'-and$argv[2]-ceq'ensure')){throw 'Unexpected process from Explorer context invocation'}
    }
-   if($mains.Count-gt1){throw 'Explorer command launched more than one selected-folder main'}
-   if($mains.Count-eq1){$child=$mains[0];$window=[PickerNative]::Window($child.Id,'Ottrin');if($window-ne[IntPtr]::Zero){break}}
-   Start-Sleep -Milliseconds 200
+   if($mains.Count-gt$targets.Count){throw 'Explorer command duplicated its main processes'}
+   foreach($target in $targets){if(@($mains|Where-Object {$_.path-ceq$target.path}).Count-gt1){throw 'Duplicate main for one selected folder'}}
+   if($mains.Count-eq$targets.Count-and@($mains|Where-Object {$_.window-eq[IntPtr]::Zero}).Count-eq0){$mapped=$mains;break};Start-Sleep -Milliseconds 200
   }while([DateTime]::UtcNow-lt$deadline)
-  if(-not$child-or$window-eq[IntPtr]::Zero){throw 'Explorer command did not map the selected-folder main window'}
-  [uint32]$packageLength=0
-  if([PackageIdentityQA]::GetPackageFullName($child.Handle,[ref]$packageLength,$null)-ne122){throw 'Explorer-launched process has no queryable package identity'}
-  $packageName=[Text.StringBuilder]::new([int]$packageLength)
-  if([PackageIdentityQA]::GetPackageFullName($child.Handle,[ref]$packageLength,$packageName)-ne0-or$packageName.ToString()-ne$package.PackageFullName-or[InputDesktopQA]::Elevated($child.Handle)){throw 'Explorer-launched process must be the ordinary installed package'}
-  $processOwner=Invoke-CimMethod -InputObject (Get-CimInstance Win32_Process -Filter ('ProcessId='+$child.Id)) -MethodName GetOwnerSid
-  if($processOwner.Sid-ne$owner.sid){throw 'Explorer-launched process belongs to another user'}
-  $deadline=[DateTime]::UtcNow.AddSeconds(20)
-  do{$markers=@(UiNodes $window $Marker|Where-Object {-not$_.Current.IsOffscreen});if($markers.Count){break};Start-Sleep -Milliseconds 100}while([DateTime]::UtcNow-lt$deadline)
-  if(-not$markers.Count){throw 'Explorer-launched main does not display selected folder contents'}
-  $foregroundBeforeQaFocus=([PickerNative]::GetForegroundWindow()-eq$window)
-  [PickerNative]::Place($window);[PickerNative]::Focus($window);[PickerNative]::Shot($window,(Join-Path $Root 'results\explorer-invoked-main.png'))
-  [PackageIdentityQA]::PostMessageW($window,0x10,[IntPtr]::Zero,[IntPtr]::Zero)|Out-Null
-  $closed=$child.WaitForExit(15000);if($closed){$child.WaitForExit()}
-  $exitCode=if($closed){$child.ExitCode}else{$null}
-  Save 'EXPLORER_INVOKED_PROCESS' @{pid=$child.Id;package=$packageName.ToString();sid=$processOwner.Sid;ordinary=$true;selected=$Selection;visible_marker=$Marker;closed=$closed;exit_code=$exitCode;foreground_before_qa_focus=$foregroundBeforeQaFocus}
-  if(-not$closed-or$exitCode-ne0){throw ('Explorer-launched main did not close normally; closed='+$closed+' exit='+$exitCode)}
-  return @{status='pass actual Explorer menu invocation';selected=$Selection;pid=$child.Id;visible_marker=$Marker;foreground_before_explicit_qa_focus=$foregroundBeforeQaFocus;menu_items=$menu}
+  if($mapped.Count-ne$targets.Count){throw 'Explorer context did not map exactly one main per target'}
+  $foreground=[PickerNative]::GetForegroundWindow();$automaticForeground=@($mapped|Where-Object {$_.window-eq$foreground}).Count-eq1
+  if(-not$automaticForeground){throw 'No context-launched main acquired foreground before QA input'}
+  $proofs=@()
+  foreach($entry in $mapped){
+   $child=$entry.process;$window=$entry.window;[uint32]$length=0
+   if([PackageIdentityQA]::GetPackageFullName($child.Handle,[ref]$length,$null)-ne122){throw 'Context main package identity unavailable'}
+   $name=[Text.StringBuilder]::new([int]$length)
+   if([PackageIdentityQA]::GetPackageFullName($child.Handle,[ref]$length,$name)-ne0-or$name.ToString()-ne$package.PackageFullName-or[InputDesktopQA]::Elevated($child.Handle)){throw 'Context main must have ordinary current package identity'}
+   $identity=Invoke-CimMethod -InputObject (Get-CimInstance Win32_Process -Filter ('ProcessId='+$child.Id)) -MethodName GetOwnerSid
+   if($identity.Sid-ne$owner.sid){throw 'Context main user mismatch'}
+   $target=@($targets|Where-Object {$_.path-ceq$entry.path})[0];$deadline=[DateTime]::UtcNow.AddSeconds(20)
+   do{$markers=@(UiNodes $window $target.marker|Where-Object {-not$_.Current.IsOffscreen});if($markers.Count){break};Start-Sleep -Milliseconds 100}while([DateTime]::UtcNow-lt$deadline)
+   if(-not$markers.Count){throw ('Context main lacks expected folder content '+$target.marker)}
+   [PickerNative]::Place($window);[PickerNative]::Focus($window);[PickerNative]::Shot($window,(Join-Path $Root ('results\explorer-invoked-'+$Context+'-'+$proofs.Count+'.png')))
+   [PackageIdentityQA]::PostMessageW($window,0x10,[IntPtr]::Zero,[IntPtr]::Zero)|Out-Null
+   $closed=$child.WaitForExit(15000);if($closed){$child.WaitForExit()};$exitCode=if($closed){$child.ExitCode}else{$null}
+   $proofs+=@{pid=$child.Id;path=$entry.path;marker=$target.marker;package=$name.ToString();sid=$identity.Sid;closed=$closed;exit_code=$exitCode}
+   Save ('EXPLORER_PROCESSES_'+$Context) @{context=$Context;automatic_foreground=$automaticForeground;processes=$proofs}
+   if(-not$closed-or$exitCode-ne0){throw 'Context main did not close normally'}
+  }
+  $after=@(Get-Process ottrin-indexd|Where-Object {$_.Path-ieq$daemonExe}|ForEach-Object {$_.Id})
+  if($after.Count-ne1-or$after[0]-ne$daemonBefore[0]){throw 'Explorer context changed the running daemon'}
+  return @{status='pass actual Explorer context';context=$Context;targets=$targets;processes=$proofs;automatic_foreground=$automaticForeground;daemon_before=$daemonBefore;daemon_after=$after;providers=$providers}
  }finally{
   foreach($process in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe-and$_.Id-notin$before})){if(-not$process.HasExited){$process.Kill();$null=$process.WaitForExit(5000)}}
-  if($browser){if($browser.Document.Folder.Self.Path-ine$parent){throw 'Owned Explorer window navigated elsewhere; preserve it'};$browser.Quit();[Runtime.InteropServices.Marshal]::FinalReleaseComObject($browser)|Out-Null}
-  if($windows){[Runtime.InteropServices.Marshal]::FinalReleaseComObject($windows)|Out-Null}
-  [Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)|Out-Null
+  if($browser){if($browser.Document.Folder.Self.Path-ine$parent){throw 'Owned Explorer window navigated elsewhere'};$browser.Quit();[Runtime.InteropServices.Marshal]::FinalReleaseComObject($browser)|Out-Null}
+  if($windows){[Runtime.InteropServices.Marshal]::FinalReleaseComObject($windows)|Out-Null};[Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)|Out-Null
+  if($second){$markerPath=Join-Path $second 'second-menu-proof.txt';if([IO.File]::ReadAllText($markerPath)-cne'Owned second menu fixture'){throw 'Owned second fixture changed; preserved'};[IO.File]::Delete($markerPath);[IO.Directory]::Delete($second)}
  }
 }
 
@@ -284,8 +330,9 @@ function Exercise-PackagedFolderCommand($App,$Settings){
  $expectedIcon=(Join-Path $package.InstallLocation 'bin\ottrin.exe')+',0'
  $icon=[PackagedShellQA]::Icon()
  if(-not$icon.EndsWith(',0')-or[IO.Path]::GetFullPath($icon.Substring(0,$icon.Length-2))-ine[IO.Path]::GetFullPath($expectedIcon.Substring(0,$expectedIcon.Length-2))){throw 'COM command did not resolve its actual package icon'}
- if([PackagedShellQA]::State()-ne2){throw 'Fresh installed command must be hidden before explicit enable'}
- $proof=@{status='running';host_package_identity_code=15700;title='Open in Ottrin';icon=$expectedIcon;actions=@();scope='Actual ordinary-user package COM activation/visibility/invocation; real Explorer menu surface and automatic foreground behavior remain separate'}
+ $initialEnabled=$Mode-eq'Updated'-and$owner.package.previous.version-eq'0.1.0.24'
+ if([PackagedShellQA]::State()-ne$(if($initialEnabled){0}else{2})){throw 'Folder command did not retain its declared initial/update preference'}
+ $proof=@{status='running';initial_enabled=$initialEnabled;host_package_identity_code=15700;title='Open in Ottrin';icon=$expectedIcon;actions=@();scope='Actual ordinary-user package COM activation/visibility/invocation; real Explorer menu surface and automatic foreground behavior remain separate'}
  $selection=Join-Path $Root ('shell-selection\-- folder with spaces '+[char]0x03a9+[char]::ConvertFromUtf32(0x10437))
  [IO.Directory]::CreateDirectory($selection)|Out-Null
  $marker=Join-Path $selection 'menu-invocation-proof.txt';[IO.File]::WriteAllText($marker,'Owned shell invocation fixture')
@@ -301,7 +348,8 @@ function Exercise-PackagedFolderCommand($App,$Settings){
    if($buttons.Count-eq1){break};[PickerNative]::Wheel($Settings,-240);Start-Sleep -Milliseconds 300
   }
   Save 'FOLDER_COMMAND' $proof
-  foreach($enabled in @($true,$false,$true)){
+  $requested=if($initialEnabled){@($false,$true)}else{@($true,$false,$true)}
+  foreach($enabled in $requested){
    $result.phase='packaged folder command visibility '+$enabled;Save $ActorStateName $result
    UiInvoke $Settings $(if($enabled){'Enable folder menu actions'}else{'Remove folder menu actions'})
    $expected=if($enabled){0}else{2};$deadline=[DateTime]::UtcNow.AddSeconds(15)
@@ -360,7 +408,13 @@ function Exercise-PackagedFolderCommand($App,$Settings){
   $daemonAfter=@(Get-Process ottrin-indexd -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$daemonPath}|ForEach-Object {$_.Id})
   if($daemonAfter.Count-ne1-or$daemonAfter[0]-ne$daemonBefore[0]){throw 'Folder commands or closing their main window restarted the index daemon'}
   $proof.daemon_pids_after=$daemonAfter
-  $proof.explorer=Exercise-ExplorerFolderCommand $selection 'menu-invocation-proof.txt'
+  $proof.contexts=@()
+  foreach($context in @('Background','Multiple','Drive')){
+   $target=if($context-eq'Drive'){[IO.Path]::GetPathRoot($env:SystemRoot)}else{$selection}
+   $expected=if($context-eq'Drive'){'Windows'}else{'menu-invocation-proof.txt'}
+   $proof.contexts+=Exercise-ExplorerFolderCommand $target $expected $context
+   Save 'FOLDER_COMMAND' $proof
+  }
   $proof.status='pass native packaged COM activation, UI preference and selected-folder invocation';$result.folder_command=$proof;Save 'FOLDER_COMMAND' $proof;Save $ActorStateName $result
  }finally{
   foreach($process in @(Get-Process ottrin -ErrorAction SilentlyContinue|Where-Object {$_.Path-ieq$exe-and$_.Id-notin$before})){
@@ -430,7 +484,16 @@ function Exercise-StartupCheckbox($App,$Window){
   Save $ActorStateName $result
   CheckboxTrace 'after result serialization'
 
-  if([string]$package.Version-eq$owner.package.version){Exercise-PackagedFolderCommand $App $settings}else{if(-not$owner.package.previous-or[string]$package.Version-ne$owner.package.previous.version){throw 'Undeclared baseline package'}}
+  if([string]$package.Version-eq$owner.package.version){Exercise-PackagedFolderCommand $App $settings}else{
+   if(-not$owner.package.previous-or[string]$package.Version-ne$owner.package.previous.version-or$owner.package.previous.version-ne'0.1.0.24'){throw 'Undeclared baseline package'}
+   Initialize-ShellProbe
+   if([PackagedShellQA]::HostIdentity()-ne15700-or[PackagedShellQA]::State()-ne2){throw 'Previous package must start with its command hidden'}
+   UiInvoke $settings 'Enable folder menu actions';$deadline=[DateTime]::UtcNow.AddSeconds(15)
+   do{$state=[PackagedShellQA]::State();if($state-eq0){break};Start-Sleep -Milliseconds 100}while([DateTime]::UtcNow-lt$deadline)
+   if($state-ne0){throw 'Previous package folder command did not enable'}
+   $result.previous_folder_command=@{enabled=$true;com_state=$state;version=[string]$package.Version;package=$package.PackageFullName}
+   Save $ActorStateName $result
+  }
 
  }catch{
   [PickerNative]::Shot($settings,(Join-Path $Root 'results\msix-startup-failure.png'));throw

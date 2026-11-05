@@ -1,0 +1,153 @@
+{
+  "status": "pass bounded native background/two-folder cases; fail Drive; no full-lifecycle acceptance",
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "artifact_sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
+  "runtime_script_sha256": "a27a1049363b31f7d82add2fbed899e5c0ff625623fdae9fd6aa9886cca3da11",
+  "passed_contexts": [
+    {
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 7384,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+          "marker": "menu-invocation-proof.txt",
+          "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "providers": [
+        {
+          "left": 768,
+          "width": 256,
+          "top": 429,
+          "height": 32,
+          "runtime_id": "42,66462,4,126",
+          "native_window": 0,
+          "process": 5904
+        },
+        {
+          "left": 768,
+          "width": 256,
+          "top": 429,
+          "height": 32,
+          "runtime_id": "42,66462,4,126",
+          "native_window": 0,
+          "process": 5904
+        }
+      ],
+      "daemon_after": [
+        7748
+      ],
+      "automatic_foreground": true,
+      "targets": [
+        {
+          "marker": "menu-invocation-proof.txt",
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+        }
+      ],
+      "daemon_before": [
+        7748
+      ],
+      "context": "Background",
+      "status": "pass actual Explorer context"
+    },
+    {
+      "processes": [
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 1532,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\second folder \u03a9",
+          "marker": "second-menu-proof.txt",
+          "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        },
+        {
+          "closed": true,
+          "exit_code": 0,
+          "pid": 8920,
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+          "marker": "menu-invocation-proof.txt",
+          "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+          "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002"
+        }
+      ],
+      "providers": [
+        {
+          "left": 201,
+          "width": 282,
+          "top": 443,
+          "height": 32,
+          "runtime_id": "42,1835640,4,145",
+          "native_window": 0,
+          "process": 5904
+        },
+        {
+          "left": 201,
+          "width": 282,
+          "top": 443,
+          "height": 32,
+          "runtime_id": "42,1835640,4,145",
+          "native_window": 0,
+          "process": 5904
+        }
+      ],
+      "daemon_after": [
+        7748
+      ],
+      "automatic_foreground": true,
+      "targets": [
+        {
+          "marker": "menu-invocation-proof.txt",
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+        },
+        {
+          "marker": "second-menu-proof.txt",
+          "path": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\second folder \u03a9"
+        }
+      ],
+      "daemon_before": [
+        7748
+      ],
+      "context": "Multiple",
+      "status": "pass actual Explorer context"
+    }
+  ],
+  "failed_context": {
+    "physical_rows": 0,
+    "context": "Drive",
+    "providers": [],
+    "explorer_hwnd": 656140,
+    "targets": [
+      {
+        "marker": "Windows",
+        "path": "C:\\"
+      }
+    ]
+  },
+  "direct_original_captures_reviewed": {
+    "explorer-menu-Background.png": "ff487aa2d6535e1316b8e7c00ea3b9891ec06fb6205bf6d27cf3fc54206bbfa0",
+    "explorer-invoked-Background-0.png": "34956c56ae8a353bded4e3cb368e13d064d394e73b887e4564696f5fad655b28",
+    "explorer-menu-Multiple.png": "3632befe5840d16d95f964f10df0404119096cfe6a1f4634121271d561164296",
+    "explorer-invoked-Multiple-0.png": "e37702978f9e11e99b07b1f702bab6253a2f89277a54039f62104c7c3447f7c3",
+    "explorer-invoked-Multiple-1.png": "34956c56ae8a353bded4e3cb368e13d064d394e73b887e4564696f5fad655b28",
+    "explorer-menu-Drive.png": "573316bae8e82c0cb316ccb88953c700f260905df2026566566a4b16cf087804"
+  },
+  "visual_limits": [
+    "Background menu extends beyond captured Explorer frame; native action/contents/identity/exit are verified, complete menu visual acceptance is not",
+    "Light native icon and supplementary glyph remain open findings; no whole-interface or physical acceptance"
+  ],
+  "correction": "Use desktop10 Drive declaration with the same handler; SDK validation and newly packaged native drive acceptance remain required",
+  "primary_source": "https://learn.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/element-desktop10-itemtype",
+  "owned_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

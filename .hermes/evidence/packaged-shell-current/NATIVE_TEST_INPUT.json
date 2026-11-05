@@ -1,6 +1,6 @@
 {
   "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_shell-36fcbe56ed1c0b11.exe",
-  "sha256": "ee102e58d70a5e030dd57fc7fba69964fceda5e023abed1022c205cd40ee1f9e",
+  "sha256": "1849fe961c7598e48b396a98c92816f7dc9b869e84e728e83648e1f4226be240",
   "source_verification": "VERIFY_STATE.json",
   "scope": "Direct native COM/Unicode path and manifest reference/ID regression; no actual package activation or Explorer surface acceptance"
 }

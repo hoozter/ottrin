@@ -1,0 +1,178 @@
+{
+  "status": "pass exact MSIX24 ordinary runtime, direct packaged COM folder invocation, real reboot/login and removal preservation",
+  "package": {
+    "runtime_script_sha256": "c88204058395521331918b77c7fd9cac40a7e9c06a2fe80cc439ba4a34153665",
+    "native_controls_sha256": "a4d9b34b9016f4d3bf8ea4171cf00e7f5e61416f277e7e4e928e35a6c0d3a700",
+    "sha256": "20149a9fcebe56145b1826f5af9096c5534f992450ff9ca6e7242e4cbe5109d0",
+    "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+    "version": "0.1.0.24",
+    "startup_enabled": true
+  },
+  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "runtime_result": ".hermes/evidence/packaged-shell-current/runtime24/RUNTIME_RESULT.json",
+  "folder_command": {
+    "host_package_identity_code": 15700,
+    "title": "Open in Ottrin",
+    "status": "pass native packaged COM activation, UI preference and selected-folder invocation",
+    "daemon_pids_after": [
+      3400
+    ],
+    "scope": "Actual ordinary-user package COM activation/visibility/invocation; real Explorer menu surface and automatic foreground behavior remain separate",
+    "invocation_processes": [
+      {
+        "parent": 4308,
+        "pid": 9168,
+        "arguments": [
+          "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin/ottrin.exe",
+          "--",
+          "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "com_state": 0,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 355,
+          "top": 714,
+          "height": 17
+        },
+        "enabled": true
+      },
+      {
+        "com_state": 2,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 333,
+          "top": 714,
+          "height": 17
+        },
+        "enabled": false
+      },
+      {
+        "com_state": 0,
+        "complete_status_bounds": {
+          "left": 345,
+          "width": 355,
+          "top": 714,
+          "height": 17
+        },
+        "enabled": true
+      }
+    ],
+    "icon": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr\\bin\\ottrin.exe,0",
+    "daemon_pids_before": [
+      3400
+    ],
+    "invocation": {
+      "ordinary": true,
+      "selected_folder": "C:\\OttrinOwnedMsixRuntime\\shell-selection\\-- folder with spaces \u03a9\ud801\udc37",
+      "pid": 9168,
+      "visible_marker": "menu-invocation-proof.txt",
+      "exit": 0,
+      "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr",
+      "capture_focus": "Explicit private QA focus; no automatic foreground acceptance"
+    }
+  },
+  "startup_checkbox": {
+    "status": "pass actual installed-package checkbox",
+    "actions": [
+      {
+        "daemon_pids_before": [
+          3400
+        ],
+        "backend": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login\n",
+        "daemon_pids_after": [
+          3400
+        ],
+        "enabled": false
+      },
+      {
+        "daemon_pids_before": [
+          3400
+        ],
+        "backend": "source=Windows Startup apps\nenabled=true\ndetail=Enabled at login\n",
+        "daemon_pids_after": [
+          3400
+        ],
+        "enabled": true
+      }
+    ],
+    "package_identity": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+  },
+  "real_login": {
+    "index_ready": "ready",
+    "phase": "login-index-status.json",
+    "observed_before_any_ottrin_cli": {
+      "pid": 8232,
+      "administrator": false,
+      "session": 1,
+      "package": "Ottrin.Development_0.1.0.24_x64__vs01n017nxmbr"
+    },
+    "cli_exits": {
+      "login-service-status.stdout": 0,
+      "login-index-status.json": 0
+    },
+    "scope": "Observe Windows-started package daemon before any Ottrin CLI, after actual reboot/login",
+    "preferences_preserved": true,
+    "status": "pass",
+    "store": {
+      "path": "C:\\Users\\OTMSIX34aae71ac655\\AppData\\Local\\Packages\\Ottrin.Development_vs01n017nxmbr\\LocalCache\\Local\\ottrin\\search.db",
+      "bytes": 28672,
+      "identity": "FA402E6A402E2E37:0003000000024B8A0000000000000000"
+    },
+    "boot_ticks": 639294874815000000,
+    "administrator": false
+  },
+  "removal": {
+    "package_removed": true,
+    "package_processes_removed": true,
+    "fixture_preserved": true,
+    "preferences_preserved": true,
+    "remaining_index_tasks": []
+  },
+  "state_reader_native_smoke": {
+    "transient_milliseconds": 398.88480000000004,
+    "status": "pass native sharing retry, bounded persistent lock, malformed JSON and missing file refusal",
+    "private_fixture_removed": true,
+    "persistent_lock_seconds": 2.0087222
+  },
+  "capture_review": {
+    "reviewed": true,
+    "settings_visible": true,
+    "all_captures_match_exact_hashes": true,
+    "captures": {
+      "main.png": "e753891a63e9cf30ce720c176d557f6282e7afbf7ccb684f15bf83525d4a479f",
+      "msix-startup-disabled.png": "d7019e1df8778ca393d20f8de85ff246e7e8aa40cca03204a6b8b82a6f9e0a4c",
+      "msix-startup-enabled.png": "a84b336ecd39b7ae9165e373879a08374131cf1e8e02c8f12241a03fb245f6c4",
+      "msix-folder-enabled.png": "e1a5634ae4742b6d7d81047714662da07b173cbc6f2833cfaf9c06ccda5b0dc8",
+      "msix-folder-disabled.png": "dafc596a5f3371335b89ede80e4b6706e134c6e97fb1d4948862187f909580de",
+      "msix-folder-invoked.png": "5566228593d0f76d01d1dbfc48d8cab442980b8aff847376f767d45cef000628"
+    },
+    "observations": [
+      "Directly reviewed six exact original captures, Dark software desktop only. Main window, shared Settings title/sidebar, neutral completed-action history and authoritative current green status are visible.",
+      "Startup checkbox Off/On matches the separate sign-in text while current index remains Ready; folder enable/disable status is fully visible and changes as intended.",
+      "Selected Unicode folder opens with the owned marker file. U+10437 is rendered as a missing-glyph box in the title/breadcrumb; actual native UTF16 path/argv/navigation remains verified. Font fallback belongs to the open interface audit.",
+      "Settings taskbar overlays its bottom control edge in this fixture; no complete-window layout acceptance. QA capture placement should respect the Windows working area in the next relevant fixture.",
+      "Native COM and explicit QA focus are exercised; these frames do not prove actual Explorer menu clicking or automatic foreground behavior."
+    ],
+    "scope": "Targeted fresh MSIX24 ordinary runtime captures; no Light/full interface/physical GPU/signing/Store/update acceptance."
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "limits": [
+    "Direct native COM API invocation, not an actual Explorer menu click or automatic foreground proof",
+    "Real Explorer foreground/background/drive/multiselection, package upgrade and ordinary-user COM unregistration remain separate",
+    "Dark software-desktop targeted captures only; no Light, whole-interface, physical GPU, Store, signing or owner acceptance",
+    "Stable-path Windows publication requires its own remaining package gates; this is an investigation candidate"
+  ]
+}

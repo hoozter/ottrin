@@ -1,0 +1,91 @@
+{
+  "domain": "ottrin-native-test",
+  "uuid": "d46f3439-d0b1-419c-a766-75d99f74a9c7",
+  "base_domain": null,
+  "base_disk": "/var/lib/libvirt/images/ottrin-stock-client.qcow2",
+  "network_interfaces": 0,
+  "volumes": [
+    "ottrin-native-test-fixture.iso",
+    "ottrin-native-test.qcow2"
+  ],
+  "status": "exact selected native unit test passes",
+  "public_compiler_cache": null,
+  "scope": "Exact named Rust unit test under the owned Windows guest agent token; no ordinary desktop, installer or user-file workflow acceptance",
+  "producer_sha256": "3ecf9914518a1efed6aba2554597ad70e899c6eecc76e83c644548e2c2d11501",
+  "storage_at_start": {
+    "available_bytes": 29635080192,
+    "minimum_headroom_bytes": 25769803776,
+    "path": "/var/lib/libvirt/images"
+  },
+  "uploaded_host_iso_removed_bytes": 11683840,
+  "host_filesystems": 0,
+  "host_devices": 0,
+  "usb_redirection": 0,
+  "guest_pid": 4916,
+  "checked_backing_chains": [
+    {
+      "retained_domain": "ottrin-copy-cleanup-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-index-qa",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-index-qa.qcow2",
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "ottrin-qa-20261011",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-qa-20261011.qcow2",
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "retained_domain": "win11ltsc",
+      "files": [
+        "/var/lib/libvirt/images/win11ltsc.qcow2"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-native-test-fixture.iso",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-native-test-fixture.iso"
+      ]
+    },
+    {
+      "owned_volume": "ottrin-native-test.qcow2",
+      "files": [
+        "/var/lib/libvirt/images/ottrin-native-test.qcow2",
+        "/var/lib/libvirt/images/ottrin-stock-client.qcow2"
+      ]
+    }
+  ],
+  "owned_volume_allocations_before_removal": [
+    {
+      "volume": "ottrin-native-test-fixture.iso",
+      "allocated_bytes": 11689984,
+      "virtual_capacity_bytes": 11683840
+    },
+    {
+      "volume": "ottrin-native-test.qcow2",
+      "allocated_bytes": 1377693696,
+      "virtual_capacity_bytes": 68719476736
+    }
+  ],
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-native-test.qcow2",
+      "ottrin-native-test-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}
