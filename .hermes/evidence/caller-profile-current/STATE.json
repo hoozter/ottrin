@@ -1,0 +1,18 @@
+{
+  "status": "Profile locator source/strict-lint/ordinary-native component accepted; owned cleanup complete; broader Copy goal active",
+  "scope": "Authenticated original-process Local AppData locator only; no Copy registry/filesystem authority, coordinator, alternate-credential UAC or enabled administrator Copy acceptance",
+  "source": "crates/ottrin-platform/src/windows_privileged_transport.rs",
+  "previous_goal_turn": "progress: Windows candidate delivered and checkpoint pushed; current goal remains active",
+  "acceptance": "ACCEPTANCE.json",
+  "next": "Bind the returned registered folder to the original principal and pinned recovery registry; implement external durable cohort coordinator and cross-admin/package recovery before Copy enablement",
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-current",
+      "purpose": "Compact source/build/native/cleanup receipts for this component; provenance and next registry/coordinator work"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current compiler/test outputs and useful finalized shared caches; six obsolete sessions removed"
+    }
+  ]
+}

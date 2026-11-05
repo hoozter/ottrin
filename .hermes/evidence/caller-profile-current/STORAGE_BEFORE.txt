@@ -1,0 +1,7 @@
+Observed before source/lint/build changes (same shared compiler profiles):
+24G target/debug/deps
+24G target/debug/incremental
+29G target/x86_64-pc-windows-gnu/debug/deps
+42G target/x86_64-pc-windows-gnu/debug/incremental
+Caller-profile evidence root newly allocated; no second compiler target/configuration.
+Current delivered Windows at dist/windows-candidate/ is preserved; no package rebuild in this component phase.

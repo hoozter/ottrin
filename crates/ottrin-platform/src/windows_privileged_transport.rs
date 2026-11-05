@@ -5,25 +5,27 @@ use crate::windows_pipe::{LocalPipeListener, LocalPipeStream};
 use crate::{PlatformError, helper_protocol};
 use ottrin_core::{PrivilegedRequest, PrivilegedResponse, PrivilegedStatus};
 use serde::{Serialize, de::DeserializeOwned};
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::io::{self, Read, Write};
-use std::os::windows::ffi::OsStrExt;
+use std::os::windows::ffi::{OsStrExt, OsStringExt};
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::ptr;
 use std::time::{Duration, Instant};
 use windows_sys::Win32::Foundation::{
     ERROR_CANCELLED, FILETIME, HANDLE, WAIT_OBJECT_0, WAIT_TIMEOUT,
 };
-use windows_sys::Win32::Security::TOKEN_QUERY;
-use windows_sys::Win32::System::Com::{COINIT_APARTMENTTHREADED, CoInitializeEx, CoUninitialize};
+use windows_sys::Win32::Security::{TOKEN_DUPLICATE, TOKEN_IMPERSONATE, TOKEN_QUERY};
+use windows_sys::Win32::System::Com::{
+    COINIT_APARTMENTTHREADED, CoInitializeEx, CoTaskMemFree, CoUninitialize,
+};
 use windows_sys::Win32::System::Threading::{
     GetCurrentProcess, GetProcessId, GetProcessTimes, OpenProcess, OpenProcessToken,
     PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE, WaitForSingleObject,
 };
 use windows_sys::Win32::UI::Shell::{
-    SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW,
-    ShellExecuteExW,
+    FOLDERID_LocalAppData, KF_FLAG_DONT_VERIFY, SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC,
+    SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW, SHGetKnownFolderPath, ShellExecuteExW,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::SW_HIDE;
 
@@ -91,13 +93,70 @@ fn process_start_time(process: HANDLE) -> io::Result<u64> {
     Ok(value)
 }
 
-fn process_token(process: &OwnedHandle) -> io::Result<OwnedHandle> {
+fn process_token(process: &OwnedHandle, access: u32) -> io::Result<OwnedHandle> {
     let mut token = ptr::null_mut();
     // SAFETY: the retained process is queryable; success transfers one token handle.
-    if unsafe { OpenProcessToken(process.as_raw_handle(), TOKEN_QUERY, &mut token) } == 0 {
+    if unsafe { OpenProcessToken(process.as_raw_handle(), access, &mut token) } == 0 {
         return Err(io::Error::last_os_error());
     }
     Ok(unsafe { OwnedHandle::from_raw_handle(token) })
+}
+
+/// Query Windows for the explicit token's registered folder, without creating
+/// it or consulting the helper's environment. The returned path is a locator,
+/// not permission to adopt a recovery registry or replay serialized authority.
+fn local_app_data(token: &OwnedHandle) -> io::Result<PathBuf> {
+    struct Buffer(*mut u16);
+    impl Drop for Buffer {
+        fn drop(&mut self) {
+            // SAFETY: SHGetKnownFolderPath requires this even on failure; null is OK.
+            unsafe { CoTaskMemFree(self.0.cast()) };
+        }
+    }
+    let mut buffer = Buffer(ptr::null_mut());
+    // SAFETY: the live primary token has the documented access rights; Windows
+    // owns a terminated UTF-16 allocation which Buffer releases on every path.
+    let result = unsafe {
+        SHGetKnownFolderPath(
+            &FOLDERID_LocalAppData,
+            KF_FLAG_DONT_VERIFY as u32,
+            token.as_raw_handle(),
+            &mut buffer.0,
+        )
+    };
+    if result < 0 {
+        return Err(io::Error::other(format!(
+            "Resolve original caller Local AppData: HRESULT {result:#x}"
+        )));
+    }
+    if buffer.0.is_null() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Windows returned no caller profile path",
+        ));
+    }
+    let mut length = 0;
+    // SAFETY: successful SHGetKnownFolderPath returns a terminated allocation.
+    while unsafe { *buffer.0.add(length) } != 0 {
+        length += 1;
+    }
+    let path = PathBuf::from(OsString::from_wide(unsafe {
+        std::slice::from_raw_parts(buffer.0, length)
+    }));
+    if !path.is_absolute()
+        || path.components().any(|part| {
+            matches!(
+                part,
+                std::path::Component::ParentDir | std::path::Component::CurDir
+            )
+        })
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Windows returned an ambiguous caller profile path",
+        ));
+    }
+    Ok(path)
 }
 
 /// Retain the original process object and its primary token. The creation time
@@ -133,10 +192,31 @@ impl CallerProcess {
                 "Application process creation time does not match its launch identity",
             ));
         }
-        let token = process_token(&process)?;
+        let token = process_token(&process, TOKEN_QUERY)?;
         let caller = Self { process, token };
         caller.validate()?;
         Ok(caller)
+    }
+    fn local_app_data(&self) -> io::Result<PathBuf> {
+        self.validate()?;
+        // Additional token rights are requested only for profile lookup. Normal
+        // helper admission still requires query access alone. No impersonation,
+        // registry-hive loading, environment edits or directory creation occurs.
+        let token = process_token(
+            &self.process,
+            TOKEN_QUERY | TOKEN_IMPERSONATE | TOKEN_DUPLICATE,
+        )?;
+        if crate::windows_fs::user_for_token(&token).map_err(io::Error::other)?
+            != crate::windows_fs::user_for_token(&self.token).map_err(io::Error::other)?
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Caller token user changed before profile lookup",
+            ));
+        }
+        let path = local_app_data(&token)?;
+        self.validate()?;
+        Ok(path)
     }
     fn validate(&self) -> io::Result<()> {
         // SAFETY: capture retained the exact process with SYNCHRONIZE rights.
@@ -151,8 +231,9 @@ impl CallerProcess {
             _ => return Err(io::Error::last_os_error()),
         }
         let original = crate::windows_fs::user_for_token(&self.token).map_err(io::Error::other)?;
-        let current = crate::windows_fs::user_for_token(&process_token(&self.process)?)
-            .map_err(io::Error::other)?;
+        let current =
+            crate::windows_fs::user_for_token(&process_token(&self.process, TOKEN_QUERY)?)
+                .map_err(io::Error::other)?;
         if current != original {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
@@ -186,6 +267,12 @@ impl HelperChannel {
         self.caller.validate().map_err(|error| error.to_string())?;
         request.validate_protocol().map_err(str::to_owned)?;
         Ok(request)
+    }
+    /// Read-only Local AppData locator for the authenticated original process.
+    /// This does not create, admit or authorize a Copy registry. A future registry
+    /// binding must separately pin and validate its native identity/security.
+    pub fn caller_local_app_data(&self) -> io::Result<PathBuf> {
+        self.caller.local_app_data()
     }
     pub fn write_response(&mut self, response: &PrivilegedResponse) -> io::Result<()> {
         write_json(&mut self.stream, response)
@@ -417,6 +504,114 @@ mod tests {
         assert_eq!(
             caller.validate().unwrap_err().kind(),
             io::ErrorKind::PermissionDenied
+        );
+    }
+
+    #[test]
+    #[ignore = "Owned subprocess entry; exercised by caller_profile_uses_kernel_token_not_environment"]
+    fn caller_profile_worker() {
+        let parent = std::env::var("OTTRIN_PROFILE_PARENT")
+            .unwrap()
+            .parse()
+            .unwrap();
+        let start = std::env::var("OTTRIN_PROFILE_START")
+            .unwrap()
+            .parse()
+            .unwrap();
+        let mut channel = HelperChannel::connect(
+            &std::env::var("OTTRIN_PROFILE_NONCE").unwrap(),
+            parent,
+            start,
+        )
+        .unwrap();
+        channel.read_request().unwrap();
+        let path = channel.caller_local_app_data().unwrap();
+        write_json(&mut channel.stream, &path).unwrap();
+    }
+
+    #[test]
+    fn caller_profile_uses_kernel_token_not_environment() {
+        let started = process_start_time(unsafe { GetCurrentProcess() }).unwrap();
+        let current = CallerProcess::capture(std::process::id(), started).unwrap();
+        let token = process_token(
+            &current.process,
+            TOKEN_QUERY | TOKEN_IMPERSONATE | TOKEN_DUPLICATE,
+        )
+        .unwrap();
+        let expected = local_app_data(&token).unwrap();
+        let root = tempfile::tempdir().unwrap();
+        let false_profile = root.path().join("not the profile Ω");
+        let nonce = nonce();
+        let mut listener = LocalPipeListener::bind(&endpoint(&nonce).unwrap(), ACL).unwrap();
+        let started = process_start_time(unsafe { GetCurrentProcess() }).unwrap();
+        let mut worker = Child(
+            std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "windows_privileged_transport::tests::caller_profile_worker",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .env("OTTRIN_PROFILE_PARENT", std::process::id().to_string())
+                .env("OTTRIN_PROFILE_START", started.to_string())
+                .env("OTTRIN_PROFILE_NONCE", &nonce)
+                .env("LOCALAPPDATA", &false_profile)
+                .env("USERPROFILE", &false_profile)
+                .spawn()
+                .unwrap(),
+        );
+        let mut server = listener
+            .accept(Duration::from_secs(10), |pid| {
+                verify_pid(pid, worker.0.id())
+            })
+            .unwrap()
+            .unwrap();
+        let request = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+            command: PrivilegedCommand::ListDirectory {
+                path: root.path().into(),
+                show_hidden: false,
+            },
+            context: PrivilegedContext {
+                reason: None,
+                cwd: None,
+            },
+        };
+        write_json(&mut server, &request).unwrap();
+        assert_eq!(read_json::<PathBuf>(&mut server).unwrap(), expected);
+        assert!(worker.0.wait().unwrap().success());
+        assert!(
+            !false_profile.exists(),
+            "Profile resolution must not create a redirected directory"
+        );
+
+        // The original process may also have a false environment. Only its
+        // retained primary token selects the profile, and exit revokes lookup.
+        let command =
+            PathBuf::from(std::env::var_os("SystemRoot").unwrap()).join("System32/cmd.exe");
+        let mut original = Child(
+            std::process::Command::new(command)
+                .args(["/d", "/q", "/c", "set /p OTTRIN_QA_WAIT="])
+                .env("LOCALAPPDATA", &false_profile)
+                .env("USERPROFILE", &false_profile)
+                .stdin(std::process::Stdio::piped())
+                .stdout(std::process::Stdio::null())
+                .spawn()
+                .unwrap(),
+        );
+        let started = process_start_time(original.0.as_raw_handle()).unwrap();
+        let caller = CallerProcess::capture(original.0.id(), started).unwrap();
+        assert_eq!(caller.local_app_data().unwrap(), expected);
+        assert!(!false_profile.exists());
+        original.0.kill().unwrap();
+        original.0.wait().unwrap();
+        assert_eq!(
+            caller.local_app_data().unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        println!(
+            "OTTRIN_CALLER_PROFILE={}",
+            serde_json::to_string(&expected).unwrap()
         );
     }
 

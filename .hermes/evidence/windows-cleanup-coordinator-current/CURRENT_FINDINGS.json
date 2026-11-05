@@ -1,11 +1,10 @@
 {
-  "status": "source investigation refreshed; durable coordinator and caller registry remain unimplemented",
-  "inspected_revision": "b9575141281718098de2b142182ab6b3b47f3777",
+  "status": "External coordinator and original-caller registry bridge still unimplemented; profile locator component separately source/native verified",
   "source_sha256": {
     "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "711989544e45368bf04afa12ef1125523e9d66bd13df33d4e1f153115638d8d8",
     "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "982990869e86f71d8a904dfbbeb09c0d4d020ddae41fcad76702a92093fc29a8",
-    "crates/ottrin-platform/src/windows_fs/identity.rs": "2ed8ee8e161722a1ed9ea401f1b3a5a23931d938305accef02c3cc7bbccf9f3b",
-    "crates/ottrin-platform/src/windows_privileged_transport.rs": "83c626e4c86e15ed47c1f6c780e241a98a5a34157f305402832f1730cc350ed3",
+    "crates/ottrin-platform/src/windows_fs/identity.rs": "3ceb5fc2832a646896e459ee3704934dd7d110a23e5aa232fc368a3200fd9c09",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "5dfa8bf28a2935e19836081b6f9904c38804d7658e7453d7fa3fba2c500f8846",
     "crates/ottrin-platform/src/windows_pipe.rs": "18c9e391d5bdc210733a25f1689a4e30b298c1a78ec06b7fc7b52756717d1b31"
   },
   "confirmed": [
@@ -13,12 +12,24 @@
     "Selection freezes central registry names/root version and peer control bytes/security; coordinator writes must be outside that guarded registry",
     "AnchoredRoot.open_at uses one fixed external marker, so sibling coordinator roots need an explicit distinct factory/marker and original-registry binding, not another open_at call",
     "current_owner and owner_for_token intentionally read TokenOwner for file descriptor ownership; replacing them globally with TokenUser would conflate default file owner with caller identity",
-    "HelperChannel checks the connected pipe peer PID, but currently retains no original application process/token handle or TokenUser SID. Caller registry must derive the UI SID from kernel-held authenticated process context, not request fields or elevated LOCALAPPDATA"
+    "HelperChannel now retains the authenticated original process/token and checks TokenUser independently of TokenOwner. A lazy explicit-token Windows registered Local AppData locator passes ordinary same-user poisoned-environment and process-exit checks. It is a read-only locator, not a pinned registry, original-user file-ownership bridge or alternate-admin UAC proof."
   ],
   "next_required": [
     "Implement canonical externally anchored cohort snapshot and pending/completed metadata checkpoints; never recover deletion authority from missing IDs",
     "Require crash/fault/native fresh-process recovery and changed-peer/root/case/ACL/foreign identity refusals before enabling helper Copy",
-    "Add separate kernel TokenUser caller identity while preserving file-owner semantics and existing meaningful validation"
+    "Use the original principal and registered profile locator to build a separately pinned native registry/receipt/Undo/cleanup authority; preserve file-owner semantics, add alternate-admin/package-context proof, and keep Windows administrator Copy disabled until all coordinator/recovery gates pass."
   ],
-  "current_delivery": "Linux/Windows24af previews delivered separately; administrator Copy remains gated; this record is not implementation or native acceptance"
+  "current_delivery": "Linuxbee and Windows8e stay delivered separately; profile component source is not a shipped enabled Copy feature",
+  "reference_commit": "88cbc6e98b68cf461f69636e0e31e0c0cea16ebe",
+  "profile_locator_component": ".hermes/evidence/caller-profile-current/ACCEPTANCE.json",
+  "current_platform_test_input": ".hermes/evidence/caller-profile-current/NATIVE_TEST_INPUT.json",
+  "prior_test_retirement": ".hermes/evidence/caller-profile-current/TEST_EXECUTABLE_CLEANUP.json",
+  "profile_path_limit": "Windows registered folder paths can be redirected. The locator is data, not trusted filesystem authority; future admission must bind the original TokenUser separately from TokenOwner and pin/revalidate native directory/anchor/security identities.",
+  "implementation_sequence": [
+    "Retain original process/token and resolve registered profile without environment authority (component proven; no Copy enablement).",
+    "Construct explicit original-caller recovery context: authenticated TokenUser, original default file owner and pinned native registry/anchor. Do not globally change file-owner semantics, rewrite environment or impersonate away elevation needed for the actual Copy.",
+    "Thread that context through creation/discovery/receipt/Undo/cleanup; add alternate-administrator and package-context native proof.",
+    "Create the external coordinator outside the guarded registry with distinct anchor and original-registry binding; persist complete member proof and pending/completed checkpoints before metadata retirement.",
+    "Prove fresh-process crash/restart, partial/checkpoint I/O and changed-peer/root/case/ACL/foreign refusals; only then enable administrator Copy."
+  ]
 }

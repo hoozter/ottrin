@@ -1,0 +1,25 @@
+{
+  "status": "Queued duplicate build stopped; overlapping logs not acceptance",
+  "pid": 3028183,
+  "start_ticks": "54484527",
+  "command_sha256": "507819a93e224db9e85b266f6a581b34b38849b1f70e1cde66e00d47b06a354f",
+  "first_session": 16516,
+  "second_session": 48154,
+  "next": "Wait original build terminal, retire overlapped logs, then one source-frozen clean-record build",
+  "original_build_exit": 0,
+  "duplicate_build_exit": 143,
+  "retired_logs": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-current/test-build.jsonl",
+      "bytes": 64180,
+      "sha256": "2966afe3bcc121dbff1d47824b8b019004ac6741c2817a7317a21e53817651cf",
+      "scope": "Overlapping writes; never native/source acceptance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-current/test-build.log",
+      "bytes": 279,
+      "sha256": "727a54af3d440f70d399d17d4d16bbbf8dba5ee7bf3c7d599ee03dd43eb34cdb",
+      "scope": "Overlapping writes; never native/source acceptance"
+    }
+  ]
+}

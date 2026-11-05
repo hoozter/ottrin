@@ -1,0 +1,6 @@
+{
+  "status": "pass consumed verified native archive retired",
+  "bytes": 2499,
+  "sha256": "77fe1dbccdb1aa92b0b0c3c18cdfc6c13f28ad541dd3e9813775935ddff32259",
+  "replacement": "results/ exact bytes and normalized native_result in ACCEPTANCE.json"
+}

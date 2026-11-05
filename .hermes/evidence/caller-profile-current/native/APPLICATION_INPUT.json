@@ -1,0 +1,22 @@
+{
+  "source_revision": "88cbc6e98b68cf461f69636e0e31e0c0cea16ebe",
+  "source_test_sha256": "79b849cf18ab524d1dfc1b51d4aa8fe90f09d0af741715e162aa9c08b0cd053d",
+  "test_sha256": "f686e29fac7655d54c16af83eab98d81270e89dbecf64f8daeb6066ef27e4fed",
+  "source_bytes": 498888271,
+  "staged_bytes": 477574385,
+  "strip_command": [
+    "x86_64-w64-mingw32-strip",
+    "--strip-debug"
+  ],
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 371636736,
+    "sha256": "d7d4b768e9b8617e84bf4bf5d66149405cd743d9be6dfe541e56a0280b890a40"
+  },
+  "actor_sha256": "6a0b721c7baf64b05663692e4cde5e55cb8df38d45c02036e8c2f29c3b64a893",
+  "scope": "Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance",
+  "changed_product_sources": {
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "5dfa8bf28a2935e19836081b6f9904c38804d7658e7453d7fa3fba2c500f8846"
+  },
+  "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+}

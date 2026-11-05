@@ -18,7 +18,7 @@ assert not args.application_uia_stage or (args.use_stock_base and args.output an
 assert not args.application_nsis_stage or ((args.use_stock_base or args.office_installed) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])), 'NSIS requires its own stock ordinary-user case'
 assert not args.application_msi or ((args.use_stock_base or args.use_updated_base) and args.output and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test])),'Application MSI requires a fresh declared stock or prepared updated ordinary-user case'
 assert not args.boundary_fixture or args.application_native_test
-assert not args.application_native_test or (args.boundary_fixture and args.use_stock_base and args.output and args.application_actor and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test,args.native_helper])), 'Native boundary test requires an explicit isolated ordinary-user actor'
+assert not args.application_native_test or (args.use_stock_base and args.output and args.application_actor and not any([args.native_msi_builder,args.native_elevated,args.update_manifest,args.msix_parse_only,args.msix_stage,args.msix_runtime,args.native_test,args.native_helper])), 'Native boundary test requires an explicit isolated ordinary-user actor'
 assert not args.native_elevated or args.native_msi_builder,'Elevated diagnostic requires the native file-only builder; never an application deployment mode'
 assert not args.native_helper or (args.native_test and args.test_filter=='windows_privileged_transport::tests::windows_helper_pipe_'), 'Helper input only supports the explicit production-helper test'
 assert not args.test_filter or args.native_test
@@ -81,7 +81,7 @@ if args.application_msi:scope='Exact held diagnostic Ottrin MSI ordinary-user in
 if args.native_elevated:scope='Diagnostic elevated owned QA account, same native file-only MSI authoring. No ordinary-user acceptance, Ottrin executable, security-policy change or original profile mutation.'
 if args.office_installed:scope='Current NSIS installed Office main/Inspector render and fallback on ordinary native WGPU/OpenGL; private clone of retained verified-provider QA base, not a clean stock installation'
 if args.application_actor:scope='Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance.'
-if args.application_native_test:scope='Exact native Windows preview-boundary executable under a fresh ordinary interactive account; repeated concurrent Rust tests, no installed Office or package acceptance'
+if args.application_native_test:scope='Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.'
 backing='/var/lib/libvirt/images/win11ltsc.qcow2'
 if args.office_installed:
  assert virsh('domstate','ottrin-copy-cleanup-qa')=='shut off' and virsh('domuuid','ottrin-copy-cleanup-qa')=='9b2e795f-fb04-4adb-95a7-8832f8894c67'
@@ -364,7 +364,7 @@ with ExitStack() as stack:
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
   if args.application_native_test:
-   executable=args.application_native_test.resolve();assert executable.parent==r/'target/x86_64-pc-windows-gnu/debug/deps' and re.fullmatch(r'windows_job_native-[0-9a-f]{16}\.exe',executable.name) and not args.application_native_test.is_symlink()
+   executable=args.application_native_test.resolve();assert executable.parent==r/'target/x86_64-pc-windows-gnu/debug/deps' and re.fullmatch(r'(windows_job_native|ottrin_platform)-[0-9a-f]{16}\.exe',executable.name) and not args.application_native_test.is_symlink()
    with executable.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
    # GNU embeds debug sections in the executable; copying hundreds of MB per
    # case changes the test workload. Retain the canonical compiler output and
@@ -386,13 +386,17 @@ with ExitStack() as stack:
    original_digest=digest
    with staged.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
    identity={'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'source_test_sha256':original_digest,'test_sha256':digest,'source_bytes':executable.stat().st_size,'staged_bytes':staged.stat().st_size,'strip_command':['x86_64-w64-mingw32-strip','--strip-debug'],'unchanged_executable_text':code_identity,'actor_sha256':hashlib.sha256(args.application_actor.read_bytes()).hexdigest(),'scope':scope}
-   companion=args.boundary_fixture.resolve();assert companion==r/'target/x86_64-pc-windows-gnu/debug/ottrin-native-job-fixture.exe' and not args.boundary_fixture.is_symlink()
-   staged_companion=fixture/'boundary-fixture.exe';subprocess.run(['x86_64-w64-mingw32-strip','--strip-debug','-o',str(staged_companion),str(companion)],check=True)
-   companion_code=executable_text(companion);assert executable_text(staged_companion)==companion_code
-   with companion.open('rb') as stream:companion_source_sha=hashlib.file_digest(stream,'sha256').hexdigest()
-   with staged_companion.open('rb') as stream:companion_sha=hashlib.file_digest(stream,'sha256').hexdigest()
-   identity['fixture']={'source_sha256':companion_source_sha,'sha256':companion_sha,'source_bytes':companion.stat().st_size,'staged_bytes':staged_companion.stat().st_size,'unchanged_executable_text':companion_code}
-   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity);application_files=['boundary-test.exe','boundary-fixture.exe','application-input.json']
+   if args.boundary_fixture:
+    companion=args.boundary_fixture.resolve();assert companion==r/'target/x86_64-pc-windows-gnu/debug/ottrin-native-job-fixture.exe' and not args.boundary_fixture.is_symlink()
+    staged_companion=fixture/'boundary-fixture.exe';subprocess.run(['x86_64-w64-mingw32-strip','--strip-debug','-o',str(staged_companion),str(companion)],check=True)
+    companion_code=executable_text(companion);assert executable_text(staged_companion)==companion_code
+    with companion.open('rb') as stream:companion_source_sha=hashlib.file_digest(stream,'sha256').hexdigest()
+    with staged_companion.open('rb') as stream:companion_sha=hashlib.file_digest(stream,'sha256').hexdigest()
+    identity['fixture']={'source_sha256':companion_source_sha,'sha256':companion_sha,'source_bytes':companion.stat().st_size,'staged_bytes':staged_companion.stat().st_size,'unchanged_executable_text':companion_code}
+   changed=subprocess.check_output(['git','diff','--name-only','HEAD','--','Cargo.toml','Cargo.lock','crates'],text=True).splitlines()
+   identity['changed_product_sources']={path:hashlib.sha256((r/path).read_bytes()).hexdigest() for path in changed}
+   identity['source_scope']='Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test.'
+   (fixture/'application-input.json').write_text(json.dumps(identity));save('APPLICATION_INPUT.json',identity);application_files=['boundary-test.exe','application-input.json']+(['boundary-fixture.exe'] if args.boundary_fixture else [])
    start=script.index(" $pins=Get-Content");end=script.index(" Copy-Item (Join-Path $PSScriptRoot 'actor.ps1')",start)
    script=script[:start]+" foreach($file in @('"+"','".join(application_files)+"')){Copy-Item (Join-Path $PSScriptRoot $file) (Join-Path $root $file)}\n"+script[end:]
   if args.application_nsis_stage and args.application_actor:

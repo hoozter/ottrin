@@ -1,0 +1,112 @@
+{
+  "status": "pass2 superseded same-configuration test executables, dep-info and Cargo fingerprints retired",
+  "replacement": {
+    "file": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+    "bytes": 498888271,
+    "mtime_ns": 1793898680602074208,
+    "links": 1,
+    "current": true,
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-d1588445e089e3c2/test-lib-ottrin_platform.json",
+    "profile": 4539089746505721204,
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 8200324069407742093,
+    "dependencies": 15
+  },
+  "replacement_sha256": "79b849cf18ab524d1dfc1b51d4aa8fe90f09d0af741715e162aa9c08b0cd053d",
+  "matching_settings": [
+    "profile",
+    "rustc",
+    "features",
+    "rustflags",
+    "config",
+    "compile_kind"
+  ],
+  "removed": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.exe",
+      "bytes": 493002341,
+      "sha256": "4d092123bd574422253cc0805f151dd202f2547ed161a39ca5d3a9eee8768b56"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.d",
+      "bytes": 16813,
+      "sha256": "0b2f5a67d1bb40444a9e780f4ac92ef738ff8dc4a22249e5ce867391390dc549"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-2d2ee2db8e90bb8b/test-lib-ottrin_platform.json",
+      "bytes": 1245,
+      "sha256": "18d96fc0c29a20a98de6d4534274385d06965eefc2a289c984ead86b3651890d"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-2d2ee2db8e90bb8b/dep-test-lib-ottrin_platform",
+      "bytes": 4133,
+      "sha256": "9acf1d34bcb66c928394a7545ae8178539c5e271bc9f2f7cd3b5976ed79da494"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-2d2ee2db8e90bb8b/test-lib-ottrin_platform",
+      "bytes": 16,
+      "sha256": "fb78df52ac5a29f72c4d95b130faf95ecfddb951fdbcbb8ac3ee29aabfbcf150"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-2d2ee2db8e90bb8b/invoked.timestamp",
+      "bytes": 48,
+      "sha256": "5a109e6643e8d3e88642e3f35e85d2a83e639d07523aa6e99166c48178e965c3"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-470ab05b74f61b7c.exe",
+      "bytes": 478013920,
+      "sha256": "40e1e2424154dc4593dd1e8cbc5a2b375aa1b6ccff9ae53ca4e4522c26730834"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-470ab05b74f61b7c.d",
+      "bytes": 16813,
+      "sha256": "c465db74b68cb2b6498d61368c5b0a88d819d03e05b3e05849c0a10a93ca069d"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-470ab05b74f61b7c/test-lib-ottrin_platform.json",
+      "bytes": 1245,
+      "sha256": "493b223e0912d60a679ffb36364b0f0632e69c0b4d04c2e69edaf5090ca08296"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-470ab05b74f61b7c/dep-test-lib-ottrin_platform",
+      "bytes": 4133,
+      "sha256": "c2da609e4dc25b284d0776fd8dcfbfe6f7858ec79259330b54e2671c37d10cd1"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-470ab05b74f61b7c/test-lib-ottrin_platform",
+      "bytes": 16,
+      "sha256": "e960e51bd76e0fa203f1b88f68937ea15abffd1cc3c3df23f0d5b5f534be2e7d"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-470ab05b74f61b7c/invoked.timestamp",
+      "bytes": 48,
+      "sha256": "5a109e6643e8d3e88642e3f35e85d2a83e639d07523aa6e99166c48178e965c3"
+    }
+  ],
+  "removed_logical_bytes": 971060771,
+  "references": {
+    "ottrin_platform-2d2ee2db8e90bb8b.exe": [
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-current/TEST_EXECUTABLE_INVENTORY.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-caller-current/BUILD_RESULT.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-caller-current/native/INPUT.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-caller-current/windows-build.log",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-caller-current/CLEANUP_FINAL.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cleanup-preparation-current/NATIVE_METADATA_ACCEPTANCE.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cleanup-preparation-current/STORAGE_AFTER.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cleanup-preparation-current/METADATA_TEST_BINARY.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cleanup-preparation-current/TEST_BINARY.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-cleanup-preparation-current/build.jsonl"
+    ],
+    "ottrin_platform-470ab05b74f61b7c.exe": [
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-pipe-current/RETIRED_TESTS.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-pipe-current/TEST_BINARIES.json",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-helper-pipe-current/build.jsonl",
+      "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-current/TEST_EXECUTABLE_INVENTORY.json"
+    ]
+  },
+  "consumer_review": "Old bytes match completed helper-caller/helper-pipe records. Historical metadata receipts keep their original hashes/scopes. The former next-coordinator consumer now uses current source-bound native-verified d158 input. No active process consumer or hard link; retained VMs are off. Broad win11ltsc home export is preserved unchanged and not an exact artifact dependency. Different-configuration e2d6933b1ac22a07 output is preserved.",
+  "current_input": "NATIVE_TEST_INPUT.json"
+}

@@ -56,7 +56,13 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 1. Finish Windows administrator Copy recovery: the externally anchored durable
    cohort coordinator and original caller's canonical registry/profile/receipt,
    Undo and cleanup bridge. Kernel process/TokenUser binding is implemented;
-   original-caller registry authority is still separate work. Never interpret a
+   original-caller registry authority is still separate work. The explicit-token
+   registered Local AppData locator now passes strict Windows lint, an ordinary
+   same-user native poisoned-environment/process-exit check and four existing pipe
+   regressions (`caller-profile-current/ACCEPTANCE.json`). It creates no directories
+   and grants no recovery-registry authority. Alternate-admin/package-context,
+   native registry ownership and coordinator binding remain required; administrator
+   Copy stays disabled. Current downloads remain Linuxbee/Windows8e. Never interpret a
    missing member ID as completed deletion or unknown recovered history as a
    completed original batch. Native crash/restart and changed-peer/root/case/ACL
    refusals must precede enabling administrator Copy.

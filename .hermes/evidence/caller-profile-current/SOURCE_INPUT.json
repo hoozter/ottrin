@@ -1,0 +1,13 @@
+{
+  "reference_commit": "88cbc6e98b68cf461f69636e0e31e0c0cea16ebe",
+  "working_tree": "dirty source component; current deliverables remain8e",
+  "files": {
+    "Cargo.toml": "563448b81efed23c72114fce8537b49ace937c517f6c6c6c9af1cce8f89fc9c1",
+    "Cargo.lock": "a1f7e66afdcd218047dfe67573ea05fa960c5f911250307fee87698ec198c66c",
+    "crates/ottrin-platform/Cargo.toml": "c1d1bf22cc36db09af5ecd160db9c76bb2877eb17ba74cdb859892b902d9e011",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "5dfa8bf28a2935e19836081b6f9904c38804d7658e7453d7fa3fba2c500f8846",
+    "crates/ottrin-platform/src/windows_pipe.rs": "18c9e391d5bdc210733a25f1689a4e30b298c1a78ec06b7fc7b52756717d1b31",
+    "crates/ottrin-platform/src/windows_fs/identity.rs": "3ceb5fc2832a646896e459ee3704934dd7d110a23e5aa232fc368a3200fd9c09"
+  },
+  "scope": "Read-only original-caller profile locator; no registry/coordinator/elevation/Copy enablement"
+}

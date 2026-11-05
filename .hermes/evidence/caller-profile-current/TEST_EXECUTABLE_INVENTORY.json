@@ -1,0 +1,62 @@
+[
+  {
+    "file": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-2d2ee2db8e90bb8b.exe",
+    "bytes": 493002341,
+    "mtime_ns": 1793857397328548096,
+    "links": 1,
+    "current": false,
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-2d2ee2db8e90bb8b/test-lib-ottrin_platform.json",
+    "profile": 4539089746505721204,
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 8200324069407742093,
+    "dependencies": 14
+  },
+  {
+    "file": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-470ab05b74f61b7c.exe",
+    "bytes": 478013920,
+    "mtime_ns": 1793823641005887075,
+    "links": 1,
+    "current": false,
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-470ab05b74f61b7c/test-lib-ottrin_platform.json",
+    "profile": 4539089746505721204,
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 8200324069407742093,
+    "dependencies": 14
+  },
+  {
+    "file": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+    "bytes": 498888271,
+    "mtime_ns": 1793898680602074208,
+    "links": 1,
+    "current": true,
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-d1588445e089e3c2/test-lib-ottrin_platform.json",
+    "profile": 4539089746505721204,
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 8200324069407742093,
+    "dependencies": 15
+  },
+  {
+    "file": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.exe",
+    "bytes": 1126296969,
+    "mtime_ns": 1792264400607319479,
+    "links": 1,
+    "current": false,
+    "fingerprint": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-e2d6933b1ac22a07/test-lib-ottrin_platform.json",
+    "profile": 1722584277633009122,
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 8200324069407742093,
+    "dependencies": 14
+  }
+]
