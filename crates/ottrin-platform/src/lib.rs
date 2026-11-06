@@ -4,7 +4,7 @@ mod file_uri;
 mod helper_protocol;
 #[cfg(target_os = "linux")]
 pub mod native_desktop;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub mod privileged_copy;
 #[cfg(target_os = "windows")]
 pub mod windows_pipe;

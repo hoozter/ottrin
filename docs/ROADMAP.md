@@ -53,115 +53,55 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `8d49b17c` passes all four hosted jobs in
+Published source `4861b17a` passes all four hosted jobs in
+[run42247139035](https://github.com/hoozter/ottrin/actions/runs/42247139035).
+Its preceding `8d49b17c` also passes all four jobs in
 [run42237479342](https://github.com/hoozter/ottrin/actions/runs/42237479342).
-Its preceding `c3aacd51` also passes all four hosted jobs in
-[run42229716307](https://github.com/hoozter/ottrin/actions/runs/42229716307),
-including the corrected immutable Linux portal fixture. Earlier source
-`e3417b61` also passes all four hosted jobs in
-[run42210630346](https://github.com/hoozter/ottrin/actions/runs/42210630346).
-Its preceding `72f21c52` also passes all four jobs in
-[run42203809953](https://github.com/hoozter/ottrin/actions/runs/42203809953).
-The older red recovery fixture and ineffective DACL-drift fixture are corrected;
-their exact diagnosis and fixture-only patches remain in
-`caller-cleanup-current/HOSTED_FAILURE.json` and `FIXTURE_CORRECTIONS.patch`.
 Stable application packages retain the separately accepted source scopes above.
-
-The subsequent `d5ab3f33` run
-[42218175273](https://github.com/hoozter/ottrin/actions/runs/42218175273)
-exposed a Linux portal test-fixture launch failure: `Text file busy` while
-executing a newly written chooser script; the other three hosted jobs passed.
-The corrected tests execute an
-immutable checked-in fixture through the unchanged production chooser path.
-All 49 native app tests and 20 parallel portal cycles (80 repeated test passes)
-pass locally, including graceful pipe closure and pinned-pidfd forced termination.
-Strict Linux app/all-target lint passes. This is a fixture correction, not a
-changed production portal or a replacement for hosted acceptance. Evidence:
-`.hermes/evidence/caller-public-cleanup-current/HOSTED_FAILURE.json`,
-`LINUX_TEST_INPUT.json` and `LINUX_PORTAL_STRESS.json` in the same directory.
+The earlier Linux portal `Text file busy` fixture failure is corrected through an
+immutable checked-in chooser fixture. Its source, stress checks and all-green
+hosted result remain in `caller-public-cleanup-current/`; production portal
+behaviour was unchanged. Historical component receipts keep their exact scopes.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
-   Implemented engine components retain original-caller authority through canonical
-   registry/profile admission, private claims/staging/journals, native permission
-   plans, completion receipts, source-free Resume/Undo, original retention and
-   restoration, registry discovery, and retained-payload/metadata cleanup.
-   These bounded controls do not complete the dispatcher or package/UAC acceptance.
+   The shared native engine retains original-caller authority through canonical
+   profile/registry admission, private claims/staging/journals, source pins,
+   destination permission plans, completion receipts, source-free Resume/Undo,
+   original retention/restoration, discovery, cleanup and terminal name release.
+   These implemented components do not establish packaged or alternate-admin UAC
+   acceptance. Their contracts and bounded native evidence are maintained in
+   [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md).
 
-   Current cohort work passes eight native caller scenarios: actual file/directory
-   sources, mixed retained-original/post-Undo copied-payload cohorts, and caller-owned
-   shared root-file/directory-child aliases, each with direct or interrupted recovery.
-   They cover cancellation/wrong-process refusal, fresh same-client admission,
-   private external log lifecycle, ordered metadata retirement and public/source/
-   preferences/index preservation. Shared cases retain an outside alias and a local
-   duplicate; the public overwrite guard still refuses overlapping work. Historical
-   retained alias states use explicit lower-level fixture transitions.
-   Verification passes 164 tests across 87 invocations: 120/43 on the focused
-   build, then the paired caller/helper and all 42 additional ordinary group/cohort
-   parents on a rebuilt shared-fixture source. All 11 production file hashes and
-   existing caller fixture bodies are unchanged between builds. Together the runs
-   cover all 54 selected metadata/group/cohort parent tests, with exact source,
-   compiler profile, native executable text and role separation recorded.
-   Strict Windows platform/UI lint and independent owned VM/disks/private desktop/
-   profile/process teardown pass. Current receipt:
-   `.hermes/evidence/caller-cohort-current/ACCEPTANCE.json`.
+   Engine base `4861b17a` retains the full caller registry binding through
+   end-attempt/name-release admission. Edited or unknown retained payloads stay
+   untouched; divergent journals remain refused. Its exact native component scope
+   and fixture correction remain in `.hermes/evidence/caller-terminal-current/`.
 
-   Earlier payload (200 passes/123 invocations, including all 91 non-worker cleanup
-   parents) and metadata (120/43) receipts retain their exact source scopes in
-   `caller-cleanup-current/ACCEPTANCE.json` and
-   `caller-metadata-retirement-current/ACCEPTANCE.json`. They are overlapping
-   component coverage, not an additive whole-product test count. Detailed prior
-   authority, permission, claim, staging, publication, receipt and recovery contracts
-   remain in [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md) and their receipts.
-
-   Public caller cleanup, pending-cohort recovery and cleanup status discovery
-   now retain canonical registry authority. Ten native caller flows pass through
-   public single-member, mixed and shared plans for file/directory sources, with
-   cancellation, original cohort IDs, idempotent completion and foreign-root
-   refusal. Four payload/metadata discovery pairs preserve journals and cancellation.
-   All 16 top-level native invocations pass: the ordinary client, SYSTEM helper
-   and all 14 selected ordinary configured/pending/discovery regression parents.
-   Strict Windows platform/UI lint and independent VM/disks/private desktop/profile/
-   process teardown pass. The first native run correctly refused cleanup after
-   deliberately incomplete journal fixtures; reordering those fixtures preserved
-   every case and the production dependency guard. Exact source/build binding,
-   failure diagnosis, continuity and final acceptance are retained in
-   `.hermes/evidence/caller-public-cleanup-current/ACCEPTANCE.json` and its receipts.
-
-   The public caller path/conflict entry point now uses the shared dispatcher.
-   Its original Source admission retains authority and native handles; canonical
-   registry provisioning borrows those same pins. Native first-time setup passes
-   cancellation, relative-source, profile-overlap and wrong-authority refusal
-   before writes, plus successful creation/public Undo/cleanup with existing
-   preferences/index preservation. Eight file/directory creation/Skip/Rename/
-   Overwrite cases pass source pinning and applicable stream/preserved-metadata
-   comparison, distinct copied IDs, receipt refresh, idempotent public Undo, cleanup
-   and exact original restoration. The two Skip cases return no receipt and leave
-   the original and journal catalog unchanged. All 16 top-level invocations pass, including all five
-   ordinary dispatcher and nine registry/namespace parents. Strict Windows
-   platform/UI lint and independent owned teardown pass. Scope and inputs:
-   `.hermes/evidence/caller-dispatch-current/ACCEPTANCE.json`.
-   This is native engine/API acceptance; advertised administrator Copy stays off.
-
-   Caller end-attempt and terminal name-release plans now retain runtime authority
-   and the complete original registry binding. Four Undone/CleaningUp cases preserve
-   edited/unknown payloads under exclusive root leases, leave both journals unchanged
-   and permit only confirmed name reuse. Twelve file/directory creation/overwrite
-   cases cover cancellation, stale refusal, direct termination, complete paired-prefix
-   recovery and divergent-prefix refusal without repair. Sources, public originals,
-   preferences/index identities, bytes and security remain preserved. All 13 native
-   top-level invocations pass: ordinary client, full SYSTEM caller role and all
-   eleven abort/name-release/claim-repair/dependency parents. Strict Windows
-   platform/UI lint and independent owned teardown pass. The first fixture correctly
-   refused a writer flush through an inspection-only registry; corrected writer
-   admission keeps every production flush/access check. Exact source reconstruction,
-   diagnosis and final acceptance: `.hermes/evidence/caller-terminal-current/`.
+   Current helper routing passes 46 actual framed Copy/history/Undo/cleanup
+   commands between an ordinary user and a distinct SYSTEM helper. File/directory
+   creation, Skip, Rename, retained-overlap refusal and independent Overwrite pass;
+   Undo restores original native identities, security and bytes. Invalid selections
+   preserve history; a later batch failure retains its earlier actionable receipt.
+   Exactly the two expected persistent target-claim controls are admitted through
+   the original caller, while ambient Process authority refuses them. Other parent
+   entries remain unchanged. All 13 top-level native invocations pass, including
+   the existing caller engine matrices and all 11 ordinary terminal-recovery
+   regression parents; these are overlapping component checks, not additive whole-
+   product coverage. Strict Windows platform/UI lint and helper compilation pass,
+   as do six Linux privileged Copy regressions and strict Linux platform lint.
+   Independent VM/disks/private desktop/profile/process teardown passes.
+   The two initial fixture assumptions (overwriting a live retained receipt and
+   expecting no persistent claim coordinator) are corrected without weakening
+   production guards. Exact source/build inputs, original failed fixtures,
+   corrections and acceptance: `.hermes/evidence/caller-routing-current/`.
+   Stable application packages are unchanged; administrator Copy stays disabled.
 
    Remaining dependency-ready work, in order:
 
-   - Complete helper command/history/recovery routing through the authenticated
-     caller APIs; keep the original caller rather than the ambient helper profile
-     for all operations and partial batch results. Advertised administrator Copy
-     stays disabled until its remaining native and package/UAC gates pass.
+   - Connect explicit Resume, end-attempt and name-release helper commands and
+     their recovery presentation through
+     the same authenticated caller. Connect operation Stop/progress before exposing
+     the feature. Keep history and partial batch results honest.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and the original-retention/restoration failure matrix,
      including readonly original roots.
@@ -169,7 +109,7 @@ changed production portal or a replacement for hosted acceptance. Evidence:
      a context of the same live client does not establish process-restart recovery.
    - Prove alternate-administrator UAC, in-place TokenOwner mutation, caller symbolic
      links and packaged/profile contexts. Existing hard-link cases do not close
-     these gates.
+     these gates. Advertised administrator Copy remains disabled until they pass.
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits; personal authentication,
@@ -179,8 +119,11 @@ changed production portal or a replacement for hosted acceptance. Evidence:
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
-   have bounded acceptance; List/Grid representation, miniature corner scaling,
-   inspector role ownership and whole-interface alignment/grouping remain open.
+   have bounded acceptance; List/Grid representation, miniature window edge clipping
+   and radius/border scaling, inspector role ownership and whole-interface alignment/
+   grouping remain open. `appearance_editor.rs::theme_miniature` also still rounds
+   selected rows using the shared radius, while the real `file_row` presenter paints
+   square rows. These are verified source gaps, not completed theme acceptance.
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

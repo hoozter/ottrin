@@ -553,6 +553,32 @@ impl HelperChannel {
         request.validate_protocol().map_err(str::to_owned)?;
         Ok(request)
     }
+    /// Route Copy commands only through the kernel-authenticated original caller.
+    /// Capturing once per request keeps the same authority for the entire batch.
+    /// Feature negotiation remains disabled until package/UAC acceptance passes.
+    pub fn execute_copy_command(
+        &self,
+        command: &ottrin_core::PrivilegedCommand,
+    ) -> Option<PrivilegedResponse> {
+        use ottrin_core::{FileCommand, PrivilegedCommand};
+        if !matches!(
+            command,
+            PrivilegedCommand::File(FileCommand::Copy { .. })
+                | PrivilegedCommand::DiscoverCopyHistory
+                | PrivilegedCommand::UndoCopy { .. }
+                | PrivilegedCommand::CleanupCopy { .. }
+        ) {
+            return None;
+        }
+        Some(match self.caller_copy_context() {
+            Ok(caller) => crate::privileged_copy::execute(Arc::new(caller), command),
+            Err(error) => PrivilegedResponse {
+                status: PrivilegedStatus::Failed,
+                message: Some(error.to_string()),
+                payload: None,
+            },
+        })
+    }
     pub fn caller_copy_context(&self) -> io::Result<CallerCopyContext> {
         CallerCopyContext::capture(Arc::clone(&self.caller))
     }

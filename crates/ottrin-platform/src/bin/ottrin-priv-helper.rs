@@ -95,6 +95,17 @@ fn main() {
         }
     };
 
+    #[cfg(target_os = "windows")]
+    if let IoMode::Pipe {
+        channel: Some(channel),
+        ..
+    } = &mode
+        && let Some(response) = channel.execute_copy_command(&req.command)
+    {
+        write_response(&mut mode, response);
+        return;
+    }
+
     let platform = DefaultPlatform;
     let response = match req.command {
         PrivilegedCommand::File(cmd) => run_file_command(&platform, &cmd),

@@ -1,6 +1,7 @@
 //! Explicit two-principal fixture. Bootstrap/ready files only coordinate this
 //! disposable guest; authority-bearing requests still use the real bound pipe.
 use super::*;
+mod copy_commands;
 use serde_json::{Value, json};
 use std::io::Seek;
 use windows_sys::Win32::Security::{
@@ -330,6 +331,7 @@ fn client() {
     // transport's five-second default. The owned outer actor bounds the test
     // and terminates its process tree; a helper disconnect still fails here.
     pipe.set_io_timeout(Duration::MAX);
+    copy_commands::client(&mut pipe, &root, &source);
     let response: PrivilegedResponse = read_json(&mut pipe).unwrap();
     assert_eq!(response.status, PrivilegedStatus::Success);
     assert!(response.payload.is_none());
@@ -898,6 +900,7 @@ fn system_helper() {
             },
         );
     }
+    copy_commands::serve(&mut channel, &root);
     crate::WindowsCopyRegistry::exercise_caller_terminal_recovery(
         &context,
         &parent,

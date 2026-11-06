@@ -1,12 +1,23 @@
 //! Elevated Copy uses the same durable transactions as ordinary Copy. References
 //! returned over IPC are lookup keys, never deserialized filesystem authority.
-use crate::{DefaultPlatform, PlatformError, PlatformOps};
-use ottrin_core::{
-    ConflictAction, PrivilegedCopyReceipt, PrivilegedPayload, PrivilegedResponse, PrivilegedStatus,
-};
-use std::collections::{BTreeMap, BTreeSet};
+use crate::PlatformError;
+#[cfg(target_os = "linux")]
+use crate::{DefaultPlatform, PlatformOps};
+#[cfg(target_os = "linux")]
+use ottrin_core::ConflictAction;
+use ottrin_core::{PrivilegedCopyReceipt, PrivilegedPayload, PrivilegedResponse, PrivilegedStatus};
+#[cfg(target_os = "linux")]
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+#[cfg(target_os = "linux")]
 use std::path::{Path, PathBuf};
 
+#[cfg(target_os = "windows")]
+mod windows;
+#[cfg(target_os = "windows")]
+pub(crate) use windows::execute;
+
+#[cfg(target_os = "linux")]
 pub fn copy(
     platform: &DefaultPlatform,
     sources: &[PathBuf],
@@ -58,6 +69,7 @@ fn failure(message: String) -> PrivilegedResponse {
 fn selected(ids: &[String]) -> Result<BTreeSet<String>, PlatformError> {
     let selected = ids.iter().cloned().collect::<BTreeSet<_>>();
     if selected.is_empty()
+        || (cfg!(target_os = "windows") && ids.len() > 10_000)
         || selected.len() != ids.len()
         || selected
             .iter()
@@ -70,6 +82,7 @@ fn selected(ids: &[String]) -> Result<BTreeSet<String>, PlatformError> {
     Ok(selected)
 }
 
+#[cfg(target_os = "linux")]
 pub fn undo(ids: &[String]) -> Result<(), PlatformError> {
     let ids = selected(ids)?;
     let observed = crate::discover_retained_copy_transactions()?
@@ -90,6 +103,7 @@ pub fn undo(ids: &[String]) -> Result<(), PlatformError> {
 
 /// Discover only the elevated account's canonical registry. A successful scan
 /// does not retain descriptors or mutation plans across the IPC boundary.
+#[cfg(target_os = "linux")]
 pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>, PlatformError> {
     use ottrin_core::{PrivilegedCopyHistoryEntry, PrivilegedCopyHistoryState};
     let finalizations = crate::discover_retained_copy_finalizations()?;
@@ -163,6 +177,7 @@ pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>
     Ok(history)
 }
 
+#[cfg(target_os = "linux")]
 pub fn cleanup(ids: &[String]) -> Result<(), PlatformError> {
     let mut ids = selected(ids)?;
     // A previous helper may have stopped after removing some central journals.
@@ -204,7 +219,7 @@ pub fn cleanup(ids: &[String]) -> Result<(), PlatformError> {
     plan.begin_finalization()?.finish()
 }
 
-#[cfg(test)]
+#[cfg(all(test, target_os = "linux"))]
 mod tests {
     use super::*;
 

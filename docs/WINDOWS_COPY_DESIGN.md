@@ -12,6 +12,43 @@ cleanup authority are connected and accepted together. Authenticated caller
 context and caller-owned private entry creation/reopen are implemented components;
 they do not complete that transaction or packaged/alternate-administrator gates.
 
+## Authenticated helper command routing
+
+The helper routes Copy, Copy history, Undo and cleanup through its existing
+kernel-authenticated `HelperChannel`. It captures one original-caller context
+per command and retains it for the whole batch. The helper's environment,
+profile and `DefaultPlatform` recovery configuration do not select that registry.
+This routing does not enable the advertised Windows `--copy-recovery` capability.
+
+Copy uses the existing batch-result and native transaction implementations.
+Completed receipts survive a later item failure; Skip counts a completed source
+without inventing a transaction. History independently inspects the caller's
+canonical registry without provisioning it. Its paths and IDs are presentation
+and lookup references, never serialized authority; discovery reports zero for the
+original completed-source count because journals cannot establish skipped items.
+
+Undo validates bounded, unique transaction IDs against fresh caller discovery,
+then re-admits each inverse in reverse request order. Each inverse remains subject to the live overlap and journal guards. Cleanup admits
+the caller's existing cohort writer; interrupted finalization retains the full
+original membership even after some central journals disappear. A partial
+selection of that pending cohort is refused.
+
+The native command fixture sends actual framed requests and responses between an
+ordinary caller and its distinct SYSTEM companion, using the same routing method
+as the helper executable. It checks file/directory conflict handling, reverse
+batch Undo, history before/after recovery, partial batch receipts and invalid
+selection refusal. All 46 framed commands and 13 top-level native invocations
+pass, including the existing caller engine and eleven ordinary recovery parents.
+Independent originals retain their native identities, security and complete bytes;
+only the two expected persistent caller-bound claim controls augment the parent.
+The initial retained-overlap and coordinator fixture assumptions are corrected
+without changing production guards. Exact verification and owned teardown are recorded in
+`.hermes/evidence/caller-routing-current/`. This is the existing wire command set:
+explicit Resume, end-attempt and name-release commands and their UI remain to be
+connected. Operation Stop/progress must also reach the helper before UI enablement.
+Newly authenticated process-restart, alternate-administrator UAC,
+remaining native matrices and packaged acceptance are separate gates.
+
 ## Authenticated private reopen
 
 `CallerCopyContext::open_private_entry` reopens an existing single native component

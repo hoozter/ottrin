@@ -174,6 +174,18 @@ fn parent_directory(path: &Path, initialize: bool) -> Result<Option<File>, Platf
 }
 
 impl AnchoredRoot {
+    #[cfg(test)]
+    pub(crate) fn assert_caller_destination_claims(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+    ) {
+        let authority = Authority::Caller(Arc::clone(caller));
+        let claims = Self::claims(&authority, parent, false).unwrap().unwrap();
+        claims.validate().unwrap();
+        assert!(Self::claims(&Authority::Process, parent, false).is_err());
+        caller.validate().unwrap();
+    }
+
     /// Read-only recovery inspection using this already admitted registry. Caller
     /// registries are independently bound to the kernel-resolved canonical root.
     pub fn retained_with_progress(
