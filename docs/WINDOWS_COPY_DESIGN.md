@@ -302,6 +302,18 @@ bindings. The final 100 tests across 23 native invocations and strict paired
 Windows platform/UI lint pass. Evidence:
 `.hermes/evidence/caller-journals-current/ACCEPTANCE.json`.
 
+Retained copied-tree verification now retains the snapshot/journal's authenticated
+runtime authority. Its shared no-follow source opener uses scoped helper access
+for caller entries, while keeping the same native type, parent and link checks.
+Held payload readers carry that authority through namespace binding checks and
+native destination-permission re-admission; saved records never select an identity.
+The native file and populated-directory fixtures reopen the planned paired journals,
+verify every payload and derive the identical original-token native policy again.
+Ordinary source-free publication/permission replay and receipt/public Undo also
+pass against the shared retained-tree verifier. The latest checkpoint has 102
+passing tests across 25 native invocations and strict paired Windows platform/UI
+lint. Evidence: `.hermes/evidence/caller-retained-tree-current/ACCEPTANCE.json`.
+
 This does not complete caller destination publication/final-permission application,
 original retention/overwrite, receipts or retained discovery/resume/Undo/cleanup.
 The actual dispatcher must retain original source pins and canonical registry

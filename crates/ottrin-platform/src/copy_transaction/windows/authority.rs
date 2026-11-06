@@ -108,18 +108,34 @@ impl Authority {
         access: u32,
         sharing: u32,
     ) -> std::io::Result<File> {
+        self.open_entry(parent, name, Some(directory), access, sharing)
+    }
+    pub(super) fn open_entry(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        directory: Option<bool>,
+        access: u32,
+        sharing: u32,
+    ) -> std::io::Result<File> {
         match self {
-            Self::Process => ordinary_child(parent, name, directory, access, sharing),
+            Self::Process => unsafe {
+                windows_fs::open_relative(
+                    parent,
+                    name,
+                    windows_fs::RelativeOptions {
+                        directory,
+                        create_new: false,
+                        access,
+                        sharing,
+                        security: ptr::null(),
+                    },
+                )
+            },
             Self::Caller(caller) => {
                 caller.validate()?;
                 let file = windows_fs::with_file_privileges(|| {
-                    windows_fs::open_existing_for_caller(
-                        parent,
-                        name,
-                        Some(directory),
-                        access,
-                        sharing,
-                    )
+                    windows_fs::open_existing_for_caller(parent, name, directory, access, sharing)
                 })?;
                 caller.validate()?;
                 Ok(file)

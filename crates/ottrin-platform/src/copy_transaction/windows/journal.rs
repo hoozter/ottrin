@@ -2015,6 +2015,7 @@ impl Journal {
         // Restoration must remain possible even if that private copy changed.
         let candidate = if direction == OriginalMove::Retain && name == from {
             let tree = HeldTree::open(
+                &self.authority,
                 &self.parent_dir,
                 &self.state,
                 self.header.candidate_name(),
@@ -2871,6 +2872,7 @@ impl PermissionStage {
                     != journal.state.rename_expected(RenameKind::Publish)?.created
             {
                 let proof = HeldTree::open(
+                    &journal.authority,
                     parent,
                     &journal.state,
                     target.clone(),
@@ -2881,6 +2883,7 @@ impl PermissionStage {
                 journal.finish_creation(RenameKind::Publish, &root)?;
                 drop(proof);
                 let proof = HeldTree::open(
+                    &journal.authority,
                     parent,
                     &journal.state,
                     target.clone(),
@@ -3544,7 +3547,14 @@ impl<'a> RetainedStage<'a> {
             ));
         }
         let root_name = snapshot.root_name(parent)?;
-        let tree = HeldTree::open(parent, &snapshot.state, root_name, None, &mut progress)?;
+        let tree = HeldTree::open(
+            &snapshot.authority,
+            parent,
+            &snapshot.state,
+            root_name,
+            None,
+            &mut progress,
+        )?;
         let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
         let result = Self {
             parent,
@@ -3611,11 +3621,13 @@ fn validate_stage_entries(stage: &File) -> Result<(), PlatformError> {
 /// explicitly owned Undo epoch. Windows requires descendant readers to close
 /// for a directory rename; all frozen versions are revalidated after that handoff.
 struct HeldTree {
+    authority: Authority,
     entries: Vec<RetainedEntry>,
     root_name: OsString,
 }
 impl HeldTree {
     fn open(
+        authority: &Authority,
         parent: &File,
         state: &State,
         root_name: OsString,
@@ -3647,7 +3659,7 @@ impl HeldTree {
             };
             let handle = match (index, root_capability) {
                 (0, Some(capability)) => std::fs::File::try_clone(capability).map_err(io)?,
-                _ => namespace::open_source(owner, &name, None)?,
+                _ => namespace::open_source_with(authority, owner, &name, None)?,
             };
             let evidence = node.staged.as_ref().unwrap();
             if state.permissions == security::PermissionProgress::default() {
@@ -3667,7 +3679,11 @@ impl HeldTree {
                 children: std::mem::take(&mut children[index]),
             });
         }
-        Ok(Self { entries, root_name })
+        Ok(Self {
+            authority: authority.clone(),
+            entries,
+            root_name,
+        })
     }
     fn derive_destination_security(
         &self,
@@ -3680,7 +3696,7 @@ impl HeldTree {
             .as_ref()
             .map(|plan| plan.at_root(&self.root_name));
         let plan = security::TreeSecurityPlan::capture_at(
-            &super::authority::Authority::Process,
+            &self.authority,
             parent,
             state
                 .nodes
@@ -3736,7 +3752,8 @@ impl HeldTree {
             } else {
                 OsString::from_wide(&node.name)
             };
-            bound(owner, &name, entry.observed.identity)?;
+            self.authority
+                .binding(owner, &name, entry.observed.identity)?;
             namespace::validate_single_link(&entry.handle)?;
             state.validate_final_version(index, &entry.observed, &self.root_name)?;
             if super::version(&entry.handle)? != entry.observed {
@@ -3935,6 +3952,7 @@ fn undo_bound_copy(
         return Err(io("Copy withdrawal epoch changed at writer handoff"));
     }
     let mut tree = HeldTree::open(
+        &snapshot.authority,
         parent,
         &snapshot.state,
         root_name,
@@ -3966,6 +3984,7 @@ fn undo_bound_copy(
         }
         root = journal.reopen_readonly(0, parent, &candidate, root, &mut progress)?;
         tree = HeldTree::open(
+            &journal.authority,
             parent,
             &journal.state,
             candidate,
@@ -3984,6 +4003,7 @@ fn undo_bound_copy(
         journal.finish_creation(RenameKind::Withdraw, &root)?;
         drop(tree);
         tree = HeldTree::open(
+            &journal.authority,
             parent,
             &journal.state,
             journal.header.candidate_name(),

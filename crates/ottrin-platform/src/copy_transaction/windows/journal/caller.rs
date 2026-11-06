@@ -177,7 +177,14 @@ pub(in super::super) fn exercise_caller_journals(
     .unwrap();
     assert!(snapshot.state.planned.is_some());
     assert_eq!(snapshot.bytes, planned);
-    drop(snapshot);
+    let retained =
+        RetainedStage::from_snapshot(&parent, manager.root(), snapshot, |_| Ok(())).unwrap();
+    assert_eq!(retained.entry_count(), source_evidence.entries.len());
+    let recovered_plan = retained.plan_destination_security(|| Ok(())).unwrap();
+    assert_eq!(recovered_plan.evidence(), evidence);
+    recovered_plan.validate().unwrap();
+    retained.revalidate(|_| Ok(())).unwrap();
+    drop((retained, recovered_plan));
     // Begin-only records permit reservation release, whether already published
     // or left at the complete preparation name. An intent forbids that release.
     struct ResetFault;

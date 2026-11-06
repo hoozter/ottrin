@@ -1,0 +1,42 @@
+{
+  "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+  "status": "pass owned SYSTEM companion",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... caller journal source_directory=false: staging, reopen, plan and three Begin recovery cases passed\ncaller journal source_directory=true: staging, reopen, plan and three Begin recovery cases passed\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 18.94s\n\n",
+      "case": "caller private helper",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (3476) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::windows_native_copy_final_link_dacl_does_not_change_populated_targets ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.13s\n\n",
+      "case": "SYSTEM native symbolic-link security",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 13 tests\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_accepts_regular_root_and_rejects_occupied_directory ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_budget_preflight_and_known_links_never_follow_targets ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_cancellation_retains_partial_candidate_and_original ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_candidate_and_source_child_changes_are_retained ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_candidate_stream_tampering_is_not_overwritten ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_child_rebinding_preserves_original_and_replacement ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_pinned_roots_survive_ancestor_alias_retarget ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_read_only_source_acl_needs_no_delete_or_write_access ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_refuses_destination_inside_source_before_child_creation ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_stages_populated_unicode_raw_names_streams_and_metadata ... ok\ntest copy_transaction::windows::tree::tests::windows_native_existing_tree_cancellation_and_budget_leave_original_intact ... ok\ntest copy_transaction::windows::tree::tests::windows_native_existing_tree_freezes_streams_security_and_original_aliases_readonly ... ok\ntest copy_transaction::windows::tree::tests::windows_native_existing_tree_refuses_changed_original_evidence_without_normalizing ... ok\n\ntest result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 566 filtered out; finished in 11.02s\n\n",
+      "case": "native tree regressions with symbolic-link capability",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 4 tests\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_link_policies_match_native_links_without_targets ... ok\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_projects_final_inheritance_against_kernel_trees ... ok\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_refuses_bad_graphs_and_cancels_without_mutation ... ok\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_revalidates_parent_private_permissions_and_membership ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 575 filtered out; finished in 0.17s\n\n",
+      "case": "native whole-tree security-plan regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.02s\n\n",
+      "case": "SYSTEM destination default-DACL regression",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.05s\n\n",
+      "case": "SYSTEM native audit-SACL security",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

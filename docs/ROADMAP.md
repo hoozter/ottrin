@@ -59,7 +59,7 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current native component acceptance: 100 top-level passes across 23 invocations,
+   Current native component acceptance: 102 top-level passes across 25 invocations,
    using ordinary-user and SYSTEM roles. Registry/private staging share explicit
    authority; real tree/payload staging and required naming policy pass. Final
    permission plans now retain caller authority, derive the whole graph from one
@@ -89,8 +89,13 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    preferences/index bytes, identities and permissions and full source evidence
    remain unchanged. Directory-source overlap admission now retains scoped helper
    access while inspecting private registry ancestry, before any initialization.
-   Current receipt: `caller-journals-current/ACCEPTANCE.json`; prior claim and final
-   permission receipts retain their original scopes. These are component controls,
+   Retained copied-tree reopening now keeps that runtime authority through native
+   no-follow reads, content and namespace verification and original-token permission
+   re-admission. Actual file and four-entry directory recovery derive the exact
+   previously planned native policy; ordinary source-free publication and public
+   Undo regressions pass with the shared verifier. Current receipt:
+   `caller-retained-tree-current/ACCEPTANCE.json`; prior paired-journal, claim and
+   final-permission receipts retain their original scopes. These are component controls,
    not completed caller Copy, whole retained recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
    registry admission through the entire operation; caller-aware destination

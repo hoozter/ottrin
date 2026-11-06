@@ -1,0 +1,33 @@
+{
+  "status": "complete owned native fixture and build cleanup",
+  "baseline": "BASELINE.json",
+  "target_bytes_after": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30176128209,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48864941838
+  },
+  "target_byte_changes": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 567099,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 3675613
+  },
+  "obsolete_incremental_sessions_removed": 11,
+  "measured_incremental_reclaimed": "1.83 GiB",
+  "consumed_outputs_removed": 6,
+  "final_incremental_candidates": 0,
+  "retained_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-retained-tree-current",
+      "purpose": "Compact source/build/native/cleanup acceptance evidence and reusable bound fixture scripts; no VM, staging, bootstrap controller or screenshots remain"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Shared useful compiler caches and current same-configuration platform/UI test binaries; source/artifact bindings retained"
+    }
+  ],
+  "remaining_task_created_disposable_storage": [],
+  "packages": "PRESERVED_PACKAGES.json",
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471267528704 26207727616  95% /\n"
+}

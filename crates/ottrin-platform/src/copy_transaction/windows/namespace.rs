@@ -238,21 +238,20 @@ pub(super) fn open_source(
     name: &OsStr,
     directory: Option<bool>,
 ) -> Result<File, PlatformError> {
+    open_source_with(&Authority::Process, parent, name, directory)
+}
+
+pub(super) fn open_source_with(
+    authority: &Authority,
+    parent: &File,
+    name: &OsStr,
+    directory: Option<bool>,
+) -> Result<File, PlatformError> {
+    authority.validate()?;
     let expected = directory_identity(parent)?;
-    let file = unsafe {
-        windows_fs::open_relative(
-            parent,
-            name,
-            RelativeOptions {
-                directory,
-                create_new: false,
-                access: FILE_GENERIC_READ,
-                sharing: FILE_SHARE_READ,
-                security: ptr::null(),
-            },
-        )
-    }
-    .map_err(io)?;
+    let file = authority
+        .open_entry(parent, name, directory, FILE_GENERIC_READ, FILE_SHARE_READ)
+        .map_err(io)?;
     let identity = stable_identity_from_handle(&file).map_err(io)?;
     let correct_type = match directory {
         Some(true) => identity.is_directory_without_reparse(),

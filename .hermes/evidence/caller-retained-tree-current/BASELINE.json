@@ -1,0 +1,10 @@
+{
+  "sizes": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30175561110,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48861266225
+  },
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471236497408 26238758912  95% /\n",
+  "purpose": "Caller-authority retained-tree recovery verification; shared compiler caches, owned native fixture teardown."
+}

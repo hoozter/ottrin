@@ -1,0 +1,42 @@
+{
+  "source": {
+    "reference_commit": "e8ebcc6fb8e1b9a865df1aa316c030353298a80f",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "7cd017ad9dea62e86931d900350f652a9709ea6d0b60ef6136abe1e92bc25567",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "b3c9b6f1a11fda3bb30cd6b957c1a9daa722f2dc51a00e969d61de8729def27c",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "377eb61a510d14cf363b0660802c1f5184fe3384030a1b95f20ff1f08825ff86",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "88c3c30d1e3689ee55fecb8a43b6c2f872a53cd98e440cdb3d08dbbf6ce52db1",
+      "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "5e808894754f2dac7fecdda7ba278cf1e2887a1c0e8a392af82bbe23870764e7"
+    },
+    "scope": "Retained copied-tree reopening, content/binding checks and destination permission re-admission retain runtime caller authority. No caller publication/receipt/Undo/dispatcher completion."
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "a78bef281255f67123e3578adf1bc868789cc747f5b37f3da8b4478af4a4ac15",
+      "bytes": 772332732,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    },
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "6cc51db075db3ab430dced577e54233a048424d5fd26280373ed3b1f2feedc2b",
+      "bytes": 548678433,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    }
+  ],
+  "compiler_jsonl_sha256": "24f2c5ca006d6b993f55819450ba799a45aadbcd50ce665981ad8dd3318b80fe"
+}

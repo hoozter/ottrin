@@ -1041,6 +1041,7 @@ impl<'a> HeldCleanup<'a> {
         let header = state.header.as_ref().unwrap();
         let payload = if state.undo_complete() {
             Payload::Copy(HeldTree::open(
+                &snapshot.authority,
                 parent,
                 state,
                 header.candidate_name(),
