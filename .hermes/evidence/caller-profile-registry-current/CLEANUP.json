@@ -1,0 +1,34 @@
+{
+  "status": "complete owned teardown and consumed-output cleanup",
+  "observed_at": "2026-11-06T01:25:22.149181+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "shared_root_bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 31113874466,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48839397386
+  },
+  "obsolete_incremental_sessions_removed": 33,
+  "measured_incremental_reclaim_lower_bound_bytes": 3126317056,
+  "partial_batch_accounting": "Six first-pass removals recorded in REPARSE_INCREMENTAL_LEDGER.json lack an aggregate filesystem delta; omitted from measured reclaim. Remaining five retry removals have their own successful receipt.",
+  "available_bytes": 25814163456,
+  "owned_native_scopes": [
+    "native-initial/OWNER.json",
+    "native-owner-fixture/OWNER.json",
+    "native-final/OWNER.json"
+  ],
+  "independent_checks": "All three disposable guest disk/desktop/profile/fixture sets absent; protected bases remain off. Actual volume inventory checked.",
+  "consumed_outputs_removed": "Thirteen exact paths in CLEANUP_REMOVALS.json, through guarded helper. No permission/inspection/storage guard bypass.",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current",
+      "bytes_before_final_receipts": 1014329,
+      "purpose": "Compact source/build/native/failure/teardown receipts and reproducible actors; compiler JSONL and viewer text diagnostics preserve provenance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Shared compiler caches and newest same-configuration paired Windows platform/UI test artifacts for remaining metadata/transaction integration. No extra target tree."
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

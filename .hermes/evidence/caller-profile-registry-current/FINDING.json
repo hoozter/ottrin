@@ -1,0 +1,8 @@
+{
+  "status": "native profile construction/preservation checks pass; controlled fixture mutations corrected",
+  "initial": "native-initial/RESULT.json: production admission/preservation/ancestor-DACL checks passed before populated-directory rename under the helper was denied",
+  "owner_fixture": "native-owner-fixture/RESULT.json: ordinary-user state/registry writes also passed; populated-directory rename remained denied with descendants open",
+  "correction": "Place the redirection/refusal fixture before real application-data creation; remove only the owned link, confirm target unchanged, then create real existing files under the original user token. No production permission/validation changes for these fixture corrections.",
+  "final": "native-final/RESULT.json: all27 named passes across9 invocations; both caller/kernel roles and all assertions complete",
+  "allocation": "ALLOCATION_RETRY.json and REPARSE_INCREMENTAL_LEDGER.json preserve storage/process-gap refusal and exact partial/retry accounting"
+}

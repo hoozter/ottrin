@@ -1,0 +1,49 @@
+{
+  "source": {
+    "reference_commit": "eb62456de63679b0c2117470e41ad3f416f27796",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction.rs": "f26c127869bf8576fca025ba60300561d1422e0ad1b7efa668df22184399d879",
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "0612ca731e4ac01dfeeffcc25e47b563285a9b1883ee8e9cc9a396e45d17df40",
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "fdb19ae0c5b2134ecfd820de63fc70d437520641cf069def533f1fe3931eb890",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "80a5aea18d56785b73b686dcae679db96cc24b3eba32cffb252fbf3161ef069a",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "ed933f43626b747dcd156b49f3c79b11f41ec93f7f0b37c6373ab10c45c56ac8",
+      "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "ec8e049961a20023a6de95945741730d37cec99116c24f06565de29e5582bb55",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/caller_profile.rs": "5f998f14459cb3ace204d9680a6beb0ea2c50f9cb49937ffd8c6c60efa63b597",
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "e963894a852a771cfa2900067cdd49fb166541f32fe4c8c4b0a6dfe544dc40ec",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "ba0121642b5d7b1d5eb00b9e6c94569aad0cb7e528fb223add378bb8483306c6"
+    },
+    "scope": "Kernel profile ancestry, source overlap before provisioning, existing user-data preservation, real ancestor DACL/redirection refusal, strict ancestry binding schema, valid large codec and torn cohort replay; no full helper Copy or package acceptance"
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "a9431b6dfd552e6e2a2cf6747febc30ff0a4bf3f3113c7968366771f655fa343",
+      "bytes": 772265445,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": []
+    },
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "fc338b538a1aa1048977cede861bd7611bf0fb2473e37cb1d52778a05462782b",
+      "bytes": 545628503,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": []
+    }
+  ],
+  "build_exit": 0,
+  "command": "cargo test -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --lib --no-run --message-format=json"
+}

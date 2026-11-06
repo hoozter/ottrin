@@ -38,6 +38,7 @@ struct Anchor {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Binding {
+    ancestry: Vec<security::CallerDirectoryBinding>,
     anchor: Anchor,
     marker_security: security::PrivateSecurity,
     parent_location: Vec<u16>,
@@ -48,6 +49,7 @@ pub(super) struct Binding {
 /// Held registry admission. Private creation/reopen retains its authenticated
 /// caller authority; this alone does not admit a Copy transaction or cleanup.
 pub struct AnchoredRoot {
+    ancestry: Option<Arc<security::CallerRegistryParent>>,
     authority: Authority,
     root: File,
     anchor_name: OsString,
@@ -301,6 +303,64 @@ fn parent_directory(path: &Path, initialize: bool) -> Result<Option<File>, Platf
 }
 
 impl AnchoredRoot {
+    pub(crate) fn for_caller_profile(
+        caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        sources: &[PathBuf],
+        initialize: bool,
+    ) -> Result<Option<Self>, PlatformError> {
+        caller.validate().map_err(io)?;
+        if (initialize && sources.is_empty()) || sources.len() > super::MAX_COPY_ENTRIES {
+            return Err(io(
+                "Caller registry initialization needs a bounded nonempty source selection",
+            ));
+        }
+        let path = caller
+            .local_app_data()
+            .map_err(io)?
+            .join("Ottrin")
+            .join("State")
+            .join("copies");
+        let mut admitted = Vec::with_capacity(sources.len());
+        for source in sources {
+            if !source.is_absolute()
+                || source.components().any(|c| {
+                    matches!(
+                        c,
+                        std::path::Component::ParentDir | std::path::Component::CurDir
+                    )
+                })
+            {
+                return Err(io(
+                    "Caller Copy source requires an unambiguous absolute path",
+                ));
+            }
+            let source = super::dispatch::Source::open(source)?;
+            source.reject_overlap(&path, true, &mut |_| caller.validate().map_err(io))?;
+            admitted.push(source);
+        }
+        let Some(parent) = caller.registry_parent(initialize).map_err(io)? else {
+            return Ok(None);
+        };
+        caller.validate_registry_parent(&parent).map_err(io)?;
+        for source in &admitted {
+            source.validate()?;
+        }
+        let mut root = Self::for_caller(
+            parent.state()?.try_clone().map_err(io)?,
+            Arc::clone(&caller),
+            initialize,
+        )?;
+        if let Some(root) = &mut root {
+            root.ancestry = Some(Arc::new(parent));
+            root.validate()?;
+        }
+        for source in &admitted {
+            source.validate()?;
+        }
+        caller.validate().map_err(io)?;
+        Ok(root)
+    }
+
     /// The engine must independently admit this held parent and reject source
     /// overlap before initialization. No caller-supplied path, SID or saved ACL
     /// selects authority. Missing discovery never provisions state.
@@ -386,7 +446,7 @@ impl AnchoredRoot {
                 "Copy coordinator parent differs from registry admission",
             ));
         }
-        let result = Self::open_under(
+        let mut result = Self::open_under(
             parent,
             OsStr::new(COHORTS_ROOT),
             OsStr::new(COHORTS_ANCHOR),
@@ -394,6 +454,10 @@ impl AnchoredRoot {
             initialize,
             self.authority.clone(),
         )?;
+        if let Some(root) = &mut result {
+            root.ancestry = self.ancestry.clone();
+            root.validate()?;
+        }
         self.validate()?;
         Ok(result)
     }
@@ -559,6 +623,7 @@ impl AnchoredRoot {
             )
             .map_err(io)?;
         let result = Self {
+            ancestry: None,
             authority,
             parent_security: security::owner_group_dacl_digest(&parent)?,
             cases: (
@@ -581,6 +646,10 @@ impl AnchoredRoot {
     pub(super) fn binding(&self) -> Result<Binding, PlatformError> {
         self.validate()?;
         Ok(Binding {
+            ancestry: self
+                .ancestry
+                .as_ref()
+                .map_or_else(Vec::new, |parent| parent.binding()),
             anchor: self.record.clone(),
             marker_security: self.marker_security.clone(),
             parent_location: self.parent_location.as_os_str().encode_wide().collect(),
@@ -636,6 +705,16 @@ impl AnchoredRoot {
     }
     pub fn validate(&self) -> Result<(), PlatformError> {
         self.authority.validate()?;
+        if let Some(parent) = &self.ancestry {
+            match &self.authority {
+                Authority::Caller(caller) => caller.validate_registry_parent(parent).map_err(io)?,
+                Authority::Process => {
+                    return Err(io(
+                        "Caller ancestry requires authenticated caller authority",
+                    ));
+                }
+            }
+        }
         if !self.record.root.is_directory_without_reparse()
             || windows_fs::location(&self.parent).map_err(io)? != self.parent_location
             || stable_identity_from_handle(&self.parent).map_err(io)? != self.record.parent
@@ -673,6 +752,240 @@ impl AnchoredRoot {
 
 #[cfg(test)]
 impl AnchoredRoot {
+    pub(crate) fn exercise_canonical_profile(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        source: &Path,
+        mut as_original_owner: impl FnMut(&mut dyn FnMut()),
+    ) {
+        use std::io::{Seek, Write};
+        use std::os::windows::io::AsRawHandle;
+        use windows_sys::Win32::Security::{
+            Authorization::{SE_FILE_OBJECT, SetSecurityInfo},
+            DACL_SECURITY_INFORMATION, GetSecurityDescriptorDacl,
+            PROTECTED_DACL_SECURITY_INFORMATION,
+        };
+        fn bytes(file: &File) -> Vec<u8> {
+            let mut reader = file.try_clone().unwrap();
+            reader.rewind().unwrap();
+            let mut out = Vec::new();
+            reader.read_to_end(&mut out).unwrap();
+            out
+        }
+        let profile = caller.local_app_data().unwrap().to_path_buf();
+        let app = profile.join("Ottrin");
+        assert!(
+            !app.exists(),
+            "Only the fresh owned guest profile may run this fixture"
+        );
+        assert!(caller.copy_registry(&[], false).unwrap().is_none());
+        assert!(!app.exists());
+        assert!(caller.copy_registry(&[], true).is_err());
+        assert!(
+            caller
+                .copy_registry(&[PathBuf::from("relative-source")], true)
+                .is_err()
+        );
+        let overlap = caller
+            .copy_registry(std::slice::from_ref(&profile), true)
+            .err()
+            .unwrap();
+        assert!(
+            overlap.to_string().contains("outside the source tree"),
+            "{overlap}"
+        );
+        assert!(
+            !app.exists(),
+            "Overlap must be refused before even the first profile directory is created"
+        );
+        // Isolate the reparse refusal while the application entry is absent;
+        // live descendants deliberately keep existing data open later below.
+        let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+        let target = source.parent().unwrap().join("profile-redirect-target");
+        let target_parent = windows_fs::open_directory(
+            target.parent().unwrap(),
+            FILE_GENERIC_READ | FILE_GENERIC_WRITE,
+        )
+        .unwrap();
+        let target_handle = caller
+            .create_private_entry(&target_parent, target.file_name().unwrap(), true, sharing)
+            .unwrap();
+        let mut target_data = caller
+            .create_private_entry(
+                &target_handle,
+                OsStr::new("unrelated-user-data"),
+                false,
+                sharing,
+            )
+            .unwrap();
+        target_data
+            .write_all(b"never follow profile reparse target")
+            .unwrap();
+        target_data.sync_all().unwrap();
+        std::os::windows::fs::symlink_dir(&target, &app).unwrap();
+        for initialize in [false, true] {
+            let selection = if initialize {
+                vec![source.to_path_buf()]
+            } else {
+                Vec::new()
+            };
+            assert!(caller.copy_registry(&selection, initialize).is_err());
+            assert_eq!(
+                windows_fs::directory_children_limited(&target_handle, 8).unwrap(),
+                vec![OsString::from("unrelated-user-data")]
+            );
+            assert_eq!(bytes(&target_data), b"never follow profile reparse target");
+        }
+        std::fs::remove_dir(&app).unwrap();
+        assert_eq!(
+            windows_fs::directory_children_limited(&target_handle, 8).unwrap(),
+            vec![OsString::from("unrelated-user-data")]
+        );
+        assert_eq!(bytes(&target_data), b"never follow profile reparse target");
+        as_original_owner(&mut || {
+            std::fs::create_dir(profile.join("Ottrin")).unwrap();
+            std::fs::write(
+                profile.join("Ottrin/preferences.ini"),
+                b"retain original caller preferences",
+            )
+            .unwrap();
+            std::fs::write(
+                profile.join("Ottrin/index.db"),
+                b"retain original caller index",
+            )
+            .unwrap();
+        });
+        let app_handle = windows_fs::open_directory(&app, FILE_GENERIC_READ).unwrap();
+        let preferences = File::open(app.join("preferences.ini")).unwrap();
+        let index = File::open(app.join("index.db")).unwrap();
+        let old_preferences = bytes(&preferences);
+        let old_index = bytes(&index);
+        let preferences_id = stable_identity_from_handle(&preferences).unwrap();
+        let index_id = stable_identity_from_handle(&index).unwrap();
+        let app_security = security::owner_group_dacl_digest(&app_handle).unwrap();
+        let pref_security = security::owner_group_dacl_digest(&preferences).unwrap();
+        let index_security = security::owner_group_dacl_digest(&index).unwrap();
+        assert!(caller.copy_registry(&[], false).unwrap().is_none());
+        assert!(!app.join("State").exists());
+        let root = caller
+            .copy_registry(&[source.to_path_buf()], true)
+            .unwrap()
+            .unwrap();
+        let binding = root.binding().unwrap();
+        assert_eq!(binding.ancestry.len(), 3);
+        // Ownership alone is insufficient: the original unelevated subject
+        // must be able to write the helper-created state and private registry.
+        as_original_owner(&mut || {
+            std::fs::write(
+                app.join("State/ordinary-user-write-proof"),
+                b"ordinary user retains writable state",
+            )
+            .unwrap();
+            std::fs::write(
+                app.join("State/copies/ordinary-user-write-proof"),
+                b"ordinary user retains writable registry",
+            )
+            .unwrap();
+        });
+        assert_eq!(
+            security::owner_group_dacl_digest(&app_handle).unwrap(),
+            app_security
+        );
+        assert_eq!(
+            security::owner_group_dacl_digest(&preferences).unwrap(),
+            pref_security
+        );
+        assert_eq!(
+            security::owner_group_dacl_digest(&index).unwrap(),
+            index_security
+        );
+        assert_eq!(bytes(&preferences), old_preferences);
+        assert_eq!(bytes(&index), old_index);
+        let root_id = stable_identity_from_handle(root.root()).unwrap();
+        root.writable_root().unwrap().sync_all().unwrap();
+        let coordinator = root.cohorts(true).unwrap().unwrap();
+        assert_eq!(coordinator.binding().unwrap().ancestry, binding.ancestry);
+        let reopened = caller.copy_registry(&[], false).unwrap().unwrap();
+        assert_eq!(reopened.binding().unwrap(), binding);
+        assert_eq!(
+            stable_identity_from_handle(reopened.root()).unwrap(),
+            root_id
+        );
+        let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+        let state = root.ancestry.as_ref().unwrap().state().unwrap();
+        let mut unrelated = caller
+            .create_private_entry(state, OsStr::new("unrelated-user-data"), false, sharing)
+            .unwrap();
+        unrelated.write_all(b"retain unrelated state data").unwrap();
+        unrelated.sync_all().unwrap();
+        let unrelated_id = stable_identity_from_handle(&unrelated).unwrap();
+        root.validate().unwrap();
+        coordinator.validate().unwrap();
+        let root_security = security::owner_group_dacl_digest(root.root()).unwrap();
+        // Real ancestor DACL mutation must invalidate the old held authority and
+        // its saved binding, while leaving the protected registry/data intact.
+        let writable_app = windows_fs::with_file_privileges(|| {
+            windows_fs::open_directory(&app, FILE_GENERIC_READ | WRITE_DAC)
+        })
+        .unwrap();
+        let policy = windows_fs::LocalSecurity::from_sddl("D:P(A;;FA;;;OW)(A;;FR;;;WD)").unwrap();
+        let (mut present, mut defaulted, mut acl) = (0, 0, ptr::null_mut());
+        assert_ne!(
+            unsafe {
+                GetSecurityDescriptorDacl(policy.as_raw(), &mut present, &mut acl, &mut defaulted)
+            },
+            0
+        );
+        assert_eq!(
+            unsafe {
+                SetSecurityInfo(
+                    writable_app.as_raw_handle().cast(),
+                    SE_FILE_OBJECT,
+                    DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    acl,
+                    ptr::null(),
+                )
+            },
+            0
+        );
+        let altered = security::owner_group_dacl_digest(&writable_app).unwrap();
+        assert_ne!(altered, app_security);
+        assert!(root.validate().is_err());
+        assert!(root.writable_root().is_err());
+        assert!(coordinator.validate().is_err());
+        let fresh = caller.copy_registry(&[], false).unwrap().unwrap();
+        assert_ne!(
+            fresh.binding().unwrap(),
+            binding,
+            "Fresh admission cannot extend the old saved ancestry binding"
+        );
+        assert_eq!(
+            security::owner_group_dacl_digest(&writable_app).unwrap(),
+            altered
+        );
+        assert_eq!(
+            security::owner_group_dacl_digest(fresh.root()).unwrap(),
+            root_security
+        );
+        assert_eq!(
+            stable_identity_from_handle(&preferences).unwrap(),
+            preferences_id
+        );
+        assert_eq!(stable_identity_from_handle(&index).unwrap(), index_id);
+        assert_eq!(bytes(&preferences), old_preferences);
+        assert_eq!(bytes(&index), old_index);
+        assert_eq!(bytes(&unrelated), b"retain unrelated state data");
+        assert_eq!(
+            stable_identity_from_handle(&unrelated).unwrap(),
+            unrelated_id
+        );
+        drop((fresh, reopened, coordinator, root));
+        assert_eq!(bytes(&preferences), old_preferences);
+        assert_eq!(bytes(&index), old_index);
+        caller.validate().unwrap();
+    }
+
     pub(crate) fn exercise_caller_authority(
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         protected_parent: &File,

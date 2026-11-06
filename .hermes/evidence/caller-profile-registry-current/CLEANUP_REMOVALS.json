@@ -1,0 +1,98 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-initial/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-initial/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-initial/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-initial/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-owner-fixture/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-owner-fixture/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-owner-fixture/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-owner-fixture/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-final/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-final/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-final/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/native-final/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-profile-registry-current/ci-failure.log",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture or summarized hosted failure log",
+      "evidence": "Flat archive members, exact hashes and parsed native results verified; source/build/failure snapshots and relevant hosted error excerpts retained as compact JSON. Three owned guests/volumes/desktops/profiles/fixtures are removed. Current packages and user data excluded."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    }
+  ]
+}

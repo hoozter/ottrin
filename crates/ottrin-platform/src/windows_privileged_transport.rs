@@ -291,6 +291,55 @@ impl CallerCopyContext {
         self.profile.validate().map_err(io::Error::other)?;
         self.caller.validate()
     }
+    /// Canonical caller profile registry. New provisioning requires a nonempty
+    /// source selection and refuses native overlap before any directory write.
+    /// Existing registry discovery passes an empty selection with initialize=false.
+    pub fn copy_registry(
+        self: &Arc<Self>,
+        sources: &[PathBuf],
+        initialize: bool,
+    ) -> io::Result<Option<crate::WindowsCopyRegistry>> {
+        crate::copy_transaction::WindowsCopyRegistry::for_caller_profile(
+            Arc::clone(self),
+            sources,
+            initialize,
+        )
+        .map_err(io::Error::other)
+    }
+    pub(crate) fn registry_parent(
+        &self,
+        initialize: bool,
+    ) -> io::Result<Option<crate::copy_transaction::CallerRegistryParent>> {
+        self.validate()?;
+        let parent = self
+            .profile
+            .registry_parent(
+                &self.caller.identity.user,
+                &self.caller.identity.owner,
+                initialize,
+                |parent, name| {
+                    self.create_private_entry(
+                        parent,
+                        name,
+                        true,
+                        windows_sys::Win32::Storage::FileSystem::FILE_SHARE_READ
+                            | windows_sys::Win32::Storage::FileSystem::FILE_SHARE_WRITE
+                            | windows_sys::Win32::Storage::FileSystem::FILE_SHARE_DELETE,
+                    )
+                },
+            )
+            .map_err(io::Error::other)?;
+        self.validate()?;
+        Ok(parent)
+    }
+    pub(crate) fn validate_registry_parent(
+        &self,
+        parent: &crate::copy_transaction::CallerRegistryParent,
+    ) -> io::Result<()> {
+        self.validate()?;
+        parent.validate(&self.profile).map_err(io::Error::other)?;
+        self.validate()
+    }
     /// Open the fixed Copy registry under an independently admitted parent.
     /// The returned holder retains this authenticated context for every native
     /// validation/reopen. This does not select the profile ancestry or admit

@@ -1,0 +1,29 @@
+{
+  "status": "exact failing codec regression repaired and passed in all three owned native cases; fresh hosted verification pending",
+  "run_id": 42132867918,
+  "source": "1ba0d8d33947f371dcfb9825f7144853a33a86d2",
+  "url": "https://github.com/hoozter/ottrin/actions/runs/42132867918",
+  "failed_case": "copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority",
+  "raw_log_sha256": "4c6d5342c1b2adb442f88f0dfe76bbed663889f9e73f9169948e16ba92bdf5f8",
+  "raw_log_bytes": 229458,
+  "failure_excerpt": [
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2955833Z ---- copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority stdout ----",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2956168Z ",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2956580Z thread 'copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority' (9176) panicked at crates\\ottrin-platform\\src\\copy_transaction\\windows\\journal.rs:9769:36:",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2957390Z called `Result::unwrap()` on an `Err` value: Io(\"Windows Copy stream staging: invalid Windows Copy staging journal transition or evidence\")",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2957970Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2958287Z ",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2958290Z ",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2958905Z failures:",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2959254Z     copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2959562Z ",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2959818Z test result: FAILED. 493 passed; 1 failed; 85 ignored; 0 measured; 0 filtered out; finished in 1398.16s",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.2960135Z ",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.3114574Z \u001b[1m\u001b[91merror\u001b[0m: test failed, to rerun pass `-p ottrin-platform --lib`",
+    "verify (windows-latest)\tCargo test\t2026-11-06T00:32:18.4162220Z ##[error]Process completed with exit code 1."
+  ],
+  "cause": "The test enlarged final-security ACLs using unused zero padding; canonical logical ACL evidence correctly refuses padding after the earlier capacity fix.",
+  "correction": "Repeat real native ACE sequences and update both logical size and ACE count; require IsValidAcl. Keep aggregate-over-frame, stream decode/state/evidence assertions and production validation unchanged.",
+  "scope": "Synthetic codec/resource fixture only; decoded evidence grants no native file or permission authority.",
+  "final_native": "native-final/RESULT.json"
+}

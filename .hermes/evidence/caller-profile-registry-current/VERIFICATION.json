@@ -1,0 +1,19 @@
+{
+  "status": "pass exact source/build/native result and three owned teardown scopes",
+  "archive_sha256": "aa1b16c161476daa7723706b7538d3967b79d2c3e1b464f7e9d112336bc85052",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "source_build_binding_verified": true,
+  "native_invocations": 9,
+  "named_top_level_passes": 27,
+  "unique_named_cases": 26,
+  "both_kernel_principals": "Original ordinary interactive caller and distinct SYSTEM helper; no UAC/package acceptance",
+  "ordinary_user_write_scope": "Real original-token writes into helper-created State and copies directories succeeded in the same authenticated helper fixture"
+}

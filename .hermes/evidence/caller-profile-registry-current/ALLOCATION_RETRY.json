@@ -1,0 +1,5 @@
+{
+  "initial_refusal": "Before allocation: 25509969920 bytes available, below24GiB. Output contained only DRIVER_SOURCE.py; no VM, volume, profile or test process allocated.",
+  "cleanup_initial_refusal": "Wrapper stopped after six locked removals at an unreadable process3451425; independently confirmed /proc/3451425 absent before retry. Per-entry ledger verifies all six. Five remaining candidates were then removed by the same locked helper.",
+  "cleanup_retry": "No guard/permission bypass; successful REPARSE_INCREMENTAL_CLEANUP.json measures the five-item retry only. REPARSE_INCREMENTAL_LEDGER.json records all11; failed-pass aggregate space delta was not captured."
+}

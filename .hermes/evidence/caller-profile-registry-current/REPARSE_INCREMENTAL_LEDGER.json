@@ -1,0 +1,63 @@
+{
+  "status": "all eleven exact candidates removed across partial pass and retry",
+  "initial_partial_count": 6,
+  "retry_count": 5,
+  "partial_filesystem_delta": "Not captured by the wrapper on failure; do not add inferred bytes to measured reclaim",
+  "removed": [
+    {
+      "time": "2026-11-06T01:14:40.286395+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1ecm900ayg162/s-hnw6o95g0m-1wh9mj3-b045qyx50a9qd9hm6qsnb579f",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:14:41.039085+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kulopz5455sp/s-hnw6mf3wu2-1bdfrde-2zb6esclch4z3s9iu6kaqxxjv",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:14:41.731072+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnw6o95g3j-09a5kdi-bdd6mpeaz6geuic1w1hle63z1",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:14:42.486588+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnw6mf3wey-1b0qr17-5smna1rxzvli4sq30qxo57xgo",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:14:43.191872+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1a9q2k13gmc8n/s-hnw6obnt8l-1xpoazd-6tsactljluaj59qc1vg15th17",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:14:43.887862+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1w4zv3l5rguav/s-hnw6obnq8a-0ve4dtt-bnjcs0gmu9un4j7tof2wjdjm0",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:16:10.130380+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_search-33pm2ixta6i6v/s-hnw6obo0lr-1gsgpz2-dfyuticp7r1gj2xke8dcndkto",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:16:10.882282+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_search-3e9a2i98scben/s-hnw6mgani2-1cgdz5w-c2dmsrlonv5ue21jawtzaxdal",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:16:11.577909+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0jtapt06a26oi/s-hnw6ocg4sg-0acrlk5-1xry04hq7z45r5aduv0wh51xn",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:16:12.272948+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3jepsrbp170x5/s-hnw6ocg4d8-1ljj87h-b7hkw3syzuc0q90xhov57z7ms",
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T01:16:13.047402+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3ljecrdd3b4ww/s-hnw6mgzrw1-08ynetp-cajt3opfw7z9vy9zh4888tlbp",
+      "status": "removed"
+    }
+  ]
+}

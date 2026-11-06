@@ -1,0 +1,83 @@
+{
+  "input": {
+    "source_revision": "eb62456de63679b0c2117470e41ad3f416f27796",
+    "source_test_sha256": "f5ea8115536f2dd1900d8a141d41f0e299ce485339add144094fecba6185331a",
+    "test_sha256": "6799fde2fe90ff861235e6c49c76f5ba8908e5092a55f90a858c24f7657bcf76",
+    "source_bytes": 545625131,
+    "staged_bytes": 524166115,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 408907776,
+      "sha256": "61ea4590c7cfda839ef81c45faf5dabc2b235e7b3080452e56fd28e254ddd810"
+    },
+    "actor_sha256": "39c2c8e7e6d9262fb25479f7f7077f63057db26646c60db6e446d3b72227fa8c",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "1db50faf614134fe122f4649bb38feab54e6ffbad23c4e40ae0910f275a29a59",
+    "changed_product_sources": {
+      "crates/ottrin-platform/src/copy_transaction.rs": "f26c127869bf8576fca025ba60300561d1422e0ad1b7efa668df22184399d879",
+      "crates/ottrin-platform/src/copy_transaction/windows.rs": "0612ca731e4ac01dfeeffcc25e47b563285a9b1883ee8e9cc9a396e45d17df40",
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "fdb19ae0c5b2134ecfd820de63fc70d437520641cf069def533f1fe3931eb890",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "80a5aea18d56785b73b686dcae679db96cc24b3eba32cffb252fbf3161ef069a",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "f872dc8daeb929eb0750dc11f25c9779e4662d2af604880000ea9a9d8665551d",
+      "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "ec8e049961a20023a6de95945741730d37cec99116c24f06565de29e5582bb55",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/caller_profile.rs": "5f998f14459cb3ace204d9680a6beb0ea2c50f9cb49937ffd8c6c60efa63b597",
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "e963894a852a771cfa2900067cdd49fb166541f32fe4c8c4b0a6dfe544dc40ec",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "b7c2055289a1c064a8ed288c41d50998613b3f64cb0dcdcba8c1f4425f138f93"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "system": {
+    "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+    "status": "failed",
+    "error": "SYSTEM native assertions failed: caller private helper",
+    "runs": [
+      {
+        "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::system_helper\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.39s\n\n",
+        "case": "caller private helper",
+        "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (7480) panicked at crates/ottrin-platform/src/copy_transaction/windows/registry.rs:915:42:\ncalled `Result::unwrap()` on an `Err` value: Os { code: 5, kind: PermissionDenied, message: \"Access is denied.\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+        "exit": 101
+      }
+    ],
+    "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 30\r\nat <ScriptBlock>, <No file>: line 1"
+  },
+  "stack": "at Require, <No file>: line 5\r\nat <ScriptBlock>, <No file>: line 31\r\nat <ScriptBlock>, <No file>: line 1",
+  "error": "Native assertions failed: ordinary cross-principal client",
+  "phase": "large canonical security-plan codec regression",
+  "scope": "Ordinary-client/SYSTEM-companion caller registry creation/reopen/coordinator and native security/registry regressions; no full transaction, alternate-administrator UAC or package acceptance",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "failed",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::client ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::client\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 4.11s\n\n",
+      "case": "ordinary cross-principal client",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::client' (6116) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:243:61:\ncalled `Result::unwrap()` on an `Err` value: Error { kind: UnexpectedEof, message: \"failed to fill whole buffer\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 101
+    },
+    {
+      "stdout": "\nrunning 12 tests\ntest copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults ... ok\ntest copy_transaction::windows::security::tests::destination_directory_dacl_and_child_inheritance_match_native_creation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_changed_parent_permissions_without_mutation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_private_stage_as_publication_parent ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_wrong_name_identity_and_type ... ok\ntest copy_transaction::windows::security::tests::destination_security_reports_write_dac_denial_without_changing_bytes_or_acl ... ok\ntest copy_transaction::windows::security::tests::native_acl_evidence_ignores_spare_capacity_but_preserves_access_rules ... ok\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ignored, requires SeSecurityPrivilege; selected explicitly in the native SYSTEM audit lane\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_mandatory_label ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_maximum_allowed_dacl_is_per_object_after_handle_clone ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_permission_handle_rights_do_not_expand_journals_or_sources ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_private_group_drift_is_detected_without_payload_mutation ... ok\n\ntest result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 567 filtered out; finished in 0.30s\n\n",
+      "case": "native Copy security regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 9 tests\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_refuses_policy_drift_and_unanchored_data ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_uses_native_volume_name_rules ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_refuses_self_consistent_new_anchor ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_survives_reopen_and_refuses_case_drift ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_configured_dispatch_discovery_and_source_free_undo ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_provisions_once_and_readers_hold_the_binding ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_refuses_unanchored_partial_and_foreign_state_without_repair ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_rejects_replaced_root_marker_and_parent ... ok\n\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 570 filtered out; finished in 3.23s\n\n",
+      "case": "native registry and namespace regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 12.33s\n\n",
+      "case": "large canonical security-plan codec regression",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

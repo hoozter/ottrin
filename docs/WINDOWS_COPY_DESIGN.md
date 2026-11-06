@@ -52,14 +52,32 @@ part of the original-token transaction integration. Anchor identity, parent loca
 and complete private security still require exact validation. Existing foreign,
 unanchored or altered state is retained and refused, never repaired or adopted.
 
-This constructor requires the engine to admit its parent and reject source overlap
-before initialization. It does not provision the original profile's `Ottrin/State`
-ancestry, convert destination claims or carry authority through all saved
-journal/receipt/Undo/cleanup plans. Ordinary configured entry points retain their
-ordinary-process environment locator; helper entry points must not use it to
-select caller state. Administrator Copy stays disabled pending the complete bridge
-and native alternate-administrator/package acceptance. This section describes the
-source contract; exact native acceptance is recorded separately in the roadmap.
+The low-level constructor requires the engine to admit its parent and reject
+source overlap before initialization. `CallerCopyContext::copy_registry` now
+performs canonical profile admission: it resolves the fixed `Ottrin/State/copies`
+location from the pinned kernel-known profile, pins every selected source and
+rejects native source overlap before creating even the first missing directory.
+New initialization requires a bounded, nonempty absolute source selection.
+Read-only discovery accepts an empty selection and never creates missing ancestry.
+
+Existing `Ottrin` and `State` directories retain their contents and full native
+security; their owner must match the authenticated user or distinct default file
+owner. New directories use caller-derived private creation. Held ancestry pins
+the profile, both fixed native child bindings, locations, full owner/group/DACL
+and case policy. Validation and sibling coordinators retain this ancestry.
+The handle-free registry binding now requires an `ancestry` array: empty for
+ordinary-process roots, three directory records for canonical caller roots.
+Missing cached fields are refused; serialized ACL bytes are never applied.
+Fresh admission with different ancestor evidence cannot extend an earlier saved
+binding. This is source/runtime admission, not full transaction authority.
+
+Original caller authority still needs to reach destination claims, stage/journal,
+required metadata changes, final destination policy, receipts and restored
+Undo/cleanup plans. Ordinary configured entry points retain their ordinary-process
+environment locator; helper dispatch must select the canonical caller factory.
+Administrator Copy remains disabled pending the complete bridge and native
+alternate-administrator/package acceptance. Exact native acceptance is recorded
+separately in the roadmap.
 
 ## Canonical native security evidence
 

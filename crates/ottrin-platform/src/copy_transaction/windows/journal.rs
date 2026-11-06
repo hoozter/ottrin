@@ -9738,8 +9738,26 @@ mod tests {
             if index != 0 {
                 let mut acl: Vec<u8> =
                     serde_json::from_value(entry["final_security"]["dacl"].clone()).unwrap();
-                acl.resize(6000, 0);
-                acl[2..4].copy_from_slice(&6000u16.to_le_bytes());
+                // Large logical evidence must contain occupied ACEs, not spare
+                // allocation capacity: canonical cached ACLs reject padding.
+                let count = u16::from_le_bytes(acl[4..6].try_into().unwrap());
+                let entries = acl[8..].to_vec();
+                assert!(count > 0 && !entries.is_empty());
+                let repetitions = (6000usize - 8).div_ceil(entries.len());
+                acl.truncate(8);
+                for _ in 0..repetitions {
+                    acl.extend_from_slice(&entries);
+                }
+                let size = u16::try_from(acl.len()).unwrap();
+                let count = count
+                    .checked_mul(u16::try_from(repetitions).unwrap())
+                    .unwrap();
+                acl[2..4].copy_from_slice(&size.to_le_bytes());
+                acl[4..6].copy_from_slice(&count.to_le_bytes());
+                assert_ne!(
+                    unsafe { windows_sys::Win32::Security::IsValidAcl(acl.as_ptr().cast()) },
+                    0
+                );
                 entry["final_security"]["dacl"] = serde_json::json!(acl);
             }
             planned.push(serde_json::from_value::<security::PlannedEntry>(entry).unwrap());

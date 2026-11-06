@@ -15,7 +15,7 @@ use windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED;
 
 const MAX_RENAME_CANDIDATES: usize = 10_000;
 
-struct Source {
+pub(super) struct Source {
     parent: File,
     file: File,
     name: OsString,
@@ -23,7 +23,7 @@ struct Source {
     parent_location: PathBuf,
 }
 impl Source {
-    fn open(path: &Path) -> Result<Self, PlatformError> {
+    pub(super) fn open(path: &Path) -> Result<Self, PlatformError> {
         let name = path
             .file_name()
             .ok_or_else(|| PlatformError::InvalidSource(path.display().to_string()))?;
@@ -46,13 +46,13 @@ impl Source {
             parent_location,
         })
     }
-    fn validate(&self) -> Result<(), PlatformError> {
+    pub(super) fn validate(&self) -> Result<(), PlatformError> {
         if windows_fs::location(&self.parent).map_err(io)? != self.parent_location {
             return Err(io("Copy source parent moved"));
         }
         namespace::validate_binding(&self.parent, &self.name, self.version.identity)
     }
-    fn reject_overlap(
+    pub(super) fn reject_overlap(
         &self,
         path: &Path,
         allow_missing: bool,

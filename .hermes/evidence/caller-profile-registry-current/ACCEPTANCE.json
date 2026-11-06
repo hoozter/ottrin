@@ -1,0 +1,31 @@
+{
+  "status": "pass canonical caller profile ancestry and source admission for registry initialization",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-final/RESULT.json",
+  "binding": "VERIFICATION.json",
+  "native_invocations": 9,
+  "named_top_level_passes": 27,
+  "unique_named_cases": 26,
+  "coverage": [
+    "Kernel-known original Local AppData selects fixed Ottrin/State/copies; poisoned helper environment unused",
+    "Empty/relative/overlapping source initialization refused before even Ottrin is created; read-only discovery creates no missing ancestry",
+    "Existing ordinary-user-created preference/index fixture bytes, native identities and DACLs preserved; missing State created caller-owned; original unelevated token can write helper-created State and registry",
+    "Held profile/Ottrin/State native bindings, full security/location/case records retained in registry/coordinator and mandatory serialized ancestry array",
+    "Real ancestor DACL change invalidates old holder/binding without repairing permissions; fresh admission differs from saved evidence; private root/unrelated user data retained",
+    "Profile application-entry symlink refused for discovery and initialization with target contents unchanged",
+    "Existing private creator/reopen/thread privilege, native registry/name rules, final DACL/label and SYSTEM symbolic-link/audit regressions pass",
+    "Previously failing over-single-frame codec uses real occupied ACEs with IsValidAcl, strict decode and size limits; torn checkpoint replay retains only validated prefix"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "b27c92d932fcc656cd8f90ed7d4470ffc53a8a41d6d732285f861a74d8768b28"
+  },
+  "limits": [
+    "No enabled Windows administrator Copy; canonical factory still needs full caller-dispatcher integration and retained source/operation authority",
+    "Destination claims, stage/journal, required metadata changes, final destination token policy, receipts and restored Undo/cleanup still need explicit caller context",
+    "No actual alternate-administrator UAC, in-place TokenOwner mutation or packaged helper/profile-virtualization acceptance",
+    "No new package, whole interface or whole-roadmap acceptance; cached bindings lacking the required ancestry field are refused, with no compatibility replay path"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "encoding": "UTF-8 LF JSON with unchanged parsed values",
+  "generated_text": "Controller/readiness line endings/trailing whitespace normalized; statements and diagnostic text unchanged. Bound application actors unchanged.",
+  "normalized": [
+    "native-initial/controller.ps1",
+    "native-initial/readiness.log",
+    "native-owner-fixture/controller.ps1",
+    "native-owner-fixture/readiness.log",
+    "native-final/controller.ps1",
+    "native-final/readiness.log"
+  ]
+}

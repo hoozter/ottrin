@@ -18,7 +18,7 @@ mod caller_private;
 mod caller_profile;
 pub(crate) use caller_private::{CallerCreationSecurity, open_caller_private_entry};
 mod tree;
-pub(crate) use caller_profile::CallerProfile;
+pub(crate) use caller_profile::{CallerDirectoryBinding, CallerProfile, CallerRegistryParent};
 pub(super) use tree::{
     PermissionProgress, PlannedEntry, SecurityEntry, SecurityPlanHeader, TreeSecurityEvidence,
     TreeSecurityPlan,

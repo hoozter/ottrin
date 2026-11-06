@@ -658,6 +658,18 @@ fn system_helper() {
     );
     assert_eq!(system_parent_policy(&parent), parent_owner);
     crate::WindowsCopyRegistry::exercise_caller_authority(&context, &parent);
+    crate::WindowsCopyRegistry::exercise_canonical_profile(
+        &context,
+        &root.join("probe-data/caller-source.txt"),
+        |operation| {
+            assert_ne!(
+                unsafe { ImpersonateLoggedOnUser(token.as_raw_handle().cast()) },
+                0
+            );
+            let _revert = Revert;
+            operation();
+        },
+    );
     assert_eq!(token_state(), original_helper_state);
     context.validate().unwrap();
     channel.write_response(&PrivilegedResponse {
@@ -675,6 +687,9 @@ fn system_helper() {
             "nested_privileged_thread_restored":true,
             "foreign_owner_entry_refused_without_data_or_security_change":true,
             "derived_policy_refuses_owner_or_group_outside_admitted_identity":true,
+            "canonical_profile_ancestry_and_source_overlap_before_provisioning":true,
+            "existing_preferences_index_native_identities_bytes_and_security_preserved":true,
+            "ancestor_dacl_drift_and_reparse_refused_without_target_mutation":true,
             "authenticated_registry_creation_reopen_and_coordinator":true,
             "registry_refuses_ambient_helper_admission_or_altered_foreign_unanchored_state":true,
             "registry_flush_handles_have_no_delete_or_write_dac":true,

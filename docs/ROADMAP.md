@@ -59,21 +59,27 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current source acceptance: 25 named passes across seven ordinary-user/SYSTEM
-   invocations, including both inherited naming policies, narrow flush-handle
-   rights, exact helper-token restoration, unchanged refusal of altered/foreign/
-   unanchored state, nine ordinary registry/namespace regressions, eleven ordinary
-   security cases and SYSTEM link/default-DACL/audit cases. Strict paired Windows
-   platform/UI lint passes. Both owned guests/disks/desktops/profiles and consumed
-   outputs are removed. Receipt: `caller-registry-current/ACCEPTANCE.json`.
-   Remaining: canonical `Ottrin/State` ancestry and source-overlap admission;
-   authority through claims, staging, complete journals, final destination security,
-   receipts and restored Undo/cleanup plans; original-token authority for required
-   naming-policy changes on caller-owned candidates; actual alternate-admin,
-   in-place TokenOwner-mutation and package-context proof. Already-inherited
-   registry naming is verified without an unnecessary setter; it is not full
-   metadata support. The parent-group fixture remains distinct from a literal
-   parent-DACL test. Root-DACL refusal has its separate caller-registry scope.
+   Current source acceptance: 27 top-level passes across nine ordinary-user/SYSTEM
+   invocations. The canonical profile/Ottrin/State ancestry is now held and bound
+   to full native identity, location, security and naming policy. Source overlap
+   is refused before provisioning. Real original-user writes into helper-created
+   State/registry pass; existing preference/index fixture bytes, identities and
+   permissions remain unchanged. Actual ancestor-DACL mutation and application
+   entry redirection refuse without repair. Native registry/security regressions,
+   large streamed journal decoding and torn-checkpoint recovery pass. Strict
+   paired Windows platform/UI lint passes. Three owned guest/disk/desktop/profile
+   scopes and consumed transports are removed; 33 obsolete incremental sessions
+   were removed, with at least 2.91 GiB measured reclaimed. Receipt:
+   `caller-profile-registry-current/ACCEPTANCE.json`.
+   Remaining: connect this factory to the actual caller dispatcher and retain
+   admitted source/operation authority; propagate authority through claims,
+   staging, complete journals, final destination security, receipts and restored
+   Undo/cleanup plans; original-token authority for required naming-policy
+   changes on caller-owned candidates; actual alternate-admin, in-place
+   TokenOwner-mutation and package-context proof. Already-inherited registry
+   naming is verified without an unnecessary setter; it is not full metadata
+   support. The new actual Ottrin-ancestor DACL fixture is distinct from the
+   earlier parent-group and private-root DACL cases.
    Missing member IDs never license deletion or a completed original-batch claim.
    These are independently executable implementation/QA gates, not owner waits.
    See the historical caller checkpoints below for earlier exact-source scopes.
