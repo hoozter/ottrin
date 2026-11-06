@@ -9,7 +9,7 @@
 
 mod authority;
 mod dispatch;
-pub(crate) use dispatch::copy_configured;
+pub(crate) use dispatch::{copy_configured, copy_for_caller};
 /// Bound pinned source descriptors before any destination mutation.
 pub(crate) const MAX_COPY_ENTRIES: usize = 100_000;
 mod journal;

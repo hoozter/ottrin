@@ -1996,3 +1996,41 @@ their separately accepted source and hashes.
 Recapturing the same live client remains distinct from real process restart or a
 new authenticated connection. Full dispatcher and package/UAC acceptance remain
 required before administrator Copy can be enabled.
+
+### Caller path and conflict dispatch
+
+`CallerCopyContext::copy_entry_with_progress` selects the authenticated caller's
+runtime authority and executes the existing dispatcher. Source admission opens
+the native parent and leaf with that authority, retains both handles and validates
+the original binding at progress boundaries. Caller source paths require the same
+unambiguous absolute form as registry initialization. Native source sharing denies
+replacement; no Source is reconstructed from a display label or persisted record.
+
+The canonical registry factory borrows those original Source admissions through
+profile provisioning. It refuses mismatched runtime authority before any write.
+Read-only existing-registry discovery still accepts an empty source selection.
+The shared conflict loop takes authority from its admitted Source and retains the
+canonical registry through creation, Skip, Rename, Overwrite, publication and
+receipt admission. Existing rich preparation errors keep their retained-data path.
+Caller destination opens and native-ID parent resolution share one required-access
+policy; ordinary Process dispatch uses the same engine with its existing access.
+
+Native first provisioning and eight file/directory conflict cases pass through the
+public caller API. They verify refused pre-write cancellation/relative source/
+profile overlap/Process-source admission, an actual source-replacement sharing
+violation, copied stream/preserved metadata equality, distinct native IDs, receipt
+refresh, repeated public Undo, cleanup, exact original restoration and source/
+preferences/index preservation. Two Skip cases preserve the original/catalog
+and return no receipt; the other six conflict cases exercise receipt/Undo/cleanup.
+All five ordinary dispatcher and nine registry/
+namespace parents pass, alongside the ordinary client and full SYSTEM caller role:
+16 top-level invocations. Strict Windows platform/UI lint, exact source/build/
+staged-text binding and independent owned teardown pass. Evidence:
+`.hermes/evidence/caller-dispatch-current/ACCEPTANCE.json`.
+
+The public engine/API is covered, not final helper command routing. End-attempt
+and terminal name-release plans still use Process admission and need caller-aware
+integration before the complete helper bridge/failure matrix can be accepted.
+Full caller mutation-prefix, readonly/link, process-restart/new-connection,
+TokenOwner, alternate-administrator UAC and package/profile gates remain open.
+Administrator Copy stays disabled and stable package hashes remain unchanged.

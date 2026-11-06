@@ -17,8 +17,8 @@ mod windows;
 pub(crate) use windows::owner_group_dacl_digest;
 #[cfg(target_os = "windows")]
 pub(crate) use windows::{
-    CallerCreationSecurity, CallerProfile, CallerRegistryParent, open_caller_private_entry,
-    set_caller_private_directory_case_policy,
+    CallerCreationSecurity, CallerProfile, CallerRegistryParent, copy_for_caller,
+    open_caller_private_entry, set_caller_private_directory_case_policy,
 };
 #[cfg(target_os = "windows")]
 pub(super) use windows::{MAX_COPY_ENTRIES, copy_configured};

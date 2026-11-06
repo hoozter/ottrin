@@ -798,6 +798,201 @@ pub(in super::super) fn exercise_caller_overwrite(
     caller.validate().unwrap();
 }
 
+/// Full authenticated path/conflict dispatch, using the public caller entry
+/// point rather than manually assembling a destination or durable stage.
+pub(in super::super) fn exercise_caller_dispatch(
+    caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    protected_parent: &File,
+    source: &File,
+    preferences: &File,
+    index: &File,
+    mut as_caller: impl FnMut(&mut dyn FnMut()),
+) {
+    let authority = Authority::Caller(Arc::clone(caller));
+    let source_path = windows_fs::location(source).unwrap();
+    let source_name = source_path.file_name().unwrap();
+    let source_pin = tree::PinnedTree::open(&authority, source, 16, &mut |_| Ok(())).unwrap();
+    let source_evidence = source_pin.freeze_existing(|_| Ok(())).unwrap();
+    let directory = source_pin.root().directory;
+    let manager = caller.copy_registry(&[], false).unwrap().unwrap();
+    let binding = manager.binding().unwrap();
+    let observe_user_data = || {
+        [preferences, index].map(|file| {
+            (
+                read(file).unwrap(),
+                stable_identity_from_handle(file).unwrap(),
+                security::owner_group_dacl_digest(file).unwrap(),
+            )
+        })
+    };
+    let mut before = None;
+    as_caller(&mut || before = Some(observe_user_data()));
+    let before = before.unwrap();
+    for (case, conflict, occupied) in [
+        (0, crate::ConflictAction::Overwrite, false),
+        (1, crate::ConflictAction::Skip, true),
+        (2, crate::ConflictAction::Rename, true),
+        (3, crate::ConflictAction::Overwrite, true),
+    ] {
+        let parent = windows_fs::create_private(
+            protected_parent,
+            OsStr::new(&format!("caller-dispatch-{directory}-{case}")),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+        let destination = windows_fs::location(&parent).unwrap();
+        let original = occupied.then(|| {
+            let mut file = authority
+                .create(
+                    &parent,
+                    source_name,
+                    false,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                )
+                .unwrap();
+            file.write_all(b"original dispatcher payload").unwrap();
+            file.sync_all().unwrap();
+            tree::PinnedTree::open(&authority, &file, 16, &mut |_| Ok(()))
+                .unwrap()
+                .freeze_existing(|_| Ok(()))
+                .unwrap()
+        });
+        let names = windows_fs::directory_children(manager.root()).unwrap();
+        assert!(
+            caller
+                .copy_entry_with_progress(&source_path, &destination, conflict, 16, |_| Err(io(
+                    "owned public dispatch cancellation"
+                )))
+                .is_err()
+        );
+        assert_eq!(
+            windows_fs::directory_children(manager.root()).unwrap(),
+            names
+        );
+        let mut progress_calls = 0;
+        let receipt = caller
+            .copy_entry_with_progress(&source_path, &destination, conflict, 16, |_| {
+                progress_calls += 1;
+                if progress_calls == 2 {
+                    // The dispatcher has opened the source before this callback.
+                    // A path rename must fail because its original native handle
+                    // denies delete sharing, not merely because an ACL denies us.
+                    let moved = source_path
+                        .with_file_name(format!("owned-source-must-stay-{directory}-{case}"));
+                    let attempt =
+                        windows_fs::with_file_privileges(|| std::fs::rename(&source_path, &moved));
+                    if attempt.is_ok() {
+                        windows_fs::with_file_privileges(|| std::fs::rename(&moved, &source_path))
+                            .unwrap();
+                        panic!("Original dispatcher source pin did not prevent replacement");
+                    }
+                    assert_eq!(attempt.unwrap_err().raw_os_error(), Some(32));
+                }
+                Ok(())
+            })
+            .unwrap();
+        assert!(progress_calls >= 2);
+        if conflict == crate::ConflictAction::Skip {
+            assert!(receipt.is_none());
+            assert_eq!(
+                windows_fs::directory_children(manager.root()).unwrap(),
+                names
+            );
+        } else {
+            let receipt = receipt.unwrap();
+            let target = receipt.after_path().file_name().unwrap();
+            if conflict == crate::ConflictAction::Rename {
+                let mut expected = std::path::Path::new(source_name)
+                    .file_stem()
+                    .unwrap_or(source_name)
+                    .to_os_string();
+                expected.push(" (1)");
+                if let Some(extension) = std::path::Path::new(source_name).extension() {
+                    expected.push(".");
+                    expected.push(extension);
+                }
+                assert_eq!(target, expected);
+            } else {
+                assert_eq!(target, source_name);
+            }
+            let published = namespace::open_source_with(&authority, &parent, target, None).unwrap();
+            let observed = tree::PinnedTree::open(&authority, &published, 16, &mut |_| Ok(()))
+                .unwrap()
+                .freeze_existing(|_| Ok(()))
+                .unwrap();
+            assert_eq!(observed.entries.len(), source_evidence.entries.len());
+            for (actual, expected) in observed.entries.iter().zip(&source_evidence.entries) {
+                assert_eq!(
+                    (
+                        actual.parent,
+                        &actual.name,
+                        &actual.streams,
+                        actual.compression
+                    ),
+                    (
+                        expected.parent,
+                        &expected.name,
+                        &expected.streams,
+                        expected.compression
+                    )
+                );
+                assert_ne!(actual.version.identity, expected.version.identity);
+                assert_eq!(actual.version.created, expected.version.created);
+                assert_eq!(actual.version.modified, expected.version.modified);
+                assert_eq!(actual.version.attributes, expected.version.attributes);
+            }
+            drop(published);
+            let receipt = receipt.refresh_windows_copy_undo(|_| Ok(())).unwrap();
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .unwrap();
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .unwrap();
+            if conflict == crate::ConflictAction::Rename || !occupied {
+                assert!(
+                    matches!(authority.probe(&parent, target), Err(error) if error.kind() == std::io::ErrorKind::NotFound)
+                );
+            }
+            let mut cleanup = manager
+                .cleanup_plan_with_progress(
+                    &[receipt.copy_transaction_id().unwrap().to_owned()],
+                    |_| Ok(()),
+                )
+                .unwrap();
+            cleanup.reclaim(|_| Ok(())).unwrap();
+            assert!(cleanup.complete());
+        }
+        if let Some(mut expected) = original {
+            let original =
+                namespace::open_source_with(&authority, &parent, source_name, Some(false)).unwrap();
+            let actual = tree::PinnedTree::open(&authority, &original, 16, &mut |_| Ok(()))
+                .unwrap()
+                .freeze_existing(|_| Ok(()))
+                .unwrap();
+            if conflict == crate::ConflictAction::Overwrite {
+                expected.entries[0].version.changed = actual.entries[0].version.changed;
+            }
+            assert_eq!(
+                actual, expected,
+                "Original data, ID, metadata and security must survive dispatch/Undo"
+            );
+        }
+        assert_eq!(manager.binding().unwrap(), binding);
+        source_pin
+            .validate_existing(&source_evidence, &mut |_| Ok(()))
+            .unwrap();
+        println!(
+            "caller public dispatcher source_directory={directory} case={case}: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed"
+        );
+    }
+    let mut after = None;
+    as_caller(&mut || after = Some(observe_user_data()));
+    assert_eq!(after.unwrap(), before);
+    caller.validate().unwrap();
+}
+
 /// Re-admit persisted records through independently captured authenticated
 /// contexts, rather than cloning the old runtime plan or granting by status row.
 pub(in super::super) fn exercise_caller_recovery(

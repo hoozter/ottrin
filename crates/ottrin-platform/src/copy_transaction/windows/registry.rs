@@ -260,40 +260,45 @@ impl AnchoredRoot {
                 "Caller registry initialization needs a bounded nonempty source selection",
             ));
         }
+        let authority = Authority::Caller(Arc::clone(&caller));
+        let admitted = sources
+            .iter()
+            .map(|source| super::dispatch::Source::open_with(&authority, source))
+            .collect::<Result<Vec<_>, _>>()?;
+        Self::for_caller_sources(caller, &admitted, initialize)
+    }
+
+    /// Borrow the dispatcher's original source pins; never reopen source paths
+    /// between overlap admission and the first registry namespace mutation.
+    pub(super) fn for_caller_sources(
+        caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        admitted: &[super::dispatch::Source],
+        initialize: bool,
+    ) -> Result<Option<Self>, PlatformError> {
+        caller.validate().map_err(io)?;
+        if (initialize && admitted.is_empty()) || admitted.len() > super::MAX_COPY_ENTRIES {
+            return Err(io(
+                "Caller registry initialization needs a bounded nonempty source selection",
+            ));
+        }
         let path = caller
             .local_app_data()
             .map_err(io)?
             .join("Ottrin")
             .join("State")
             .join("copies");
-        let mut admitted = Vec::with_capacity(sources.len());
-        for source in sources {
-            if !source.is_absolute()
-                || source.components().any(|c| {
-                    matches!(
-                        c,
-                        std::path::Component::ParentDir | std::path::Component::CurDir
-                    )
-                })
-            {
-                return Err(io(
-                    "Caller Copy source requires an unambiguous absolute path",
-                ));
+        let authority = Authority::Caller(Arc::clone(&caller));
+        for source in admitted {
+            if source.authority() != &authority {
+                return Err(io("Copy source admission belongs to another authority"));
             }
-            let source = super::dispatch::Source::open(source)?;
-            // Directory-source overlap checks must inspect existing private
-            // caller ancestry before initialization. Retain helper file access
-            // for that bounded native traversal; it never provisions state.
-            Authority::Caller(Arc::clone(&caller)).file_operation(|| {
-                source.reject_overlap(&path, true, &mut |_| caller.validate().map_err(io))
-            })?;
-            admitted.push(source);
+            source.reject_overlap(&path, true, &mut |_| caller.validate().map_err(io))?;
         }
         let Some(parent) = caller.registry_parent(initialize).map_err(io)? else {
             return Ok(None);
         };
         caller.validate_registry_parent(&parent).map_err(io)?;
-        for source in &admitted {
+        for source in admitted {
             source.validate()?;
         }
         let mut root = Self::for_caller(
@@ -305,7 +310,7 @@ impl AnchoredRoot {
             root.ancestry = Some(Arc::new(parent));
             root.validate()?;
         }
-        for source in &admitted {
+        for source in admitted {
             source.validate()?;
         }
         caller.validate().map_err(io)?;
@@ -778,6 +783,52 @@ impl AnchoredRoot {
             !app.exists(),
             "Overlap must be refused before even the first profile directory is created"
         );
+        assert!(
+            caller
+                .copy_entry_with_progress(
+                    source,
+                    source.parent().unwrap(),
+                    crate::ConflictAction::Overwrite,
+                    16,
+                    |_| Err(io("owned dispatch cancellation before provisioning")),
+                )
+                .is_err()
+        );
+        assert!(
+            caller
+                .copy_entry_with_progress(
+                    Path::new("relative-source"),
+                    source.parent().unwrap(),
+                    crate::ConflictAction::Overwrite,
+                    16,
+                    |_| Ok(()),
+                )
+                .is_err()
+        );
+        let overlap = caller
+            .copy_entry_with_progress(
+                &profile,
+                source.parent().unwrap(),
+                crate::ConflictAction::Overwrite,
+                16,
+                |_| Ok(()),
+            )
+            .unwrap_err();
+        assert!(
+            overlap.to_string().contains("outside the source tree"),
+            "{overlap}"
+        );
+        assert!(
+            !app.exists(),
+            "Public dispatch must refuse before profile provisioning"
+        );
+        let process_source =
+            super::dispatch::Source::open_with(&Authority::Process, source).unwrap();
+        assert!(Self::for_caller_sources(Arc::clone(caller), &[process_source], true).is_err());
+        assert!(
+            !app.exists(),
+            "A process source pin must not admit a caller registry"
+        );
         // Isolate the reparse refusal while the application entry is absent;
         // live descendants deliberately keep existing data open later below.
         let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
@@ -847,10 +898,34 @@ impl AnchoredRoot {
         let index_security = security::owner_group_dacl_digest(&index).unwrap();
         assert!(caller.copy_registry(&[], false).unwrap().is_none());
         assert!(!app.join("State").exists());
-        let root = caller
-            .copy_registry(&[source.to_path_buf()], true)
+        let dispatch_destination = tempfile::tempdir().unwrap();
+        let receipt = caller
+            .copy_entry_with_progress(
+                source,
+                dispatch_destination.path(),
+                crate::ConflictAction::Overwrite,
+                16,
+                |_| Ok(()),
+            )
             .unwrap()
             .unwrap();
+        let root = caller.copy_registry(&[], false).unwrap().unwrap();
+        crate::PlatformOps::undo_copy_with_receipt(&crate::DefaultPlatform, &receipt, &mut |_| {
+            Ok(())
+        })
+        .unwrap();
+        let mut cleanup = root
+            .cleanup_plan_with_progress(
+                &[receipt.copy_transaction_id().unwrap().to_owned()],
+                |_| Ok(()),
+            )
+            .unwrap();
+        cleanup.reclaim(|_| Ok(())).unwrap();
+        assert!(cleanup.complete());
+        drop((cleanup, receipt));
+        println!(
+            "caller public dispatcher provisioning: cancellation, relative path and source overlap refuse before writes; creation, public Undo and cleanup preserve existing profile data"
+        );
         let binding = root.binding().unwrap();
         assert_eq!(binding.ancestry.len(), 3);
         // Ownership alone is insufficient: the original unelevated subject
@@ -1262,6 +1337,23 @@ impl AnchoredRoot {
             preferences,
             index,
             recapture,
+            as_caller,
+        );
+    }
+    pub(crate) fn exercise_caller_dispatch(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &File,
+        preferences: &File,
+        index: &File,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_dispatch(
+            caller,
+            parent,
+            source,
+            preferences,
+            index,
             as_caller,
         );
     }

@@ -882,6 +882,23 @@ fn system_helper() {
         );
     }
     for source in [&source_file, &source_directory] {
+        crate::WindowsCopyRegistry::exercise_caller_dispatch(
+            &context,
+            &parent,
+            source,
+            &preferences,
+            &index,
+            |operation| {
+                context
+                    .with_caller_token(|| {
+                        operation();
+                        Ok(())
+                    })
+                    .unwrap();
+            },
+        );
+    }
+    for source in [&source_file, &source_directory] {
         crate::WindowsCopyRegistry::exercise_caller_journals(
             &context,
             &parent,

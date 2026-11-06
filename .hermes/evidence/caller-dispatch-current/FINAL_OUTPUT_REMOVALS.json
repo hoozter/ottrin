@@ -1,0 +1,116 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/RESULT.json",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/viewer",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/readiness.log",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/controller.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/actor.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/DRIVER_SOURCE.py",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/SYSTEM_COMPANION_SOURCE.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/PRIVACY_CONTROL_SOURCE.py",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/LIVE_PROGRESS.json",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/native/PROGRESS_OBSERVER_PROCESS.json",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native setup/export intermediate",
+      "evidence": "ACCEPTANCE.json and normalized native records preserve exact results/input hashes and independent teardown; producer is tracked at reference commit; privacy setup hashes retained; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/test-build.jsonl",
+      "kind": "test-fixture",
+      "reason": "Consumed compiler/staged binding intermediate",
+      "evidence": "Final SOURCE_INPUT/NATIVE_TEST_INPUT/APPLICATION_INPUT/ACCEPTANCE retain hashes, profiles and exact staged text; no pending consumer."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current/LIVE_BUILD_BINDING.json",
+      "kind": "test-fixture",
+      "reason": "Consumed compiler/staged binding intermediate",
+      "evidence": "Final SOURCE_INPUT/NATIVE_TEST_INPUT/APPLICATION_INPUT/ACCEPTANCE retain hashes, profiles and exact staged text; no pending consumer."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    }
+  ]
+}

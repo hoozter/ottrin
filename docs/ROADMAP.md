@@ -53,7 +53,10 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `e3417b61` passes all four hosted jobs in
+Published source `c3aacd51` passes all four hosted jobs in
+[run42229716307](https://github.com/hoozter/ottrin/actions/runs/42229716307),
+including the corrected immutable Linux portal fixture. Earlier source
+`e3417b61` also passes all four hosted jobs in
 [run42210630346](https://github.com/hoozter/ottrin/actions/runs/42210630346).
 Its preceding `72f21c52` also passes all four jobs in
 [run42203809953](https://github.com/hoozter/ottrin/actions/runs/42203809953).
@@ -122,10 +125,26 @@ changed production portal or a replacement for hosted acceptance. Evidence:
    failure diagnosis, continuity and final acceptance are retained in
    `.hermes/evidence/caller-public-cleanup-current/ACCEPTANCE.json` and its receipts.
 
+   The public caller path/conflict entry point now uses the shared dispatcher.
+   Its original Source admission retains authority and native handles; canonical
+   registry provisioning borrows those same pins. Native first-time setup passes
+   cancellation, relative-source, profile-overlap and wrong-authority refusal
+   before writes, plus successful creation/public Undo/cleanup with existing
+   preferences/index preservation. Eight file/directory creation/Skip/Rename/
+   Overwrite cases pass source pinning and applicable stream/preserved-metadata
+   comparison, distinct copied IDs, receipt refresh, idempotent public Undo, cleanup
+   and exact original restoration. The two Skip cases return no receipt and leave
+   the original and journal catalog unchanged. All 16 top-level invocations pass, including all five
+   ordinary dispatcher and nine registry/namespace parents. Strict Windows
+   platform/UI lint and independent owned teardown pass. Scope and inputs:
+   `.hermes/evidence/caller-dispatch-current/ACCEPTANCE.json`.
+   This is native engine/API acceptance; advertised administrator Copy stays off.
+
    Remaining dependency-ready work, in order:
 
-   - Wire the actual caller dispatcher while retaining original source pins and
-     canonical registry admission through the whole operation.
+   - Carry caller authority through end-attempt and terminal name-release plans,
+     then complete helper command/history/recovery routing through the authenticated
+     caller APIs. These existing plans still select ordinary Process authority.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and the original-retention/restoration failure matrix,
      including readonly original roots.

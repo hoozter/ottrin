@@ -6,17 +6,17 @@ use std::{
     ffi::{OsStr, OsString},
     fs::File,
     path::{Path, PathBuf},
-    ptr,
+    sync::Arc,
 };
 use windows_sys::Win32::Storage::FileSystem::{
-    FILE_GENERIC_READ, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
-    SYNCHRONIZE,
+    FILE_GENERIC_READ, FILE_READ_ATTRIBUTES, SYNCHRONIZE,
 };
 use windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED;
 
 const MAX_RENAME_CANDIDATES: usize = 10_000;
 
 pub(super) struct Source {
+    authority: Authority,
     parent: File,
     file: File,
     name: OsString,
@@ -24,22 +24,36 @@ pub(super) struct Source {
     parent_location: PathBuf,
 }
 impl Source {
-    pub(super) fn open(path: &Path) -> Result<Self, PlatformError> {
+    pub(super) fn open_with(authority: &Authority, path: &Path) -> Result<Self, PlatformError> {
+        authority.validate()?;
+        if matches!(authority, Authority::Caller(_))
+            && (!path.is_absolute()
+                || path.components().any(|c| {
+                    matches!(
+                        c,
+                        std::path::Component::ParentDir | std::path::Component::CurDir
+                    )
+                }))
+        {
+            return Err(io(
+                "Caller Copy source requires an unambiguous absolute path",
+            ));
+        }
         let name = path
             .file_name()
             .ok_or_else(|| PlatformError::InvalidSource(path.display().to_string()))?;
         windows_fs::valid_component(name).map_err(io)?;
         let path = std::path::absolute(path).map_err(io)?;
-        let parent = windows_fs::open_directory(
+        let parent = authority.directory(
             path.parent()
                 .ok_or_else(|| io("Copy source has no parent"))?,
             FILE_GENERIC_READ,
-        )
-        .map_err(io)?;
-        let file = namespace::open_source(&parent, name, None)?;
+        )?;
+        let file = namespace::open_source_with(authority, &parent, name, None)?;
         let version = version(&file)?;
         let parent_location = windows_fs::location(&parent).map_err(io)?;
         Ok(Self {
+            authority: authority.clone(),
             parent,
             file,
             name: name.to_os_string(),
@@ -47,11 +61,16 @@ impl Source {
             parent_location,
         })
     }
+    pub(super) fn authority(&self) -> &Authority {
+        &self.authority
+    }
     pub(super) fn validate(&self) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         if windows_fs::location(&self.parent).map_err(io)? != self.parent_location {
             return Err(io("Copy source parent moved"));
         }
-        namespace::validate_binding(&self.parent, &self.name, self.version.identity)
+        self.authority
+            .binding(&self.parent, &self.name, self.version.identity)
     }
     pub(super) fn reject_overlap(
         &self,
@@ -60,18 +79,25 @@ impl Source {
         progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         if !self.version.identity.is_directory_without_reparse() {
-            return Ok(());
+            return self.validate();
         }
         for ancestor in path.ancestors() {
             progress(0)?;
-            let directory =
-                match windows_fs::open_directory(ancestor, FILE_READ_ATTRIBUTES | SYNCHRONIZE) {
-                    Ok(file) => file,
-                    Err(error) if allow_missing && error.kind() == std::io::ErrorKind::NotFound => {
-                        continue;
+            let Some(directory) =
+                self.authority.file_operation(|| {
+                    match windows_fs::open_directory(ancestor, FILE_READ_ATTRIBUTES | SYNCHRONIZE) {
+                        Ok(file) => Ok(Some(file)),
+                        Err(error)
+                            if allow_missing && error.kind() == std::io::ErrorKind::NotFound =>
+                        {
+                            Ok(None)
+                        }
+                        Err(error) => Err(io(error)),
                     }
-                    Err(error) => return Err(io(error)),
-                };
+                })?
+            else {
+                continue;
+            };
             if stable_identity_from_handle(&directory).map_err(io)? == self.version.identity {
                 return Err(io(
                     "Copy destination and registry must be outside the source tree",
@@ -90,7 +116,7 @@ pub(crate) fn copy_configured(
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
     progress(0)?;
-    let source = Source::open(source)?;
+    let source = Source::open_with(&Authority::Process, source)?;
     let registry_path = super::registry::configured_path()?;
     // Provisioning is itself a namespace mutation. Refuse source overlap before
     // creating even the first missing profile/state directory or marker.
@@ -111,24 +137,56 @@ pub(crate) fn copy_configured(
     )
 }
 
+/// Authenticated caller dispatch retains the original source admission through
+/// registry provisioning, conflict selection, publication and receipt admission.
+pub(crate) fn copy_for_caller(
+    caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    source: &Path,
+    destination: &Path,
+    conflict: ConflictAction,
+    max_entries: usize,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+    let authority = Authority::Caller(Arc::clone(&caller));
+    let mut guarded_progress = |bytes| {
+        progress(bytes)?;
+        authority.validate()
+    };
+    guarded_progress(0)?;
+    let source = Source::open_with(&authority, source)?;
+    source.reject_overlap(destination, false, &mut guarded_progress)?;
+    guarded_progress(0)?;
+    let registry = super::registry::AnchoredRoot::for_caller_sources(
+        caller,
+        std::slice::from_ref(&source),
+        true,
+    )?
+    .ok_or_else(|| io("Caller Copy registry initialization returned no registry"))?;
+    super::registry::require_uncoordinated(registry.authority(), registry.root())?;
+    let result = copy_admitted_source(
+        source,
+        destination,
+        conflict,
+        registry.root(),
+        max_entries,
+        |bytes| {
+            guarded_progress(bytes)?;
+            registry.validate()
+        },
+    );
+    result.and_then(|receipt| {
+        registry.validate()?;
+        Ok(receipt)
+    })
+}
+
 /// Absence is a native NotFound result, never an arbitrary failed metadata read.
 fn entry(
+    authority: &Authority,
     parent: &File,
     name: &OsStr,
 ) -> Result<Option<super::WindowsStableIdentity>, PlatformError> {
-    match unsafe {
-        windows_fs::open_relative(
-            parent,
-            name,
-            windows_fs::RelativeOptions {
-                directory: None,
-                create_new: false,
-                access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                security: ptr::null(),
-            },
-        )
-    } {
+    match authority.probe(parent, name) {
         Ok(file) => stable_identity_from_handle(&file).map(Some).map_err(io),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
         Err(error) => Err(io(error)),
@@ -148,7 +206,7 @@ pub(super) fn copy_at(
 ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
     progress(0)?;
     copy_admitted_source(
-        Source::open(source)?,
+        Source::open_with(&Authority::Process, source)?,
         destination,
         conflict,
         central,
@@ -165,8 +223,9 @@ fn copy_admitted_source(
     max_entries: usize,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+    let authority = &source.authority;
     let name = source.name.as_os_str();
-    let parent = windows_fs::open_directory(destination, MAXIMUM_ALLOWED).map_err(io)?;
+    let parent = authority.directory(destination, MAXIMUM_ALLOWED)?;
     let parent_location = windows_fs::location(&parent).map_err(io)?;
     let central_location = windows_fs::location(central).map_err(io)?;
     if !stable_identity_from_handle(central)
@@ -175,8 +234,16 @@ fn copy_admitted_source(
     {
         return Err(io("Copy registry is not an ordinary directory"));
     }
-    let creator = windows_fs::current_owner()?;
-    let registry_security = security::PrivateSecurity::capture(central, &creator)?;
+    let creator = authority.owner()?;
+    let registry_security = match authority {
+        Authority::Process => security::PrivateSecurity::capture(central, &creator)?,
+        Authority::Caller(caller) => security::PrivateSecurity::capture_for_caller(
+            central,
+            &creator,
+            caller.default_file_group_sid().map_err(io)?,
+        )
+        .map_err(io)?,
+    };
 
     for location in [&parent_location, &central_location] {
         source.reject_overlap(location, false, &mut progress)?;
@@ -192,7 +259,7 @@ fn copy_admitted_source(
         registry_security.validate(central, &creator)
     };
     guarded_progress(0)?;
-    let existing = entry(&parent, name)?;
+    let existing = entry(authority, &parent, name)?;
     if existing == Some(source.version.identity) {
         return Err(io(
             "Cannot copy an entry onto itself or its hard-link alias",
@@ -213,7 +280,7 @@ fn copy_admitted_source(
                 target.push(extension);
             }
         }
-        let occupied = entry(&parent, &target)?;
+        let occupied = entry(authority, &parent, &target)?;
         let admission = match (occupied, conflict) {
             (Some(_), ConflictAction::Skip) => return Ok(None),
             (Some(_), ConflictAction::Rename) => {
@@ -221,15 +288,13 @@ fn copy_admitted_source(
                 continue;
             }
             (Some(_), ConflictAction::Overwrite) => journal::DestinationAdmission::overwrite(
-                &Authority::Process,
+                authority,
                 &parent,
                 &target,
                 max_entries,
                 &mut guarded_progress,
             )?,
-            (None, _) => {
-                journal::DestinationAdmission::creation(&Authority::Process, &parent, &target)?
-            }
+            (None, _) => journal::DestinationAdmission::creation(authority, &parent, &target)?,
         };
         let result = journal::DurableStage::execute_with_receipt(
             &source.file,
@@ -256,6 +321,10 @@ fn copy_admitted_source(
 mod tests {
     use super::*;
     use crate::PlatformOps;
+    use std::ptr;
+    use windows_sys::Win32::Storage::FileSystem::{
+        FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
+    };
 
     fn registry(root: &Path) -> File {
         let parent = windows_fs::open_directory(root, MAXIMUM_ALLOWED).unwrap();

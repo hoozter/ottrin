@@ -306,6 +306,26 @@ impl CallerCopyContext {
         )
         .map_err(io::Error::other)
     }
+    /// Execute one authenticated Copy through the shared conflict/staging engine.
+    /// The returned receipt is admitted using this original caller, never the
+    /// helper's ambient profile. This does not enable advertised administrator Copy.
+    pub fn copy_entry_with_progress(
+        self: &Arc<Self>,
+        source: &Path,
+        destination: &Path,
+        conflict: crate::ConflictAction,
+        max_entries: usize,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Option<crate::PathMoveUndoReceipt>, PlatformError> {
+        crate::copy_transaction::copy_for_caller(
+            Arc::clone(self),
+            source,
+            destination,
+            conflict,
+            max_entries,
+            progress,
+        )
+    }
     pub(crate) fn registry_parent(
         &self,
         initialize: bool,

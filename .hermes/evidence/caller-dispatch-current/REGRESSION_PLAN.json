@@ -1,0 +1,68 @@
+{
+  "tests": [
+    {
+      "name": "windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim",
+      "full_name": "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_an_outstanding_undo_destination_claim"
+    },
+    {
+      "name": "windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo",
+      "full_name": "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_creation_times_across_tunneled_names_and_undo"
+    },
+    {
+      "name": "windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite",
+      "full_name": "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_routes_creation_skip_rename_and_overwrite"
+    },
+    {
+      "name": "windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry",
+      "full_name": "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_refuses_self_descendants_aliases_and_foreign_registry"
+    },
+    {
+      "name": "windows_native_copy_dispatch_preserves_late_occupants_and_original_changes",
+      "full_name": "copy_transaction::windows::dispatch::tests::windows_native_copy_dispatch_preserves_late_occupants_and_original_changes"
+    },
+    {
+      "name": "windows_native_copy_registry_binding_survives_reopen_and_refuses_case_drift",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_survives_reopen_and_refuses_case_drift"
+    },
+    {
+      "name": "windows_native_copy_registry_binding_refuses_self_consistent_new_anchor",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_refuses_self_consistent_new_anchor"
+    },
+    {
+      "name": "windows_native_copy_claim_namespace_uses_native_volume_name_rules",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_uses_native_volume_name_rules"
+    },
+    {
+      "name": "windows_native_copy_claim_namespace_refuses_policy_drift_and_unanchored_data",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_refuses_policy_drift_and_unanchored_data"
+    },
+    {
+      "name": "windows_native_copy_claim_namespace_arbitrates_separate_processes",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes"
+    },
+    {
+      "name": "windows_native_copy_registry_provisions_once_and_readers_hold_the_binding",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_registry_provisions_once_and_readers_hold_the_binding"
+    },
+    {
+      "name": "windows_native_copy_registry_rejects_replaced_root_marker_and_parent",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_registry_rejects_replaced_root_marker_and_parent"
+    },
+    {
+      "name": "windows_native_copy_registry_refuses_unanchored_partial_and_foreign_state_without_repair",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_registry_refuses_unanchored_partial_and_foreign_state_without_repair"
+    },
+    {
+      "name": "windows_native_copy_registry_configured_dispatch_discovery_and_source_free_undo",
+      "full_name": "copy_transaction::windows::registry::tests::windows_native_copy_registry_configured_dispatch_discovery_and_source_free_undo"
+    }
+  ],
+  "expected_top_level_invocations": 16,
+  "scope": "All five ordinary dispatcher parents and all nine native registry parents; existing full caller fixture plus public first-time provisioning and eight file/directory conflict paths",
+  "case_deadlines_seconds": {
+    "caller_client_and_helper": 600,
+    "ordinary_case": 300,
+    "producer": 1200
+  },
+  "deadline_reason": "Caller role now includes public first-time provisioning and8 full path/conflict flows in addition to the previously233-second security/recovery/cohort suite; paired deadlines600, ordinary deadlines unchanged; explicit bounded producer teardown retained"
+}

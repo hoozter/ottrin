@@ -1,0 +1,12 @@
+{
+  "reference_commit": "c3aacd51c3962965aeff5a48a7e9ee4e563eb3b2",
+  "sizes": {
+    "target/debug/deps": 22343532544,
+    "target/debug/incremental": 25769959424,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29477564416,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49803255808
+  },
+  "evidence_root": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current",
+  "purpose": "Shared original-caller path/conflict dispatcher; original source pins borrowed through canonical registry admission and retained through receipt; native paired caller plus affected ordinary dispatch/registry regression QA",
+  "scope": "Baseline after focused metadata-only cargo check; before substantial no-run build; same compiler flags/features and shared target tree"
+}

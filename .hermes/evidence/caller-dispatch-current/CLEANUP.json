@@ -1,0 +1,46 @@
+{
+  "status": "Owned cleanup complete; native acceptance verified",
+  "removed": {
+    "older_incremental_sessions": 14,
+    "consumed_native_compiler_intermediates": 16,
+    "native_runs_torn_down": 1
+  },
+  "cache_baseline": {
+    "target/debug/deps": 22343532544,
+    "target/debug/incremental": 25769959424,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29477564416,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49803255808
+  },
+  "cache_final": {
+    "target/debug/deps": 22343532544,
+    "target/debug/incremental": 25769959424,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29494931456,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49726218240
+  },
+  "cache_deltas": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 17367040,
+    "target/x86_64-pc-windows-gnu/debug/incremental": -77037568
+  },
+  "evidence": [
+    "INCREMENTAL_CANDIDATES.json",
+    "INCREMENTAL_CLEANUP.json",
+    "FINAL_OUTPUT_CLEANUP.json",
+    "native/OWNER.json",
+    "ACCEPTANCE.json"
+  ],
+  "pending_consumers": [],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-dispatch-current",
+      "purpose": "Compact source/build/native-test/teardown receipts and reproduction scripts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug",
+      "purpose": "Current accepted platform/UI test executables, dependencies and newest shared compiler caches; next caller failure-recovery work"
+    }
+  ],
+  "stable_packages": "PRESERVED_PACKAGES.json unchanged; no new user-facing package cohort",
+  "preserved": "User data, unrelated AGENTS.md, stable deliverables, dependencies and newest finalized compiler sessions; no blanket cargo clean"
+}

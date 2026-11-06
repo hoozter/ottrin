@@ -233,6 +233,7 @@ fn retained(directory: &File, name: &OsStr, error: impl std::fmt::Display) -> Pl
 }
 
 /// A Copy source needs read access, never the DELETE right needed by Move.
+#[cfg(test)]
 pub(super) fn open_source(
     parent: &File,
     name: &OsStr,

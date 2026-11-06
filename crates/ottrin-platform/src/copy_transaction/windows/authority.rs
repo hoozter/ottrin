@@ -210,8 +210,19 @@ impl Authority {
         namespace::validate_binding_with(parent, expected, || self.probe(parent, name))?;
         self.validate()
     }
+    fn directory_access(&self, access: u32) -> u32 {
+        if matches!(self, Self::Caller(_))
+            && access & windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED != 0
+        {
+            access | FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC
+        } else {
+            access
+        }
+    }
     pub(super) fn directory(&self, path: &Path, access: u32) -> Result<File, PlatformError> {
-        self.file_operation(|| windows_fs::open_directory(path, access).map_err(io))
+        self.file_operation(|| {
+            windows_fs::open_directory(path, self.directory_access(access)).map_err(io)
+        })
     }
     pub(super) fn registry_directory(
         &self,
@@ -245,13 +256,7 @@ impl Authority {
         access: u32,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<File, PlatformError> {
-        let access = if matches!(self, Self::Caller(_))
-            && access & windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED != 0
-        {
-            access | FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC
-        } else {
-            access
-        };
+        let access = self.directory_access(access);
         self.file_operation(|| {
             windows_fs::Volumes::new(central)?.resolve(identity, access, &mut progress)
         })
