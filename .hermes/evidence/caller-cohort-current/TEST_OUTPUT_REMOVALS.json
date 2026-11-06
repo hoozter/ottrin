@@ -1,0 +1,38 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-1df9e3bb6dfd3a60.exe",
+      "kind": "build-cache",
+      "reason": "Superseded Windows preview boundary test and exact companions",
+      "evidence": "Identical rustc/target/profile/features/path/rustflags/config/compile_kind; newer e79 replacement hash equals accepted 60-pass native boundary fixture. Only old single-link executable and exact dep-info/fingerprint removed; source, current executable and libraries retained. TEST_OUTPUT_RETIREMENT.json records proof."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-1df9e3bb6dfd3a60.d",
+      "kind": "build-cache",
+      "reason": "Superseded Windows preview boundary test and exact companions",
+      "evidence": "Identical rustc/target/profile/features/path/rustflags/config/compile_kind; newer e79 replacement hash equals accepted 60-pass native boundary fixture. Only old single-link executable and exact dep-info/fingerprint removed; source, current executable and libraries retained. TEST_OUTPUT_RETIREMENT.json records proof."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-1df9e3bb6dfd3a60",
+      "kind": "build-cache",
+      "reason": "Superseded Windows preview boundary test and exact companions",
+      "evidence": "Identical rustc/target/profile/features/path/rustflags/config/compile_kind; newer e79 replacement hash equals accepted 60-pass native boundary fixture. Only old single-link executable and exact dep-info/fingerprint removed; source, current executable and libraries retained. TEST_OUTPUT_RETIREMENT.json records proof."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    }
+  ]
+}

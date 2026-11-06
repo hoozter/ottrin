@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "scope": "Known first-login pages observed by OCR and completed with native input on owned private console; optional collection declined; no policy bypass",
+  "domain_uuid": "ddec8f00-9e07-40c2-af1d-82b9b700c415",
+  "steps": [
+    {
+      "heading": "blank console",
+      "observed_sha256": "34c352a1e341a1e44722fc3db3221e524f04d4f777c484d91327f096ce0ccf50",
+      "input": {
+        "one_click_to_focus_and_wake_guest": [
+          645,
+          428
+        ]
+      },
+      "selection": null
+    },
+    {
+      "heading": "recognized owned desktop",
+      "observed_sha256": "44dc33ce007204dbb1c34a35ad84aa7da603e59f6e46c873c01c474a6ec9be6b",
+      "input": {
+        "one_click_to_focus_guest_canvas": [
+          1096,
+          428
+        ]
+      },
+      "selection": null
+    }
+  ],
+  "desktop_observed": true
+}

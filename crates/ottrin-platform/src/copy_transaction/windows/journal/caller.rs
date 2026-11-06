@@ -1302,6 +1302,23 @@ pub(in super::super) fn exercise_caller_cleanup(
             "caller cleanup source_directory={directory} undo={undo}: retained payload deletion, cancellation, private authority and public data preservation passed"
         );
     }
+    exercise_caller_cohort(
+        &authority,
+        &manager,
+        protected_parent,
+        source,
+        directory,
+        &mut recapture,
+    );
+    exercise_caller_shared_cohort(
+        &authority,
+        &manager,
+        protected_parent,
+        source,
+        directory,
+        &mut recapture,
+        &mut as_caller,
+    );
     assert_eq!(manager.binding().unwrap(), binding);
     let mut after = None;
     as_caller(&mut || after = Some(observe()));
@@ -1310,4 +1327,532 @@ pub(in super::super) fn exercise_caller_cleanup(
         .validate_existing(&source_evidence, &mut |_| Ok(()))
         .unwrap();
     caller.validate().unwrap();
+}
+
+/// Mixed retained-copy/original cohorts use the same canonical registry and
+/// explicit authority as single-member cleanup. Fresh observation after a local
+/// control disappears must derive its authority from the external cohort log.
+fn exercise_caller_cohort(
+    authority: &Authority,
+    manager: &super::super::registry::AnchoredRoot,
+    protected_parent: &File,
+    source: &File,
+    directory: bool,
+    recapture: &mut impl FnMut() -> Arc<crate::windows_privileged_transport::CallerCopyContext>,
+) {
+    use super::cleanup_group::Observation;
+    for interrupted in [false, true] {
+        let parent = windows_fs::create_private(
+            protected_parent,
+            OsStr::new(&format!("caller-cohort-{directory}-{interrupted}")),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+        let mut headers = Vec::new();
+        for overwrite in [false, true] {
+            let name = OsString::from(format!("copy-{overwrite}"));
+            let before = windows_fs::directory_children_limited(&parent, 32).unwrap();
+            let destination = if overwrite {
+                let mut original = authority
+                    .create(
+                        &parent,
+                        &name,
+                        directory,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    )
+                    .unwrap();
+                if directory {
+                    let mut child = authority
+                        .create(
+                            &original,
+                            OsStr::new("retained.txt"),
+                            false,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        )
+                        .unwrap();
+                    child.write_all(b"caller cohort original").unwrap();
+                    child.sync_all().unwrap();
+                } else {
+                    original.write_all(b"caller cohort original").unwrap();
+                }
+                original.sync_all().unwrap();
+                drop(original);
+                DestinationAdmission::overwrite(authority, &parent, &name, 16, |_| Ok(())).unwrap()
+            } else {
+                DestinationAdmission::creation(authority, &parent, &name).unwrap()
+            };
+            let receipt = DurableStage::execute_with_receipt(
+                source,
+                &parent,
+                manager.root(),
+                &destination,
+                OsStr::new("unavailable-cohort-source"),
+                16,
+                |_| Ok(()),
+            )
+            .unwrap();
+            if !overwrite {
+                crate::DefaultPlatform
+                    .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                    .unwrap();
+            }
+            drop(receipt);
+            let stage = windows_fs::directory_children_limited(&parent, 32)
+                .unwrap()
+                .into_iter()
+                .find(|entry| {
+                    !before.contains(entry) && entry.to_string_lossy().starts_with(".ottrin-copy-")
+                })
+                .unwrap();
+            let snapshot = Snapshot::load(
+                authority,
+                &parent,
+                manager.root(),
+                &stage,
+                SnapshotAccess::Read,
+            )
+            .unwrap();
+            headers.push(snapshot.state.header.unwrap());
+        }
+        let public =
+            namespace::open_source_with(authority, &parent, OsStr::new("copy-true"), None).unwrap();
+        let public_evidence = tree::PinnedTree::open(authority, &public, 16, &mut |_| Ok(()))
+            .unwrap()
+            .freeze_existing(|_| Ok(()))
+            .unwrap();
+        drop(public);
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let before = headers
+            .iter()
+            .map(|header| {
+                Snapshot::load(
+                    authority,
+                    &parent,
+                    manager.root(),
+                    &header.stage_name(),
+                    SnapshotAccess::Read,
+                )
+                .unwrap()
+                .bytes
+            })
+            .collect::<Vec<_>>();
+        assert!(Observation::observe_at(manager.path(), &ids, |_| Ok(())).is_err());
+        let fresh = Authority::Caller(recapture());
+        assert!(
+            Observation::observe_with(&fresh, manager.path(), &ids, |_| Err(io(
+                "owned cohort cancellation"
+            )))
+            .is_err()
+        );
+        for (header, bytes) in headers.iter().zip(&before) {
+            assert_eq!(
+                &Snapshot::load(
+                    authority,
+                    &parent,
+                    manager.root(),
+                    &header.stage_name(),
+                    SnapshotAccess::Read
+                )
+                .unwrap()
+                .bytes,
+                bytes
+            );
+        }
+        let mut group =
+            Observation::observe_with(&fresh, manager.path(), &ids, |_| Ok(())).unwrap();
+        assert!(
+            group
+                .reclaim_all(|_| Err(io("owned cohort cancellation")))
+                .is_err()
+        );
+        for (header, bytes) in headers.iter().zip(&before) {
+            assert_eq!(
+                &Snapshot::load(
+                    authority,
+                    &parent,
+                    manager.root(),
+                    &header.stage_name(),
+                    SnapshotAccess::Read
+                )
+                .unwrap()
+                .bytes,
+                bytes
+            );
+        }
+        if interrupted {
+            for index in 0..2 {
+                group.reclaim_payload(index, |_| Ok(())).unwrap();
+            }
+            for index in 0..2 {
+                group.prepare_metadata(index, |_| Ok(())).unwrap();
+            }
+            let sequence = Snapshot::load(
+                authority,
+                &parent,
+                manager.root(),
+                &headers[0].stage_name(),
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .sequence;
+            let reset = ResetFault;
+            FAULT.with(|slot| {
+                slot.set(Some((
+                    sequence,
+                    Step::CleanupMetadata {
+                        role: CleanupMetadataRole::Local,
+                        point: CleanupMetadataPoint::HandleClosed,
+                    },
+                    false,
+                )))
+            });
+            let error = group.finish_metadata(0, |_| Ok(())).unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("injected Copy journal flush boundary failure"),
+                "{error}"
+            );
+            drop(reset);
+            drop(group);
+            let next = Authority::Caller(recapture());
+            assert!(
+                Observation::observe_with(&next, manager.path(), &ids[..1], |_| Ok(())).is_err()
+            );
+            assert!(Observation::observe_at(manager.path(), &ids, |_| Ok(())).is_err());
+            group = Observation::observe_with(&next, manager.path(), &ids, |_| Ok(())).unwrap();
+        }
+        group.reclaim_all(|_| Ok(())).unwrap();
+        assert!(group.complete());
+        group.reclaim_all(|_| Ok(())).unwrap();
+        let coordinator = manager.cohorts(false).unwrap().unwrap();
+        assert!(
+            windows_fs::directory_children_limited(coordinator.root(), 1)
+                .unwrap()
+                .is_empty()
+        );
+        coordinator.validate().unwrap();
+        for header in &headers {
+            assert!(
+                matches!(authority.probe(&parent, &header.stage_name()), Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+            );
+            assert!(
+                matches!(authority.probe(manager.root(), &header.central_name()), Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+            );
+        }
+        assert!(
+            matches!(authority.probe(&parent, OsStr::new("copy-false")), Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+        );
+        let public =
+            namespace::open_source_with(authority, &parent, OsStr::new("copy-true"), None).unwrap();
+        let actual = tree::PinnedTree::open(authority, &public, 16, &mut |_| Ok(()))
+            .unwrap()
+            .freeze_existing(|_| Ok(()))
+            .unwrap();
+        assert_eq!(actual, public_evidence);
+        manager.validate().unwrap();
+        println!(
+            "caller cohort source_directory={directory} interrupted={interrupted}: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed"
+        );
+    }
+}
+
+/// Construct the same retained alias histories exercised by ordinary recovery
+/// tests. Public Copy's dependency guard must still refuse the second overlap;
+/// lower-level journal transitions model the already-existing historical state.
+fn exercise_caller_shared_cohort(
+    authority: &Authority,
+    manager: &super::super::registry::AnchoredRoot,
+    protected_parent: &File,
+    source: &File,
+    directory: bool,
+    recapture: &mut impl FnMut() -> Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    as_caller: &mut impl FnMut(&mut dyn FnMut()),
+) {
+    use super::cleanup_group::Observation;
+    let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    for interrupted in [false, true] {
+        let root = authority
+            .create(
+                protected_parent,
+                OsStr::new(&format!("caller-shared-cohort-{directory}-{interrupted}")),
+                true,
+                sharing,
+            )
+            .unwrap();
+        let parents = ["left", "right"].map(|name| {
+            authority
+                .create(&root, OsStr::new(name), true, sharing)
+                .unwrap()
+        });
+        let original_dirs = if directory {
+            Some(parents.each_ref().map(|parent| {
+                authority
+                    .create(parent, OsStr::new("copy"), true, sharing)
+                    .unwrap()
+            }))
+        } else {
+            None
+        };
+        let mut leaf = authority
+            .create(
+                original_dirs.as_ref().map_or(&parents[0], |dirs| &dirs[0]),
+                OsStr::new(if directory { "old" } else { "copy" }),
+                false,
+                sharing,
+            )
+            .unwrap();
+        leaf.write_all(b"caller shared original data").unwrap();
+        leaf.sync_all().unwrap();
+        let from = windows_fs::location(&leaf).unwrap();
+        let mut links = vec![
+            windows_fs::location(&parents[1])
+                .unwrap()
+                .join(if directory { "copy/old" } else { "copy" }),
+            windows_fs::location(&root).unwrap().join("outside"),
+        ];
+        if directory {
+            links.push(
+                windows_fs::location(&parents[1])
+                    .unwrap()
+                    .join("copy/other"),
+            );
+        }
+        for to in links {
+            let mut result = None;
+            as_caller(&mut || result = Some(std::fs::hard_link(&from, &to)));
+            result.unwrap().unwrap();
+        }
+        drop((leaf, original_dirs));
+        let outside = authority
+            .open_child(
+                &root,
+                OsStr::new("outside"),
+                false,
+                FILE_GENERIC_READ,
+                sharing,
+            )
+            .unwrap();
+        let outside_before = (
+            read(&outside).unwrap(),
+            stable_identity_from_handle(&outside).unwrap(),
+            security::owner_group_dacl_digest(&outside).unwrap(),
+        );
+        let mut names: Vec<OsString> = Vec::new();
+        for (index, parent) in parents.iter().enumerate() {
+            let destination =
+                DestinationAdmission::overwrite(authority, parent, OsStr::new("copy"), 16, |_| {
+                    Ok(())
+                })
+                .unwrap();
+            if index == 1 {
+                let prior = Snapshot::load(
+                    authority,
+                    &parents[0],
+                    manager.root(),
+                    &names[0],
+                    SnapshotAccess::Read,
+                )
+                .unwrap()
+                .bytes;
+                assert!(
+                    destination
+                        .guard_overwrite_dependencies(parent, manager.root(), |_| Ok(()))
+                        .is_err()
+                );
+                assert_eq!(
+                    Snapshot::load(
+                        authority,
+                        &parents[0],
+                        manager.root(),
+                        &names[0],
+                        SnapshotAccess::Read
+                    )
+                    .unwrap()
+                    .bytes,
+                    prior
+                );
+            }
+            let mut staged = DurableStage::create(
+                source,
+                parent,
+                manager.root(),
+                &destination,
+                OsStr::new("unavailable-shared-source"),
+                16,
+                |_| Ok(()),
+            )
+            .unwrap();
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            let name = staged.stage.name.clone();
+            drop(staged);
+            let snapshot = Snapshot::load(
+                authority,
+                parent,
+                manager.root(),
+                &name,
+                SnapshotAccess::Write,
+            )
+            .unwrap();
+            let mut journal = Journal::from_snapshot(parent, manager.root(), snapshot).unwrap();
+            journal.prepare_original(16, |_| Ok(())).unwrap();
+            if directory {
+                journal
+                    .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                    .unwrap();
+            } else {
+                // Both file aliases must finish their native renames before
+                // either writer acknowledges the final shared object epoch.
+                let reset = ResetFault;
+                FAULT.with(|slot| {
+                    slot.set(Some((journal.sequence + 1, Step::OriginalRenamed, false)))
+                });
+                let error = journal
+                    .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                    .unwrap_err();
+                assert!(
+                    error
+                        .to_string()
+                        .contains("injected Copy journal flush boundary failure"),
+                    "{error}"
+                );
+                drop(reset);
+            }
+            drop(journal);
+            if directory {
+                PermissionStage::publish(authority, parent, manager.root(), &name, |_| Ok(()))
+                    .unwrap()
+                    .apply(|_| Ok(()))
+                    .unwrap();
+            }
+            names.push(name);
+        }
+        if !directory {
+            for (parent, name) in parents.iter().zip(&names) {
+                let snapshot = Snapshot::load(
+                    authority,
+                    parent,
+                    manager.root(),
+                    name,
+                    SnapshotAccess::Write,
+                )
+                .unwrap();
+                let mut journal = Journal::from_snapshot(parent, manager.root(), snapshot).unwrap();
+                journal
+                    .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                    .unwrap();
+                drop(journal);
+                PermissionStage::publish(authority, parent, manager.root(), name, |_| Ok(()))
+                    .unwrap()
+                    .apply(|_| Ok(()))
+                    .unwrap();
+            }
+        }
+        let headers = parents
+            .iter()
+            .zip(&names)
+            .map(|(parent, name)| {
+                Snapshot::load(
+                    authority,
+                    parent,
+                    manager.root(),
+                    name,
+                    SnapshotAccess::Read,
+                )
+                .unwrap()
+                .state
+                .header
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let ids = headers
+            .iter()
+            .map(|header| header.transaction.clone())
+            .collect::<Vec<_>>();
+        let public = parents
+            .iter()
+            .map(|parent| {
+                let file = namespace::open_source_with(authority, parent, OsStr::new("copy"), None)
+                    .unwrap();
+                tree::PinnedTree::open(authority, &file, 16, &mut |_| Ok(()))
+                    .unwrap()
+                    .freeze_existing(|_| Ok(()))
+                    .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let fresh = Authority::Caller(recapture());
+        assert!(Observation::observe_at(manager.path(), &ids, |_| Ok(())).is_err());
+        let mut group =
+            Observation::observe_with(&fresh, manager.path(), &ids, |_| Ok(())).unwrap();
+        assert_eq!(group.shared.len(), 1);
+        assert!(group.references.contains(&(0, 1)) && group.references.contains(&(1, 0)));
+        if interrupted {
+            group.prepare_shared_unlink(0, |_| Ok(())).unwrap();
+            let sequence = Snapshot::load(
+                authority,
+                &parents[0],
+                manager.root(),
+                &names[0],
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .sequence;
+            let reset = ResetFault;
+            FAULT.with(|slot| slot.set(Some((sequence, Step::CleanupHandleClosed, false))));
+            let error = group.unlink_shared_entry(0, |_| Ok(())).unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("injected Copy journal flush boundary failure"),
+                "{error}"
+            );
+            drop(reset);
+            assert!(group.unlink_shared_entry(0, |_| Ok(())).is_err());
+            drop(group);
+            let next = Authority::Caller(recapture());
+            group = Observation::observe_with(&next, manager.path(), &ids, |_| Ok(())).unwrap();
+        }
+        group.reclaim_all(|_| Ok(())).unwrap();
+        assert!(group.complete());
+        group.reclaim_all(|_| Ok(())).unwrap();
+        for ((parent, header), expected) in parents.iter().zip(&headers).zip(&public) {
+            assert!(
+                matches!(authority.probe(parent, &header.stage_name()), Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+            );
+            assert!(
+                matches!(authority.probe(manager.root(), &header.central_name()), Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+            );
+            let file =
+                namespace::open_source_with(authority, parent, OsStr::new("copy"), None).unwrap();
+            let actual = tree::PinnedTree::open(authority, &file, 16, &mut |_| Ok(()))
+                .unwrap()
+                .freeze_existing(|_| Ok(()))
+                .unwrap();
+            assert_eq!(&actual, expected);
+        }
+        assert_eq!(
+            (
+                read(&outside).unwrap(),
+                stable_identity_from_handle(&outside).unwrap(),
+                security::owner_group_dacl_digest(&outside).unwrap()
+            ),
+            outside_before
+        );
+        assert_eq!(namespace::link_count(&outside).unwrap(), 1);
+        let coordinator = manager.cohorts(false).unwrap().unwrap();
+        assert!(
+            windows_fs::directory_children_limited(coordinator.root(), 1)
+                .unwrap()
+                .is_empty()
+        );
+        coordinator.validate().unwrap();
+        manager.validate().unwrap();
+        println!(
+            "caller shared cohort source_directory={directory} interrupted={interrupted}: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed"
+        );
+    }
 }

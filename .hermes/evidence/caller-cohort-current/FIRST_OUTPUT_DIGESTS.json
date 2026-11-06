@@ -1,0 +1,47 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/RESULTS.zip",
+    "sha256": "ce78aa305188a97b83ec150c2c5065c9226e7992edb30dfb13db997652ea81b3",
+    "bytes": 12684
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/controller.ps1",
+    "sha256": "05adda091e7ef63d0587d777fd76a0287d1f7b942d132ea7bd99e4450b3a34b9",
+    "bytes": 6494
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/desktop-ready.png",
+    "sha256": "f9b2b83469e1f4a94d458d07275c2398d70361c907ed698a01f67c7d33f02507",
+    "bytes": 964582
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/privacy-accepted-0.png",
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "bytes": 9819
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/privacy-accepted-1.png",
+    "sha256": "b3efdaeb15381b2709f97c2a7d85d26e661855b40171e61fa3b0b541bf1851a8",
+    "bytes": 478538
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-fixture-fragment.rs",
+    "sha256": "cd5e461d2d1d5b470a11144e66adda22a8fd90832fad3a0b273dc78d7c52268f",
+    "bytes": 8478
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/group-actor.ps1",
+    "sha256": "9bb51399e0477462ccfe4bc36f9e3a49a554d1e0751e17587ee1a67aee0d3301",
+    "bytes": 2170
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/group-system-a.ps1",
+    "sha256": "bc499478b600d31b462de344d6bdf15599ce144d87add807a57751222b9600cb",
+    "bytes": 18776
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/verify-batch.py",
+    "sha256": "94f5db5fdd00f209408fd766e8309905dbd09ef40234f9246abceaa2729aeffb",
+    "bytes": 3868
+  }
+]

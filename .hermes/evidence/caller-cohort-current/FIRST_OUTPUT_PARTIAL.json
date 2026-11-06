@@ -1,0 +1,18 @@
+{
+  "status": "cleanup stopped on transient unreadable process; no bypass",
+  "inspection_gap_pid": 3902812,
+  "remaining_paths": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/privacy-accepted-1.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/viewer",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-fixture-fragment.rs",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/group-actor.ps1",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/group-system-a.ps1",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/verify-batch.py"
+  ],
+  "already_removed_paths": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/controller.ps1",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/privacy-accepted-0.png"
+  ]
+}

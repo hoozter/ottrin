@@ -1,0 +1,14 @@
+{
+  "status": "pass exact source/build/staged executable and native runtime binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "source_files": 12,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 470242304,
+    "sha256": "5a291708a2ac4fee8a73155c5f73dfb2c7e53271ab1faee4f088b91239c9ee22"
+  },
+  "native_result": "pass caller mixed cleanup cohorts and affected ordinary metadata/cohort regressions",
+  "remaining": "42 additional ordinary group/cohort regressions and caller shared-alias/public integration remain separate"
+}

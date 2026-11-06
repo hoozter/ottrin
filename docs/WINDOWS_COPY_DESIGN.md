@@ -1923,3 +1923,42 @@ VM/disks/private desktop/profile/process teardown is independently verified.
 Caller cohort retirement, public cleanup entry points, real process restart/new
 connections, alternate-administrator UAC and packaged/profile acceptance remain
 separate. Administrator Copy remains disabled.
+
+
+### Caller-authorized cohort cleanup
+
+Runtime cohort observations retain explicit Authority. Selection catalogs and
+serialized metadata Plans/cohort snapshots remain evidence only. Canonical caller
+registry admission is re-established before every bound registry use; parent IDs,
+peer journals, shared payload operations and metadata inspections use the same
+retained authority. No ambient helper profile or persisted selection chooses a token.
+
+The external coordinator creates its unpublished control with a live caller-derived
+private descriptor, FILE_CREATE and atomic delete-on-close. Publication uses the
+held native handle and no-replace rename; delete-on-close is cancelled only after
+that rename. Reopen, namespace binding, checkpoint inspection and retirement keep
+caller authority and preserve the existing identity/security/content/exclusion
+checks. Ordinary paths select Process explicitly and share the same engine.
+
+Eight native caller cases pass: file/directory sources, mixed original/post-Undo
+cohorts and shared retained aliases, each direct or interrupted. Shared file-root
+renames finish before either journal acknowledges the final shared epoch; directory
+children include a local duplicate and an outside alias. The public dependency guard
+still refuses the second overlap. Lower-level transitions construct only historical
+retained state, without rewriting records or fabricating timestamps. Post-unlink
+recovery uses a fresh context of the same live client and preserves outside bytes,
+native identity/security, both public trees and source/preferences/index evidence.
+
+The first focused source passes 120 tests/43 invocations and strict platform/UI lint.
+Only the caller test fixture then gains shared-alias cases; reconstruction verifies
+all existing fixture bodies and all 11 production file hashes remain unchanged.
+The rebuilt shared-fixture source passes the paired caller/helper plus all 42
+additional ordinary group/cohort parents: 44 passes/44 invocations. Combined,
+164 passes/87 invocations cover the eight caller scenarios and all 54 selected
+metadata/group/cohort parents. The ordinary audit-SACL case is intentionally
+ignored without its privilege, then explicitly passes in the SYSTEM lane.
+Both native runs have independent VM/disks/private desktop/profile/process teardown.
+Scope and provenance: `.hermes/evidence/caller-cohort-current/ACCEPTANCE.json`.
+Public caller cleanup/discovery admissions, complete caller failure/readonly/link
+matrices, actual process restart/new connections/UAC and package/profile contexts
+remain separate. Administrator Copy remains disabled.

@@ -188,6 +188,29 @@ pub(crate) fn create_temporary_relative(parent: &File, name: &OsStr) -> io::Resu
     )
 }
 
+/// Create a new caller-owned unpublished control with atomic delete-on-close.
+/// # Safety
+/// `security` must be derived from the live authenticated caller token.
+pub(crate) unsafe fn create_temporary_for_caller(
+    parent: &File,
+    name: &OsStr,
+    security: *const SECURITY_DESCRIPTOR,
+) -> io::Result<File> {
+    create_private_native(
+        parent,
+        name,
+        RelativeOptions {
+            directory: Some(false),
+            create_new: true,
+            access: FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
+            sharing: 0,
+            security,
+        },
+        FILE_OPEN_FOR_BACKUP_INTENT | FILE_DELETE_ON_CLOSE,
+        FILE_CREATE,
+    )
+}
+
 unsafe fn open_relative_options(
     parent: &File,
     name: &OsStr,

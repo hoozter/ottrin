@@ -54,6 +54,7 @@ mod control_records {
 
 impl Selection {
     fn capture(
+        authority: &Authority,
         central: &File,
         ids: &[String],
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
@@ -71,7 +72,8 @@ impl Selection {
             }
         }
         let root = super::super::version(central)?;
-        let creator = windows_fs::current_owner()?;
+        authority.validate()?;
+        let creator = authority.owner()?;
         let security = security::PrivateSecurity::capture(central, &creator)?;
         let names =
             windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
@@ -85,8 +87,7 @@ impl Selection {
                 }
                 continue;
             };
-            let record =
-                discovery::RegisteredJournal::dependency(&Authority::Process, central, name)?;
+            let record = discovery::RegisteredJournal::dependency(authority, central, name)?;
             let header = record.state.header.as_ref().unwrap();
             records.insert(
                 name.clone(),
@@ -111,7 +112,7 @@ impl Selection {
             security,
             creator,
         };
-        result.validate(central, cancel)?;
+        result.validate(authority, central, cancel)?;
         Ok(result)
     }
 
@@ -246,6 +247,7 @@ impl Selection {
     /// Every surviving control and all unrelated names/attributes stay frozen.
     fn reconcile_metadata(
         &self,
+        authority: &Authority,
         plan: &cleanup_finalize::Plan,
         parent: &File,
         central: &File,
@@ -280,9 +282,9 @@ impl Selection {
         if !next.names.contains(&header.central_name()) {
             next.records.remove(&header.central_name());
         }
-        next.validate(central, cancel)?;
-        plan.validate_in_group(parent, central, &next, &mut *cancel)?;
-        next.validate(central, cancel)?;
+        next.validate(authority, central, cancel)?;
+        plan.validate_in_group(authority, parent, central, &next, &mut *cancel)?;
+        next.validate(authority, central, cancel)?;
         Ok(next)
     }
 
@@ -312,10 +314,13 @@ impl Selection {
 
     fn validate(
         &self,
+        authority: &Authority,
         central: &File,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        if super::super::version(central)? != self.root
+        authority.validate()?;
+        if authority.owner()? != self.creator
+            || super::super::version(central)? != self.root
             || windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
                 .map_err(io)?
                 != self.names
@@ -326,9 +331,7 @@ impl Selection {
         for name in self.records.keys() {
             cancel(0)?;
             self.check(&discovery::RegisteredJournal::dependency(
-                &Authority::Process,
-                central,
-                name,
+                authority, central, name,
             )?)?;
         }
         Ok(())
@@ -370,6 +373,7 @@ impl Member {
 /// the eventual executor; they are not silently declined or treated as absent.
 #[derive(Clone, Debug)]
 pub(super) struct Observation {
+    authority: Authority,
     pub(super) registry: std::path::PathBuf,
     registry_binding: Binding,
     pub(super) selection: Selection,
@@ -421,7 +425,7 @@ impl Observation {
         // recheck can fail. No handles escape this method.
         self.selection = selection;
         self.members = members;
-        self.selection.validate(central, cancel)?;
+        self.selection.validate(&self.authority, central, cancel)?;
         Ok(())
     }
 
@@ -439,17 +443,23 @@ impl Observation {
             ));
         }
         cancel(0)?;
-        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+        let manager =
+            AnchoredRoot::open_bound_with(&self.authority, &self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
-        self.selection.validate(&central, &mut cancel)?;
-        let mut volumes = windows_fs::Volumes::new(&central)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         // Validate every confirmed payload before the first durable begin.
         for member in &self.members {
             if matches!(member, Member::Complete(_)) {
                 continue;
             }
             let header = member.header();
-            let parent = volumes.resolve(header.parent, FILE_GENERIC_READ, &mut cancel)?;
+            let parent = self.authority.resolve_parent(
+                &central,
+                header.parent,
+                FILE_GENERIC_READ,
+                &mut cancel,
+            )?;
             match member {
                 Member::Payload(admission) => {
                     admission.validate_in_group(&parent, &central, &self.selection, &mut cancel)?
@@ -460,6 +470,7 @@ impl Observation {
                 Member::Complete(_) => {}
                 Member::Metadata(plan) => {
                     let current = cleanup_finalize::Plan::observe_in_group(
+                        &self.authority,
                         &parent,
                         &central,
                         &header.stage_name(),
@@ -472,7 +483,8 @@ impl Observation {
                 }
             }
         }
-        self.selection.validate(&central, &mut cancel)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         for index in 0..self.members.len() {
             let Member::Payload(admission) = &self.members[index] else {
                 continue;
@@ -485,7 +497,8 @@ impl Observation {
             {
                 central.try_clone().map_err(io)?
             } else {
-                volumes.resolve(
+                self.authority.resolve_parent(
+                    &central,
                     admission.header().parent,
                     FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                     &mut cancel,
@@ -515,9 +528,11 @@ impl Observation {
             return Err(io("Invalid or different pending shared unlink owner"));
         }
         self.start_all(&mut cancel)?;
-        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+        let manager =
+            AnchoredRoot::open_bound_with(&self.authority, &self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
-        self.selection.validate(&central, &mut cancel)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         let owner_header = self.members[owner].header().clone();
         // A fresh observer must not prepare another owner while durable peers
         // are waiting for an existing owner, even before any physical unlink.
@@ -526,7 +541,7 @@ impl Observation {
                 continue;
             }
             let record = discovery::RegisteredJournal::dependency(
-                &Authority::Process,
+                &self.authority,
                 &central,
                 &member.header().central_name(),
             )?;
@@ -550,7 +565,7 @@ impl Observation {
             .filter(|(_, members)| members.iter().any(|(member, _)| *member == owner))
             .map(|(object, _)| *object)
             .collect();
-        let parent = Self::writable_parent(&central, &owner_header, &mut cancel)?;
+        let parent = Self::writable_parent(&self.authority, &central, &owner_header, &mut cancel)?;
         let (started, intent) = admission.prepare_owner_unlink(
             &parent,
             &central,
@@ -587,7 +602,8 @@ impl Observation {
             let Member::Payload(admission) = &self.members[peer] else {
                 return Err(io("Shared peer has no retained payload"));
             };
-            let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+            let parent =
+                Self::writable_parent(&self.authority, &central, admission.header(), &mut cancel)?;
             let started = admission.prepare_peer_unlink(
                 &parent,
                 &central,
@@ -621,9 +637,11 @@ impl Observation {
             }
             _ => self.prepare_shared_unlink(owner, &mut cancel)?,
         };
-        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+        let manager =
+            AnchoredRoot::open_bound_with(&self.authority, &self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
-        self.selection.validate(&central, &mut cancel)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         let peers = self
             .shared
             .get(&intent.expected.identity.object_key())
@@ -635,7 +653,8 @@ impl Observation {
             return Err(io("Missing shared owner payload"));
         };
         if !admission.pending_entry_absent() {
-            let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+            let parent =
+                Self::writable_parent(&self.authority, &central, admission.header(), &mut cancel)?;
             let (change, delta) = admission.unlink_shared_entry(
                 &parent,
                 &central,
@@ -656,13 +675,15 @@ impl Observation {
             members[owner] = Member::Payload(change.admission);
             self.selection = selection;
             self.members = members;
-            self.selection.validate(&central, &mut cancel)?;
+            self.selection
+                .validate(&self.authority, &central, &mut cancel)?;
         }
         for peer in peers {
             let Member::Payload(admission) = &self.members[peer] else {
                 return Err(io("Missing shared peer payload"));
             };
-            let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+            let parent =
+                Self::writable_parent(&self.authority, &central, admission.header(), &mut cancel)?;
             let change = admission.acknowledge_shared_peer(
                 &parent,
                 &central,
@@ -675,7 +696,8 @@ impl Observation {
         let Member::Payload(admission) = &self.members[owner] else {
             return Err(io("Missing shared owner completion"));
         };
-        let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+        let parent =
+            Self::writable_parent(&self.authority, &central, admission.header(), &mut cancel)?;
         let change = admission.finish_shared_entry(
             &parent,
             &central,
@@ -707,11 +729,13 @@ impl Observation {
             }
         }
         self.pending_unlink = None;
-        self.selection.validate(&central, &mut cancel)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         manager.validate()
     }
 
     fn writable_parent(
+        authority: &Authority,
         central: &File,
         header: &Header,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
@@ -719,7 +743,8 @@ impl Observation {
         if header.parent.same_object(header.central) {
             central.try_clone().map_err(io)
         } else {
-            windows_fs::Volumes::new(central)?.resolve(
+            authority.resolve_parent(
+                central,
                 header.parent,
                 FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                 cancel,
@@ -782,13 +807,23 @@ impl Observation {
         }
         self.start_all(&mut cancel)?;
         loop {
-            let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+            let manager = AnchoredRoot::open_bound_with(
+                &self.authority,
+                &self.registry,
+                &self.registry_binding,
+            )?;
             let central = manager.writable_root()?;
-            self.selection.validate(&central, &mut cancel)?;
+            self.selection
+                .validate(&self.authority, &central, &mut cancel)?;
             let mut next = Vec::new();
             for (index, member) in self.members.iter().enumerate() {
                 if let Member::Payload(admission) = member {
-                    let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+                    let parent = Self::writable_parent(
+                        &self.authority,
+                        &central,
+                        admission.header(),
+                        &mut cancel,
+                    )?;
                     next.push((
                         index,
                         admission.next_in_group(&parent, &central, &mut cancel)?,
@@ -841,16 +876,27 @@ impl Observation {
             if shared {
                 self.unlink_shared_entry(index, &mut cancel)?;
             } else {
-                let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+                let manager = AnchoredRoot::open_bound_with(
+                    &self.authority,
+                    &self.registry,
+                    &self.registry_binding,
+                )?;
                 let central = manager.writable_root()?;
-                self.selection.validate(&central, &mut cancel)?;
+                self.selection
+                    .validate(&self.authority, &central, &mut cancel)?;
                 let Member::Payload(admission) = &self.members[index] else {
                     return Err(io("Selected cleanup member has no payload"));
                 };
-                let parent = Self::writable_parent(&central, admission.header(), &mut cancel)?;
+                let parent = Self::writable_parent(
+                    &self.authority,
+                    &central,
+                    admission.header(),
+                    &mut cancel,
+                )?;
                 let change = admission.reclaim_next_in_group(&parent, &central, &mut cancel)?;
                 self.accept_entry_change(index, change)?;
-                self.selection.validate(&central, &mut cancel)?;
+                self.selection
+                    .validate(&self.authority, &central, &mut cancel)?;
                 manager.validate()?;
             }
         }
@@ -891,9 +937,11 @@ impl Observation {
         let Member::Payload(admission) = &self.members[index] else {
             return Ok(());
         };
-        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+        let manager =
+            AnchoredRoot::open_bound_with(&self.authority, &self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
-        self.selection.validate(&central, &mut cancel)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         let parent = if admission
             .header()
             .parent
@@ -901,7 +949,8 @@ impl Observation {
         {
             central.try_clone().map_err(io)?
         } else {
-            windows_fs::Volumes::new(&central)?.resolve(
+            self.authority.resolve_parent(
+                &central,
                 admission.header().parent,
                 FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                 &mut cancel,
@@ -909,7 +958,8 @@ impl Observation {
         };
         let reclaimed = admission.reclaim_with_ack(&parent, &central, &mut cancel)?;
         self.accept_entry_change(index, cleanup::EntryChange::Complete(reclaimed))?;
-        self.selection.validate(&central, &mut cancel)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         manager.validate()
     }
 
@@ -945,25 +995,29 @@ impl Observation {
             return Err(io("Complete all group payloads before metadata removal"));
         }
         cancel(0)?;
-        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+        let manager =
+            AnchoredRoot::open_bound_with(&self.authority, &self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         let header = self.members[index].header().clone();
         let parent = if header.parent.same_object(header.central) {
             central.try_clone().map_err(io)?
         } else {
-            windows_fs::Volumes::new(&central)?.resolve(
+            self.authority.resolve_parent(
+                &central,
                 header.parent,
                 FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                 &mut cancel,
             )?
         };
-        self.selection.validate(&central, &mut cancel)?;
+        self.selection
+            .validate(&self.authority, &central, &mut cancel)?;
         // The entire surviving cohort is still bound before any intent.
         for member in &self.members {
             if matches!(member, Member::Complete(_)) {
                 continue;
             }
-            let peer_parent = windows_fs::Volumes::new(&central)?.resolve(
+            let peer_parent = self.authority.resolve_parent(
+                &central,
                 member.header().parent,
                 FILE_GENERIC_READ,
                 &mut cancel,
@@ -975,9 +1029,13 @@ impl Observation {
                     &self.selection,
                     &mut cancel,
                 )?,
-                Member::Metadata(plan) => {
-                    plan.validate_in_group(&peer_parent, &central, &self.selection, &mut cancel)?
-                }
+                Member::Metadata(plan) => plan.validate_in_group(
+                    &self.authority,
+                    &peer_parent,
+                    &central,
+                    &self.selection,
+                    &mut cancel,
+                )?,
                 Member::Payload(_) | Member::Complete(_) => unreachable!(),
             }
         }
@@ -1108,13 +1166,15 @@ impl Observation {
         log.pending(index, &mut cancel)?;
         self.cohort = Some(log.receipt());
         cancel(0)?;
-        let manager = AnchoredRoot::open_bound(&self.registry, &self.registry_binding)?;
+        let manager =
+            AnchoredRoot::open_bound_with(&self.authority, &self.registry, &self.registry_binding)?;
         let central = manager.writable_root()?;
         let header = self.members[index].header().clone();
         let parent = if header.parent.same_object(header.central) {
             central.try_clone().map_err(io)?
         } else {
-            windows_fs::Volumes::new(&central)?.resolve(
+            self.authority.resolve_parent(
+                &central,
                 header.parent,
                 FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
                 &mut cancel,
@@ -1126,9 +1186,13 @@ impl Observation {
         };
         // A retained Plan, never a missing ID, licenses reconciliation after an
         // uncertain own metadata unlink. Freeze all other members until done.
-        let selection = self
-            .selection
-            .reconcile_metadata(plan, &parent, &central, &mut cancel)?;
+        let selection = self.selection.reconcile_metadata(
+            &self.authority,
+            plan,
+            &parent,
+            &central,
+            &mut cancel,
+        )?;
         let mut members = self.members.clone();
         for member in &mut members {
             member.advance_catalog(&self.selection, &selection)?;
@@ -1138,10 +1202,14 @@ impl Observation {
         let Member::Metadata(plan) = &self.members[index] else {
             unreachable!()
         };
-        let result = plan.finish(&parent, &central, &mut cancel);
-        let selection = self
-            .selection
-            .reconcile_metadata(plan, &parent, &central, &mut cancel)?;
+        let result = plan.finish_with(&self.authority, &parent, &central, &mut cancel);
+        let selection = self.selection.reconcile_metadata(
+            &self.authority,
+            plan,
+            &parent,
+            &central,
+            &mut cancel,
+        )?;
         let mut members = self.members.clone();
         for member in &mut members {
             member.advance_catalog(&self.selection, &selection)?;
@@ -1162,22 +1230,31 @@ impl Observation {
         ids: &[String],
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        Self::observe_with(&Authority::Process, path, ids, &mut cancel)
+    }
+
+    pub(super) fn observe_with(
+        authority: &Authority,
+        path: &Path,
+        ids: &[String],
+        mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        authority.validate()?;
         cancel(0)?;
-        if let Some(group) = cohort::observe_at(path, ids, &mut cancel)? {
+        if let Some(group) = cohort::observe_at(authority, path, ids, &mut cancel)? {
             return Ok(group);
         }
-        let manager = AnchoredRoot::open_at(path, false)?
+        let manager = AnchoredRoot::open_existing(authority, path)?
             .ok_or_else(|| io("Configured Copy registry is missing"))?;
         let central = manager.root();
-        let selection = Selection::capture(central, ids, &mut cancel)?;
-        let mut volumes = windows_fs::Volumes::new(central)?;
+        let selection = Selection::capture(authority, central, ids, &mut cancel)?;
         let mut members = Vec::new();
         let mut protected: BTreeMap<Object, BTreeSet<usize>> = BTreeMap::new();
         let mut retained: BTreeMap<Object, Vec<(usize, usize)>> = BTreeMap::new();
         for (member_index, id) in ids.iter().enumerate() {
             cancel(0)?;
             let record = discovery::RegisteredJournal::open(
-                &Authority::Process,
+                authority,
                 central,
                 &OsString::from(format!("{id}.copy-journal")),
             )?;
@@ -1189,9 +1266,11 @@ impl Observation {
                 .as_ref()
                 .is_some_and(|p| p.metadata_removal_intent);
             drop(record);
-            let parent = volumes.resolve(header.parent, FILE_GENERIC_READ, &mut cancel)?;
+            let parent =
+                authority.resolve_parent(central, header.parent, FILE_GENERIC_READ, &mut cancel)?;
             let member = if metadata {
                 Member::Metadata(cleanup_finalize::Plan::observe_in_group(
+                    authority,
                     &parent,
                     central,
                     &header.stage_name(),
@@ -1200,6 +1279,7 @@ impl Observation {
                 )?)
             } else {
                 let admission = cleanup::Admission::observe_in_group(
+                    authority,
                     &parent,
                     central,
                     &header.stage_name(),
@@ -1207,7 +1287,7 @@ impl Observation {
                     &mut cancel,
                 )?;
                 let snapshot = Snapshot::load(
-                    &Authority::Process,
+                    authority,
                     &parent,
                     central,
                     &header.stage_name(),
@@ -1243,7 +1323,7 @@ impl Observation {
         for (index, member) in members.iter().enumerate() {
             cancel(0)?;
             let record = discovery::RegisteredJournal::open(
-                &Authority::Process,
+                authority,
                 central,
                 &member.header().central_name(),
             )?;
@@ -1259,7 +1339,12 @@ impl Observation {
                 }
             }
             drop(record);
-            let parent = volumes.resolve(member.header().parent, FILE_GENERIC_READ, &mut cancel)?;
+            let parent = authority.resolve_parent(
+                central,
+                member.header().parent,
+                FILE_GENERIC_READ,
+                &mut cancel,
+            )?;
             match member {
                 Member::Payload(admission) => {
                     admission.validate_metadata(&parent, central, &mut cancel)?
@@ -1270,6 +1355,7 @@ impl Observation {
                 Member::Complete(_) => {}
                 Member::Metadata(plan) => {
                     let current = cleanup_finalize::Plan::observe_in_group(
+                        authority,
                         &parent,
                         central,
                         &plan.header().stage_name(),
@@ -1282,7 +1368,7 @@ impl Observation {
                 }
             }
         }
-        selection.validate(central, &mut cancel)?;
+        selection.validate(authority, central, &mut cancel)?;
         manager.validate()?;
         retained.retain(|_, owners| {
             owners
@@ -1293,6 +1379,7 @@ impl Observation {
                 > 1
         });
         Ok(Self {
+            authority: authority.clone(),
             registry: manager.path().to_path_buf(),
             registry_binding: manager.binding()?,
             selection,
@@ -1309,6 +1396,6 @@ impl Observation {
         path: &Path,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Option<Self>, PlatformError> {
-        cohort::pending_at(path, &mut cancel)
+        cohort::pending_at(&Authority::Process, path, &mut cancel)
     }
 }

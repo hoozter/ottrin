@@ -1,0 +1,11 @@
+{
+  "first_source": "SOURCE_INPUT.json",
+  "first_build": "NATIVE_TEST_INPUT.json",
+  "first_native": "FOCUSED_VERIFICATION.json",
+  "first_patch": "FIRST_SOURCE_PATCH.json",
+  "allowed_difference": [
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs"
+  ],
+  "scope": "Additional caller shared-alias fixtures only; all 11 production files retain first-tested hashes; both ordinary and SYSTEM caller deadlines cover the longer combined helper, not product behavior",
+  "patch_storage": "JSON preserves exact patch bytes, including required blank-context prefixes, without treating patch syntax as source whitespace"
+}

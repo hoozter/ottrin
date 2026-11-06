@@ -95,20 +95,14 @@ impl Admission {
     }
 
     pub(super) fn observe_in_group(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
         selection: &super::cleanup_group::Selection,
         cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        Self::observe_selected(
-            &Authority::Process,
-            parent,
-            central,
-            name,
-            Some(selection),
-            cancel,
-        )
+        Self::observe_selected(authority, parent, central, name, Some(selection), cancel)
     }
 
     fn observe_selected(

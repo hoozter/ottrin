@@ -1,0 +1,17 @@
+{
+  "status": "dependency-ready after verified cohort checkpoint",
+  "files": [
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs"
+  ],
+  "required": [
+    "Expose caller-authorized cleanup/pending admissions on already admitted WindowsCopyRegistry, mirroring retained/resume/undo methods",
+    "Pass Authority through RetainedCopyCleanupPlan observers and pending cohort recovery; keep ordinary configured-path entry points selecting Process once",
+    "Use observe_with in discovery cleanup metadata/payload branches; current Process observers can still mark valid caller cleanup NeedsReview",
+    "Test public caller single/mixed/shared cleanup, read-only/cancelled discovery, pending original-cohort recovery, wrong-process/foreign-root refusal and source/user-state preservation",
+    "Then wire full caller dispatcher retaining original source pins and canonical registry guard; preserve remaining failure/readonly/link/restart/UAC/TokenOwner/package gates"
+  ],
+  "goal": "Full Linux/Windows objective active; no owner blocker"
+}

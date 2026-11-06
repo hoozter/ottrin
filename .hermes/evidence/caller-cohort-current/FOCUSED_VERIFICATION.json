@@ -1,0 +1,43 @@
+{
+  "status": "pass caller mixed cleanup cohorts and affected ordinary metadata/cohort regressions",
+  "archive_sha256": "ce78aa305188a97b83ec150c2c5065c9226e7992edb30dfb13db997652ea81b3",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 43,
+  "top_level_passes": 120,
+  "caller_metadata_scenarios": 4,
+  "caller_mixed_cohort_scenarios": 4,
+  "ordinary_metadata_regressions": [
+    "windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order",
+    "windows_native_copy_cleanup_metadata_authority_requires_matching_intent_mirrors",
+    "windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission",
+    "windows_native_copy_cleanup_metadata_rechecks_control_before_any_unlink",
+    "windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_removal",
+    "windows_native_copy_cleanup_finalizes_metadata_and_replays_its_admitted_proof",
+    "windows_native_copy_cleanup_metadata_refuses_unknown_content_and_aliases",
+    "windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_first_unlink",
+    "windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal",
+    "windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+    "windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl",
+    "windows_native_copy_cohort_replays_later_pending_member"
+  ],
+  "compiler_jsonl_sha256": "19f343ccff8e502e08fb218460fb3b50b2ca0257952ff084b7a3049931a1e750",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "limits": [
+    "Mixed caller cohort component only; additional ordinary group/cohort regressions, caller shared aliases and public cleanup integration remain incomplete; Administrator Copy stays disabled",
+    "Fresh contexts of the same live authenticated client do not prove actual client/helper restart, new authenticated connections or alternate-administrator UAC",
+    "Full dispatcher, complete caller prefix/readonly/link/alias failure matrices, TokenOwner mutation and packaged profile contexts remain required",
+    "Stable application packages unchanged; hosted acceptance remains separate"
+  ]
+}

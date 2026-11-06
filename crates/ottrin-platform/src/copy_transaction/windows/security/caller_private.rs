@@ -89,6 +89,18 @@ impl CallerCreationSecurity {
         self.validate_created(&file)?;
         Ok(file)
     }
+    pub(crate) fn create_temporary(&self, parent: &File, name: &OsStr) -> std::io::Result<File> {
+        if self.directory {
+            return Err(std::io::Error::other(
+                "Temporary Copy controls must be files",
+            ));
+        }
+        let file = windows_fs::with_file_privileges(|| unsafe {
+            windows_fs::create_temporary_for_caller(parent, name, self.descriptor.0.cast())
+        })?;
+        self.validate_created(&file)?;
+        Ok(file)
+    }
     pub(crate) fn create_candidate(
         &self,
         parent: &File,

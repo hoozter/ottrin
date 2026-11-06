@@ -1,0 +1,122 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/controller.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/viewer",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/test-build.jsonl",
+      "kind": "build-cache",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-test-build.jsonl",
+      "kind": "build-cache",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/LIVE_BUILD_BINDING.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/SHARED_LIVE_BINDING.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/CALLER_COMPONENT_OBSERVATION.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/SHARED_COMPONENT_OBSERVATION.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/TEST_OUTPUT_CANDIDATES.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/LIVE_PROGRESS.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/PROGRESS_OBSERVER_PROCESS.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/LIVE_PROGRESS.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/PROGRESS_OBSERVER_PROCESS.json",
+      "kind": "test-fixture",
+      "reason": "Consumed native fixture output, compiler stream or superseded progress/planning observation",
+      "evidence": "FOCUSED_VERIFICATION and SHARED_VERIFICATION prove exact source/build/staged text and normalized results plus independent teardown. Current ACCEPTANCE/BUILD inputs, fixture continuity, source patches, lint/build logs and native exports retained. All owned guests/volumes/desktops/profiles/processes terminal and absent; newest test executables and caches preserved."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    }
+  ]
+}

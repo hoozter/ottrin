@@ -1,0 +1,98 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/RESULTS.zip",
+    "bytes": 10609,
+    "sha256": "5e6792fdefb472ac9a38a3c2213d6d752e7e3cc62e5d511b553feaa39eba075f",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/controller.ps1",
+    "bytes": 6494,
+    "sha256": "05adda091e7ef63d0587d777fd76a0287d1f7b942d132ea7bd99e4450b3a34b9",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/desktop-ready.png",
+    "bytes": 2522174,
+    "sha256": "1eee2ec30216b65732fad33db432f825af2c3fb0afe7e17c536b01eae36627e4",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/privacy-accepted-0.png",
+    "bytes": 10983,
+    "sha256": "34c352a1e341a1e44722fc3db3221e524f04d4f777c484d91327f096ce0ccf50",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/privacy-accepted-1.png",
+    "bytes": 1490611,
+    "sha256": "44dc33ce007204dbb1c34a35ad84aa7da603e59f6e46c873c01c474a6ec9be6b",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/test-build.jsonl",
+    "bytes": 360792,
+    "sha256": "19f343ccff8e502e08fb218460fb3b50b2ca0257952ff084b7a3049931a1e750",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-test-build.jsonl",
+    "bytes": 360789,
+    "sha256": "d5bf80a7b3c28e3d6949b49a6bb582452bf185271ae9f077ab56cc2e657adf57",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/LIVE_BUILD_BINDING.json",
+    "bytes": 350,
+    "sha256": "6b90387b747c38b115f84f4f9d68e872d4c2712a623e4cf27693a8148c948b1e",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/SHARED_LIVE_BINDING.json",
+    "bytes": 364,
+    "sha256": "4d823bcd7a3644a361634447ed2ccf403eec0543bad034677b1299207be05988",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/CALLER_COMPONENT_OBSERVATION.json",
+    "bytes": 5981,
+    "sha256": "5f7a69ee9aefb86f3df2d32cea3ceb7fd75e090a32eb5d2b4505c6ea7b45ac44",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/SHARED_COMPONENT_OBSERVATION.json",
+    "bytes": 6619,
+    "sha256": "245be4b6d89a03876aacd60728e11f0b5fc6c338c877c170ae76e48ec5c9c6af",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/TEST_OUTPUT_CANDIDATES.json",
+    "bytes": 14343,
+    "sha256": "7d6c97bdfb00978615439ebd60aa25f77a54d66b9d4d3fa5b0d26311e9972fcf",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/LIVE_PROGRESS.json",
+    "bytes": 14351,
+    "sha256": "478b076d7fc39464e145b25f21599eca90484c387fb88eb600a3f44eaf3f11c6",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/native/PROGRESS_OBSERVER_PROCESS.json",
+    "bytes": 21995,
+    "sha256": "4b699c277507f55a1aa166ba0ef458beab9ab34e76ad7aa76346d9968e28f10f",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/LIVE_PROGRESS.json",
+    "bytes": 21676,
+    "sha256": "51f0d5bd0e2c164e8754b1a71dd6e4da616a850a2d8cbf3820d7c16d39a6374d",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current/shared-native/PROGRESS_OBSERVER_PROCESS.json",
+    "bytes": 34623,
+    "sha256": "ecefb2351ea0db1f5cf727e21b5cf5549d49be6b05be2442028245cf6ffdd634",
+    "links": 1
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "status": "owned task cleanup finished; current deliverables, useful shared caches and source preserved",
+  "before_sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29860347904,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49403625472
+  },
+  "after_sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29457641472,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49634570240
+  },
+  "size_deltas": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": -402706432,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 230944768
+  },
+  "evidence_root_baseline": "Task-owned directory created empty before first build; no pre-existing artifacts",
+  "evidence_root_allocated_bytes": 991232,
+  "obsolete_incremental_sessions_removed": 17,
+  "incremental_filesystem_delta": 4163940352,
+  "superseded_test_executables_removed": 1,
+  "test_executable_retirement": "TEST_OUTPUT_RETIREMENT.json",
+  "test_cleanup": "TEST_OUTPUT_CLEANUP.json",
+  "consumed_output_targets": 27,
+  "all_consumed_paths_absent": true,
+  "cleanup_transient_process_gap": "FIRST_OUTPUT_PARTIAL.json; PID gone before exact remaining retry; no bypass",
+  "final_incremental_candidates": 0,
+  "native_teardown": "FOCUSED_VERIFICATION.json and SHARED_VERIFICATION.json; VM/disks/private desktop/profile/observer absence independently verified",
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cohort-current",
+      "purpose": "Compact source/build/native/cleanup receipts and reproducible QA scripts",
+      "pending_consumer": "Roadmap continuation and source/platform provenance review"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "purpose": "Current same-configuration reusable native Windows test executable",
+      "pending_consumer": "Caller public cleanup/discovery and dispatcher QA"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "purpose": "Current same-configuration reusable native Windows test executable",
+      "pending_consumer": "Caller public cleanup/discovery and dispatcher QA"
+    }
+  ],
+  "preserved_packages": "PRESERVED_PACKAGES.json",
+  "limits": "Measured per-step free-space deltas are observations amid other system activity; not summed allocated cache sizes"
+}

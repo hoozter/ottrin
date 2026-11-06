@@ -1,0 +1,41 @@
+{
+  "candidate": {
+    "executable": "target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-1df9e3bb6dfd3a60.exe",
+    "fingerprint": "target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-1df9e3bb6dfd3a60/test-integration-test-windows_job_native.json",
+    "mtime": 1792968163521680133,
+    "bytes": 445672780,
+    "links": 1,
+    "settings": {
+      "compile_kind": 8200324069407742093,
+      "config": 8247474407144887393,
+      "features": "[\"default\"]",
+      "path": 3280908861163272666,
+      "profile": 1169666772337208464,
+      "rustc": 18276270781310494267,
+      "rustflags": [],
+      "target": 18049050356650963353
+    }
+  },
+  "replacement": {
+    "executable": "target/x86_64-pc-windows-gnu/debug/deps/windows_job_native-e79be56cfa052a12.exe",
+    "fingerprint": "target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-e79be56cfa052a12/test-integration-test-windows_job_native.json",
+    "mtime": 1793859181344103847,
+    "bytes": 446387957,
+    "links": 1,
+    "settings": {
+      "compile_kind": 8200324069407742093,
+      "config": 8247474407144887393,
+      "features": "[\"default\"]",
+      "path": 3280908861163272666,
+      "profile": 1169666772337208464,
+      "rustc": 18276270781310494267,
+      "rustflags": [],
+      "target": 18049050356650963353
+    }
+  },
+  "replacement_native_passes": 60,
+  "replacement_acceptance": "../windows-preview-boundary-race-current/ACCEPTANCE.json",
+  "candidate_sha256": "59e014e9c153a8752f6e3bfb96761c6c43034a551e9d68d98064b9b86b50341e",
+  "replacement_sha256": "8a0620b9fddcb22e749a1abbd0713d351b77983b2bc883f317712a375583222c",
+  "consumers": "No current script, packaging, workflow or evidence producer references old exact name; no running native fixture/compiler; cleanup helper checks process references and hard links. Matching old dep-info and four-file fingerprint are obsolete."
+}

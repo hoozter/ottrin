@@ -1,0 +1,9 @@
+{
+  "status": "first caller fixture reconstructed from reference and exact first patch; all existing fixture bodies unchanged",
+  "first_caller_sha256": "5b7a184eecb0e7f3bd5e8cfe3862d124fa6d43e1f5ac2502a592183a7fe6f8bb",
+  "current_caller_sha256": "ef19bda306445916c2f1d7d61c9029445858ec1c9c6a80fa67b0e9d263fb16ac",
+  "only_changes": "One invocation and the new caller shared-cohort fixture; all 11 production source hashes unchanged",
+  "temporary_snapshot": "Removed by registered TemporaryDirectory teardown",
+  "patch": "SHARED_FIXTURE_ADDITIONS.json",
+  "patch_storage": "JSON preserves exact patch bytes, including required blank-context prefixes, without treating patch syntax as source whitespace"
+}

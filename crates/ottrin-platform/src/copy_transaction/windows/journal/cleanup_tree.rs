@@ -42,10 +42,6 @@ pub(super) fn dispose(file: &File) -> Result<(), PlatformError> {
     Ok(())
 }
 
-pub(super) fn absent(parent: &File, name: &OsStr) -> Result<(), PlatformError> {
-    absent_with(&Authority::Process, parent, name)
-}
-
 pub(super) fn absent_with(
     authority: &Authority,
     parent: &File,

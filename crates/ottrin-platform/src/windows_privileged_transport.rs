@@ -388,6 +388,16 @@ impl CallerCopyContext {
         self.validate()?;
         Ok(file)
     }
+    pub(crate) fn create_temporary_control(
+        &self,
+        parent: &std::fs::File,
+        name: &OsStr,
+    ) -> io::Result<std::fs::File> {
+        let policy = self.private_creation_policy(false)?;
+        let file = policy.create_temporary(parent, name)?;
+        self.validate()?;
+        Ok(file)
+    }
     pub(crate) fn create_private_candidate(
         &self,
         parent: &std::fs::File,

@@ -53,156 +53,68 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Previous published source `0128f51b` has three successful hosted jobs and one
-Windows verification failure in
-[run42190338862](https://github.com/hoozter/ottrin/actions/runs/42190338862).
-The failing recovery fixture manufactured an overlapping overwrite through the
-shared executor, which now correctly enforces its dependency guard. The current
-checkpoint checks that refusal, then constructs only the historical test state
-through existing lower-level journal transitions; cleanup dependency and
-data-preservation assertions remain. The corrected test passes natively. A second
-fixture now makes a real DACL change instead of assigning a group SID that could
-already match its owner under SYSTEM. It also passes, with refusal and namespace
-preservation intact. New hosted acceptance remains separate. Diagnosis and exact
-fixture-only corrections are in `caller-cleanup-current/HOSTED_FAILURE.json` and
-`FIXTURE_CORRECTIONS.patch`; stable application packages are unchanged.
+Published source `e3417b61` passes all four hosted jobs in
+[run42210630346](https://github.com/hoozter/ottrin/actions/runs/42210630346).
+Its preceding `72f21c52` also passes all four jobs in
+[run42203809953](https://github.com/hoozter/ottrin/actions/runs/42203809953).
+The older red recovery fixture and ineffective DACL-drift fixture are corrected;
+their exact diagnosis and fixture-only patches remain in
+`caller-cleanup-current/HOSTED_FAILURE.json` and `FIXTURE_CORRECTIONS.patch`.
+Stable application packages retain the separately accepted source scopes above.
 
-1. Finish Windows administrator Copy using the original caller's canonical
-   profile/registry, destination claims, stage/journal, metadata/final-permission
-   token, receipts, Undo and cleanup authority. Administrator Copy stays disabled.
-   The ordinary durable coordinator and Activity restart/mutation fence have their
-   scoped native acceptance. Authenticated caller context, private creation/reopen,
-   and now held caller registry/coordinator authority are implemented components.
-   Current metadata component coverage is 120 test passes across 43 top-level
-   invocations. The preceding payload component has 200 passes across 123
-   invocations, including all 91 non-worker ordinary cleanup tests; those receipts
-   retain their own source scope. Both use ordinary-user and SYSTEM roles. Registry/private staging share explicit
-   authority; real tree/payload staging and required naming policy pass. Final
-   permission plans now retain caller authority, derive the whole graph from one
-   original-token snapshot, apply under the helper and re-admit saved phases.
-   Six native parent policies cover 30 entry updates and 30 already-final pending
-   replays; all projected descriptors match actual original-token references,
-   unrelated entries remain unchanged and parent-policy drift refuses. The real
-   staged tree also applies its retained root policy. A reproduced helper-side
-   inheritance failure is fixed by retaining scoped file privileges during the
-   native permission update; exact descriptor checks remain mandatory.
-   Existing 15 audit/label inheritance comparisons, two per-object scenarios and
-   metadata/sparse/tree/link/profile/registry/security/codec/torn-checkpoint
-   regressions pass, as does strict paired Windows platform/UI lint. Caller-owned
-   destination claims now retain explicit authority through anchored roots, key
-   buckets, creation, read-only/writable reopen, validation, release and complete
-   orphan-preparation reclamation. Case-sensitive/insensitive and short/Unicode
-   contexts, original-token reads, dead-owner replacement, unrelated/partial data
-   preservation and changed-policy refusal pass. Native claim publication retains
-   scoped helper privileges during its no-replace rename. Ordinary paired-journal
-   claim publication/process/exclusion/recovery/release/retirement and initialization
-   regressions pass. Caller-aware paired journals now create and reopen local and
-   central controls with frozen caller ownership and explicit runtime authority.
-   Real one-file and four-entry directory staging, original-token reads, readonly
-   write denial, fresh writer reopening and durable native permission-plan appends
-   pass. Published/unpublished complete Begin-only recovery releases only the
-   reservation and preserves both journals; payload intent stays reserved. Pinned
-   preferences/index bytes, identities and permissions and full source evidence
-   remain unchanged. Directory-source overlap admission now retains scoped helper
-   access while inspecting private registry ancestry, before any initialization.
-   Retained copied-tree reopening now keeps that runtime authority through native
-   no-follow reads, content and namespace verification and original-token permission
-   re-admission. Actual file and four-entry directory recovery derive the exact
-   previously planned native policy; ordinary source-free publication and public
-   Undo regressions pass with the shared verifier. Creation publication now carries
-   caller authority across journal writer handoff, native per-object reopening,
-   no-replace rename, creation-time recovery binding and final whole-tree permissions.
-   Both actual source contexts publish, finish permissions, reopen completed payload
-   evidence and replay through a fresh writer. A reproduced post-rename access denial
-   was fixed at the remaining process-authority binding check; operation-specific IO
-   diagnostics preserve typed refusals. Unified caller creation execution now holds
-   canonical registry admission before its first stage/claim write and through
-   completion receipt construction. Shared staging/publication/completion readers
-   select authority explicitly; opaque Undo plans retain the live authenticated
-   context across canonical admission, refresh, native-ID parent reopening and
-   source-free public Undo. Actual file and four-entry directory flows finish both
-   the manual publication/receipt path and unified execute-with-receipt path;
-   repeated Undo, wrong-process refusal, cancelled refresh and foreign registry
-   refusal before any destination/registry entry write pass. Source and pinned
-   preferences/index bytes, identities and security remain unchanged. A reproduced
-   missed Process selection at the receipt-to-Undo admission handoff is fixed.
-   Live caller forward plans now retain authenticated context through canonical
-   registry admission/reopening, native-ID parent resolution, paired journal access
-   and source-free publication/permission recovery. Both actual source contexts
-   recover four retained states: staged, renamed before acknowledgement, published
-   before permission application, and native permission changed while intent remains
-   pending. Wrong process is refused; cancelled resume preserves journal bytes;
-   completed replay appends no records and public Undo succeeds afterward. Ordinary
-   source-free/readonly completed replay and publication/permission outcome retries
-   also pass. Caller-aware overwrite now admits and validates private original trees,
-   retains their read authority through original planning/rename/restoration and
-   preserves that authority in dependency leases and held-original proofs. The
-   shared executor owns the dependency guard for all caller/ordinary entry paths.
-   Actual file and four-entry directory sources overwrite caller-private originals
-   through direct execution and recovery after an unacknowledged original rename.
-   Receipt refresh and repeated public Undo restore original IDs, streams, membership,
-   owner/group/DACL digests and all observed metadata except legitimate rename change
-   time. Source and pinned preferences/index evidence remain unchanged. Ordinary
-   overwrite source-free replay and drift/occupant refusals pass too. Admitted caller
-   registries now expose read-only discovery and restored Resume/Undo admission
-   through the shared authority-aware discovery implementation. Actual file and
-   four-entry directory cases independently recapture contexts of the same live
-   authenticated client, discover staged/completed/undone evidence, restore and
-   execute Resume and Undo, refuse cancellation/invalid IDs and preserve journals
-   during discovery plus original source/preferences/index evidence. All 108 test
-   passes across 31 native invocations and strict Windows platform/UI lint pass.
-   The privilege-dependent bad-record/symlink discovery test runs as SYSTEM;
-   ordinary phase-classification discovery remains an ordinary-user control.
-   Current receipt: `caller-cleanup-current/ACCEPTANCE.json`; prior discovery, overwrite,
-   resume, receipt, publication,
-   retained-tree, paired-journal, claim and permission receipts retain their scopes.
-   These are component controls,
-   not completed caller Copy, whole retained recovery or package/UAC acceptance.
-   Remaining: actual caller dispatcher retaining pinned source and canonical
-   registry admission through the entire operation; complete caller creation mutation-prefix,
-   readonly/link publication recovery, the complete original-retention/restoration
-   failure matrix (including readonly original roots), caller cohort retirement
-   and public cleanup admissions, and real client/helper restart with
-   newly authenticated connections.
-   Fresh context captures of a live client do not prove process-restart recovery.
-   Caller cleanup records can still report NeedsReview until their own authority
-   integration is complete; caller cohort/public cleanup is not yet accepted.
-   Retained-payload cleanup now carries explicit caller
-   authority through admission, dependency leases, remaining-tree reads/deletion,
-   peer observations and completion proofs. Four actual file/directory cases pass
-   original cleanup after overwrite and copied-payload cleanup after Undo,
-   cancellation preservation, injected post-unlink recovery through a fresh context
-   and public/source/preferences/index preservation. The existing 108 focused
-   passes plus 89 ordinary cleanup cases passed on the initial build; only two
-   test fixtures then changed. Three exact native tests on the rebuilt source
-   verify both corrections and the remaining cohort case. Together these cover
-   all 91 non-worker cleanup cases, with no production changes between builds.
-   The initial whole-module 600-second timeout remains recorded; individually
-   retained results include 199/223-second process-exit matrices. Metadata/cohort
-   retirement and public caller cleanup admissions were unconverted at that scope.
-   Evidence: `.hermes/evidence/caller-cleanup-current/ACCEPTANCE.json`.
-   The next metadata component now uses explicit runtime caller authority for
-   paired-intent observation, no-follow reads, namespace checks, dependency proof
-   and ordered local/stage/central removal. Serialized removal Plans contain only
-   native evidence, never caller tokens. Four native file/directory × overwrite/
-   post-Undo cases pass same-client fresh-context inspection, cancelled observation,
-   wrong-process refusal before mutation, local-unlink interruption recovery and
-   idempotent replay. Public/source/preferences/index evidence is checked after
-   metadata retirement. All 120 test passes across 43 top-level invocations and
-   strict Windows platform/UI lint pass, including all 12 affected ordinary
-   metadata/cohort regressions. The ordinary audit-SACL test is intentionally
-   ignored without its privilege, then explicitly passes in the SYSTEM lane.
-   Owned VM/disks/private desktop/profile/process teardown is independently
-   verified. Current receipt:
-   `.hermes/evidence/caller-metadata-retirement-current/ACCEPTANCE.json`.
-   Caller cohort retirement and public cleanup admission remain dependency-ready
-   work, not owner waits or whole caller-cleanup acceptance.
-   Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
-   package/profile contexts. Creation-inheritance and original-token finalization
-   controls do not substitute for that complete transaction/recovery proof.
+1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
+   Implemented engine components retain original-caller authority through canonical
+   registry/profile admission, private claims/staging/journals, native permission
+   plans, completion receipts, source-free Resume/Undo, original retention and
+   restoration, registry discovery, and retained-payload/metadata cleanup.
+   These bounded controls do not complete the dispatcher or package/UAC acceptance.
+
+   Current cohort work passes eight native caller scenarios: actual file/directory
+   sources, mixed retained-original/post-Undo copied-payload cohorts, and caller-owned
+   shared root-file/directory-child aliases, each with direct or interrupted recovery.
+   They cover cancellation/wrong-process refusal, fresh same-client admission,
+   private external log lifecycle, ordered metadata retirement and public/source/
+   preferences/index preservation. Shared cases retain an outside alias and a local
+   duplicate; the public overwrite guard still refuses overlapping work. Historical
+   retained alias states use explicit lower-level fixture transitions.
+   Verification passes 164 tests across 87 invocations: 120/43 on the focused
+   build, then the paired caller/helper and all 42 additional ordinary group/cohort
+   parents on a rebuilt shared-fixture source. All 11 production file hashes and
+   existing caller fixture bodies are unchanged between builds. Together the runs
+   cover all 54 selected metadata/group/cohort parent tests, with exact source,
+   compiler profile, native executable text and role separation recorded.
+   Strict Windows platform/UI lint and independent owned VM/disks/private desktop/
+   profile/process teardown pass. Current receipt:
+   `.hermes/evidence/caller-cohort-current/ACCEPTANCE.json`.
+
+   Earlier payload (200 passes/123 invocations, including all 91 non-worker cleanup
+   parents) and metadata (120/43) receipts retain their exact source scopes in
+   `caller-cleanup-current/ACCEPTANCE.json` and
+   `caller-metadata-retirement-current/ACCEPTANCE.json`. They are overlapping
+   component coverage, not an additive whole-product test count. Detailed prior
+   authority, permission, claim, staging, publication, receipt and recovery contracts
+   remain in [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md) and their receipts.
+
+   Remaining dependency-ready work, in order:
+
+   - Finish public caller cleanup admissions, pending-cohort recovery and
+     discovery/status inspection. Caller
+     cleanup can still show NeedsReview until those entry points retain authority.
+   - Wire the actual caller dispatcher while retaining original source pins and
+     canonical registry admission through the whole operation.
+   - Complete caller creation mutation-prefix and readonly/symbolic-link publication
+     recovery matrices, and the original-retention/restoration failure matrix,
+     including readonly original roots.
+   - Prove actual app/helper restart and newly authenticated connections; recapturing
+     a context of the same live client does not establish process-restart recovery.
+   - Prove alternate-administrator UAC, in-place TokenOwner mutation, caller symbolic
+     links and packaged/profile contexts. Existing hard-link cases do not close
+     these gates.
+
    Missing member IDs never license deletion or a completed original-batch claim.
-   These are independently executable implementation/QA gates, not owner waits.
-   See the historical caller checkpoints below for earlier exact-source scopes.
+   These are implementation/QA tasks, not owner waits; personal authentication,
+   unavailable hardware and final owner acceptance stay on the separate waiting list.
+
 2. Finish U05–U08 interface/theme consistency and property mapping. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.

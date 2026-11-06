@@ -88,6 +88,12 @@ impl Authority {
             Self::Caller(caller) => caller.create_private_entry(parent, name, directory, sharing),
         }
     }
+    pub(super) fn create_temporary(&self, parent: &File, name: &OsStr) -> std::io::Result<File> {
+        match self {
+            Self::Process => windows_fs::create_temporary_relative(parent, name),
+            Self::Caller(caller) => caller.create_temporary_control(parent, name),
+        }
+    }
     pub(super) fn child(
         &self,
         parent: &File,

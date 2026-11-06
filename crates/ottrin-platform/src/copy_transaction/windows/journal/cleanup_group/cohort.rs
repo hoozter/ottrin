@@ -90,31 +90,33 @@ impl Receipt {
         {
             return Err(io("Cohort registry or external anchor admission changed"));
         }
+        let authority = manager.authority();
         let central = manager.root();
         let mut selection = self.selection.clone();
         if let Some(index) = self.pending {
             let plan = &self.snapshot.plans[index];
-            let parent = inspection_parent(central, plan.header(), cancel)?;
-            selection = selection.reconcile_metadata(plan, &parent, central, cancel)?;
+            let parent = inspection_parent(authority, central, plan.header(), cancel)?;
+            selection = selection.reconcile_metadata(authority, plan, &parent, central, cancel)?;
         }
-        selection.validate(central, cancel)?;
+        selection.validate(authority, central, cancel)?;
         let mut members = Vec::new();
         for (index, plan) in self.snapshot.plans.iter().enumerate() {
             cancel(0)?;
-            let parent = inspection_parent(central, plan.header(), cancel)?;
-            plan.validate_in_group(&parent, central, &selection, &mut *cancel)?;
+            let parent = inspection_parent(authority, central, plan.header(), cancel)?;
+            plan.validate_in_group(authority, &parent, central, &selection, &mut *cancel)?;
             if self.completed[index] {
-                cleanup_tree::absent(&parent, &plan.header().stage_name())?;
-                cleanup_tree::absent(central, &plan.header().central_name())?;
+                cleanup_tree::absent_with(authority, &parent, &plan.header().stage_name())?;
+                cleanup_tree::absent_with(authority, central, &plan.header().central_name())?;
                 members.push(Member::Complete(Box::new(plan.header().clone())));
             } else {
                 members.push(Member::Metadata(plan.clone()));
             }
         }
-        selection.validate(central, cancel)?;
+        selection.validate(authority, central, cancel)?;
         manager.validate()?;
         coordinator.validate()?;
         Ok(Observation {
+            authority: authority.clone(),
             registry: manager.path().to_path_buf(),
             registry_binding: self.snapshot.registry.clone(),
             selection,
@@ -129,6 +131,7 @@ impl Receipt {
 }
 
 fn inspection_parent(
+    authority: &Authority,
     central: &File,
     header: &Header,
     cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
@@ -136,7 +139,7 @@ fn inspection_parent(
     if header.parent.same_object(header.central) {
         central.try_clone().map_err(io)
     } else {
-        windows_fs::Volumes::new(central)?.resolve(header.parent, FILE_GENERIC_READ, cancel)
+        authority.resolve_parent(central, header.parent, FILE_GENERIC_READ, cancel)
     }
 }
 
@@ -276,8 +279,12 @@ pub(super) struct Log {
 }
 
 impl Log {
-    fn load(path: &Path, writable: bool) -> Result<Option<Self>, PlatformError> {
-        let Some(manager) = AnchoredRoot::open_at(path, false)? else {
+    fn load(
+        authority: &Authority,
+        path: &Path,
+        writable: bool,
+    ) -> Result<Option<Self>, PlatformError> {
+        let Some(manager) = AnchoredRoot::open_existing(authority, path)? else {
             return Ok(None);
         };
         let Some(coordinator) = manager.cohorts(false)? else {
@@ -290,29 +297,24 @@ impl Log {
         if names != [OsString::from(NAME)] {
             return Err(io("Unknown entries in Copy cohort namespace"));
         }
-        let mut file = unsafe {
-            windows_fs::open_relative(
+        let mut file = authority
+            .open_child(
                 coordinator.root(),
                 OsStr::new(NAME),
-                RelativeOptions {
-                    directory: Some(false),
-                    create_new: false,
-                    access: FILE_GENERIC_READ
-                        | if writable {
-                            FILE_GENERIC_WRITE | DELETE
-                        } else {
-                            0
-                        },
-                    sharing: if writable {
-                        FILE_SHARE_READ
+                false,
+                FILE_GENERIC_READ
+                    | if writable {
+                        FILE_GENERIC_WRITE | DELETE
                     } else {
-                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+                        0
                     },
-                    security: ptr::null(),
+                if writable {
+                    FILE_SHARE_READ
+                } else {
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
                 },
             )
-        }
-        .map_err(io)?;
+            .map_err(io)?;
         let epoch = super::super::super::version(&file)?;
         let mut bytes = Vec::new();
         (&mut file)
@@ -361,7 +363,7 @@ impl Log {
         group: &Observation,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        if let Some(mut log) = Self::load(&group.registry, true)? {
+        if let Some(mut log) = Self::load(&group.authority, &group.registry, true)? {
             if log.receipt.snapshot.selection.selected != group.selection.selected
                 || log.receipt.snapshot.registry != group.registry_binding
             {
@@ -383,15 +385,28 @@ impl Log {
         if group.cohort.is_some() {
             return Err(io("Admitted Copy coordinator is missing"));
         }
-        let manager = AnchoredRoot::open_bound(&group.registry, &group.registry_binding)?;
-        group.selection.validate(manager.root(), cancel)?;
+        let manager = AnchoredRoot::open_bound_with(
+            &group.authority,
+            &group.registry,
+            &group.registry_binding,
+        )?;
+        group
+            .selection
+            .validate(&group.authority, manager.root(), cancel)?;
         let mut plans = Vec::new();
         for member in &group.members {
             let Member::Metadata(plan) = member else {
                 return Err(io("Every cohort member must have paired metadata intent"));
             };
-            let parent = inspection_parent(manager.root(), plan.header(), cancel)?;
-            plan.validate_in_group(&parent, manager.root(), &group.selection, &mut *cancel)?;
+            let parent =
+                inspection_parent(&group.authority, manager.root(), plan.header(), cancel)?;
+            plan.validate_in_group(
+                &group.authority,
+                &parent,
+                manager.root(),
+                &group.selection,
+                &mut *cancel,
+            )?;
             plans.push(plan.clone());
         }
         let coordinator = manager.cohorts(true)?.unwrap();
@@ -405,8 +420,10 @@ impl Log {
             ".preparing-{}",
             super::super::super::super::random_transaction_id()?
         ));
-        let mut file =
-            windows_fs::create_temporary_relative(coordinator.root(), &temporary).map_err(io)?;
+        let mut file = group
+            .authority
+            .create_temporary(coordinator.root(), &temporary)
+            .map_err(io)?;
         let snapshot = Snapshot {
             protocol: "ottrin-windows-cleanup-cohort-1".into(),
             registry: manager.binding()?,
@@ -421,33 +438,41 @@ impl Log {
         file.sync_all().map_err(io)?;
         #[cfg(test)]
         exit_at("header-unpublished");
-        crate::move_transaction::rename_windows_handle_no_replace(
-            &file,
-            coordinator.root(),
-            OsStr::new(NAME),
-        )?;
+        group.authority.file_operation(|| {
+            crate::move_transaction::rename_windows_handle_no_replace(
+                &file,
+                coordinator.root(),
+                OsStr::new(NAME),
+            )
+        })?;
         let disposition = FILE_DISPOSITION_INFO_EX {
             Flags: FILE_DISPOSITION_FLAG_ON_CLOSE,
         };
-        if unsafe {
-            SetFileInformationByHandle(
-                file.as_raw_handle().cast(),
-                FileDispositionInfoEx,
-                ptr::from_ref(&disposition).cast(),
-                std::mem::size_of_val(&disposition) as u32,
-            )
-        } == 0
-        {
-            return Err(io(std::io::Error::last_os_error()));
-        }
+        group.authority.file_operation(|| {
+            if unsafe {
+                SetFileInformationByHandle(
+                    file.as_raw_handle().cast(),
+                    FileDispositionInfoEx,
+                    ptr::from_ref(&disposition).cast(),
+                    std::mem::size_of_val(&disposition) as u32,
+                )
+            } == 0
+            {
+                return Err(io(std::io::Error::last_os_error()));
+            }
+            Ok(())
+        })?;
         file.sync_all().map_err(io)?;
         coordinator.writable_root()?.sync_all().map_err(io)?;
         manager.validate()?;
-        group.selection.validate(manager.root(), cancel)?;
+        group
+            .selection
+            .validate(&group.authority, manager.root(), cancel)?;
         drop(file);
         #[cfg(test)]
         exit_at("header-published");
-        Self::load(&group.registry, true)?.ok_or_else(|| io("Published coordinator disappeared"))
+        Self::load(&group.authority, &group.registry, true)?
+            .ok_or_else(|| io("Published coordinator disappeared"))
     }
 
     fn check(&self) -> Result<(), PlatformError> {
@@ -461,7 +486,11 @@ impl Log {
             .file
             .as_ref()
             .ok_or_else(|| io("Cohort writer already retired"))?;
-        namespace::validate_binding(self.coordinator.root(), OsStr::new(NAME), snapshot.file)?;
+        self.manager.authority().binding(
+            self.coordinator.root(),
+            OsStr::new(NAME),
+            snapshot.file,
+        )?;
         namespace::validate_single_link(file)?;
         snapshot
             .security
@@ -575,7 +604,9 @@ impl Log {
         self.observation(cancel)?;
         self.check()?;
         let file = self.file.take().unwrap();
-        cleanup_tree::dispose(&file)?;
+        self.manager
+            .authority()
+            .file_operation(|| cleanup_tree::dispose(&file))?;
         drop(file);
         #[cfg(test)]
         exit_at("retired");
@@ -615,7 +646,8 @@ pub(super) fn retry_retirement(
     if !receipt.all_done() {
         return Ok(false);
     }
-    let manager = AnchoredRoot::open_bound(&group.registry, &group.registry_binding)?;
+    let manager =
+        AnchoredRoot::open_bound_with(&group.authority, &group.registry, &group.registry_binding)?;
     let coordinator = manager
         .cohorts(false)?
         .ok_or_else(|| io("Admitted cohort root is missing"))?;
@@ -630,11 +662,12 @@ pub(super) fn retry_retirement(
 }
 
 pub(super) fn observe_at(
+    authority: &Authority,
     path: &Path,
     ids: &[String],
     cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Option<Observation>, PlatformError> {
-    let Some(log) = Log::load(path, false)? else {
+    let Some(log) = Log::load(authority, path, false)? else {
         return Ok(None);
     };
     let selected: BTreeSet<_> = ids.iter().cloned().collect();
@@ -647,10 +680,11 @@ pub(super) fn observe_at(
 }
 
 pub(super) fn pending_at(
+    authority: &Authority,
     path: &Path,
     cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Option<Observation>, PlatformError> {
-    Log::load(path, false)?
+    Log::load(authority, path, false)?
         .map(|log| log.observation(cancel))
         .transpose()
 }

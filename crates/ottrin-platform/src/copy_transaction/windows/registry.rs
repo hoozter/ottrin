@@ -580,11 +580,33 @@ impl AnchoredRoot {
         })
     }
 
+    /// Caller registries are admitted from the authenticated profile, never a
+    /// helper environment or a persisted locator alone.
+    pub(super) fn open_existing(
+        authority: &Authority,
+        path: &Path,
+    ) -> Result<Option<Self>, PlatformError> {
+        match authority {
+            Authority::Process => Self::open_at(path, false),
+            Authority::Caller(_) => authority
+                .registry_directory(path)
+                .map(|(_, manager)| manager),
+        }
+    }
+
     /// A path is only a locator: fresh admission must match every original
     /// identity, ownership/security and naming-policy proof before reuse.
+    #[cfg(test)]
     pub(super) fn open_bound(path: &Path, binding: &Binding) -> Result<Self, PlatformError> {
-        let root =
-            Self::open_at(path, false)?.ok_or_else(|| io("Configured Copy registry is missing"))?;
+        Self::open_bound_with(&Authority::Process, path, binding)
+    }
+    pub(super) fn open_bound_with(
+        authority: &Authority,
+        path: &Path,
+        binding: &Binding,
+    ) -> Result<Self, PlatformError> {
+        let root = Self::open_existing(authority, path)?
+            .ok_or_else(|| io("Configured Copy registry is missing"))?;
         if root.binding()? != *binding {
             return Err(io("Copy registry differs from its original admission"));
         }

@@ -1,0 +1,8 @@
+{
+  "first_launch": "refused before VM allocation",
+  "available_bytes": 25568931840,
+  "required_bytes": 25769803776,
+  "resolution": "Retired exact obsolete preview test executable and matching dep-info/fingerprint after verifying same compiler settings and newer 60-pass native replacement; TEST_OUTPUT_RETIREMENT.json",
+  "preserved": "All current stable packages, protected QA bases, current executables and useful caches",
+  "successful_allocation": "native/OWNER.json storage_at_start"
+}

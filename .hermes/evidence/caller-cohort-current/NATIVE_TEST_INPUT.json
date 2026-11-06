@@ -1,0 +1,50 @@
+{
+  "source": {
+    "reference_commit": "e3417b61bcc050378d097faa8e3d4f792ba41134",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "0c8b0bf92fde495876bab11fa69ba86be656a670e1f9bc38688f3c469b2fd2df",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "40494faae869bd3e3fd213d10e051f20c685fff4ed9373bac16d632fc19fcd05",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "5b7a184eecb0e7f3bd5e8cfe3862d124fa6d43e1f5ac2502a592183a7fe6f8bb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "936a6ce25b40b036d96c24f0a025e6999820cc1cbf10358aff93757522d530d2",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "ed7dc3854e33f64dc98471c9c745ab3503e99b4f60b9c5f0fa19ccf26d3e2cf4",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "d672599bd01534089795b40e1470ab441518e2d7475e9d7ee0ba4377fd303904",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group/cohort.rs": "7a1fb5e3bdf2334fe314a1e11ebdfa0f13967f5e2a06a0d7aff7576bd36edb57",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "d17d31944ac13070abab120e916020ea069fb3b3daa7ed7261f28ac3c50255b0",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "093a4f075758d7edb00b794bdac577883c9e9a8255eba616c055541779f933cf",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/caller_private.rs": "4664857b38a2292f9c5d61512f89307686cea56f62e670a7de2d7218f6d13d40",
+      "crates/ottrin-platform/src/windows_fs.rs": "444b75064519a29c854180fd8972080e6db61b97a4d499f3977240745175090c",
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "b7282faf2aba950e1853ec4940156297c04be920604c7bd44221e7823924d3c5"
+    },
+    "scope": "Explicit caller-authorized cleanup cohort observation/execution/log lifecycle; four mixed private caller file/directory direct/interrupted scenarios. Caller shared aliases and public cleanup/dispatcher remain separate."
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "8861d54d333e65e24386fdb6e47e89f7dac798aa6112f775594f14944f12ab00",
+      "bytes": 772488552,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    },
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "1ed496d3a15ef8e0e5fcea88674eebc59b3c7d550cb2b7b60661faf7ede273ca",
+      "bytes": 622983728,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    }
+  ],
+  "compiler_jsonl_sha256": "19f343ccff8e502e08fb218460fb3b50b2ca0257952ff084b7a3049931a1e750",
+  "command": "cargo test -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --lib --no-run --message-format=json"
+}

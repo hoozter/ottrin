@@ -506,13 +506,14 @@ impl Plan {
 
     pub(super) fn validate_in_group(
         &self,
+        authority: &Authority,
         parent: &File,
         central: &File,
         selection: &super::cleanup_group::Selection,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         self.run(
-            &Authority::Process,
+            authority,
             parent,
             central,
             Action::Inspect,
@@ -543,20 +544,14 @@ impl Plan {
     }
 
     pub(super) fn observe_in_group(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
         selection: &super::cleanup_group::Selection,
         cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        Self::observe_selected(
-            &Authority::Process,
-            parent,
-            central,
-            name,
-            Some(selection),
-            cancel,
-        )
+        Self::observe_selected(authority, parent, central, name, Some(selection), cancel)
     }
 
     fn observe_selected(
@@ -640,6 +635,7 @@ impl Plan {
         authority.validate()
     }
 
+    #[cfg(test)]
     pub(super) fn finish(
         &self,
         parent: &File,

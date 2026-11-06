@@ -1,0 +1,10 @@
+{
+  "reference_commit": "e3417b61bcc050378d097faa8e3d4f792ba41134",
+  "sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29860347904,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49403625472
+  },
+  "purpose": "Live caller authority through whole-cohort cleanup and external log lifecycle; reuse existing caches/configuration; owned private native fixture teardown"
+}
