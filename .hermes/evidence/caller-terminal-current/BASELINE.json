@@ -1,0 +1,12 @@
+{
+  "reference_commit": "8d49b17cd64751b7722498852dbecc03b22b7f4a",
+  "sizes": {
+    "target/debug/deps": 22343532544,
+    "target/debug/incremental": 25769959424,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29494935552,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49840664576
+  },
+  "evidence_root": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-terminal-current",
+  "purpose": "Caller-aware end-attempt and name-release admission/execution; destructive-data refusal and payload-independent terminal recovery; reuse existing compiler flags/cache and owned native producer",
+  "scope": "Baseline after metadata-only cargo checks and before substantial no-run build"
+}

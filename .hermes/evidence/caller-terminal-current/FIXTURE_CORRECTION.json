@@ -1,0 +1,9 @@
+{
+  "source": "crates/ottrin-platform/src/copy_transaction/windows/journal/caller_terminal.rs",
+  "original_sha256": "8b9e6208e446668be3ebf9bbc301dfd6da3d6e701ff3797658eee682e8853b06",
+  "current_sha256": "c7f6343a1410fc18e277ff19333be01379fa7f44e821fa3ab44ae0de8e79f624",
+  "original_block": "            let manager = caller.copy_registry(&[], false).unwrap().unwrap();",
+  "corrected_block": "            let manager = caller\n                .copy_registry(std::slice::from_ref(&source_path), true)\n                .unwrap()\n                .unwrap();",
+  "reconstruction": "Replace exactly the corrected_block with original_block in the current source to reconstruct the first failed native fixture; SHA256 verified",
+  "scope": "Only test fixture capability admission changed; production unchanged"
+}

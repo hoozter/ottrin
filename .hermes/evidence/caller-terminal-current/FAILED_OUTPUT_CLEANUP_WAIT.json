@@ -1,0 +1,9 @@
+{
+  "status": "Resolved by registered current-producer teardown; observer reaped, all consumed outputs removed",
+  "pid": 4066180,
+  "parent_pid": 4064822,
+  "state": "Z",
+  "ownership": "Matches current native/OWNER.json desktop_observer_pid; completed observer awaits registered producer teardown/reaping",
+  "reason": "Cleanup helper refused an unreadable zombie process; no bypass or restart. Old failed-run outputs remain intact and will be removed after current suite teardown.",
+  "resolution": "FINAL_OUTPUT_CLEANUP.json; no process-inspection exception or restart used"
+}

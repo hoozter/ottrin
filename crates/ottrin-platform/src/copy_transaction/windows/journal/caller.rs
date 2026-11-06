@@ -2279,6 +2279,16 @@ fn exercise_foreign_cleanup_registry(
             .pending_cleanup_plan_with_progress(|_| Ok(()))
             .is_err()
     );
+    assert!(
+        foreign
+            .abort_plan_with_progress(&ids[0], |_| Ok(()))
+            .is_err()
+    );
+    assert!(
+        foreign
+            .name_release_plan_with_progress(&ids[0], |_| Ok(()))
+            .is_err()
+    );
     assert_eq!(foreign.binding().unwrap(), binding);
     assert_eq!(
         windows_fs::directory_children_limited(foreign.root(), 8).unwrap(),

@@ -1,0 +1,55 @@
+{
+  "tests": [
+    {
+      "name": "windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name",
+      "full_name": "copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name"
+    },
+    {
+      "name": "windows_native_copy_end_staging_refuses_live_changed_and_verified_controls",
+      "full_name": "copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_refuses_live_changed_and_verified_controls"
+    },
+    {
+      "name": "windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_reserved",
+      "full_name": "copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_reserved"
+    },
+    {
+      "name": "windows_native_copy_name_release_admission_finishes_without_touching_retained_payload",
+      "full_name": "copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_finishes_without_touching_retained_payload"
+    },
+    {
+      "name": "windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes",
+      "full_name": "copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes"
+    },
+    {
+      "name": "windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history",
+      "full_name": "copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history"
+    },
+    {
+      "name": "windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged",
+      "full_name": "copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged"
+    },
+    {
+      "name": "windows_native_copy_release_repair_errors_and_process_exits_preserve_payload",
+      "full_name": "copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_release_repair_errors_and_process_exits_preserve_payload"
+    },
+    {
+      "name": "windows_native_copy_ended_attempt_allows_unrelated_overwrite_and_cleanup",
+      "full_name": "copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_allows_unrelated_overwrite_and_cleanup"
+    },
+    {
+      "name": "windows_native_copy_ended_attempt_still_protects_recorded_created_aliases",
+      "full_name": "copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases"
+    },
+    {
+      "name": "windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair",
+      "full_name": "copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair"
+    }
+  ],
+  "expected_top_level_invocations": 13,
+  "scope": "Full paired caller security/recovery/dispatcher lane plus four edited-payload terminal phase cases and12 interrupted end-attempt file/directory/overwrite/prefix cases; all affected abort/name-release/claim-repair/dependency parent tests",
+  "case_deadlines_seconds": {
+    "caller_client_and_helper": 600,
+    "ordinary_case": 300,
+    "producer": 1200
+  }
+}

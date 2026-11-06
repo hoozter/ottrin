@@ -6,7 +6,8 @@ use std::path::{Path, PathBuf};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RetainedCopyNameReleasePlan {
     registry: PathBuf,
-    registry_anchor: WindowsStableIdentity,
+    authority: Authority,
+    registry_binding: super::super::registry::Binding,
     header: Box<Header>,
     journal: [u8; 32],
     claim: (EntryVersion, [u8; 32]),
@@ -19,23 +20,35 @@ impl RetainedCopyNameReleasePlan {
     pub(crate) fn admit(
         root: &Path,
         id: &str,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::admit_with(&Authority::Process, root, id, progress)
+    }
+    pub(in crate::copy_transaction::windows) fn admit_with(
+        authority: &Authority,
+        root: &Path,
+        id: &str,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        let mut guarded_progress = |bytes| {
+            progress(bytes)?;
+            authority.validate()
+        };
         let name = OsString::from(format!("{id}.copy-journal"));
         discovery::registry_id(&name).ok_or_else(|| io("invalid Copy transaction ID"))?;
-        progress(0)?;
-        let registry =
-            AnchoredRoot::open_at(root, false)?.ok_or_else(|| io("Copy registry is missing"))?;
-        let record =
-            discovery::RegisteredJournal::open(&Authority::Process, registry.root(), &name)?;
+        guarded_progress(0)?;
+        let registry = AnchoredRoot::open_existing(authority, root)?
+            .ok_or_else(|| io("Copy registry is missing"))?;
+        let record = discovery::RegisteredJournal::open(authority, registry.root(), &name)?;
         let header = record.state.header.as_ref().unwrap();
-        let parent = windows_fs::Volumes::new(registry.root())?.resolve(
+        let parent = authority.resolve_parent(
+            registry.root(),
             header.parent,
             FILE_GENERIC_READ,
-            &mut progress,
+            &mut guarded_progress,
         )?;
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            authority,
             &parent,
             registry.root(),
             &header.stage_name(),
@@ -54,7 +67,8 @@ impl RetainedCopyNameReleasePlan {
         registry.validate()?;
         Ok(Self {
             registry: windows_fs::location(registry.root()).map_err(io)?,
-            registry_anchor: registry.anchor_identity(),
+            authority: authority.clone(),
+            registry_binding: registry.binding()?,
             header: Box::new(header.clone()),
             journal: Sha256::digest(&snapshot.bytes).into(),
             claim: snapshot.claim.as_ref().unwrap().observation(),
@@ -85,23 +99,28 @@ impl RetainedCopyNameReleasePlan {
         if self.complete {
             return Err(io("Copy name release is already complete"));
         }
-        progress(0)?;
-        let registry = AnchoredRoot::open_at(&self.registry, false)?
-            .ok_or_else(|| io("Copy registry disappeared"))?;
+        let authority = &self.authority;
+        let mut guarded_progress = |bytes| {
+            progress(bytes)?;
+            authority.validate()
+        };
+        guarded_progress(0)?;
+        let registry =
+            AnchoredRoot::open_bound_with(authority, &self.registry, &self.registry_binding)?;
         super::super::registry::require_uncoordinated(registry.authority(), registry.root())?;
-        if registry.anchor_identity() != self.registry_anchor
-            || stable_identity_from_handle(registry.root()).map_err(io)? != self.header.central
+        if stable_identity_from_handle(registry.root()).map_err(io)? != self.header.central
             || windows_fs::location(registry.root()).map_err(io)? != self.registry
         {
             return Err(io("Copy name-release registry binding changed"));
         }
-        let parent = windows_fs::Volumes::new(registry.root())?.resolve(
+        let parent = authority.resolve_parent(
+            registry.root(),
             self.header.parent,
             FILE_GENERIC_READ,
-            &mut progress,
+            &mut guarded_progress,
         )?;
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            authority,
             &parent,
             registry.root(),
             &self.header.stage_name(),
@@ -124,7 +143,7 @@ impl RetainedCopyNameReleasePlan {
         }
         snapshot.revalidate(&parent, registry.root())?;
         registry.validate()?;
-        progress(0)?;
+        guarded_progress(0)?;
         // Both journals remain read-leased against writes/deletion throughout
         // the claim handoff. No payload tree is opened or mutation API called.
         drop(Journal::from_snapshot(&parent, registry.root(), snapshot)?);

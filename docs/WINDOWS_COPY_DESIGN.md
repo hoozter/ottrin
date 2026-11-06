@@ -2028,9 +2028,51 @@ namespace parents pass, alongside the ordinary client and full SYSTEM caller rol
 staged-text binding and independent owned teardown pass. Evidence:
 `.hermes/evidence/caller-dispatch-current/ACCEPTANCE.json`.
 
-The public engine/API is covered, not final helper command routing. End-attempt
-and terminal name-release plans still use Process admission and need caller-aware
-integration before the complete helper bridge/failure matrix can be accepted.
+The public engine/API is covered, not final helper command routing. Caller-aware
+end-attempt and terminal name-release integration is described below; the complete
+helper bridge and failure matrix remain separate gates.
 Full caller mutation-prefix, readonly/link, process-restart/new-connection,
 TokenOwner, alternate-administrator UAC and package/profile gates remain open.
 Administrator Copy stays disabled and stable package hashes remain unchanged.
+
+### Caller end-attempt and terminal name release
+
+Both runtime plans retain explicit Authority and the complete original registry
+Binding. Canonical registry admission is re-established before execution; matching
+only an anchor ID is insufficient. Parent resolution, paired control snapshots
+and the existing claim writer use that same authority. Ordinary entry points
+select Process once and share these implementations. No persisted field supplies
+a caller token or security descriptor to apply.
+
+`WindowsCopyRegistry::abort_plan_with_progress` admits only an unverified attempt
+with exact paired controls. Ending it writes the existing paired StagingAborted
+record, then uses the existing terminal claim handoff. It never adopts, opens or
+removes the payload. `name_release_plan_with_progress` admits only a durably
+terminal attempt whose claim still needs release; finishing changes claim
+bookkeeping and preserves both journals and all payload data. Cancellation,
+stale controls, changed registry/parent evidence and already completed plans
+continue to refuse through the existing validation paths.
+
+The caller fixture covers edited/unknown payloads under exclusive root leases in
+Undone and CleaningUp phases, and file/directory creation/overwrite attempts ended
+directly, after a complete paired prefix, or after a divergent local prefix.
+Complete terminal evidence permits name reuse; divergence stays reserved without
+repair or data deletion. Fixture ordering keeps all public dispatcher/cleanup
+controls ahead of deliberately uncertain shared-registry records.
+
+All four caller terminal name-release cases and twelve end-attempt cases pass.
+Together with the ordinary client, full SYSTEM caller role and all eleven ordinary
+abort/name-release/claim-repair/dependency parent tests, the run passes 13 top-level
+invocations. Strict platform/UI lint, exact seven-file source/build/staged-text
+binding and independent owned teardown pass. The initial fixture attempted a
+writer flush through an inspection-only registry and correctly failed before data
+transfer; corrected writer admission preserves all production checks. The failed
+source is exactly reconstructible from the retained correction receipt. Evidence:
+`.hermes/evidence/caller-terminal-current/ACCEPTANCE.json` and its first-failure,
+continuity, source/build and cleanup records.
+
+Complete helper command/history/recovery routing, caller mutation-prefix and
+readonly/link matrices, actual restart/new connections, TokenOwner mutation,
+alternate-administrator UAC and package/profile contexts remain separate. The
+native engine/API checkpoint does not enable advertised administrator Copy or
+replace the stable application packages.

@@ -215,6 +215,42 @@ impl AnchoredRoot {
         result
     }
 
+    /// End unverified staging through the admitted caller without adopting or
+    /// opening its payload. The returned plan pins the full registry binding.
+    pub fn abort_plan_with_progress(
+        &self,
+        id: &str,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<super::journal::RetainedCopyAbortPlan, PlatformError> {
+        self.validate()?;
+        let result = super::journal::RetainedCopyAbortPlan::admit_with(
+            &self.authority,
+            self.path(),
+            id,
+            progress,
+        );
+        self.validate()?;
+        result
+    }
+
+    /// Finish only a durably terminal target-name handoff, retaining this
+    /// registry's authority and complete original admission.
+    pub fn name_release_plan_with_progress(
+        &self,
+        id: &str,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<super::journal::RetainedCopyNameReleasePlan, PlatformError> {
+        self.validate()?;
+        let result = super::journal::RetainedCopyNameReleasePlan::admit_with(
+            &self.authority,
+            self.path(),
+            id,
+            progress,
+        );
+        self.validate()?;
+        result
+    }
+
     /// Admit one confirmed cleanup cohort through this registry's retained
     /// authority. The plan reopens the same canonical binding before mutations.
     pub fn cleanup_plan_with_progress(
@@ -1334,6 +1370,25 @@ impl AnchoredRoot {
             caller,
             parent,
             source,
+            preferences,
+            index,
+            recapture,
+            as_caller,
+        );
+    }
+    pub(crate) fn exercise_caller_terminal_recovery(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        sources: [&File; 2],
+        preferences: &File,
+        index: &File,
+        recapture: impl FnMut() -> Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_terminal_recovery(
+            caller,
+            parent,
+            sources,
             preferences,
             index,
             recapture,

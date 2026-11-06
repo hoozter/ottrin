@@ -1,0 +1,298 @@
+{
+  "input": {
+    "source_revision": "8d49b17cd64751b7722498852dbecc03b22b7f4a",
+    "source_test_sha256": "fbea43962074605298022ff471b2a6941510d36094b0950b9f17a968dedc5722",
+    "test_sha256": "d19545a099c6b3fd7a0f1e0e3e554f7186f50d1405b746dcccbfafec56ba86f0",
+    "source_bytes": 680220159,
+    "staged_bytes": 658761143,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 514930688,
+      "sha256": "1c2b3fde20a2b7e93d499f686b353ee80d3e91676d92905184f33eb7f5116de5"
+    },
+    "actor_sha256": "d8f0958ff959030f229ba7af9ab485c3d23cfedbe13ac80eb62b70bb515de74c",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "ecb74ddfc56b22e5bdccadfacaefab80bf61e1c6e0d8879979dd6b2384a649ec",
+    "changed_product_sources": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "4b6cf026f9e2db3c8fbbc54acfc66f0bcf977674af9d2a4134685ba5aa59b3b7",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/abort.rs": "badf5994bc1b2539725971d7af5d1299985ad6a93e78cf565a054a5ce7742c01",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "bfc1708dc82105e458375b2cb1e7204737b9e21bee50203b27c0da2dabe869ba",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller_terminal.rs": "c7f6343a1410fc18e277ff19333be01379fa7f44e821fa3ab44ae0de8e79f624",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "7deeed8868449e4e41fa64937fa1d3da5b2bebf5ae1c710265452a0c9548001e",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c979a1319b28f99e0d87f5fa169b52b82fccaaf897596d051ec9b4b9fd4e0f2a",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "352135b7db16c743e8aa9efb3188f80e3ef3e37cb0548b232b84446f48fdf3a7"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "system": {
+    "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+    "status": "pass owned SYSTEM companion",
+    "phase": "windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair",
+    "runs": [
+      {
+        "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... caller public dispatcher provisioning: cancellation, relative path and source overlap refuse before writes; creation, public Undo and cleanup preserve existing profile data\ncaller overwrite source_directory=false case=0: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=false case=1: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=true case=0: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=true case=1: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller cleanup discovery source_directory=false undo=false: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=false undo=false: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=false undo=false: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller cleanup discovery source_directory=false undo=true: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=false undo=true: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=false undo=true: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller public cohort source_directory=false interrupted=false: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=false interrupted=false: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public cohort source_directory=false interrupted=true: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=false interrupted=true: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public shared cohort source_directory=false interrupted=false: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=false interrupted=false: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller public shared cohort source_directory=false interrupted=true: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=false interrupted=true: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller cleanup discovery source_directory=true undo=false: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=true undo=false: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=true undo=false: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller cleanup discovery source_directory=true undo=true: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=true undo=true: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=true undo=true: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller public cohort source_directory=true interrupted=false: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=true interrupted=false: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public cohort source_directory=true interrupted=true: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=true interrupted=true: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public shared cohort source_directory=true interrupted=false: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=true interrupted=false: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller public shared cohort source_directory=true interrupted=true: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=true interrupted=true: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller public cleanup source_directory=false: single-member admission, cancellation, original cohort IDs, idempotent retirement and foreign-root refusal passed\ncaller fresh recovery source_directory=false: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed\ncaller public cleanup source_directory=true: single-member admission, cancellation, original cohort IDs, idempotent retirement and foreign-root refusal passed\ncaller fresh recovery source_directory=true: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed\ncaller public dispatcher source_directory=false case=0: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller public dispatcher source_directory=false case=1: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller public dispatcher source_directory=false case=2: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller public dispatcher source_directory=false case=3: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller public dispatcher source_directory=true case=0: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller public dispatcher source_directory=true case=1: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller public dispatcher source_directory=true case=2: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller public dispatcher source_directory=true case=3: original source pin, conflict policy, complete payload/metadata, receipt refresh, idempotent Undo and cleanup passed\ncaller terminal name release source_directory=false undo=true: readonly admission, cancellation, exclusive edited payload preservation, stale refusal and released-name reuse passed\ncaller terminal name release source_directory=false undo=false: readonly admission, cancellation, exclusive edited payload preservation, stale refusal and released-name reuse passed\ncaller terminal name release source_directory=true undo=true: readonly admission, cancellation, exclusive edited payload preservation, stale refusal and released-name reuse passed\ncaller terminal name release source_directory=true undo=false: readonly admission, cancellation, exclusive edited payload preservation, stale refusal and released-name reuse passed\ncaller end attempt source_directory=false overwrite=false mode=0: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=false overwrite=false mode=1: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=false overwrite=false mode=2: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=false overwrite=true mode=0: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=false overwrite=true mode=1: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=false overwrite=true mode=2: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=true overwrite=false mode=0: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=true overwrite=false mode=1: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=true overwrite=false mode=2: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=true overwrite=true mode=0: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=true overwrite=true mode=1: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller end attempt source_directory=true overwrite=true mode=2: caller admission, cancellation, exclusive unknown payload/original preservation, prefix-safe name release and stale refusal passed\ncaller receipt source_directory=false: unified execution, canonical receipt refresh, public Undo and idempotent replay passed\ncaller resume source_directory=false case=0: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=1: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=2: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=3: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller journal source_directory=false: staging, reopen, plan and three Begin recovery cases passed\ncaller receipt source_directory=true: unified execution, canonical receipt refresh, public Undo and idempotent replay passed\ncaller resume source_directory=true case=0: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=1: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=2: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=3: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller journal source_directory=true: staging, reopen, plan and three Begin recovery cases passed\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 317.99s\n\n",
+        "timed_out": false,
+        "case": "caller private helper",
+        "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (1168) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.54s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_refuses_live_changed_and_verified_controls ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.80s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_end_staging_refuses_live_changed_and_verified_controls",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_reserved ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 2.69s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_reserved",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_finishes_without_touching_retained_payload ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 4.33s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_name_release_admission_finishes_without_touching_retained_payload",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 4.61s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 27.77s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 8.69s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_release_repair_errors_and_process_exits_preserve_payload ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 44.94s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_release_repair_errors_and_process_exits_preserve_payload",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_allows_unrelated_overwrite_and_cleanup ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 4.27s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_ended_attempt_allows_unrelated_overwrite_and_cleanup",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.41s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_ended_attempt_still_protects_recorded_created_aliases",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.72s\n\n",
+        "timed_out": false,
+        "case": "windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair",
+        "stderr": "",
+        "exit": 0
+      }
+    ]
+  },
+  "observation": {
+    "ancestor_dacl_drift_and_reparse_refused_without_target_mutation": true,
+    "atomic_private_creation_owner_matches_caller": true,
+    "authenticated_registry_creation_reopen_and_coordinator": true,
+    "caller_candidate_audit_label_and_per_object_original_token_controls": true,
+    "caller_destination_claim_creation_reopen_release_and_preparation_recovery": true,
+    "caller_group": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      1,
+      2,
+      0,
+      0
+    ],
+    "caller_owner": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      234,
+      3,
+      0,
+      0
+    ],
+    "caller_paired_journal_staging_reopen_planning_and_begin_recovery": true,
+    "caller_permission_plan_projection_helper_apply_and_phase_restore": true,
+    "caller_private_stage_tree_payload_and_required_case_policy": true,
+    "caller_profile": "C:\\Users\\OTMSIfaf4804d3cd3\\AppData\\Local",
+    "caller_token_success_error_unwind_and_nested_restoration": true,
+    "caller_user": [
+      1,
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      21,
+      0,
+      0,
+      0,
+      143,
+      77,
+      235,
+      225,
+      140,
+      94,
+      87,
+      155,
+      199,
+      17,
+      106,
+      144,
+      234,
+      3,
+      0,
+      0
+    ],
+    "canonical_profile_ancestry_and_source_overlap_before_provisioning": true,
+    "control_creation_owner_matches_caller": true,
+    "creation_with_original_token_and_elevated_parent_handle": {
+      "created": false,
+      "message": "Access is denied. (os error 5)",
+      "native_error": 5
+    },
+    "derived_policy_refuses_owner_or_group_outside_admitted_identity": true,
+    "exact_thread_token_and_privileges_restored": true,
+    "existing_preferences_index_native_identities_bytes_and_security_preserved": true,
+    "existing_private_entry_refused_unchanged": true,
+    "foreign_nonprivate_changed_policy_reopen_refused": true,
+    "foreign_owner_entry_refused_without_data_or_security_change": true,
+    "helper_user": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      18,
+      0,
+      0,
+      0
+    ],
+    "identity_bound_private_reopen": true,
+    "nested_privileged_thread_restored": true,
+    "ordinary_helper_reopen_refused": true,
+    "private_metadata_refuses_wrong_identity_or_nonempty_directory": true,
+    "profile_still_valid": true,
+    "protected_parent_dacl_verified": true,
+    "protected_parent_owner": [
+      1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      32,
+      0,
+      0,
+      0,
+      32,
+      2,
+      0,
+      0
+    ],
+    "read_only_reopen_denies_writes": true,
+    "registry_flush_handles_have_no_delete_or_write_dac": true,
+    "registry_refuses_ambient_helper_admission_or_altered_foreign_unanchored_state": true,
+    "reopen_refuses_replacement_or_missing": true,
+    "required_private_directory_case_changes_with_original_token": true,
+    "scope": "Distinct SYSTEM helper mechanism observation; no alternate-administrator UAC or enabled Copy acceptance",
+    "thread_identity_restored": true
+  },
+  "phase": "complete",
+  "scope": "Ordinary-client/SYSTEM-companion caller registry creation/reopen/coordinator and native security/registry regressions; bounded native dispatcher only; no enabled Copy, alternate-administrator UAC or package acceptance",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "pass canonical caller profile registry and native security/registry/codec regressions",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::client ... Native mechanism observation recorded; this does not enable privileged Copy\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 320.26s\n\n",
+      "case": "ordinary cross-principal client",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

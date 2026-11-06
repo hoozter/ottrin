@@ -53,7 +53,9 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `c3aacd51` passes all four hosted jobs in
+Published source `8d49b17c` passes all four hosted jobs in
+[run42237479342](https://github.com/hoozter/ottrin/actions/runs/42237479342).
+Its preceding `c3aacd51` also passes all four hosted jobs in
 [run42229716307](https://github.com/hoozter/ottrin/actions/runs/42229716307),
 including the corrected immutable Linux portal fixture. Earlier source
 `e3417b61` also passes all four hosted jobs in
@@ -140,11 +142,26 @@ changed production portal or a replacement for hosted acceptance. Evidence:
    `.hermes/evidence/caller-dispatch-current/ACCEPTANCE.json`.
    This is native engine/API acceptance; advertised administrator Copy stays off.
 
+   Caller end-attempt and terminal name-release plans now retain runtime authority
+   and the complete original registry binding. Four Undone/CleaningUp cases preserve
+   edited/unknown payloads under exclusive root leases, leave both journals unchanged
+   and permit only confirmed name reuse. Twelve file/directory creation/overwrite
+   cases cover cancellation, stale refusal, direct termination, complete paired-prefix
+   recovery and divergent-prefix refusal without repair. Sources, public originals,
+   preferences/index identities, bytes and security remain preserved. All 13 native
+   top-level invocations pass: ordinary client, full SYSTEM caller role and all
+   eleven abort/name-release/claim-repair/dependency parents. Strict Windows
+   platform/UI lint and independent owned teardown pass. The first fixture correctly
+   refused a writer flush through an inspection-only registry; corrected writer
+   admission keeps every production flush/access check. Exact source reconstruction,
+   diagnosis and final acceptance: `.hermes/evidence/caller-terminal-current/`.
+
    Remaining dependency-ready work, in order:
 
-   - Carry caller authority through end-attempt and terminal name-release plans,
-     then complete helper command/history/recovery routing through the authenticated
-     caller APIs. These existing plans still select ordinary Process authority.
+   - Complete helper command/history/recovery routing through the authenticated
+     caller APIs; keep the original caller rather than the ambient helper profile
+     for all operations and partial batch results. Advertised administrator Copy
+     stays disabled until its remaining native and package/UAC gates pass.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and the original-retention/restoration failure matrix,
      including readonly original roots.

@@ -1,0 +1,13 @@
+{
+  "reference_commit": "8d49b17cd64751b7722498852dbecc03b22b7f4a",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "4b6cf026f9e2db3c8fbbc54acfc66f0bcf977674af9d2a4134685ba5aa59b3b7",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/abort.rs": "badf5994bc1b2539725971d7af5d1299985ad6a93e78cf565a054a5ce7742c01",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "bfc1708dc82105e458375b2cb1e7204737b9e21bee50203b27c0da2dabe869ba",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller_terminal.rs": "c7f6343a1410fc18e277ff19333be01379fa7f44e821fa3ab44ae0de8e79f624",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "7deeed8868449e4e41fa64937fa1d3da5b2bebf5ae1c710265452a0c9548001e",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c979a1319b28f99e0d87f5fa169b52b82fccaaf897596d051ec9b4b9fd4e0f2a",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "352135b7db16c743e8aa9efb3188f80e3ef3e37cb0548b232b84446f48fdf3a7"
+  },
+  "scope": "Retained runtime caller authority and complete registry binding in end/name-release plans; public canonical admissions; native terminal/prefix/non-destructive controls; no enabled administrator Copy"
+}

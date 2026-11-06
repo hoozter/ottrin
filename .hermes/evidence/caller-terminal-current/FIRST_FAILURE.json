@@ -1,0 +1,18 @@
+{
+  "status": "Fixture capability mismatch; not terminal recovery acceptance",
+  "cause": "Low-level DurableStage::create used an inspection-only registry and correctly failed FlushFileBuffers on its read-only central directory before payload staging. Four caller terminal name-release cases passed before this failure.",
+  "error": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (7260) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (7260) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/caller_terminal.rs:343:25:\ncopy failed and transaction cleanup is pending at \\\\?\\C:\\Users\\OTMSI24b2e33c4d62\\AppData\\Local\\Ottrin\\State\\copies\\.preparing-2b9bb715d8b58425a364fc3a2110ea44: filesystem operation failed: Windows Copy stream staging: Access is denied. (os error 5); unstarted Copy setup retained for verification\n",
+  "correction": "Request the existing writer registry through the authenticated caller factory with its admitted source selection; keep all production flushes and access checks",
+  "archive_sha256": "a3f31db69959e1a860695b343f4e9fbff9aabe4676bcc962b30948775e3ed6eb",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "production_sources_unchanged_by_correction": true
+}

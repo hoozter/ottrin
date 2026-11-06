@@ -25,6 +25,10 @@ use windows_sys::Win32::Storage::FileSystem::{
 
 #[cfg(test)]
 mod caller;
+#[cfg(test)]
+mod caller_terminal;
+#[cfg(test)]
+pub(super) use caller_terminal::exercise_caller_terminal_recovery;
 mod claims;
 #[cfg(test)]
 pub(super) use caller::{

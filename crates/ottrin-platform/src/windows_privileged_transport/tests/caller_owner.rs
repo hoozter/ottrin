@@ -898,6 +898,23 @@ fn system_helper() {
             },
         );
     }
+    crate::WindowsCopyRegistry::exercise_caller_terminal_recovery(
+        &context,
+        &parent,
+        [&source_file, &source_directory],
+        &preferences,
+        &index,
+        || Arc::new(channel.caller_copy_context().unwrap()),
+        |operation| {
+            context
+                .with_caller_token(|| {
+                    operation();
+                    Ok(())
+                })
+                .unwrap();
+        },
+    );
+
     for source in [&source_file, &source_directory] {
         crate::WindowsCopyRegistry::exercise_caller_journals(
             &context,
