@@ -180,7 +180,7 @@ impl OttrinApp {
         }
     }
 
-    fn merge_privileged_copy_history(
+    pub(super) fn merge_privileged_copy_history(
         &mut self,
         history: Vec<ottrin_core::PrivilegedCopyHistoryEntry>,
     ) {
@@ -191,7 +191,8 @@ impl OttrinApp {
             .operation_history
             .iter()
             .filter(|record| {
-                is_restored(record)
+                is_privileged(record)
+                    && replaceable_history(record)
                     && record.status != OperationStatus::Queued
                     && record.path_move_undo != Some(PathMoveUndoState::UndoQueued)
                     && !self.copy_cleanup.owns(record)
@@ -281,6 +282,8 @@ impl OttrinApp {
                 )
             });
             refreshed.insert(id);
+            self.copy_cleanup
+                .confirm_history(&entry.reference.transactions);
             let available = matches!(&entry.recovery, PrivilegedCopyHistoryState::UndoAvailable);
             self.finish_operation_record(
                 id,
@@ -423,22 +426,30 @@ fn history_ids(record: &OperationRecord) -> Vec<String> {
 }
 
 fn replaceable_history(record: &OperationRecord) -> bool {
+    if record
+        .retained_copy
+        .as_ref()
+        .is_some_and(|owner| owner.finalization.is_some())
+    {
+        return false;
+    }
     if is_restored(record) {
         return true;
     }
+    let eligible = is_privileged(record);
     #[cfg(target_os = "windows")]
-    if record.path_move_undo_token.is_none()
+    let eligible = eligible || record.path_move_undo_token.is_none();
+    eligible
         && matches!(
             record.path_move_undo,
             Some(PathMoveUndoState::Unavailable { .. })
         )
         && record.retained_copy.as_ref().is_some_and(|owner| {
-            owner.restored && owner.recovery.is_none() && owner.finalization.is_none()
+            let idle = owner.restored;
+            #[cfg(target_os = "windows")]
+            let idle = idle && owner.recovery.is_none();
+            idle
         })
-    {
-        return true;
-    }
-    false
 }
 
 pub(super) fn is_restored(record: &OperationRecord) -> bool {

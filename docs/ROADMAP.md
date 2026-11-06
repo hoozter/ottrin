@@ -76,165 +76,69 @@ hosted result remain in `caller-public-cleanup-current/`; production portal
 behaviour was unchanged. Historical component receipts keep their exact scopes.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
-   The shared native engine retains original-caller authority through canonical
-   profile/registry admission, private claims/staging/journals, source pins,
-   destination permission plans, completion receipts, source-free Resume/Undo,
-   original retention/restoration, discovery, cleanup and terminal name release.
-   These implemented components do not establish packaged or alternate-admin UAC
-   acceptance. Their contracts and bounded native evidence are maintained in
+   Implemented source includes original-caller profile/registry admission, private
+   claims/staging/journals, source pins, destination permission plans, completion
+   receipts, source-free Resume/Undo, original retention/restoration, discovery,
+   cleanup, end-attempt and terminal name release. Protocol5 provides typed
+   progress/terminal frames, same-connection Stop, blocked-IO cancellation and
+   retained helper-exit observation after a lost result. These are implemented
+   components, not final alternate-administrator UAC or package acceptance.
+   The authoritative engine contracts and historical component evidence are in
    [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md).
 
-   Engine base `4861b17a` retains the full caller registry binding through
-   end-attempt/name-release admission. Edited or unknown retained payloads stay
-   untouched; divergent journals remain refused. Its exact native component scope
-   and fixture correction remain in `.hermes/evidence/caller-terminal-current/`.
+   Shared Activity history deduplicates all transaction IDs and complete cohorts,
+   preserves live ordinary/helper receipts and cleanup ownership, keeps loading
+   opt-in, and never authenticates at startup. Unknown entries remain review
+   messages. Missing or partial snapshots retain IDs without inferring deletion
+   or original-batch completion; stale restored actions require fresh confirmation.
+   Windows forward Copy uses the existing queued operation/result channel and
+   Stop owner. Late successful terminal replies and failed prefixes keep receipts;
+   denial and missing payloads cannot invent completion. Progress reports the
+   current copy/verification step, with bounded GUI wakes. Queuing is distinguished
+   from completion. Stable application packages retain their separate source scopes.
 
-   Current helper routing passes 46 actual framed Copy/history/Undo/cleanup
-   commands between an ordinary user and a distinct SYSTEM helper. File/directory
-   creation, Skip, Rename, retained-overlap refusal and independent Overwrite pass;
-   Undo restores original native identities, security and bytes. Invalid selections
-   preserve history; a later batch failure retains its earlier actionable receipt.
-   Exactly the two expected persistent target-claim controls are admitted through
-   the original caller, while ambient Process authority refuses them. Other parent
-   entries remain unchanged. All 13 top-level native invocations pass, including
-   the existing caller engine matrices and all 11 ordinary terminal-recovery
-   regression parents; these are overlapping component checks, not additive whole-
-   product coverage. Strict Windows platform/UI lint and helper compilation pass,
-   as do six Linux privileged Copy regressions and strict Linux platform lint.
-   Independent VM/disks/private desktop/profile/process teardown passes.
-   The two initial fixture assumptions (overwriting a live retained receipt and
-   expecting no persistent claim coordinator) are corrected without weakening
-   production guards. Exact source/build inputs, original failed fixtures,
-   corrections and acceptance: `.hermes/evidence/caller-routing-current/`.
-   Stable application packages are unchanged; administrator Copy stays disabled.
+   Current bounded evidence:
 
-   The protocol4 checkpoint introduced explicit Resume, end-attempt and
-   name-release requests, with specific recovery/ended/cleanup-pending history.
-   Sixty-five scoped Linux core/platform/UI/helper tests and strict Windows/Linux
-   lint pass, together with nine actual Linux helper protocol/action probes.
-   Eight interrupted file/directory pipe-recovery cases pass within 128 actual
-   authenticated requests and all 13 top-level native invocations. Sources,
-   preferences/index identities, security and bytes, edited unknown payloads and
-   terminal journal pairs are preserved. Exact source/build/receipt checks and
-   independent owned teardown pass in
-   `.hermes/evidence/caller-recovery-routing-current/ACCEPTANCE.json`.
-   Their interrupted seeds do not establish public dispatcher mutation-prefix or
-   actual process-restart coverage.
-   Two fixture defects are corrected: normalized native path spelling is matched
-   by the unique prepared case component, and private publications are inspected
-   through caller-aware native handles rather than ambient filesystem access.
-   The fresh complete run passes both end-attempt and all final preservation
-   assertions; production recovery guards were not weakened. Its wrapper's duplicate
-   SYSTEM log contains an exactly verified UTF8-to-ANSI decoding artifact; the
-   independent native log is intact. Both complete records are checked through that
-   exact conversion. The fixture now specifies UTF8, but this reporting-only change
-   has not been rerun in a guest. Original inputs and the limitation are retained in
-   `WRAPPER_ENCODING.json`; no test assertion or result is omitted.
-
-   The shared Activity integration now uses the existing helper history, Copy
-   receipts, Undo, cleanup and Windows recovery workers. It deduplicates whole
-   transaction cohorts, preserves live ordinary/helper ownership, keeps discovery
-   opt-in and shows recovery outcomes without requiring Details to be expanded.
-   Cancellation/refusal retains lookup references for explicit retry; unknown
-   history remains a review message. One shared capability constant keeps Windows
-   administrator Copy disabled in both the helper and its Activity controls.
-   Twenty-two native Windows cases pass under the guest-agent SYSTEM token:
-   headless egui/adapter interaction, ordinary Copy/Undo ownership and actual helper
-   protocol/capability probes. Twenty scoped Linux platform/UI tests, nine actual
-   Linux helper CLI probes, strict Linux/Windows lint and formatting pass. Exact
-   source/executable/helper bindings, four unchanged package hashes and independent
-   domain/volume/staging teardown pass in `caller-history-ui-current/ACCEPTANCE.json`.
-   These are component checks, not ordinary-user GUI/UAC or new package acceptance.
-
-   A subsequent fresh-history correction preserves an entire restored cohort when
-   the helper omits it or returns only a subset. Its stale Undo and Windows
-   recovery/cleanup actions are withdrawn; a complete fresh result renews them.
-   Current-session receipts remain owned and unchanged. Twenty-three native
-   Windows cases, 21 scoped Linux tests and strict Linux/Windows checks pass;
-   exact source/build/package bindings and independent teardown are recorded in
-   `caller-history-refresh-current/ACCEPTANCE.json`. This does not infer deletion
-   or original-batch completion from absence, or establish GUI/UAC acceptance.
-
-   Forward Windows administrator Copy now queues one Activity row and uses the
-   existing operation-result consumer, captured storage bindings and per-operation
-   Stop owner. Ordinary Windows Copy and helper Copy share bounded GUI wakes and
-   a current copy/verification-step byte counter. A late committed success keeps
-   its receipt after Stop; failed prefixes keep Undo/cleanup ownership. Denial and
-   missing success payloads cannot invent completion. Queuing no longer announces
-   success, and pre-work cancellation presents Stopped. Private-profile fixtures
-   accept full test names, with every affected caller updated. Twenty-six scoped
-   Linux tests, 39 native Windows cases, strict Linux/Windows lint and formatting
-   pass. Exact source/executable/helper bindings, unchanged stable package hashes
-   and independent initial/final VM/volume/staging teardown pass in
-   `caller-forward-ui-current/ACCEPTANCE.json`. The native scope is SYSTEM-token
-   headless interaction/adapter tests and actual ordinary-process regressions;
-   ordinary-user rendered GUI, UAC and package acceptance remain separate.
+   - `caller-forward-ui-current/ACCEPTANCE.json`: 26 scoped Linux tests and 39
+     native Windows cases, including SYSTEM-token headless egui/adapter worker
+     tests, actual ordinary-process Copy/Stop/Undo, all twelve existing private-
+     profile callers and actual helper protocol/capability probes. Source/build/
+     helper bindings, unchanged package hashes and independent teardown pass.
+   - `caller-cleanup-refresh-current/ACCEPTANCE.json`: the shared Linux/Windows
+     failed-cleanup refresh correction passes 27 scoped Linux tests and 39 native
+     Windows cases, strict lint/formatting, exact source/build/helper/package
+     bindings and independent VM/volume/staging teardown. It retains IDs and writer
+     ownership and clears a stale failure overlay only after an admitted complete
+     cohort confirms the new state. Unrelated errors are kept.
+   - Backend receipts retain their original source and test scopes in
+     `caller-terminal-current/`, `caller-routing-current/`,
+     `caller-recovery-routing-current/`, `caller-progress-current/`,
+     `caller-stream-current/` and `caller-invocation-current/`. These include actual
+     ordinary-caller/SYSTEM-helper framed requests, blocked-source cancellation
+     and retained process-handle exit checks. They are overlapping component
+     checks, not additive whole-product or actual UAC-helper acceptance.
 
    Remaining dependency-ready work, in order:
 
-   - Finish fresh-history reconciliation after failed cleanup of a current-session
-     helper receipt; its references must remain owned and explicitly refreshable.
-     Prove queued worker, step progress, Stop and partial/late terminal ownership
-     through actual ordinary-user GUI, launched UAC helper and packaged contexts
-     before exposing the feature. The shared recovery presentation and Windows
-     forward worker are implemented.
-     The command adapter now forwards fallible engine progress through all seven
-     command kinds; history callback failures fail the request instead of becoming
-     damaged-record rows. All 16 native invocations and 137 framed requests pass,
-     including seven pre-work callback cancellations, actual engine/byte callbacks,
-     three history-error policy tests and the full preceding recovery lane. Exact
-     UTF8 wrapper/native receipt equality, source/build binding and independent
-     teardown pass in `caller-progress-current/ACCEPTANCE.json`. At that checkpoint,
-     transport frames and blocked-helper Stop remained open; callback-only
-     cancellation did not establish them. Only Windows-gated source changed; Linux acceptance retains
-     its previous scope. Stable application packages are unchanged.
-     Protocol5 now implements typed progress/terminal frames, same-connection Stop,
-     blocked synchronous IO cancellation, post-elevation pre-send cancellation and
-     helper-exit observation after a lost result. All 26 native invocations and
-     150 authenticated framed requests pass in `caller-stream-current/ACCEPTANCE.json`.
-     Real source-oplock Stop interrupts IO with error995 before lease release,
-     with zero completed members and with an earlier completed directory; that
-     prefix remains actionable through streamed history, Undo and cleanup. Nine
-     transport/lifecycle cases cover disconnect, invalid control, late Stop,
-     pre-send cancellation, panic teardown, partial frames and no pending read.
-     Linux's 66 scoped tests and nine actual helper probes, strict Windows/Linux
-     lint, exact source/executable/export bindings and independent VM/disks/private
-     desktop/profile teardown pass. Frontend, actual launched UAC helper/process
-     and package acceptance remain open. Stable packages are unchanged.
-     The first native run was stopped to correct a reader cancellation/unwind race;
-     registered teardown completed and no partial pass is claimed. The revised
-     lane includes nine stream cases, including panic and partial-frame timeout
-     recovery, with exact correction/interruption evidence retained.
-     Subsequent native checks exposed two test-fixture races: the oplock wait
-     expired while an earlier directory was still copying, and disconnect teardown
-     released blocked IO before cancellation could be observed. Both fixtures now
-     keep their blockers held until the measured outcome. Original failures and
-     source continuity are retained; neither counts as a passing runtime result.
-     The corrected nine-test native preflight now passes on the exact current
-     executable, including disconnect cancellation before the blocking peer is
-     released. SYSTEM-token scope and independent VM/volume teardown are bound in
-     `caller-stream-current/STREAM_PREFLIGHT_ACCEPTANCE.json`. This preflight
-     is separate from the now-passing ordinary-caller/full recovery run.
-     The invocation owner also passes two native parent tests exercising three
-     actual child processes: disconnect, lost terminal response and callback
-     unwind all observe the retained process handle signalled before returning,
-     without the watchdog forcing termination. Exact inputs, unchanged production
-     and preceding stream-case bindings, strict Windows lint and independent VM/
-     disks teardown are in `caller-invocation-current/ACCEPTANCE.json`. These are
-     same-user native fixtures; actual ShellExecute/UAC helper and UI acceptance
-     remain separate. Stable packages are unchanged.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
-     recovery matrices, and the original-retention/restoration failure matrix,
-     including readonly original roots.
-   - Prove actual app/helper restart and newly authenticated connections; recapturing
-     a context of the same live client does not establish process-restart recovery.
+     recovery matrices, and original-retention/restoration failure cases including
+     readonly original roots. Preserve edited/unknown payloads and refuse divergent
+     journals; callback-only or seeded interruption checks do not close these gates.
+     Re-run the recovery wrapper's UTF8 reporting correction with the extended
+     current caller matrix; its prior converted receipt retains historical scope.
+   - Prove actual app/helper restart with newly authenticated connections.
+     Recapturing the same live client is insufficient. Verify the actual launched
+     helper's lifetime on disconnect, lost terminal reply and Stop through UAC.
    - Prove alternate-administrator UAC, in-place TokenOwner mutation, caller symbolic
-     links and packaged/profile contexts. Existing hard-link cases do not close
-     these gates. Advertised administrator Copy remains disabled until they pass.
+     links and packaged/profile contexts. Existing hard-link cases are insufficient.
+   - Prove queued worker, step progress, Stop and partial/late terminal ownership
+     through ordinary-user rendered GUI, launched UAC helper and packaged contexts
+     before enabling the feature. Retain original-caller authority and the one
+     canonical registry throughout history, Undo, recovery and cleanup.
 
    Missing member IDs never license deletion or a completed original-batch claim.
-   These are implementation/QA tasks, not owner waits; personal authentication,
-   unavailable hardware and final owner acceptance stay on the separate waiting list.
+   These are implementation/QA tasks, not owner waits. Personal authentication,
+   unavailable hardware and final acceptance remain on the separate waiting list.
 
 2. Finish U05–U08 interface/theme consistency and property mapping. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the

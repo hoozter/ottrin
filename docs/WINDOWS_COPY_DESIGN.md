@@ -2247,10 +2247,10 @@ Linux scoped UI/platform tests, strict Linux/Windows checks and helper CLI probe
 are separate from native Windows headless interaction/adapter tests under the
 SYSTEM guest-agent token. None establishes ordinary-user rendered interaction,
 interactive elevation or a newly delivered package. Stable package hashes remain
-unchanged. Forward administrator Copy still needs asynchronous worker/progress/
-Stop integration; fresh-history reconciliation after failed cleanup of current-session
-helper receipts and the full caller failure,
-process-restart, alternate-administrator UAC and package matrices remain open.
+unchanged. At that shared-Activity checkpoint, forward worker/progress/Stop and
+fresh-history reconciliation after failed cleanup remained open; their source
+follow-ups are described below. Full caller failure, process-restart,
+alternate-administrator UAC and package acceptance remain open.
 
 Fresh successful snapshots now renew actions only for complete, successfully merged
 restored cohorts. An omitted or refused partial cohort keeps all IDs and its card,
@@ -2289,3 +2289,25 @@ fixture teardown. Evidence:
 `.hermes/evidence/caller-forward-ui-current/ACCEPTANCE.json`. Ordinary-user rendered
 GUI, actual UAC/helper process and package acceptance remain open. Windows Copy
 capability stays disabled; this source checkpoint does not replace stable packages.
+
+### Refresh after failed helper cleanup
+
+Linux and Windows now admit an explicit fresh helper snapshot for a failed
+current-session helper receipt. The same eligibility predicate protects both the
+merge and missing-snapshot reconciliation. Retained finalization/writer ownership
+prevents replacement, including already-restored helper records. A successfully
+admitted complete cohort retires only its stale cleanup-error overlay; failed,
+missing or overlapping snapshots preserve lookup IDs and unrelated failures.
+Fresh Undo, Undone and Windows cleanup-pending states retain the original Activity
+ID. Loading remains explicit and does not start authentication automatically.
+
+The shared regression drives the actual cleanup-result consumer in a private
+process profile on Linux and Windows. It checks current-session provenance,
+writer refusal, explicit renewal, error-overlay retirement, absent-snapshot
+preservation, renewed cleanup state and an unrelated failure. Exact inputs,
+results and teardown receipts:
+`.hermes/evidence/caller-cleanup-refresh-current/ACCEPTANCE.json`. The checkpoint
+passes 27 scoped Linux tests, 39 native Windows cases, strict Linux/Windows lint,
+formatting and source/build/helper/package bindings, with independent owned
+VM/volume/staging teardown. This is UI state integration; actual UAC and package
+acceptance remain separate.

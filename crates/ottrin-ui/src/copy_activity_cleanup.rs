@@ -66,6 +66,13 @@ impl CopyCleanupUi {
             .iter()
             .any(|selection| selection.transactions.iter().any(|id| ids.contains(id)))
     }
+    pub(super) fn confirm_history(&mut self, transactions: &[String]) {
+        // Only a successfully admitted complete helper cohort renews the state.
+        // Failed or absent snapshots keep the prior cleanup outcome and IDs.
+        for transaction in transactions {
+            self.errors.remove(transaction);
+        }
+    }
     pub(super) fn failed(&self, record: &OperationRecord) -> bool {
         !self.errors.is_empty()
             && transactions(record)
@@ -764,6 +771,9 @@ impl OttrinApp {
         }
     }
 }
+
+#[cfg(all(test, any(target_os = "linux", target_os = "windows")))]
+mod helper_refresh_tests;
 
 #[cfg(all(test, target_os = "windows"))]
 mod caller_tests;
