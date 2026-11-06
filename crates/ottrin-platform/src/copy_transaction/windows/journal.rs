@@ -2151,7 +2151,7 @@ impl Journal {
         evidence.set_reopening_attributes(&file, true)?;
         boundary(self.sequence, Step::ReadonlyWritable)?;
         drop(file);
-        let file = windows_fs::PerObjectFile::open(owner, name).map_err(io)?;
+        let file = self.authority.open_candidate(owner, name)?;
         self.authority
             .binding(owner, name, evidence.candidate_identity)?;
         namespace::validate_single_link(&file)?;
@@ -2204,7 +2204,7 @@ impl Journal {
         for index in ancestors.into_iter().rev() {
             let node = &self.state.nodes[index];
             let name = OsString::from_wide(&node.name);
-            let file = windows_fs::PerObjectFile::open(&owner, &name).map_err(io)?;
+            let file = self.authority.open_candidate(&owner, &name)?;
             self.authority.binding(
                 &owner,
                 &name,
@@ -2218,7 +2218,7 @@ impl Journal {
             owner = file;
         }
         let name = OsString::from_wide(&self.state.nodes[index].name);
-        let file = windows_fs::PerObjectFile::open(&owner, &name).map_err(io)?;
+        let file = self.authority.open_candidate(&owner, &name)?;
         drop(self.reopen_readonly(index, &owner, &name, file, progress)?);
         Ok(())
     }
@@ -2757,6 +2757,7 @@ impl PermissionStage {
         binding: Option<&CopyResumeBinding>,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        let authority = retained.snapshot.authority.clone();
         let parent = retained.parent;
         let central = retained.central;
         let name = retained
@@ -2771,7 +2772,8 @@ impl PermissionStage {
                 "Original retention must be acknowledged before publication",
             ));
         }
-        let prepared = prepare_forward(&retained, binding, &mut progress)?;
+        let prepared = prepare_forward(&retained, binding, &mut progress)
+            .map_err(|error| publication_context("validating retained policy", error))?;
         let evidence = prepared.evidence().at_root(
             &retained
                 .snapshot
@@ -2785,20 +2787,16 @@ impl PermissionStage {
         let expected = retained.snapshot.bytes.clone();
         let root_name = retained.tree.root_name.clone();
         drop(retained);
-        let snapshot = Snapshot::load(
-            &Authority::Process,
-            parent,
-            central,
-            &name,
-            SnapshotAccess::Write,
-        )?;
+        let snapshot = Snapshot::load(&authority, parent, central, &name, SnapshotAccess::Write)
+            .map_err(|error| publication_context("acquiring journal writer", error))?;
         if snapshot.bytes != expected {
             return Err(io(
                 "Copy journal changed between validation and writer acquisition",
             ));
         }
-        let root = windows_fs::PerObjectFile::open(parent, &root_name)
-            .map_err(|e| io(format!("opening publication root: {e}")))?;
+        let root = authority
+            .open_candidate(parent, &root_name)
+            .map_err(|error| publication_context("opening root capability", error))?;
         if let Some(expected) = binding.and_then(|binding| binding.pending_copy.as_ref())
             && snapshot.state.copy_rename_at(&root_name) == Some(RenameKind::Publish)
             && !snapshot.state.admitted_rename_matches(
@@ -2830,10 +2828,17 @@ impl PermissionStage {
         }
 
         let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
-        let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
-        journal.prepare_plan(&evidence, || progress(0))?;
-        journal.finish_pending_readonly(&root, &mut progress)?;
-        let root = journal.reopen_readonly(0, parent, &root_name, root, &mut progress)?;
+        let mut journal = Journal::from_snapshot(parent, central, snapshot)
+            .map_err(|error| publication_context("admitting journal writer", error))?;
+        journal
+            .prepare_plan(&evidence, || progress(0))
+            .map_err(|error| publication_context("persisting permission plan", error))?;
+        journal
+            .finish_pending_readonly(&root, &mut progress)
+            .map_err(|error| publication_context("finishing readonly lease", error))?;
+        let root = journal
+            .reopen_readonly(0, parent, &root_name, root, &mut progress)
+            .map_err(|error| publication_context("reopening readonly root", error))?;
         journal.reserve_permission_tail()?;
         if !journal.state.published {
             if !journal.state.publication_intent {
@@ -2846,7 +2851,11 @@ impl PermissionStage {
             parent_policy.validate_parent(parent)?;
             namespace::validate_single_link(&root)?;
             if root_name != target {
-                crate::move_transaction::rename_windows_handle_no_replace(&root, parent, &target)?;
+                journal.authority.file_operation(|| {
+                    crate::move_transaction::rename_windows_handle_no_replace(
+                        &root, parent, &target,
+                    )
+                })?;
             }
             boundary(journal.sequence, Step::PublicationRenamed)?;
             root.sync_all()
@@ -2854,7 +2863,7 @@ impl PermissionStage {
             parent.sync_all().map_err(io)?;
             boundary(journal.sequence, Step::PublicationFlushed)?;
             namespace::validate_single_link(&root)?;
-            bound(
+            journal.authority.binding(
                 parent,
                 &target,
                 journal.state.nodes[0]
@@ -2880,7 +2889,11 @@ impl PermissionStage {
                     &mut progress,
                 )?;
                 proof.revalidate(parent, &journal.state, &mut progress)?;
-                journal.finish_creation(RenameKind::Publish, &root)?;
+                journal
+                    .finish_creation(RenameKind::Publish, &root)
+                    .map_err(|error| {
+                        publication_context("preserving renamed creation time", error)
+                    })?;
                 drop(proof);
                 let proof = HeldTree::open(
                     &journal.authority,
@@ -2892,7 +2905,11 @@ impl PermissionStage {
                 )?;
                 proof.revalidate(parent, &journal.state, &mut progress)?;
             } else {
-                journal.finish_creation(RenameKind::Publish, &root)?;
+                journal
+                    .finish_creation(RenameKind::Publish, &root)
+                    .map_err(|error| {
+                        publication_context("preserving renamed creation time", error)
+                    })?;
             }
             journal.persist(Record::Published)?;
         }
@@ -2902,8 +2919,9 @@ impl PermissionStage {
             let node = &journal.state.nodes[index];
             progress(0)?;
             let owner = &*candidates[node.parent.unwrap()];
-            let file = windows_fs::PerObjectFile::open(owner, &OsString::from_wide(&node.name))
-                .map_err(io)?;
+            let file = journal
+                .authority
+                .open_candidate(owner, &OsString::from_wide(&node.name))?;
             if stable_identity_from_handle(&file).map_err(io)?
                 != node.staged.as_ref().unwrap().candidate_identity
             {
@@ -2916,7 +2934,7 @@ impl PermissionStage {
         let recorded = journal.state.planned.as_ref().unwrap().at_root(&root_name);
         let plan =
             security::TreeSecurityPlan::capture_at(
-                &super::authority::Authority::Process,
+                &journal.authority,
                 parent,
                 journal.state.nodes.iter().zip(&candidates).enumerate().map(
                     |(index, (node, file))| security::SecurityEntry {
@@ -2940,7 +2958,9 @@ impl PermissionStage {
             plan,
             original,
         };
-        result.validate(&mut progress)?;
+        result
+            .validate(&mut progress)
+            .map_err(|error| publication_context("validating published payload", error))?;
         Ok(result)
     }
     fn validate(
@@ -3066,6 +3086,15 @@ impl PermissionStage {
     #[cfg(test)]
     pub(super) fn completed(&self) -> usize {
         self.journal.state.permissions.completed
+    }
+}
+
+fn publication_context(operation: &str, error: PlatformError) -> PlatformError {
+    match error {
+        PlatformError::Io(message) => {
+            PlatformError::Io(format!("Copy publication {operation}: {message}"))
+        }
+        other => other,
     }
 }
 

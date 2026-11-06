@@ -184,7 +184,31 @@ pub(in super::super) fn exercise_caller_journals(
     assert_eq!(recovered_plan.evidence(), evidence);
     recovered_plan.validate().unwrap();
     retained.revalidate(|_| Ok(())).unwrap();
-    drop((retained, recovered_plan));
+    drop(recovered_plan);
+    let mut publication = PermissionStage::from_retained(retained, None, |_| Ok(())).unwrap();
+    publication.apply(|_| Ok(())).unwrap();
+    assert_eq!(publication.completed(), source_evidence.entries.len());
+    assert!(publication.journal.state.completion_verified);
+    drop(publication);
+    let snapshot = Snapshot::load(
+        &authority,
+        &parent,
+        manager.root(),
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap();
+    let retained =
+        RetainedStage::from_snapshot(&parent, manager.root(), snapshot, |_| Ok(())).unwrap();
+    retained.revalidate(|_| Ok(())).unwrap();
+    let final_plan = retained.plan_destination_security(|| Ok(())).unwrap();
+    assert_eq!(final_plan.evidence(), evidence.at_root(OsStr::new("copy")));
+    drop(final_plan);
+    // A fresh writer must re-admit the completed destination without source data.
+    let mut replay = PermissionStage::from_retained(retained, None, |_| Ok(())).unwrap();
+    replay.apply(|_| Ok(())).unwrap();
+    assert!(replay.journal.state.completion_verified);
+    drop(replay);
     // Begin-only records permit reservation release, whether already published
     // or left at the complete preparation name. An intent forbids that release.
     struct ResetFault;

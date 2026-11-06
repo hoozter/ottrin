@@ -1,0 +1,26 @@
+{
+  "status": "pass caller creation publication, final permissions and fresh completed replay",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 102,
+  "native_invocations": 25,
+  "coverage": [
+    "Publication retains authenticated caller authority across exclusive journal handoff, genuine native per-object reopening, no-replace rename, binding checks and final original-token permission application",
+    "One-file and actual four-entry directory fixtures publish, apply every final permission, revalidate completed payload/policy and replay through a fresh completed writer; source/user-state evidence remains unchanged",
+    "Ordinary source-free publication/permission replay and receipt/public Undo still pass with shared retained verifier",
+    "Prior caller paired-journal, Begin recovery, claim, profile, token, metadata, tree/security and codec regressions pass"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "888c0ddd067363c63814a2ce0e03fd5c5139acec28bf321a1a3a6c1ced5b589e"
+  },
+  "limits": [
+    "Caller mutation-prefix, readonly and link publication recovery remain separate native gates",
+    "Caller creation publication/final permission application and fresh completed replay only; full dispatcher, overwrite, receipts, restored discovery/resume/Undo/cleanup remain incomplete",
+    "Original retention/overwrite, caller-aware discovery/resume/cleanup, real alternate-admin UAC, caller links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

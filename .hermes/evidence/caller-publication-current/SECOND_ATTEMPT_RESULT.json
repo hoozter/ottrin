@@ -1,0 +1,26 @@
+{
+  "status": "reproduced same caller publication failure after explicit native rights; not treated as fixed",
+  "input": "SECOND_ATTEMPT_INPUT.json",
+  "native": "native-fixed/APPLICATION_INPUT.json",
+  "archive_sha256": "6db856d4698e9a687ec51ec61656e229093fb473b4b8dd58f40ebd85a814eebd",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "independent_teardown": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "console_observer_profile_absent": true,
+  "next_change": "Retain journal authority in rename creation-time destination binding and snapshot authority in pending-copy epoch source opening; add operation-specific IO error context without changing typed failures"
+}

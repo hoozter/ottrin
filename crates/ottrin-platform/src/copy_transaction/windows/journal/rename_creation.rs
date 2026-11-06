@@ -9,7 +9,7 @@ pub(super) fn pending_undo_epochs(
     let copy = if state.undone.is_none() {
         let name = snapshot.root_name(parent)?;
         if state.copy_rename_at(&name) == Some(RenameKind::Withdraw) {
-            let root = namespace::open_source(parent, &name, None)?;
+            let root = namespace::open_source_with(&snapshot.authority, parent, &name, None)?;
             state.validate_copy_metadata(0, &root, &name)?;
             Some(super::super::version(&root)?)
         } else {
@@ -333,7 +333,7 @@ impl Journal {
         self.bindings()?;
         let actual = super::super::version(root)?;
         self.state.validate_creation_epoch(kind, &actual)?;
-        bound(
+        self.authority.binding(
             &self.parent_dir,
             &kind.destination(&self.header),
             actual.identity,

@@ -468,6 +468,28 @@ impl PerObjectFile {
         // Deliberately violate the access contract only in kernel-denial tests.
         Self(file)
     }
+    /// Reopen a native per-object capability under the authenticated helper's
+    /// scoped file privileges. The caller must validate the journal/phase and
+    /// native binding before mutation; this never promotes an arbitrary File.
+    pub(crate) fn open_for_caller(parent: &File, name: &OsStr, readonly: bool) -> io::Result<Self> {
+        open_existing_for_caller(
+            parent,
+            name,
+            None,
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED
+                | FILE_GENERIC_READ
+                | FILE_WRITE_ATTRIBUTES
+                | DELETE
+                | WRITE_DAC
+                | if readonly {
+                    SYNCHRONIZE
+                } else {
+                    FILE_GENERIC_WRITE
+                },
+            FILE_SHARE_READ,
+        )
+        .map(Self)
+    }
     pub(crate) fn open(parent: &File, name: &OsStr) -> io::Result<Self> {
         // Caller must establish journal/phase ownership before acquiring this capability.
         unsafe {

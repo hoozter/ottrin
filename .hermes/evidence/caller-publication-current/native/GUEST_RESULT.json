@@ -1,0 +1,168 @@
+{
+  "input": {
+    "source_revision": "2a94d3818f28c0483f8548741fa4f9a2d95f08f1",
+    "source_test_sha256": "cceb97fe8a68a9046ea687a7adbdb69ad23af381eaf7a536e46fc93465a4fed8",
+    "test_sha256": "cc6616b8955dfba9bd901edbc7352ec605af408ddfee0c6c6056fb7b93c8e163",
+    "source_bytes": 550759607,
+    "staged_bytes": 529300591,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 413036032,
+      "sha256": "cd386cae67572ab396f3e092ef59bf2f791d177f47ce99617d70896037e648ae"
+    },
+    "actor_sha256": "bb157ffb027cc3baa97e6aec93082297c843c17d5ed1f5dc3c9c5a21de3af10c",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "f807138c9aba5a44585151fbae0fa1a1228c9f3b3086e8f268246b595fc365e7",
+    "changed_product_sources": {
+      "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "49c09e4f7d5fd5bca7155a6e45b0f3ec4267afc569569b8f90954182ec40493e",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "f7e2c959186ce0941c72e6e447cc36f858ee05030886618c8acaf12848cf9ddb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "feee651aa93cf3ecca34fe590c8b5aadffbc53aa5cb55b504e2a3ea62eac06e5",
+      "crates/ottrin-platform/src/windows_fs.rs": "3902b0ca5a11ced9bc559ea561542c5d1bc94fd8b6128749d3c4b6d3ad97d740"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "system": {
+    "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+    "status": "failed",
+    "error": "SYSTEM native assertions failed: caller private helper",
+    "runs": [
+      {
+        "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::system_helper\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 12.25s\n\n",
+        "case": "caller private helper",
+        "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (5744) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (5744) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs:188:86:\ncalled `Result::unwrap()` on an `Err` value: Io(\"Windows Copy stream staging: Access is denied. (os error 5)\")\n",
+        "exit": 101
+      }
+    ],
+    "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 30\r\nat <ScriptBlock>, <No file>: line 1"
+  },
+  "stack": "at Require, <No file>: line 5\r\nat <ScriptBlock>, <No file>: line 31\r\nat <ScriptBlock>, <No file>: line 1",
+  "error": "Native assertions failed: ordinary cross-principal client",
+  "phase": "saved ancestry binding and torn cohort checkpoint regression",
+  "scope": "Ordinary-client/SYSTEM-companion caller registry creation/reopen/coordinator and native security/registry regressions; no full transaction, alternate-administrator UAC or package acceptance",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "failed",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::windows_native_copy_publication_and_permissions_are_source_free_and_idempotent ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.99s\n\n",
+      "case": "retained tree ordinary publication and permissions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::windows_native_copy_session_receipt_executes_admitted_creation_and_overwrite_then_public_undo ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 5.31s\n\n",
+      "case": "retained tree ordinary receipt and public undo",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::client ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::client\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 13.32s\n\n",
+      "case": "ordinary cross-principal client",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::client' (1256) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:333:61:\ncalled `Result::unwrap()` on an `Err` value: Error { kind: UnexpectedEof, message: \"failed to fill whole buffer\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 101
+    },
+    {
+      "stdout": "\nrunning 12 tests\ntest copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults ... ok\ntest copy_transaction::windows::security::tests::destination_directory_dacl_and_child_inheritance_match_native_creation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_changed_parent_permissions_without_mutation ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_private_stage_as_publication_parent ... ok\ntest copy_transaction::windows::security::tests::destination_security_refuses_wrong_name_identity_and_type ... ok\ntest copy_transaction::windows::security::tests::destination_security_reports_write_dac_denial_without_changing_bytes_or_acl ... ok\ntest copy_transaction::windows::security::tests::native_acl_evidence_ignores_spare_capacity_but_preserves_access_rules ... ok\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ignored, requires SeSecurityPrivilege; selected explicitly in the native SYSTEM audit lane\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_mandatory_label ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_maximum_allowed_dacl_is_per_object_after_handle_clone ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_permission_handle_rights_do_not_expand_journals_or_sources ... ok\ntest copy_transaction::windows::security::tests::windows_native_copy_private_group_drift_is_detected_without_payload_mutation ... ok\n\ntest result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 567 filtered out; finished in 0.29s\n\n",
+      "case": "native Copy security regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 9 tests\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_arbitrates_separate_processes ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_refuses_policy_drift_and_unanchored_data ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_claim_namespace_uses_native_volume_name_rules ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_refuses_self_consistent_new_anchor ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_binding_survives_reopen_and_refuses_case_drift ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_configured_dispatch_discovery_and_source_free_undo ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_provisions_once_and_readers_hold_the_binding ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_refuses_unanchored_partial_and_foreign_state_without_repair ... ok\ntest copy_transaction::windows::registry::tests::windows_native_copy_registry_rejects_replaced_root_marker_and_parent ... ok\n\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 570 filtered out; finished in 4.47s\n\n",
+      "case": "native registry and namespace regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 11.71s\n\n",
+      "case": "large canonical security-plan codec regression",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 11 tests\ntest copy_transaction::windows::metadata_tests::windows_native_copy_directory_payload_cancellation_preserves_the_source ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_directory_payload_detects_same_size_stream_tampering ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_directory_payload_handles_compression_and_empty_directories ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_directory_payload_preserves_streams_eas_and_times ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_directory_payload_rejects_type_alias_and_occupied_streams ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_metadata_cancellation_never_applies_final_metadata ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_metadata_detects_changed_source_and_candidate ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_metadata_keeps_private_candidate_security ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_metadata_preserves_compression_and_removes_inherited_compression ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_metadata_preserves_times_attributes_and_streams ... ok\ntest copy_transaction::windows::metadata_tests::windows_native_copy_metadata_refuses_candidate_alias_and_same_size_tampering ... ok\n\ntest result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 568 filtered out; finished in 0.49s\n\n",
+      "case": "ordinary metadata and directory payload regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 4 tests\ntest copy_transaction::windows::sparse::native::windows_native_copy_sparse_payload_detects_same_size_changes_and_cancellation ... ok\ntest copy_transaction::windows::sparse::native::windows_native_copy_sparse_payload_preserves_files_directories_named_streams_and_large_holes ... sparse payload: directory=false primary_sparse=true logical=16777216 physical_progress=131072 attributes=544\nsparse payload: directory=false primary_sparse=true logical=1099511627776 physical_progress=131072 attributes=544\nsparse payload: directory=false primary_sparse=true logical=8388608 physical_progress=65536 attributes=544\nsparse payload: directory=false primary_sparse=true logical=0 physical_progress=0 attributes=544\nsparse payload: directory=false primary_sparse=false logical=0 physical_progress=65536 attributes=32\nsparse payload: directory=true primary_sparse=false logical=0 physical_progress=65536 attributes=48\nok\ntest copy_transaction::windows::sparse::tests::windows_native_copy_sparse_fingerprint_ignores_allocation_and_buffer_boundaries ... ok\ntest copy_transaction::windows::sparse::tests::windows_native_copy_sparse_fingerprint_rejects_malformed_ranges_and_binds_eof ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 575 filtered out; finished in 0.41s\n\n",
+      "case": "ordinary sparse payload regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 6 tests\ntest copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_preserves_foreign_partial_replaced_and_misnamed_files ... ok\ntest copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_preserves_retained_stage_and_registry_records ... ok\ntest copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_refuses_added_streams_and_hard_links ... ok\ntest copy_transaction::windows::journal::claims::preparations::tests::windows_native_copy_preparation_cleanup_waits_for_writer_and_reclaims_complete_orphan ... ok\ntest copy_transaction::windows::journal::claims::tests::windows_native_claim_admission_reserves_release_without_changing_rejected_log ... ok\ntest copy_transaction::windows::journal::claims::tests::windows_native_claim_retirement_preserves_retained_records_and_unknown_control_content ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 573 filtered out; finished in 1.08s\n\n",
+      "case": "claim ledger and preparation native controls",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 3 tests\ntest copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_preserves_ambiguous_or_partial_construction ... ok\ntest copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_recovers_after_kernel_owner_exit ... ok\ntest copy_transaction::windows::journal::tests::claim_orphans::windows_native_copy_orphan_claim_release_keeps_older_recovery_history ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 576 filtered out; finished in 1.27s\n\n",
+      "case": "claim orphan recovery",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::claim_processes::windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 4.02s\n\n",
+      "case": "claim process exclusion",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 6 tests\ntest copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_errors_preserve_unpublished_or_complete_controls ... ok\ntest copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_complete ... ok\ntest copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_prepared_claim_publishers_race_without_overwrite ... ok\ntest copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_temporary_claim_collision_preserves_foreign_preparation ... ok\ntest copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_unpublished_claim_error_preserves_added_stream ... ok\ntest copy_transaction::windows::journal::tests::claim_publication::windows_native_copy_unpublished_claim_hard_kill_preserves_preparation ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 573 filtered out; finished in 2.57s\n\n",
+      "case": "claim preparation publication",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 3 tests\ntest copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_keeps_terminal_journals_leased_during_undo_retry ... ok\ntest copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_terminal_journals ... ok\ntest copy_transaction::windows::journal::tests::claim_releases::windows_native_copy_claim_release_recovers_every_exact_prefix_without_rewriting_journals ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 576 filtered out; finished in 14.25s\n\n",
+      "case": "claim terminal release",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 3 tests\ntest copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewriting_history ... ok\ntest copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_orphan_release_refuses_records_unknown_tails_and_streams_unchanged ... ok\ntest copy_transaction::windows::journal::tests::claim_repair::windows_native_copy_release_repair_errors_and_process_exits_preserve_payload ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 576 filtered out; finished in 26.58s\n\n",
+      "case": "claim release repair",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 4 tests\ntest copy_transaction::windows::journal::tests::claim_retirement::windows_native_copy_claim_retirement_errors_and_exits_preserve_recovery ... ok\ntest copy_transaction::windows::journal::tests::claim_retirement::windows_native_copy_claim_retirement_keeps_terminal_cleanup_independent_of_new_owners ... ok\ntest copy_transaction::windows::journal::tests::claim_retirement::windows_native_copy_claim_retirement_yields_to_a_new_process_owner ... ok\ntest copy_transaction::windows::journal::tests::claim_retirement::windows_native_copy_terminal_claim_discharge_requires_paired_state_and_never_adopts_foreign_controls ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 575 filtered out; finished in 8.63s\n\n",
+      "case": "claim retirement and foreign controls",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 10 tests\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_begin_only_recovery_releases_name_without_changing_retained_data ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_begin_recovery_refuses_intents_mismatches_replacements_and_collisions ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_begin_recovery_retries_release_faults_with_both_journals_leased ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_central_collision_preserves_foreign_record_and_retries ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_preheader_failure_preserves_unexpected_stage_content_and_releases_name ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_setup_errors_preserve_controls_and_release_unstarted_name ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_setup_failure_preserves_streams_on_both_controls ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_unpublished_marker_before_stage_allows_orphan_reclaim ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_unpublished_native_names_are_review_only_and_preserved ... ok\ntest copy_transaction::windows::journal::tests::initialization::windows_native_copy_unpublished_setup_hard_kill_stays_visible_without_actions ... ok\n\ntest result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 569 filtered out; finished in 8.39s\n\n",
+      "case": "journal initialization preservation",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 2 tests\ntest copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_finishes_without_touching_retained_payload ... ok\ntest copy_transaction::windows::journal::tests::name_release_action::windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_changes ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 5.74s\n\n",
+      "case": "name release admission",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 3 tests\ntest copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_reserved ... ok\ntest copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name ... ok\ntest copy_transaction::windows::journal::tests::abort::windows_native_copy_end_staging_refuses_live_changed_and_verified_controls ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 576 filtered out; finished in 2.17s\n\n",
+      "case": "unstarted abort reservation",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_torn_checkpoint_replays_only_validated_prefix ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 15.54s\n\n",
+      "case": "saved ancestry binding and torn cohort checkpoint regression",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

@@ -310,11 +310,32 @@ native destination-permission re-admission; saved records never select an identi
 The native file and populated-directory fixtures reopen the planned paired journals,
 verify every payload and derive the identical original-token native policy again.
 Ordinary source-free publication/permission replay and receipt/public Undo also
-pass against the shared retained-tree verifier. The latest checkpoint has 102
+pass against the shared retained-tree verifier. That checkpoint has 102
 passing tests across 25 native invocations and strict paired Windows platform/UI
 lint. Evidence: `.hermes/evidence/caller-retained-tree-current/ACCEPTANCE.json`.
 
-This does not complete caller destination publication/final-permission application,
+Creation publication now retains caller authority through the exclusive paired
+journal handoff, genuine native per-object reopening, no-replace publish rename,
+creation-time recovery binding and final permission-plan capture/application.
+Reopened caller capabilities retain MAXIMUM_ALLOWED in the native request and
+explicitly request payload/metadata/rename/DACL rights under scoped helper file
+privileges. Readonly file data stays behind its durable attribute lease; directories
+retain their write capability. No arbitrary File is promoted and no policy is repaired.
+
+Two failed native attempts reproduced the publication admission denial; explicit
+native access rights alone did not resolve it. The shared creation-time recovery
+code still checked the renamed caller-owned destination under process authority.
+It now uses the retained journal authority; pending copy-epoch readers use their
+snapshot authority. Publication IO errors name the operation while typed refusals
+keep their existing variants. Both actual file and four-entry directory fixtures
+now publish, apply all final permissions, reopen completed content/security evidence
+and replay through a fresh writer. Original source and pinned preferences/index
+bytes, identities and security remain unchanged. All 102 tests across 25 native
+invocations and strict paired Windows platform/UI lint pass. Failed input/result
+bindings and the final acceptance are retained at
+`.hermes/evidence/caller-publication-current/ACCEPTANCE.json`.
+
+This does not complete caller mutation-prefix/readonly/link publication recovery,
 original retention/overwrite, receipts or retained discovery/resume/Undo/cleanup.
 The actual dispatcher must retain original source pins and canonical registry
 admission for the entire operation. Actual alternate-administrator UAC, caller

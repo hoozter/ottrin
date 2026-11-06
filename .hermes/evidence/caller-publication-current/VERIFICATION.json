@@ -1,0 +1,27 @@
+{
+  "status": "pass caller creation publication, final permissions and fresh completed replay",
+  "archive_sha256": "db9edd0a7305ea6a73a7b48a5f3fa8865a11ce612c625d24fc804a8ac7f326d6",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 25,
+  "top_level_passes": 102,
+  "compiler_jsonl_sha256": "87599c16bca430c179a57875cf103b38e88f7fd56dcfbd2cb1af877e9511df25",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "limits": [
+    "Caller mutation-prefix, readonly and link publication recovery remain separate native gates",
+    "Caller creation publication/final permission application and fresh completed replay only; full dispatcher, overwrite, receipts, restored discovery/resume/Undo/cleanup remain incomplete",
+    "Original retention/overwrite, caller-aware discovery/resume/cleanup, real alternate-admin UAC, caller links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

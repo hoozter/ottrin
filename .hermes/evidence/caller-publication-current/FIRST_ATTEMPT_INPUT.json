@@ -1,0 +1,65 @@
+{
+  "SOURCE_INPUT.json": {
+    "reference_commit": "2a94d3818f28c0483f8548741fa4f9a2d95f08f1",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "49c09e4f7d5fd5bca7155a6e45b0f3ec4267afc569569b8f90954182ec40493e",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "f7e2c959186ce0941c72e6e447cc36f858ee05030886618c8acaf12848cf9ddb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "feee651aa93cf3ecca34fe590c8b5aadffbc53aa5cb55b504e2a3ea62eac06e5",
+      "crates/ottrin-platform/src/windows_fs.rs": "3902b0ca5a11ced9bc559ea561542c5d1bc94fd8b6128749d3c4b6d3ad97d740"
+    },
+    "scope": "Original-caller creation publication, native typed payload reopening, final whole-tree permissions and completed writer replay; no full dispatcher/overwrite/receipt/Undo/cleanup integration."
+  },
+  "NATIVE_TEST_INPUT.json": {
+    "source": {
+      "reference_commit": "2a94d3818f28c0483f8548741fa4f9a2d95f08f1",
+      "files": {
+        "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "49c09e4f7d5fd5bca7155a6e45b0f3ec4267afc569569b8f90954182ec40493e",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "f7e2c959186ce0941c72e6e447cc36f858ee05030886618c8acaf12848cf9ddb",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "feee651aa93cf3ecca34fe590c8b5aadffbc53aa5cb55b504e2a3ea62eac06e5",
+        "crates/ottrin-platform/src/windows_fs.rs": "3902b0ca5a11ced9bc559ea561542c5d1bc94fd8b6128749d3c4b6d3ad97d740"
+      },
+      "scope": "Original-caller creation publication, native typed payload reopening, final whole-tree permissions and completed writer replay; no full dispatcher/overwrite/receipt/Undo/cleanup integration."
+    },
+    "artifacts": [
+      {
+        "crate": "ottrin_ui",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+        "sha256": "c5408c4e75799fb60efc84136a526df368fa3cee6f2bd578c923561e340fa14f",
+        "bytes": 772348584,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      },
+      {
+        "crate": "ottrin_platform",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+        "sha256": "cceb97fe8a68a9046ea687a7adbdb69ad23af381eaf7a536e46fc93465a4fed8",
+        "bytes": 550759607,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      }
+    ],
+    "compiler_jsonl_sha256": "2c3d99fd787405d9402fc30d60cd2d6376d9901771641905b9c48ae65f9efab6"
+  },
+  "BUILD_BINDING.json": {
+    "status": "pass source/build/staged binding; native runtime pending",
+    "source": "SOURCE_INPUT.json",
+    "build": "NATIVE_TEST_INPUT.json",
+    "native": "native/APPLICATION_INPUT.json",
+    "source_files": 4,
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 413036032,
+      "sha256": "cd386cae67572ab396f3e092ef59bf2f791d177f47ce99617d70896037e648ae"
+    }
+  }
+}

@@ -212,6 +212,25 @@ impl Authority {
             }
         }
     }
+    pub(super) fn open_candidate(
+        &self,
+        parent: &File,
+        name: &OsStr,
+    ) -> Result<windows_fs::PerObjectFile, PlatformError> {
+        self.file_operation(|| match self {
+            Self::Process => windows_fs::PerObjectFile::open(parent, name).map_err(io),
+            Self::Caller(_) => {
+                let observed = self.probe(parent, name).map_err(io)?;
+                let attributes = super::metadata::basic(&observed)?.FileAttributes;
+                let readonly = attributes & FILE_ATTRIBUTE_READONLY != 0
+                    && attributes & FILE_ATTRIBUTE_DIRECTORY == 0;
+                // Explicit rights make the native backup-intent request useful
+                // under a foreign DACL. Readonly payload data is reopened only
+                // after the journaled attribute lease; metadata rights stay held.
+                windows_fs::PerObjectFile::open_for_caller(parent, name, readonly).map_err(io)
+            }
+        })
+    }
     pub(super) fn case_policy(
         &self,
         directory: &File,

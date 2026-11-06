@@ -1,0 +1,20 @@
+[
+  {
+    "path": "native/readiness.log",
+    "change": "CRLF to LF only",
+    "before_sha256": "334367644c669df0006d1a273cc4d6c9ab0256e3b15cb04dd609a4d6fd1078a1",
+    "after_sha256": "9b899346cee91f395ef4655ec1554112779139a9d35dd08a0d9f8fee55eccd35"
+  },
+  {
+    "path": "native-fixed/readiness.log",
+    "change": "CRLF to LF only",
+    "before_sha256": "84f1071f1f5373a47229bbe642e0e01dc9356977b2e88e372ddc46506f6885f7",
+    "after_sha256": "dd88551aec7a2de86a758389a18923ec5e39bd819d1195a771e4e0800ceb1f96"
+  },
+  {
+    "path": "native-final/readiness.log",
+    "change": "CRLF to LF only",
+    "before_sha256": "8d21641f2376dabd45336948794bb0ade95d2598194ca09e5357c3b86d31f210",
+    "after_sha256": "9c87829a95380d5f5748df9a9a86ee8aab8104a86aae0a5c2eeba0ba712d57bc"
+  }
+]

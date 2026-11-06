@@ -93,13 +93,19 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    no-follow reads, content and namespace verification and original-token permission
    re-admission. Actual file and four-entry directory recovery derive the exact
    previously planned native policy; ordinary source-free publication and public
-   Undo regressions pass with the shared verifier. Current receipt:
-   `caller-retained-tree-current/ACCEPTANCE.json`; prior paired-journal, claim and
-   final-permission receipts retain their original scopes. These are component controls,
+   Undo regressions pass with the shared verifier. Creation publication now carries
+   caller authority across journal writer handoff, native per-object reopening,
+   no-replace rename, creation-time recovery binding and final whole-tree permissions.
+   Both actual source contexts publish, finish permissions, reopen completed payload
+   evidence and replay through a fresh writer. A reproduced post-rename access denial
+   was fixed at the remaining process-authority binding check; operation-specific IO
+   diagnostics preserve typed refusals. Current receipt:
+   `caller-publication-current/ACCEPTANCE.json`; prior retained-tree, paired-journal,
+   claim and final-permission receipts retain their original scopes. These are component controls,
    not completed caller Copy, whole retained recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
-   registry admission through the entire operation; caller-aware destination
-   publication/final-permission application, original retention/overwrite, receipts
+   registry admission through the entire operation; caller creation mutation-prefix,
+   readonly/link publication recovery, original retention/overwrite, receipts
    and restored discovery/resume/Undo/cleanup. Those entry points still select
    Process authority until their caller-aware integration is connected.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and

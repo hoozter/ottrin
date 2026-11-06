@@ -1,0 +1,10 @@
+{
+  "sizes": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30176128209,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48864941838
+  },
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471272542208 26202714112  95% /\n",
+  "purpose": "Caller-aware creation publication/final permission application and completed replay; shared compiler caches and registered native fixture teardown"
+}

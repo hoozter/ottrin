@@ -1,0 +1,23 @@
+{
+  "status": "reproduced and resolved in final native run",
+  "binding": "FIRST_ATTEMPT_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "error": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (5744) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (5744) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs:188:86:\ncalled `Result::unwrap()` on an `Err` value: Io(\"Windows Copy stream staging: Access is denied. (os error 5)\")\n",
+  "archive_sha256": "a6c4b55299a178fd492a3faadc1cedc25084a424f7b6faa6076be1961055b83f",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "private_console_observer_profile_absent": true
+  },
+  "change": "Reopened caller per-object handles explicitly request payload read/write (write data only when not readonly), metadata, DELETE and WRITE_DAC while retaining MAXIMUM_ALLOWED and backup intent; no DACL repair, fallback, weakened checks or File promotion.",
+  "root_cause": "Shared creation-time recovery bound the renamed caller-owned destination under process authority. Explicit rights alone did not resolve it (SECOND_ATTEMPT_RESULT.json); journal/snapshot authority now remains across that check.",
+  "final_verification": "VERIFICATION.json"
+}
