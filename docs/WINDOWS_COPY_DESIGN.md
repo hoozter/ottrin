@@ -89,6 +89,32 @@ and the original used actor. The fixture's corrected explicit UTF8 read has not
 been rerun in a guest. No assertions or result fields are omitted. This setup is
 not public-dispatcher mutation-prefix or new-process/reconnection acceptance.
 
+## Operation progress and Stop
+
+The command adapter forwards a single fallible progress callback through Copy,
+history admission, Undo, cleanup, Resume, end-attempt and name release. One freshly
+captured original-caller context still owns the entire request. Callback failure
+before a batch member starts preserves earlier completed receipts. History treats
+invalid record evidence as a review state, but a failed callback ends the request;
+it must not become a damaged-record row or a successful partial history response.
+The callback-routing native fixture passes all 16 invocations and 137 actual
+framed requests. Seven command kinds cancel at the first callback with unchanged
+history and no completed Copy references. Successful requests forward actual
+engine callbacks for every command kind, including positive copied-byte progress.
+Three policy tests distinguish damaged-record review, interrupted requests and an
+incorrectly swallowed callback failure. The full preceding caller/recovery lane
+still passes; exact UTF8 wrapper/native receipt equality, source/build binding and
+independent teardown pass in `.hermes/evidence/caller-progress-current/ACCEPTANCE.json`.
+These pre-work stops do not establish mid-operation or blocked-helper cancellation.
+
+Progress/cancellation frames over the authenticated pipe and Windows frontend
+integration remain required. Stop must reach the running helper even when its
+filesystem thread is blocked, preserve its original caller binding, and await a
+terminal result before releasing Activity ownership. A requested Stop is not
+evidence that the operation stopped; a completed batch prefix and its receipts
+must remain actionable. No elapsed-operation timeout may imply failure or restart
+the producer. Administrator Copy remains disabled until the remaining gates pass.
+
 ## Authenticated private reopen
 
 `CallerCopyContext::open_private_entry` reopens an existing single native component

@@ -4,6 +4,7 @@ use ottrin_core::{ConflictAction, FileCommand, PrivilegedCopyHistoryState, Privi
 
 const READY: &str = "owned caller Copy command route ready";
 const DONE: &str = "owned caller Copy command route complete";
+const STOP: &str = "owned caller Copy stop callback";
 
 fn request(command: PrivilegedCommand, reason: &str) -> PrivilegedRequest {
     PrivilegedRequest {
@@ -75,6 +76,47 @@ pub(super) fn client(pipe: &mut LocalPipeStream, root: &Path, source: &Path) {
     let tree = root.join("probe-data/wire-source-tree Ω");
     std::fs::create_dir(&tree).unwrap();
     std::fs::write(tree.join("member.txt"), b"wire directory payload").unwrap();
+    let before = history(pipe);
+    let id = "a".repeat(32);
+    let mut stopped = vec![
+        PrivilegedCommand::File(FileCommand::Copy {
+            sources: vec![wire_file.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Rename,
+        }),
+        PrivilegedCommand::DiscoverCopyHistory,
+        PrivilegedCommand::UndoCopy {
+            transactions: vec![id.clone()],
+        },
+        PrivilegedCommand::CleanupCopy {
+            transactions: vec![id.clone()],
+        },
+    ];
+    stopped.extend(
+        [
+            ottrin_core::PrivilegedCopyRecoveryAction::Resume,
+            ottrin_core::PrivilegedCopyRecoveryAction::EndAttempt,
+            ottrin_core::PrivilegedCopyRecoveryAction::ReleaseName,
+        ]
+        .map(|action| PrivilegedCommand::RecoverCopy {
+            transaction: id.clone(),
+            action,
+        }),
+    );
+    for command in stopped {
+        write_json(pipe, &request(command, STOP)).unwrap();
+        let response: PrivilegedResponse = read_json(pipe).unwrap();
+        assert_eq!(response.status, PrivilegedStatus::Failed);
+        assert!(response.message.unwrap().contains("Owned callback stop"));
+        if let Some(PrivilegedPayload::Copy(reference)) = response.payload {
+            assert_eq!(reference.completed_sources, 0);
+            assert!(reference.transactions.is_empty() && reference.paths.is_empty());
+        }
+    }
+    assert_eq!(history(pipe), before);
+    println!(
+        "caller helper seven command kinds stop before work with unchanged history and no completed Copy references"
+    );
     for source in [wire_file.as_path(), tree.as_path()] {
         let first = copy(
             pipe,
@@ -387,7 +429,19 @@ pub(super) fn serve(
             assert!(channel.execute_copy_command(&request.command).is_none());
             break;
         }
-        let response = recovery.execute(channel, &request);
+        let response = if request.context.reason.as_deref() == Some(STOP) {
+            let mut callbacks = 0;
+            let response = channel
+                .execute_copy_command_with_progress(&request.command, &mut |_| {
+                    callbacks += 1;
+                    Err(crate::PlatformError::Io("Owned callback stop".into()))
+                })
+                .unwrap();
+            assert_eq!(callbacks, 1);
+            response
+        } else {
+            recovery.execute(channel, &request)
+        };
         assert_eq!(token_state(), original_token);
         if let Some(PrivilegedPayload::Copy(receipt)) = &response.payload {
             for (_, publication) in &receipt.paths {

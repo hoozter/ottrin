@@ -560,11 +560,21 @@ impl HelperChannel {
         &self,
         command: &ottrin_core::PrivilegedCommand,
     ) -> Option<PrivilegedResponse> {
+        self.execute_copy_command_with_progress(command, &mut |_| Ok(()))
+    }
+    /// Forward progress/cancellation into both admission and filesystem work.
+    /// The callback does not supply authority; one fresh kernel-authenticated
+    /// caller context still owns this entire request.
+    pub fn execute_copy_command_with_progress(
+        &self,
+        command: &ottrin_core::PrivilegedCommand,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Option<PrivilegedResponse> {
         if !command.requires_copy_recovery() {
             return None;
         }
         Some(match self.caller_copy_context() {
-            Ok(caller) => crate::privileged_copy::execute(Arc::new(caller), command),
+            Ok(caller) => crate::privileged_copy::execute(Arc::new(caller), command, progress),
             Err(error) => PrivilegedResponse {
                 status: PrivilegedStatus::Failed,
                 message: Some(error.to_string()),

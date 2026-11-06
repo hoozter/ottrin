@@ -53,7 +53,13 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `9b6ca438` passes all four hosted jobs in
+Published source `1153775f` has
+[run42275563764](https://github.com/hoozter/ottrin/actions/runs/42275563764).
+At the progress-callback checkpoint, Linux verification and both search-performance
+jobs pass; Windows verification is still running. The exact observed job state is
+in `caller-progress-current/HOSTED_PREVIOUS_RUN.json`. Wait for that run to finish
+before another push, so `cancel-in-progress` does not interrupt it.
+Its preceding `9b6ca438` passes all four hosted jobs in
 [run42257541740](https://github.com/hoozter/ottrin/actions/runs/42257541740).
 Its preceding `4861b17a` also passes all four jobs in
 [run42247139035](https://github.com/hoozter/ottrin/actions/runs/42247139035).
@@ -127,6 +133,16 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
      the feature. Merge ordinary and administrator Windows history by transaction
      identity while preserving live receipt ownership; both use the caller's one
      canonical registry. Keep history and partial batch results honest.
+     The command adapter now forwards fallible engine progress through all seven
+     command kinds; history callback failures fail the request instead of becoming
+     damaged-record rows. All 16 native invocations and 137 framed requests pass,
+     including seven pre-work callback cancellations, actual engine/byte callbacks,
+     three history-error policy tests and the full preceding recovery lane. Exact
+     UTF8 wrapper/native receipt equality, source/build binding and independent
+     teardown pass in `caller-progress-current/ACCEPTANCE.json`. Transport frames
+     and blocked-helper Stop remain open; callback-only cancellation does not
+     establish them. Only Windows-gated source changed; Linux acceptance retains
+     its previous scope. Stable application packages are unchanged.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and the original-retention/restoration failure matrix,
      including readonly original roots.

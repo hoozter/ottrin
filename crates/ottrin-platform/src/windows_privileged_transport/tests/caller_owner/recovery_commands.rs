@@ -46,6 +46,7 @@ pub(super) struct Server {
     parents: BTreeSet<OsString>,
     user_data: [File; 2],
     before: UserData,
+    progress: HashMap<&'static str, (usize, u64)>,
 }
 impl Server {
     pub(super) fn new(
@@ -70,6 +71,7 @@ impl Server {
             parents: BTreeSet::new(),
             user_data,
             before,
+            progress: HashMap::new(),
         }
     }
     pub(super) fn execute(
@@ -163,7 +165,30 @@ impl Server {
         } else {
             assert_eq!(reason, "owned caller Copy command");
         }
-        let response = channel.execute_copy_command(&request.command).unwrap();
+        let kind = match &request.command {
+            PrivilegedCommand::File(ottrin_core::FileCommand::Copy { .. }) => "copy",
+            PrivilegedCommand::DiscoverCopyHistory => "history",
+            PrivilegedCommand::UndoCopy { .. } => "undo",
+            PrivilegedCommand::CleanupCopy { .. } => "cleanup",
+            PrivilegedCommand::RecoverCopy { action, .. } => match action {
+                PrivilegedCopyRecoveryAction::Resume => "resume",
+                PrivilegedCopyRecoveryAction::EndAttempt => "end",
+                PrivilegedCopyRecoveryAction::ReleaseName => "release",
+            },
+            _ => panic!("Unexpected caller Copy command"),
+        };
+        let mut callbacks = 0;
+        let mut bytes = 0;
+        let response = channel
+            .execute_copy_command_with_progress(&request.command, &mut |value| {
+                callbacks += 1;
+                bytes = bytes.max(value);
+                Ok(())
+            })
+            .unwrap();
+        let maximum = self.progress.entry(kind).or_default();
+        maximum.0 = maximum.0.max(callbacks);
+        maximum.1 = maximum.1.max(bytes);
         if let Some(id) = prepared_id {
             let Some(PrivilegedPayload::CopyHistory(entries)) = &response.payload else {
                 panic!("Seeded history failed: {response:?}")
@@ -181,6 +206,19 @@ impl Server {
         response
     }
     pub(super) fn finish(&mut self) {
+        for kind in [
+            "copy", "history", "undo", "cleanup", "resume", "end", "release",
+        ] {
+            assert!(
+                self.progress[kind].0 > 1,
+                "{kind} did not forward engine callbacks: {:?}",
+                self.progress
+            );
+        }
+        assert!(self.progress["copy"].1 > 0);
+        println!(
+            "caller helper progress reaches engine callbacks for all seven command kinds; copied byte progress observed"
+        );
         assert_eq!(self.parents.len(), 8);
         for checks in self.checks.values_mut() {
             for check in checks {
