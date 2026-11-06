@@ -1,0 +1,18 @@
+{
+  "next": "Connect canonical caller profile registry factory to actual caller dispatcher; retain pinned admitted Source and operation authority through all mutations. Source admission must not expire after registry initialization.",
+  "authority": "Extend the existing registry Authority responsibility through transaction construction rather than adding an ambient/global identity override. Ordinary-process behavior remains explicit.",
+  "concrete_callers": [
+    "windows/dispatch.rs copy_configured and copy_admitted_source select ambient configured_path/current_owner today",
+    "windows/namespace.rs PrivateStage::for_transaction and candidate creation currently use ordinary private creators",
+    "windows/journal/initialization.rs preparation creation and journal local/central creation need same explicit caller authority",
+    "windows/journal/claims.rs and claims/preparations.rs lease/owner/namespace handling still select current_owner and ordinary private handles",
+    "windows/security.rs DestinationSecurity::capture_with_token and tree security plans must derive final policy from original token rather than helper token",
+    "windows/journal discovery/restore and retained plans must carry original caller context, compare complete canonical ancestry binding, and use caller-owned reopen for all journals/coordinators"
+  ],
+  "metadata": "Original-token set_private_directory_case_policy component now accepted; route engine-required new empty candidate case changes through it, with journal intent and create-new ownership. Never use it to repair retained state.",
+  "acceptance_remaining": "Actual alternate-admin UAC, in-place TokenOwner mutation and package/profile-virtualization proof before enabling administrator Copy. Complete destination claims, staging, journal, final security, receipts, restored Undo/cleanup and crash/restart acceptance remain open.",
+  "publication": "Current preceding hosted run42144115878 is confirmed live on9cf3b307; Linux verify and both search-performance jobs passed. Commit this verified checkpoint locally, then publish once after that run is terminal so it is not cancelled.",
+  "other_ready_work": "U05-U08 complete interface/theme audit, remaining themed picker/supported folder integration, ordinary-user MSI registration rollback.",
+  "owner_waits": "Personal helper authentication, signing identity/keys, release-ready free Store submission, unavailable physical/proprietary environments/corpora, final acceptance.",
+  "packages": "Stable Linuxbee15669 and Windows8e805d31 unchanged; no administrator Copy or new package delivery."
+}

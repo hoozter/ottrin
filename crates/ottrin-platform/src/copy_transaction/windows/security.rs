@@ -16,7 +16,9 @@ use windows_sys::Win32::Storage::FileSystem::*;
 
 mod caller_private;
 mod caller_profile;
-pub(crate) use caller_private::{CallerCreationSecurity, open_caller_private_entry};
+pub(crate) use caller_private::{
+    CallerCreationSecurity, open_caller_private_entry, set_caller_private_directory_case_policy,
+};
 mod tree;
 pub(crate) use caller_profile::{CallerDirectoryBinding, CallerProfile, CallerRegistryParent};
 pub(super) use tree::{

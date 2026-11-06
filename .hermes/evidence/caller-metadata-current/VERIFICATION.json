@@ -1,0 +1,28 @@
+{
+  "status": "pass exact source/build/native results and producer teardown",
+  "archive_sha256": "9ea3f7189ae73486cf7c7507fbcaad2e7c8bc1d29a48b02cf55cab5e3d305b87",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 9,
+  "top_level_passes": 27,
+  "source_binding": "BUILD_BINDING.json",
+  "observed_metadata": {
+    "caller_token_success_error_unwind_and_nested_restoration": true,
+    "creation_with_original_token_and_elevated_parent_handle": {
+      "created": false,
+      "message": "Access is denied. (os error 5)",
+      "native_error": 5
+    },
+    "exact_thread_token_and_privileges_restored": true,
+    "private_metadata_refuses_wrong_identity_or_nonempty_directory": true,
+    "required_private_directory_case_changes_with_original_token": true
+  },
+  "limits": "No actual alternate-administrator UAC, in-place TokenOwner mutation, package profile context or complete caller transaction/recovery acceptance"
+}

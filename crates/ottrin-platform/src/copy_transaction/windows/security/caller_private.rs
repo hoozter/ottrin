@@ -101,3 +101,33 @@ impl CallerCreationSecurity {
         Ok(file)
     }
 }
+
+/// Only the engine's create-new empty private candidate may be changed. Native
+/// identity and caller ownership are checked before mutation; saved permissions
+/// are never installed. The kernel performs the setter under the caller token.
+pub(crate) fn set_caller_private_directory_case_policy(
+    directory: &File,
+    expected: WindowsStableIdentity,
+    owner: &[u8],
+    group: &[u8],
+    case_sensitive: bool,
+) -> std::io::Result<()> {
+    if !expected.is_directory_without_reparse()
+        || stable_identity_from_handle(directory).map_err(std::io::Error::other)? != expected
+    {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "Private metadata requires the admitted ordinary directory identity",
+        ));
+    }
+    let policy = PrivateSecurity::capture_for_caller(directory, owner, group)?;
+    windows_fs::set_empty_directory_case_policy(directory, case_sensitive)?;
+    if stable_identity_from_handle(directory).map_err(std::io::Error::other)? != expected
+        || PrivateSecurity::capture_for_caller(directory, owner, group)?.0 != policy.0
+    {
+        return Err(std::io::Error::other(
+            "Private directory identity/security changed during metadata operation; data retained",
+        ));
+    }
+    Ok(())
+}

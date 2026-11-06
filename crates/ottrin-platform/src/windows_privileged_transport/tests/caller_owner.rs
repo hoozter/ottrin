@@ -125,6 +125,92 @@ fn token_state() -> (u32, i32, Vec<u8>) {
     )
 }
 
+fn exercise_caller_metadata(context: &CallerCopyContext, parent: &std::fs::File) {
+    use crate::move_recovery::stable_identity_from_handle;
+    use crate::windows_fs::{directory_case_sensitive, set_empty_directory_case_policy};
+    let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    let prior = token_state();
+    let caller_user = context.user_sid().unwrap().to_vec();
+    let directory = context
+        .create_private_entry(parent, OsStr::new("required-case-policy Ω"), true, sharing)
+        .unwrap();
+    let expected = stable_identity_from_handle(&directory).unwrap();
+    let security = crate::copy_transaction::owner_group_dacl_digest(&directory).unwrap();
+    let initial = directory_case_sensitive(&directory).unwrap();
+    // The inherited value is not acceptance of an actual metadata change.
+    assert!(set_empty_directory_case_policy(&directory, !initial).is_err());
+    assert_eq!(directory_case_sensitive(&directory).unwrap(), initial);
+    context
+        .set_private_directory_case_policy(&directory, expected, !initial)
+        .unwrap();
+    assert_eq!(directory_case_sensitive(&directory).unwrap(), !initial);
+    assert_eq!(token_state(), prior);
+    context
+        .set_private_directory_case_policy(&directory, expected, initial)
+        .unwrap();
+    assert_eq!(directory_case_sensitive(&directory).unwrap(), initial);
+    assert_eq!(token_state(), prior);
+    assert_eq!(
+        crate::copy_transaction::owner_group_dacl_digest(&directory).unwrap(),
+        security
+    );
+    let other = context
+        .create_private_entry(parent, OsStr::new("other-case-policy"), true, sharing)
+        .unwrap();
+    assert!(
+        context
+            .set_private_directory_case_policy(&other, expected, !initial)
+            .is_err()
+    );
+    assert_eq!(directory_case_sensitive(&other).unwrap(), initial);
+    let child = context
+        .create_private_entry(&directory, OsStr::new("retained.txt"), false, sharing)
+        .unwrap();
+    let child_id = stable_identity_from_handle(&child).unwrap();
+    assert!(
+        context
+            .set_private_directory_case_policy(&directory, expected, !initial)
+            .is_err()
+    );
+    assert_eq!(directory_case_sensitive(&directory).unwrap(), initial);
+    assert_eq!(stable_identity_from_handle(&child).unwrap(), child_id);
+    assert_eq!(
+        crate::copy_transaction::owner_group_dacl_digest(&directory).unwrap(),
+        security
+    );
+    assert_eq!(token_state(), prior);
+    // Nested helper privileges must be restored to that exact thread token,
+    // including failures and unwinding, without affecting another thread.
+    crate::windows_fs::with_file_privileges(|| {
+        let outer = token_state();
+        context.with_caller_token(|| {
+            assert_eq!(
+                crate::windows_fs::user_for_token(&crate::windows_fs::current_token().unwrap())
+                    .unwrap(),
+                caller_user
+            );
+            assert_eq!(std::thread::spawn(token_state).join().unwrap(), prior);
+            Ok(())
+        })?;
+        assert_eq!(token_state(), outer);
+        let failure = context
+            .with_caller_token::<()>(|| Err(io::Error::other("owned operation refusal")))
+            .unwrap_err();
+        assert_eq!(failure.to_string(), "owned operation refusal");
+        assert_eq!(token_state(), outer);
+        assert!(
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let _ = context.with_caller_token::<()>(|| panic!("owned token-scope unwind"));
+            }))
+            .is_err()
+        );
+        assert_eq!(token_state(), outer);
+        Ok(())
+    })
+    .unwrap();
+    assert_eq!(token_state(), prior);
+}
+
 fn system_parent_policy(file: &std::fs::File) -> Vec<u8> {
     let (mut dacl, mut descriptor) = (ptr::null_mut(), ptr::null_mut());
     assert_eq!(
@@ -657,6 +743,7 @@ fn system_helper() {
         helper_user
     );
     assert_eq!(system_parent_policy(&parent), parent_owner);
+    exercise_caller_metadata(&context, &parent);
     crate::WindowsCopyRegistry::exercise_caller_authority(&context, &parent);
     crate::WindowsCopyRegistry::exercise_canonical_profile(
         &context,
@@ -683,6 +770,9 @@ fn system_helper() {
             "atomic_private_creation_owner_matches_caller":true,
             "existing_private_entry_refused_unchanged":true,
             "ordinary_helper_reopen_refused":true,
+            "required_private_directory_case_changes_with_original_token":true,
+            "private_metadata_refuses_wrong_identity_or_nonempty_directory":true,
+            "caller_token_success_error_unwind_and_nested_restoration":true,
             "exact_thread_token_and_privileges_restored":true,
             "nested_privileged_thread_restored":true,
             "foreign_owner_entry_refused_without_data_or_security_change":true,

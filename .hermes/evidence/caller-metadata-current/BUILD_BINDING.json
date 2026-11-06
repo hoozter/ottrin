@@ -1,0 +1,14 @@
+{
+  "status": "pass exact current source and native executable binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "native_result": "pass exact native result; see VERIFICATION.json",
+  "source_files": 8,
+  "native_text": {
+    "entry_rva": 5136,
+    "bytes": 408934400,
+    "sha256": "7a4c103b6754f8d646a9eced8b8ef3a3b1deab417c663e6e9de18f310a8211bb"
+  },
+  "lint_sha256": "b2651e6e6844a4e53b60fadd0bf2491ffd647620faa5dfb9b34afbbed039acae"
+}

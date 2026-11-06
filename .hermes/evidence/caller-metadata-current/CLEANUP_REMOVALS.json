@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-current/native/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture",
+      "evidence": "All seven flat archive members decoded and verified against exact source/build; 27 top-level passes in nine invocations. Guest/disk/desktop/profile/fixture teardown independently checked; compact native JSON and diagnostic text retained. No user data/current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-current/native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture",
+      "evidence": "All seven flat archive members decoded and verified against exact source/build; 27 top-level passes in nine invocations. Guest/disk/desktop/profile/fixture teardown independently checked; compact native JSON and diagnostic text retained. No user data/current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-current/native/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture",
+      "evidence": "All seven flat archive members decoded and verified against exact source/build; 27 top-level passes in nine invocations. Guest/disk/desktop/profile/fixture teardown independently checked; compact native JSON and diagnostic text retained. No user data/current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-current/native/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport/setup capture",
+      "evidence": "All seven flat archive members decoded and verified against exact source/build; 27 top-level passes in nine invocations. Guest/disk/desktop/profile/fixture teardown independently checked; compact native JSON and diagnostic text retained. No user data/current packages."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified with ps; preserve. Native producer and owned guest/viewer/observer/profile are stopped/removed. Four exact targets are consumed native result transport and setup screenshots, not authentication files or current artifacts. The cleanup helper must verify exact process identity before accepting this scoped review."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified with ps; preserve. Native producer and owned guest/viewer/observer/profile are stopped/removed. Four exact targets are consumed native result transport and setup screenshots, not authentication files or current artifacts. The cleanup helper must verify exact process identity before accepting this scoped review."
+    }
+  ]
+}

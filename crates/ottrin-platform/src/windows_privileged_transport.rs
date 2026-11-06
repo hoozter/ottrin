@@ -406,6 +406,56 @@ impl CallerCopyContext {
         self.validate()?;
         Ok(file)
     }
+    /// Apply a required naming policy to the engine's newly created, empty
+    /// private directory. The engine must establish create-new ownership and
+    /// journal intent; this method does not admit arbitrary retained candidates.
+    pub fn set_private_directory_case_policy(
+        &self,
+        directory: &std::fs::File,
+        expected: crate::move_recovery::WindowsStableIdentity,
+        case_sensitive: bool,
+    ) -> io::Result<()> {
+        self.with_caller_token(|| {
+            crate::copy_transaction::set_caller_private_directory_case_policy(
+                directory,
+                expected,
+                &self.caller.identity.owner,
+                &self.caller.identity.group,
+                case_sensitive,
+            )
+        })
+    }
+    /// Snapshot the kernel-bound original token, compare its immutable admitted
+    /// identity, and restore the exact previous thread token on every exit.
+    fn with_caller_token<T>(&self, operation: impl FnOnce() -> io::Result<T>) -> io::Result<T> {
+        self.validate()?;
+        let source = process_token(&self.caller.process, TOKEN_QUERY | TOKEN_DUPLICATE)?;
+        let mut raw = ptr::null_mut();
+        if unsafe {
+            windows_sys::Win32::Security::DuplicateTokenEx(
+                source.as_raw_handle().cast(),
+                TOKEN_QUERY | TOKEN_IMPERSONATE,
+                ptr::null(),
+                windows_sys::Win32::Security::SecurityImpersonation,
+                windows_sys::Win32::Security::TokenImpersonation,
+                &mut raw,
+            )
+        } == 0
+        {
+            return Err(io::Error::last_os_error());
+        }
+        let token = unsafe { OwnedHandle::from_raw_handle(raw.cast()) };
+        if CallerIdentity::capture(&token)? != self.caller.identity {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Caller token changed before private metadata operation",
+            ));
+        }
+        self.validate()?;
+        let result = crate::windows_fs::with_thread_token(&token, operation);
+        self.validate()?;
+        result
+    }
     /// Reopen one private entry whose native identity the transaction engine
     /// independently admitted. A serialized identity alone is not admission.
     /// This checks caller/profile liveness, identity/type and private owner/group/

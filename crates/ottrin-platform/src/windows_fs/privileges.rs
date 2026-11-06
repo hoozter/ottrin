@@ -13,27 +13,77 @@ use windows_sys::Win32::{
     },
 };
 
-pub(crate) fn with_file_privileges<T>(operation: impl FnOnce() -> io::Result<T>) -> io::Result<T> {
-    let mut raw = ptr::null_mut();
-    let previous = if unsafe {
-        OpenThreadToken(
-            GetCurrentThread(),
-            TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_IMPERSONATE,
-            1,
-            &mut raw,
-        )
-    } != 0
-    {
-        Some(unsafe { OwnedHandle::from_raw_handle(raw.cast()) })
-    } else {
-        let error = io::Error::last_os_error();
-        if error.raw_os_error() != Some(ERROR_NO_TOKEN as i32) {
-            return Err(error);
+struct Restore {
+    previous: Option<OwnedHandle>,
+    installed: bool,
+}
+impl Restore {
+    fn capture() -> io::Result<Self> {
+        let mut raw = ptr::null_mut();
+        let previous = if unsafe {
+            OpenThreadToken(
+                GetCurrentThread(),
+                TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_IMPERSONATE,
+                1,
+                &mut raw,
+            )
+        } != 0
+        {
+            Some(unsafe { OwnedHandle::from_raw_handle(raw.cast()) })
+        } else {
+            let error = io::Error::last_os_error();
+            if error.raw_os_error() != Some(ERROR_NO_TOKEN as i32) {
+                return Err(error);
+            }
+            None
+        };
+        Ok(Self {
+            previous,
+            installed: false,
+        })
+    }
+    fn install<T>(
+        mut self,
+        token: &OwnedHandle,
+        operation: impl FnOnce() -> io::Result<T>,
+    ) -> io::Result<T> {
+        if unsafe { SetThreadToken(ptr::null(), token.as_raw_handle().cast()) } == 0 {
+            return Err(io::Error::last_os_error());
         }
-        None
-    };
+        self.installed = true;
+        operation()
+    }
+}
+impl Drop for Restore {
+    fn drop(&mut self) {
+        if !self.installed {
+            return;
+        }
+        let token = self
+            .previous
+            .as_ref()
+            .map_or(ptr::null_mut(), |token| token.as_raw_handle().cast());
+        // Never continue with an unexpectedly changed effective identity.
+        if unsafe { SetThreadToken(ptr::null(), token) } == 0 {
+            std::process::abort();
+        }
+    }
+}
+
+/// The caller provides an already admitted impersonation token. No token is
+/// modified; restore the exact prior thread token on return, error or unwind.
+pub(crate) fn with_thread_token<T>(
+    token: &OwnedHandle,
+    operation: impl FnOnce() -> io::Result<T>,
+) -> io::Result<T> {
+    Restore::capture()?.install(token, operation)
+}
+
+pub(crate) fn with_file_privileges<T>(operation: impl FnOnce() -> io::Result<T>) -> io::Result<T> {
+    let restore = Restore::capture()?;
+    let mut raw = ptr::null_mut();
     let process;
-    let effective = if let Some(token) = &previous {
+    let effective = if let Some(token) = &restore.previous {
         token
     } else {
         if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_DUPLICATE, &mut raw) }
@@ -92,22 +142,5 @@ pub(crate) fn with_file_privileges<T>(operation: impl FnOnce() -> io::Result<T>)
             return Err(io::Error::from_raw_os_error(error as i32));
         }
     }
-    struct Restore(Option<OwnedHandle>);
-    impl Drop for Restore {
-        fn drop(&mut self) {
-            let token = self
-                .0
-                .as_ref()
-                .map_or(ptr::null_mut(), |token| token.as_raw_handle().cast());
-            // Continuing with unexpectedly elevated thread privileges is unsafe.
-            if unsafe { SetThreadToken(ptr::null(), token) } == 0 {
-                std::process::abort();
-            }
-        }
-    }
-    if unsafe { SetThreadToken(ptr::null(), duplicate.as_raw_handle().cast()) } == 0 {
-        return Err(io::Error::last_os_error());
-    }
-    let _restore = Restore(previous);
-    operation()
+    restore.install(&duplicate, operation)
 }

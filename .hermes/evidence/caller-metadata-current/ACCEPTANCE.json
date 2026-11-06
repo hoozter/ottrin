@@ -1,0 +1,27 @@
+{
+  "status": "pass original-caller private directory naming-policy changes and exact thread authority restoration",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "native_invocations": 9,
+  "top_level_passes": 27,
+  "coverage": [
+    "Required naming-policy mutation refused under ambient SYSTEM subject, then succeeds under authenticated original caller in both directions",
+    "Caller-owned private directory identity and owner/group/DACL record remain unchanged",
+    "Wrong native identity and nonempty candidate refused without altering policy or retained child",
+    "Success, explicit operation error and caught unwind restore exact prior thread token and privilege state, including nested helper privilege scopes; unrelated thread retains process identity",
+    "Original native profile/registry/source-overlap, creator/reopen, ordinary security/registry/name-policy, large codec and torn checkpoint regressions pass",
+    "SYSTEM native symbolic-link, default-DACL and audit-SACL security regressions pass"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "b2651e6e6844a4e53b60fadd0bf2491ffd647620faa5dfb9b34afbbed039acae"
+  },
+  "limits": [
+    "No complete administrator Copy dispatcher/stage/journal/final-policy/receipt/recovery bridge; Copy remains disabled",
+    "No actual alternate-administrator UAC, in-place TokenOwner mutation or packaged profile-context acceptance",
+    "No new deliverable; stable Linux and Windows package hashes remain unchanged"
+  ]
+}

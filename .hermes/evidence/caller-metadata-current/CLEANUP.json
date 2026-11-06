@@ -1,0 +1,30 @@
+{
+  "status": "complete owned native teardown and consumed-output cleanup",
+  "observed_at": "2026-11-06T01:42:57.734361+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 31113950989,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48847033010
+  },
+  "obsolete_incremental_sessions_removed": 11,
+  "measured_incremental_reclaim_bytes": 1557868544,
+  "final_incremental_candidates": 0,
+  "available_bytes": 25770250240,
+  "native_teardown": "native/OWNER.json",
+  "independent_checks": "Private viewer/observer PIDs and workspace profile absent; owned fixture absent; libvirt inventory contains only four protected off domains and their protected disks plus standalone stock-client base. Owned guest and both owned volumes absent.",
+  "consumed_outputs_removed": "Five exact guarded targets: four transport/setup captures in CLEANUP_REMOVALS.json and consumed generated QA bootstrap in STAGING_REMOVALS.json. Complete producer and bound assertions remain; all exact targets verified absent. Unchanged protected authentication processes preserved.",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-current",
+      "purpose": "Compact exact source/build/native/cleanup receipts and reproducible actor/controller scripts; compiler JSONL and isolated viewer text diagnostics retained for provenance",
+      "bytes": 575756
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Shared compiler caches and latest same-configuration Windows platform/UI native tests for remaining caller transaction bridge; no extra target tree"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

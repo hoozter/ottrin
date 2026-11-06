@@ -5,7 +5,7 @@ mod recovery;
 pub(crate) use identity::{
     current_owner, current_token, group_for_token, owner_for_token, user_for_token, valid_sid,
 };
-pub(crate) use privileges::with_file_privileges;
+pub(crate) use privileges::{with_file_privileges, with_thread_token};
 pub(crate) mod journal_access;
 pub(crate) use recovery::Volumes;
 use std::ffi::{OsStr, OsString, c_void};

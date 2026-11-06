@@ -1,0 +1,14 @@
+{
+  "reference_commit": "9cf3b307d0ef48cc975ccfbb53411b23934412a7",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction.rs": "e79fa25b7005f3423ad6107778e4b2c67d18fd15839a73c8fc38c4502b15a53e",
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "98edd5794a126e7dc402e82313dd6416517900a33d5d9dd91653235f9377dfc3",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "26b9d8a491d41a5ca59cd156a14c9bf609a9b5924b6d1cdbd83992e441941f7c",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/caller_private.rs": "a85c258256a14bd9eb4f05c9a0e22aa3873b0f259557da38ca19919839155642",
+    "crates/ottrin-platform/src/windows_fs.rs": "488aabd624abacfb1600901544116f220c26c240ec1cc8ee20b35ad1065f9cc3",
+    "crates/ottrin-platform/src/windows_fs/privileges.rs": "3259000c78c8121b4e8146b78effe37ca698b35fb587da14d4ba84327b8074be",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "3a139d488985d8f863d75d541043f6ac3a5012d11f01940ed8122f6acea9e9f2",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "5375456e90e11e5c2afcc8e582f1137c80e5c8dd15cf69c62a3bdc2144a50a58"
+  },
+  "scope": "Scoped original caller naming-policy mutation and exact prior thread-token restoration; no complete administrator Copy or package acceptance"
+}

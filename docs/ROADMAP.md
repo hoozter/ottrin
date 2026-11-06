@@ -71,11 +71,18 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    scopes and consumed transports are removed; 33 obsolete incremental sessions
    were removed, with at least 2.91 GiB measured reclaimed. Receipt:
    `caller-profile-registry-current/ACCEPTANCE.json`.
+   The required naming-policy primitive now runs under a snapshot of the
+   authenticated original token, with exact prior thread-token restoration.
+   Native SYSTEM/caller assertions verify actual changes in both directions,
+   unchanged owner/group/DACL, wrong-ID/nonempty refusal, and restoration after
+   success, failure, unwind and nesting. This remains a component, not enabled
+   administrator Copy. Current metadata receipt:
+   `caller-metadata-current/ACCEPTANCE.json`.
    Remaining: connect this factory to the actual caller dispatcher and retain
    admitted source/operation authority; propagate authority through claims,
    staging, complete journals, final destination security, receipts and restored
-   Undo/cleanup plans; original-token authority for required naming-policy
-   changes on caller-owned candidates; actual alternate-admin, in-place
+   Undo/cleanup plans; carry the verified original-token naming-policy operation
+   into candidate staging/recovery; actual alternate-admin, in-place
    TokenOwner-mutation and package-context proof. Already-inherited registry
    naming is verified without an unnecessary setter; it is not full metadata
    support. The new actual Ottrin-ancestor DACL fixture is distinct from the

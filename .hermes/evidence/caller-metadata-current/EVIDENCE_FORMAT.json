@@ -1,0 +1,9 @@
+{
+  "status": "text and JSON formatting only",
+  "readiness_log": {
+    "before_sha256": "f039aaa823aa69aa645b63daa1178c20455b718eda42781cdd2bd46ecb8fa652",
+    "after_sha256": "74665a4267bd185374ac28e1dd407781f7c80d586e8e1f1060d20d6c72da9c79",
+    "change": "CRLF to LF only; text unchanged"
+  },
+  "native_JSON": "Archive members decoded with UTF-8 BOM handling and formatted as JSON; parsed RESULT equals separately collected GUEST_RESULT. No assertion, statement or native result changed."
+}

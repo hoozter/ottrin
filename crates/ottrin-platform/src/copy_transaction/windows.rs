@@ -38,6 +38,7 @@ mod security;
 pub(crate) use security::owner_group_dacl_digest;
 pub(crate) use security::{
     CallerCreationSecurity, CallerProfile, CallerRegistryParent, open_caller_private_entry,
+    set_caller_private_directory_case_policy,
 };
 mod tree;
 

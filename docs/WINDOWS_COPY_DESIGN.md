@@ -46,9 +46,9 @@ Directory-flush handles retain the existing read/write mask without `DELETE` or
 `WRITE_DAC`. Naming-policy initialization first observes the live native flag after
 ordinary-directory and emptiness checks. An already-correct inherited value
 requires no write. A different value still requires the native setter, its access
-checks and exact postcondition. This does not grant the helper authority to change
-a caller-owned candidate's naming policy; such required metadata changes remain
-part of the original-token transaction integration. Anchor identity, parent location/security/case policy, root identity
+checks and exact postcondition. Required changes on caller-owned candidates use
+an explicit original-token metadata operation, described below. Anchor identity,
+parent location/security/case policy, root identity
 and complete private security still require exact validation. Existing foreign,
 unanchored or altered state is retained and refused, never repaired or adopted.
 
@@ -78,6 +78,32 @@ environment locator; helper dispatch must select the canonical caller factory.
 Administrator Copy remains disabled pending the complete bridge and native
 alternate-administrator/package acceptance. Exact native acceptance is recorded
 separately in the roadmap.
+
+## Original-caller private metadata authority
+
+`CallerCopyContext::set_private_directory_case_policy` accepts the engine's held,
+newly created empty private directory and its independently admitted native ID.
+The directory must match that ID, ordinary type, frozen caller owner/group and
+protected private security. Existing retained state is never repaired; the engine
+must establish create-new ownership and journal intent before this operation.
+
+The context snapshots the kernel-bound original process token into an impersonation
+token and checks its user/default owner/primary group against admitted values.
+The native naming-policy setter runs under that original caller, without adding
+helper backup/restore privileges. Native access checks, emptiness and exact policy
+postcondition remain mandatory; no failed change is ignored. The private
+owner/group/DACL record and native identity must remain unchanged afterwards. Caller/profile liveness is
+validated around the operation.
+
+One shared thread-token guard serves this operation and existing scoped helper
+file privileges. It captures the exact prior thread token, installs the selected
+token only for the synchronous operation, and restores the prior token on return,
+error or unwind. A restoration failure aborts rather than continuing with an
+unknown effective identity. Neither original process token nor prior impersonation
+token is modified. This primitive still needs to be carried through actual Copy
+candidate creation/recovery; it does not enable administrator Copy or prove
+alternate-administrator UAC/package behavior. Native mechanism acceptance:
+`.hermes/evidence/caller-metadata-current/ACCEPTANCE.json`.
 
 ## Canonical native security evidence
 

@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-11-06T01:30:55.679918+00:00",
+  "bytes": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 31113874466,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48839397386
+  },
+  "purpose": "Same paired GNU platform/UI test graph, native caller metadata authority; reuse shared target only"
+}
