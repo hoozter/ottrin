@@ -2259,3 +2259,33 @@ Current-session ownership remains unchanged. The follow-up passes 23 native Wind
 cases, 21 scoped Linux tests and strict Linux/Windows checks with independently
 verified teardown and unchanged package hashes:
 `.hermes/evidence/caller-history-refresh-current/ACCEPTANCE.json`.
+
+### Queued administrator Copy
+
+Windows retries dispatch Copy through a named worker and the ordinary OpResult
+channel. The original queued Activity ID owns paths and Stop registration until
+terminal consumption. The worker rechecks captured storage bindings before helper
+admission and uses the progress-aware transport. One Copy reference validator is
+shared with Linux's synchronous receipt path. Partial terminal responses attach
+opaque helper receipts before failure presentation; a late successful terminal
+response remains successful after Stop. Pre-work cancellation is Stopped, and
+denial or missing success payload cannot invent a completed operation. The retry
+UI distinguishes queuing from completion.
+
+Ordinary Windows Copy and helper Copy share a step-byte counter and bounded GUI
+wakes. Counters follow the engine's current copy or verification step; they are
+not batch totals or percentages. Result publication wakes immediately. Existing
+CopyWorkUi Drop cancellation also owns the helper worker's close path.
+
+The headless adapter fixtures run in separate child profiles to avoid parallel
+registry interference. The existing private-profile runner takes qualified test
+names, and all callers use that interface. The native lane also covers all twelve
+existing private-profile callers, including actual ordinary Copy, blocked-source
+Stop, partial batch receipt/Undo and directory stream/source preservation.
+Twenty-six scoped Linux tests and 39 native Windows cases pass, together with
+strict Linux/Windows lint, formatting, exact source/build/helper bindings, four
+unchanged stable package hashes and independent initial/final VM, volume and
+fixture teardown. Evidence:
+`.hermes/evidence/caller-forward-ui-current/ACCEPTANCE.json`. Ordinary-user rendered
+GUI, actual UAC/helper process and package acceptance remain open. Windows Copy
+capability stays disabled; this source checkpoint does not replace stable packages.

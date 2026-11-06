@@ -465,6 +465,40 @@ pub(super) fn is_privileged(record: &OperationRecord) -> bool {
     )
 }
 
+fn copy_reference<'a>(
+    command: &FileCommand,
+    response: &'a ottrin_core::PrivilegedResponse,
+) -> Result<Option<&'a ottrin_core::PrivilegedCopyReceipt>, String> {
+    let FileCommand::Copy {
+        sources,
+        destination,
+        ..
+    } = command
+    else {
+        return Ok(None);
+    };
+    let Some(PrivilegedPayload::Copy(reference)) = &response.payload else {
+        // Cancellation/denial may occur before the helper starts a Copy.
+        return if response.status == PrivilegedStatus::Success {
+            Err("Administrator helper omitted Copy recovery references; review retained data before retrying.".into())
+        } else {
+            Ok(None)
+        };
+    };
+    if reference.completed_sources > sources.len()
+        || reference.transactions.len() != reference.paths.len()
+        || reference.transactions.iter().collect::<HashSet<_>>().len()
+            != reference.transactions.len()
+        || reference
+            .paths
+            .iter()
+            .any(|(_, publication)| publication.parent() != Some(destination.as_path()))
+    {
+        return Err("Administrator helper returned inconsistent Copy recovery references; retained data requires review.".into());
+    }
+    Ok(Some(reference))
+}
+
 impl OttrinApp {
     pub(super) fn record_privileged_copy(
         &mut self,
@@ -473,33 +507,12 @@ impl OttrinApp {
         tab: Option<u64>,
         bindings: Vec<StorageOperationBinding>,
     ) -> Result<(), String> {
-        let FileCommand::Copy {
-            sources,
-            destination,
-            ..
-        } = command
-        else {
+        let Some(reference) = copy_reference(command, response)? else {
             return Ok(());
         };
-        let Some(PrivilegedPayload::Copy(reference)) = &response.payload else {
-            // Cancellation/denial may occur before the helper starts a Copy.
-            return if response.status == PrivilegedStatus::Success {
-                Err("Administrator helper omitted Copy recovery references; review retained data before retrying.".into())
-            } else {
-                Ok(())
-            };
+        let FileCommand::Copy { destination, .. } = command else {
+            unreachable!()
         };
-        if reference.completed_sources > sources.len()
-            || reference.transactions.len() != reference.paths.len()
-            || reference.transactions.iter().collect::<HashSet<_>>().len()
-                != reference.transactions.len()
-            || reference
-                .paths
-                .iter()
-                .any(|(_, publication)| publication.parent() != Some(destination.as_path()))
-        {
-            return Err("Administrator helper returned inconsistent Copy recovery references; retained data requires review.".into());
-        }
         let id = self.queue_operation_record(command.clone());
         let completed = response.status == PrivilegedStatus::Success;
         self.finish_operation_record(
@@ -538,6 +551,9 @@ impl OttrinApp {
         Ok(())
     }
 }
+
+#[cfg(target_os = "windows")]
+mod forward;
 
 #[cfg(test)]
 pub(crate) mod test_support;

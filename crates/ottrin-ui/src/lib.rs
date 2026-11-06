@@ -3579,6 +3579,13 @@ impl Clipboard {
     }
 }
 
+#[derive(Debug)]
+enum PrivilegedRetryState {
+    Completed,
+    #[cfg(target_os = "windows")]
+    Queued,
+}
+
 #[derive(Debug, Clone)]
 struct PendingPrivilegedRetry {
     cmd: FileCommand,
@@ -10717,6 +10724,10 @@ impl OttrinApp {
         #[cfg(target_os = "windows")]
         let copy_cancellation =
             matches!(cmd, FileCommand::Copy { .. }).then(|| self.copy_work.start(op_id));
+        #[cfg(target_os = "windows")]
+        let mut copy_bytes = copy_cancellation
+            .as_ref()
+            .map(|_| self.copy_work.progress(op_id, self.result_repaint.clone()));
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
         let result_repaint = self.result_repaint.clone();
@@ -10823,7 +10834,13 @@ impl OttrinApp {
                         destination,
                         conflict,
                     } => {
-                        let mut progress = |_| {
+                        let mut progress = |count| {
+                            #[cfg(not(target_os = "windows"))]
+                            let _ = count;
+                            #[cfg(target_os = "windows")]
+                            if let Some(bytes) = &mut copy_bytes {
+                                bytes.report(count);
+                            }
                             #[cfg(target_os = "windows")]
                             if copy_cancellation
                                 .as_ref()
@@ -11254,7 +11271,7 @@ impl OttrinApp {
     fn retry_file_op_with_privileges(
         &mut self,
         retry: PendingPrivilegedRetry,
-    ) -> Result<(), String> {
+    ) -> Result<PrivilegedRetryState, String> {
         if !matches!(retry.cmd, FileCommand::ShowProperties { .. })
             && !self.admit_mutation_paths(&operation_paths_for_command(&retry.cmd))
         {
@@ -11278,6 +11295,18 @@ impl OttrinApp {
             return Err(
                 "Privileged retry was not started because the location is unavailable.".to_string(),
             );
+        }
+        #[cfg(target_os = "windows")]
+        if matches!(cmd, FileCommand::Copy { .. }) {
+            self.start_privileged_copy(
+                PendingPrivilegedRetry {
+                    cmd,
+                    tab_id: refresh_tab,
+                    bindings: retry_bindings,
+                },
+                self.platform.clone(),
+            )?;
+            return Ok(PrivilegedRetryState::Queued);
         }
         self.privileged_status = Some(PrivilegedUiStatus {
             kind: PrivilegedUiKind::InProgress,
@@ -11313,7 +11342,7 @@ impl OttrinApp {
                     text: "Operation completed with administrator privileges.".to_string(),
                     since: Instant::now(),
                 });
-                Ok(())
+                Ok(PrivilegedRetryState::Completed)
             }
             PrivilegedStatus::Denied => {
                 let msg = res
@@ -15026,6 +15055,10 @@ impl OttrinApp {
                             });
                             ui.label(status);
                         });
+                        #[cfg(target_os = "windows")]
+                        if forward_copy && let Some(bytes) = self.copy_work.transferred(record.id) {
+                            ui.label(RichText::new(format!("Current step: {} processed", format_size(bytes))).color(c.text_muted).size(10.0 * c.font_scale));
+                        }
                         let show_message = record.retained_copy.is_none();
                         #[cfg(any(target_os = "linux", target_os = "windows"))]
                         let show_message = show_message || privileged_copy_activity::is_privileged(record);
@@ -16262,13 +16295,14 @@ impl OttrinApp {
                             .clicked()
                         {
                             match self.retry_file_op_with_privileges(retry) {
-                                Ok(()) => {
+                                Ok(state) => {
                                     self.pending_privileged_retry = None;
                                     self.command_frame.error = None;
-                                    self.command_frame.message = Some(
-                                        "Operation completed with administrator privileges."
-                                            .to_string(),
-                                    );
+                                    self.command_frame.message = Some(match state {
+                                        PrivilegedRetryState::Completed => "Operation completed with administrator privileges.",
+                                        #[cfg(target_os = "windows")]
+                                        PrivilegedRetryState::Queued => "Administrator Copy progress is available in Activity.",
+                                    }.into());
                                 }
                                 Err(e) => {
                                     self.command_frame.error = Some(e);
@@ -29213,7 +29247,9 @@ mod tests {
 
     #[test]
     fn clipboard_native_paste_event_starts_owned_file_operation() {
-        if private_activity_process("clipboard_native_paste_event_starts_owned_file_operation") {
+        if private_activity_process(
+            "tests::clipboard_native_paste_event_starts_owned_file_operation",
+        ) {
             return;
         }
         let (root, mut app, source) = clipboard_keyboard_fixture();
@@ -29321,7 +29357,7 @@ mod tests {
     #[test]
     fn clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict() {
         if private_activity_process(
-            "clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict",
+            "tests::clipboard_native_menu_capture_and_confirmed_keep_both_preserve_copy_conflict",
         ) {
             return;
         }
@@ -29438,7 +29474,7 @@ mod tests {
     #[test]
     fn windows_public_copy_rendered_stop_interrupts_blocked_source_without_publishing() {
         if private_activity_process(
-            "windows_public_copy_rendered_stop_interrupts_blocked_source_without_publishing",
+            "tests::windows_public_copy_rendered_stop_interrupts_blocked_source_without_publishing",
         ) {
             return;
         }
@@ -29498,7 +29534,7 @@ mod tests {
     #[test]
     fn windows_public_copy_partial_batch_keeps_completed_receipt_and_undo() {
         if private_activity_process(
-            "windows_public_copy_partial_batch_keeps_completed_receipt_and_undo",
+            "tests::windows_public_copy_partial_batch_keeps_completed_receipt_and_undo",
         ) {
             return;
         }
@@ -29574,7 +29610,7 @@ mod tests {
     #[test]
     fn windows_public_copy_directory_preserves_streams_and_undo_keeps_source() {
         if private_activity_process(
-            "windows_public_copy_directory_preserves_streams_and_undo_keeps_source",
+            "tests::windows_public_copy_directory_preserves_streams_and_undo_keeps_source",
         ) {
             return;
         }
@@ -29655,7 +29691,7 @@ mod tests {
     #[test]
     fn windows_public_copy_chunk_stop_retains_an_endable_unpublished_attempt() {
         if private_activity_process(
-            "windows_public_copy_chunk_stop_retains_an_endable_unpublished_attempt",
+            "tests::windows_public_copy_chunk_stop_retains_an_endable_unpublished_attempt",
         ) {
             return;
         }
@@ -32474,7 +32510,7 @@ mod tests {
     #[test]
     fn windows_move_recovery_requires_captured_paths_and_real_drive_bindings() {
         if private_activity_process(
-            "windows_move_recovery_requires_captured_paths_and_real_drive_bindings",
+            "tests::windows_move_recovery_requires_captured_paths_and_real_drive_bindings",
         ) {
             return;
         }
@@ -32885,7 +32921,9 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_move_undo_admission_tracks_renamed_parent_paths() {
-        if private_activity_process("windows_move_undo_admission_tracks_renamed_parent_paths") {
+        if private_activity_process(
+            "tests::windows_move_undo_admission_tracks_renamed_parent_paths",
+        ) {
             return;
         }
         assert_windows_move_undo_admission_tracks_renamed_parent_paths(false);
@@ -32902,7 +32940,7 @@ mod tests {
     #[test]
     fn windows_move_history_reconciles_exact_inverse_without_overriding_its_worker() {
         if private_activity_process(
-            "windows_move_history_reconciles_exact_inverse_without_overriding_its_worker",
+            "tests::windows_move_history_reconciles_exact_inverse_without_overriding_its_worker",
         ) {
             return;
         }
@@ -36013,7 +36051,7 @@ mod tests {
 
     // These use the real profile-wide recovery registry. Parallel tests create
     // and retire journals, so each case needs its own process/state root.
-    fn private_activity_process(test: &str) -> bool {
+    pub(super) fn private_activity_process(test: &str) -> bool {
         const CHILD: &str = "OTTRIN_TEST_PRIVATE_ACTIVITY";
         if std::env::var(CHILD).as_deref() == Ok(test) {
             return false;
@@ -36032,7 +36070,7 @@ mod tests {
         let stderr = root.path().join("activity.stderr");
         let mut command = std::process::Command::new(std::env::current_exe().unwrap());
         command
-            .args(["--exact", &format!("tests::{test}"), "--nocapture"])
+            .args(["--exact", test, "--nocapture"])
             .env(CHILD, test)
             .stdout(std::fs::File::create(&stdout).expect("Activity output"))
             .stderr(std::fs::File::create(&stderr).expect("Activity diagnostics"));
@@ -36080,7 +36118,7 @@ mod tests {
 
     #[test]
     fn startup_loads_retained_move_activity_from_discovery() {
-        if private_activity_process("startup_loads_retained_move_activity_from_discovery") {
+        if private_activity_process("tests::startup_loads_retained_move_activity_from_discovery") {
             return;
         }
         let mut app = OttrinApp::default();
@@ -36093,8 +36131,9 @@ mod tests {
 
     #[test]
     fn move_batch_warning_refreshes_retained_move_activity_snapshot() {
-        if private_activity_process("move_batch_warning_refreshes_retained_move_activity_snapshot")
-        {
+        if private_activity_process(
+            "tests::move_batch_warning_refreshes_retained_move_activity_snapshot",
+        ) {
             return;
         }
         let mut app = OttrinApp::default();
@@ -36146,8 +36185,9 @@ mod tests {
 
     #[test]
     fn failed_move_batch_reconciles_retained_move_activity_snapshot() {
-        if private_activity_process("failed_move_batch_reconciles_retained_move_activity_snapshot")
-        {
+        if private_activity_process(
+            "tests::failed_move_batch_reconciles_retained_move_activity_snapshot",
+        ) {
             return;
         }
         let mut app = OttrinApp::default();

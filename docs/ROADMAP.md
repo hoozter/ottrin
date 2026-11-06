@@ -53,10 +53,12 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `4043ca5d` has
-[run42302933196](https://github.com/hoozter/ottrin/actions/runs/42302933196)
-passing all four jobs. Its preceding `0405eb4a` passes all
-four jobs in [run42296867973](https://github.com/hoozter/ottrin/actions/runs/42296867973).
+Published source `923b179b` has
+[run42310288820](https://github.com/hoozter/ottrin/actions/runs/42310288820): Linux
+verification and both performance jobs pass; Windows verification is running.
+Its preceding `4043ca5d` passes all four jobs in
+[run42302933196](https://github.com/hoozter/ottrin/actions/runs/42302933196), as does
+`0405eb4a` in [run42296867973](https://github.com/hoozter/ottrin/actions/runs/42296867973).
 Its preceding `705cf309` passes all four jobs in
 [run42285010531](https://github.com/hoozter/ottrin/actions/runs/42285010531).
 Its preceding `1153775f` passes all four jobs in
@@ -153,14 +155,29 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
    `caller-history-refresh-current/ACCEPTANCE.json`. This does not infer deletion
    or original-batch completion from absence, or establish GUI/UAC acceptance.
 
+   Forward Windows administrator Copy now queues one Activity row and uses the
+   existing operation-result consumer, captured storage bindings and per-operation
+   Stop owner. Ordinary Windows Copy and helper Copy share bounded GUI wakes and
+   a current copy/verification-step byte counter. A late committed success keeps
+   its receipt after Stop; failed prefixes keep Undo/cleanup ownership. Denial and
+   missing success payloads cannot invent completion. Queuing no longer announces
+   success, and pre-work cancellation presents Stopped. Private-profile fixtures
+   accept full test names, with every affected caller updated. Twenty-six scoped
+   Linux tests, 39 native Windows cases, strict Linux/Windows lint and formatting
+   pass. Exact source/executable/helper bindings, unchanged stable package hashes
+   and independent initial/final VM/volume/staging teardown pass in
+   `caller-forward-ui-current/ACCEPTANCE.json`. The native scope is SYSTEM-token
+   headless interaction/adapter tests and actual ordinary-process regressions;
+   ordinary-user rendered GUI, UAC and package acceptance remain separate.
+
    Remaining dependency-ready work, in order:
 
-   - Finish the forward administrator Copy worker with byte progress/Stop and
-     queued/partial/late-result ownership. Finish fresh-history reconciliation after
-     failed cleanup of a current-session helper receipt; its references must remain
-     owned and explicitly refreshable. The shared recovery presentation
-     is implemented; actual ordinary-user GUI, launched UAC helper and packaged
-     acceptance remain required before exposing the feature.
+   - Finish fresh-history reconciliation after failed cleanup of a current-session
+     helper receipt; its references must remain owned and explicitly refreshable.
+     Prove queued worker, step progress, Stop and partial/late terminal ownership
+     through actual ordinary-user GUI, launched UAC helper and packaged contexts
+     before exposing the feature. The shared recovery presentation and Windows
+     forward worker are implemented.
      The command adapter now forwards fallible engine progress through all seven
      command kinds; history callback failures fail the request instead of becoming
      damaged-record rows. All 16 native invocations and 137 framed requests pass,
