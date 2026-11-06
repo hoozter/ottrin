@@ -1,0 +1,9 @@
+{
+  "status": "formatting only",
+  "readiness_log": {
+    "change": "CRLF to LF only; text unchanged",
+    "before_sha256": "df7c00ee59278676df0fd21ea1f6e83cdab1c740887c5ea569b62fcb47ffad82",
+    "after_sha256": "311b3d449ffdcbe458a277196ae99582e786d3c5538c9d2e0aa5d130b663a10b"
+  },
+  "native_JSON": "Parsed archive members normalized with UTF-8 BOM handling; collected result equals separately observed GUEST_RESULT. Native assertions/statements unchanged."
+}

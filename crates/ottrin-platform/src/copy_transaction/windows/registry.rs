@@ -1128,6 +1128,13 @@ impl AnchoredRoot {
 
 #[cfg(test)]
 impl AnchoredRoot {
+    pub(crate) fn exercise_caller_candidate_security(
+        context: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        control: &File,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        security::tests::exercise_caller_candidate_security(context, control, as_caller);
+    }
     pub(crate) fn exercise_caller_staging(
         context: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         parent: &File,

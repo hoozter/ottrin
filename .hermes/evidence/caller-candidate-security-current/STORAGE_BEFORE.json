@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-11-06T02:37:40.218994+00:00",
+  "bytes": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30173644525,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48842104985
+  },
+  "purpose": "Same paired GNU platform/UI graph; original-token candidate audit/label/per-object controls"
+}

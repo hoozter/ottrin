@@ -60,23 +60,23 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
    Current native component acceptance: 55 top-level passes across 12 invocations,
-   using ordinary-user and SYSTEM roles. Registry and private staging now share
-   one explicit authority. The caller-mode real tree/payload engine stages a
-   four-entry nested directory tree into a protected destination, retains caller
-   ownership, applies required naming policy and verifies payload/metadata and
-   token restoration. Ordinary metadata/sparse, SYSTEM tree/link and the existing
-   profile/registry/security/codec/torn-checkpoint regressions pass. Strict paired
-   Windows platform/UI lint passes. This is component acceptance, with an
-   observational journal adapter; it is not durable caller Copy or package/UAC
-   acceptance. Receipt: `caller-staging-current/ACCEPTANCE.json`.
-   Remaining: connect the canonical factory to the actual caller dispatcher,
-   retaining pinned source and registry admission throughout operations; caller
-   authority in destination claims, stage/local/central journals, final security,
-   receipts and restored Undo/cleanup. Prove caller-mode audit/mandatory-label
-   inheritance, per-object ACL propagation, links, actual alternate-admin,
-   in-place TokenOwner mutation and package/profile contexts. Existing inherited
-   naming acceptance is distinct from the newly verified required case change;
-   broader metadata/security behavior still needs its complete transaction proof.
+   using ordinary-user and SYSTEM roles. Registry/private staging share explicit
+   authority; real tree/payload staging and required naming policy pass. Dedicated
+   caller candidate controls now pass 15 same-parent original-token audit/label
+   inheritance comparisons and two per-object DACL finalization scenarios,
+   including cloned handles and populated unprotected descendants. No production
+   candidate-creation change was needed. The broader metadata/sparse/tree/link,
+   profile/registry/security/codec/torn-checkpoint regressions and strict paired
+   Windows platform/UI lint pass. Receipt:
+   `caller-candidate-security-current/ACCEPTANCE.json`. These are component
+   controls, not durable caller Copy, whole permission recovery or package/UAC
+   acceptance.
+   Remaining: actual caller dispatcher retaining pinned source and canonical
+   registry admission; caller authority in destination claims, stage/local/central
+   journals, helper-side final security, receipts and restored Undo/cleanup.
+   Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
+   package/profile contexts. Creation-inheritance and original-token finalization
+   controls do not substitute for that complete transaction/recovery proof.
    Missing member IDs never license deletion or a completed original-batch claim.
    These are independently executable implementation/QA gates, not owner waits.
    See the historical caller checkpoints below for earlier exact-source scopes.

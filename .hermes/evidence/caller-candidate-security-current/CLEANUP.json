@@ -1,0 +1,29 @@
+{
+  "status": "complete owned native teardown and consumed-output cleanup",
+  "observed_at": "2026-11-06T02:54:16.278566+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30173682162,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48845237860
+  },
+  "obsolete_incremental_sessions_removed": 11,
+  "measured_incremental_reclaim_bytes": 1394778112,
+  "final_incremental_candidates": 0,
+  "consumed_targets_removed": 5,
+  "native_teardown": "native/OWNER.json",
+  "independent_checks": "Guest and two owned volumes absent; private viewer/observer/profile and fixture absent. libvirt contains only four protected off domains and their protected disks plus stock-client base.",
+  "available_bytes": 26551857152,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-candidate-security-current",
+      "purpose": "Compact exact source/build/native/cleanup receipts and reproducible bound actors/producer; compiler JSONL and isolated viewer text diagnostics retain provenance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Useful shared compiler caches and latest paired GNU platform/UI tests for remaining caller transaction/recovery integration; no extra target tree"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

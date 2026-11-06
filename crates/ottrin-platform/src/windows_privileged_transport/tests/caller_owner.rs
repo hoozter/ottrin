@@ -743,6 +743,19 @@ fn system_helper() {
         helper_user
     );
     assert_eq!(system_parent_policy(&parent), parent_owner);
+    crate::WindowsCopyRegistry::exercise_caller_candidate_security(
+        &context,
+        &control_parent,
+        |operation| {
+            context
+                .with_caller_token(|| {
+                    operation();
+                    Ok(())
+                })
+                .unwrap();
+        },
+    );
+    assert_eq!(token_state(), original_helper_state);
     let source_tree = root.join("probe-data/caller-stage-source");
     context
         .with_caller_token(|| {
@@ -795,6 +808,7 @@ fn system_helper() {
             "atomic_private_creation_owner_matches_caller":true,
             "existing_private_entry_refused_unchanged":true,
             "ordinary_helper_reopen_refused":true,
+            "caller_candidate_audit_label_and_per_object_original_token_controls":true,
             "caller_private_stage_tree_payload_and_required_case_policy":true,
             "required_private_directory_case_changes_with_original_token":true,
             "private_metadata_refuses_wrong_identity_or_nonempty_directory":true,

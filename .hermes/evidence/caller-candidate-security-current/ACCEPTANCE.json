@@ -1,0 +1,31 @@
+{
+  "status": "pass caller candidate native inheritance and per-object controls",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 55,
+  "native_invocations": 12,
+  "audit_label_comparisons": 15,
+  "per_object_scenarios": 2,
+  "coverage": [
+    "Files/directories/descendants compare with actual original-token creation under identical native parent policies",
+    "Labels: noninherited/default, OICI and OICINP; audit: OICI and OICINP",
+    "Caller-owned private owner/group/DACL verified; no audit-observer privilege scope encloses candidate creation",
+    "Original-token policy application changes root DACL while three populated unprotected descendants retain owner/group/DACL and payload; direct and cloned typed handles",
+    "All handles share read/write/delete, preventing exclusive-sharing denial from hiding accidental propagation",
+    "Existing source/profile/registry/staging/tree/metadata/sparse/security/codec/torn-checkpoint and token restoration regressions pass"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "3008c62bb38636c0a3ab035d59c1d18a832f594e0024a4ec3db1e3416ddc4dcf"
+  },
+  "implementation": "No production candidate-creation change; added real native controls and shared existing fixture audit-privilege guard",
+  "limits": [
+    "Fresh ordinary-user/SYSTEM candidate component scope; not every token or package context",
+    "Original-token finalization callback is not integrated helper final-plan/publication/recovery authority",
+    "Caller links, actual alternate-admin UAC, in-place TokenOwner mutation and packaged profile proof remain open",
+    "Administrator Copy remains disabled; no new package or full-roadmap acceptance"
+  ]
+}

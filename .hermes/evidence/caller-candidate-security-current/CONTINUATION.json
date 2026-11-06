@@ -1,0 +1,15 @@
+{
+  "next": "Implement original-caller authority through final permission planning and application, actual caller dispatcher, claims/journals and restored receipt/Undo/cleanup plans. Keep Copy disabled until complete.",
+  "newly_closed_component_gate": "15 real original-token candidate audit/label comparisons and two per-object DACL controls pass. Do not repeat these matrices without changed inputs or a reproduced defect. No production creation change required.",
+  "final_plan_targets": [
+    "windows/security/tree.rs TreeSecurityPlan capture_at uses current_token/current_owner and ordinary namespace bindings; derive from frozen admitted original token and retain authority",
+    "windows/tree.rs destination_security_plan must use held caller authority rather than helper process policy",
+    "windows/journal.rs and claims/preparations/discovery/recovery still choose ambient creators and ordinary handles; preserve same native engine and strict journal/namespace refusal gates"
+  ],
+  "operation_admission": "Actual caller dispatch must retain pinned Source and canonical registry/ancestry through the full operation, reject overlap before provisioning and revalidate throughout. Factory-local checks alone are not lifetime authority.",
+  "scope_limits": "New per-object application runs inside a controlled original-token callback; helper-side final policy and complete durable transition/crash/recovery still unaccepted. Caller links/UAC/actual TokenOwner mutation/package profile gates remain independently executable.",
+  "publication": "Preceding main run42150828538 is live; inspect it before any push. Commit verified candidate-security checkpoint locally, then publish with later dependency-ready work after predecessor is terminal to avoid cancellation.",
+  "other_ready_work": "U05-U08 complete interface/theme property audit; remaining themed picker/folder integration; ordinary-user MSI registration rollback with held diagnostic input.",
+  "owner_waits": "Personal helper authentication, signing identity/keys, release-ready free Store submission, unavailable physical/proprietary environments/corpora and final acceptance.",
+  "packages": "Stable Linux/Windows deliverables unchanged; no new app package or administrator Copy enablement."
+}

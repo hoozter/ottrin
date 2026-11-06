@@ -1,0 +1,21 @@
+{
+  "status": "pass exact native candidate security controls and regressions",
+  "archive_sha256": "5ea056bd626eaae0cd8f722d23e39b3ae1f330e1b8edac3f866118543a78b6e0",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 12,
+  "top_level_passes": 55,
+  "audit_label_comparisons": 15,
+  "per_object_scenarios": 2,
+  "scope": "Original fresh ordinary token vs SYSTEM helper; same-parent file/directory/child controls, default/noninherit/OICI/NP label and OICI/NP audit, unprotected populated descendants and original/cloned per-object handles",
+  "binding": "BUILD_BINDING.json",
+  "cleanup": "Guest/volumes/private viewer/observer/profile/fixture independently verified absent; protected base remains off",
+  "limits": "Candidate creation and per-object DACL behavior only. No full caller claims/journal/publication/recovery, actual alternate-admin UAC/TokenOwner mutation or packaged profile proof."
+}

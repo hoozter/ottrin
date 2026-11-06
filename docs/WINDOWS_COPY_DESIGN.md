@@ -133,11 +133,40 @@ fixture invokes this same private staging/payload engine with an observational
 journal adapter; it does not persist caller claims or durable journals, publish a
 file, derive/apply caller final destination policy, or admit receipt/Undo/cleanup.
 The dispatcher must retain the canonical registry and pinned source admission and
-carry authority through those remaining transitions. Caller-mode audit/mandatory
-label inheritance, per-object ACL propagation, links and package/UAC contexts need
-their own acceptance; ordinary/SYSTEM regressions cannot substitute for it.
-Administrator Copy remains disabled. Exact scoped evidence is maintained at
+carry authority through those remaining transitions. Caller candidate creation and
+per-object ACL behavior now have the dedicated original-token controls below.
+Caller links, full final-permission/journal/recovery integration and package/UAC
+contexts remain separate gates. Administrator Copy remains disabled. Exact scoped evidence is maintained at
 `.hermes/evidence/caller-staging-current/ACCEPTANCE.json`.
+
+## Caller candidate security controls
+
+The fresh ordinary-caller/SYSTEM fixture now compares caller-owned private
+candidates against children created by the actual original token under the same
+native parent policy. Fifteen comparisons cover files, directories and descendants:
+noninherited/default labels, inherited labels with `OICI` and `OICINP`, and audit
+ACEs with `OICI` and `OICINP`. Private DACL protection does not change those native
+inheritance results. Audit privilege is scoped to fixture setup/observation;
+candidate creation uses the production caller API outside those observer scopes.
+
+Two further scenarios finalize the candidate's DACL through the existing policy
+engine under the original token, once directly and once through a cloned typed
+handle. Root permissions must actually change, while three populated, unprotected
+inherited descendants retain their full owner/group/DACL records and payload.
+All handles permit sharing, so sharing denial cannot explain the lack of
+propagation. These are controls for the native per-object handle contract, including
+[the SDK's `MAXIMUM_ALLOWED` behavior](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-setsecurityinfo).
+Native descriptor derivation follows
+[`CreatePrivateObjectSecurityEx`](https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createprivateobjectsecurityex).
+
+All controls pass without changing production candidate creation. Exact source,
+executable, native results and teardown are recorded in
+`.hermes/evidence/caller-candidate-security-current/ACCEPTANCE.json`.
+The original-token finalization callback is a component control; helper-side final
+plans, claims, durable journals, receipts and restored Undo/cleanup still need
+explicit caller authority. This does not enable administrator Copy or establish
+alternate-administrator UAC, in-place TokenOwner mutation, caller links or package
+profile-context acceptance.
 
 ## Canonical native security evidence
 

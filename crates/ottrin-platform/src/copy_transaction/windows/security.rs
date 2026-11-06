@@ -413,7 +413,7 @@ impl DestinationSecurity {
 }
 
 #[cfg(test)]
-mod tests {
+pub(super) mod tests {
     use std::os::windows::io::FromRawHandle;
     use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
@@ -714,9 +714,7 @@ mod tests {
         }
     }
 
-    #[test]
-    #[ignore = "requires SeSecurityPrivilege; selected explicitly in the native SYSTEM audit lane"]
-    fn new_copy_candidate_inherits_the_real_parent_audit_sacl() {
+    fn with_audit_privilege<T>(operation: impl FnOnce() -> T) -> T {
         use windows_sys::Win32::Foundation::{GetLastError, SetLastError};
         struct Privilege {
             token: OwnedHandle,
@@ -793,27 +791,180 @@ mod tests {
             "SYSTEM audit fixture privilege is required"
         );
         let _privilege = Privilege { token, previous };
-        for flags in ["OICI", "OICINP"] {
-            let root = tempfile::tempdir().unwrap();
-            let parent = OpenOptions::new()
-                .access_mode(
-                    FILE_GENERIC_READ
-                        | FILE_GENERIC_WRITE
-                        | DELETE
-                        | WRITE_DAC
-                        | ACCESS_SYSTEM_SECURITY,
+        operation()
+    }
+    #[test]
+    #[ignore = "requires SeSecurityPrivilege; selected explicitly in the native SYSTEM audit lane"]
+    fn new_copy_candidate_inherits_the_real_parent_audit_sacl() {
+        with_audit_privilege(|| {
+            for flags in ["OICI", "OICINP"] {
+                let root = tempfile::tempdir().unwrap();
+                let parent = OpenOptions::new()
+                    .access_mode(
+                        FILE_GENERIC_READ
+                            | FILE_GENERIC_WRITE
+                            | DELETE
+                            | WRITE_DAC
+                            | ACCESS_SYSTEM_SECURITY,
+                    )
+                    .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                    .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+                    .open(root.path())
+                    .unwrap();
+                set_sacl(
+                    &parent,
+                    &format!("S:(AU;{flags}SAFA;GR;;;WD)"),
+                    SACL_SECURITY_INFORMATION,
+                );
+                check_new_child_security(&parent, SACL_SECURITY_INFORMATION, flags);
+            }
+        });
+    }
+    pub(in super::super) fn exercise_caller_candidate_security(
+        context: &std::sync::Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        control: &File,
+        mut as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        fn new_parent(control: &File, name: &str, audit: bool) -> File {
+            unsafe {
+                windows_fs::open_relative(
+                    control,
+                    OsStr::new(name),
+                    RelativeOptions {
+                        directory: Some(true),
+                        create_new: true,
+                        access: windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED
+                            | SYNCHRONIZE
+                            | if audit { ACCESS_SYSTEM_SECURITY } else { 0 },
+                        sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        security: ptr::null(),
+                    },
                 )
-                .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
-                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
-                .open(root.path())
-                .unwrap();
-            set_sacl(
-                &parent,
-                &format!("S:(AU;{flags}SAFA;GR;;;WD)"),
-                SACL_SECURITY_INFORMATION,
-            );
-            check_new_child_security(&parent, SACL_SECURITY_INFORMATION, flags);
+            }
+            .unwrap()
         }
+        fn observe(file: &File, information: u32) -> (bool, u16, Option<Vec<u8>>) {
+            if information == SACL_SECURITY_INFORMATION {
+                with_audit_privilege(|| {
+                    windows_fs::with_file_privileges(|| Ok(observed_sacl(file, information)))
+                        .unwrap()
+                })
+            } else {
+                observed_sacl(file, information)
+            }
+        }
+        let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+        let owner = context.default_file_owner_sid().unwrap().to_vec();
+        let group = context.default_file_group_sid().unwrap().to_vec();
+        for (information, flags) in [
+            (LABEL_SECURITY_INFORMATION, ""),
+            (LABEL_SECURITY_INFORMATION, "OICI"),
+            (LABEL_SECURITY_INFORMATION, "OICINP"),
+            (SACL_SECURITY_INFORMATION, "OICI"),
+            (SACL_SECURITY_INFORMATION, "OICINP"),
+        ] {
+            let parent_name = format!("caller-security-{information}-{flags}");
+            let parent = if information == SACL_SECURITY_INFORMATION {
+                with_audit_privilege(|| {
+                    let parent = new_parent(control, &parent_name, true);
+                    set_sacl(&parent, "S:(ML;;NW;;;LW)", LABEL_SECURITY_INFORMATION);
+                    set_sacl(
+                        &parent,
+                        &format!("S:(AU;{flags}SAFA;GR;;;WD)"),
+                        SACL_SECURITY_INFORMATION,
+                    );
+                    parent
+                })
+            } else {
+                let parent = new_parent(control, &parent_name, false);
+                set_sacl(
+                    &parent,
+                    &format!("S:(ML;{flags};NW;;;LW)"),
+                    LABEL_SECURITY_INFORMATION,
+                );
+                parent
+            };
+            for directory in [false, true] {
+                let label = if directory { "directory" } else { "file" };
+                let mut reference = None;
+                as_caller(&mut || {
+                    reference = Some(ordinary(&parent, &format!("reference-{label}"), directory))
+                });
+                let reference = reference.unwrap();
+                let expected = observe(&reference, information);
+                let candidate = context
+                    .create_private_candidate(
+                        &parent,
+                        OsStr::new(&format!("candidate-{label}")),
+                        directory,
+                        sharing,
+                    )
+                    .unwrap();
+                PrivateSecurity::capture_for_caller(&candidate, &owner, &group).unwrap();
+                assert_eq!(
+                    observe(&candidate, information),
+                    expected,
+                    "caller candidate security differs: information={information}, flags={flags}, directory={directory}"
+                );
+                if directory {
+                    let mut reference_child = None;
+                    as_caller(&mut || reference_child = Some(ordinary(&reference, "child", false)));
+                    let child = context
+                        .create_private_candidate(&candidate, OsStr::new("child"), false, sharing)
+                        .unwrap();
+                    PrivateSecurity::capture_for_caller(&child, &owner, &group).unwrap();
+                    assert_eq!(
+                        observe(&child, information),
+                        observe(&reference_child.unwrap(), information),
+                        "caller descendant security differs: information={information}, flags={flags}"
+                    );
+                }
+            }
+        }
+        // Unprotected inherited descendants must remain unchanged when a caller
+        // candidate's own DACL is finalized, including through a cloned handle.
+        for cloned in [false, true] {
+            let parent = new_parent(control, &format!("caller-per-object-{cloned}"), false);
+            set_sacl(&parent, "S:(ML;;NW;;;LW)", LABEL_SECURITY_INFORMATION);
+            let candidate = context
+                .create_private_candidate(&parent, OsStr::new("candidate"), true, sharing)
+                .unwrap();
+            let mut children = None;
+            as_caller(&mut || {
+                let child = ordinary(&candidate, "child", false);
+                let nested = ordinary(&candidate, "nested", true);
+                let leaf = ordinary(&nested, "leaf", false);
+                (&child).write_all(b"retained caller child").unwrap();
+                children = Some((child, nested, leaf));
+            });
+            let (mut child, nested, leaf) = children.unwrap();
+            let before = [&child, &nested, &leaf].map(observed);
+            assert!(before.iter().all(|p| p.control & SE_DACL_PROTECTED == 0));
+            let duplicate = cloned.then(|| candidate.try_clone().unwrap());
+            as_caller(&mut || {
+                let policy = DestinationSecurity::capture(&parent, true).unwrap();
+                assert_ne!(observed(&candidate), policy.expected);
+                policy
+                    .apply(
+                        &parent,
+                        OsStr::new("candidate"),
+                        duplicate.as_ref().unwrap_or(&candidate),
+                    )
+                    .unwrap();
+                policy.validate_candidate(&candidate).unwrap();
+            });
+            assert_eq!(
+                [&child, &nested, &leaf].map(observed),
+                before,
+                "caller per-object DACL propagated: cloned={cloned}"
+            );
+            use std::io::{Read, Seek};
+            child.rewind().unwrap();
+            let mut bytes = Vec::new();
+            child.read_to_end(&mut bytes).unwrap();
+            assert_eq!(bytes, b"retained caller child");
+        }
+        context.validate().unwrap();
     }
     #[test]
     fn destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults() {

@@ -1,0 +1,9 @@
+{
+  "reference_commit": "a9bf73d021af88793bb13840c52a19eda22c70ed",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "e183d69779f6fd4be593e30c4567c955a136f8f6efc3dbb03e25ffe4a9ac2ea9",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "0a5ff32ec96260d85ec3dc0eb93ca4e47389f94f31495194c15942c7c4bc21e7",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "0cfcd2e7f5103d89496acfbb3ecc3f7683a98789e6a3adef04db41aaa0fa3020"
+  },
+  "scope": "Caller candidate audit/mandatory-label and per-object native controls; no complete caller transaction or packaged/UAC acceptance"
+}
