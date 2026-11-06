@@ -1,0 +1,27 @@
+{
+  "status": "pass admitted caller registry discovery and restored Resume/Undo across fresh context captures",
+  "archive_sha256": "86f0ff2e80acecf9cf28998e419cbf738ce13d066aa8302bda51665eb9daa70f",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 31,
+  "top_level_passes": 108,
+  "compiler_jsonl_sha256": "bbe88d92ff8a8b3f3821021ebb291f14bae5f80b93fc15b121392296a0d124ff",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "limits": [
+    "Complete caller mutation-prefix coverage, readonly original-root retention and readonly/link publication recovery remain separate native gates",
+    "Fresh captures of the same authenticated client only; real client/helper restart, new authenticated connections/UAC, full dispatcher, all prefix/readonly/link cases and caller cleanup remain incomplete",
+    "Caller cleanup records may remain NeedsReview until their own observers and mutations carry caller authority; complete original failure matrix, real restart recovery, alternate-admin UAC, links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

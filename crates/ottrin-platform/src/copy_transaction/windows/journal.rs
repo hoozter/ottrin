@@ -25,7 +25,9 @@ use windows_sys::Win32::Storage::FileSystem::{
 mod caller;
 mod claims;
 #[cfg(test)]
-pub(super) use caller::{exercise_caller_journals, exercise_caller_overwrite};
+pub(super) use caller::{
+    exercise_caller_journals, exercise_caller_overwrite, exercise_caller_recovery,
+};
 #[cfg(test)]
 pub(super) use claims::exercise_caller_claims;
 mod cleanup;
@@ -40,6 +42,26 @@ mod cleanup_peer;
 mod cleanup_protocol;
 mod cleanup_tree;
 mod discovery;
+pub(super) use discovery::discover_directory;
+
+pub(super) fn restore_resume_for_registry(
+    authority: &Authority,
+    root: &std::path::Path,
+    id: &str,
+    progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<RetainedCopyResumePlan, PlatformError> {
+    RetainedCopyResumePlan::admit(authority, root, id, progress)
+}
+
+pub(super) fn restore_undo_for_registry(
+    authority: &Authority,
+    root: &std::path::Path,
+    id: &str,
+    progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<RetainedCopyUndoPlan, PlatformError> {
+    RetainedCopyUndoPlan::admit(authority, root, id, progress)
+}
+
 pub use abort::RetainedCopyAbortPlan;
 pub(crate) use abort::{restore_abort, restore_abort_at};
 mod name_release;

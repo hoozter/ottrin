@@ -405,11 +405,33 @@ The checkpoint has 106 passing tests across 29 native invocations and strict pai
 Windows platform/UI lint. Evidence:
 `.hermes/evidence/caller-overwrite-current/ACCEPTANCE.json`.
 
+Admitted registry objects now provide read-only retained discovery and restored
+Resume/Undo admissions with their retained runtime authority. Ordinary and caller
+inspection share one implementation; registered journals, native-ID parent
+resolution, snapshot loading and payload bindings use the selected authority.
+Caller inspection independently rechecks the canonical registry and native root
+identity. Presentation rows and persisted fields grant no mutation capability.
+
+Both actual source contexts now drop old stage/writer owners, independently capture
+a fresh context of the same authenticated client, discover ReadyToPublish evidence
+and restore/execute Resume. Another fresh capture discovers Completed evidence,
+restores/executes Undo and discovers Undone evidence. Cancellation and invalid IDs
+are refused, completed Resume/Undo admissions are refused, discovery preserves
+journal bytes and source/preferences/index evidence stays unchanged. All 108 test
+passes across 31 native invocations and strict Windows platform/UI lint pass.
+The bad-record/symlink discovery regression requires SYSTEM's symlink capability;
+ordinary phase-classification discovery remains an ordinary-user control. An initial
+ordinary-user routing failure occurred during symlink fixture creation (error 1314),
+before product discovery; the unchanged executable passed with the corrected role.
+Evidence: `.hermes/evidence/caller-discovery-current/ACCEPTANCE.json`.
+
 This does not complete the full caller mutation-prefix matrix, readonly/link
 publication recovery, the complete original-retention/restoration failure matrix
-(including readonly original roots) or authenticated externally
-restored discovery/resume/Undo/cleanup
-entry points. Live caller receipts/public Undo do not establish process-restart or
+(including readonly original roots), caller cleanup observers/mutations or actual
+client/helper restart with newly authenticated connections. Fresh captures of the
+same live client do not establish process-restart recovery. Caller cleanup records
+can still report NeedsReview until their own authority integration is complete.
+Live caller receipts/public Undo do not establish process-restart or
 complete helper-dispatcher/UAC acceptance.
 The actual dispatcher must retain original source pins and canonical registry
 admission for the entire operation. Actual alternate-administrator UAC, caller

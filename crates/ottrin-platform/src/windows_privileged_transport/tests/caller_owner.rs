@@ -860,6 +860,24 @@ fn system_helper() {
             },
         );
     }
+    for source in [&source_file, &source_directory] {
+        crate::WindowsCopyRegistry::exercise_caller_recovery(
+            &context,
+            &parent,
+            source,
+            &preferences,
+            &index,
+            || Arc::new(channel.caller_copy_context().unwrap()),
+            |operation| {
+                context
+                    .with_caller_token(|| {
+                        operation();
+                        Ok(())
+                    })
+                    .unwrap();
+            },
+        );
+    }
     assert_eq!(token_state(), original_helper_state);
     context.validate().unwrap();
     channel.write_response(&PrivilegedResponse {

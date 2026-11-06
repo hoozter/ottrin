@@ -1,0 +1,10 @@
+{
+  "sizes": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30197516391,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48920842610
+  },
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471575691264 25899565056  95% /\n",
+  "purpose": "Admitted caller registry inspection and restored Resume/Undo using independently recaptured contexts; shared caches and registered native teardown"
+}

@@ -127,17 +127,29 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    Receipt refresh and repeated public Undo restore original IDs, streams, membership,
    owner/group/DACL digests and all observed metadata except legitimate rename change
    time. Source and pinned preferences/index evidence remain unchanged. Ordinary
-   overwrite source-free replay and drift/occupant refusals pass too. Current receipt:
-   `caller-overwrite-current/ACCEPTANCE.json`; prior resume, receipt, publication,
+   overwrite source-free replay and drift/occupant refusals pass too. Admitted caller
+   registries now expose read-only discovery and restored Resume/Undo admission
+   through the shared authority-aware discovery implementation. Actual file and
+   four-entry directory cases independently recapture contexts of the same live
+   authenticated client, discover staged/completed/undone evidence, restore and
+   execute Resume and Undo, refuse cancellation/invalid IDs and preserve journals
+   during discovery plus original source/preferences/index evidence. All 108 test
+   passes across 31 native invocations and strict Windows platform/UI lint pass.
+   The privilege-dependent bad-record/symlink discovery test runs as SYSTEM;
+   ordinary phase-classification discovery remains an ordinary-user control.
+   Current receipt: `caller-discovery-current/ACCEPTANCE.json`; prior overwrite,
+   resume, receipt, publication,
    retained-tree, paired-journal, claim and permission receipts retain their scopes.
    These are component controls,
    not completed caller Copy, whole retained recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
    registry admission through the entire operation; complete caller creation mutation-prefix,
    readonly/link publication recovery, the complete original-retention/restoration
-   failure matrix (including readonly original roots) and authenticated
-   restored discovery/resume/Undo/cleanup entry points. Those entry points still select
-   Process authority until their caller-aware integration is connected.
+   failure matrix (including readonly original roots), caller cleanup observers and
+   mutations, and real client/helper restart with newly authenticated connections.
+   Fresh context captures of a live client do not prove process-restart recovery.
+   Caller cleanup records can still report NeedsReview until their own authority
+   integration is complete; no caller cleanup acceptance is claimed.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
    package/profile contexts. Creation-inheritance and original-token finalization
    controls do not substitute for that complete transaction/recovery proof.

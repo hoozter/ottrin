@@ -1,0 +1,27 @@
+{
+  "status": "first trial caller/product checks passed; bad-record fixture setup lacked ordinary-user symlink privilege",
+  "input": "FIRST_ATTEMPT_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "error": {
+    "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links ... FAILED\n\nfailures:\n\nfailures:\n    copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.07s\n\n",
+    "case": "ordinary windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links",
+    "stderr": "\nthread 'copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links' (9212) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:8087:10:\ncalled `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: \"A required privilege is not held by the client.\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+    "exit": 101
+  },
+  "archive_sha256": "aef97169639a378102521565e591d6d8abdbf57d412754e04ec937d72c2ab20a",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "correction": "Move unchanged bad-record/symlink refusal test to existing owned SYSTEM companion; no product, assertion or OS policy change",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  }
+}

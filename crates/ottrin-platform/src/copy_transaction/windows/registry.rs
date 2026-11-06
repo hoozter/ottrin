@@ -174,6 +174,47 @@ fn parent_directory(path: &Path, initialize: bool) -> Result<Option<File>, Platf
 }
 
 impl AnchoredRoot {
+    /// Read-only recovery inspection using this already admitted registry. Caller
+    /// registries are independently bound to the kernel-resolved canonical root.
+    pub fn retained_with_progress(
+        &self,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Vec<super::journal::WindowsRetainedCopyStatus>, PlatformError> {
+        self.validate()?;
+        let (central, canonical) = self.authority.registry_directory(self.path())?;
+        if stable_identity_from_handle(&central).map_err(io)? != self.record.root {
+            return Err(io("Copy registry changed before recovery inspection"));
+        }
+        let result = super::journal::discover_directory(&self.authority, &central, progress);
+        self.validate()?;
+        if let Some(canonical) = canonical {
+            canonical.validate()?;
+        }
+        result
+    }
+    pub fn resume_plan_with_progress(
+        &self,
+        id: &str,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<super::journal::RetainedCopyResumePlan, PlatformError> {
+        self.validate()?;
+        let result =
+            super::journal::restore_resume_for_registry(&self.authority, self.path(), id, progress);
+        self.validate()?;
+        result
+    }
+    pub fn undo_plan_with_progress(
+        &self,
+        id: &str,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<super::journal::RetainedCopyUndoPlan, PlatformError> {
+        self.validate()?;
+        let result =
+            super::journal::restore_undo_for_registry(&self.authority, self.path(), id, progress);
+        self.validate()?;
+        result
+    }
+
     pub(crate) fn for_caller_profile(
         caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
         sources: &[PathBuf],
@@ -1149,6 +1190,25 @@ impl AnchoredRoot {
 
 #[cfg(test)]
 impl AnchoredRoot {
+    pub(crate) fn exercise_caller_recovery(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &File,
+        preferences: &File,
+        index: &File,
+        recapture: impl FnMut() -> Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_recovery(
+            caller,
+            parent,
+            source,
+            preferences,
+            index,
+            recapture,
+            as_caller,
+        );
+    }
     pub(crate) fn exercise_caller_overwrite(
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         parent: &File,

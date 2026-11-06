@@ -1,0 +1,14 @@
+[
+  {
+    "path": ".hermes/evidence/caller-discovery-current/native-fixed/readiness.log",
+    "before_sha256": "529447833ec1806e48f2c5c953cf898fe9e74a8426337269f286412e6dcd6d66",
+    "after_sha256": "0da4f344af65774a24b647335f2c4eb92d92ca809b6ad282a0e3c2fa4acb6684",
+    "scope": "CRLF to LF only"
+  },
+  {
+    "path": ".hermes/evidence/caller-discovery-current/native/readiness.log",
+    "before_sha256": "c01f605fcdd34467c3f269f5ef8d03c98e88b1f99c8b1d6f482e11cfd466dab5",
+    "after_sha256": "e7a09f1800796c6b3bb669f38646f4979e8e0428a9c1354680b41180cf804c96",
+    "scope": "CRLF to LF only"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable and native runtime binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-fixed/APPLICATION_INPUT.json",
+  "source_files": 5,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 434817024,
+    "sha256": "efdba3ec3168920a9eafa9ad3ba6c21ae4b09b79a1db9b33dbad9daffb1d75a3"
+  },
+  "native_result": "pass admitted caller registry discovery and restored Resume/Undo across fresh context captures"
+}

@@ -568,6 +568,21 @@ pub fn discover_at_with_progress(
     root: &Path,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
+    progress(0)?;
+    let central = match open_directory(root, FILE_GENERIC_READ) {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(io(error)),
+    };
+    discover_directory(&Authority::Process, &central, progress)
+}
+
+pub(in crate::copy_transaction::windows) fn discover_directory(
+    authority: &Authority,
+    central: &File,
+    mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+) -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {
+    authority.validate()?;
     let cancelled = std::cell::Cell::new(false);
     let mut progress = |bytes| {
         let result = progress(bytes);
@@ -577,16 +592,9 @@ pub fn discover_at_with_progress(
         result
     };
     progress(0)?;
-    let central = match open_directory(root, FILE_GENERIC_READ) {
-        Ok(file) => file,
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
-        Err(error) => return Err(io(error)),
-    };
-    let mut volumes = Volumes::new(&central)?;
+    let mut volumes = Volumes::new(central)?;
     let mut output = Vec::new();
-    for name in
-        windows_fs::directory_children_limited(&central, MAX_REGISTRY_ENTRIES).map_err(io)?
-    {
+    for name in windows_fs::directory_children_limited(central, MAX_REGISTRY_ENTRIES).map_err(io)? {
         progress(0)?;
         let id = registry_id(&name);
         let unpublished = initialization::preparation_candidate(&name);
@@ -609,7 +617,7 @@ pub fn discover_at_with_progress(
             // The name is only a presentation hint. Do not read/adopt its bytes,
             // follow a reparse target or issue any transaction capability.
             status.transaction_id = None;
-            status.transaction = Some(windows_fs::location(&central).map_err(io)?.join(&name));
+            status.transaction = Some(windows_fs::location(central).map_err(io)?.join(&name));
             status.evidence = WindowsCopyRecoveryEvidence::NeedsReview {
                 reason: "Unpublished Copy setup record retained for review. It may still be in use or belong to an interrupted setup. Its filename does not authorize Resume, Undo or cleanup.".into(),
             };
@@ -617,7 +625,7 @@ pub fn discover_at_with_progress(
             continue;
         }
         if status.transaction_id.is_none() {
-            status.transaction = Some(windows_fs::location(&central).map_err(io)?.join(&name));
+            status.transaction = Some(windows_fs::location(central).map_err(io)?.join(&name));
             status.evidence = WindowsCopyRecoveryEvidence::NeedsReview {
                 reason: "Unrecognized Copy recovery filename; record preserved without adopting a transaction identity".into(),
             };
@@ -625,11 +633,13 @@ pub fn discover_at_with_progress(
             continue;
         }
         let result = (|| {
-            let (bytes, state) = registered_journal(&Authority::Process, &central, &name)?;
+            let (bytes, state) = registered_journal(authority, central, &name)?;
             let header = state.header.as_ref().unwrap();
             status.phase = Some(phase(&state));
             status.source_label = Some(OsString::from_wide(&header.source_label));
-            let parent = volumes.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
+            let parent = authority.file_operation(|| {
+                volumes.resolve(header.parent, FILE_GENERIC_READ, &mut progress)
+            })?;
             let location = windows_fs::location(&parent).map_err(io)?;
             status.publication = Some(location.join(OsString::from_wide(&header.target)));
             status.retained = Some(location.join(header.candidate_name()));
@@ -641,9 +651,9 @@ pub fn discover_at_with_progress(
                     .is_some_and(|cleanup| cleanup.metadata_removal_intent)
             {
                 let snapshot = Snapshot::load(
-                    &Authority::Process,
+                    authority,
                     &parent,
-                    &central,
+                    central,
                     &header.stage_name(),
                     SnapshotAccess::Read,
                 )?;
@@ -655,7 +665,7 @@ pub fn discover_at_with_progress(
                     .as_ref()
                     .is_some_and(claims::Lease::needs_release)
                 {
-                    snapshot.revalidate(&parent, &central)?;
+                    snapshot.revalidate(&parent, central)?;
                     return Ok(WindowsCopyRecoveryEvidence::PendingNameRelease);
                 }
             }
@@ -663,31 +673,31 @@ pub fn discover_at_with_progress(
                 if cleanup.metadata_removal_intent {
                     super::cleanup_finalize::Plan::observe(
                         &parent,
-                        &central,
+                        central,
                         &header.stage_name(),
                         &mut progress,
                     )?;
                 } else {
                     super::cleanup::Admission::observe(
                         &parent,
-                        &central,
+                        central,
                         &header.stage_name(),
                         &mut progress,
                     )?;
                 }
-                let (current, _) = registered_journal(&Authority::Process, &central, &name)?;
+                let (current, _) = registered_journal(authority, central, &name)?;
                 if current != bytes {
                     return Err(io("Copy cleanup record changed during discovery"));
                 }
                 // The stage may already be gone. Its surviving authenticated
                 // central record is the recovery location, never a stale path.
-                status.transaction = Some(windows_fs::location(&central).map_err(io)?.join(&name));
+                status.transaction = Some(windows_fs::location(central).map_err(io)?.join(&name));
                 return Ok(WindowsCopyRecoveryEvidence::VerifiedCleanup);
             }
             let snapshot = Snapshot::load(
-                &Authority::Process,
+                authority,
                 &parent,
-                &central,
+                central,
                 &header.stage_name(),
                 SnapshotAccess::Read,
             )?;
@@ -703,7 +713,7 @@ pub fn discover_at_with_progress(
                 )?
                 .ok_or_else(|| io("withdrawn overwrite has no original evidence"))?;
                 status.owned_location = Some(location.join(&original.name));
-                snapshot.revalidate(&parent, &central)?;
+                snapshot.revalidate(&parent, central)?;
                 return Ok(WindowsCopyRecoveryEvidence::VerifiedOriginal);
             }
             if let Some(root) = snapshot
@@ -713,18 +723,18 @@ pub fn discover_at_with_progress(
                 .and_then(|node| node.staged.as_ref())
             {
                 let root_name = snapshot.root_name(&parent)?;
-                bound(&parent, &root_name, root.candidate_identity)?;
+                authority.binding(&parent, &root_name, root.candidate_identity)?;
                 status.owned_location = Some(location.join(root_name));
             }
             if !snapshot.state.verified {
-                snapshot.revalidate(&parent, &central)?;
+                snapshot.revalidate(&parent, central)?;
                 return Ok(WindowsCopyRecoveryEvidence::UnverifiedStage);
             }
             drop(snapshot);
             let retained = RetainedStage::open(
-                &Authority::Process,
+                authority,
                 &parent,
-                &central,
+                central,
                 &header.stage_name(),
                 &mut progress,
             )?;
@@ -748,6 +758,7 @@ pub fn discover_at_with_progress(
         };
         output.push(status);
     }
+    authority.validate()?;
     Ok(output)
 }
 pub fn discover() -> Result<Vec<WindowsRetainedCopyStatus>, PlatformError> {

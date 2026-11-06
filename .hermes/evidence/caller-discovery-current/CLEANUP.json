@@ -1,0 +1,37 @@
+{
+  "status": "pass owned VM/disks/private desktop/profile/processes removed; consumed outputs absent; newest compiler sessions preserved",
+  "incremental_removed_sessions": 11,
+  "incremental_measured_free_delta": 1377783808,
+  "consumed_removed_paths": [
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native/privacy-accepted-1.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native/controller.ps1",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/test-build.jsonl",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native-fixed/RESULTS.zip",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native-fixed/desktop-ready.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native-fixed/privacy-accepted-0.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native-fixed/privacy-accepted-1.png",
+    "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current/native-fixed/controller.ps1"
+  ],
+  "baseline_sizes": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30197516391,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48920842610
+  },
+  "after_sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30225977344,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49040859136
+  },
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471664705536 25810550784  95% /\n",
+  "retained_task_storage": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-discovery-current",
+    "purpose": "Compact exact source/build/native verification and cleanup receipts, scripts and normalized diagnostics; no live fixture",
+    "allocated_bytes": 770048
+  },
+  "preserved": "Current binaries, compiler caches, source/user data and stable Linux/Windows deliverables; no extra target tree"
+}

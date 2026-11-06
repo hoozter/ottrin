@@ -1,0 +1,67 @@
+{
+  "SOURCE_INPUT.json": {
+    "reference_commit": "a0faf661a14170eb920a922fdc4bf6c719bdd625",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "b33bf94b8ee8d35b11a9097afd83332d92b46e7518cd1e8eca052afeac30e0db",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "bb60b3c43a6373f6c5780d2d841a24e07dc95ecd212f761edc9391168cd441b9",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "1fc87cc89025608e961b4d5dba5190967cb63e43bae7fdf59b0e7d7cbcbf4dbc",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "6df355570f2bc202e08189cc5917925ac2fb006fa694324063f6fe68f4fe9e4d",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "03750b18a82adbf14d81a089d001a1d70817a460e7b1727330aa30aee67c793d"
+    },
+    "scope": "Admitted registry recovery inspection and restored Resume/Undo admissions retain caller authority; native file/directory cases recapture independent contexts of the same authenticated client. No real client/helper restart, new connection/UAC, caller cleanup or full dispatcher acceptance."
+  },
+  "NATIVE_TEST_INPUT.json": {
+    "source": {
+      "reference_commit": "a0faf661a14170eb920a922fdc4bf6c719bdd625",
+      "files": {
+        "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "b33bf94b8ee8d35b11a9097afd83332d92b46e7518cd1e8eca052afeac30e0db",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "bb60b3c43a6373f6c5780d2d841a24e07dc95ecd212f761edc9391168cd441b9",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "1fc87cc89025608e961b4d5dba5190967cb63e43bae7fdf59b0e7d7cbcbf4dbc",
+        "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "6df355570f2bc202e08189cc5917925ac2fb006fa694324063f6fe68f4fe9e4d",
+        "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "03750b18a82adbf14d81a089d001a1d70817a460e7b1727330aa30aee67c793d"
+      },
+      "scope": "Admitted registry recovery inspection and restored Resume/Undo admissions retain caller authority; native file/directory cases recapture independent contexts of the same authenticated client. No real client/helper restart, new connection/UAC, caller cleanup or full dispatcher acceptance."
+    },
+    "artifacts": [
+      {
+        "crate": "ottrin_ui",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+        "sha256": "e2dac674e546154a376e7dca2f052da03d061de620e197ae3b828c8239bd5764",
+        "bytes": 772504713,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      },
+      {
+        "crate": "ottrin_platform",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+        "sha256": "9df5d2f258c9575bffaf8ed04a48734a2650a0440fe79da788ad0e1b14632edd",
+        "bytes": 577957901,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      }
+    ],
+    "compiler_jsonl_sha256": "bbe88d92ff8a8b3f3821021ebb291f14bae5f80b93fc15b121392296a0d124ff"
+  },
+  "BUILD_BINDING.json": {
+    "status": "pass source/build/staged executable binding; native result pending",
+    "source": "SOURCE_INPUT.json",
+    "build": "NATIVE_TEST_INPUT.json",
+    "native": "native/APPLICATION_INPUT.json",
+    "source_files": 5,
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 434817024,
+      "sha256": "efdba3ec3168920a9eafa9ad3ba6c21ae4b09b79a1db9b33dbad9daffb1d75a3"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "reference_commit": "a0faf661a14170eb920a922fdc4bf6c719bdd625",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "b33bf94b8ee8d35b11a9097afd83332d92b46e7518cd1e8eca052afeac30e0db",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "bb60b3c43a6373f6c5780d2d841a24e07dc95ecd212f761edc9391168cd441b9",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "1fc87cc89025608e961b4d5dba5190967cb63e43bae7fdf59b0e7d7cbcbf4dbc",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "6df355570f2bc202e08189cc5917925ac2fb006fa694324063f6fe68f4fe9e4d",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "03750b18a82adbf14d81a089d001a1d70817a460e7b1727330aa30aee67c793d"
+  },
+  "scope": "Admitted registry recovery inspection and restored Resume/Undo admissions retain caller authority; native file/directory cases recapture independent contexts of the same authenticated client. No real client/helper restart, new connection/UAC, caller cleanup or full dispatcher acceptance."
+}

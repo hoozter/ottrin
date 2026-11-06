@@ -1,0 +1,6 @@
+{
+  "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links ... FAILED\n\nfailures:\n\nfailures:\n    copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.07s\n\n",
+  "case": "ordinary windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links",
+  "stderr": "\nthread 'copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links' (9212) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal.rs:8087:10:\ncalled `Result::unwrap()` on an `Err` value: Os { code: 1314, kind: Uncategorized, message: \"A required privilege is not held by the client.\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+  "exit": 101
+}

@@ -801,3 +801,153 @@ pub(in super::super) fn exercise_caller_overwrite(
         .unwrap();
     caller.validate().unwrap();
 }
+
+/// Re-admit persisted records through independently captured authenticated
+/// contexts, rather than cloning the old runtime plan or granting by status row.
+pub(in super::super) fn exercise_caller_recovery(
+    caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    protected_parent: &File,
+    source: &File,
+    preferences: &File,
+    index: &File,
+    mut recapture: impl FnMut() -> Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    mut as_caller: impl FnMut(&mut dyn FnMut()),
+) {
+    let authority = Authority::Caller(Arc::clone(caller));
+    let source_pin = tree::PinnedTree::open(&authority, source, 16, &mut |_| Ok(())).unwrap();
+    let source_evidence = source_pin.freeze_existing(|_| Ok(())).unwrap();
+    let directory = source_pin.root().directory;
+    let manager = caller
+        .copy_registry(&[windows_fs::location(source).unwrap()], true)
+        .unwrap()
+        .unwrap();
+    let binding = manager.binding().unwrap();
+    let observe = || {
+        [preferences, index].map(|file| {
+            (
+                read(file).unwrap(),
+                stable_identity_from_handle(file).unwrap(),
+                security::owner_group_dacl_digest(file).unwrap(),
+            )
+        })
+    };
+    let mut before = None;
+    as_caller(&mut || before = Some(observe()));
+    let before = before.unwrap();
+    let parent = windows_fs::create_private(
+        protected_parent,
+        OsStr::new(&format!("caller-fresh-recovery-{directory}")),
+        true,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    )
+    .unwrap();
+    let destination =
+        DestinationAdmission::creation(&authority, &parent, OsStr::new("copy")).unwrap();
+    let mut staged = DurableStage::create(
+        source,
+        &parent,
+        manager.root(),
+        &destination,
+        OsStr::new("unavailable-source-label"),
+        16,
+        |_| Ok(()),
+    )
+    .unwrap();
+    drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+    let name = staged.stage.name.clone();
+    let id = staged.journal.header.transaction.clone();
+    drop(staged);
+    let bytes = Snapshot::load(
+        &authority,
+        &parent,
+        manager.root(),
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .bytes;
+    let fresh = recapture();
+    assert!(!Arc::ptr_eq(&fresh, caller));
+    let fresh_registry = fresh.copy_registry(&[], false).unwrap().unwrap();
+    assert!(
+        fresh_registry
+            .retained_with_progress(|_| Err(io("owned discovery cancellation")))
+            .is_err()
+    );
+    let rows = fresh_registry.retained_with_progress(|_| Ok(())).unwrap();
+    let row = rows
+        .iter()
+        .find(|row| row.transaction_id.as_deref() == Some(&id))
+        .unwrap();
+    assert_eq!(row.phase, Some(WindowsCopyPhase::ReadyToPublish));
+    assert_eq!(row.evidence, WindowsCopyRecoveryEvidence::VerifiedTree);
+    assert_eq!(
+        Snapshot::load(
+            &authority,
+            &parent,
+            manager.root(),
+            &name,
+            SnapshotAccess::Read
+        )
+        .unwrap()
+        .bytes,
+        bytes
+    );
+    assert!(
+        fresh_registry
+            .resume_plan_with_progress("../not-an-id", |_| Ok(()))
+            .is_err()
+    );
+    let mut plan = fresh_registry
+        .resume_plan_with_progress(&id, |_| Ok(()))
+        .unwrap();
+    plan.resume(|_| Ok(())).unwrap();
+    assert!(plan.complete());
+    drop(plan);
+    drop(fresh_registry);
+    drop(fresh);
+    let fresh = recapture();
+    assert!(!Arc::ptr_eq(&fresh, caller));
+    let fresh_registry = fresh.copy_registry(&[], false).unwrap().unwrap();
+    let rows = fresh_registry.retained_with_progress(|_| Ok(())).unwrap();
+    let row = rows
+        .iter()
+        .find(|row| row.transaction_id.as_deref() == Some(&id))
+        .unwrap();
+    assert_eq!(row.phase, Some(WindowsCopyPhase::Completed));
+    assert_eq!(row.evidence, WindowsCopyRecoveryEvidence::VerifiedTree);
+    assert!(
+        fresh_registry
+            .resume_plan_with_progress(&id, |_| Ok(()))
+            .is_err()
+    );
+    let mut undo = fresh_registry
+        .undo_plan_with_progress(&id, |_| Ok(()))
+        .unwrap();
+    undo.undo_next_with_progress(|_| Ok(())).unwrap();
+    assert_eq!(undo.remaining(), 0);
+    drop(undo);
+    let rows = fresh_registry.retained_with_progress(|_| Ok(())).unwrap();
+    let row = rows
+        .iter()
+        .find(|row| row.transaction_id.as_deref() == Some(&id))
+        .unwrap();
+    assert_eq!(row.phase, Some(WindowsCopyPhase::Undone));
+    assert_eq!(row.evidence, WindowsCopyRecoveryEvidence::VerifiedTree);
+    assert!(
+        fresh_registry
+            .undo_plan_with_progress(&id, |_| Ok(()))
+            .is_err()
+    );
+    assert_eq!(manager.binding().unwrap(), binding);
+    let mut after = None;
+    as_caller(&mut || after = Some(observe()));
+    assert_eq!(after.unwrap(), before);
+    source_pin
+        .validate_existing(&source_evidence, &mut |_| Ok(()))
+        .unwrap();
+    caller.validate().unwrap();
+    println!(
+        "caller fresh recovery source_directory={directory}: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed"
+    );
+}
