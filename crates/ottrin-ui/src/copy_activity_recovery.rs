@@ -77,7 +77,7 @@ impl OttrinApp {
             .find(|record| record.id == id && can_recover(record))
             .and_then(|record| record.retained_copy.as_ref())
             .and_then(|owner| owner.recovery.as_ref());
-        if let Some(plan @ CopyRecoveryAction::Abort(_)) = plan {
+        if let Some(plan) = plan.filter(|plan| plan.is_end_attempt()) {
             self.copy_recovery.confirmation = Some((id, plan.clone()));
         } else {
             self.start_copy_recovery(id, None);
@@ -97,8 +97,10 @@ impl OttrinApp {
                 ui.set_width(400.0 * c.font_scale);
                 ui.label(RichText::new("End this copy attempt?").color(c.heading).strong().size(15.0 * c.font_scale));
                 ui.add_space(8.0);
-                if let CopyRecoveryAction::Abort(plan) = &plan {
-                    ui.label(format!("Destination: {}", path_label(&plan.target())));
+                if let Some((_, target)) = plan.path_pairs().first() {
+                    ui.label(format!("Destination: {}", path_label(target)));
+                } else {
+                    ui.label("The administrator helper will recheck the recorded destination.");
                 }
                 ui.label("This attempt will no longer be able to resume or publish. Its reserved file name will become available for another copy.");
                 ui.label("All partial files, later edits and recovery records are kept. This does not reclaim disk space.");
@@ -137,6 +139,20 @@ impl OttrinApp {
         {
             return;
         }
+        if plan.is_administrator()
+            && self.operation_history.iter().any(|row| {
+                row.id != id
+                    && (row.status == OperationStatus::Queued
+                        || row.path_move_undo == Some(PathMoveUndoState::UndoQueued))
+            })
+        {
+            self.set_status_message(
+                "Wait for current file operations before administrator Copy recovery.",
+                false,
+                6,
+            );
+            return;
+        }
         if self.activity_paths_conflict(id, &plan.path_pairs()) {
             self.set_status_message(
                 "Wait for the operation using this Copy destination to finish.",
@@ -157,6 +173,7 @@ impl OttrinApp {
             .find(|record| record.id == id)
             .unwrap();
         record.status = OperationStatus::Queued;
+        record.queued_at = Instant::now();
         record.finished_at = None;
         record.message = None;
         record.operation_paths = paths;
@@ -168,8 +185,14 @@ impl OttrinApp {
         self.copy_recovery.operation = Some(id);
         self.copy_recovery.cancellation = Some(cancellation);
         let repaint = self.result_repaint.clone();
+        let platform = self.platform.clone();
+        let administrator = plan.is_administrator();
         let success = Completion {
-            message: plan.success_message(),
+            message: if administrator {
+                "Administrator recovery completed. Reload administrator Copy history to inspect its current state."
+            } else {
+                plan.success_message()
+            },
             released_phase: plan.released_phase(),
         };
         #[cfg(test)]
@@ -185,7 +208,7 @@ impl OttrinApp {
                 Err(error) => Err(error.to_string()),
                 Ok(io_cancellation) => {
                     let result = plan
-                        .run(|_| {
+                        .run(platform.as_ref(), |_| {
                             if worker_cancel.load(Ordering::Acquire) {
                                 Err(PlatformError::Io(
                                     "Copy recovery stopped; retained data is preserved for retry."
@@ -257,8 +280,29 @@ impl OttrinApp {
             if let Some(owner) = &mut record.retained_copy {
                 owner.recovery = None;
             }
+            let administrator = privileged_copy_activity::is_privileged(record);
+            if administrator {
+                let guidance = "Reload administrator Copy history to inspect the completed or interrupted recovery.";
+                record.message = Some(match &result {
+                    Ok(completion) => completion.message.into(),
+                    Err(error) => format!("{error}. {guidance}"),
+                });
+                record.path_move_undo = Some(PathMoveUndoState::Unavailable {
+                    reason: "Reload administrator Copy history to inspect the completed or interrupted recovery.".into()
+                });
+                if let Some(owner) = &mut record.retained_copy {
+                    owner.cleanup_phase = None;
+                }
+            }
             if let Err(error) = &result {
-                self.copy_recovery.errors.insert(id, error.clone());
+                self.copy_recovery.errors.insert(
+                    id,
+                    if administrator {
+                        record.message.clone().unwrap()
+                    } else {
+                        error.clone()
+                    },
+                );
             }
         }
         if let Ok(completion) = result {
@@ -755,3 +799,6 @@ pub(super) fn name_release_test_case(root: &Path) {
         &app.operation_history[0]
     ));
 }
+
+#[cfg(test)]
+mod caller_tests;

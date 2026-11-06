@@ -2225,3 +2225,28 @@ readonly/link matrices, actual restart/new connections, TokenOwner mutation,
 alternate-administrator UAC and package/profile contexts remain separate. The
 native engine/API checkpoint does not enable advertised administrator Copy or
 replace the stable application packages.
+
+### Shared Activity caller integration
+
+The Linux helper Activity implementation is shared with Windows. History, Undo
+and cleanup use the progress-aware privileged API; Windows Resume, end-attempt
+and name release use the existing recovery worker and confirmation flow. Helper
+references remain opaque lookup IDs, never ordinary filesystem admission. History
+merging checks every transaction, preserves live receipts/cleanup ownership and
+coalesces only complete inactive restored cleanup cohorts. Ordinary discovery
+cannot replace helper-owned records. Loading history remains explicit, cancellable
+and absent from startup authentication. Unknown entries remain visible for review.
+A shared core capability constant keeps both the Windows helper and its Activity
+history controls disabled until remaining acceptance passes.
+
+The checkpoint passes 22 native Windows cases, 20 scoped Linux tests, nine actual
+Linux helper CLI probes, formatting and strict Linux/Windows lint. Exact source,
+executable/helper hashes, unchanged stable packages and independent VM/volume/
+staging teardown pass in `.hermes/evidence/caller-history-ui-current/ACCEPTANCE.json`.
+Linux scoped UI/platform tests, strict Linux/Windows checks and helper CLI probes
+are separate from native Windows headless interaction/adapter tests under the
+SYSTEM guest-agent token. None establishes ordinary-user rendered interaction,
+interactive elevation or a newly delivered package. Stable package hashes remain
+unchanged. Forward administrator Copy still needs asynchronous worker/progress/
+Stop integration; absent/partial history reconciliation and the full caller failure,
+process-restart, alternate-administrator UAC and package matrices remain open.

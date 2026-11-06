@@ -1308,6 +1308,10 @@ pub struct PrivilegedContext {
 /// Exact wire contract required by both the caller and elevated helper.
 pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 5;
 
+/// One capability gate for the helper probe and its recovery interface.
+/// Windows remains disabled until caller, UI, UAC and package acceptance pass.
+pub const PRIVILEGED_COPY_RECOVERY_SUPPORTED: bool = cfg!(target_os = "linux");
+
 /// Request payload sent from unprivileged app process to elevated helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PrivilegedRequest {

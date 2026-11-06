@@ -48,6 +48,9 @@ pub(super) fn refresh_undo_receipt(
             OperationUndoReceipt::PathMove(receipt.refresh_windows_copy_undo(progress)?)
         }
         OperationUndoReceipt::CopyBatch(batch) => OperationUndoReceipt::CopyBatch(match batch {
+            // These IDs are lookup references. Only the authenticated helper
+            // re-admits their filesystem authority when Undo actually runs.
+            CopyBatchUndoReceipt::Privileged { .. } => batch.clone(),
             CopyBatchUndoReceipt::Retained(plan) => {
                 CopyBatchUndoReceipt::Retained(Box::new(plan.refreshed_with_progress(progress)?))
             }

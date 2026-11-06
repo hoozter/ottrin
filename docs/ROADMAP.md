@@ -2,7 +2,7 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-06. This is the single active queue. Historical sections and
+Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
@@ -53,9 +53,10 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `0405eb4a` has
-[run42296867973](https://github.com/hoozter/ottrin/actions/runs/42296867973): Linux
-verification and both search-performance jobs pass; Windows Cargo test is running.
+Published source `4043ca5d` has
+[run42302933196](https://github.com/hoozter/ottrin/actions/runs/42302933196)
+still in progress at the current checkpoint. Its preceding `0405eb4a` passes all
+four jobs in [run42296867973](https://github.com/hoozter/ottrin/actions/runs/42296867973).
 Its preceding `705cf309` passes all four jobs in
 [run42285010531](https://github.com/hoozter/ottrin/actions/runs/42285010531).
 Its preceding `1153775f` passes all four jobs in
@@ -128,20 +129,29 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
    has not been rerun in a guest. Original inputs and the limitation are retained in
    `WRAPPER_ENCODING.json`; no test assertion or result is omitted.
 
+   The shared Activity integration now uses the existing helper history, Copy
+   receipts, Undo, cleanup and Windows recovery workers. It deduplicates whole
+   transaction cohorts, preserves live ordinary/helper ownership, keeps discovery
+   opt-in and shows recovery outcomes without requiring Details to be expanded.
+   Cancellation/refusal retains lookup references for explicit retry; unknown
+   history remains a review message. One shared capability constant keeps Windows
+   administrator Copy disabled in both the helper and its Activity controls.
+   Twenty-two native Windows cases pass under the guest-agent SYSTEM token:
+   headless egui/adapter interaction, ordinary Copy/Undo ownership and actual helper
+   protocol/capability probes. Twenty scoped Linux platform/UI tests, nine actual
+   Linux helper CLI probes, strict Linux/Windows lint and formatting pass. Exact
+   source/executable/helper bindings, four unchanged package hashes and independent
+   domain/volume/staging teardown pass in `caller-history-ui-current/ACCEPTANCE.json`.
+   These are component checks, not ordinary-user GUI/UAC or new package acceptance.
+
    Remaining dependency-ready work, in order:
 
-   - Connect the explicit commands' Windows recovery presentation through the same
-     authenticated caller. Connect operation
-     Stop/progress before exposing
-     the feature. Merge ordinary and administrator Windows history by transaction
-     identity while preserving live receipt ownership; both use the caller's one
-     canonical registry. Keep history and partial batch results honest.
-     Generalize the existing Linux-only helper history/receipt/cleanup paths,
-     rather than adding a parallel Windows Activity list. Wire explicit recovery
-     through the existing Windows recovery worker. Both discovery paths must
-     deduplicate all transaction IDs and retain live receipt/cleanup ownership;
-     ordinary discovery must not downgrade a protected helper receipt. Loading
-     helper history remains opt-in and must not request authentication at startup.
+   - Finish the forward administrator Copy worker with byte progress/Stop and
+     queued/partial/late-result ownership. Reconcile absent or partial fresh helper
+     history without inferring deletion or original-batch completion. Retain IDs,
+     cohorts and live receipt/cleanup ownership. The shared recovery presentation
+     is implemented; actual ordinary-user GUI, launched UAC helper and packaged
+     acceptance remain required before exposing the feature.
      The command adapter now forwards fallible engine progress through all seven
      command kinds; history callback failures fail the request instead of becoming
      damaged-record rows. All 16 native invocations and 137 framed requests pass,

@@ -144,7 +144,7 @@ fn protocol_check(args: &[String]) -> Option<i32> {
     }
     if args[2..].iter().any(|feature| {
         !matches!(feature.as_str(),
-            "--copy-recovery" if cfg!(target_os = "linux"))
+            "--copy-recovery" if ottrin_core::PRIVILEGED_COPY_RECOVERY_SUPPORTED)
             && !matches!(feature.as_str(), "--bound-local-pipe" if cfg!(target_os = "windows"))
     }) {
         return Some(69);

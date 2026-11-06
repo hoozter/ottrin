@@ -5,7 +5,7 @@ use super::*;
 #[derive(Clone)]
 struct Selection {
     transactions: Vec<String>,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     privileged: bool,
     #[cfg(target_os = "linux")]
     finalization: Option<String>,
@@ -41,6 +41,17 @@ impl CopyCleanupUi {
         self.cancellation
             .as_ref()
             .is_some_and(|flag| flag.load(Ordering::Acquire))
+    }
+
+    #[cfg(target_os = "windows")]
+    pub(super) fn retains_plan(&self) -> bool {
+        self.windows_plan.as_ref().is_some_and(|slot| {
+            slot.try_lock().map_or(true, |guard| {
+                guard
+                    .as_ref()
+                    .is_some_and(|plan| plan.requires_retained_retry())
+            })
+        })
     }
 
     pub(super) fn running(&self) -> bool {
@@ -162,6 +173,7 @@ fn run(
                 PrivilegedCommand::CleanupCopy {
                     transactions: selection.transactions.clone(),
                 },
+                &mut |_| Ok(()),
             )?;
             outcome
                 .completed
@@ -252,6 +264,7 @@ fn windows_selection_matches(
 #[cfg(target_os = "windows")]
 fn run(
     selections: &[Selection],
+    platform: &dyn PlatformOps,
     slot: &WindowsPlan,
     cancellation: &AtomicBool,
     #[cfg(test)] stop_when_missing: Option<&Path>,
@@ -292,6 +305,25 @@ fn run(
         .is_some_and(|plan| plan.requires_retained_retry());
     if retain && !windows_selection_matches(guard.as_ref().unwrap(), &selected) {
         outcome.error = Some("Finish the pending Copy cleanup selection first.".into());
+        return outcome;
+    }
+    if !retain && selections.iter().any(|selection| selection.privileged) {
+        // One canonical registry owns the whole selection. Do not split a
+        // mixed ordinary/helper cohort across two writers or lose membership.
+        drop(guard);
+        progress("Requesting administrator permission to clear retained Copy data…".into());
+        outcome.error = privileged_copy_activity::execute_recovery(
+            platform,
+            PrivilegedCommand::CleanupCopy {
+                transactions: selected.iter().cloned().collect(),
+            },
+            &mut native_progress,
+        )
+        .err()
+        .map(|error| error.to_string());
+        if outcome.error.is_none() {
+            outcome.completed.extend(selected);
+        }
         return outcome;
     }
     if !retain {
@@ -397,7 +429,7 @@ impl OttrinApp {
             .filter(|record| ids.contains(&record.id) && can_cleanup(record))
             .map(|record| Selection {
                 transactions: transactions(record),
-                #[cfg(target_os = "linux")]
+                #[cfg(any(target_os = "linux", target_os = "windows"))]
                 privileged: privileged_copy_activity::is_privileged(record),
                 #[cfg(target_os = "linux")]
                 finalization: record
@@ -457,6 +489,7 @@ impl OttrinApp {
                                 })
                                 .map(|record| Selection {
                                     transactions: transactions(record),
+                                    privileged: privileged_copy_activity::is_privileged(record),
                                 })
                                 .collect();
                             let expanded = selected
@@ -489,7 +522,7 @@ impl OttrinApp {
         let (tx, rx) = mpsc::channel();
         let active = selected.clone();
         let repaint = self.result_repaint.clone();
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         let platform = Arc::clone(&self.platform);
         let spawn = std::thread::Builder::new()
             .name("ottrin-copy-cleanup".into())
@@ -511,7 +544,7 @@ impl OttrinApp {
                     };
                 let outcome = run(
                     &selected,
-                    #[cfg(target_os = "linux")]
+                    #[cfg(any(target_os = "linux", target_os = "windows"))]
                     platform.as_ref(),
                     #[cfg(target_os = "windows")]
                     &windows_plan,
@@ -617,6 +650,8 @@ impl OttrinApp {
                 }
             }
             for record in &mut self.operation_history {
+                #[cfg(target_os = "windows")]
+                let privileged = privileged_copy_activity::is_privileged(record);
                 let ids = transactions(record);
                 if ids
                     .iter()
@@ -644,7 +679,9 @@ impl OttrinApp {
                         #[cfg(target_os = "windows")]
                         {
                             owner.recovery = None;
-                            record.path_move_undo_token = None;
+                            if !privileged {
+                                record.path_move_undo_token = None;
+                            }
                         }
                         if let Some((id, members)) = &outcome.finalization
                             && owner
@@ -727,6 +764,9 @@ impl OttrinApp {
         }
     }
 }
+
+#[cfg(all(test, target_os = "windows"))]
+mod caller_tests;
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests {

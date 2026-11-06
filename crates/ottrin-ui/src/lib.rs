@@ -1,4 +1,4 @@
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 mod privileged_copy_activity;
 #[cfg(target_os = "linux")]
 mod startup_notification;
@@ -1086,7 +1086,7 @@ struct TextEditUndoReceipt {
 
 #[derive(Debug, Clone)]
 enum CopyBatchUndoReceipt {
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     Privileged {
         reference: ottrin_core::PrivilegedCopyReceipt,
         pending: bool,
@@ -1104,7 +1104,7 @@ enum CopyBatchUndoReceipt {
 impl CopyBatchUndoReceipt {
     fn remaining(&self) -> usize {
         match self {
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Privileged { pending, .. } => usize::from(*pending),
             Self::Session { remaining, .. } => *remaining,
             #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -1113,7 +1113,7 @@ impl CopyBatchUndoReceipt {
     }
     fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         match self {
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Privileged { reference, .. } => reference
                 .paths
                 .iter()
@@ -1134,7 +1134,7 @@ impl CopyBatchUndoReceipt {
     ) -> Result<(), PlatformError> {
         progress(0)?;
         match self {
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             Self::Privileged {
                 reference, pending, ..
             } => {
@@ -1143,6 +1143,7 @@ impl CopyBatchUndoReceipt {
                     PrivilegedCommand::UndoCopy {
                         transactions: reference.transactions.clone(),
                     },
+                    progress,
                 )?;
                 *pending = false;
                 Ok(())
@@ -1502,6 +1503,13 @@ enum CopyRecoveryAction {
     Abort(ottrin_platform::RetainedCopyAbortPlan),
     NameRelease(ottrin_platform::RetainedCopyNameReleasePlan),
     NameReleaseBlocked,
+    // Presentation/lookup references from a validated helper snapshot. They
+    // never carry filesystem authority; each command is freshly admitted.
+    Administrator {
+        transaction: String,
+        action: ottrin_core::PrivilegedCopyRecoveryAction,
+        paths: Vec<(PathBuf, PathBuf)>,
+    },
 }
 #[cfg(target_os = "windows")]
 impl CopyRecoveryAction {
@@ -1511,6 +1519,7 @@ impl CopyRecoveryAction {
             Self::Abort(plan) => Some(plan.transaction_id()),
             Self::NameRelease(plan) => Some(plan.transaction_id()),
             Self::NameReleaseBlocked => None,
+            Self::Administrator { transaction, .. } => Some(transaction),
         }
     }
     fn complete(&self) -> bool {
@@ -1519,10 +1528,32 @@ impl CopyRecoveryAction {
             Self::Abort(plan) => plan.complete(),
             Self::NameRelease(plan) => plan.complete(),
             Self::NameReleaseBlocked => true,
+            Self::Administrator { .. } => false,
         }
     }
+    fn is_end_attempt(&self) -> bool {
+        matches!(
+            self,
+            Self::Abort(_)
+                | Self::Administrator {
+                    action: ottrin_core::PrivilegedCopyRecoveryAction::EndAttempt,
+                    ..
+                }
+        )
+    }
+    fn is_administrator(&self) -> bool {
+        matches!(self, Self::Administrator { .. })
+    }
     fn is_name_release(&self) -> bool {
-        matches!(self, Self::NameRelease(_) | Self::NameReleaseBlocked)
+        matches!(
+            self,
+            Self::NameRelease(_)
+                | Self::NameReleaseBlocked
+                | Self::Administrator {
+                    action: ottrin_core::PrivilegedCopyRecoveryAction::ReleaseName,
+                    ..
+                }
+        )
     }
     fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         match self {
@@ -1530,6 +1561,10 @@ impl CopyRecoveryAction {
             Self::Abort(plan) => vec![(plan.destination(), plan.destination())],
             Self::NameRelease(plan) => vec![(plan.destination(), plan.destination())],
             Self::NameReleaseBlocked => Vec::new(),
+            Self::Administrator { paths, .. } => paths
+                .iter()
+                .map(|(before, after)| (before.as_path(), after.as_path()))
+                .collect(),
         }
     }
     fn observed_location(&self) -> Option<&Path> {
@@ -1539,7 +1574,7 @@ impl CopyRecoveryAction {
         }
     }
     fn label(&self) -> &'static str {
-        if matches!(self, Self::Abort(_)) {
+        if self.is_end_attempt() {
             "End copy attempt…"
         } else if self.is_name_release() {
             "Finish releasing name"
@@ -1555,7 +1590,7 @@ impl CopyRecoveryAction {
         }
     }
     fn success_message(&self) -> &'static str {
-        if matches!(self, Self::Abort(_)) {
+        if self.is_end_attempt() {
             "Copy attempt ended. Partial files and recovery records are preserved."
         } else if self.is_name_release() {
             "File name released. Retained files are unchanged."
@@ -1565,9 +1600,22 @@ impl CopyRecoveryAction {
     }
     fn run(
         &mut self,
-        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+        platform: &dyn PlatformOps,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         match self {
+            Self::Administrator {
+                transaction,
+                action,
+                ..
+            } => privileged_copy_activity::execute_recovery(
+                platform,
+                PrivilegedCommand::RecoverCopy {
+                    transaction: transaction.clone(),
+                    action: *action,
+                },
+                &mut progress,
+            ),
             Self::Forward(plan) => plan.resume(progress),
             Self::Abort(plan) => plan.end_attempt(progress),
             Self::NameRelease(plan) => plan.finish(progress),
@@ -2076,7 +2124,7 @@ fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
             .collect();
     }
     match &token.receipt {
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Privileged { reference, .. }) => {
             reference.transactions.clone()
         }
@@ -3970,7 +4018,7 @@ pub struct OttrinApp {
     retained_copy_activity_loader: RetainedActivityLoader<RetainedCopySnapshot>,
     retained_copy_activity_error: Option<String>,
     pending_retained_copy_activity: Option<Vec<RestoredCopyActivity>>,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     privileged_copy_history: privileged_copy_activity::HistoryUi,
     copy_cleanup: copy_activity_cleanup::CopyCleanupUi,
     #[cfg(target_os = "windows")]
@@ -4279,7 +4327,7 @@ impl OttrinApp {
             retained_copy_activity_loader,
             retained_copy_activity_error,
             pending_retained_copy_activity: None,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             privileged_copy_history: Default::default(),
             copy_cleanup: Default::default(),
             #[cfg(target_os = "windows")]
@@ -6081,6 +6129,10 @@ impl OttrinApp {
             .map(|group| group.ownership.key.clone())
             .collect();
         for record in &mut self.operation_history {
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
+            if privileged_copy_activity::is_privileged(record) {
+                continue;
+            }
             if record
                 .retained_copy
                 .as_ref()
@@ -6097,6 +6149,15 @@ impl OttrinApp {
             }
         }
         for group in activity {
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
+            if self.operation_history.iter().any(|record| {
+                privileged_copy_activity::is_privileged(record)
+                    && copy_receipt_transaction_ids(record)
+                        .iter()
+                        .any(|id| group.ownership.transactions.contains(id))
+            }) {
+                continue;
+            }
             let title = group.title();
             if group.ownership.finalization.is_some() {
                 // One manifest owns the whole interrupted clear, even when it
@@ -11209,7 +11270,7 @@ impl OttrinApp {
             tab_id: refresh_tab,
             bindings: retry_bindings,
         } = retry;
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         let _ = &retry_bindings;
         if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
             self.pending_privileged_retry = None;
@@ -11233,7 +11294,7 @@ impl OttrinApp {
             },
         };
         let res = self.execute_privileged_request(&req)?;
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         self.record_privileged_copy(&repair_cmd, &res, refresh_tab, retry_bindings)?;
         match res.status {
             PrivilegedStatus::Success => {
@@ -14628,8 +14689,10 @@ impl OttrinApp {
     fn render_activity_sidebar(&mut self, ui: &mut egui::Ui) {
         let c = self.colors;
         smart_panel_header(ui, &c, MI_HISTORY, "Activity");
-        #[cfg(target_os = "linux")]
-        self.render_privileged_copy_history(ui);
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
+        if ottrin_core::PRIVILEGED_COPY_RECOVERY_SUPPORTED {
+            self.render_privileged_copy_history(ui);
+        }
         ui.horizontal_wrapped(|ui| {
             if ui.add_enabled(
                 !self.retained_move_activity_loader.pending && !self.retained_copy_activity_loader.pending && !self.copy_cleanup.running(),
@@ -14867,7 +14930,7 @@ impl OttrinApp {
                 let ending_attempt = {
                     #[cfg(target_os = "windows")]
                     { record.retained_copy.as_ref().and_then(|owner| owner.recovery.as_ref())
-                        .is_some_and(|plan| matches!(plan, CopyRecoveryAction::Abort(_))) }
+                        .is_some_and(CopyRecoveryAction::is_end_attempt) }
                     #[cfg(not(target_os = "windows"))]
                     { false }
                 };
@@ -14875,10 +14938,10 @@ impl OttrinApp {
                 let forward_copy = record.status == OperationStatus::Queued && self.copy_work.running(record.id);
                 #[cfg(not(target_os = "windows"))]
                 let forward_copy = false;
-                #[cfg(target_os = "linux")]
+                #[cfg(any(target_os = "linux", target_os = "windows"))]
                 let restored_history = privileged_copy_activity::is_restored(record)
                     && record.status == OperationStatus::Completed;
-                #[cfg(not(target_os = "linux"))]
+                #[cfg(not(any(target_os = "linux", target_os = "windows")))]
                 let restored_history = false;
                 let (status_text, status_color, status_icon) = if forward_copy {
                     #[cfg(target_os = "windows")]
@@ -14963,9 +15026,12 @@ impl OttrinApp {
                             });
                             ui.label(status);
                         });
-                        if record.retained_copy.is_none() && let Some(msg) = &record.message {
+                        let show_message = record.retained_copy.is_none();
+                        #[cfg(any(target_os = "linux", target_os = "windows"))]
+                        let show_message = show_message || privileged_copy_activity::is_privileged(record);
+                        if show_message && let Some(msg) = &record.message {
                             ui.add_space(4.0);
-                            let message_color = if matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)) { c.text_muted } else { c.error };
+                            let message_color = if record.status == OperationStatus::Completed || matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)) { c.text_muted } else { c.error };
                             ui.label(RichText::new(msg).color(message_color).size(10.0 * c.font_scale));
                         }
                         if copy_recovery_available {

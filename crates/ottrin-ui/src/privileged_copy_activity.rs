@@ -9,19 +9,42 @@ type HistoryResult = Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>, String
 pub(super) struct HistoryUi {
     loader: Option<RetainedActivityLoader<HistoryResult>>,
     message: Option<String>,
+    review: Vec<String>,
+    cancellation: Option<Arc<AtomicBool>>,
 }
 
-fn load_history(platform: &dyn PlatformOps) -> HistoryResult {
+impl Drop for HistoryUi {
+    fn drop(&mut self) {
+        if let Some(flag) = &self.cancellation {
+            flag.store(true, Ordering::Release);
+        }
+    }
+}
+
+fn load_history(platform: &dyn PlatformOps, cancelled: &AtomicBool) -> HistoryResult {
+    let mut progress = |_| {
+        if cancelled.load(Ordering::Acquire) {
+            Err(PlatformError::Io(
+                "Administrator Copy history check stopped; existing activity is unchanged.".into(),
+            ))
+        } else {
+            Ok(())
+        }
+    };
     let response = platform
-        .execute_privileged(&PrivilegedRequest {
-            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
-            command: PrivilegedCommand::DiscoverCopyHistory,
-            context: PrivilegedContext {
-                reason: Some("Load administrator Copy history for recovery".into()),
-                cwd: None,
+        .execute_privileged_with_progress(
+            &PrivilegedRequest {
+                protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+                command: PrivilegedCommand::DiscoverCopyHistory,
+                context: PrivilegedContext {
+                    reason: Some("Load administrator Copy history for recovery".into()),
+                    cwd: None,
+                },
             },
-        })
+            &mut progress,
+        )
         .map_err(|error| error.to_string())?;
+    progress(0).map_err(|error| error.to_string())?;
     if response.status != PrivilegedStatus::Success {
         return Err(response.message.unwrap_or_else(|| {
             "Administrator Copy history was not loaded. Retained data is unchanged.".into()
@@ -38,11 +61,24 @@ fn validate_history(history: &[ottrin_core::PrivilegedCopyHistoryEntry]) -> Resu
     let mut seen = HashSet::new();
     for entry in history {
         let reference = &entry.reference;
-        if matches!(
+        let windows_state = matches!(
             entry.recovery,
             PrivilegedCopyHistoryState::RecoveryAvailable { .. }
                 | PrivilegedCopyHistoryState::AttemptEnded
-        ) || reference.transactions.is_empty()
+        );
+        let unrecognized = cfg!(target_os = "windows")
+            && reference.transactions.is_empty()
+            && reference.paths.is_empty()
+            && matches!(
+                entry.recovery,
+                PrivilegedCopyHistoryState::NeedsReview { .. }
+            );
+        if (windows_state && !cfg!(target_os = "windows"))
+            || (reference.transactions.is_empty() && !unrecognized)
+            || (matches!(
+                entry.recovery,
+                PrivilegedCopyHistoryState::RecoveryAvailable { .. }
+            ) && reference.transactions.len() != 1)
             || reference.paths.len() > reference.transactions.len()
             || reference.transactions.iter().any(|id| {
                 id.len() != 32
@@ -69,6 +105,11 @@ impl OttrinApp {
                 record.status == OperationStatus::Queued
                     || matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
             });
+        #[cfg(target_os = "windows")]
+        let busy = busy
+            || self.copy_recovery.running()
+            || self.native_undo_preparation.is_some()
+            || self.copy_cleanup.retains_plan();
         let loading = self
             .privileged_copy_history
             .loader
@@ -82,13 +123,36 @@ impl OttrinApp {
             .on_hover_text("Requests administrator permission to find Copy recovery records from previous sessions. This does not change files.")
             .clicked()
         {
+            let cancellation = self.privileged_copy_history.cancellation
+                .get_or_insert_with(|| Arc::new(AtomicBool::new(false))).clone();
+            cancellation.store(false, Ordering::Release);
             if self.privileged_copy_history.loader.is_none() {
                 let platform = self.platform.clone();
-                self.privileged_copy_history.loader = Some(RetainedActivityLoader::spawn_with(move || load_history(platform.as_ref())));
+                self.privileged_copy_history.loader = Some(RetainedActivityLoader::spawn_with(move || load_history(platform.as_ref(), &cancellation)));
             }
             self.privileged_copy_history.message = self.privileged_copy_history.loader.as_mut().unwrap().request().err().map(str::to_owned);
         }
         if loading {
+            let stopping = self
+                .privileged_copy_history
+                .cancellation
+                .as_ref()
+                .is_some_and(|flag| flag.load(Ordering::Acquire));
+            if ui
+                .add_enabled(
+                    !stopping,
+                    egui::Button::new(if stopping {
+                        "Cancelling history load…"
+                    } else {
+                        "Cancel loading history"
+                    })
+                    .themed(&self.colors),
+                )
+                .clicked()
+                && let Some(flag) = &self.privileged_copy_history.cancellation
+            {
+                flag.store(true, Ordering::Release);
+            }
             ui.ctx().request_repaint_after(Duration::from_millis(100));
         }
         if !busy {
@@ -111,44 +175,79 @@ impl OttrinApp {
         if let Some(message) = &self.privileged_copy_history.message {
             ui.label(RichText::new(message).color(self.colors.text_muted));
         }
+        for reason in &self.privileged_copy_history.review {
+            ui.label(RichText::new(reason).color(self.colors.error));
+        }
     }
 
     fn merge_privileged_copy_history(
         &mut self,
         history: Vec<ottrin_core::PrivilegedCopyHistoryEntry>,
     ) {
+        self.privileged_copy_history.review.clear();
         for entry in history {
+            if entry.reference.transactions.is_empty() {
+                if let PrivilegedCopyHistoryState::NeedsReview { reason } = entry.recovery {
+                    self.privileged_copy_history.review.push(reason);
+                }
+                continue;
+            }
             // Only refresh an exact restored cohort. Live receipts and cleanup
             // workers retain their own progress and must never lose ownership.
             let overlapping = self
                 .operation_history
                 .iter()
                 .filter(|record| {
-                    is_privileged(record)
-                        && copy_receipt_transaction_ids(record)
-                            .iter()
-                            .any(|id| entry.reference.transactions.contains(id))
+                    history_ids(record)
+                        .iter()
+                        .any(|id| entry.reference.transactions.contains(id))
                 })
                 .collect::<Vec<_>>();
-            let existing = match overlapping.as_slice() {
-                [] => None,
-                [record]
-                    if is_restored(record)
-                        && record.retained_copy.is_none()
-                        && !matches!(
-                            record.path_move_undo,
-                            Some(PathMoveUndoState::UndoQueued)
-                        )
+            let same_cohort = overlapping.is_empty()
+                || matches!(entry.recovery, PrivilegedCopyHistoryState::CleanupPending)
+                || (overlapping.len() == 1
+                    && history_ids(overlapping[0]).iter().collect::<HashSet<_>>()
+                        == entry.reference.transactions.iter().collect::<HashSet<_>>());
+            let replace = same_cohort
+                && overlapping.iter().all(|record| {
+                    let replaceable = replaceable_history(record);
+                    #[cfg(target_os = "windows")]
+                    let replaceable = replaceable
+                        || (matches!(entry.recovery, PrivilegedCopyHistoryState::CleanupPending)
+                            && record.retained_copy.as_ref().is_some_and(|owner| {
+                                owner.restored && owner.finalization.is_none()
+                            }));
+                    replaceable
+                        && !self.copy_cleanup.owns(record)
+                        && record.path_move_undo != Some(PathMoveUndoState::UndoQueued)
                         && record.status != OperationStatus::Queued
-                        && copy_receipt_transaction_ids(record)
+                        && history_ids(record)
                             .iter()
-                            .collect::<HashSet<_>>()
-                            == entry.reference.transactions.iter().collect::<HashSet<_>>() =>
+                            .all(|id| entry.reference.transactions.contains(id))
+                });
+            if !replace {
+                let reason = "Administrator history overlaps an existing owned Copy activity. Finish or review that activity before reloading history.";
+                if !self
+                    .privileged_copy_history
+                    .review
+                    .iter()
+                    .any(|item| item == reason)
                 {
-                    Some(record.id)
+                    self.privileged_copy_history.review.push(reason.into());
                 }
-                _ => continue,
-            };
+                continue;
+            }
+            let existing = overlapping.first().map(|record| record.id);
+            let replaced = overlapping
+                .iter()
+                .skip(1)
+                .map(|record| record.id)
+                .collect::<HashSet<_>>();
+            // A fresh canonical cleanup cohort may combine several inactive
+            // restored cards. Keep its entire membership in one card; current-
+            // session receipts and active workers were excluded above.
+            self.operation_history
+                .retain(|record| !replaced.contains(&record.id));
             let detail = if entry.reference.paths.is_empty() {
                 "Retained administrator Copy bookkeeping".to_owned()
             } else {
@@ -197,13 +296,42 @@ impl OttrinApp {
                 .collect();
             record.finished_at = None; // Original operation timing is not in the snapshot.
             record.undo_kind = Some(PathMoveUndoKind::Copy);
+            #[cfg(target_os = "windows")]
+            {
+                use ottrin_platform::WindowsCopyPhase as Phase;
+                let recovery = match &entry.recovery {
+                    PrivilegedCopyHistoryState::RecoveryAvailable { action } => {
+                        Some(CopyRecoveryAction::Administrator {
+                            transaction: entry.reference.transactions[0].clone(),
+                            action: *action,
+                            paths: entry.reference.paths.clone(),
+                        })
+                    }
+                    _ => None,
+                };
+                record.retained_copy = Some(RetainedCopyOwnership {
+                    key: format!("administrator:{}", entry.reference.transactions.join(":")),
+                    transactions: entry.reference.transactions.clone(),
+                    blocked_by: Vec::new(),
+                    restored: true,
+                    finalization: None,
+                    recovery,
+                    cleanup_phase: match entry.recovery {
+                        PrivilegedCopyHistoryState::UndoAvailable => Some(Phase::Completed),
+                        PrivilegedCopyHistoryState::Undone => Some(Phase::Undone),
+                        PrivilegedCopyHistoryState::CleanupPending => Some(Phase::CleaningUp),
+                        _ => None,
+                    },
+                    recovery_location: None,
+                });
+            }
             record.path_move_undo = Some(match entry.recovery {
                 PrivilegedCopyHistoryState::UndoAvailable => PathMoveUndoState::Available,
                 PrivilegedCopyHistoryState::Undone => PathMoveUndoState::Undone,
                 PrivilegedCopyHistoryState::NeedsReview { reason } => {
                     PathMoveUndoState::Unavailable { reason }
                 }
-                PrivilegedCopyHistoryState::RecoveryAvailable { .. } => PathMoveUndoState::Unavailable { reason: "This record requires Windows administrator Copy recovery.".into() },
+                PrivilegedCopyHistoryState::RecoveryAvailable { .. } => PathMoveUndoState::Unavailable { reason: "Use this activity's recovery action. The administrator helper rechecks the retained operation before changing files.".into() },
                 PrivilegedCopyHistoryState::AttemptEnded => PathMoveUndoState::Unavailable { reason: "Copy attempt ended; partial files and recovery records are retained.".into() },
                 PrivilegedCopyHistoryState::CleanupPending => PathMoveUndoState::Unavailable { reason: "Copy cleanup was interrupted. Undo is revoked; finish clearing retained data.".into() },
             });
@@ -223,15 +351,19 @@ impl OttrinApp {
 pub(super) fn execute_recovery(
     platform: &dyn PlatformOps,
     command: PrivilegedCommand,
+    progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
-    let response = platform.execute_privileged(&PrivilegedRequest {
-        protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
-        command,
-        context: PrivilegedContext {
-            reason: Some("Manage the retained administrator Copy operation".into()),
-            cwd: None,
+    let response = platform.execute_privileged_with_progress(
+        &PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+            command,
+            context: PrivilegedContext {
+                reason: Some("Manage the retained administrator Copy operation".into()),
+                cwd: None,
+            },
         },
-    })?;
+        progress,
+    )?;
     if response.status == PrivilegedStatus::Success {
         Ok(())
     } else {
@@ -239,6 +371,33 @@ pub(super) fn execute_recovery(
             "Administrator Copy recovery was refused; retained data is preserved.".into()
         })))
     }
+}
+
+fn history_ids(record: &OperationRecord) -> Vec<String> {
+    record
+        .retained_copy
+        .as_ref()
+        .map(|owner| owner.transactions.clone())
+        .unwrap_or_else(|| copy_receipt_transaction_ids(record))
+}
+
+fn replaceable_history(record: &OperationRecord) -> bool {
+    if is_restored(record) {
+        return true;
+    }
+    #[cfg(target_os = "windows")]
+    if record.path_move_undo_token.is_none()
+        && matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Unavailable { .. })
+        )
+        && record.retained_copy.as_ref().is_some_and(|owner| {
+            owner.restored && owner.recovery.is_none() && owner.finalization.is_none()
+        })
+    {
+        return true;
+    }
+    false
 }
 
 pub(super) fn is_restored(record: &OperationRecord) -> bool {
@@ -340,8 +499,12 @@ impl OttrinApp {
 }
 
 #[cfg(test)]
+pub(crate) mod test_support;
+
+#[cfg(test)]
 mod tests {
     use super::*;
+    mod history;
     #[test]
     fn rendered_loaded_message_does_not_keep_a_second_stale_record_count_after_cleanup() {
         let mut app = OttrinApp::default();
@@ -635,8 +798,17 @@ mod tests {
             record.path_move_undo,
             Some(PathMoveUndoState::Unavailable { .. })
         ));
-        assert!(copy_activity_cleanup::can_cleanup(record));
+        assert_eq!(
+            copy_activity_cleanup::can_cleanup(record),
+            cfg!(target_os = "linux")
+        );
         assert_eq!(record.status, OperationStatus::NeedsReview);
+    }
+
+    fn owned(relative: &str) -> PathBuf {
+        std::env::temp_dir()
+            .join("OttrinOwnedActivityReferences")
+            .join(relative.trim_start_matches('/'))
     }
 
     fn response(status: PrivilegedStatus, completed: usize) -> ottrin_core::PrivilegedResponse {
@@ -647,21 +819,15 @@ mod tests {
                 ottrin_core::PrivilegedCopyReceipt {
                     completed_sources: completed,
                     transactions: vec!["a".repeat(32)],
-                    paths: vec![(
-                        PathBuf::from("/owned/output/.ottrin-txn-a/new"),
-                        PathBuf::from("/owned/output/a"),
-                    )],
+                    paths: vec![(owned("/output/.ottrin-txn-a/new"), owned("/output/a"))],
                 },
             )),
         }
     }
     fn command() -> FileCommand {
         FileCommand::Copy {
-            sources: vec![
-                PathBuf::from("/owned/input/a"),
-                PathBuf::from("/owned/input/b"),
-            ],
-            destination: PathBuf::from("/owned/output"),
+            sources: vec![owned("/input/a"), owned("/input/b")],
+            destination: owned("/output"),
             conflict: ConflictAction::Overwrite,
         }
     }
@@ -690,7 +856,7 @@ mod tests {
             let token = record.path_move_undo_token.as_ref().unwrap();
             assert_eq!(
                 token.receipt.path_pairs()[0].1,
-                Path::new("/owned/output/a")
+                owned("/output/a").as_path()
             );
             app.clear_finished_activity();
             assert_eq!(
@@ -750,6 +916,7 @@ mod tests {
         assert!(app.operation_history.is_empty());
     }
     #[test]
+    #[cfg(target_os = "linux")]
     fn linux_history_refuses_windows_only_recovery_before_merging() {
         let reference = ottrin_core::PrivilegedCopyReceipt {
             completed_sources: 0,
