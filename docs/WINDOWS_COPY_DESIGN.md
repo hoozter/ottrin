@@ -425,9 +425,34 @@ ordinary-user routing failure occurred during symlink fixture creation (error 13
 before product discovery; the unchanged executable passed with the corrected role.
 Evidence: `.hermes/evidence/caller-discovery-current/ACCEPTANCE.json`.
 
+Retained-payload cleanup now carries explicit runtime authority too. Its handle-free
+admission retains the authenticated context through snapshot/writer handoff and
+fresh observations. Dependency leases use that authority for private control reads,
+native parent resolution and binding rechecks. The remaining-tree reader retains it
+for no-follow descendant access, narrowly acquired deletion capabilities, absence
+and alias checks, native disposition and post-unlink recovery. Peer observations and
+successful payload completion proofs keep the same context. Ordinary entry paths
+explicitly select Process; persisted fields still cannot choose a token.
+
+Actual file and four-entry directory sources reclaim caller-private retained
+originals after overwrite and retained copies after Undo. Wrong-process access and
+cancelled reads/mutations preserve journals. An injected failure after unlink is
+re-admitted through a fresh context, verifies the pending absence and completes.
+Public contents and source/preferences/index bytes, IDs and security remain intact.
+The focused 108 passes and 89 ordinary cleanup tests use the initial exact build;
+only two test fixtures then change. Three exact tests on the rebuilt source verify
+the guarded-overlap fixture correction, a real parent-DACL mutation under SYSTEM
+and the final cohort case. All 91 non-worker cleanup tests are covered, including
+full metadata/cohort, alias, failure-prefix, drift and real-exit controls. The initial
+whole-module timeout is retained as incomplete evidence; per-test results preserve
+the later successful long matrices. There are 200 test passes across 123 top-level
+native invocations in total, with strict Windows platform/UI lint passing.
+Evidence: `.hermes/evidence/caller-cleanup-current/ACCEPTANCE.json`.
+
 This does not complete the full caller mutation-prefix matrix, readonly/link
 publication recovery, the complete original-retention/restoration failure matrix
-(including readonly original roots), caller cleanup observers/mutations or actual
+(including readonly original roots), caller cohort/metadata retirement, public
+cleanup admissions or actual
 client/helper restart with newly authenticated connections. Fresh captures of the
 same live client do not establish process-restart recovery. Caller cleanup records
 can still report NeedsReview until their own authority integration is complete.

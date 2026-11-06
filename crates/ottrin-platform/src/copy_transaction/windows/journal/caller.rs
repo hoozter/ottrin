@@ -1,6 +1,14 @@
 //! Owned native caller journal controls; not the enabled dispatcher or Undo bridge.
 use super::*;
+use crate::PlatformOps;
 use std::{io::Write, sync::Arc};
+
+struct ResetFault;
+impl Drop for ResetFault {
+    fn drop(&mut self) {
+        FAULT.with(|fault| fault.set(None));
+    }
+}
 
 pub(in super::super) fn exercise_caller_journals(
     caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
@@ -472,12 +480,6 @@ fn exercise_caller_resume(
     central: &File,
     directory: bool,
 ) {
-    struct ResetFault;
-    impl Drop for ResetFault {
-        fn drop(&mut self) {
-            FAULT.with(|fault| fault.set(None));
-        }
-    }
     let registry = windows_fs::location(central).unwrap();
     for case in 0..4 {
         let parent = windows_fs::create_private(
@@ -620,12 +622,6 @@ pub(in super::super) fn exercise_caller_overwrite(
     let mut before = None;
     as_caller(&mut || before = Some(observe()));
     let before = before.unwrap();
-    struct ResetFault;
-    impl Drop for ResetFault {
-        fn drop(&mut self) {
-            FAULT.with(|fault| fault.set(None));
-        }
-    }
     use crate::PlatformOps;
     for case in 0..2 {
         let parent = windows_fs::create_private(
@@ -950,4 +946,261 @@ pub(in super::super) fn exercise_caller_recovery(
     println!(
         "caller fresh recovery source_directory={directory}: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed"
     );
+}
+
+/// Exercise actual retained payload deletion; metadata/cohort retirement is a
+/// separate phase and cannot be inferred from this component control.
+pub(in super::super) fn exercise_caller_cleanup(
+    caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    protected_parent: &File,
+    source: &File,
+    preferences: &File,
+    index: &File,
+    mut recapture: impl FnMut() -> Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    mut as_caller: impl FnMut(&mut dyn FnMut()),
+) {
+    let authority = Authority::Caller(Arc::clone(caller));
+    let source_pin = tree::PinnedTree::open(&authority, source, 16, &mut |_| Ok(())).unwrap();
+    let source_evidence = source_pin.freeze_existing(|_| Ok(())).unwrap();
+    let directory = source_pin.root().directory;
+    let manager = caller
+        .copy_registry(&[windows_fs::location(source).unwrap()], true)
+        .unwrap()
+        .unwrap();
+    let binding = manager.binding().unwrap();
+    let observe = || {
+        [preferences, index].map(|file| {
+            (
+                read(file).unwrap(),
+                stable_identity_from_handle(file).unwrap(),
+                security::owner_group_dacl_digest(file).unwrap(),
+            )
+        })
+    };
+    let mut before = None;
+    as_caller(&mut || before = Some(observe()));
+    let before = before.unwrap();
+    for undo in [false, true] {
+        let parent = windows_fs::create_private(
+            protected_parent,
+            OsStr::new(&format!("caller-cleanup-{directory}-{undo}")),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+        let destination = if undo {
+            DestinationAdmission::creation(&authority, &parent, OsStr::new("copy")).unwrap()
+        } else {
+            let mut original = authority
+                .create(
+                    &parent,
+                    OsStr::new("copy"),
+                    directory,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                )
+                .unwrap();
+            if directory {
+                let nested = authority
+                    .create(
+                        &original,
+                        OsStr::new("Nested"),
+                        true,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    )
+                    .unwrap();
+                for (dir, name) in [(&original, "root.txt"), (&nested, "old.txt")] {
+                    let mut file = authority
+                        .create(
+                            dir,
+                            OsStr::new(name),
+                            false,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        )
+                        .unwrap();
+                    file.write_all(b"retained original cleanup payload")
+                        .unwrap();
+                    file.sync_all().unwrap();
+                }
+            } else {
+                original
+                    .write_all(b"retained original cleanup payload")
+                    .unwrap();
+            }
+            original.sync_all().unwrap();
+            drop(original);
+            DestinationAdmission::overwrite(&authority, &parent, OsStr::new("copy"), 16, |_| Ok(()))
+                .unwrap()
+        };
+        let receipt = DurableStage::execute_with_receipt(
+            source,
+            &parent,
+            manager.root(),
+            &destination,
+            OsStr::new("unavailable-source-label"),
+            16,
+            |_| Ok(()),
+        )
+        .unwrap();
+        if undo {
+            crate::DefaultPlatform
+                .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+                .unwrap();
+        }
+        drop(receipt);
+        let name = windows_fs::directory_children_limited(&parent, 16)
+            .unwrap()
+            .into_iter()
+            .find(|name| name.to_string_lossy().starts_with(".ottrin-copy-"))
+            .unwrap();
+        let snapshot = Snapshot::load(
+            &authority,
+            &parent,
+            manager.root(),
+            &name,
+            SnapshotAccess::Read,
+        )
+        .unwrap();
+        let bytes = snapshot.bytes.clone();
+        let retained = if undo {
+            snapshot.state.header.as_ref().unwrap().candidate_name()
+        } else {
+            snapshot.state.header.as_ref().unwrap().original_name()
+        };
+        drop(snapshot);
+        let public = if undo {
+            None
+        } else {
+            let file =
+                namespace::open_source_with(&authority, &parent, OsStr::new("copy"), None).unwrap();
+            Some(
+                tree::PinnedTree::open(&authority, &file, 16, &mut |_| Ok(()))
+                    .unwrap()
+                    .freeze_existing(|_| Ok(()))
+                    .unwrap(),
+            )
+        };
+        assert!(cleanup::Admission::observe(&parent, manager.root(), &name, |_| Ok(())).is_err());
+        let fresh = Authority::Caller(recapture());
+        assert!(
+            cleanup::Admission::observe_with(&fresh, &parent, manager.root(), &name, |_| Err(io(
+                "owned cancellation"
+            )))
+            .is_err()
+        );
+        assert_eq!(
+            Snapshot::load(
+                &authority,
+                &parent,
+                manager.root(),
+                &name,
+                SnapshotAccess::Read
+            )
+            .unwrap()
+            .bytes,
+            bytes
+        );
+        let admission =
+            cleanup::Admission::observe_with(&fresh, &parent, manager.root(), &name, |_| Ok(()))
+                .unwrap();
+        assert!(
+            admission
+                .reclaim(&parent, manager.root(), |_| Err(io("owned cancellation")))
+                .is_err()
+        );
+        assert_eq!(
+            Snapshot::load(
+                &authority,
+                &parent,
+                manager.root(),
+                &name,
+                SnapshotAccess::Read
+            )
+            .unwrap()
+            .bytes,
+            bytes
+        );
+        let completion = if undo {
+            let started = admission
+                .start(&parent, manager.root(), |_| Ok(()))
+                .unwrap();
+            let snapshot = Snapshot::load(
+                &authority,
+                &parent,
+                manager.root(),
+                &name,
+                SnapshotAccess::Read,
+            )
+            .unwrap();
+            let sequence = snapshot.sequence + 1;
+            drop(snapshot);
+            let reset = ResetFault;
+            FAULT.with(|fault| fault.set(Some((sequence, Step::CleanupHandleClosed, false))));
+            let error = started
+                .reclaim(&parent, manager.root(), |_| Ok(()))
+                .unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("injected Copy journal flush boundary failure"),
+                "{error}"
+            );
+            drop(reset);
+            drop(started);
+            let fresh = Authority::Caller(recapture());
+            let resumed = cleanup::Admission::observe_with(
+                &fresh,
+                &parent,
+                manager.root(),
+                &name,
+                |_| Ok(()),
+            )
+            .unwrap();
+            assert!(resumed.pending_entry_absent());
+            resumed
+                .reclaim(&parent, manager.root(), |_| Ok(()))
+                .unwrap()
+        } else {
+            admission
+                .reclaim(&parent, manager.root(), |_| Ok(()))
+                .unwrap()
+        };
+        drop(completion);
+        assert!(
+            matches!(authority.probe(&parent,&retained),Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+        );
+        let snapshot = Snapshot::load(
+            &authority,
+            &parent,
+            manager.root(),
+            &name,
+            SnapshotAccess::Read,
+        )
+        .unwrap();
+        assert!(snapshot.state.cleanup.as_ref().unwrap().payload_removed);
+        drop(snapshot);
+        if let Some(expected) = public {
+            let file =
+                namespace::open_source_with(&authority, &parent, OsStr::new("copy"), None).unwrap();
+            let current = tree::PinnedTree::open(&authority, &file, 16, &mut |_| Ok(()))
+                .unwrap()
+                .freeze_existing(|_| Ok(()))
+                .unwrap();
+            assert_eq!(current, expected);
+        } else {
+            assert!(
+                matches!(authority.probe(&parent,OsStr::new("copy")),Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+            );
+        }
+        println!(
+            "caller cleanup source_directory={directory} undo={undo}: retained payload deletion, cancellation, private authority and public data preservation passed"
+        );
+    }
+    assert_eq!(manager.binding().unwrap(), binding);
+    let mut after = None;
+    as_caller(&mut || after = Some(observe()));
+    assert_eq!(after.unwrap(), before);
+    source_pin
+        .validate_existing(&source_evidence, &mut |_| Ok(()))
+        .unwrap();
+    caller.validate().unwrap();
 }

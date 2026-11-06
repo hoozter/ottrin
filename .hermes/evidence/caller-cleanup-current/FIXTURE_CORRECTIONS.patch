@@ -1,0 +1,98 @@
+--- a/crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs
++++ b/crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs
+@@ -5940,29 +5940,16 @@
+             )
+             .unwrap();
+         } else {
+-            use std::os::windows::io::AsRawHandle;
+             let parent = windows_fs::open_directory(
+                 root.path(),
+                 windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
+             )
+             .unwrap();
+             let before = super::super::super::security::owner_group_dacl_digest(&parent).unwrap();
+-            let mut owner = windows_fs::current_owner().unwrap();
+-            // Owned fixture only: valid borrowed SID and a live native handle.
+-            assert_eq!(
+-                unsafe {
+-                    windows_sys::Win32::Security::Authorization::SetSecurityInfo(
+-                        parent.as_raw_handle().cast(),
+-                        windows_sys::Win32::Security::Authorization::SE_FILE_OBJECT,
+-                        windows_sys::Win32::Security::GROUP_SECURITY_INFORMATION,
+-                        std::ptr::null_mut(),
+-                        owner.as_mut_ptr().cast(),
+-                        std::ptr::null_mut(),
+-                        std::ptr::null_mut(),
+-                    )
+-                },
+-                0
+-            );
++            // Change the owned fixture's DACL rather than assigning its group
++            // to its owner: those SIDs can already match (for example SYSTEM).
++            // Keep owner access so refusal can be observed without an ACL repair.
++            security::tests::dacl(&parent, "D:P(A;;FA;;;OW)(A;;FR;;;WD)");
+             assert_ne!(
+                 super::super::super::security::owner_group_dacl_digest(&parent).unwrap(),
+                 before
+--- a/crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort_dependencies.rs
++++ b/crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort_dependencies.rs
+@@ -181,7 +181,8 @@
+             |_| Ok(()),
+         )
+         .unwrap();
+-        let receipt = DurableStage::execute_with_receipt(
++        let before = namespace_contents(root.path());
++        let error = DurableStage::execute_with_receipt(
+             &source(&input),
+             &parent,
+             &central,
+@@ -190,8 +191,48 @@
+             100,
+             |_| Ok(()),
+         )
++        .unwrap_err();
++        assert!(
++            error.to_string().contains("retained Copy transaction"),
++            "{error}"
++        );
++        assert_eq!(namespace_contents(root.path()), before);
++        // Exercise a historical overlapping state without bypassing the shared
++        // executor's live dependency guard. Construct only the owned fixture
++        // through the lower-level journal transitions used by recovery tests.
++        let mut staged = DurableStage::create(
++            &source(&input),
++            &parent,
++            &central,
++            &admission,
++            OsStr::new("replacement"),
++            100,
++            |_| Ok(()),
++        )
+         .unwrap();
+-        receipt.windows_copy_plan().unwrap().transaction_ids()[0].to_owned()
++        let name = staged.stage.name.clone();
++        let id = staged.journal.header.transaction.clone();
++        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
++        drop(staged);
++        let snapshot = Snapshot::load(
++            &Authority::Process,
++            &parent,
++            &central,
++            &name,
++            SnapshotAccess::Write,
++        )
++        .unwrap();
++        let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
++        journal.prepare_original(100, |_| Ok(())).unwrap();
++        journal
++            .move_original(None, OriginalMove::Retain, |_| Ok(()))
++            .unwrap();
++        drop(journal);
++        PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
++            .unwrap()
++            .apply(|_| Ok(()))
++            .unwrap();
++        id
+     };
+     let before = namespace_contents(root.path());
+     let refusal = RetainedCopyCleanupPlan::observe_at(&fixture.registry, &[id], |_| Ok(()))

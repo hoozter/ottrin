@@ -51,7 +51,8 @@ fn windows_native_copy_cleanup_observation_uses_only_retained_payloads() {
             let central = owner(&root.path().join("central"));
             let local = root.path().join("destination").join(&name).join(LOCAL);
             let bytes = std::fs::read(&local).unwrap();
-            let held = HeldCleanup::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            let held = HeldCleanup::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
             match &held.payload {
                 Payload::None => assert!(!overwrite && !undone),
                 Payload::Copy(_) => assert!(undone),
@@ -79,11 +80,11 @@ fn windows_native_copy_cleanup_observation_refuses_unfinished_work_and_cancellat
     drop(staged);
     let local = root.path().join("destination").join(&name).join(LOCAL);
     let bytes = std::fs::read(&local).unwrap();
-    assert!(HeldCleanup::open(&parent, &central, &name, |_| Ok(())).is_err());
+    assert!(HeldCleanup::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).is_err());
     assert!(
-        HeldCleanup::open(&parent, &central, &name, |_| Err(PlatformError::Io(
-            "owned cancellation".into()
-        )))
+        HeldCleanup::open(&Authority::Process, &parent, &central, &name, |_| Err(
+            PlatformError::Io("owned cancellation".into())
+        ))
         .is_err()
     );
     assert_eq!(std::fs::read(&local).unwrap(), bytes);
@@ -127,7 +128,10 @@ fn windows_native_copy_cleanup_observation_preserves_changed_payloads_and_unexpe
                 std::fs::read(&local).unwrap(),
                 std::fs::read(&mirror).unwrap(),
             );
-            assert!(HeldCleanup::open(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(
+                HeldCleanup::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
             assert_eq!(
                 (
                     std::fs::read(&local).unwrap(),
@@ -153,7 +157,7 @@ fn windows_native_copy_cleanup_observation_cancellation_during_validation_is_ret
     let bytes = std::fs::read(&local).unwrap();
     let mut calls = 0;
     assert!(
-        HeldCleanup::open(&parent, &central, &name, |_| {
+        HeldCleanup::open(&Authority::Process, &parent, &central, &name, |_| {
             calls += 1;
             if calls == 3 {
                 Err(PlatformError::Io("owned validation cancellation".into()))
@@ -165,7 +169,7 @@ fn windows_native_copy_cleanup_observation_cancellation_during_validation_is_ret
     );
     assert_eq!(calls, 3);
     assert_eq!(std::fs::read(&local).unwrap(), bytes);
-    HeldCleanup::open(&parent, &central, &name, |_| Ok(()))
+    HeldCleanup::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
         .unwrap()
         .revalidate(|_| Ok(()))
         .unwrap();
@@ -3851,6 +3855,7 @@ fn windows_native_copy_cleanup_peer_unlink_codec_replays_one_external_alias_ackn
     }
     drop(file);
     super::super::cleanup_tree::Remaining::open(
+        &Authority::Process,
         &owner(&root.path().join("second-destination")),
         &journal.state,
         progress,
@@ -4054,20 +4059,23 @@ fn windows_native_copy_cleanup_peer_binding_checks_present_absent_and_historical
     local.prepare_peer_unlink(proof.clone()).unwrap();
     let central = owner(&root.path().join("central"));
     let before = namespace_contents(root.path());
-    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    let observation =
+        Observation::open(&Authority::Process, &central, &local.state, |_| Ok(())).unwrap();
     assert!(!observation.removed());
     observation.revalidate(&central, |_| Ok(())).unwrap();
     assert_eq!(namespace_contents(root.path()), before);
     drop(observation);
     std::fs::remove_file(&removed).unwrap();
     owner(removed.parent().unwrap()).sync_all().unwrap();
-    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    let observation =
+        Observation::open(&Authority::Process, &central, &local.state, |_| Ok(())).unwrap();
     assert!(observation.removed());
     observation.revalidate(&central, |_| Ok(())).unwrap();
     drop(observation);
     let retained_root = removed.parent().unwrap().to_path_buf();
     finish_peer_payload_fixture(root.path(), &proof, &removed);
-    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    let observation =
+        Observation::open(&Authority::Process, &central, &local.state, |_| Ok(())).unwrap();
     assert!(observation.removed());
     // The historical intent remains bound even after the peer advances; a new
     // occupant in its old root slot must invalidate the live absence check.
@@ -4124,9 +4132,12 @@ fn windows_native_copy_cleanup_peer_binding_rejects_unmatched_control_prefix_and
         local.prepare_peer_unlink(proof).unwrap();
         let before = namespace_contents(root.path());
         assert!(
-            Observation::open(&owner(&root.path().join("central")), &local.state, |_| Ok(
-                ()
-            ))
+            Observation::open(
+                &Authority::Process,
+                &owner(&root.path().join("central")),
+                &local.state,
+                |_| Ok(())
+            )
             .is_err(),
             "accepted binding change {change}"
         );
@@ -4167,13 +4178,18 @@ fn windows_native_copy_cleanup_peer_binding_preserves_missing_mirrors_changes_an
         }
         let before = namespace_contents(root.path());
         assert!(
-            Observation::open(&owner(&root.path().join("central")), &local.state, |_| {
-                if change == 3 {
-                    Err(io("owned peer cancellation"))
-                } else {
-                    Ok(())
+            Observation::open(
+                &Authority::Process,
+                &owner(&root.path().join("central")),
+                &local.state,
+                |_| {
+                    if change == 3 {
+                        Err(io("owned peer cancellation"))
+                    } else {
+                        Ok(())
+                    }
                 }
-            })
+            )
             .is_err()
         );
         assert_eq!(namespace_contents(root.path()), before);
@@ -4187,7 +4203,8 @@ fn windows_native_copy_cleanup_peer_binding_revalidates_parent_policy_without_wr
     let (mut local, proof, _) = peer_unlink_codec_fixture(root.path());
     local.prepare_peer_unlink(proof).unwrap();
     let central = owner(&root.path().join("central"));
-    let observation = Observation::open(&central, &local.state, |_| Ok(())).unwrap();
+    let observation =
+        Observation::open(&Authority::Process, &central, &local.state, |_| Ok(())).unwrap();
     let parent = root.path().join("destination");
     let old_policy =
         super::super::super::security::owner_group_dacl_digest(&owner(&parent)).unwrap();
@@ -4239,6 +4256,7 @@ fn windows_native_copy_cleanup_peer_acknowledgement_validates_replays_and_counts
     .unwrap();
     let mut replayed = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
     super::super::cleanup_tree::Remaining::open(
+        &Authority::Process,
         &parent,
         &replayed.state,
         replayed.state.cleanup.as_ref().unwrap(),
@@ -4317,9 +4335,16 @@ fn windows_native_copy_cleanup_peer_acknowledgement_read_handles_never_grant_del
     owner(removed.parent().unwrap()).sync_all().unwrap();
     let central = owner(&root.path().join("central"));
     let parent = owner(&root.path().join("second-destination"));
-    let observation = Observation::open(&central, &journal.state, |_| Ok(())).unwrap();
-    let mut remaining =
-        Remaining::after_peer_unlink(&parent, &journal.state, &observation, |_| Ok(())).unwrap();
+    let observation =
+        Observation::open(&Authority::Process, &central, &journal.state, |_| Ok(())).unwrap();
+    let mut remaining = Remaining::after_peer_unlink(
+        &Authority::Process,
+        &parent,
+        &journal.state,
+        &observation,
+        |_| Ok(()),
+    )
+    .unwrap();
     let before = namespace_contents(root.path());
     let progress = journal.state.cleanup.as_ref().unwrap();
     assert!(
@@ -4424,6 +4449,7 @@ fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ac
         assert!(progress.payload_removed);
         assert!(
             Dependencies::open_selected(
+                &Authority::Process,
                 &central,
                 &peer.state,
                 &progress.manifest,
@@ -4457,6 +4483,7 @@ fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ac
         .unwrap();
         drop(
             Dependencies::open_selected(
+                &Authority::Process,
                 &central,
                 &peer.state,
                 &peer.state.cleanup.as_ref().unwrap().manifest,
@@ -4556,6 +4583,7 @@ fn windows_native_copy_cleanup_group_shared_prepare_is_bound_idempotent_and_neve
                 Some(&intent.bind_local(&snapshot.state).unwrap())
             );
             let observed = super::super::cleanup_peer::Observation::open(
+                &Authority::Process,
                 &central,
                 &snapshot.state,
                 |_| Ok(()),
@@ -5912,29 +5940,16 @@ fn windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl() {
             )
             .unwrap();
         } else {
-            use std::os::windows::io::AsRawHandle;
             let parent = windows_fs::open_directory(
                 root.path(),
                 windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
             )
             .unwrap();
             let before = super::super::super::security::owner_group_dacl_digest(&parent).unwrap();
-            let mut owner = windows_fs::current_owner().unwrap();
-            // Owned fixture only: valid borrowed SID and a live native handle.
-            assert_eq!(
-                unsafe {
-                    windows_sys::Win32::Security::Authorization::SetSecurityInfo(
-                        parent.as_raw_handle().cast(),
-                        windows_sys::Win32::Security::Authorization::SE_FILE_OBJECT,
-                        windows_sys::Win32::Security::GROUP_SECURITY_INFORMATION,
-                        std::ptr::null_mut(),
-                        owner.as_mut_ptr().cast(),
-                        std::ptr::null_mut(),
-                        std::ptr::null_mut(),
-                    )
-                },
-                0
-            );
+            // Change the owned fixture's DACL rather than assigning its group
+            // to its owner: those SIDs can already match (for example SYSTEM).
+            // Keep owner access so refusal can be observed without an ACL repair.
+            security::tests::dacl(&parent, "D:P(A;;FA;;;OW)(A;;FR;;;WD)");
             assert_ne!(
                 super::super::super::security::owner_group_dacl_digest(&parent).unwrap(),
                 before

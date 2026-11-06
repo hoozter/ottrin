@@ -1,0 +1,338 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-native-control-current/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-registry-current/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/updated-runtime/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-safety-current/stock-corrected/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-safety-current/stock-native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-boundary-race-current/companion/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-boundary-race-current/native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-boundary-race-current/stripped-parallel/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/menus25-background-invocation-failure/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/update23to24/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/office-installed-current/windows-observed/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/native-windows-failed-invoke/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/native-windows/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/runtime21-focus-failure/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/runtime21/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current/windows-picker/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled-rejected-positive-control/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/upgrade-disabled/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/windows-native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-dialog-focus-current/windows-native-ui/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/roadmap-audit-current/windows-picker/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/msi-desktop-ready/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/runtime-ready/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/windows-software/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/windows-unattended/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup-viewport/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/upgrade-disabled/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup-controls/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/editable-fields-current/windows-fields/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/editable-fields-current/windows-fields-native-path/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-audit-current/windows-folders-json-helper/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-audit-current/windows-folders/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-audit-current/windows-folders-loaded-image/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current/native-windows/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current/native-windows-geometry-fixture-failed/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-row-focus-current/windows-native-ui/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-registry-current/native-acl/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current/windows/native-picker/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current/windows/modal-labels/opengl/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current/windows/modal-labels/native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/windows-native-ui/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/windows-native-ui-selection-observed/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-enabled/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-disabled/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed boot-readiness image from a completed owned QA clone",
+      "evidence": "Exact SHA/size and completed native OWNER/DESKTOP_SIGNAL receipts reviewed in REMAINING_DESKTOP_CANDIDATES.json. Domain/disks/fixture removed, base preserved off, private profile independently absent. No product capture review references this readiness frame. Preserve all product originals, privacy-choice frames, compact acceptance receipts, held MSI/provider inputs and current packages."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    }
+  ]
+}

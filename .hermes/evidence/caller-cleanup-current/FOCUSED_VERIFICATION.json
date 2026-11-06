@@ -1,0 +1,16 @@
+{
+  "status": "pass focused caller retained-payload cleanup; full regression verification incomplete",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "archive_sha256": "da98b59983940c4d5fd507793cfa4760f1226d6be2fc7d6ded167d28a4689abf",
+  "top_level_passes": 108,
+  "native_invocations": 31,
+  "caller_markers": 4,
+  "full_module_finding": "Active cleanup module reached the fixture 600-second limit; its in-flight output was not retained by the old companion. No product assertion failure established. Rerun all 91 non-worker tests as individually recorded disjoint batches.",
+  "teardown": "VM/disks/private desktop/profile/processes independently absent",
+  "limits": [
+    "Caller metadata/cohort retirement and public cleanup entry points remain unconverted",
+    "Actual client/helper restart/new authenticated connections/UAC, full failure matrix/links, dispatcher and packages remain separate"
+  ]
+}

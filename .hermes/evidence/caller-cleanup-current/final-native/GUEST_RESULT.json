@@ -1,0 +1,34 @@
+{
+  "phase": "complete",
+  "scope": "Ordinary owned actor coordinates a disjoint SYSTEM native cleanup regression batch; no caller/UAC/package acceptance",
+  "system": {
+    "scope": "Disjoint SYSTEM ordinary cleanup regression batch; no caller/UAC/package acceptance",
+    "status": "pass owned SYSTEM companion",
+    "phase": "remaining later pending cohort member",
+    "runs": [
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 6.51s\n\n",
+        "timed_out": false,
+        "case": "corrected guarded overlap recovery fixture",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 41.41s\n\n",
+        "timed_out": false,
+        "case": "corrected native ACL drift fixture",
+        "stderr": "",
+        "exit": 0
+      },
+      {
+        "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_replays_later_pending_member ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 28.28s\n\n",
+        "timed_out": false,
+        "case": "remaining later pending cohort member",
+        "stderr": "",
+        "exit": 0
+      }
+    ]
+  },
+  "status": "pass disjoint native cleanup regression batch",
+  "runs": []
+}

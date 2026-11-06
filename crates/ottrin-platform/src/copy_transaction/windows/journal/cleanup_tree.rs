@@ -8,20 +8,14 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_DISPOSITION_INFO_EX, FileDispositionInfoEx, SYNCHRONIZE, SetFileInformationByHandle,
 };
 
-fn entry(parent: &File, name: &[u16], access: u32) -> std::io::Result<File> {
-    unsafe {
-        windows_fs::open_relative(
-            parent,
-            &OsString::from_wide(name),
-            RelativeOptions {
-                directory: None,
-                create_new: false,
-                access,
-                sharing: FILE_SHARE_READ,
-                security: ptr::null(),
-            },
-        )
-    }
+fn entry(authority: &Authority, parent: &File, name: &[u16], access: u32) -> std::io::Result<File> {
+    authority.open_entry(
+        parent,
+        &OsString::from_wide(name),
+        None,
+        access,
+        FILE_SHARE_READ,
+    )
 }
 
 pub(super) fn dispose(file: &File) -> Result<(), PlatformError> {
@@ -49,7 +43,12 @@ pub(super) fn dispose(file: &File) -> Result<(), PlatformError> {
 }
 
 pub(super) fn absent(parent: &File, name: &OsStr) -> Result<(), PlatformError> {
+    absent_with(&Authority::Process, parent, name)
+}
+
+fn absent_with(authority: &Authority, parent: &File, name: &OsStr) -> Result<(), PlatformError> {
     match entry(
+        authority,
         parent,
         &name.encode_wide().collect::<Vec<_>>(),
         FILE_GENERIC_READ,
@@ -61,6 +60,7 @@ pub(super) fn absent(parent: &File, name: &OsStr) -> Result<(), PlatformError> {
 }
 
 pub(super) struct Remaining {
+    authority: Authority,
     handles: Vec<Option<File>>,
     pub(super) observed: Vec<Option<EntryVersion>>,
     present: Vec<bool>,
@@ -82,17 +82,19 @@ impl Remaining {
     }
 
     pub(super) fn open(
+        authority: &Authority,
         parent: &File,
         state: &State,
         progress: &Progress,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        Self::open_adjusted(parent, state, progress, None, &mut cancel)
+        Self::open_adjusted(authority, parent, state, progress, None, &mut cancel)
     }
 
     /// Read capabilities only: the peer observer must certify its recorded
     /// absence before this permits one link-count/change-time adjustment.
     pub(super) fn after_peer_unlink(
+        authority: &Authority,
         parent: &File,
         state: &State,
         observation: &super::cleanup_peer::Observation,
@@ -100,6 +102,7 @@ impl Remaining {
     ) -> Result<Self, PlatformError> {
         let identity = observation.removed_identity(state)?;
         Self::open_adjusted(
+            authority,
             parent,
             state,
             state.cleanup.as_ref().unwrap(),
@@ -109,6 +112,7 @@ impl Remaining {
     }
 
     fn open_adjusted(
+        authority: &Authority,
         parent: &File,
         state: &State,
         progress: &Progress,
@@ -122,6 +126,7 @@ impl Remaining {
         }
         let pending = progress.pending.then(|| manifest.order[progress.completed]);
         let mut result = Self {
+            authority: authority.clone(),
             handles: (0..present.len()).map(|_| None).collect(),
             observed: vec![None; present.len()],
             present,
@@ -135,6 +140,7 @@ impl Remaining {
                 continue;
             }
             match entry(
+                authority,
                 result.parent(parent, progress, index),
                 &manifest.entries[index].name,
                 FILE_GENERIC_READ,
@@ -251,7 +257,8 @@ impl Remaining {
     ) -> Result<(), PlatformError> {
         if !progress.manifest.entries.is_empty() && !self.present[0] {
             // Recheck absence on every observation, not just initial admission.
-            absent(
+            absent_with(
+                &self.authority,
                 parent,
                 &OsString::from_wide(&progress.manifest.entries[0].name),
             )?;
@@ -272,7 +279,7 @@ impl Remaining {
                 cancel(0)?;
                 let node = &progress.manifest.entries[index];
                 let file = self.handles[index].as_ref().unwrap();
-                bound(
+                self.authority.binding(
                     self.parent(parent, progress, index),
                     &OsString::from_wide(&node.name),
                     observed.identity,
@@ -306,6 +313,7 @@ impl Remaining {
         index: usize,
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         if self.peer_change.is_some() {
             return Err(io(
                 "Peer acknowledgement observation grants no removal capability",
@@ -317,6 +325,7 @@ impl Remaining {
             self.handles[p] = None;
             self.handles[p] = Some(
                 entry(
+                    &self.authority,
                     self.parent(parent, progress, p),
                     &progress.manifest.entries[p].name,
                     // open_relative uses synchronous native I/O; MAXIMUM_ALLOWED
@@ -332,6 +341,7 @@ impl Remaining {
                 self.handles[other] = None;
             }
             let file = entry(
+                &self.authority,
                 self.parent(parent, progress, index),
                 &progress.manifest.entries[index].name,
                 FILE_GENERIC_READ | DELETE,
@@ -369,7 +379,7 @@ impl Remaining {
         while let Some(index) = current {
             if let Some(observed) = &self.observed[index] {
                 let node = &progress.manifest.entries[index];
-                bound(
+                self.authority.binding(
                     self.parent(parent, progress, index),
                     &OsString::from_wide(&node.name),
                     observed.identity,
@@ -412,13 +422,14 @@ impl Remaining {
         }
         if self.present[index] {
             let file = self.handles[index].as_ref().unwrap();
-            dispose(file)?;
+            self.authority.file_operation(|| dispose(file))?;
             boundary(sequence, Step::CleanupDispositionSet)?;
             for &other in progress.manifest.same_object(index) {
                 self.handles[other] = None;
             }
             boundary(sequence, Step::CleanupHandleClosed)?;
-            absent(
+            absent_with(
+                &self.authority,
                 self.parent(parent, progress, index),
                 &OsString::from_wide(&progress.manifest.entries[index].name),
             )?;
@@ -443,6 +454,7 @@ impl Remaining {
             if self.handles[other].is_none() {
                 self.handles[other] = Some(
                     entry(
+                        &self.authority,
                         self.parent(parent, progress, other),
                         &progress.manifest.entries[other].name,
                         FILE_GENERIC_READ,

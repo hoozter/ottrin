@@ -1,0 +1,326 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.09.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.02.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.06.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.12.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.06.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.01.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.15.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.03.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.00.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.05.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.11.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.04.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.01.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.09.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.14.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.01.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.10.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.13.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.07.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.13.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.15.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.11.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.08.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.09.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.10.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.11.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.00.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.02.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.02.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.04.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.03.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.00.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.07.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.04.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.15.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.07.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.05.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.14.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.14.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.12.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.10.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.03.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.08.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.06.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.12.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.08.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.05.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.13.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Loose compiler object already retained byte-for-byte in finalized rlib",
+      "evidence": "ar extraction SHA-256 equality verified; current dependency archive and compiler caches preserved. No running compiler/linker. Cargo links the finalized archive, not these consumed loose objects."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.38wsxpnkou9r6vng8xt4erpm1.04wbs05.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Abandoned October 18 native-test link object from an unfinished compile",
+      "evidence": "Object timestamps follow retained October 17 e2d test executable; abandoned sibling object is zero bytes. No compiler/linker live, no project scripts/package/workflow references. Current November 6 paired native tests built successfully in authoritative GNU target tree; retained e2d executable and all finalized incremental sessions preserved. These loose link intermediates are not finalized compiler caches or source."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.5l2au8fp1vrdzo67pg2yhxky8.04wbs05.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Abandoned October 18 native-test link object from an unfinished compile",
+      "evidence": "Object timestamps follow retained October 17 e2d test executable; abandoned sibling object is zero bytes. No compiler/linker live, no project scripts/package/workflow references. Current November 6 paired native tests built successfully in authoritative GNU target tree; retained e2d executable and all finalized incremental sessions preserved. These loose link intermediates are not finalized compiler caches or source."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.6iuhjtzoiqpfnhgbay4ennb9v.04wbs05.rcgu.o",
+      "kind": "build-cache",
+      "reason": "Abandoned October 18 native-test link object from an unfinished compile",
+      "evidence": "Object timestamps follow retained October 17 e2d test executable; abandoned sibling object is zero bytes. No compiler/linker live, no project scripts/package/workflow references. Current November 6 paired native tests built successfully in authoritative GNU target tree; retained e2d executable and all finalized incremental sessions preserved. These loose link intermediates are not finalized compiler caches or source."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    }
+  ]
+}

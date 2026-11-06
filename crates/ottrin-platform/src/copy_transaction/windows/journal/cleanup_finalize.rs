@@ -163,6 +163,7 @@ pub(super) fn prepare(
 /// raw journals survive the transition to metadata authorization.
 #[derive(Clone, Debug)]
 pub(super) struct Completion {
+    authority: Authority,
     header: Header,
     journal: [u8; 32],
     metadata: [u8; 32],
@@ -217,6 +218,7 @@ impl Reclaimed {
         let (registry_stamp, registry_names) = dependencies.namespace_proof();
         Ok(Self {
             completion: Completion {
+                authority: journal.authority.clone(),
                 header: journal.header.clone(),
                 journal: Sha256::digest(&bytes).into(),
                 metadata: super::super::evidence_digest(&metadata)?,
@@ -291,7 +293,7 @@ impl Completion {
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(Snapshot, Dependencies, [EntryVersion; 3]), PlatformError> {
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            &self.authority,
             parent,
             central,
             &self.header.stage_name(),
@@ -315,8 +317,15 @@ impl Completion {
             .as_ref()
             .filter(|p| p.payload_removed && !p.metadata_removal_intent)
             .ok_or_else(|| io("Copy cleanup payload is not ready for metadata finalization"))?;
-        Remaining::open(parent, &snapshot.state, progress, &mut *cancel)?;
+        Remaining::open(
+            &self.authority,
+            parent,
+            &snapshot.state,
+            progress,
+            &mut *cancel,
+        )?;
         let dependencies = Dependencies::open_selected(
+            &self.authority,
             central,
             &snapshot.state,
             &progress.manifest,
@@ -363,7 +372,7 @@ impl Completion {
         ));
         cleanup_handoff(sequence)?;
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            &self.authority,
             parent,
             central,
             &name,
@@ -659,6 +668,7 @@ impl Plan {
         let sequence = decoded.sequence;
         let progress = control.state.cleanup.as_ref().unwrap();
         let mut dependencies = Dependencies::open_selected(
+            &Authority::Process,
             central,
             &control.state,
             &progress.manifest,

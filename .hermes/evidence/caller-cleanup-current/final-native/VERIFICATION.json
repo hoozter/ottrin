@@ -1,0 +1,35 @@
+{
+  "status": "pass all three final native cases",
+  "archive_sha256": "988af9b6ea1bee8bcaa92d41734e494f20c4afba0cb681bd543a28036b1e2318",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "source": "../FIXED_SOURCE_INPUT.json",
+  "build": "../FIXED_NATIVE_TEST_INPUT.json",
+  "tests": [
+    {
+      "case": "corrected guarded overlap recovery fixture",
+      "qualified_test": "copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases"
+    },
+    {
+      "case": "corrected native ACL drift fixture",
+      "qualified_test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl"
+    },
+    {
+      "case": "remaining later pending cohort member",
+      "qualified_test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_replays_later_pending_member"
+    }
+  ],
+  "test_passes": 3,
+  "native_invocations": 3,
+  "independent_teardown": {
+    "domain_volumes_console_observer_profile_absent": true,
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n"
+  }
+}

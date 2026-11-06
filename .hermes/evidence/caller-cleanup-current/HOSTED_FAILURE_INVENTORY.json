@@ -1,0 +1,169 @@
+[
+  {
+    "run": 42190338862,
+    "created": "2026-11-06T08:48:34Z",
+    "sha": "0128f51b8b7f6f19e4480f0a45e5acb7b0050554",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/42190338862",
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "failed_steps": [
+          "Cargo test"
+        ]
+      }
+    ],
+    "diagnostics": [
+      "2026-11-06T09:11:48.8231906Z test copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases ... FAILED",
+      "2026-11-06T09:31:59.3598498Z thread 'copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases' (3404) panicked at crates\\ottrin-platform\\src\\copy_transaction\\windows\\journal\\tests\\abort_dependencies.rs:193:10:",
+      "2026-11-06T09:31:59.3603874Z test result: FAILED. 493 passed; 1 failed; 85 ignored; 0 measured; 0 filtered out; finished in 1221.17s"
+    ]
+  },
+  {
+    "run": 42132867918,
+    "created": "2026-11-05T23:54:03Z",
+    "sha": "1ba0d8d33947f371dcfb9825f7144853a33a86d2",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/42132867918",
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "failed_steps": [
+          "Cargo test"
+        ]
+      }
+    ],
+    "diagnostics": [
+      "2026-11-06T00:26:41.6171103Z test copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority ... FAILED",
+      "2026-11-06T00:32:18.2956580Z thread 'copy_transaction::windows::journal::tests::windows_native_copy_streamed_plan_codec_exceeds_old_single_frame_without_native_authority' (9176) panicked at crates\\ottrin-platform\\src\\copy_transaction\\windows\\journal.rs:9769:36:",
+      "2026-11-06T00:32:18.2959818Z test result: FAILED. 493 passed; 1 failed; 85 ignored; 0 measured; 0 filtered out; finished in 1398.16s"
+    ]
+  },
+  {
+    "run": 42028570906,
+    "created": "2026-11-05T12:36:25Z",
+    "sha": "f71a53839cc753fc91a0378b0818b6e083aa49eb",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/42028570906",
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "failed_steps": [
+          "Verify native MSIX manifest template"
+        ]
+      }
+    ],
+    "diagnostics": [
+      "2026-11-05T12:38:17.1215697Z MakeAppx : error: Error info: error C00CE169: App manifest validation error: The app manifest must be valid as per ",
+      "2026-11-05T12:38:17.1217696Z MakeAppx : error: Package creation failed.",
+      "2026-11-05T12:38:17.1218326Z MakeAppx : error: 0x80080204 - The specified package format is not valid: The package manifest is not valid.",
+      "2026-11-05T12:38:17.1232904Z     MakeAppx : error: Error info: error C00CE169: App manifest validation error: The app manifest must be valid as per ",
+      "2026-11-05T12:38:17.1234498Z MakeAppx : error: Package creation failed.",
+      "2026-11-05T12:38:17.1234881Z MakeAppx : error: 0x80080204 - The specified package format is not valid: The package manifest is not valid."
+    ]
+  },
+  {
+    "run": 42010460579,
+    "created": "2026-11-05T10:24:35Z",
+    "sha": "2f9e1c5f5a90caae1e930d36d9a16856e44ae2f0",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/42010460579",
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "failed_steps": [
+          "Cargo fmt"
+        ]
+      },
+      {
+        "name": "verify (windows-latest)",
+        "failed_steps": [
+          "Cargo fmt"
+        ]
+      }
+    ],
+    "diagnostics": []
+  },
+  {
+    "run": 41982529608,
+    "created": "2026-11-05T06:45:10Z",
+    "sha": "8d69ce98c7d6f25aa12025c67b205c035785d970",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41982529608",
+    "failed_jobs": [
+      {
+        "name": "verify (ubuntu-latest)",
+        "failed_steps": [
+          "Release build"
+        ]
+      }
+    ],
+    "diagnostics": [
+      "2026-11-05T06:55:21.3634567Z rustc-LLVM ERROR: IO failure on output stream: No space left on device",
+      "2026-11-05T06:55:28.7648750Z       '  No space left on device (os error 28)\\n'"
+    ]
+  },
+  {
+    "run": 41971204224,
+    "created": "2026-11-05T05:00:02Z",
+    "sha": "b961609554cdf72cd42dd9d4e059582a64eac92b",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41971204224",
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "failed_steps": [
+          "Cargo test"
+        ]
+      }
+    ],
+    "diagnostics": [
+      "2026-11-05T05:39:53.0519705Z test native_job_captures_output_and_cleans_diagnostics ... FAILED",
+      "2026-11-05T05:39:58.0364592Z test native_job_cancellation_kills_parent_and_descendant ... FAILED",
+      "2026-11-05T05:39:59.5945452Z thread 'native_job_captures_output_and_cleans_diagnostics' (6504) panicked at crates\\ottrin-preview\\tests\\windows_job_native.rs:279:10:",
+      "2026-11-05T05:39:59.5947802Z thread 'native_job_cancellation_kills_parent_and_descendant' (1032) panicked at crates\\ottrin-preview\\tests\\windows_job_native.rs:329:9:",
+      "2026-11-05T05:39:59.5953631Z test result: FAILED. 8 passed; 2 failed; 3 ignored; 0 measured; 0 filtered out; finished in 6.58s"
+    ]
+  },
+  {
+    "run": 41936995231,
+    "created": "2026-11-04T23:51:43Z",
+    "sha": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41936995231",
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "failed_steps": [
+          "Cargo test"
+        ]
+      }
+    ],
+    "diagnostics": [
+      "2026-11-05T00:41:21.1736993Z assertion `left == right` failed",
+      "2026-11-05T00:41:21.1738037Z thread 'tests::live_content_search_excludes_content_policy_roots' (5888) panicked at crates\\ottrin-search\\src\\lib.rs:7201:9:",
+      "2026-11-05T00:41:21.1738442Z assertion `left == right` failed",
+      "2026-11-05T00:41:21.1739779Z thread 'tests::live_content_search_excludes_hidden_policy_roots_when_hidden_search_is_enabled' (1392) panicked at crates\\ottrin-search\\src\\lib.rs:7291:9:",
+      "2026-11-05T00:41:21.1740237Z assertion `left == right` failed",
+      "2026-11-05T00:41:21.1741384Z thread 'tests::live_content_search_honors_nested_include_and_exclude_roots' (3428) panicked at crates\\ottrin-search\\src\\lib.rs:7339:9:",
+      "2026-11-05T00:41:21.1741799Z assertion `left == right` failed",
+      "2026-11-05T00:41:21.1742902Z thread 'tests::live_content_total_counts_filename_shaped_hits_outside_metadata' (5572) panicked at crates\\ottrin-search\\src\\lib.rs:7523:9:",
+      "2026-11-05T00:41:21.1744597Z thread 'tests::negated_filename_filter_keeps_content_fallback_available_while_indexing' (6068) panicked at crates\\ottrin-search\\src\\lib.rs:8286:9:",
+      "2026-11-05T00:41:21.1745069Z assertion failed: response.error.is_none()",
+      "2026-11-05T00:41:21.1745919Z thread 'tests::positive_content_pages_cover_every_match_in_requested_order' (7604) panicked at crates\\ottrin-search\\src\\lib.rs:7632:17:",
+      "2026-11-05T00:41:21.1753646Z test result: FAILED. 211 passed; 16 failed; 6 ignored; 0 measured; 0 filtered out; finished in 122.11s"
+    ]
+  },
+  {
+    "run": 41773667747,
+    "created": "2026-11-04T04:31:00Z",
+    "sha": "6f0a58e98786878811b84e8df05c75e686d6424e",
+    "url": "https://github.com/hoozter/ottrin/actions/runs/41773667747",
+    "failed_jobs": [
+      {
+        "name": "verify (windows-latest)",
+        "failed_steps": [
+          "Cargo test"
+        ]
+      }
+    ],
+    "diagnostics": [
+      "2026-11-04T05:13:33.0093935Z test tests::index_powershell_preserves_multiline_comments_quotes_and_unicode ... FAILED",
+      "2026-11-04T05:14:39.1694295Z thread 'tests::index_powershell_preserves_multiline_comments_quotes_and_unicode' (3452) panicked at crates\\ottrin-search\\src\\lib.rs:5469:17:",
+      "2026-11-04T05:14:39.1730620Z test result: FAILED. 225 passed; 1 failed; 6 ignored; 0 measured; 0 filtered out; finished in 110.82s"
+    ]
+  }
+]

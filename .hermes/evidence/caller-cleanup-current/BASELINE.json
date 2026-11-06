@@ -1,0 +1,11 @@
+{
+  "reference_commit": "0128f51b8b7f6f19e4480f0a45e5acb7b0050554",
+  "sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30225977344,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49040859136
+  },
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471671750656 25803505664  95% /\n",
+  "purpose": "Caller-authority retained cleanup payload admission, native deletion and recovery using existing protocol; cohort/metadata conversion remains required"
+}

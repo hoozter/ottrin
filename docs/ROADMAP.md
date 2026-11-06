@@ -53,13 +53,28 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
+Previous published source `0128f51b` has three successful hosted jobs and one
+Windows verification failure in
+[run42190338862](https://github.com/hoozter/ottrin/actions/runs/42190338862).
+The failing recovery fixture manufactured an overlapping overwrite through the
+shared executor, which now correctly enforces its dependency guard. The current
+checkpoint checks that refusal, then constructs only the historical test state
+through existing lower-level journal transitions; cleanup dependency and
+data-preservation assertions remain. The corrected test passes natively. A second
+fixture now makes a real DACL change instead of assigning a group SID that could
+already match its owner under SYSTEM. It also passes, with refusal and namespace
+preservation intact. New hosted acceptance remains separate. Diagnosis and exact
+fixture-only corrections are in `caller-cleanup-current/HOSTED_FAILURE.json` and
+`FIXTURE_CORRECTIONS.patch`; stable application packages are unchanged.
+
 1. Finish Windows administrator Copy using the original caller's canonical
    profile/registry, destination claims, stage/journal, metadata/final-permission
    token, receipts, Undo and cleanup authority. Administrator Copy stays disabled.
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current native component acceptance: 106 top-level passes across 29 invocations,
+   Current native component regression coverage: 200 test passes across 123
+   top-level invocations, including all 91 non-worker ordinary cleanup tests,
    using ordinary-user and SYSTEM roles. Registry/private staging share explicit
    authority; real tree/payload staging and required naming policy pass. Final
    permission plans now retain caller authority, derive the whole graph from one
@@ -137,7 +152,7 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    passes across 31 native invocations and strict Windows platform/UI lint pass.
    The privilege-dependent bad-record/symlink discovery test runs as SYSTEM;
    ordinary phase-classification discovery remains an ordinary-user control.
-   Current receipt: `caller-discovery-current/ACCEPTANCE.json`; prior overwrite,
+   Current receipt: `caller-cleanup-current/ACCEPTANCE.json`; prior discovery, overwrite,
    resume, receipt, publication,
    retained-tree, paired-journal, claim and permission receipts retain their scopes.
    These are component controls,
@@ -145,11 +160,27 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    Remaining: actual caller dispatcher retaining pinned source and canonical
    registry admission through the entire operation; complete caller creation mutation-prefix,
    readonly/link publication recovery, the complete original-retention/restoration
-   failure matrix (including readonly original roots), caller cleanup observers and
-   mutations, and real client/helper restart with newly authenticated connections.
+   failure matrix (including readonly original roots), caller cohort/metadata
+   retirement and public cleanup admissions, and real client/helper restart with
+   newly authenticated connections.
    Fresh context captures of a live client do not prove process-restart recovery.
    Caller cleanup records can still report NeedsReview until their own authority
-   integration is complete; no caller cleanup acceptance is claimed.
+   integration is complete; caller cohort/metadata cleanup is not yet accepted.
+   Retained-payload cleanup now carries explicit caller
+   authority through admission, dependency leases, remaining-tree reads/deletion,
+   peer observations and completion proofs. Four actual file/directory cases pass
+   original cleanup after overwrite and copied-payload cleanup after Undo,
+   cancellation preservation, injected post-unlink recovery through a fresh context
+   and public/source/preferences/index preservation. The existing 108 focused
+   passes plus 89 ordinary cleanup cases passed on the initial build; only two
+   test fixtures then changed. Three exact native tests on the rebuilt source
+   verify both corrections and the remaining cohort case. Together these cover
+   all 91 non-worker cleanup cases, with no production changes between builds.
+   The initial whole-module 600-second timeout remains recorded; individually
+   retained results include 199/223-second process-exit matrices. Metadata/cohort
+   retirement and public caller cleanup admissions remain unconverted. Evidence:
+   `.hermes/evidence/caller-cleanup-current/ACCEPTANCE.json`; this is independent
+   work, not an owner wait or whole caller-cleanup acceptance.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
    package/profile contexts. Creation-inheritance and original-token finalization
    controls do not substitute for that complete transaction/recovery proof.

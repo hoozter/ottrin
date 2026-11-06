@@ -1,0 +1,18 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwjuq7mme-11vnjrp-8k1dck3ck87u5x0jkaauje777",
+    "kind": "build-cache",
+    "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwjuq7mme-11vnjrp.lock",
+    "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwluzmkwz-0a1zfj1-608nkb4xcbe9oa99yfg37l7zw",
+    "reason": "Superseded finalized rustc incremental session",
+    "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwluzmkwz-0a1zfj1-608nkb4xcbe9oa99yfg37l7zw. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwjranep9-1gv3pu1-chdzproh2y6hsfhu8huqjvx1e",
+    "kind": "build-cache",
+    "lock_path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwjranep9-1gv3pu1.lock",
+    "retained_session": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwlqyvk90-1opbxhq-71s7f1v291c2lai7oqc1l8we4",
+    "reason": "Superseded finalized rustc incremental session",
+    "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwlqyvk90-1opbxhq-71s7f1v291c2lai7oqc1l8we4. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained."
+  }
+]

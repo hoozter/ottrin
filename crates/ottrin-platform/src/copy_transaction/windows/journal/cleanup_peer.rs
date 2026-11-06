@@ -134,6 +134,7 @@ pub(super) struct Observation {
 
 impl Observation {
     pub(super) fn open(
+        authority: &Authority,
         central: &File,
         local: &State,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
@@ -148,7 +149,7 @@ impl Observation {
             .as_deref()
             .ok_or_else(|| io("Copy has no recorded peer unlink intent"))?;
         let record = discovery::RegisteredJournal::dependency(
-            &Authority::Process,
+            authority,
             central,
             &OsString::from(format!("{}.copy-journal", proof.transaction)),
         )?;
@@ -189,13 +190,10 @@ impl Observation {
         if current.completed == before.completed && !current.pending {
             return Err(io("Copy peer has lost the recorded pending unlink"));
         }
-        let parent = windows_fs::Volumes::new(central)?.resolve(
-            header.parent,
-            FILE_GENERIC_READ,
-            &mut cancel,
-        )?;
+        let parent =
+            authority.resolve_parent(central, header.parent, FILE_GENERIC_READ, &mut cancel)?;
         let snapshot = Snapshot::read_with_control(
-            &Authority::Process,
+            authority,
             &parent,
             central,
             &header.stage_name(),
@@ -204,7 +202,7 @@ impl Observation {
         if snapshot.bytes != record.bytes || snapshot.state.header.as_ref() != Some(header) {
             return Err(io("Copy peer unlink mirrors disagree"));
         }
-        let remaining = Remaining::open(&parent, &snapshot.state, current, &mut cancel)?;
+        let remaining = Remaining::open(authority, &parent, &snapshot.state, current, &mut cancel)?;
         let removed = current.completed > before.completed || remaining.pending_absent;
         let parent_security = security::owner_group_dacl_digest(&parent)?;
         let result = Self {
@@ -286,7 +284,9 @@ impl Observation {
     ) -> Result<(), PlatformError> {
         cancel(0)?;
         let header = self.snapshot.state.header.as_ref().unwrap();
-        bound(central, &header.central_name(), header.central_file)?;
+        self.snapshot
+            .authority
+            .binding(central, &header.central_name(), header.central_file)?;
         namespace::validate_single_link(&self.control)?;
         header
             .central_security
@@ -323,9 +323,15 @@ impl Journal {
         self.bindings()?;
         self.reserve_cleanup_tail()?;
         let parent_security = security::owner_group_dacl_digest(&self.parent_dir)?;
-        let observation = Observation::open(&self.central_dir, &self.state, &mut cancel)?;
-        let remaining =
-            Remaining::after_peer_unlink(&self.parent_dir, &self.state, &observation, &mut cancel)?;
+        let observation =
+            Observation::open(&self.authority, &self.central_dir, &self.state, &mut cancel)?;
+        let remaining = Remaining::after_peer_unlink(
+            &self.authority,
+            &self.parent_dir,
+            &self.state,
+            &observation,
+            &mut cancel,
+        )?;
         let progress = self.state.cleanup.as_ref().unwrap();
         let proof = progress.peer_unlink.as_deref().unwrap();
         let after = remaining.observed[proof.index]

@@ -1,0 +1,66 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current/upgrade-enabled/desktop-ready.png",
+    "sha256": "47bd730fbfa149760e2d7d588992f82c23d496588fddba83bf9ae1fee6f5f05d",
+    "bytes": 2523174,
+    "owner_receipt": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/picker-accessibility-current/upgrade-enabled/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-folder-msix-current/runtime23/desktop-ready.png",
+    "sha256": "d4f2ad5d3e4c4bcb4b60ab3ac145076c18aa2059df4746a1f6c5def3c84178c2",
+    "bytes": 2522860,
+    "owner_receipt": ".hermes/evidence/windows-folder-msix-current/runtime23/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-folder-msix-current/runtime23/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-folder-msix-current/runtime23-capture-helper-failure/desktop-ready.png",
+    "sha256": "861eecbf09b616b19b8168a5448208d4339357bdba4676b5b4816882c32362d6",
+    "bytes": 2522659,
+    "owner_receipt": ".hermes/evidence/windows-folder-msix-current/runtime23-capture-helper-failure/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-folder-msix-current/runtime23-capture-helper-failure/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current/windows/native-default/desktop-ready.png",
+    "sha256": "4c8816d84618a6ea2e9ec2780f5612138f57d42e253474b9525dcafadfc81809",
+    "bytes": 2522523,
+    "owner_receipt": ".hermes/evidence/assistive-viewports-current/windows/native-default/OWNER.json",
+    "signal_receipt": ".hermes/evidence/assistive-viewports-current/windows/native-default/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/desktop-ready.png",
+    "sha256": "6e376d758c2438a74559ded21af7ab83f2862752c4de71d02aeb488f319c181f",
+    "bytes": 2522418,
+    "owner_receipt": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/roadmap-audit-current/windows-picker-index-disabled/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/roadmap-audit-current/windows-picker-native-title/desktop-ready.png",
+    "sha256": "b76f8d0570887e5c5f36f0092b5d995b7222b70a0a64b753c1011d2860f7b01d",
+    "bytes": 2522331,
+    "owner_receipt": ".hermes/evidence/roadmap-audit-current/windows-picker-native-title/OWNER.json",
+    "signal_receipt": ".hermes/evidence/roadmap-audit-current/windows-picker-native-title/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/desktop-ready.png",
+    "sha256": "2cfb0983c752bc40da603461920c49c1aaebf47217b80f65710a87eb4f13857a",
+    "bytes": 2515163,
+    "owner_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-assistive-current/native-root-details/desktop-ready.png",
+    "sha256": "154e285af35bae1933d3212088242a1aedc8ec7bbcb900b2514ac6d479effd86",
+    "bytes": 2522336,
+    "owner_receipt": ".hermes/evidence/windows-assistive-current/native-root-details/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-assistive-current/native-root-details/DESKTOP_SIGNAL.json",
+    "reviewed_product_captures_preserved": true
+  }
+]

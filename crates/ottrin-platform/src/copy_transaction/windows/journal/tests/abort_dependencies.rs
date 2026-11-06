@@ -181,7 +181,26 @@ fn windows_native_copy_ended_attempt_still_protects_recorded_created_aliases() {
             |_| Ok(()),
         )
         .unwrap();
-        let receipt = DurableStage::execute_with_receipt(
+        let before = namespace_contents(root.path());
+        let error = DurableStage::execute_with_receipt(
+            &source(&input),
+            &parent,
+            &central,
+            &admission,
+            OsStr::new("replacement"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap_err();
+        assert!(
+            error.to_string().contains("retained Copy transaction"),
+            "{error}"
+        );
+        assert_eq!(namespace_contents(root.path()), before);
+        // Exercise a historical overlapping state without bypassing the shared
+        // executor's live dependency guard. Construct only the owned fixture
+        // through the lower-level journal transitions used by recovery tests.
+        let mut staged = DurableStage::create(
             &source(&input),
             &parent,
             &central,
@@ -191,7 +210,29 @@ fn windows_native_copy_ended_attempt_still_protects_recorded_created_aliases() {
             |_| Ok(()),
         )
         .unwrap();
-        receipt.windows_copy_plan().unwrap().transaction_ids()[0].to_owned()
+        let name = staged.stage.name.clone();
+        let id = staged.journal.header.transaction.clone();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        drop(staged);
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Write,
+        )
+        .unwrap();
+        let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
+        journal.prepare_original(100, |_| Ok(())).unwrap();
+        journal
+            .move_original(None, OriginalMove::Retain, |_| Ok(()))
+            .unwrap();
+        drop(journal);
+        PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+            .unwrap()
+            .apply(|_| Ok(()))
+            .unwrap();
+        id
     };
     let before = namespace_contents(root.path());
     let refusal = RetainedCopyCleanupPlan::observe_at(&fixture.registry, &[id], |_| Ok(()))
@@ -273,6 +314,7 @@ fn windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair
                 .unwrap();
                 let manifest = snapshot.state.cleanup_manifest().unwrap();
                 let dependencies = super::super::cleanup_dependencies::Dependencies::open_selected(
+                    &Authority::Process,
                     &central,
                     &snapshot.state,
                     &manifest,

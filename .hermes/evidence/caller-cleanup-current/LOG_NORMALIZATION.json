@@ -1,0 +1,26 @@
+[
+  {
+    "path": ".hermes/evidence/caller-cleanup-current/batch-a/readiness.log",
+    "before_sha256": "6a738e82cd457c0be0e2815f6439b66cca19da512ab2bb79a2da64d3c883ccec",
+    "after_sha256": "17311864c37e9c15b5b1bc9176ffecccbab57c8e37aa9e53b9052eb7429a7e38",
+    "scope": "CRLF to LF only"
+  },
+  {
+    "path": ".hermes/evidence/caller-cleanup-current/batch-b/readiness.log",
+    "before_sha256": "98e82a7958edc35f0f72720990b28548868a40445a0b35aa401ed015662dbbcc",
+    "after_sha256": "1cbebc1e98512626f5a99ae571b8e8ebe81e272dc67b53e8e1f67419df9a3895",
+    "scope": "CRLF to LF only"
+  },
+  {
+    "path": ".hermes/evidence/caller-cleanup-current/native/readiness.log",
+    "before_sha256": "5dfa00feed1bbb0fa239e356858219bd19cf49114828f1b10e179059effe4921",
+    "after_sha256": "7b2cf9df14309fc331f567d58361d9e7d7c424ab56e284bccde69e6e23ebed10",
+    "scope": "CRLF to LF only"
+  },
+  {
+    "path": ".hermes/evidence/caller-cleanup-current/final-native/readiness.log",
+    "before_sha256": "99738c25f565f1d85ccb0bbe82997e95b7ee4b77ae3a80d632c21588e55bf614",
+    "after_sha256": "6c2d5daba25d4dbbcb1d6b3c03f3204604dcd59a9f8182fb8753bb7efc6f7f92",
+    "scope": "CRLF to LF only"
+  }
+]

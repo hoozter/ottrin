@@ -1,0 +1,407 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.09.rcgu.o",
+    "sha256": "236b08a1482c816cbfe43fb3dee93181f17850c04eb5ac01b462c06ea97591e3",
+    "bytes": 1149594,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.09.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.02.rcgu.o",
+    "sha256": "635530e237c2dc9d2530414c15b41c4da1da0ae86b9bb91c92f9d5cf13974364",
+    "bytes": 1595485,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.02.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.06.rcgu.o",
+    "sha256": "80b830f1791456b600a236b66a1ab4b3c7f6faa04871f6248a021899e12ffe74",
+    "bytes": 1013942,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.06.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.12.rcgu.o",
+    "sha256": "273827c09b9c44303cad15266e17847ae0afcc723dd07a5d293798c9f31e837d",
+    "bytes": 1108626,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.12.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.06.rcgu.o",
+    "sha256": "216be13ca55c9b88f4749314985319d7e75e4f350b23ac92101191e89f69d367",
+    "bytes": 1047321,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.06.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.01.rcgu.o",
+    "sha256": "a8eb3cbb78c33c60e4fc81bcd55a50c679a8729977ecd09568427bd42491656c",
+    "bytes": 2683896,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.01.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.15.rcgu.o",
+    "sha256": "e10832de58805c1a55c6f92a1ffb18efc5b4c27836c23960af7a0d8cca9f87c8",
+    "bytes": 942131,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.15.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.03.rcgu.o",
+    "sha256": "2e1c37d7e8c315b4357875c47890d185d045e9551a521f343681d3b8381cff7c",
+    "bytes": 1083123,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.03.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.00.rcgu.o",
+    "sha256": "0231e575302acf2aab9bcf101af60ab2cd2a7c15ab5033177832678a9cdde7a1",
+    "bytes": 3158153,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.00.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.05.rcgu.o",
+    "sha256": "858164d1ede6f30fbabc9a0f2ac8e13a52a0d6bcbd383850c52faaac4aa53745",
+    "bytes": 1204369,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.05.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.11.rcgu.o",
+    "sha256": "767983dbf11c4619a36efe4080871bf4a222a4e7cbd1355f789f1d41dbde971a",
+    "bytes": 916112,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.11.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.04.rcgu.o",
+    "sha256": "28099a56d46f86b304113dfd154136f7dfff334eaa73fba0d2e87aa8f8f69b28",
+    "bytes": 1239086,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.04.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.01.rcgu.o",
+    "sha256": "d1a89bc8cafa3e82f3161942a81e9bc8b6cb5886d07f3722eebf21cd3ec0aa66",
+    "bytes": 1502981,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.01.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.09.rcgu.o",
+    "sha256": "cfbd55ceb7ada2bdc63b11b6d5b1cc9d12aaf5a3fb121340a2a667298c1eaa66",
+    "bytes": 1168335,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.09.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.14.rcgu.o",
+    "sha256": "5bde0e8ebb8f06894a724eaac5f9b283b29bddfb303c7f4486aa07f530b1c893",
+    "bytes": 1105538,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.14.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.01.rcgu.o",
+    "sha256": "c2c65a8bcf9ef4a7bdb19f7229be8017019692ef14212bbc11d8e2a6c27fd630",
+    "bytes": 1502981,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.01.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.10.rcgu.o",
+    "sha256": "7c5138b7746ba95a120a47e86a7714f068783f66bcf31df73c5cc10d1dca741a",
+    "bytes": 982625,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.10.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.13.rcgu.o",
+    "sha256": "7301bf661f44179e77e40112a1143dbf5ccca62e4f1e0e905db4c20cf452d383",
+    "bytes": 808063,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.13.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.07.rcgu.o",
+    "sha256": "bf94ee414eb8d7389a6e3ad4c902dc7c38c16feee4c0ba1f88803419a73bea6f",
+    "bytes": 1179052,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.07.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.13.rcgu.o",
+    "sha256": "ea1fec43ec638eb2de3f34f7cd3005bab65e19428604ed44c47e1ea36452555a",
+    "bytes": 1020621,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.13.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.15.rcgu.o",
+    "sha256": "e91474173fbf494ef09791e46736fa59f406eb9c19e388d268f77681bb32262f",
+    "bytes": 915169,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.15.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.11.rcgu.o",
+    "sha256": "aefd7060d58eae287611d632aca2d30abc9caff725306d7d055fe243bd38c41a",
+    "bytes": 1393713,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.11.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.08.rcgu.o",
+    "sha256": "7813609d6e64ac5b2bf9bcfecd3903df84a0c812e8a5cc168176f5ee74398b96",
+    "bytes": 1031744,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.08.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.09.rcgu.o",
+    "sha256": "89b706224bf707d5af3566c8990e033fa79f509d4e0ee0c08fc79d04237275c6",
+    "bytes": 974616,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.09.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.10.rcgu.o",
+    "sha256": "8773e4149f77823e166a0710f8129b392e705f1f45065cc6be39d5887176ac64",
+    "bytes": 982526,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.10.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.11.rcgu.o",
+    "sha256": "746b213fd75e85d298cee08bf13c24250d37eec7805f2ffc9031adc4e6e39177",
+    "bytes": 920726,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.11.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.00.rcgu.o",
+    "sha256": "117cc08250609ff6d486adaa84c2cf2da95e863f8f003f7f3a86d669fce7693c",
+    "bytes": 3344597,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.00.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.02.rcgu.o",
+    "sha256": "7434e6ebf7d5c4bacf2a3aa00bb40ee8e297bb0c51916b809fdaa5b77b04a62b",
+    "bytes": 1595495,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.02.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.02.rcgu.o",
+    "sha256": "2d7bab082e8cba12155f4720986bb4f358f55de8b4f0a75a3e59b35f334c221e",
+    "bytes": 1556653,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.02.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.04.rcgu.o",
+    "sha256": "f8923c8afd8bce44939e6d27ae70020d525197f5f76907bb092c33e760a6331c",
+    "bytes": 1245502,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.04.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.03.rcgu.o",
+    "sha256": "5292070256b389dd38ae5534e1a7801348198f387d1684b9a958555782ff8f5f",
+    "bytes": 1267873,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.03.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.00.rcgu.o",
+    "sha256": "cf99925cf13a908df1cf0dbc702d01fd6a715694a502ea905defade6638b2211",
+    "bytes": 3158153,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.00.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.07.rcgu.o",
+    "sha256": "4e93ded779a494e2052eb65de92163244ffa417dfdfe0ec6bd98732c6d7e117d",
+    "bytes": 2147605,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.07.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.04.rcgu.o",
+    "sha256": "2e316080a60ffc6e74a34b91f8caaa82a021a15f5c813406beb9b6828450d7d1",
+    "bytes": 1404932,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.04.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.15.rcgu.o",
+    "sha256": "69ee81c7f2f0e40a0ebc9c1700632af047feaf5d34c97187e3d3cf28939382c9",
+    "bytes": 921830,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.15.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.07.rcgu.o",
+    "sha256": "0557aec03d6e1dee886568022cc3756b0855cafeb85a86f27c7b39868006b9a9",
+    "bytes": 2150666,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.07.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.05.rcgu.o",
+    "sha256": "66cc00b2e1706932b9bf1b8bb99b1932c337f32974bdec9e82c95ea0580b9a24",
+    "bytes": 1436532,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.05.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.14.rcgu.o",
+    "sha256": "e3157e9726ee9e27200117311c073a699892e1013f84c6a9f5e0b9d07ab5186c",
+    "bytes": 1208823,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.14.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.14.rcgu.o",
+    "sha256": "71eab00a26f4406320d84bf0e5767da461724e5cdd39710791c0a1799493e864",
+    "bytes": 1186135,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.14.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.12.rcgu.o",
+    "sha256": "fc6c8b5439ae2bbb20a4ba6da5d49cbb8b781fd267b3cdd18ce4c7f6ad7c44e3",
+    "bytes": 1107345,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.12.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.10.rcgu.o",
+    "sha256": "00c2fa593bd8aaef5c5484ad6e2da9800ebfb7e21d82ca1c7b27960576c99758",
+    "bytes": 1289215,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.10.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.03.rcgu.o",
+    "sha256": "f83cef488dc8d1d8322b1010bd1762ba02580417ceb68921708d2f922089aacd",
+    "bytes": 1277429,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.03.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.08.rcgu.o",
+    "sha256": "4efbb1c627addee30699f1ad49536c9a462ca28033d69d72cb510de74fa13247",
+    "bytes": 1026128,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-515db5ba20d83c03.rlib",
+    "archive_sha256": "098bab0d8d55a0b9d4d477a2819c01534094ac3657012a673d0fbf8c82add329",
+    "member": "rwml-515db5ba20d83c03.rwml.a5ea08af7e7fab8a-cgu.08.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.06.rcgu.o",
+    "sha256": "fcb82cc836342420ffd8c8b28f75be479fe5fcd76ab4881db8817c4e67843ab9",
+    "bytes": 1072676,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.06.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.12.rcgu.o",
+    "sha256": "24f6d703ca97440aa4ed370dc080b49ac863e590353b7abfa9acf2b6334a6840",
+    "bytes": 808120,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.12.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.08.rcgu.o",
+    "sha256": "43ae7db299128d77722338861ce910b709b579b5353e746e09212fb5f9321f72",
+    "bytes": 1139807,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-0d882e4e0227fb46.rlib",
+    "archive_sha256": "e50e25aa06e26076de5a0ca068428988cbaa99124ab8449ba5e4ae1ef3ff1908",
+    "member": "rwml-0d882e4e0227fb46.rwml.eb657d9b1b4fcc6a-cgu.08.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.05.rcgu.o",
+    "sha256": "d9c87181e3722b1cb22dd4dcb153e04cb336f663938ef8dfb77e148b17bf8c01",
+    "bytes": 1437820,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.05.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.13.rcgu.o",
+    "sha256": "15239bc19ed495ce947b128793d66a1d8590a276e53e88077f77036745f1d0af",
+    "bytes": 804515,
+    "archive": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/librwml-bd963fc27e850ead.rlib",
+    "archive_sha256": "f55267af0c15b57a7cf5bf228c7a1f59af18a7d4d8cd044725412acfffb29f44",
+    "member": "rwml-bd963fc27e850ead.rwml.6e15f94cc354ec9e-cgu.13.rcgu.o"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.38wsxpnkou9r6vng8xt4erpm1.04wbs05.rcgu.o",
+    "sha256": "03efb09a51c97d3f268feec7f9e6a6fd1bff6dea8c0ce2adbd6ec72c82efd88d",
+    "bytes": 65118464,
+    "mtime_ns": 1792274815761452160,
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.5l2au8fp1vrdzo67pg2yhxky8.04wbs05.rcgu.o",
+    "sha256": "a0223ecfa216b904451054f3261a8a38e6c0a9fbd2e751ec043461793c0804e5",
+    "bytes": 62857852,
+    "mtime_ns": 1792274826554601547,
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.6iuhjtzoiqpfnhgbay4ennb9v.04wbs05.rcgu.o",
+    "sha256": "9a64d41d0728fa155acdbd49993343c98cf002203e5272cbb057c9fade19ebb8",
+    "bytes": 208701226,
+    "mtime_ns": 1792274796200180838,
+    "links": 1
+  }
+]

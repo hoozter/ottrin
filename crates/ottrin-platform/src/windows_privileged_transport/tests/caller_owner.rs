@@ -844,6 +844,24 @@ fn system_helper() {
         );
     }
     for source in [&source_file, &source_directory] {
+        crate::WindowsCopyRegistry::exercise_caller_cleanup(
+            &context,
+            &parent,
+            source,
+            &preferences,
+            &index,
+            || Arc::new(channel.caller_copy_context().unwrap()),
+            |operation| {
+                context
+                    .with_caller_token(|| {
+                        operation();
+                        Ok(())
+                    })
+                    .unwrap()
+            },
+        );
+    }
+    for source in [&source_file, &source_directory] {
         crate::WindowsCopyRegistry::exercise_caller_journals(
             &context,
             &parent,

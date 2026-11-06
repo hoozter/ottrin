@@ -1,0 +1,62 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cleanup-current/test-build.jsonl",
+      "kind": "test-fixture",
+      "reason": "Consumed final native export/readiness/controller or compiler JSONL",
+      "evidence": "Final three cases, exact source/build/actor bindings, normalized results and archive hash/members verified; aggregate covers 200 passes/123 top-level calls and all 91 cleanup cases. Compiler JSONL hashes rechecked against retained inputs. All owned VM/disks/private profile/processes absent; no current consumers."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cleanup-current/fixed-test-build.jsonl",
+      "kind": "test-fixture",
+      "reason": "Consumed final native export/readiness/controller or compiler JSONL",
+      "evidence": "Final three cases, exact source/build/actor bindings, normalized results and archive hash/members verified; aggregate covers 200 passes/123 top-level calls and all 91 cleanup cases. Compiler JSONL hashes rechecked against retained inputs. All owned VM/disks/private profile/processes absent; no current consumers."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cleanup-current/final-native/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed final native export/readiness/controller or compiler JSONL",
+      "evidence": "Final three cases, exact source/build/actor bindings, normalized results and archive hash/members verified; aggregate covers 200 passes/123 top-level calls and all 91 cleanup cases. Compiler JSONL hashes rechecked against retained inputs. All owned VM/disks/private profile/processes absent; no current consumers."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cleanup-current/final-native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed final native export/readiness/controller or compiler JSONL",
+      "evidence": "Final three cases, exact source/build/actor bindings, normalized results and archive hash/members verified; aggregate covers 200 passes/123 top-level calls and all 91 cleanup cases. Compiler JSONL hashes rechecked against retained inputs. All owned VM/disks/private profile/processes absent; no current consumers."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cleanup-current/final-native/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed final native export/readiness/controller or compiler JSONL",
+      "evidence": "Final three cases, exact source/build/actor bindings, normalized results and archive hash/members verified; aggregate covers 200 passes/123 top-level calls and all 91 cleanup cases. Compiler JSONL hashes rechecked against retained inputs. All owned VM/disks/private profile/processes absent; no current consumers."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cleanup-current/final-native/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed final native export/readiness/controller or compiler JSONL",
+      "evidence": "Final three cases, exact source/build/actor bindings, normalized results and archive hash/members verified; aggregate covers 200 passes/123 top-level calls and all 91 cleanup cases. Compiler JSONL hashes rechecked against retained inputs. All owned VM/disks/private profile/processes absent; no current consumers."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-cleanup-current/final-native/controller.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed final native export/readiness/controller or compiler JSONL",
+      "evidence": "Final three cases, exact source/build/actor bindings, normalized results and archive hash/members verified; aggregate covers 200 passes/123 top-level calls and all 91 cleanup cases. Compiler JSONL hashes rechecked against retained inputs. All owned VM/disks/private profile/processes absent; no current consumers."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    }
+  ]
+}

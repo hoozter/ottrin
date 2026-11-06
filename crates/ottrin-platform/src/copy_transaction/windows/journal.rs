@@ -26,7 +26,8 @@ mod caller;
 mod claims;
 #[cfg(test)]
 pub(super) use caller::{
-    exercise_caller_journals, exercise_caller_overwrite, exercise_caller_recovery,
+    exercise_caller_cleanup, exercise_caller_journals, exercise_caller_overwrite,
+    exercise_caller_recovery,
 };
 #[cfg(test)]
 pub(super) use claims::exercise_caller_claims;

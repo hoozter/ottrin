@@ -1,0 +1,18 @@
+{
+  "tests": [
+    {
+      "case": "corrected guarded overlap recovery fixture",
+      "qualified_test": "copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases"
+    },
+    {
+      "case": "corrected native ACL drift fixture",
+      "qualified_test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl"
+    },
+    {
+      "case": "remaining later pending cohort member",
+      "qualified_test": "copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_replays_later_pending_member"
+    }
+  ],
+  "scope": "Exact post-fixture-correction build: CI regression, actual parent ACL mutation under SYSTEM and final unexecuted cohort case; no production cleanup changes relative to prior native passes",
+  "prior_scope": "108 focused passes + 46 batch-a + 43 batch-b; failed precondition is not counted as a pass"
+}

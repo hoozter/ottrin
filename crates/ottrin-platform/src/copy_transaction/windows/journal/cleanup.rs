@@ -19,6 +19,7 @@ pub(super) enum Payload {
 /// later writer handoff without retaining raw journals or decoded peer graphs.
 #[derive(Clone, Debug, PartialEq)]
 pub(super) struct Admission {
+    authority: Authority,
     header: Header,
     journal: [u8; 32],
     metadata: [u8; 32],
@@ -80,7 +81,17 @@ impl Admission {
         name: &OsStr,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        Self::observe_selected(parent, central, name, None, &mut cancel)
+        Self::observe_with(&Authority::Process, parent, central, name, &mut cancel)
+    }
+
+    pub(super) fn observe_with(
+        authority: &Authority,
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::observe_selected(authority, parent, central, name, None, cancel)
     }
 
     pub(super) fn observe_in_group(
@@ -90,10 +101,18 @@ impl Admission {
         selection: &super::cleanup_group::Selection,
         cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        Self::observe_selected(parent, central, name, Some(selection), cancel)
+        Self::observe_selected(
+            &Authority::Process,
+            parent,
+            central,
+            name,
+            Some(selection),
+            cancel,
+        )
     }
 
     fn observe_selected(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
@@ -106,62 +125,64 @@ impl Admission {
         let result = (|| {
             cancel(0)?;
             let parent_security = security::owner_group_dacl_digest(parent)?;
-            let snapshot = Snapshot::load(
-                &Authority::Process,
-                parent,
-                central,
-                name,
-                SnapshotAccess::Read,
-            )?;
+            let snapshot = Snapshot::load(authority, parent, central, name, SnapshotAccess::Read)?;
             started = snapshot.state.cleanup.is_some();
-            let (snapshot, observed, pending_absent, catalog, peer_absent) = if let Some(progress) =
-                &snapshot.state.cleanup
-            {
-                let remaining =
-                    Self::read_remaining(parent, central, &snapshot.state, progress, &mut cancel)?;
-                let dependencies = Dependencies::open_selected(
-                    central,
-                    &snapshot.state,
-                    &progress.manifest,
-                    selection,
-                    &mut cancel,
-                )?;
-                let observed = super::super::evidence_digest(&remaining.observed)?;
-                let absent = remaining.pending_absent;
-                let peer_absent = remaining.observes_peer_unlink();
-                let catalog = dependencies.fingerprint()?;
-                remaining.revalidate(parent, &snapshot.state, progress, &mut cancel)?;
-                drop((remaining, dependencies));
-                (snapshot, observed, absent, catalog, peer_absent)
-            } else {
-                drop(snapshot);
-                let held = HeldCleanup::open(parent, central, name, &mut cancel)?;
-                let manifest = held.snapshot.state.cleanup_manifest()?;
-                let dependencies = Dependencies::open_selected(
-                    central,
-                    &held.snapshot.state,
-                    &manifest,
-                    selection,
-                    &mut cancel,
-                )?;
-                held.revalidate(&mut cancel)?;
-                let observed = manifest
-                    .entries
-                    .iter()
-                    .map(|entry| Some(&entry.version))
-                    .collect::<Vec<_>>();
-                let observed = super::super::evidence_digest(&observed)?;
-                let catalog = dependencies.fingerprint()?;
-                drop(dependencies);
-                let HeldCleanup {
-                    snapshot, payload, ..
-                } = held;
-                drop(payload);
-                (snapshot, observed, false, catalog, false)
-            };
+            let (snapshot, observed, pending_absent, catalog, peer_absent) =
+                if let Some(progress) = &snapshot.state.cleanup {
+                    let remaining = Self::read_remaining(
+                        authority,
+                        parent,
+                        central,
+                        &snapshot.state,
+                        progress,
+                        &mut cancel,
+                    )?;
+                    let dependencies = Dependencies::open_selected(
+                        authority,
+                        central,
+                        &snapshot.state,
+                        &progress.manifest,
+                        selection,
+                        &mut cancel,
+                    )?;
+                    let observed = super::super::evidence_digest(&remaining.observed)?;
+                    let absent = remaining.pending_absent;
+                    let peer_absent = remaining.observes_peer_unlink();
+                    let catalog = dependencies.fingerprint()?;
+                    remaining.revalidate(parent, &snapshot.state, progress, &mut cancel)?;
+                    drop((remaining, dependencies));
+                    (snapshot, observed, absent, catalog, peer_absent)
+                } else {
+                    drop(snapshot);
+                    let held = HeldCleanup::open(authority, parent, central, name, &mut cancel)?;
+                    let manifest = held.snapshot.state.cleanup_manifest()?;
+                    let dependencies = Dependencies::open_selected(
+                        authority,
+                        central,
+                        &held.snapshot.state,
+                        &manifest,
+                        selection,
+                        &mut cancel,
+                    )?;
+                    held.revalidate(&mut cancel)?;
+                    let observed = manifest
+                        .entries
+                        .iter()
+                        .map(|entry| Some(&entry.version))
+                        .collect::<Vec<_>>();
+                    let observed = super::super::evidence_digest(&observed)?;
+                    let catalog = dependencies.fingerprint()?;
+                    drop(dependencies);
+                    let HeldCleanup {
+                        snapshot, payload, ..
+                    } = held;
+                    drop(payload);
+                    (snapshot, observed, false, catalog, false)
+                };
             let metadata = super::cleanup_finalize::snapshot_metadata(&snapshot, &mut cancel)?;
             snapshot.revalidate(parent, central)?;
             Ok(Self {
+                authority: authority.clone(),
                 header: snapshot.state.header.as_ref().unwrap().clone(),
                 journal: Sha256::digest(&snapshot.bytes).into(),
                 metadata: super::super::evidence_digest(&metadata)?,
@@ -185,7 +206,7 @@ impl Admission {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            &self.authority,
             parent,
             central,
             &self.header.stage_name(),
@@ -212,11 +233,12 @@ impl Admission {
         selection: &super::cleanup_group::Selection,
         cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        let current = Self::observe_in_group(
+        let current = Self::observe_selected(
+            &self.authority,
             parent,
             central,
             &self.header.stage_name(),
-            selection,
+            Some(selection),
             cancel,
         )?;
         if current != *self {
@@ -378,6 +400,7 @@ impl Admission {
     }
 
     fn read_remaining(
+        authority: &Authority,
         parent: &File,
         central: &File,
         state: &State,
@@ -385,12 +408,13 @@ impl Admission {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Remaining, PlatformError> {
         if progress.peer_unlink.is_some() {
-            let peer = super::cleanup_peer::Observation::open(central, state, &mut cancel)?;
+            let peer =
+                super::cleanup_peer::Observation::open(authority, central, state, &mut cancel)?;
             if peer.removed() {
-                return Remaining::after_peer_unlink(parent, state, &peer, cancel);
+                return Remaining::after_peer_unlink(authority, parent, state, &peer, cancel);
             }
         }
-        Remaining::open(parent, state, progress, cancel)
+        Remaining::open(authority, parent, state, progress, cancel)
     }
 
     pub(super) fn pending_entry_absent(&self) -> bool {
@@ -427,6 +451,7 @@ impl Admission {
             &mut *cancel,
         )?;
         let admission = Self {
+            authority: self.authority.clone(),
             header: journal.header.clone(),
             journal: Sha256::digest(&bytes).into(),
             metadata: super::super::evidence_digest(&metadata)?,
@@ -457,7 +482,7 @@ impl Admission {
         cancel(0)?;
         cleanup_handoff(self.sequence)?;
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            &self.authority,
             parent,
             central,
             &name,
@@ -499,9 +524,16 @@ impl Admission {
             .as_ref()
             .or(initial.as_ref())
             .unwrap();
-        let remaining =
-            Self::read_remaining(parent, central, &snapshot.state, progress, &mut *cancel)?;
+        let remaining = Self::read_remaining(
+            &self.authority,
+            parent,
+            central,
+            &snapshot.state,
+            progress,
+            &mut *cancel,
+        )?;
         let dependencies = Dependencies::open_selected(
+            &self.authority,
             central,
             &snapshot.state,
             &progress.manifest,
@@ -564,7 +596,13 @@ impl Admission {
                 return Err(io("Shared unlink catalog changed"));
             }
             let progress = journal.state.cleanup.as_ref().unwrap();
-            let mut remaining = Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+            let mut remaining = Remaining::open(
+                &self.authority,
+                parent,
+                &journal.state,
+                progress,
+                &mut cancel,
+            )?;
             if remaining.pending_absent
                 || self.pending_absent
                 || self.peer_absent
@@ -647,6 +685,7 @@ impl Admission {
                 return Err(io("Peer has no matching pending shared unlink"));
             }
             let dependencies = Dependencies::open_selected(
+                &self.authority,
                 central,
                 &snapshot.state,
                 &progress.manifest,
@@ -665,8 +704,15 @@ impl Admission {
                 journal.acknowledge_peer_unlink(&mut cancel)?;
             }
             let progress = journal.state.cleanup.as_ref().unwrap();
-            let remaining = Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+            let remaining = Remaining::open(
+                &self.authority,
+                parent,
+                &journal.state,
+                progress,
+                &mut cancel,
+            )?;
             let dependencies = Dependencies::open_selected(
+                &self.authority,
                 central,
                 &journal.state,
                 &progress.manifest,
@@ -710,7 +756,13 @@ impl Admission {
                 return Err(io("Shared owner completion catalog changed"));
             }
             let progress = journal.state.cleanup.as_ref().unwrap();
-            let mut remaining = Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+            let mut remaining = Remaining::open(
+                &self.authority,
+                parent,
+                &journal.state,
+                progress,
+                &mut cancel,
+            )?;
             if !remaining.pending_absent
                 || !self.pending_absent
                 || self.peer_absent
@@ -808,7 +860,7 @@ impl Admission {
     ) -> Result<Next, PlatformError> {
         self.validate_metadata(parent, central, &mut *cancel)?;
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            &self.authority,
             parent,
             central,
             &self.header.stage_name(),
@@ -848,8 +900,14 @@ impl Admission {
                 .cleanup
                 .as_ref()
                 .ok_or_else(|| io("Group cleanup has not started"))?;
-            let mut remaining =
-                Self::read_remaining(parent, central, &journal.state, progress, &mut cancel)?;
+            let mut remaining = Self::read_remaining(
+                &self.authority,
+                parent,
+                central,
+                &journal.state,
+                progress,
+                &mut cancel,
+            )?;
             if super::super::evidence_digest(&remaining.observed)? != self.observed
                 || remaining.pending_absent != self.pending_absent
                 || remaining.observes_peer_unlink() != self.peer_absent
@@ -860,6 +918,7 @@ impl Admission {
                 Dependencies::current_entry(central, &journal, &mut cancel)?
             } else {
                 Dependencies::open_selected(
+                    &self.authority,
                     central,
                     &journal.state,
                     &progress.manifest,
@@ -963,7 +1022,13 @@ impl Admission {
                 dependencies.validate(central)?;
                 journal.reserve_cleanup_tail()?;
                 if progress.completed == progress.manifest.entries.len() {
-                    Remaining::open(parent, &journal.state, progress, &mut cancel)?;
+                    Remaining::open(
+                        &self.authority,
+                        parent,
+                        &journal.state,
+                        progress,
+                        &mut cancel,
+                    )?;
                     journal.persist(Record::Cleanup {
                         entry: CleanupRecord::PayloadRemoved,
                     })?;
@@ -1015,19 +1080,14 @@ pub(super) struct HeldCleanup<'a> {
 
 impl<'a> HeldCleanup<'a> {
     pub(super) fn open(
+        authority: &Authority,
         parent: &'a File,
         central: &'a File,
         name: &OsStr,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         progress(0)?;
-        let snapshot = Snapshot::load(
-            &Authority::Process,
-            parent,
-            central,
-            name,
-            SnapshotAccess::Read,
-        )?;
+        let snapshot = Snapshot::load(authority, parent, central, name, SnapshotAccess::Read)?;
         validate_stage_entries(&snapshot.stage)?;
         let state = &snapshot.state;
         if !state.completion_verified

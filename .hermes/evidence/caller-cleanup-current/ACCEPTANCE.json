@@ -1,0 +1,34 @@
+{
+  "status": "pass caller retained payload cleanup and complete ordinary cleanup regression coverage with corrected fixtures",
+  "test_passes": 200,
+  "native_invocations": 123,
+  "cleanup_nonworker_tests": 91,
+  "sources": {
+    "initial": "SOURCE_INPUT.json",
+    "final": "FIXED_SOURCE_INPUT.json",
+    "only_post_bulk_changes": [
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort_dependencies.rs",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs"
+    ],
+    "corrections": "FIXTURE_CORRECTIONS.patch",
+    "production_files_unchanged": true
+  },
+  "receipts": {
+    "focused": "FOCUSED_VERIFICATION.json",
+    "bulk_a": "batch-a/VERIFICATION.json",
+    "bulk_b": "batch-b/VERIFICATION.json",
+    "final": "final-native/VERIFICATION.json"
+  },
+  "scope": "108 focused passes plus 89 ordinary cleanup cases on initial build; two fixture-only corrections and final three exact native cases on rebuilt source. Covers all 91 non-worker cleanup tests; four worker entry points intentionally excluded from parent invocation. This is component evidence, not complete caller cleanup or whole-roadmap acceptance.",
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "5d412f1bd4485790d9523600a19dbd27add3e1b70ab1951f79140b606f94c6b4"
+  },
+  "limits": [
+    "Caller retained-payload cleanup component only; caller cohort/metadata retirement and public cleanup entry points remain unconverted; Administrator Copy stays disabled",
+    "Same authenticated live-client context recaptures do not prove real app/helper restart, newly authenticated connections or alternate-administrator UAC",
+    "Full dispatcher, complete caller failure/readonly/link/alias matrices, TokenOwner mutation and packaged profile contexts remain required",
+    "Stable application packages unchanged; hosted acceptance of the new checkpoint remains separate"
+  ]
+}

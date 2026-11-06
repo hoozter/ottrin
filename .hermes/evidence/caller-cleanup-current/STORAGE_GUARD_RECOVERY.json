@@ -1,0 +1,15 @@
+{
+  "status": "guard preserved; verified disposable cleanup restored headroom before successful fixture allocation",
+  "minimum_available": 25769803776,
+  "refused_available": 25426333696,
+  "incremental_candidates_removed": 18,
+  "interrupted_cleanup": {
+    "unreadable_pid": 3786731,
+    "independently_absent_on_retry": true,
+    "remaining_sessions": 1,
+    "no_exception_added": true
+  },
+  "loose_objects_removed": 51,
+  "loose_measured_free_delta": 401973248,
+  "remaining_task_storage": "Current platform/UI test executables and newest exact-configuration compiler caches; compact evidence and live owned native fixture until registered producer teardown"
+}

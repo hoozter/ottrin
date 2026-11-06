@@ -1190,6 +1190,25 @@ impl AnchoredRoot {
 
 #[cfg(test)]
 impl AnchoredRoot {
+    pub(crate) fn exercise_caller_cleanup(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &File,
+        preferences: &File,
+        index: &File,
+        recapture: impl FnMut() -> Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_cleanup(
+            caller,
+            parent,
+            source,
+            preferences,
+            index,
+            recapture,
+            as_caller,
+        );
+    }
     pub(crate) fn exercise_caller_recovery(
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         parent: &File,

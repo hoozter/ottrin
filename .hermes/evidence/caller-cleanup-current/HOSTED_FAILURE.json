@@ -1,0 +1,12 @@
+{
+  "run": 42190338862,
+  "url": "https://github.com/hoozter/ottrin/actions/runs/42190338862",
+  "source": "0128f51b8b7f6f19e4480f0a45e5acb7b0050554",
+  "failed_test": "copy_transaction::windows::journal::tests::abort_dependencies::windows_native_copy_ended_attempt_still_protects_recorded_created_aliases",
+  "result": "493 passed, 1 failed, 85 ignored; other three hosted jobs passed",
+  "failure": "Old fixture calls shared guarded execute_with_receipt to manufacture a historical overlap; new executor guard correctly refuses before writes",
+  "fix": "Guard refusal and namespace preservation are asserted; historical overlap is constructed only through existing lower-level journal transitions. No production guard or cleanup assertion weakened.",
+  "status": "corrected and verified on exact final native build; next hosted checkpoint pending",
+  "fix_receipt": "final-native/VERIFICATION.json",
+  "corrections": "FIXTURE_CORRECTIONS.patch"
+}

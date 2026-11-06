@@ -17,6 +17,7 @@ struct Peer {
 }
 
 pub(super) struct Dependencies {
+    authority: Authority,
     central: WindowsStableIdentity,
     stamp: EntryVersion,
     security: security::PrivateSecurity,
@@ -40,6 +41,7 @@ enum Scope<'a> {
 
 impl Dependencies {
     pub(super) fn open_selected(
+        authority: &Authority,
         central: &File,
         state: &State,
         manifest: &Manifest,
@@ -47,6 +49,7 @@ impl Dependencies {
         cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         Self::open_scope(
+            authority,
             central,
             state,
             manifest,
@@ -77,6 +80,7 @@ impl Dependencies {
             .get(progress.completed)
             .ok_or_else(|| io("No current cleanup entry"))?;
         Self::open_scope(
+            &journal.authority,
             central,
             &journal.state,
             &progress.manifest,
@@ -118,6 +122,7 @@ impl Dependencies {
             return Err(io("Shared entry does not match held owner intent"));
         }
         Self::open_scope(
+            &journal.authority,
             central,
             &journal.state,
             &journal.state.cleanup.as_ref().unwrap().manifest,
@@ -127,6 +132,7 @@ impl Dependencies {
     }
 
     fn open_scope(
+        authority: &Authority,
         central: &File,
         state: &State,
         manifest: &Manifest,
@@ -134,8 +140,17 @@ impl Dependencies {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let header = state.header.as_ref().unwrap();
-        let creator = windows_fs::current_owner()?;
-        let security = security::PrivateSecurity::capture(central, &creator)?;
+        authority.validate()?;
+        let creator = authority.owner()?;
+        let security = match authority {
+            Authority::Process => security::PrivateSecurity::capture(central, &creator)?,
+            Authority::Caller(caller) => security::PrivateSecurity::capture_for_caller(
+                central,
+                &creator,
+                caller.default_file_group_sid().map_err(io)?,
+            )
+            .map_err(io)?,
+        };
         let stamp = super::super::version(central)?;
         let mut protected: BTreeSet<_> = match &scope {
             Scope::Entry(_, intent, _) => BTreeSet::from([intent.expected.identity.object_key()]),
@@ -182,8 +197,7 @@ impl Dependencies {
                 }
                 continue;
             }
-            let peer =
-                discovery::RegisteredJournal::dependency(&Authority::Process, central, name)?;
+            let peer = discovery::RegisteredJournal::dependency(authority, central, name)?;
             let other = peer.state.header.as_ref().unwrap();
             // Active incomplete manifests can still add creation claims. An
             // ended peer is frozen, but only a matching, leased pair can certify
@@ -198,11 +212,12 @@ impl Dependencies {
                 if volumes.is_none() {
                     volumes = Some(windows_fs::Volumes::new(central)?);
                 }
-                let parent = volumes.as_mut().unwrap().resolve(
-                    other.parent,
-                    FILE_GENERIC_READ,
-                    &mut cancel,
-                )?;
+                let parent = authority.file_operation(|| {
+                    volumes
+                        .as_mut()
+                        .unwrap()
+                        .resolve(other.parent, FILE_GENERIC_READ, &mut cancel)
+                })?;
                 peer.paired_leases(parent, central)?
             } else {
                 Vec::new()
@@ -269,6 +284,7 @@ impl Dependencies {
             ));
         }
         let result = Self {
+            authority: authority.clone(),
             central: header.central,
             stamp,
             security,
@@ -285,6 +301,7 @@ impl Dependencies {
     }
 
     pub(super) fn validate(&self, central: &File) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         if stable_identity_from_handle(central).map_err(io)? != self.central
             || super::super::version(central)? != self.stamp
         {
@@ -315,7 +332,8 @@ impl Dependencies {
 
     fn peer_bindings(&self, central: &File) -> Result<(), PlatformError> {
         for (name, peer) in &self.peers {
-            bound(central, name, peer.version.identity)?;
+            self.authority
+                .binding(central, name, peer.version.identity)?;
             namespace::validate_single_link(&peer.file)?;
             if super::super::version(&peer.file)? != peer.version
                 || <[u8; 32]>::from(Sha256::digest(read(&peer.file)?)) != peer.digest

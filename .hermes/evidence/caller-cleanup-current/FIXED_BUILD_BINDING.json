@@ -1,0 +1,12 @@
+{
+  "status": "pass final source/build/staged executable/native result binding",
+  "source": "FIXED_SOURCE_INPUT.json",
+  "build": "FIXED_NATIVE_TEST_INPUT.json",
+  "native": "final-native/APPLICATION_INPUT.json",
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 448653824,
+    "sha256": "58ce2dcb0c067bb299791900caacf416ace380780180e1184ef8232c19fe19f6"
+  },
+  "result": "final-native/VERIFICATION.json"
+}

@@ -1,0 +1,373 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-native-control-current/desktop-ready.png",
+    "bytes": 137835,
+    "sha256": "e916aea4524137ab6976a88241f1ac3124dbb56589749d5d7b20051fdce67740",
+    "owner_receipt": ".hermes/evidence/windows-msi-native-control-current/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-msi-native-control-current/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-registry-current/desktop-ready.png",
+    "bytes": 119338,
+    "sha256": "2e23ab6dc972bcb6995a883d9660a792e43246792b9365f464b90ec2eb4718d2",
+    "owner_receipt": ".hermes/evidence/windows-msi-registry-current/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-msi-registry-current/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-package-control-current/updated-runtime/desktop-ready.png",
+    "bytes": 2513360,
+    "sha256": "0b80029b8766ddbec6fa2fbe87a3e9f05ac22c64842d1be1cbf334d8ad728153",
+    "owner_receipt": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-msi-package-control-current/updated-runtime/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-safety-current/stock-corrected/desktop-ready.png",
+    "bytes": 1692403,
+    "sha256": "a69833f9a3272ac2214fd8d077148e3023becd8f91d36769faa4d96175042ed8",
+    "owner_receipt": ".hermes/evidence/windows-preview-safety-current/stock-corrected/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-preview-safety-current/stock-corrected/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-safety-current/stock-native/desktop-ready.png",
+    "bytes": 1694543,
+    "sha256": "02a1e71cfaa039dcf4de3050496f9dd5667f5db6b957d133d1679ce34d9e70ce",
+    "owner_receipt": ".hermes/evidence/windows-preview-safety-current/stock-native/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-preview-safety-current/stock-native/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-boundary-race-current/companion/desktop-ready.png",
+    "bytes": 2142571,
+    "sha256": "722a4d30ff6d66d288e3cc7d48423e15bf8fb0e08eeb473a179888f170c19379",
+    "owner_receipt": ".hermes/evidence/windows-preview-boundary-race-current/companion/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-preview-boundary-race-current/companion/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-boundary-race-current/native/desktop-ready.png",
+    "bytes": 964638,
+    "sha256": "a34e61bf9e77c2c682c2f54f0b81f1dcdf898559f548ccf00e386faf35428c2f",
+    "owner_receipt": ".hermes/evidence/windows-preview-boundary-race-current/native/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-preview-boundary-race-current/native/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-preview-boundary-race-current/stripped-parallel/desktop-ready.png",
+    "bytes": 1695472,
+    "sha256": "71024fcaa21ce3c3bf868931ab3e0b07c73cc191125da6de37be67d388b72c74",
+    "owner_receipt": ".hermes/evidence/windows-preview-boundary-race-current/stripped-parallel/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-preview-boundary-race-current/stripped-parallel/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/menus25-background-invocation-failure/desktop-ready.png",
+    "bytes": 963956,
+    "sha256": "666b271ac2a02ce13a64a1cb43cc3e1f2492473e9d183174312c0cf7d48eb542",
+    "owner_receipt": ".hermes/evidence/packaged-shell-current/menus25-background-invocation-failure/OWNER.json",
+    "signal_receipt": ".hermes/evidence/packaged-shell-current/menus25-background-invocation-failure/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/packaged-shell-current/update23to24/desktop-ready.png",
+    "bytes": 962797,
+    "sha256": "a3cddd14d6f1a874354240b6121bae55ebbd264a1900b52d416731d6ebf2e134",
+    "owner_receipt": ".hermes/evidence/packaged-shell-current/update23to24/OWNER.json",
+    "signal_receipt": ".hermes/evidence/packaged-shell-current/update23to24/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/office-installed-current/windows-observed/desktop-ready.png",
+    "bytes": 2134396,
+    "sha256": "ffd1cdb1a5a0d1b8b7b0c5b565aa75af4505fc4253ea421e7585b35c5c1eba2b",
+    "owner_receipt": ".hermes/evidence/office-installed-current/windows-observed/OWNER.json",
+    "signal_receipt": ".hermes/evidence/office-installed-current/windows-observed/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/native-windows-failed-invoke/desktop-ready.png",
+    "bytes": 963847,
+    "sha256": "5b2ade1142debfff56f0e023d37b09c71249f3a9817a7036ca58203c6c1ee9b1",
+    "owner_receipt": ".hermes/evidence/index-status-final-delivery-current/native-windows-failed-invoke/OWNER.json",
+    "signal_receipt": ".hermes/evidence/index-status-final-delivery-current/native-windows-failed-invoke/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/native-windows/desktop-ready.png",
+    "bytes": 2484368,
+    "sha256": "7507241c739b34be21fc850276e3e6fd702af3f03fc0ac88b1dfdb8c021ed059",
+    "owner_receipt": ".hermes/evidence/index-status-final-delivery-current/native-windows/OWNER.json",
+    "signal_receipt": ".hermes/evidence/index-status-final-delivery-current/native-windows/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/runtime21-focus-failure/desktop-ready.png",
+    "bytes": 2514908,
+    "sha256": "77a0ef4b671d8e4c52ad7f8de1f141545b5adf337a120e68f290500f50d461cc",
+    "owner_receipt": ".hermes/evidence/index-status-final-delivery-current/runtime21-focus-failure/OWNER.json",
+    "signal_receipt": ".hermes/evidence/index-status-final-delivery-current/runtime21-focus-failure/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-status-final-delivery-current/runtime21/desktop-ready.png",
+    "bytes": 961771,
+    "sha256": "142e70bf9ba1b525f68f6c156aefb086ee2c67d5d2ceb5a2f2231e3d912d5676",
+    "owner_receipt": ".hermes/evidence/index-status-final-delivery-current/runtime21/OWNER.json",
+    "signal_receipt": ".hermes/evidence/index-status-final-delivery-current/runtime21/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current/windows-picker/desktop-ready.png",
+    "bytes": 963529,
+    "sha256": "a390e3b6d92713bb09e67267b76fa35a7fbb6064440e82a029c2923dc87bcff8",
+    "owner_receipt": ".hermes/evidence/picker-accessibility-current/windows-picker/OWNER.json",
+    "signal_receipt": ".hermes/evidence/picker-accessibility-current/windows-picker/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/desktop-ready.png",
+    "bytes": 1692208,
+    "sha256": "29004ab3cab3b7fd08a331d55be3c2ba64c01298b328dc2da524f9a6b8d49b3b",
+    "owner_receipt": ".hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/OWNER.json",
+    "signal_receipt": ".hermes/evidence/picker-accessibility-current/windows-picker-install-deadline/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled/desktop-ready.png",
+    "bytes": 2513222,
+    "sha256": "50745a2f9e9524764ab73b7b01d7305173918e14c641bdc43dfa3fbde91b6da7",
+    "owner_receipt": ".hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled-rejected-positive-control/desktop-ready.png",
+    "bytes": 2513274,
+    "sha256": "c2e13b0badc5fe89c468894173031fbeaf55323682fd05ae8fe61fdf3ee9ad3d",
+    "owner_receipt": ".hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled-rejected-positive-control/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-menu-space-delivery-current/upgrade-enabled-rejected-positive-control/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-menu-space-delivery-current/upgrade-disabled/desktop-ready.png",
+    "bytes": 2512923,
+    "sha256": "d0cb8debe1c907cf5a1e0ff4dd14097eb97d4212229bc02f7de8bbdaf7ca270c",
+    "owner_receipt": ".hermes/evidence/windows-menu-space-delivery-current/upgrade-disabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-menu-space-delivery-current/upgrade-disabled/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/windows-native/desktop-ready.png",
+    "bytes": 2512966,
+    "sha256": "c79f0fa4e1ab4473060db641bfafb60a30288da9a73fdb6101775ea273c2de58",
+    "owner_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/windows-native/OWNER.json",
+    "signal_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/windows-native/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/desktop-ready.png",
+    "bytes": 1686146,
+    "sha256": "52ed35c449702f12533b95507a5d58fd14415144f18395e1a683b736eda80d59",
+    "owner_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/OWNER.json",
+    "signal_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-console/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/desktop-ready.png",
+    "bytes": 1689174,
+    "sha256": "b2645a00f2fd3d5d690eaf50b6efc7e7d2a01025e5ccbe01361fe47d8135cf21",
+    "owner_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/OWNER.json",
+    "signal_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-disabled-native-focus/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/desktop-ready.png",
+    "bytes": 1688924,
+    "sha256": "7c9ba1683ecf7358332211401d474e8185d472fcf42b1e4eff1de1e60f7c7cd4",
+    "owner_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/OWNER.json",
+    "signal_receipt": ".hermes/evidence/worksheet-alignment-current/corrected/upgrade-enabled-native-focus/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-dialog-focus-current/windows-native-ui/desktop-ready.png",
+    "bytes": 1694478,
+    "sha256": "9de60bd911ac77962a0528c32d816d987dd39e009b1842cd240e860d003376cd",
+    "owner_receipt": ".hermes/evidence/file-dialog-focus-current/windows-native-ui/OWNER.json",
+    "signal_receipt": ".hermes/evidence/file-dialog-focus-current/windows-native-ui/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/roadmap-audit-current/windows-picker/desktop-ready.png",
+    "bytes": 962410,
+    "sha256": "4a1c92822ee15af01d258560da3156b784e149d64c4e49fa41c2f127b7109bda",
+    "owner_receipt": ".hermes/evidence/roadmap-audit-current/windows-picker/OWNER.json",
+    "signal_receipt": ".hermes/evidence/roadmap-audit-current/windows-picker/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/login-verified-state/desktop-ready.png",
+    "bytes": 2513176,
+    "sha256": "fc86cbb1316b6cfa05c2f9392f3d988ab73ad3badb69fa2f58135377cd167214",
+    "owner_receipt": ".hermes/evidence/windows-startup-lifetime-current/login-verified-state/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-startup-lifetime-current/login-verified-state/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/msi-desktop-ready/desktop-ready.png",
+    "bytes": 131405,
+    "sha256": "a525fdac6bb3e8c39316200023d0e26ae71d1e8a162a30feb420f12fcfd5698b",
+    "owner_receipt": ".hermes/evidence/windows-startup-lifetime-current/msi-desktop-ready/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-startup-lifetime-current/msi-desktop-ready/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-startup-lifetime-current/runtime-ready/desktop-ready.png",
+    "bytes": 1688836,
+    "sha256": "f3c3c82668db68d03c745e62a28e17ba860fb4d603c1e7dc898dc4265f82dd98",
+    "owner_receipt": ".hermes/evidence/windows-startup-lifetime-current/runtime-ready/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-startup-lifetime-current/runtime-ready/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/windows-software/desktop-ready.png",
+    "bytes": 1724592,
+    "sha256": "ba9beaaff07f4f5b459f267167183398971421aae74ae8ee5c73f9e21aee1fee",
+    "owner_receipt": ".hermes/evidence/release-audit-current/windows-software/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/windows-software/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/windows-unattended/desktop-ready.png",
+    "bytes": 1700667,
+    "sha256": "dc205cbcd10f1cc61f804a7c64b84664d0702fd2eb9eb6f439af5c1144575cb1",
+    "owner_receipt": ".hermes/evidence/release-audit-current/windows-unattended/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/windows-unattended/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/desktop-ready.png",
+    "bytes": 2513610,
+    "sha256": "cfb3f15a3b52afce9723856667346c7b49f6aeeb512e45dc0795fc44c8a1905f",
+    "owner_receipt": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-input/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/desktop-ready.png",
+    "bytes": 2135028,
+    "sha256": "6a81b97f2bb7047054da2066466f35fcaf689e6239afb8ae45c57c6829778097",
+    "owner_receipt": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup-viewport/desktop-ready.png",
+    "bytes": 2135793,
+    "sha256": "4e1abe66f0a383457a44c1d09469f61c7d677b925ad0ce0f87496b65fc1a2908",
+    "owner_receipt": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/cohort/windows-startup-viewport/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/upgrade-disabled/desktop-ready.png",
+    "bytes": 2135020,
+    "sha256": "f50cc8fa73667cafebbc41d4a6a446292b9a90dcd718754de10d1bfd9c031c47",
+    "owner_receipt": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/cohort/upgrade-disabled/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup/desktop-ready.png",
+    "bytes": 2135692,
+    "sha256": "ad42741981c3ca655a77725be9f8d861c4c1f555ef4f51dcf0c0cb08799adaa8",
+    "owner_receipt": ".hermes/evidence/release-audit-current/cohort/windows-startup/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/cohort/windows-startup/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/release-audit-current/cohort/windows-startup-controls/desktop-ready.png",
+    "bytes": 2512988,
+    "sha256": "f105af9efbc7c0b42d7b66a9aafded8946e80c552eae5ae0948440551510dbf8",
+    "owner_receipt": ".hermes/evidence/release-audit-current/cohort/windows-startup-controls/OWNER.json",
+    "signal_receipt": ".hermes/evidence/release-audit-current/cohort/windows-startup-controls/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/editable-fields-current/windows-fields/desktop-ready.png",
+    "bytes": 2142064,
+    "sha256": "647a8f99e7b937e19353923ade3ea6f8d19838ff4adba3b0f39cac055cba9a31",
+    "owner_receipt": ".hermes/evidence/editable-fields-current/windows-fields/OWNER.json",
+    "signal_receipt": ".hermes/evidence/editable-fields-current/windows-fields/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/editable-fields-current/windows-fields-native-path/desktop-ready.png",
+    "bytes": 962281,
+    "sha256": "24b3b6a7d4c151e951f2e3c48bec93f8919f1d2ff83a2a8f036cc6c49516c49a",
+    "owner_receipt": ".hermes/evidence/editable-fields-current/windows-fields-native-path/OWNER.json",
+    "signal_receipt": ".hermes/evidence/editable-fields-current/windows-fields-native-path/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-audit-current/windows-folders-json-helper/desktop-ready.png",
+    "bytes": 1692104,
+    "sha256": "9842cd178cea1a306ffb69ae02dff68fd85f2c3acb0ac6feafe788570f1a573b",
+    "owner_receipt": ".hermes/evidence/desktop-integration-audit-current/windows-folders-json-helper/OWNER.json",
+    "signal_receipt": ".hermes/evidence/desktop-integration-audit-current/windows-folders-json-helper/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-audit-current/windows-folders/desktop-ready.png",
+    "bytes": 963468,
+    "sha256": "a6faba91dee282ba58eba9bfaf7df89e634299c81fd9e1999e9f423a2bef2be5",
+    "owner_receipt": ".hermes/evidence/desktop-integration-audit-current/windows-folders/OWNER.json",
+    "signal_receipt": ".hermes/evidence/desktop-integration-audit-current/windows-folders/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/desktop-integration-audit-current/windows-folders-loaded-image/desktop-ready.png",
+    "bytes": 477315,
+    "sha256": "5c107ae1bbfe1722ccd1758104c995129cb6f31b6e14a68aa6bdc6ab9a17b3db",
+    "owner_receipt": ".hermes/evidence/desktop-integration-audit-current/windows-folders-loaded-image/OWNER.json",
+    "signal_receipt": ".hermes/evidence/desktop-integration-audit-current/windows-folders-loaded-image/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current/native-windows/desktop-ready.png",
+    "bytes": 1694166,
+    "sha256": "311ecd09b79dc4f8f45ee1225a0a46e954e0c381cbf1e566bfe9d96ffb684beb",
+    "owner_receipt": ".hermes/evidence/index-error-layout-delivery-current/native-windows/OWNER.json",
+    "signal_receipt": ".hermes/evidence/index-error-layout-delivery-current/native-windows/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/index-error-layout-delivery-current/native-windows-geometry-fixture-failed/desktop-ready.png",
+    "bytes": 2142280,
+    "sha256": "aa21ba3035b4526f9bed6b40fa9eb88e6e17f81e3d1b568e31a56f6f76562b4d",
+    "owner_receipt": ".hermes/evidence/index-error-layout-delivery-current/native-windows-geometry-fixture-failed/OWNER.json",
+    "signal_receipt": ".hermes/evidence/index-error-layout-delivery-current/native-windows-geometry-fixture-failed/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/file-row-focus-current/windows-native-ui/desktop-ready.png",
+    "bytes": 961502,
+    "sha256": "ffda9ecd92e15ac376d928e3f5722dc101e2ca925741164c5cff370d0a9a380c",
+    "owner_receipt": ".hermes/evidence/file-row-focus-current/windows-native-ui/OWNER.json",
+    "signal_receipt": ".hermes/evidence/file-row-focus-current/windows-native-ui/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msi-registry-current/native-acl/desktop-ready.png",
+    "bytes": 148565,
+    "sha256": "db34f5bc6469bc7e0029b553c1738525dd5c4941ae6b0d674c5ec95a70649f3e",
+    "owner_receipt": ".hermes/evidence/windows-msi-registry-current/native-acl/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-msi-registry-current/native-acl/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current/windows/native-picker/desktop-ready.png",
+    "bytes": 962366,
+    "sha256": "693a3f17ddf0c85bd3423c882b7d90dba58a5565cb92bd691bd36097fbb2c674",
+    "owner_receipt": ".hermes/evidence/assistive-viewports-current/windows/native-picker/OWNER.json",
+    "signal_receipt": ".hermes/evidence/assistive-viewports-current/windows/native-picker/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current/windows/modal-labels/opengl/desktop-ready.png",
+    "bytes": 963632,
+    "sha256": "cd0539b2ba63063cf0f2861649cd99dc1058744b6005c034785d015b2c3507ff",
+    "owner_receipt": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/opengl/OWNER.json",
+    "signal_receipt": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/opengl/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/assistive-viewports-current/windows/modal-labels/native/desktop-ready.png",
+    "bytes": 962487,
+    "sha256": "81431f566a7bfe3f5aebeb867ac9245119bb6baaf403ef526279e8f1a1d55e26",
+    "owner_receipt": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/native/OWNER.json",
+    "signal_receipt": ".hermes/evidence/assistive-viewports-current/windows/modal-labels/native/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/windows-native-ui/desktop-ready.png",
+    "bytes": 1693507,
+    "sha256": "a39dfd5286aeb109feb89c6d5baaf98b6a68be4ad226e3e853062eb1724b59b8",
+    "owner_receipt": ".hermes/evidence/settings-navigation-current/windows-native-ui/OWNER.json",
+    "signal_receipt": ".hermes/evidence/settings-navigation-current/windows-native-ui/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/settings-navigation-current/windows-native-ui-selection-observed/desktop-ready.png",
+    "bytes": 962481,
+    "sha256": "4741883735daeff25fd1cb9bf9a9778e093e83d7dfc3fd8da3d5a6fd481853b8",
+    "owner_receipt": ".hermes/evidence/settings-navigation-current/windows-native-ui-selection-observed/OWNER.json",
+    "signal_receipt": ".hermes/evidence/settings-navigation-current/windows-native-ui-selection-observed/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-enabled/desktop-ready.png",
+    "bytes": 2513208,
+    "sha256": "5b5e9203ef8d10c6164b1108f933c4992bf8d7254cc57446794a3f8d775808d7",
+    "owner_receipt": ".hermes/evidence/windows-msix-update-current/upgrade-enabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-msix-update-current/upgrade-enabled/DESKTOP_SIGNAL.json"
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/windows-msix-update-current/upgrade-disabled/desktop-ready.png",
+    "bytes": 2513159,
+    "sha256": "59020e45853547ffc54ade6ee0b6126473907764be0c727db769264dff574f58",
+    "owner_receipt": ".hermes/evidence/windows-msix-update-current/upgrade-disabled/OWNER.json",
+    "signal_receipt": ".hermes/evidence/windows-msix-update-current/upgrade-disabled/DESKTOP_SIGNAL.json"
+  }
+]
