@@ -216,9 +216,13 @@ fn run_case(layout: Layout) {
     let payload = parent_path.join(&candidate);
     let payload_before = super::cleanup::namespace_contents(&payload);
     std::fs::write(parent_path.join("foreign"), b"unrelated public data").unwrap();
-    let mut plan =
-        discovery::RetainedCopyResumePlan::admit(&registry, &header.transaction, |_| Ok(()))
-            .unwrap();
+    let mut plan = discovery::RetainedCopyResumePlan::admit(
+        &Authority::Process,
+        &registry,
+        &header.transaction,
+        |_| Ok(()),
+    )
+    .unwrap();
     let mut filler = Filler(Arc::new(Mutex::new(Some(
         OpenOptions::new()
             .write(true)
@@ -275,8 +279,12 @@ fn run_case(layout: Layout) {
         local_after.len(),
         central_after.len()
     );
-    let fresh =
-        discovery::RetainedCopyResumePlan::admit(&registry, &header.transaction, |_| Ok(()));
+    let fresh = discovery::RetainedCopyResumePlan::admit(
+        &Authority::Process,
+        &registry,
+        &header.transaction,
+        |_| Ok(()),
+    );
     if paired {
         let mut retry = fresh.unwrap();
         retry.resume(|_| Ok(())).unwrap();
@@ -440,8 +448,13 @@ fn windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage(
     assert_ne!(partial_stream.as_deref(), Some(named.as_slice()));
     assert_eq!(std::fs::read(&named_path).unwrap(), named);
     assert!(
-        discovery::RetainedCopyResumePlan::admit(&registry, &header.transaction, |_| Ok(()))
-            .is_err()
+        discovery::RetainedCopyResumePlan::admit(
+            &Authority::Process,
+            &registry,
+            &header.transaction,
+            |_| Ok(())
+        )
+        .is_err()
     );
     assert!(
         PermissionStage::publish(

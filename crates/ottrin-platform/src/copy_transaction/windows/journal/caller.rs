@@ -443,6 +443,13 @@ pub(in super::super) fn exercise_caller_journals(
             .unwrap();
         manager.validate().unwrap();
     }
+    exercise_caller_resume(
+        &authority,
+        protected_parent,
+        source,
+        manager.root(),
+        directory,
+    );
     assert_eq!(manager.binding().unwrap(), registry_binding);
     let mut after = None;
     as_caller(&mut || after = Some(observe_user_data()));
@@ -454,4 +461,131 @@ pub(in super::super) fn exercise_caller_journals(
     println!(
         "caller journal source_directory={directory}: staging, reopen, plan and three Begin recovery cases passed"
     );
+}
+
+/// Real paired states are reopened after every old writer/payload owner closes.
+fn exercise_caller_resume(
+    authority: &Authority,
+    protected_parent: &File,
+    source: &File,
+    central: &File,
+    directory: bool,
+) {
+    struct ResetFault;
+    impl Drop for ResetFault {
+        fn drop(&mut self) {
+            FAULT.with(|fault| fault.set(None));
+        }
+    }
+    let registry = windows_fs::location(central).unwrap();
+    for case in 0..4 {
+        let parent = windows_fs::create_private(
+            protected_parent,
+            OsStr::new(&format!("caller-resume-{directory}-{case}")),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+        let destination =
+            DestinationAdmission::creation(authority, &parent, OsStr::new("copy")).unwrap();
+        let mut staged = DurableStage::create(
+            source,
+            &parent,
+            central,
+            &destination,
+            OsStr::new("unavailable-source-label"),
+            16,
+            |_| Ok(()),
+        )
+        .unwrap();
+        drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+        let name = staged.stage.name.clone();
+        let id = staged.journal.header.transaction.clone();
+        let renamed_sequence = staged.journal.sequence + 1;
+        drop(staged);
+        if case == 1 {
+            let reset = ResetFault;
+            FAULT
+                .with(|fault| fault.set(Some((renamed_sequence, Step::PublicationRenamed, false))));
+            let error = PermissionStage::publish(authority, &parent, central, &name, |_| Ok(()))
+                .err()
+                .expect("publication rename fault must fire");
+            assert!(
+                error
+                    .to_string()
+                    .contains("injected Copy journal flush boundary failure"),
+                "{error}"
+            );
+            drop(reset);
+        } else if case >= 2 {
+            let mut publication =
+                PermissionStage::publish(authority, &parent, central, &name, |_| Ok(())).unwrap();
+            assert!(publication.journal.state.published);
+            if case == 3 {
+                let reset = ResetFault;
+                let sequence = publication.journal.sequence + 1;
+                FAULT.with(|fault| fault.set(Some((sequence, Step::PermissionsChanged, false))));
+                let error = publication.apply(|_| Ok(())).unwrap_err();
+                assert!(
+                    error
+                        .to_string()
+                        .contains("injected Copy journal flush boundary failure"),
+                    "{error}"
+                );
+                drop(reset);
+            }
+            drop(publication);
+        }
+        let before = Snapshot::load(authority, &parent, central, &name, SnapshotAccess::Read)
+            .unwrap()
+            .bytes;
+        assert!(
+            RetainedCopyResumePlan::admit(&Authority::Process, &registry, &id, |_| Ok(())).is_err()
+        );
+        let mut plan =
+            RetainedCopyResumePlan::admit(authority, &registry, &id, |_| Ok(())).unwrap();
+        assert!(
+            plan.resume(|_| Err(io("owned caller resume cancellation")))
+                .is_err()
+        );
+        assert!(!plan.complete());
+        assert_eq!(
+            Snapshot::load(authority, &parent, central, &name, SnapshotAccess::Read)
+                .unwrap()
+                .bytes,
+            before
+        );
+        let mut replay = plan.clone();
+        plan.resume(|_| Ok(())).unwrap();
+        assert!(plan.complete());
+        assert!(plan.resume(|_| Ok(())).is_err());
+        let completed =
+            Snapshot::load(authority, &parent, central, &name, SnapshotAccess::Read).unwrap();
+        assert!(completed.state.completion_verified);
+        let bytes = completed.bytes.clone();
+        drop(completed);
+        replay.resume(|_| Ok(())).unwrap();
+        assert!(replay.complete());
+        assert_eq!(
+            Snapshot::load(authority, &parent, central, &name, SnapshotAccess::Read)
+                .unwrap()
+                .bytes,
+            bytes
+        );
+        let receipt =
+            discovery::session_receipt(authority, &parent, central, &name, |_| Ok(())).unwrap();
+        use crate::PlatformOps;
+        crate::DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
+        assert!(
+            Snapshot::load(authority, &parent, central, &name, SnapshotAccess::Read)
+                .unwrap()
+                .state
+                .undo_complete()
+        );
+        println!(
+            "caller resume source_directory={directory} case={case}: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed"
+        );
+    }
 }

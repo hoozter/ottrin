@@ -115,6 +115,7 @@ fn blocked_cases(operation: &str) {
         } else {
             Recovery::Forward(
                 discovery::RetainedCopyResumePlan::admit(
+                    &Authority::Process,
                     &registry,
                     &header.transaction,
                     |_| Ok(()),

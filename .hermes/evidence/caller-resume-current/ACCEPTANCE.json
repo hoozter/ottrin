@@ -1,0 +1,26 @@
+{
+  "status": "pass caller forward recovery across four retained states, readonly replay and public Undo",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 104,
+  "native_invocations": 27,
+  "coverage": [
+    "Forward plans retain authenticated runtime authority across canonical registry admission, native-ID parent reopening, journal access and source-free publication/permission recovery",
+    "Actual file and four-entry directory fixtures recover staged, unacknowledged rename, published-before-permissions and changed-permission-pending states; wrong process refused, cancellation preserves both logs, completed replay adds no records and public Undo succeeds; prior execution/receipt checks remain",
+    "Ordinary source-free publication/permission replay and receipt/public Undo still pass with shared retained verifier",
+    "Prior caller paired-journal, Begin recovery, claim, profile, token, metadata, tree/security and codec regressions pass"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "ce5a0fc9a4bb75d409a3ff43653ab07eaadb86552c5a8a616659dfc0172b93ac"
+  },
+  "limits": [
+    "Complete caller mutation-prefix coverage and readonly/link publication recovery remain separate native gates",
+    "Caller live-context forward recovery, receipt refresh and public Undo only; full dispatcher, overwrite, external restarted/authenticated discovery/resume/Undo/cleanup entry points remain incomplete",
+    "Original retention/overwrite, authenticated discovery/cleanup and restart-context recovery, real alternate-admin UAC, caller links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

@@ -2724,15 +2724,16 @@ fn prepare_forward(
 }
 
 fn resume_bound_copy(
+    authority: &Authority,
     parent: &File,
     central: &File,
     binding: &CopyResumeBinding,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
-    super::registry::require_uncoordinated(&Authority::Process, central)?;
+    super::registry::require_uncoordinated(authority, central)?;
     let mut binding = binding.clone();
     let mut retained = RetainedStage::open(
-        &Authority::Process,
+        authority,
         parent,
         central,
         &binding.header.stage_name(),
@@ -2747,7 +2748,7 @@ fn resume_bound_copy(
         let expected = retained.snapshot.bytes.clone();
         drop(retained);
         let snapshot = Snapshot::load(
-            &Authority::Process,
+            authority,
             parent,
             central,
             &binding.header.stage_name(),
@@ -2766,7 +2767,7 @@ fn resume_bound_copy(
         )?;
         drop(journal);
         retained = RetainedStage::open(
-            &Authority::Process,
+            authority,
             parent,
             central,
             &binding.header.stage_name(),
@@ -5379,9 +5380,13 @@ mod tests {
             let journal = original_journal(root.path(), &name);
             let id = journal.header.transaction.clone();
             drop(journal);
-            let mut resume =
-                RetainedCopyResumePlan::admit(&root.path().join("central"), &id, |_| Ok(()))
-                    .unwrap();
+            let mut resume = RetainedCopyResumePlan::admit(
+                &Authority::Process,
+                &root.path().join("central"),
+                &id,
+                |_| Ok(()),
+            )
+            .unwrap();
             assert_eq!(resume.path_pairs().len(), 2);
             resume.resume(|_| Ok(())).unwrap();
             assert!(resume.complete());
@@ -5825,6 +5830,7 @@ mod tests {
                     let mirror = root.path().join("central").join(header.central_name());
                     let mirror_bytes = std::fs::read(&mirror).unwrap();
                     let admission = RetainedCopyResumePlan::admit(
+                        &Authority::Process,
                         &root.path().join("central"),
                         &header.transaction,
                         |_| Ok(()),
@@ -5921,6 +5927,7 @@ mod tests {
             let local = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&local).unwrap();
             let admission = RetainedCopyResumePlan::admit(
+                &Authority::Process,
                 &root.path().join("central"),
                 &header.transaction,
                 |_| Ok(()),
@@ -6017,8 +6024,13 @@ mod tests {
         let journal = original_journal(root.path(), &name);
         let id = journal.header.transaction.clone();
         drop(journal);
-        let mut plan =
-            RetainedCopyResumePlan::admit(&root.path().join("central"), &id, |_| Ok(())).unwrap();
+        let mut plan = RetainedCopyResumePlan::admit(
+            &Authority::Process,
+            &root.path().join("central"),
+            &id,
+            |_| Ok(()),
+        )
+        .unwrap();
         let cancel = std::rc::Rc::new(std::cell::Cell::new(false));
         let handoff = cancel.clone();
         ORIGINAL_HANDOFF
@@ -6932,11 +6944,13 @@ mod tests {
             let path = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&path).unwrap();
             let id = decode(&before).unwrap().state.header.unwrap().transaction;
-            let mut plan =
-                discovery::RetainedCopyResumePlan::admit(&root.path().join("central"), &id, |_| {
-                    Ok(())
-                })
-                .unwrap();
+            let mut plan = discovery::RetainedCopyResumePlan::admit(
+                &Authority::Process,
+                &root.path().join("central"),
+                &id,
+                |_| Ok(()),
+            )
+            .unwrap();
             let mut replay = plan.clone();
             let mut inverse_stale = plan.clone();
             assert!(!plan.complete());
@@ -6962,6 +6976,7 @@ mod tests {
             );
             assert!(
                 discovery::RetainedCopyResumePlan::admit(
+                    &Authority::Process,
                     &root.path().join("central"),
                     &id,
                     |_| Ok(())
@@ -7023,6 +7038,7 @@ mod tests {
                     .unwrap()
                     .transaction;
                 let mut plan = discovery::RetainedCopyResumePlan::admit(
+                    &Authority::Process,
                     &root.path().join("central"),
                     &id,
                     |_| Ok(()),
@@ -7068,9 +7084,13 @@ mod tests {
         let local = root.path().join("destination").join(&name).join(LOCAL);
         let bytes = std::fs::read(&local).unwrap();
         let header = decode(&bytes).unwrap().state.header.unwrap();
-        let mut plan =
-            discovery::RetainedCopyResumePlan::admit(&registry, &header.transaction, |_| Ok(()))
-                .unwrap();
+        let mut plan = discovery::RetainedCopyResumePlan::admit(
+            &Authority::Process,
+            &registry,
+            &header.transaction,
+            |_| Ok(()),
+        )
+        .unwrap();
         let mut records = journal_records(&bytes);
         let original = if let Record::CreateIntent { source, .. } = &records[1] {
             source.identity
@@ -7128,11 +7148,13 @@ mod tests {
                 .header
                 .unwrap()
                 .transaction;
-            let mut plan =
-                discovery::RetainedCopyResumePlan::admit(&root.path().join("central"), &id, |_| {
-                    Ok(())
-                })
-                .unwrap();
+            let mut plan = discovery::RetainedCopyResumePlan::admit(
+                &Authority::Process,
+                &root.path().join("central"),
+                &id,
+                |_| Ok(()),
+            )
+            .unwrap();
             FAULT.with(|f| f.set(Some((sequence, step, false))));
             let result = plan.resume(|_| Ok(()));
             FAULT.with(|f| f.set(None));
@@ -7169,8 +7191,13 @@ mod tests {
             let journal = destination.join(&name).join(LOCAL);
             let before = std::fs::read(&journal).unwrap();
             let id = decode(&before).unwrap().state.header.unwrap().transaction;
-            let mut plan =
-                discovery::RetainedCopyResumePlan::admit(&registry, &id, |_| Ok(())).unwrap();
+            let mut plan = discovery::RetainedCopyResumePlan::admit(
+                &Authority::Process,
+                &registry,
+                &id,
+                |_| Ok(()),
+            )
+            .unwrap();
             match case {
                 "policy" => super::super::tests::set_dacl(
                     &destination,
@@ -7229,7 +7256,10 @@ mod tests {
         let id = decode(&before).unwrap().state.header.unwrap().transaction;
         let registry = root.path().join("central");
         let mut plan =
-            discovery::RetainedCopyResumePlan::admit(&registry, &id, |_| Ok(())).unwrap();
+            discovery::RetainedCopyResumePlan::admit(&Authority::Process, &registry, &id, |_| {
+                Ok(())
+            })
+            .unwrap();
         let mut cancelled = false;
         assert!(
             plan.resume(|bytes| if bytes > 0 {
@@ -7260,6 +7290,7 @@ mod tests {
         let id = decode(&bytes).unwrap().state.header.unwrap().transaction;
         assert!(
             discovery::RetainedCopyResumePlan::admit(
+                &Authority::Process,
                 &incomplete.path().join("central"),
                 &id,
                 |_| Ok(())

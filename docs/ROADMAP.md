@@ -59,7 +59,7 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current native component acceptance: 102 top-level passes across 25 invocations,
+   Current native component acceptance: 104 top-level passes across 27 invocations,
    using ordinary-user and SYSTEM roles. Registry/private staging share explicit
    authority; real tree/payload staging and required naming policy pass. Final
    permission plans now retain caller authority, derive the whole graph from one
@@ -110,12 +110,20 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    refusal before any destination/registry entry write pass. Source and pinned
    preferences/index bytes, identities and security remain unchanged. A reproduced
    missed Process selection at the receipt-to-Undo admission handoff is fixed.
-   Current receipt: `caller-receipts-current/ACCEPTANCE.json`; prior publication,
-   retained-tree, paired-journal, claim and final-permission receipts retain their
-   original scopes. These are component controls,
+   Live caller forward plans now retain authenticated context through canonical
+   registry admission/reopening, native-ID parent resolution, paired journal access
+   and source-free publication/permission recovery. Both actual source contexts
+   recover four retained states: staged, renamed before acknowledgement, published
+   before permission application, and native permission changed while intent remains
+   pending. Wrong process is refused; cancelled resume preserves journal bytes;
+   completed replay appends no records and public Undo succeeds afterward. Ordinary
+   source-free/readonly completed replay and publication/permission outcome retries
+   also pass. Current receipt: `caller-resume-current/ACCEPTANCE.json`; prior receipt,
+   publication, retained-tree, paired-journal, claim and final-permission receipts
+   retain their original scopes. These are component controls,
    not completed caller Copy, whole retained recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
-   registry admission through the entire operation; caller creation mutation-prefix,
+   registry admission through the entire operation; complete caller creation mutation-prefix,
    readonly/link publication recovery, original retention/overwrite and authenticated
    restored discovery/resume/Undo/cleanup entry points. Those entry points still select
    Process authority until their caller-aware integration is connected.

@@ -1,0 +1,12 @@
+{
+  "reference_commit": "c3f9dff7f5b49515e624f9eea92e396203a9191f",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ca5f93d773db114c1e98b43fcec027f161ad1a83cd766625685ee4cd50a07f83",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "fb8af484f65f053110bb0fd25551b7d6227d1ff15ef663648cd48e62b1bc7998",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "76c53ee808a5992651123389cf0b32105391f17a9d4588159b303dc4d4cdefef",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/blocked_io.rs": "36885cf4851ec90bc1a3034d9f23e5d371b71ddf45a18392b6d4591aca5b3b70",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/disk_full.rs": "fc09745a4906db407af1f183b1afd582bacc4010bf2925f2878732496777b91a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/throttled_io.rs": "35baa3bc86cf5ae66673eb4d77d59a291c0ee67635de29a9a4256ae3ab6e953b"
+  },
+  "scope": "Authenticated live caller forward recovery across staged, unacknowledged rename, published-before-permissions and changed-permission-pending states; cancellation preserves journals, completed replay is read-only and public Undo works. Not all prefixes, restart/helper-dispatcher or overwrite/cleanup acceptance."
+}

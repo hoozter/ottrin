@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable and native runtime binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "source_files": 6,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 422287872,
+    "sha256": "8866e618418c4daeb7f9d148aab55b44d821c93bb506159dd1def5adb9c862d5"
+  },
+  "native_result": "pass caller forward recovery across four retained states, readonly replay and public Undo"
+}

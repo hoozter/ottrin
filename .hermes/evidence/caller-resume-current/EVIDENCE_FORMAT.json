@@ -1,0 +1,6 @@
+{
+  "path": "native/readiness.log",
+  "change": "CRLF to LF only",
+  "before_sha256": "fa035c8e47c79b5023246135525376464140eb29a3b2af748584fe96304280bd",
+  "after_sha256": "ce9abc1e8266b3c0e96e3e14b44a42714177722487db6e54c395d15778954fb5"
+}

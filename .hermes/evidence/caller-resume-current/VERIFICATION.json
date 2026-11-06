@@ -1,0 +1,27 @@
+{
+  "status": "pass caller forward recovery across four retained states, readonly replay and public Undo",
+  "archive_sha256": "ea35c028efe6257d63aa1051fb17e9b59312944dcbe59f845e7e9e439731480e",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 27,
+  "top_level_passes": 104,
+  "compiler_jsonl_sha256": "7b8588ab8223a1adcd4be7eaeb2c6e254cab5f0f42754ecf80f38cc62bb9585b",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "limits": [
+    "Complete caller mutation-prefix coverage and readonly/link publication recovery remain separate native gates",
+    "Caller live-context forward recovery, receipt refresh and public Undo only; full dispatcher, overwrite, external restarted/authenticated discovery/resume/Undo/cleanup entry points remain incomplete",
+    "Original retention/overwrite, authenticated discovery/cleanup and restart-context recovery, real alternate-admin UAC, caller links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

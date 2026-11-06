@@ -6,9 +6,11 @@ use std::path::{Path, PathBuf};
 pub(super) const MAX_REGISTRY_ENTRIES: usize = 10_000;
 
 /// Source-free forward admission. Presentation fields cannot construct a plan.
-/// This never resumes unverified staging or retains open file handles.
+/// This never resumes unverified staging or retains payload handles; authenticated
+/// caller/profile context remains pinned until execution finishes.
 #[derive(Clone, Debug)]
 pub struct RetainedCopyResumePlan {
+    authority: Authority,
     registry: PathBuf,
     binding: Box<CopyResumeBinding>,
     complete: bool,
@@ -20,6 +22,7 @@ pub struct RetainedCopyResumePlan {
 }
 impl RetainedCopyResumePlan {
     pub(super) fn admit(
+        authority: &Authority,
         root: &Path,
         id: &str,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
@@ -27,16 +30,16 @@ impl RetainedCopyResumePlan {
         let name = OsString::from(format!("{id}.copy-journal"));
         registry_id(&name).ok_or_else(|| io("invalid Copy transaction ID"))?;
         progress(0)?;
-        let central = open_directory(root, FILE_GENERIC_READ).map_err(io)?;
-        let (bytes, state) = registered_journal(&Authority::Process, &central, &name)?;
+        let (central, manager) = authority.registry_directory(root)?;
+        let (bytes, state) = registered_journal(authority, &central, &name)?;
         if !state.verified || state.completion_verified || state.undo_intent {
             return Err(io("Copy is not a verified unfinished forward transaction"));
         }
         let header = state.header.as_ref().unwrap();
         let parent =
-            Volumes::new(&central)?.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
+            authority.resolve_parent(&central, header.parent, FILE_GENERIC_READ, &mut progress)?;
         let retained = RetainedStage::open(
-            &Authority::Process,
+            authority,
             &parent,
             &central,
             &header.stage_name(),
@@ -47,7 +50,11 @@ impl RetainedCopyResumePlan {
         }
         let prepared = prepare_forward(&retained, None, progress)?;
         let location = windows_fs::location(&parent).map_err(io)?;
+        if let Some(manager) = &manager {
+            manager.validate()?;
+        }
         Ok(Self {
+            authority: authority.clone(),
             registry: windows_fs::location(&central).map_err(io)?,
             binding: Box::new(CopyResumeBinding {
                 header: header.clone(),
@@ -97,24 +104,28 @@ impl RetainedCopyResumePlan {
             return Err(io("Copy forward recovery is already complete"));
         }
         progress(0)?;
-        let central = open_directory(&self.registry, FILE_GENERIC_READ).map_err(io)?;
+        let (central, manager) = self.authority.registry_directory(&self.registry)?;
         if stable_identity_from_handle(&central).map_err(io)? != self.binding.header.central {
             return Err(io("Copy registry was replaced; resume refused"));
         }
         let (_, state) = registered_journal(
-            &Authority::Process,
+            &self.authority,
             &central,
             &self.binding.header.central_name(),
         )?;
         if state.header.as_ref() != Some(&self.binding.header) {
             return Err(io("Copy journal was replaced; resume refused"));
         }
-        let parent = Volumes::new(&central)?.resolve(
+        let parent = self.authority.resolve_parent(
+            &central,
             self.binding.header.parent,
             windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
             &mut progress,
         )?;
-        resume_bound_copy(&parent, &central, &self.binding, progress)?;
+        resume_bound_copy(&self.authority, &parent, &central, &self.binding, progress)?;
+        if let Some(manager) = &manager {
+            manager.validate()?;
+        }
         self.complete = true;
         Ok(())
     }
@@ -767,7 +778,7 @@ pub(crate) fn restore_resume_at(
     root: &Path,
     id: &str,
 ) -> Result<RetainedCopyResumePlan, PlatformError> {
-    RetainedCopyResumePlan::admit(root, id, |_| Ok(()))
+    RetainedCopyResumePlan::admit(&Authority::Process, root, id, |_| Ok(()))
 }
 pub(crate) fn restore_resume(id: &str) -> Result<RetainedCopyResumePlan, PlatformError> {
     let registry = super::super::registry::AnchoredRoot::open_at(

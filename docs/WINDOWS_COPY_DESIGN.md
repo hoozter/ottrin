@@ -360,8 +360,29 @@ native invocations and strict paired Windows platform/UI lint; failed source/res
 binding and final acceptance are retained at
 `.hermes/evidence/caller-receipts-current/ACCEPTANCE.json`.
 
-This does not complete caller mutation-prefix/readonly/link publication recovery,
-original retention/overwrite or authenticated restored discovery/resume/Undo/cleanup
+Live forward recovery plans now retain the authenticated runtime authority too.
+Admission and execution hold fresh canonical registry admission, inspect registered
+journals with that authority and resolve parent identity under scoped helper file
+access. The bound recovery engine carries the selected authority through retained
+payload validation and exclusive journal reopening. Persisted fields still cannot
+choose a token; no payload handles survive admission. Completion remains a read-only
+replay when another admitted owner already finished the exact copy.
+
+The actual one-file and four-entry directory fixtures now close all old stage/writer
+owners and independently re-admit four paired states: verified/planned staging,
+publish rename before acknowledgement, acknowledged publication before permissions,
+and a native permission change whose durable intent is still pending. Each rejects
+process authority, preserves both journals on cancellation, finishes through a fresh
+plan, replays completion without changing journal bytes and then performs public Undo.
+The original source and user-state evidence stay unchanged. Ordinary source-free and
+readonly-root replay plus publication/permission outcome-retry regressions also pass.
+The checkpoint has 104 passing tests across 27 native invocations and strict paired
+Windows platform/UI lint. Evidence:
+`.hermes/evidence/caller-resume-current/ACCEPTANCE.json`.
+
+This does not complete the full caller mutation-prefix matrix, readonly/link
+publication recovery, original retention/overwrite or authenticated externally
+restored discovery/resume/Undo/cleanup
 entry points. Live caller receipts/public Undo do not establish process-restart or
 complete helper-dispatcher/UAC acceptance.
 The actual dispatcher must retain original source pins and canonical registry

@@ -107,8 +107,13 @@ fn run_case(operation: &str) {
     std::fs::write(destination.join("foreign"), b"unrelated data").unwrap();
     let mut plan = match operation {
         "forward" => Recovery::Forward(
-            discovery::RetainedCopyResumePlan::admit(&registry, &header.transaction, |_| Ok(()))
-                .unwrap(),
+            discovery::RetainedCopyResumePlan::admit(
+                &Authority::Process,
+                &registry,
+                &header.transaction,
+                |_| Ok(()),
+            )
+            .unwrap(),
         ),
         "cleanup" => Recovery::Cleanup(Box::new(
             RetainedCopyCleanupPlan::observe_at(

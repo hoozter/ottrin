@@ -1,0 +1,28 @@
+{
+  "source_revision": "c3f9dff7f5b49515e624f9eea92e396203a9191f",
+  "source_test_sha256": "637f108c61c6280a2d7e7e53e46451858fcf44389f9665a3e25e77ec8c38da91",
+  "test_sha256": "db3fc7850c56f8266591d02212e4179efd6f9ccfbba565770e266bae23504593",
+  "source_bytes": 562554739,
+  "staged_bytes": 541095723,
+  "strip_command": [
+    "x86_64-w64-mingw32-strip",
+    "--strip-debug"
+  ],
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 422287872,
+    "sha256": "8866e618418c4daeb7f9d148aab55b44d821c93bb506159dd1def5adb9c862d5"
+  },
+  "actor_sha256": "6b98b9f35ae8e2bd9b40960c5f905c66f6212d56461b79bbfbc0f20960d5d682",
+  "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+  "system_companion_sha256": "f807138c9aba5a44585151fbae0fa1a1228c9f3b3086e8f268246b595fc365e7",
+  "changed_product_sources": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "ca5f93d773db114c1e98b43fcec027f161ad1a83cd766625685ee4cd50a07f83",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "fb8af484f65f053110bb0fd25551b7d6227d1ff15ef663648cd48e62b1bc7998",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "76c53ee808a5992651123389cf0b32105391f17a9d4588159b303dc4d4cdefef",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/blocked_io.rs": "36885cf4851ec90bc1a3034d9f23e5d371b71ddf45a18392b6d4591aca5b3b70",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/disk_full.rs": "fc09745a4906db407af1f183b1afd582bacc4010bf2925f2878732496777b91a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/throttled_io.rs": "35baa3bc86cf5ae66673eb4d77d59a291c0ee67635de29a9a4256ae3ab6e953b"
+  },
+  "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+}
