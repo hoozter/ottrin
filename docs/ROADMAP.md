@@ -55,7 +55,7 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 Published source `4043ca5d` has
 [run42302933196](https://github.com/hoozter/ottrin/actions/runs/42302933196)
-still in progress at the current checkpoint. Its preceding `0405eb4a` passes all
+passing all four jobs. Its preceding `0405eb4a` passes all
 four jobs in [run42296867973](https://github.com/hoozter/ottrin/actions/runs/42296867973).
 Its preceding `705cf309` passes all four jobs in
 [run42285010531](https://github.com/hoozter/ottrin/actions/runs/42285010531).
@@ -144,12 +144,21 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
    domain/volume/staging teardown pass in `caller-history-ui-current/ACCEPTANCE.json`.
    These are component checks, not ordinary-user GUI/UAC or new package acceptance.
 
+   A subsequent fresh-history correction preserves an entire restored cohort when
+   the helper omits it or returns only a subset. Its stale Undo and Windows
+   recovery/cleanup actions are withdrawn; a complete fresh result renews them.
+   Current-session receipts remain owned and unchanged. Twenty-three native
+   Windows cases, 21 scoped Linux tests and strict Linux/Windows checks pass;
+   exact source/build/package bindings and independent teardown are recorded in
+   `caller-history-refresh-current/ACCEPTANCE.json`. This does not infer deletion
+   or original-batch completion from absence, or establish GUI/UAC acceptance.
+
    Remaining dependency-ready work, in order:
 
    - Finish the forward administrator Copy worker with byte progress/Stop and
-     queued/partial/late-result ownership. Reconcile absent or partial fresh helper
-     history without inferring deletion or original-batch completion. Retain IDs,
-     cohorts and live receipt/cleanup ownership. The shared recovery presentation
+     queued/partial/late-result ownership. Finish fresh-history reconciliation after
+     failed cleanup of a current-session helper receipt; its references must remain
+     owned and explicitly refreshable. The shared recovery presentation
      is implemented; actual ordinary-user GUI, launched UAC helper and packaged
      acceptance remain required before exposing the feature.
      The command adapter now forwards fallible engine progress through all seven

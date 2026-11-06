@@ -527,3 +527,92 @@ fn windows_helper_protocol_and_activity_capability_agree_without_elevation() {
         "native helper protocol and Activity capability agree: supported={supported}; current basic pipe accepted, unsupported Copy refused, old protocol rejected; no elevation"
     );
 }
+
+#[test]
+fn missing_or_partial_history_retains_the_complete_cohort_without_stale_undo() {
+    for partial in [false, true] {
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        let Some(PrivilegedPayload::Copy(mut reference)) =
+            response(PrivilegedStatus::Success, 1).payload
+        else {
+            unreachable!()
+        };
+        reference.transactions.push("b".repeat(32));
+        reference.paths.push(reference.paths[0].clone());
+        let entry = ottrin_core::PrivilegedCopyHistoryEntry {
+            reference: reference.clone(),
+            recovery: PrivilegedCopyHistoryState::UndoAvailable,
+        };
+        app.merge_privileged_copy_history(vec![entry.clone()]);
+        let original = app.operation_history[0].id;
+        // A current-session helper receipt is independently owned and must survive
+        // even a successful empty snapshot unchanged.
+        let mut live = response(PrivilegedStatus::Success, 1);
+        if let Some(PrivilegedPayload::Copy(receipt)) = &mut live.payload {
+            receipt.transactions = vec!["c".repeat(32)];
+        }
+        app.record_privileged_copy(&command(), &live, Some(7), Vec::new())
+            .unwrap();
+        let live_id = app.operation_history[0].id;
+        let snapshot = if partial {
+            let mut part = entry.clone();
+            part.reference.transactions.truncate(1);
+            part.reference.paths.truncate(1);
+            vec![part]
+        } else {
+            Vec::new()
+        };
+        app.merge_privileged_copy_history(snapshot);
+        assert_eq!(app.operation_history.len(), 2);
+        let stale = app
+            .operation_history
+            .iter()
+            .find(|r| r.id == original)
+            .unwrap();
+        assert_eq!(history_ids(stale), reference.transactions);
+        assert!(is_restored(stale));
+        assert_eq!(stale.status, OperationStatus::NeedsReview);
+        assert!(matches!(
+            stale.path_move_undo,
+            Some(PathMoveUndoState::Unavailable { .. })
+        ));
+        assert_eq!(
+            match &stale.path_move_undo_token.as_ref().unwrap().receipt {
+                OperationUndoReceipt::CopyBatch(receipt) => receipt.remaining(),
+                _ => unreachable!(),
+            },
+            0
+        );
+        assert!(stale.message.as_ref().unwrap().contains("did not confirm"));
+        let live = app
+            .operation_history
+            .iter()
+            .find(|r| r.id == live_id)
+            .unwrap();
+        assert!(!is_restored(live));
+        assert_eq!(live.status, OperationStatus::Completed);
+        assert!(matches!(
+            live.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        #[cfg(target_os = "windows")]
+        {
+            assert!(!copy_activity_cleanup::can_cleanup(stale));
+            assert!(!copy_activity_recovery::can_recover(stale));
+        }
+        app.merge_privileged_copy_history(vec![entry]);
+        let renewed = app
+            .operation_history
+            .iter()
+            .find(|r| r.id == original)
+            .unwrap();
+        assert_eq!(history_ids(renewed), reference.transactions);
+        assert!(matches!(
+            renewed.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        app.clear_finished_activity();
+        assert_eq!(app.operation_history.len(), 2);
+    }
+}

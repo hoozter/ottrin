@@ -185,6 +185,20 @@ impl OttrinApp {
         history: Vec<ottrin_core::PrivilegedCopyHistoryEntry>,
     ) {
         self.privileged_copy_history.review.clear();
+        // Only a successfully merged fresh cohort can renew a restored action.
+        // Missing or refused entries never prove deletion, Undo or completion.
+        let previous = self
+            .operation_history
+            .iter()
+            .filter(|record| {
+                is_restored(record)
+                    && record.status != OperationStatus::Queued
+                    && record.path_move_undo != Some(PathMoveUndoState::UndoQueued)
+                    && !self.copy_cleanup.owns(record)
+            })
+            .map(|record| record.id)
+            .collect::<HashSet<_>>();
+        let mut refreshed = HashSet::new();
         for entry in history {
             if entry.reference.transactions.is_empty() {
                 if let PrivilegedCopyHistoryState::NeedsReview { reason } = entry.recovery {
@@ -266,6 +280,7 @@ impl OttrinApp {
                     OperationRecoverability::Restorable,
                 )
             });
+            refreshed.insert(id);
             let available = matches!(&entry.recovery, PrivilegedCopyHistoryState::UndoAvailable);
             self.finish_operation_record(
                 id,
@@ -344,6 +359,32 @@ impl OttrinApp {
                     restored: true,
                 }),
             });
+        }
+        for record in &mut self.operation_history {
+            if !previous.contains(&record.id) || refreshed.contains(&record.id) {
+                continue;
+            }
+            let reason = "The latest administrator history did not confirm this retained Copy operation. Its references are preserved; reload administrator history before recovery.";
+            record.status = OperationStatus::NeedsReview;
+            record.path_move_undo = Some(PathMoveUndoState::Unavailable {
+                reason: reason.into(),
+            });
+            record.message = Some(reason.into());
+            if let Some(PathMoveUndoToken {
+                receipt:
+                    OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt::Privileged {
+                        pending, ..
+                    }),
+                ..
+            }) = &mut record.path_move_undo_token
+            {
+                *pending = false;
+            }
+            #[cfg(target_os = "windows")]
+            if let Some(owner) = &mut record.retained_copy {
+                owner.recovery = None;
+                owner.cleanup_phase = None;
+            }
         }
     }
 }
@@ -768,7 +809,7 @@ mod tests {
         );
         assert!(matches!(
             app.operation_history[0].path_move_undo,
-            Some(PathMoveUndoState::Available)
+            Some(PathMoveUndoState::Unavailable { .. })
         ));
     }
 

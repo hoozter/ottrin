@@ -2248,5 +2248,14 @@ are separate from native Windows headless interaction/adapter tests under the
 SYSTEM guest-agent token. None establishes ordinary-user rendered interaction,
 interactive elevation or a newly delivered package. Stable package hashes remain
 unchanged. Forward administrator Copy still needs asynchronous worker/progress/
-Stop integration; absent/partial history reconciliation and the full caller failure,
+Stop integration; fresh-history reconciliation after failed cleanup of current-session
+helper receipts and the full caller failure,
 process-restart, alternate-administrator UAC and package matrices remain open.
+
+Fresh successful snapshots now renew actions only for complete, successfully merged
+restored cohorts. An omitted or refused partial cohort keeps all IDs and its card,
+but loses stale Undo and Windows recovery/cleanup actions until a complete refresh.
+Current-session ownership remains unchanged. The follow-up passes 23 native Windows
+cases, 21 scoped Linux tests and strict Linux/Windows checks with independently
+verified teardown and unchanged package hashes:
+`.hermes/evidence/caller-history-refresh-current/ACCEPTANCE.json`.
