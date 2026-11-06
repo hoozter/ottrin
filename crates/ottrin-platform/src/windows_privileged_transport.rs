@@ -560,14 +560,7 @@ impl HelperChannel {
         &self,
         command: &ottrin_core::PrivilegedCommand,
     ) -> Option<PrivilegedResponse> {
-        use ottrin_core::{FileCommand, PrivilegedCommand};
-        if !matches!(
-            command,
-            PrivilegedCommand::File(FileCommand::Copy { .. })
-                | PrivilegedCommand::DiscoverCopyHistory
-                | PrivilegedCommand::UndoCopy { .. }
-                | PrivilegedCommand::CleanupCopy { .. }
-        ) {
+        if !command.requires_copy_recovery() {
             return None;
         }
         Some(match self.caller_copy_context() {

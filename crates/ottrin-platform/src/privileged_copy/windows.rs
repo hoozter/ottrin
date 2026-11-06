@@ -5,7 +5,8 @@ use crate::windows_privileged_transport::CallerCopyContext;
 use crate::{PlatformError, WindowsCopyPhase, WindowsCopyRecoveryEvidence, WindowsCopyRegistry};
 use ottrin_core::{
     FileCommand, PrivilegedCommand, PrivilegedCopyHistoryEntry, PrivilegedCopyHistoryState,
-    PrivilegedCopyReceipt, PrivilegedPayload, PrivilegedResponse, PrivilegedStatus,
+    PrivilegedCopyReceipt, PrivilegedCopyRecoveryAction, PrivilegedPayload, PrivilegedResponse,
+    PrivilegedStatus,
 };
 use std::{collections::BTreeSet, sync::Arc};
 
@@ -41,6 +42,10 @@ pub(crate) fn execute(
         PrivilegedCommand::CleanupCopy { transactions } => {
             cleanup(&caller, transactions).map(|()| None)
         }
+        PrivilegedCommand::RecoverCopy {
+            transaction,
+            action,
+        } => recover(&caller, transaction, *action).map(|()| None),
         _ => return failure("Command is not a Copy operation".into()),
     };
     match result {
@@ -96,6 +101,49 @@ fn history(
                     reason: reason.clone(),
                 }
             }
+            (Some(id), WindowsCopyRecoveryEvidence::PendingNameRelease) => {
+                match registry.name_release_plan_with_progress(id, |_| Ok(())) {
+                    Ok(_) => PrivilegedCopyHistoryState::RecoveryAvailable {
+                        action: PrivilegedCopyRecoveryAction::ReleaseName,
+                    },
+                    Err(error) => PrivilegedCopyHistoryState::NeedsReview {
+                        reason: error.to_string(),
+                    },
+                }
+            }
+            (Some(_), _) if entry.phase == Some(WindowsCopyPhase::Aborted) => {
+                PrivilegedCopyHistoryState::AttemptEnded
+            }
+            (Some(id), WindowsCopyRecoveryEvidence::UnverifiedStage) => {
+                match registry.abort_plan_with_progress(id, |_| Ok(())) {
+                    Ok(_) => PrivilegedCopyHistoryState::RecoveryAvailable {
+                        action: PrivilegedCopyRecoveryAction::EndAttempt,
+                    },
+                    Err(error) => PrivilegedCopyHistoryState::NeedsReview {
+                        reason: error.to_string(),
+                    },
+                }
+            }
+            (Some(id), WindowsCopyRecoveryEvidence::VerifiedTree)
+                if !matches!(
+                    entry.phase,
+                    Some(
+                        WindowsCopyPhase::Completed
+                            | WindowsCopyPhase::UndoPending
+                            | WindowsCopyPhase::Undone
+                            | WindowsCopyPhase::CleaningUp
+                    )
+                ) =>
+            {
+                match registry.resume_plan_with_progress(id, |_| Ok(())) {
+                    Ok(_) => PrivilegedCopyHistoryState::RecoveryAvailable {
+                        action: PrivilegedCopyRecoveryAction::Resume,
+                    },
+                    Err(error) => PrivilegedCopyHistoryState::NeedsReview {
+                        reason: error.to_string(),
+                    },
+                }
+            }
             (
                 Some(_),
                 WindowsCopyRecoveryEvidence::VerifiedTree
@@ -129,11 +177,7 @@ fn history(
                 transactions: pending_ids.into_iter().collect(),
                 paths: Vec::new(),
             },
-            recovery: PrivilegedCopyHistoryState::NeedsReview {
-                reason:
-                    "Copy cleanup was interrupted. Undo is revoked; finish clearing retained data."
-                        .into(),
-            },
+            recovery: PrivilegedCopyHistoryState::CleanupPending,
         });
     }
     registry.validate()?;
@@ -187,6 +231,27 @@ fn cleanup(caller: &Arc<CallerCopyContext>, transactions: &[String]) -> Result<(
         registry
             .cleanup_plan_with_progress(&ids.into_iter().collect::<Vec<_>>(), |_| Ok(()))?
             .reclaim(|_| Ok(()))?;
+    }
+    registry.validate()
+}
+
+fn recover(
+    caller: &Arc<CallerCopyContext>,
+    transaction: &str,
+    action: PrivilegedCopyRecoveryAction,
+) -> Result<(), PlatformError> {
+    selected(&[transaction.to_owned()])?;
+    let registry = registry(caller)?;
+    match action {
+        PrivilegedCopyRecoveryAction::Resume => registry
+            .resume_plan_with_progress(transaction, |_| Ok(()))?
+            .resume(|_| Ok(()))?,
+        PrivilegedCopyRecoveryAction::EndAttempt => registry
+            .abort_plan_with_progress(transaction, |_| Ok(()))?
+            .end_attempt(|_| Ok(()))?,
+        PrivilegedCopyRecoveryAction::ReleaseName => registry
+            .name_release_plan_with_progress(transaction, |_| Ok(()))?
+            .finish(|_| Ok(()))?,
     }
     registry.validate()
 }

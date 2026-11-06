@@ -2,6 +2,7 @@
 //! disposable guest; authority-bearing requests still use the real bound pipe.
 use super::*;
 mod copy_commands;
+mod recovery_commands;
 use serde_json::{Value, json};
 use std::io::Seek;
 use windows_sys::Win32::Security::{
@@ -900,7 +901,7 @@ fn system_helper() {
             },
         );
     }
-    copy_commands::serve(&mut channel, &root);
+    copy_commands::serve(&mut channel, &root, &preferences, &index);
     crate::WindowsCopyRegistry::exercise_caller_terminal_recovery(
         &context,
         &parent,

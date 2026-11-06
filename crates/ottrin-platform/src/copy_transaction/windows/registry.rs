@@ -1388,6 +1388,32 @@ impl AnchoredRoot {
             as_caller,
         );
     }
+    pub(crate) fn assert_caller_wire_publication(
+        caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        path: &Path,
+    ) {
+        super::journal::assert_caller_wire_publication(caller, path);
+    }
+    pub(crate) fn prepare_caller_wire_recovery(
+        caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &File,
+        case: &str,
+        action: ottrin_core::PrivilegedCopyRecoveryAction,
+    ) -> (String, Box<dyn FnMut()>) {
+        super::journal::prepare_caller_wire_recovery(caller, parent, source, case, action)
+    }
+    pub(crate) fn with_caller_wire_release_fault(
+        operation: impl FnOnce() -> ottrin_core::PrivilegedResponse,
+    ) -> ottrin_core::PrivilegedResponse {
+        super::journal::with_caller_wire_release_fault(operation)
+    }
+    pub(crate) fn hold_caller_wire_terminal_payload(
+        caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        id: &str,
+    ) -> Box<dyn FnMut()> {
+        super::journal::hold_caller_wire_terminal_payload(caller, id)
+    }
     pub(crate) fn exercise_caller_terminal_recovery(
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         parent: &File,

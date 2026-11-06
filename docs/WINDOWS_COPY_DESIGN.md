@@ -49,6 +49,46 @@ connected. Operation Stop/progress must also reach the helper before UI enableme
 Newly authenticated process-restart, alternate-administrator UAC,
 remaining native matrices and packaged acceptance are separate gates.
 
+## Explicit recovery wire contract
+
+Protocol4 adds `RecoverCopy { transaction, action }` for Resume, EndAttempt and
+ReleaseName. The ID selects a freshly admitted plan in the original caller's
+canonical registry; request and history paths never authorize recovery. The
+shared core command classifier requires Copy capability negotiation for every
+Copy/history/recovery action. Older helper protocols are rejected; a future
+application package using this contract requires a matching installed helper.
+Current stable packages retain their separately accepted protocol/source scopes.
+
+History advertises an explicit recovery action only after its read-only native
+admission succeeds. An ended attempt and a pending cleanup cohort have distinct
+states. Review errors take precedence over lifecycle presentation. Pending name
+release is admitted without opening the retained payload; verified unfinished
+staging can Resume, and unverified staging can end without adopting its data.
+Every command re-admits immediately before execution and retains original-caller
+validation through the existing engine. No repair, caller environment fallback
+or serialized authority is introduced.
+
+Linux keeps its existing Copy/Undo/cleanup engine and presents interrupted cleanup
+as CleanupPending. It rejects Windows-only recovery history before UI merge and
+returns Unsupported for those explicit actions. Windows recovery frontend
+integration and operation Stop/progress transport remain required before normal
+administrator Copy capability is enabled. Its frontend must merge ordinary and
+administrator entries by transaction identity: both use the same caller registry,
+and live receipts must retain their ownership.
+
+The eight-case native fixture passes within 128 actual authenticated requests
+and all 13 top-level native invocations. It uses actual framed recovery requests
+after deliberately prepared lower-level interrupted states. Sources, caller
+preferences/index identity/security/bytes and edited unknown payloads are preserved;
+terminal name release leaves both journals byte-identical. Exact source/build,
+native assertions and independent teardown are checked in
+`.hermes/evidence/caller-recovery-routing-current/ACCEPTANCE.json`.
+The duplicate wrapper log's UTF8-to-ANSI artifact is exactly reconciled against the
+independently exported native log; `WRAPPER_ENCODING.json` retains that limitation
+and the original used actor. The fixture's corrected explicit UTF8 read has not
+been rerun in a guest. No assertions or result fields are omitted. This setup is
+not public-dispatcher mutation-prefix or new-process/reconnection acceptance.
+
 ## Authenticated private reopen
 
 `CallerCopyContext::open_private_entry` reopens an existing single native component

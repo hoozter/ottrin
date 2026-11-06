@@ -38,7 +38,11 @@ fn validate_history(history: &[ottrin_core::PrivilegedCopyHistoryEntry]) -> Resu
     let mut seen = HashSet::new();
     for entry in history {
         let reference = &entry.reference;
-        if reference.transactions.is_empty()
+        if matches!(
+            entry.recovery,
+            PrivilegedCopyHistoryState::RecoveryAvailable { .. }
+                | PrivilegedCopyHistoryState::AttemptEnded
+        ) || reference.transactions.is_empty()
             || reference.paths.len() > reference.transactions.len()
             || reference.transactions.iter().any(|id| {
                 id.len() != 32
@@ -169,6 +173,9 @@ impl OttrinApp {
                 if matches!(
                     &entry.recovery,
                     PrivilegedCopyHistoryState::NeedsReview { .. }
+                        | PrivilegedCopyHistoryState::RecoveryAvailable { .. }
+                        | PrivilegedCopyHistoryState::AttemptEnded
+                        | PrivilegedCopyHistoryState::CleanupPending
                 ) {
                     OperationStatus::NeedsReview
                 } else {
@@ -196,6 +203,9 @@ impl OttrinApp {
                 PrivilegedCopyHistoryState::NeedsReview { reason } => {
                     PathMoveUndoState::Unavailable { reason }
                 }
+                PrivilegedCopyHistoryState::RecoveryAvailable { .. } => PathMoveUndoState::Unavailable { reason: "This record requires Windows administrator Copy recovery.".into() },
+                PrivilegedCopyHistoryState::AttemptEnded => PathMoveUndoState::Unavailable { reason: "Copy attempt ended; partial files and recovery records are retained.".into() },
+                PrivilegedCopyHistoryState::CleanupPending => PathMoveUndoState::Unavailable { reason: "Copy cleanup was interrupted. Undo is revoked; finish clearing retained data.".into() },
             });
             record.path_move_undo_token = Some(PathMoveUndoToken {
                 origin_tab_id: None,
@@ -738,5 +748,40 @@ mod tests {
         app.record_privileged_copy(&command(), &denied, None, Vec::new())
             .unwrap();
         assert!(app.operation_history.is_empty());
+    }
+    #[test]
+    fn linux_history_refuses_windows_only_recovery_before_merging() {
+        let reference = ottrin_core::PrivilegedCopyReceipt {
+            completed_sources: 0,
+            transactions: vec!["a".repeat(32)],
+            paths: Vec::new(),
+        };
+        for recovery in [
+            PrivilegedCopyHistoryState::RecoveryAvailable {
+                action: ottrin_core::PrivilegedCopyRecoveryAction::Resume,
+            },
+            PrivilegedCopyHistoryState::RecoveryAvailable {
+                action: ottrin_core::PrivilegedCopyRecoveryAction::EndAttempt,
+            },
+            PrivilegedCopyHistoryState::RecoveryAvailable {
+                action: ottrin_core::PrivilegedCopyRecoveryAction::ReleaseName,
+            },
+            PrivilegedCopyHistoryState::AttemptEnded,
+        ] {
+            assert!(
+                validate_history(&[ottrin_core::PrivilegedCopyHistoryEntry {
+                    reference: reference.clone(),
+                    recovery
+                }])
+                .is_err()
+            );
+        }
+        assert!(
+            validate_history(&[ottrin_core::PrivilegedCopyHistoryEntry {
+                reference,
+                recovery: PrivilegedCopyHistoryState::CleanupPending
+            }])
+            .is_ok()
+        );
     }
 }

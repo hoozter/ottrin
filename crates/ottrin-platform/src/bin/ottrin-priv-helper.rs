@@ -114,6 +114,11 @@ fn main() {
         PrivilegedCommand::CleanupCopy { transactions } => {
             copy_recovery_command(&transactions, true)
         }
+        PrivilegedCommand::RecoverCopy { .. } => PrivilegedResponse {
+            status: PrivilegedStatus::Unsupported,
+            message: Some("This Copy recovery action is unavailable on this platform.".into()),
+            payload: None,
+        },
         PrivilegedCommand::ListDirectory { path, show_hidden } => {
             run_list_directory(&path, show_hidden)
         }

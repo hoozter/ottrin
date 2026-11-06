@@ -305,6 +305,7 @@ pub(super) fn client(pipe: &mut LocalPipeStream, root: &Path, source: &Path) {
     println!(
         "caller helper wire partial batch preserves completed receipt; invalid/missing/duplicate selections refused without mutation"
     );
+    super::recovery_commands::client(pipe, root);
     write_json(
         pipe,
         &request(
@@ -323,7 +324,13 @@ pub(super) fn client(pipe: &mut LocalPipeStream, root: &Path, source: &Path) {
     );
 }
 
-pub(super) fn serve(channel: &mut HelperChannel, root: &Path) {
+pub(super) fn serve(
+    channel: &mut HelperChannel,
+    root: &Path,
+    preferences: &std::fs::File,
+    index: &std::fs::File,
+) {
+    let mut recovery = super::recovery_commands::Server::new(channel, root, preferences, index);
     let original_token = token_state();
     let original_file = root.join("system-only/wire-overwrite-file Ω.txt");
     let original_tree = root.join("system-only/wire-overwrite-tree Ω");
@@ -380,34 +387,24 @@ pub(super) fn serve(channel: &mut HelperChannel, root: &Path) {
             assert!(channel.execute_copy_command(&request.command).is_none());
             break;
         }
-        assert_eq!(
-            request.context.reason.as_deref(),
-            Some("owned caller Copy command")
-        );
-        let response = channel.execute_copy_command(&request.command).unwrap();
+        let response = recovery.execute(channel, &request);
         assert_eq!(token_state(), original_token);
         if let Some(PrivilegedPayload::Copy(receipt)) = &response.payload {
             for (_, publication) in &receipt.paths {
-                let payload = if publication.is_dir() {
-                    publication.join("member.txt")
-                } else {
-                    publication.clone()
-                };
-                let expected = if publication.is_dir() {
-                    b"wire directory payload".as_slice()
-                } else {
-                    b"unchanged caller source".as_slice()
-                };
-                assert_eq!(std::fs::read(payload).unwrap(), expected);
+                let caller = Arc::new(channel.caller_copy_context().unwrap());
+                crate::WindowsCopyRegistry::assert_caller_wire_publication(caller, publication);
             }
         }
+        assert_eq!(token_state(), original_token);
         channel.write_response(&response).unwrap();
         count += 1;
-        assert!(count <= 64);
+        assert!(count <= 160);
     }
-    assert!(count >= 30);
+    assert!(count >= 120);
+    recovery.finish();
     let expected = before
         .into_iter()
+        .chain(recovery.parents())
         .chain([
             OsString::from(".ottrin-copy-target-claims"),
             OsString::from(".ottrin-copy-target-claims-root"),

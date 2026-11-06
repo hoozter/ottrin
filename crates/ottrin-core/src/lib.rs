@@ -1251,10 +1251,43 @@ pub enum FileCommand {
 pub enum PrivilegedCommand {
     File(FileCommand),
     DiscoverCopyHistory,
-    UndoCopy { transactions: Vec<String> },
-    CleanupCopy { transactions: Vec<String> },
-    ListDirectory { path: PathBuf, show_hidden: bool },
+    UndoCopy {
+        transactions: Vec<String>,
+    },
+    CleanupCopy {
+        transactions: Vec<String>,
+    },
+    RecoverCopy {
+        transaction: String,
+        action: PrivilegedCopyRecoveryAction,
+    },
+    ListDirectory {
+        path: PathBuf,
+        show_hidden: bool,
+    },
     SystemLocateMaintenance(SystemLocateMaintenance),
+}
+
+impl PrivilegedCommand {
+    /// Every command needing durable Copy recovery must negotiate that capability.
+    pub fn requires_copy_recovery(&self) -> bool {
+        matches!(
+            self,
+            Self::File(FileCommand::Copy { .. })
+                | Self::DiscoverCopyHistory
+                | Self::UndoCopy { .. }
+                | Self::CleanupCopy { .. }
+                | Self::RecoverCopy { .. }
+        )
+    }
+}
+
+/// Explicit single-transaction recovery. IDs are lookup references only.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PrivilegedCopyRecoveryAction {
+    Resume,
+    EndAttempt,
+    ReleaseName,
 }
 
 /// Fixed administrator operations for the operating system's locate database.
@@ -1273,7 +1306,7 @@ pub struct PrivilegedContext {
 }
 
 /// Exact wire contract required by both the caller and elevated helper.
-pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 3;
+pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 4;
 
 /// Request payload sent from unprivileged app process to elevated helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1334,7 +1367,14 @@ pub struct PrivilegedCopyHistoryEntry {
 pub enum PrivilegedCopyHistoryState {
     UndoAvailable,
     Undone,
-    NeedsReview { reason: String },
+    RecoveryAvailable {
+        action: PrivilegedCopyRecoveryAction,
+    },
+    AttemptEnded,
+    CleanupPending,
+    NeedsReview {
+        reason: String,
+    },
 }
 
 /// Presentation and lookup references only. The elevated helper must reopen and

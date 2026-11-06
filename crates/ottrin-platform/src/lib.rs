@@ -2739,13 +2739,7 @@ fn execute_privileged_windows(
 ) -> Result<PrivilegedResponse, PlatformError> {
     windows_privileged_transport::execute(
         &resolve_helper_name("ottrin-priv-helper.exe"),
-        matches!(
-            &request.command,
-            ottrin_core::PrivilegedCommand::File(FileCommand::Copy { .. })
-                | ottrin_core::PrivilegedCommand::DiscoverCopyHistory
-                | ottrin_core::PrivilegedCommand::UndoCopy { .. }
-                | ottrin_core::PrivilegedCommand::CleanupCopy { .. }
-        ),
+        request.command.requires_copy_recovery(),
         request,
     )
 }

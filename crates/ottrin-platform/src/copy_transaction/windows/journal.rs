@@ -28,7 +28,11 @@ mod caller;
 #[cfg(test)]
 mod caller_terminal;
 #[cfg(test)]
-pub(super) use caller_terminal::exercise_caller_terminal_recovery;
+pub(super) use caller_terminal::{
+    assert_caller_wire_publication, exercise_caller_terminal_recovery,
+    hold_caller_wire_terminal_payload, prepare_caller_wire_recovery,
+    with_caller_wire_release_fault,
+};
 mod claims;
 #[cfg(test)]
 pub(super) use caller::{

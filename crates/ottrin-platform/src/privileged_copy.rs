@@ -167,11 +167,7 @@ pub fn discover_history() -> Result<Vec<ottrin_core::PrivilegedCopyHistoryEntry>
                     .collect(),
                 paths: Vec::new(),
             },
-            recovery: PrivilegedCopyHistoryState::NeedsReview {
-                reason:
-                    "Copy cleanup was interrupted. Undo is revoked; finish clearing retained data."
-                        .into(),
-            },
+            recovery: PrivilegedCopyHistoryState::CleanupPending,
         });
     }
     Ok(history)
@@ -410,7 +406,7 @@ mod tests {
         assert!(history[0].reference.paths.is_empty());
         assert!(matches!(
             history[0].recovery,
-            ottrin_core::PrivilegedCopyHistoryState::NeedsReview { .. }
+            ottrin_core::PrivilegedCopyHistoryState::CleanupPending
         ));
         assert!(
             crate::discover_retained_copy_finalizations()

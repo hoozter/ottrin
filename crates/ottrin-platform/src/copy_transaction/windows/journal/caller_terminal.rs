@@ -528,3 +528,297 @@ pub(in super::super) fn exercise_caller_terminal_recovery(
         }
     }
 }
+
+/// Owned lower-level interruption seeds. Only the subsequent real pipe command
+/// is under test here; these seeds do not claim dispatcher mutation-prefix QA.
+pub(in super::super) fn prepare_caller_wire_recovery(
+    caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    protected_parent: &File,
+    source: &File,
+    case: &str,
+    action: ottrin_core::PrivilegedCopyRecoveryAction,
+) -> (String, Box<dyn FnMut()>) {
+    use ottrin_core::PrivilegedCopyRecoveryAction;
+    let authority = Authority::Caller(Arc::clone(&caller));
+    let source_path = windows_fs::location(source).unwrap();
+    let source_pin = tree::PinnedTree::open(&authority, source, 16, &mut |_| Ok(())).unwrap();
+    let source_before = source_pin.freeze_existing(|_| Ok(())).unwrap();
+    let directory = source_pin.root().directory;
+    let manager = caller
+        .copy_registry(std::slice::from_ref(&source_path), true)
+        .unwrap()
+        .unwrap();
+    let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    let parent = windows_fs::create_private(
+        protected_parent,
+        OsStr::new(&format!("wire-recovery-{case}")),
+        true,
+        sharing,
+    )
+    .unwrap();
+    let mut held = None;
+    let mut payload_before = None;
+    let id = if action == PrivilegedCopyRecoveryAction::ReleaseName {
+        let cleanup_release = case.starts_with("cleanup-release-");
+        if cleanup_release {
+            let mut original = authority
+                .create(&parent, source_path.file_name().unwrap(), false, sharing)
+                .unwrap();
+            original
+                .write_all(b"owned original retained for terminal cleanup release")
+                .unwrap();
+            original.sync_all().unwrap();
+        }
+        let receipt = caller
+            .copy_entry_with_progress(
+                &source_path,
+                &windows_fs::location(&parent).unwrap(),
+                crate::ConflictAction::Overwrite,
+                16,
+                |_| Ok(()),
+            )
+            .unwrap()
+            .unwrap();
+        let id = receipt.copy_transaction_id().unwrap().to_owned();
+        if cleanup_release {
+            let header = discovery::RegisteredJournal::open(
+                &authority,
+                manager.root(),
+                &OsString::from(format!("{id}.copy-journal")),
+            )
+            .unwrap()
+            .state
+            .header
+            .unwrap();
+            let reset = ResetFaults;
+            claims::RELEASE_FAULT
+                .with(|fault| fault.set(Some((claims::ReleasePoint::BeforeWrite, false))));
+            let error = cleanup::Admission::observe_with(
+                &authority,
+                &parent,
+                manager.root(),
+                &header.stage_name(),
+                |_| Ok(()),
+            )
+            .unwrap()
+            .start(&parent, manager.root(), |_| Ok(()))
+            .err()
+            .unwrap();
+            assert!(
+                error.to_string().contains("injected Copy claim release"),
+                "{error}"
+            );
+            drop(reset);
+        }
+        id
+    } else {
+        let destination =
+            DestinationAdmission::creation(&authority, &parent, OsStr::new("copy")).unwrap();
+        if action == PrivilegedCopyRecoveryAction::Resume {
+            let mut staged = DurableStage::create(
+                source,
+                &parent,
+                manager.root(),
+                &destination,
+                OsStr::new("unavailable-owned-wire-source"),
+                16,
+                |_| Ok(()),
+            )
+            .unwrap();
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            staged.journal.header.transaction.clone()
+        } else {
+            let names = windows_fs::directory_children(manager.root()).unwrap();
+            let error = DurableStage::create(
+                source,
+                &parent,
+                manager.root(),
+                &destination,
+                OsStr::new("unavailable-owned-wire-source"),
+                16,
+                |bytes| {
+                    if bytes > 0 {
+                        Err(io("owned wire unverified staging stop"))
+                    } else {
+                        Ok(())
+                    }
+                },
+            )
+            .err()
+            .unwrap();
+            assert!(
+                error
+                    .to_string()
+                    .contains("owned wire unverified staging stop")
+            );
+            let mut added = windows_fs::directory_children(manager.root())
+                .unwrap()
+                .into_iter()
+                .filter(|name| !names.contains(name) && discovery::registry_id(name).is_some());
+            let name = added.next().unwrap();
+            assert!(added.next().is_none());
+            let header = discovery::RegisteredJournal::open(&authority, manager.root(), &name)
+                .unwrap()
+                .state
+                .header
+                .unwrap();
+            payload_before = Some((
+                header.candidate_name(),
+                later_edits(&authority, &parent, &header.candidate_name(), directory),
+            ));
+            held = Some(
+                authority
+                    .open_entry(
+                        &parent,
+                        &header.candidate_name(),
+                        Some(directory),
+                        FILE_GENERIC_READ,
+                        0,
+                    )
+                    .unwrap(),
+            );
+            header.transaction
+        }
+    };
+    let check_id = id.clone();
+    (
+        id,
+        Box::new(move || {
+            drop(held.take());
+            if let Some((name, expected)) = &payload_before {
+                let payload = authority
+                    .open_entry(&parent, name, Some(directory), FILE_GENERIC_READ, sharing)
+                    .unwrap();
+                assert_eq!(&frozen(&authority, &payload), expected);
+                let record = discovery::RegisteredJournal::open(
+                    &authority,
+                    manager.root(),
+                    &OsString::from(format!("{check_id}.copy-journal")),
+                )
+                .unwrap();
+                assert!(record.state.aborted);
+            }
+            source_pin
+                .validate_existing(&source_before, &mut |_| Ok(()))
+                .unwrap();
+            manager.validate().unwrap();
+            caller.validate().unwrap();
+        }),
+    )
+}
+
+pub(in super::super) fn with_caller_wire_release_fault(
+    operation: impl FnOnce() -> ottrin_core::PrivilegedResponse,
+) -> ottrin_core::PrivilegedResponse {
+    let reset = ResetFaults;
+    claims::RELEASE_FAULT.with(|fault| fault.set(Some((claims::ReleasePoint::BeforeWrite, false))));
+    let result = operation();
+    drop(reset);
+    result
+}
+
+/// Freeze a terminal payload under an exclusive data lease while the actual
+/// name-release request executes. Its journal pair must remain byte-identical.
+pub(in super::super) fn hold_caller_wire_terminal_payload(
+    caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    id: &str,
+) -> Box<dyn FnMut()> {
+    let authority = Authority::Caller(Arc::clone(&caller));
+    let manager = caller.copy_registry(&[], false).unwrap().unwrap();
+    let record = discovery::RegisteredJournal::open(
+        &authority,
+        manager.root(),
+        &OsString::from(format!("{id}.copy-journal")),
+    )
+    .unwrap();
+    let undone = record.state.undo_complete();
+    assert!(undone || record.state.cleanup.is_some());
+    if !undone {
+        assert!(record.state.original.is_some());
+    }
+    let directory = undone && record.state.nodes[0].source.directory;
+    let header = record.state.header.unwrap();
+    let parent = authority
+        .resolve_parent(
+            manager.root(),
+            header.parent,
+            FILE_GENERIC_READ,
+            &mut |_| Ok(()),
+        )
+        .unwrap();
+    // Cleanup seeds retain an original file even for a directory replacement.
+    let retained = if undone {
+        header.candidate_name()
+    } else {
+        header.original_name()
+    };
+    let payload_before = later_edits(&authority, &parent, &retained, directory);
+    let journal_before = controls(&authority, &parent, manager.root(), &header);
+    let mut held = Some(
+        authority
+            .open_entry(&parent, &retained, Some(directory), FILE_GENERIC_READ, 0)
+            .unwrap(),
+    );
+    Box::new(move || {
+        drop(held.take());
+        let payload = authority
+            .open_entry(
+                &parent,
+                &retained,
+                Some(directory),
+                FILE_GENERIC_READ,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            )
+            .unwrap();
+        assert_eq!(frozen(&authority, &payload), payload_before);
+        assert_eq!(
+            controls(&authority, &parent, manager.root(), &header),
+            journal_before
+        );
+        manager.validate().unwrap();
+        caller.validate().unwrap();
+    })
+}
+
+/// Read a publication using the same explicit caller-aware native access as
+/// the transaction engine. A private fixture parent need not grant ambient IO.
+pub(in super::super) fn assert_caller_wire_publication(
+    caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    path: &std::path::Path,
+) {
+    let authority = Authority::Caller(Arc::clone(&caller));
+    let parent = authority
+        .directory(path.parent().unwrap(), FILE_GENERIC_READ)
+        .unwrap();
+    let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    let root = authority
+        .open_entry(
+            &parent,
+            path.file_name().unwrap(),
+            None,
+            FILE_GENERIC_READ,
+            sharing,
+        )
+        .unwrap();
+    let directory = super::super::version(&root).unwrap().directory;
+    let payload = if directory {
+        authority
+            .open_entry(
+                &root,
+                OsStr::new("member.txt"),
+                Some(false),
+                FILE_GENERIC_READ,
+                sharing,
+            )
+            .unwrap()
+    } else {
+        root
+    };
+    let expected = if directory {
+        b"wire directory payload".as_slice()
+    } else {
+        b"unchanged caller source".as_slice()
+    };
+    assert_eq!(read(&payload).unwrap(), expected);
+    caller.validate().unwrap();
+}

@@ -53,10 +53,10 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `4861b17a` passes all four hosted jobs in
+Published source `9b6ca438` passes all four hosted jobs in
+[run42257541740](https://github.com/hoozter/ottrin/actions/runs/42257541740).
+Its preceding `4861b17a` also passes all four jobs in
 [run42247139035](https://github.com/hoozter/ottrin/actions/runs/42247139035).
-Its preceding `8d49b17c` also passes all four jobs in
-[run42237479342](https://github.com/hoozter/ottrin/actions/runs/42237479342).
 Stable application packages retain the separately accepted source scopes above.
 The earlier Linux portal `Text file busy` fixture failure is corrected through an
 immutable checked-in chooser fixture. Its source, stress checks and all-green
@@ -96,12 +96,37 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
    corrections and acceptance: `.hermes/evidence/caller-routing-current/`.
    Stable application packages are unchanged; administrator Copy stays disabled.
 
+   The current source change introduces protocol4 explicit Resume, end-attempt and
+   name-release requests, with specific recovery/ended/cleanup-pending history.
+   Sixty-five scoped Linux core/platform/UI/helper tests and strict Windows/Linux
+   lint pass, together with nine actual Linux helper protocol/action probes.
+   Eight interrupted file/directory pipe-recovery cases pass within 128 actual
+   authenticated requests and all 13 top-level native invocations. Sources,
+   preferences/index identities, security and bytes, edited unknown payloads and
+   terminal journal pairs are preserved. Exact source/build/receipt checks and
+   independent owned teardown pass in
+   `.hermes/evidence/caller-recovery-routing-current/ACCEPTANCE.json`.
+   Their interrupted seeds do not establish public dispatcher mutation-prefix or
+   actual process-restart coverage.
+   Two fixture defects are corrected: normalized native path spelling is matched
+   by the unique prepared case component, and private publications are inspected
+   through caller-aware native handles rather than ambient filesystem access.
+   The fresh complete run passes both end-attempt and all final preservation
+   assertions; production recovery guards were not weakened. Its wrapper's duplicate
+   SYSTEM log contains an exactly verified UTF8-to-ANSI decoding artifact; the
+   independent native log is intact. Both complete records are checked through that
+   exact conversion. The fixture now specifies UTF8, but this reporting-only change
+   has not been rerun in a guest. Original inputs and the limitation are retained in
+   `WRAPPER_ENCODING.json`; no test assertion or result is omitted.
+
    Remaining dependency-ready work, in order:
 
-   - Connect explicit Resume, end-attempt and name-release helper commands and
-     their recovery presentation through
-     the same authenticated caller. Connect operation Stop/progress before exposing
-     the feature. Keep history and partial batch results honest.
+   - Connect the explicit commands' Windows recovery presentation through the same
+     authenticated caller. Connect operation
+     Stop/progress before exposing
+     the feature. Merge ordinary and administrator Windows history by transaction
+     identity while preserving live receipt ownership; both use the caller's one
+     canonical registry. Keep history and partial batch results honest.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and the original-retention/restoration failure matrix,
      including readonly original roots.
