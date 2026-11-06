@@ -1959,6 +1959,40 @@ metadata/group/cohort parents. The ordinary audit-SACL case is intentionally
 ignored without its privilege, then explicitly passes in the SYSTEM lane.
 Both native runs have independent VM/disks/private desktop/profile/process teardown.
 Scope and provenance: `.hermes/evidence/caller-cohort-current/ACCEPTANCE.json`.
-Public caller cleanup/discovery admissions, complete caller failure/readonly/link
-matrices, actual process restart/new connections/UAC and package/profile contexts
-remain separate. Administrator Copy remains disabled.
+Complete caller failure/readonly/link matrices, actual process restart/new
+connections/UAC and package/profile contexts remain separate. Administrator Copy
+remains disabled. Public cleanup/discovery admission is described below.
+
+### Public caller cleanup and discovery admission
+
+The admitted WindowsCopyRegistry exposes cleanup and pending-cleanup plans using
+its retained runtime Authority. Canonical registry admission is validated before
+and after inspection; the resulting existing cohort writer retains that authority
+through mutation. Ordinary public entry points choose Process explicitly and use
+the same implementation. Persisted records still never select a caller token.
+
+Cleanup status discovery now passes the admitted authority into payload and
+metadata observations, preserving all native identity, security, namespace and
+content validation. Pending recovery uses the original cohort rather than a list
+of surviving local journals. Cancellation remains an error and performs no repair.
+
+The native fixture exercises public single-member, mixed and shared plans for
+file/directory sources; read-only payload/metadata discovery; cancellation;
+wrong-process and noncanonical registry refusal; repeated completion; original
+cohort IDs after local metadata removal; and post-unlink shared recovery. It keeps
+the outside-alias, public tree, source and original-user preferences/index checks.
+Cleanup runs before the journal fixture's deliberately incomplete creation states:
+the production guard requires complete peer dependency evidence even when a peer
+appears unrelated. The first native run demonstrated that refusal; the fixture
+ordering correction preserves every case and does not relax the guard.
+All 16 top-level native invocations pass: the ordinary client, SYSTEM helper and
+14 selected ordinary configured/pending/discovery parents. The helper covers ten
+public cleanup flows and four payload/metadata discovery pairs. Exact eleven-file
+source/build/staged-text binding, strict Windows platform/UI lint and independent
+owned VM/disks/private desktop/profile/process teardown pass. Evidence:
+`.hermes/evidence/caller-public-cleanup-current/ACCEPTANCE.json` and its source,
+build, first-failure and continuity receipts. Existing application packages retain
+their separately accepted source and hashes.
+Recapturing the same live client remains distinct from real process restart or a
+new authenticated connection. Full dispatcher and package/UAC acceptance remain
+required before administrator Copy can be enabled.

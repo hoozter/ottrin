@@ -1,0 +1,92 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-453b84cdfc3092af",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-8443172d8770f5ec",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-56888d836df3e486",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-c99a2c8a217e41b4",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    }
+  ]
+}

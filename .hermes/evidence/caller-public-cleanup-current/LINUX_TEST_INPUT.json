@@ -1,0 +1,128 @@
+{
+  "status": "all 49 native app tests passed",
+  "source": {
+    "crates/ottrin-app/src/portal.rs": "139ef6bd885574025b8e588302261e3ad6f5af8041891a308d47382416e0bce6",
+    "crates/ottrin-app/tests/fixtures/portal-chooser.py": "eab3c74843c606831ecc5e630d0fd8d019ba6e830f29ccb097ff077ed283833a"
+  },
+  "executable": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-f0e299e85f6fae93",
+  "sha256": "17ed327ba4e67c87ce7398fb33f14905fbfec48c2fff331b85cbd429bc4aba11",
+  "compiler_settings": {
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "declared_features": "[]",
+    "target": 17573561801879140266,
+    "profile": 1169666772337208464,
+    "path": 3586702553900163283,
+    "deps": [
+      [
+        818683448757727872,
+        "zbus",
+        false,
+        16078657686746553010
+      ],
+      [
+        3103006427892492725,
+        "tempfile",
+        false,
+        17534429006477071949
+      ],
+      [
+        6474963961299565797,
+        "build_script_build",
+        false,
+        1061977211377835580
+      ],
+      [
+        6633419628244209595,
+        "async_channel",
+        false,
+        2940735931034193105
+      ],
+      [
+        9090520973410485560,
+        "futures_lite",
+        false,
+        15409673384360628748
+      ],
+      [
+        9442355480334427104,
+        "winit",
+        false,
+        11938744742139510562
+      ],
+      [
+        10681258086952200236,
+        "image",
+        false,
+        17927865578052025794
+      ],
+      [
+        12288780711474049246,
+        "ottrin_platform",
+        false,
+        14435779565244754810
+      ],
+      [
+        13795362694956882968,
+        "serde_json",
+        false,
+        408646482418262309
+      ],
+      [
+        13999664647780254892,
+        "eframe",
+        false,
+        9773488042462736840
+      ],
+      [
+        15358881090539231479,
+        "ottrin_search",
+        false,
+        12313213412691810714
+      ],
+      [
+        15550619062825872913,
+        "async_io",
+        false,
+        14769582725712475218
+      ],
+      [
+        16111914811468750799,
+        "ottrin_ui",
+        false,
+        12546765841163930289
+      ],
+      [
+        17356403469156221485,
+        "ottrin_core",
+        false,
+        482932744386271116
+      ],
+      [
+        18365559012052052344,
+        "libc",
+        false,
+        11744745101555536901
+      ]
+    ],
+    "local": [
+      {
+        "CheckDepInfo": {
+          "dep_info": "debug/.fingerprint/ottrin-app-f0e299e85f6fae93/dep-test-bin-ottrin-app",
+          "checksum": false
+        }
+      }
+    ],
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 0
+  },
+  "command": "python3 scripts/test-workspace.py -p ottrin-app --bin ottrin-app",
+  "test_passes": 49,
+  "profile_cleanup": "test-workspace.py registered process/service/profile teardown",
+  "lint": {
+    "command": "cargo clippy -p ottrin-app --all-targets -- -D warnings",
+    "exit": 0,
+    "log_sha256": "ae091ce30ebe689d60f9c4b9a0baa5d4b7f4cf0a394c0a504bc4c5c9fb849d9d"
+  }
+}

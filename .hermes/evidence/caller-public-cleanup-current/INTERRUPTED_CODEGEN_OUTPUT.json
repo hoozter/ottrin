@@ -1,0 +1,253 @@
+{
+  "status": "Reviewed candidates; pending native acceptance and consumer check before deletion",
+  "producer": "Interrupted same-configuration compiler attempt; current rebuilt same-profile standalone executable retained",
+  "inputs": "NATIVE_TEST_INPUT.json / INTERRUPTED_BUILD.json",
+  "objects": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.0bgd2arhpzuwfmbiybvk083rg.0v7t3zh.rcgu.o",
+      "bytes": 14278467,
+      "links": 1,
+      "sha256": "1526d5cf189e947c9dfa0168548ada69549344604c46f87a5ac4da2713109297",
+      "modified_ns": 1793971806137665492
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.0d8inaqqsb0jp5vxn3ophnnzv.0v7t3zh.rcgu.o",
+      "bytes": 37927,
+      "links": 2,
+      "sha256": "ba9ed66ab585fb9eef7b0a449e604c007e432f10498879ca763adfe171f0d8c2",
+      "modified_ns": 1793969052706883666
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.1fpmbvri3tnlhe4b434ov56i6.0v7t3zh.rcgu.o",
+      "bytes": 22167048,
+      "links": 1,
+      "sha256": "42770e3103572b4a998220d4c09001eb9bc0dbcfc26895f33cb0cfc48189f4ea",
+      "modified_ns": 1793971794134506450
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.2t1srwy7uirb6a2o1ywlurrmq.0v7t3zh.rcgu.o",
+      "bytes": 23307005,
+      "links": 1,
+      "sha256": "cada3b364a60b2773cc3d10ce95648bc421c4d1ba6837014ed48ccb8dc9aaffa",
+      "modified_ns": 1793971800921596468
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.360c5l0aflxw00pvpy49lih0p.0v7t3zh.rcgu.o",
+      "bytes": 13757,
+      "links": 2,
+      "sha256": "6ba3f3af9af256f3900fd6fc60da35392bf24b004aec339ed163cc7978bb8a41",
+      "modified_ns": 1793969049433868408
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.3pqzwaag134lwgk6dvnushik0.0v7t3zh.rcgu.o",
+      "bytes": 20606859,
+      "links": 1,
+      "sha256": "cd1b18b6707bf339a1e226b5a86f3cad54dc6dee10e972b9986dced671cd7f0f",
+      "modified_ns": 1793971796578538892
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.4nhf1p0rsyrxscv346wep32ba.0v7t3zh.rcgu.o",
+      "bytes": 11241707,
+      "links": 1,
+      "sha256": "706929b1b146e0dfa89f73c7d048114d61f61ef21de05f2027bb5a81d1f57805",
+      "modified_ns": 1793971815492788946
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.54onqqkb9sbjc1o58z6uu2dta.0v7t3zh.rcgu.o",
+      "bytes": 18010,
+      "links": 2,
+      "sha256": "ffe731faadf0bd8d91deef149f60d284c3a650d5ca40b5cbaebc66fdfb89e2b0",
+      "modified_ns": 1793969087211047302
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.5d82pivyzcbgxf2teeivtkjnh.0v7t3zh.rcgu.o",
+      "bytes": 66805720,
+      "links": 1,
+      "sha256": "65c95da9af11e8ff81bb0c36f69590e99c616cd4d311631fb8b871c82284eaab",
+      "modified_ns": 1793971787786422042
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.5k2b46pfq20pq8undeeij7fxp.0v7t3zh.rcgu.o",
+      "bytes": 0,
+      "links": 1,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified_ns": 1793971824615908925
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.5ucgo2pamokp6u3hw3emuvtuh.0v7t3zh.rcgu.o",
+      "bytes": 71842,
+      "links": 1,
+      "sha256": "a716b985879b2452c290cb4002463c553b7ed7e017d33e687c1479401b4618e0",
+      "modified_ns": 1793971832092006945
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.7dip0tur79v1wqdtd9d3sn7fr.0v7t3zh.rcgu.o",
+      "bytes": 0,
+      "links": 1,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified_ns": 1793971780349322887
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.7k64qfjlhdlqfbgrl3m675pyb.0v7t3zh.rcgu.o",
+      "bytes": 49518,
+      "links": 2,
+      "sha256": "2cca1a3f0a1f4c0a8ddc962776e4fa2b8d18cca018f6d64d929b4c0943e93d08",
+      "modified_ns": 1793969046180853290
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.89tbaghm8bf0si79gpp4otago.0v7t3zh.rcgu.o",
+      "bytes": 1019,
+      "links": 1,
+      "sha256": "a218d1264002fa5e997b27b14b5da272d814aaf36335dc42bf39dec0b948ddd9",
+      "modified_ns": 1793971762031077411
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.8zlfnr2y81o959dqxzxcdok6q.0v7t3zh.rcgu.o",
+      "bytes": 45889,
+      "links": 2,
+      "sha256": "ad69f5722d709e2d212d0b67273776be006ee32b265c222231129c532f8a4a66",
+      "modified_ns": 1793969082813026167
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.94i6rzscjzac2bknft7pix2ph.0v7t3zh.rcgu.o",
+      "bytes": 0,
+      "links": 1,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified_ns": 1793971836197060654
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.96tqrxqnogm4439lltx4okcaz.0v7t3zh.rcgu.o",
+      "bytes": 41513,
+      "links": 2,
+      "sha256": "0a4eaf33ab919f7d7f9dc1f0682f77181458d57b7bbd82b3d391b062d539fa5f",
+      "modified_ns": 1793969077412000322
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.98r5qgaueibfo7sj98ihbomwp.0v7t3zh.rcgu.o",
+      "bytes": 53734,
+      "links": 2,
+      "sha256": "7f0bdd30c67ba00abe6dda155904da9cd2c486ebb4850818b8315d1280faa231",
+      "modified_ns": 1793969073729982772
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.9twks63s47wq2ox9dj9svbmup.0v7t3zh.rcgu.o",
+      "bytes": 0,
+      "links": 1,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified_ns": 1793971816687804685
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.a0fkcjk2z9oxemrsw4dyoccr9.0v7t3zh.rcgu.o",
+      "bytes": 72869,
+      "links": 2,
+      "sha256": "b0abb5ed2cdd408f7038fc65e404f1f3f958b478dc15d326d1e3d4812f508b3b",
+      "modified_ns": 1793969073036979475
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.a69ge957r04xljmlhstyl1b6r.0v7t3zh.rcgu.o",
+      "bytes": 37518,
+      "links": 2,
+      "sha256": "80e07039549f49974e38378f9c3f61185745973ed4d88b273f014ab0b470a0da",
+      "modified_ns": 1793969068986960248
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.a6xscpa1lut4me49zyrv3rc9o.0v7t3zh.rcgu.o",
+      "bytes": 5130093,
+      "links": 1,
+      "sha256": "2c29b7d104e18c0c46721d48cc96db954c1c59ac7749ba1ace6b370888251cd4",
+      "modified_ns": 1793971822200877204
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.adqa3r3xt05kylseosmz74p9y.0v7t3zh.rcgu.o",
+      "bytes": 37931,
+      "links": 2,
+      "sha256": "d22b8c99c2f76753ab503107ad8ac1d31ea724568dbd8cf97c39fcc0e73d93fd",
+      "modified_ns": 1793969042400835781
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.aic8cr1nm78sgi4z3asn33f6o.0v7t3zh.rcgu.o",
+      "bytes": 32743,
+      "links": 2,
+      "sha256": "62263d3a5314caf9bd33e11ca449e0e64a1dec9cd1a39682f322104d34081e4d",
+      "modified_ns": 1793969063429933981
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.ansfr0ojk31q45u1i0k0o7egp.0v7t3zh.rcgu.o",
+      "bytes": 52960,
+      "links": 2,
+      "sha256": "cb7fb20358b1463021b88005ab508824c9e38815e7fbc02c2ae273c12ca2dff8",
+      "modified_ns": 1793969062500929602
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.aueys4w4vr2yqenebfau3kh8o.0v7t3zh.rcgu.o",
+      "bytes": 25603,
+      "links": 2,
+      "sha256": "cc06d9f620b6b8251e951d3d02f48a7ca99ad0beaf4c450d55918b32432b6415",
+      "modified_ns": 1793969057943908177
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.cdmhsiamnkzxgvedek9l2r54k.0v7t3zh.rcgu.o",
+      "bytes": 5684864,
+      "links": 1,
+      "sha256": "582148c3f9a3688ec9856b30c8ed8d6fdfd58c0b87ba6ef83cf286671b8cedda",
+      "modified_ns": 1793971834405037217
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.ckxlqs16h9lhhc2ko3twrgp81.0v7t3zh.rcgu.o",
+      "bytes": 27069170,
+      "links": 1,
+      "sha256": "2bdd2d797426ec76cf94dc96f16d0b627e8b69a6504e8ad4a2270835edde442c",
+      "modified_ns": 1793971816074796612
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.cmxftyq09p8t8agqutzxdljxl.0v7t3zh.rcgu.o",
+      "bytes": 34195986,
+      "links": 1,
+      "sha256": "8fe01803f0b562bb27734c5d43d3e862182e1d1b80cda7172ac629a708314707",
+      "modified_ns": 1793971807738686650
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.coae9664tmcs7we029l1em0qs.0v7t3zh.rcgu.o",
+      "bytes": 62692,
+      "links": 2,
+      "sha256": "3b6d1ddad7c7ed0f540b83acd5e5cc41e905d463bf2e631af8c01b3c417e3a94",
+      "modified_ns": 1793969038589818193
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.csbfie401ct54y7gv71ttkvp0.0v7t3zh.rcgu.o",
+      "bytes": 0,
+      "links": 1,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified_ns": 1793971830676988413
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.d0ekv58xre7hfipnlbzcts30y.0v7t3zh.rcgu.o",
+      "bytes": 75347,
+      "links": 2,
+      "sha256": "2d6ce882693464e8316c9c88c8e3b8311b9df99b397cb912c4b7898b1049904f",
+      "modified_ns": 1793969029103774698
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.ddac4cteeec7uhhrmd0lsg5v8.0v7t3zh.rcgu.o",
+      "bytes": 53117,
+      "links": 2,
+      "sha256": "b3458eb4e899fcf63b69992f7ff05e294b6fafba96acf4c609770d90e18864d1",
+      "modified_ns": 1793969054108890216
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.dest33i2zui69pra4rbajqd0i.0v7t3zh.rcgu.o",
+      "bytes": 33409268,
+      "links": 1,
+      "sha256": "c24c8e75c5d08c4537e84d4c34650ad27c9f2846b5a761901a513bc2fb1fef50",
+      "modified_ns": 1793971829874977905
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.f5ltie3a2aipqamwno21luuoy.0v7t3zh.rcgu.o",
+      "bytes": 0,
+      "links": 1,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified_ns": 1793971809633711678
+    }
+  ],
+  "other_object_groups": "Older e2d6933b1ac22a07 and982d879498803cbe groups preserved, outside current interrupted build"
+}

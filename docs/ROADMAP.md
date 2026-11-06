@@ -62,6 +62,19 @@ their exact diagnosis and fixture-only patches remain in
 `caller-cleanup-current/HOSTED_FAILURE.json` and `FIXTURE_CORRECTIONS.patch`.
 Stable application packages retain the separately accepted source scopes above.
 
+The subsequent `d5ab3f33` run
+[42218175273](https://github.com/hoozter/ottrin/actions/runs/42218175273)
+exposed a Linux portal test-fixture launch failure: `Text file busy` while
+executing a newly written chooser script; the other three hosted jobs passed.
+The corrected tests execute an
+immutable checked-in fixture through the unchanged production chooser path.
+All 49 native app tests and 20 parallel portal cycles (80 repeated test passes)
+pass locally, including graceful pipe closure and pinned-pidfd forced termination.
+Strict Linux app/all-target lint passes. This is a fixture correction, not a
+changed production portal or a replacement for hosted acceptance. Evidence:
+`.hermes/evidence/caller-public-cleanup-current/HOSTED_FAILURE.json`,
+`LINUX_TEST_INPUT.json` and `LINUX_PORTAL_STRESS.json` in the same directory.
+
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
    Implemented engine components retain original-caller authority through canonical
    registry/profile admission, private claims/staging/journals, native permission
@@ -95,11 +108,22 @@ Stable application packages retain the separately accepted source scopes above.
    authority, permission, claim, staging, publication, receipt and recovery contracts
    remain in [WINDOWS_COPY_DESIGN.md](WINDOWS_COPY_DESIGN.md) and their receipts.
 
+   Public caller cleanup, pending-cohort recovery and cleanup status discovery
+   now retain canonical registry authority. Ten native caller flows pass through
+   public single-member, mixed and shared plans for file/directory sources, with
+   cancellation, original cohort IDs, idempotent completion and foreign-root
+   refusal. Four payload/metadata discovery pairs preserve journals and cancellation.
+   All 16 top-level native invocations pass: the ordinary client, SYSTEM helper
+   and all 14 selected ordinary configured/pending/discovery regression parents.
+   Strict Windows platform/UI lint and independent VM/disks/private desktop/profile/
+   process teardown pass. The first native run correctly refused cleanup after
+   deliberately incomplete journal fixtures; reordering those fixtures preserved
+   every case and the production dependency guard. Exact source/build binding,
+   failure diagnosis, continuity and final acceptance are retained in
+   `.hermes/evidence/caller-public-cleanup-current/ACCEPTANCE.json` and its receipts.
+
    Remaining dependency-ready work, in order:
 
-   - Finish public caller cleanup admissions, pending-cohort recovery and
-     discovery/status inspection. Caller
-     cleanup can still show NeedsReview until those entry points retain authority.
    - Wire the actual caller dispatcher while retaining original source pins and
      canonical registry admission through the whole operation.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication

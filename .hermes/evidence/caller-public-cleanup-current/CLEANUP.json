@@ -1,0 +1,37 @@
+{
+  "status": "Owned cleanup complete; current source, packages, tests and useful caches preserved",
+  "removed": {
+    "superseded_standalone_executables": 5,
+    "older_incremental_sessions": 30,
+    "interrupted_codegen_objects": 35,
+    "consumed_native_compiler_CI_intermediates": 32,
+    "native_runs_torn_down": 2
+  },
+  "evidence": [
+    "APP_OUTPUT_CLEANUP_LEDGER.json",
+    "TEST_OUTPUT_CLEANUP.json",
+    "INCREMENTAL_PARTIAL.json",
+    "INCREMENTAL_RETRY_CLEANUP.json",
+    "LINUX_INCREMENTAL_CLEANUP.json",
+    "FINAL_INCREMENTAL_CLEANUP.json",
+    "FINAL_OUTPUT_CLEANUP.json",
+    "CACHE_ACCOUNTING.json"
+  ],
+  "pending_consumers": [],
+  "remaining_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-public-cleanup-current",
+      "purpose": "Compact source/build/test/failure/teardown receipts and reproduction scripts; retained acceptance evidence"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/debug",
+      "purpose": "Current Linux app/helper test executables and newest shared compiler caches; future roadmap verification"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug",
+      "purpose": "Current Windows platform/UI test executables and newest shared compiler caches; next caller-dispatcher implementation"
+    }
+  ],
+  "stable_packages": "PRESERVED_PACKAGES.json unchanged; no new package cohort",
+  "scope": "Both native fixtures/VMs/disks/private displays/profiles and all task-owned test processes removed; no blanket cargo clean or unrelated data removal"
+}

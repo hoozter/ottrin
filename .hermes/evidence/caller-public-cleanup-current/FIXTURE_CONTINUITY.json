@@ -1,0 +1,20 @@
+{
+  "status": "All ten first-source files remain byte-identical; only additional caller-owner test ordering changed",
+  "unchanged_first_source_files": {
+    "crates/ottrin-app/src/portal.rs": "139ef6bd885574025b8e588302261e3ad6f5af8041891a308d47382416e0bce6",
+    "crates/ottrin-app/tests/fixtures/portal-chooser.py": "eab3c74843c606831ecc5e630d0fd8d019ba6e830f29ccb097ff077ed283833a",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "a12b07d6854969d9395fed2bc91babd3496891b9fda01960f1a2f6e9f347bf64",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "82d27ab21b4724105f680acf1058596c5a1fab9708d66517e32e102e83aea476",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "5142c19612cb77e21ffb6538c2c406a9a14faa93555ed7f5dfa6b9a4d19b6484",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "1d3130d466627a1bfe2a6f1a031c7c6d94ea769857efbe8bcc62473b20e3d2a8",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "dc871bc27616db1a7dae8244e720bdd7c7e61ce2650b71b57cecae7a3caaf9fb",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "dde3591204fae2787e7cc9bf0ea952c44d2dd37d833bfe709f59a60764e5ebac",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "c54116fc749ff65fee54ae13099116c409426bccec9a45978507da4cc2d32a3c",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c4f2feb59917371dd6e3c8b1cb437e2c5702ab67f261d6053a7bb3d02caa7c75"
+  },
+  "changed_fixture": "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs",
+  "old_sha256": "3e17d8dc5b6b58a94df4960366dafef95f0146c3f1a2590657e4438384d57bbb",
+  "new_sha256": "18a416ea42f6236f8b42afe0f8216a306b8f35715c1271a1c530be20ddafe8b3",
+  "correction": "Exercise recovery/public cleanup before journal cases that intentionally leave incomplete creations; no case or production guard removed",
+  "scopes": "First failed native snapshot remains failure evidence; fresh current-source rerun is required for acceptance"
+}

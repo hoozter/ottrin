@@ -1,0 +1,8 @@
+{
+  "exit": 143,
+  "status": "terminated before final compiler success; not acceptance",
+  "processes": "No cargo/rustc remaining on independent process inspection",
+  "cause": "Not established; observed kernel OOM referred to an unrelated scope, not this build",
+  "compiler_jsonl_sha256": "339ef62466ff2f4d5fa12dbd3361b39bc8743ddb227ef5048b02db4711118895",
+  "next": "Retry same command, caches and settings; no live build restarted"
+}

@@ -524,6 +524,7 @@ impl Plan {
 
     /// Inspect existing paired removal authority without writing, flushing or
     /// removing anything. All leases are released before returning this proof.
+    #[cfg(test)]
     pub(super) fn observe(
         parent: &File,
         central: &File,

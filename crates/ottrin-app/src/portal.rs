@@ -558,7 +558,6 @@ pub(super) fn run() -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::os::unix::fs::PermissionsExt;
 
     #[test]
     fn file_chooser_version_property_matches_the_desktop_portal_contract() {
@@ -599,20 +598,19 @@ mod tests {
             }
         }
     }
-    fn start(dir: &std::path::Path, body: &str) -> OwnedTest {
-        let executable = dir.join("chooser");
-        std::fs::write(
-            &executable,
-            format!(
-                "#!/usr/bin/python3\nimport sys,json,time,pathlib\nsys.stdin.readline()\n{body}\n"
-            ),
-        )
-        .unwrap();
-        std::fs::set_permissions(&executable, std::fs::Permissions::from_mode(0o700)).unwrap();
+    fn start(dir: &std::path::Path, mode: &str) -> OwnedTest {
+        // This fixture is immutable during the test run. Executing a freshly
+        // written script can race a concurrent fork's inherited write fd.
+        let executable =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/portal-chooser.py");
+        let request = ottrin_core::picker::PickerRequest {
+            title: mode.into(),
+            initial_directory: Some(dir.to_path_buf()),
+            ..Default::default()
+        };
         let state = Arc::new(RequestState::new(":owned-test".into()));
         let child_state = state.clone();
-        let worker =
-            std::thread::spawn(move || chooser(&executable, &Default::default(), child_state));
+        let worker = std::thread::spawn(move || chooser(&executable, &request, child_state));
         let mut owner = OwnedTest {
             state,
             worker: Some(worker),
@@ -631,8 +629,7 @@ mod tests {
     #[test]
     fn portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser() {
         let dir = tempfile::tempdir().unwrap();
-        let body = "sys.stdin.read()\npathlib.Path(__file__).with_name('graceful').write_text('closed')\nprint(json.dumps(dict(accepted=False,paths=[],current_filter=None,choices={})))";
-        let mut owner = start(dir.path(), body);
+        let mut owner = start(dir.path(), "graceful");
         owner.state.cancel();
         owner.state.cancel();
         assert!(!owner.join().unwrap().accepted);
@@ -645,7 +642,7 @@ mod tests {
     #[test]
     fn unresponsive_chooser_is_stopped_through_its_pinned_pidfd() {
         let dir = tempfile::tempdir().unwrap();
-        let mut owner = start(dir.path(), "while True: time.sleep(30)");
+        let mut owner = start(dir.path(), "unresponsive");
         let started = Instant::now();
         owner.state.cancel();
         assert!(!owner.join().unwrap().accepted);

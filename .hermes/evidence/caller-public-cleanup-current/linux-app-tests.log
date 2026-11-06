@@ -1,0 +1,69 @@
+   Compiling glib-sys v0.20.10
+   Compiling gobject-sys v0.20.10
+   Compiling winit v0.30.12
+   Compiling gio-sys v0.20.10
+   Compiling glib v0.20.12
+   Compiling accesskit_winit v0.29.2
+   Compiling egui-wgpu v0.33.3
+   Compiling glutin-winit v0.5.0
+   Compiling egui-winit v0.33.3 (/home/campbell/Projects/Ottrin/vendor/egui-winit)
+   Compiling eframe v0.33.3 (/home/campbell/Projects/Ottrin/vendor/eframe)
+   Compiling gio v0.20.12
+   Compiling ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `test` profile [optimized + debuginfo] target(s) in 47.25s
+     Running unittests src/main.rs (target/debug/deps/ottrin_app-f0e299e85f6fae93)
+
+running 49 tests
+test portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok
+test portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok
+test portal_options::tests::cancelled_responses_disclose_no_paths_or_choice_results ... ok
+test file_manager::tests::methods_validate_the_entire_native_batch_before_launching ... ok
+test portal_options::tests::file_uris_encode_raw_units_metacharacters_and_unicode_without_loss ... ok
+test portal_options::tests::invalid_byte_paths_filters_and_choices_are_refused_before_ui ... ok
+test portal_options::tests::native_current_file_wins_over_other_save_hints ... ok
+test tests::administrator_gui_launch_does_not_start_index ... ok
+test tests::administrator_window_title_identifies_the_privileged_session ... ok
+test portal_options::tests::save_files_keep_order_avoid_existing_and_duplicate_names_and_create_nothing ... ok
+test tests::canonical_drop_actions_are_recognized_before_the_gui_starts ... ok
+test portal_options::tests::open_filters_choices_and_labels_follow_portal_types ... ok
+test tests::canonical_preview_command_and_alias_preserve_the_requested_path ... ok
+test tests::canonical_search_and_index_commands_are_recognized_before_the_gui_starts ... ok
+test tests::cargo_helper_artifact_parser_uses_cargo_reported_executable_for_all_target_modes ... ok
+test tests::command_separator_preserves_literal_options_and_help_queries ... ok
+test tests::folder_commands_are_headless_and_reject_unowned_modifiers ... ok
+test tests::global_gui_options_reject_missing_unsupported_or_repeated_values ... ok
+test tests::direct_path_resolution_distinguishes_files_and_directories ... ok
+test tests::direct_directory_argument_is_a_gui_open_path ... ok
+test tests::cargo_helper_artifact_parser_rejects_missing_or_wrong_artifacts ... ok
+test tests::caller_lease_blocks_without_polling_retries_interrupts_and_wakes_on_eof ... ok
+test tests::disconnect_protocol_has_one_bounded_request_frame_and_keeps_the_lease ... ok
+test tests::graphics_recovery_override_accepts_both_cli_forms ... ok
+test tests::direct_file_argument_opens_quick_inspector_without_an_index_command ... ok
+test tests::index_startup_failure_is_a_ui_result_instead_of_a_process_exit ... ok
+test tests::graphics_recovery_override_can_select_opengl_without_changing_windows_default ... ok
+test tests::invalid_renderer_override_is_rejected_instead_of_silently_using_wgpu ... ok
+test tests::index_startup_broker_is_headless_and_rejects_ambiguous_arguments ... ok
+test tests::native_renderer_uses_wgpu_on_windows_and_glow_elsewhere ... ok
+test tests::initial_viewport_fits_taskbar_work_area_at_normal_and_scaled_dpi ... ok
+test tests::portal_entry_is_headless_and_rejects_unowned_arguments ... ok
+test tests::native_cli_paths_survive_open_reveal_preview_drop_and_helper_options ... ok
+test tests::global_gui_options_preserve_target_and_action_in_either_position ... ok
+test tests::search_page_options_are_validated_before_query_execution ... ok
+test tests::preview_path_resolution_rejects_missing_and_non_file_paths ... ok
+test tests::properties_accepts_native_batches_and_reveal_accepts_folders_and_roots ... ok
+test tests::select_option_reveals_exactly_one_file_in_the_main_window ... ok
+test tests::picker_requests_are_bounded_and_validated_before_graphics_startup ... ok
+test tests::reveal_selects_a_link_in_its_parent_instead_of_following_the_target ... ok
+test tests::slow_index_startup_returns_control_before_the_daemon_is_ready ... ok
+test tests::unknown_cli_syntax_is_rejected_instead_of_opening_the_gui ... ok
+test tests::unowned_index_modifiers_are_rejected ... ok
+test tests::standalone_inspector_keeps_a_mapped_root_for_secondary_viewport_painting ... ok
+test tests::startup_failure_diagnostic_is_durable_and_names_its_location ... ok
+test tests::text_only_cli_options_reject_native_non_text_without_panicking ... ok
+test tests::windows_composition_is_opaque_while_other_platforms_keep_transparency ... ok
+test portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok
+test portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok
+
+test result: ok. 49 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.01s

@@ -1,0 +1,745 @@
+{
+  "removed_exact_paths": [
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-453b84cdfc3092af",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-8443172d8770f5ec",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-56888d836df3e486",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-c99a2c8a217e41b4",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486.d",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4.d"
+  ],
+  "actions": [
+    {
+      "time": "2026-11-06T13:16:05.043667+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "52f5fef2209804e93b6567c7f426cb8962b7e6adf8a3c033d0251ff413aad623",
+        "allocated_bytes_upper_bound": 820469760,
+        "entries": 1,
+        "newest_mtime_ns": 1793670188343507643
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:05.043667+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "52f5fef2209804e93b6567c7f426cb8962b7e6adf8a3c033d0251ff413aad623",
+        "allocated_bytes_upper_bound": 820469760,
+        "entries": 1,
+        "newest_mtime_ns": 1793670188343507643
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:05.390241+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "a4610097deb87c866c276fa26ebefd5c1367e9414f932d0359ac971a8ee4fef7",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1793670161623333418
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:05.390241+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "a4610097deb87c866c276fa26ebefd5c1367e9414f932d0359ac971a8ee4fef7",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1793670161623333418
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:05.678400+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-453b84cdfc3092af",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "a41e2b730583f30fc600dc6945c5b6e24e7bed847623068a90949e3ebe2d11e4",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1793670189353514238
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:05.678400+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-453b84cdfc3092af",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "a41e2b730583f30fc600dc6945c5b6e24e7bed847623068a90949e3ebe2d11e4",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1793670189353514238
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:05.989793+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "6f016a8c5fbfe32bcf437a6270e17f769e967b4e3da03b68e1f8fbd7ddeb192c",
+        "allocated_bytes_upper_bound": 759590912,
+        "entries": 1,
+        "newest_mtime_ns": 1793684347757828892
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:05.989793+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "6f016a8c5fbfe32bcf437a6270e17f769e967b4e3da03b68e1f8fbd7ddeb192c",
+        "allocated_bytes_upper_bound": 759590912,
+        "entries": 1,
+        "newest_mtime_ns": 1793684347757828892
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:06.335843+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "acee4240cfd7c89c86d10d10a4ad9ad7d04dca23bee805715d5abea68ae06a68",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1793684342910794681
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:06.335843+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "acee4240cfd7c89c86d10d10a4ad9ad7d04dca23bee805715d5abea68ae06a68",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1793684342910794681
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:06.591727+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-8443172d8770f5ec",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "740e07c0d069cf55b67f7f9ef74a8f1340ff89040adad29c7bd91d2da2f01bdf",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1793684348013830699
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:06.591727+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-8443172d8770f5ec",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "740e07c0d069cf55b67f7f9ef74a8f1340ff89040adad29c7bd91d2da2f01bdf",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1793684348013830699
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:20.339909+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "cd39e15a074b79152592b67e84e406c89121fa81d4150edf59dc7896c406db2a",
+        "allocated_bytes_upper_bound": 371863552,
+        "entries": 1,
+        "newest_mtime_ns": 1791746609941083060
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:20.339909+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "cd39e15a074b79152592b67e84e406c89121fa81d4150edf59dc7896c406db2a",
+        "allocated_bytes_upper_bound": 371863552,
+        "entries": 1,
+        "newest_mtime_ns": 1791746609941083060
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:20.622695+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "1157d0ace7bb572bf4eaf9026065bfc73565fd77bce1cbd77295cbac195eda17",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1791746606566025019
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:20.622695+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "1157d0ace7bb572bf4eaf9026065bfc73565fd77bce1cbd77295cbac195eda17",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1791746606566025019
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:20.912651+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-56888d836df3e486",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "b7f81286a72f6e2d5bcd5c5b477719e9f8a259e19ef6ebb4cbc3b2dd92949649",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1791746611365107520
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:20.912651+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-56888d836df3e486",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "b7f81286a72f6e2d5bcd5c5b477719e9f8a259e19ef6ebb4cbc3b2dd92949649",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1791746611365107520
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:21.169425+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "0f071416853be7f3ecd1ad6bc4cda0e8b4b95436e8dc60a8f2287ee0c337bc19",
+        "allocated_bytes_upper_bound": 374325248,
+        "entries": 1,
+        "newest_mtime_ns": 1792944442427159889
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:21.169425+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "0f071416853be7f3ecd1ad6bc4cda0e8b4b95436e8dc60a8f2287ee0c337bc19",
+        "allocated_bytes_upper_bound": 374325248,
+        "entries": 1,
+        "newest_mtime_ns": 1792944442427159889
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:21.425427+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "3c6642f73ff2a9ff6c153eb8e19094e5367ef9f6027fc041894a1a63ea37ef34",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1792944440804148090
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:21.425427+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4.d",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "3c6642f73ff2a9ff6c153eb8e19094e5367ef9f6027fc041894a1a63ea37ef34",
+        "allocated_bytes_upper_bound": 4096,
+        "entries": 1,
+        "newest_mtime_ns": 1792944440804148090
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T13:16:21.681204+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-c99a2c8a217e41b4",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "ff114f29293f2e167d77aa8eb94fb3469cf87dc89cadc1fe5f8b0db3dac21435",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1792944443424167142
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T13:16:21.681204+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-preview-c99a2c8a217e41b4",
+      "kind": "build-cache",
+      "reason": "Superseded standalone native output; current same-settings replacement retained",
+      "evidence": "APP_OUTPUT_RETIREMENT.json exact settings, link counts, hashes and replacement verification; project and service reference search found only completed historical portal-stress script, whose receipt remains. Current native tests, stable debug launchers, packages, dependency libraries and source preserved.",
+      "snapshot": {
+        "digest": "ff114f29293f2e167d77aa8eb94fb3469cf87dc89cadc1fe5f8b0db3dac21435",
+        "allocated_bytes_upper_bound": 20480,
+        "entries": 5,
+        "newest_mtime_ns": 1792944443424167142
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    }
+  ],
+  "partial_refusal": "First apply safely stopped after6 paths at process3969909; independently confirmed exited before preparing only remaining6; retry passed.",
+  "preserved": [
+    "stable debug app/renderer hardlinks",
+    "current app test executable",
+    "source/libraries/useful caches",
+    "current dist deliverables"
+  ]
+}

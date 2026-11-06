@@ -1,0 +1,64 @@
+{
+  "source": {
+    "reference_commit": "d5ab3f339e998c981d214bf26afb468f6d26d08a",
+    "files": {
+      "crates/ottrin-app/src/portal.rs": "139ef6bd885574025b8e588302261e3ad6f5af8041891a308d47382416e0bce6",
+      "crates/ottrin-app/tests/fixtures/portal-chooser.py": "eab3c74843c606831ecc5e630d0fd8d019ba6e830f29ccb097ff077ed283833a",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "a12b07d6854969d9395fed2bc91babd3496891b9fda01960f1a2f6e9f347bf64",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "82d27ab21b4724105f680acf1058596c5a1fab9708d66517e32e102e83aea476",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "5142c19612cb77e21ffb6538c2c406a9a14faa93555ed7f5dfa6b9a4d19b6484",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "1d3130d466627a1bfe2a6f1a031c7c6d94ea769857efbe8bcc62473b20e3d2a8",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "dc871bc27616db1a7dae8244e720bdd7c7e61ce2650b71b57cecae7a3caaf9fb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "dde3591204fae2787e7cc9bf0ea952c44d2dd37d833bfe709f59a60764e5ebac",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "c54116fc749ff65fee54ae13099116c409426bccec9a45978507da4cc2d32a3c",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c4f2feb59917371dd6e3c8b1cb437e2c5702ab67f261d6053a7bb3d02caa7c75"
+    },
+    "scope": "Windows public caller cleanup/pending/discovery admissions plus separately tested Linux-only portal fixture correction; production portal prefix unchanged",
+    "coverage_partition": {
+      "windows": [
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs",
+        "crates/ottrin-platform/src/copy_transaction/windows/registry.rs"
+      ],
+      "linux_test_fixture": [
+        "crates/ottrin-app/src/portal.rs",
+        "crates/ottrin-app/tests/fixtures/portal-chooser.py"
+      ]
+    }
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "a773fd7ef77540325f80306f3519dd3ce0319e2dd04517db17693a53c76fb786",
+      "bytes": 658782771,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    },
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "dd0511f6f5558cf60f7e0b974f51ef64fa14c01fef8d3a5bc684960a53713438",
+      "bytes": 772734515,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    }
+  ],
+  "compiler_jsonl_sha256": "09c731d2720e5682daef095361e8ed90b20ef567c78604e06a2920bc29a757cc",
+  "command": "cargo test -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --lib --no-run --message-format=json"
+}

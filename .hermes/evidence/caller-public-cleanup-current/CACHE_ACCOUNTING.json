@@ -1,0 +1,24 @@
+{
+  "scope": "Final compiler-cache accounting after native acceptance and owned output cleanup",
+  "baseline": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29457641472,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49634570240
+  },
+  "current": {
+    "target/debug/deps": 22343532544,
+    "target/debug/incremental": 25769959424,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29477560320,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49688875008
+  },
+  "deltas": {
+    "target/debug/deps": -1479573504,
+    "target/debug/incremental": 411652096,
+    "target/x86_64-pc-windows-gnu/debug/deps": 19918848,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 54304768
+  },
+  "removed_incremental_sessions": 30,
+  "removed_standalone_executables": 5,
+  "preserved": "Current app/test binaries, current dist deliverables, dependency libraries and newest finalized exact-configuration sessions"
+}

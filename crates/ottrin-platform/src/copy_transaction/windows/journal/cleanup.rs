@@ -75,6 +75,7 @@ impl Admission {
         &self.header
     }
 
+    #[cfg(test)]
     pub(super) fn observe(
         parent: &File,
         central: &File,

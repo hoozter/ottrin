@@ -1,0 +1,11 @@
+{
+  "status": "exact source/build/staged executable text/native result binding passed",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 498200576,
+    "sha256": "5d0072447e117c834a07b6bc74230cca18aaa1e4c81cdc96ef08fafeed821c75"
+  }
+}

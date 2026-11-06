@@ -1,0 +1,18 @@
+{
+  "candidate": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-b5a1cf66b9476b20",
+  "candidate_sha256": "51002548b48eec4992db2d7ed4ccf18dc807fc3a8eb7cb78bf61ae056be4ab22",
+  "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+  "replacement_sha256": "5afcf18cc680e86ef7e65f97fd9c5d60f3dfad049fe611f622f7877420ecb0f0",
+  "settings": {
+    "rustc": 18276270781310494267,
+    "features": "[]",
+    "target": 3195842057878862761,
+    "profile": 4539089746505721204,
+    "path": 13573265171931268338,
+    "rustflags": [],
+    "config": 8247474407144887393,
+    "compile_kind": 0
+  },
+  "functional_verification": "REPLACEMENT_HELPER_VERIFICATION.json",
+  "scope": "Retire old standalone test and its exact dep-info/fingerprint, preserve newer test, source and libraries; no service/script callers of old exact name; helper checks process refs"
+}

@@ -1,0 +1,56 @@
+{
+  "status": "pass public caller cleanup/pending/discovery and affected ordinary controls",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native_invocations": 16,
+  "test_passes": 16,
+  "caller_public_cleanup_flows": 10,
+  "caller_payload_metadata_discovery_pairs": 4,
+  "ordinary_tests": [
+    "windows_native_copy_cleanup_protocol_binds_terminal_evidence_and_ordered_progress",
+    "windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order",
+    "windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission",
+    "windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations",
+    "windows_native_copy_cleanup_unrecognized_registry_names_stay_visible_and_block_mutation",
+    "windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryable",
+    "windows_native_copy_cleanup_group_mixed_refuses_foreign_changes_during_execution",
+    "windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+    "windows_native_copy_cohort_replays_later_pending_member",
+    "windows_native_copy_cohort_torn_checkpoint_replays_only_validated_prefix",
+    "windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl",
+    "windows_native_copy_cohort_preserves_lossless_native_paths",
+    "windows_native_copy_cohort_refuses_tail_after_completed_prefix",
+    "windows_native_copy_cohort_fences_new_copy_and_unselected_undo"
+  ],
+  "archive_sha256": "54025ea64dddfbcfcd86b9c6266459f2222f7c9f5d0f77103c4a780423ec02de",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "limits": [
+    "Original client is still live; recaptured contexts do not prove actual client/helper restart or new authenticated connections",
+    "Full caller dispatcher, complete failure/readonly/symbolic-link matrices, TokenOwner mutation and alternate-admin UAC/package/profile gates remain required",
+    "Administrator Copy stays disabled; stable packages unchanged; hosted acceptance separate"
+  ],
+  "coverage": [
+    "Admitted WindowsCopyRegistry exposes cleanup/pending plans using retained authority and canonical profile admission; ordinary public entry points select Process once",
+    "Shared discovery observes caller payload/metadata cleanup without mutation and preserves cancellation; existing identity/security/content checks remain",
+    "Actual file/directory single, mixed and shared cohorts finish through public plans; original-cohort pending recovery works after local removal; invalid authority/foreign registry/cancelled admission refuse; outside aliases/public trees/source/preferences/index remain preserved",
+    "Fourteen exact ordinary public configured/pending/discovery parents cover interruption, unknown namespace data, native path losslessness, torn checkpoints, foreign ACL/log changes and new-work fencing"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "123f0795ce3457e792063f915401d0b604b2d6b02d0a18ba6674cf5caeeef900"
+  }
+}

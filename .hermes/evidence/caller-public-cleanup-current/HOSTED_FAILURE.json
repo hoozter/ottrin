@@ -1,0 +1,25 @@
+{
+  "status": "test fixture correction; production portal implementation unchanged",
+  "failure_job": 127893319955,
+  "failure_run": 42218175273,
+  "failure_test": "portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd",
+  "observed_error": "Text file busy (os error 26) while executing newly written fixture",
+  "correction": "Checked-in immutable executable fixture; real production chooser spawn/pipe/pidfd code and all graceful marker/forced-stop timing assertions preserved",
+  "source": {
+    "crates/ottrin-app/src/portal.rs": "139ef6bd885574025b8e588302261e3ad6f5af8041891a308d47382416e0bce6",
+    "crates/ottrin-app/tests/fixtures/portal-chooser.py": "eab3c74843c606831ecc5e630d0fd8d019ba6e830f29ccb097ff077ed283833a"
+  },
+  "production_prefix_sha256": "1da594183eddec16061a3ae1b5f413c65d8d92541b2f8b7401bf050ef184827a",
+  "hosted_log_sha256": "7005f7b89e11eebf89b1f5ea11f88d3c3a04eb4ccd90001519a311f124dc9ca5",
+  "failure_excerpt": [
+    "2026-11-06T12:34:57.3971051Z failures:",
+    "2026-11-06T12:34:57.3971293Z ",
+    "2026-11-06T12:34:57.3971847Z ---- portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd stdout ----",
+    "2026-11-06T12:34:57.3972610Z ",
+    "2026-11-06T12:34:57.3973568Z thread 'portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd' (6635) panicked at crates/ottrin-app/src/portal.rs:624:17:",
+    "2026-11-06T12:34:57.3975299Z Chooser exited before publishing its lease: Err(\"Could not launch Ottrin chooser: Text file busy (os error 26)\")",
+    "2026-11-06T12:34:57.3976621Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+    "2026-11-06T12:34:57.3977206Z ",
+    "2026-11-06T12:34:57.3977222Z "
+  ]
+}

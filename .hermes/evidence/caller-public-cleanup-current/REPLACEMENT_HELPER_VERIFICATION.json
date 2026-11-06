@@ -1,0 +1,10 @@
+{
+  "status": "pass all 11 newer native helper tests in disposable HOME/XDG state",
+  "executable": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_priv_helper-54132b059e6f738d",
+  "sha256": "5afcf18cc680e86ef7e65f97fd9c5d60f3dfad049fe611f622f7877420ecb0f0",
+  "test_passes": 11,
+  "exit": 0,
+  "profile": "/tmp/ottrin-cache-verification-gy7ewzei",
+  "profile_removed_after_context": true,
+  "runner": "scripts/test-workspace.py isolated_environment"
+}

@@ -671,14 +671,16 @@ pub(in crate::copy_transaction::windows) fn discover_directory(
             }
             if let Some(cleanup) = &state.cleanup {
                 if cleanup.metadata_removal_intent {
-                    super::cleanup_finalize::Plan::observe(
+                    super::cleanup_finalize::Plan::observe_with(
+                        authority,
                         &parent,
                         central,
                         &header.stage_name(),
                         &mut progress,
                     )?;
                 } else {
-                    super::cleanup::Admission::observe(
+                    super::cleanup::Admission::observe_with(
+                        authority,
                         &parent,
                         central,
                         &header.stage_name(),

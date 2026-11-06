@@ -1,0 +1,444 @@
+{
+  "status": "stopped on transient inspection gap; PID independently gone before retry",
+  "gap_pid": 3933831,
+  "removed_paths": [
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1ecm900ayg162/s-hnwnznxdr1-1utnqvt-6ut6ekvfnysszae0oee2gid4s",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kulopz5455sp/s-hnwnx14ymt-0jlbp95-eja5wvx14gcvio21wxo0jjot1",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1qyses8t2cztp/s-hnwnw8n08h-1cq8zni-3q9bbgkrr5o1hj48zatil2qhb",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-25cr5mxdbo9w3/s-hnwomn6t2m-0htqviz-ctnt029osg9cq85ekyzdvzey1",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwory5wbc-0rip5mo-6z902ufbq98p8ew51m069u5dn",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwopbj7yj-01gkklx-946c9qpp0qi8ly5pr05g8enzg",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1a9q2k13gmc8n/s-hnwnzrgnd0-0ond2jp-ag8o7r9o5rul3k4abupp8hij1"
+  ],
+  "remaining_paths": [
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1w4zv3l5rguav/s-hnwnzrgpry-0yvn8bf-00upu01lmqekh3gtgm4ua898f",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-2pb5mczhxswdm/s-hnwnwa46f9-1mwjb4a-7jljesc0x6roq6vew1xgbydtg",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_search-33pm2ixta6i6v/s-hnwnzrhad6-03ea2zs-bjvlx4rv0clpvx5nblf036ntt",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_search-3e9a2i98scben/s-hnwnx3lcgz-15v55k7-0st2d6oo0etv7e4m9n4e07yob",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0jtapt06a26oi/s-hnwnzsnfqt-05rqhlt-3wmaebla7lalqihgiujkd6cvh",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3jepsrbp170x5/s-hnwnzsnfdv-197q8xz-bueww8jtuhx0nv5bte0enix3z",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3ljecrdd3b4ww/s-hnwnx4kbtt-0y1ki10-5is2up6v49b03jw1lto2gcu0u"
+  ],
+  "ledger": [
+    {
+      "time": "2026-11-06T12:48:00.071209+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1ecm900ayg162/s-hnwnznxdr1-1utnqvt-6ut6ekvfnysszae0oee2gid4s",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1ecm900ayg162/s-hnwq261sy2-1la90kb-7857sejco4janid5ia2xcthj8. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "fb9c458c3f0a12987dc68e8e1fd7848cfca377744e9b2843d56efd8ba0185e8f",
+        "allocated_bytes_upper_bound": 51040256,
+        "entries": 5,
+        "newest_mtime_ns": 1793964672837632146
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T12:48:00.071209+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1ecm900ayg162/s-hnwnznxdr1-1utnqvt-6ut6ekvfnysszae0oee2gid4s",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1ecm900ayg162/s-hnwq261sy2-1la90kb-7857sejco4janid5ia2xcthj8. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "fb9c458c3f0a12987dc68e8e1fd7848cfca377744e9b2843d56efd8ba0185e8f",
+        "allocated_bytes_upper_bound": 51040256,
+        "entries": 5,
+        "newest_mtime_ns": 1793964672837632146
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T12:48:01.105432+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kulopz5455sp/s-hnwnx14ymt-0jlbp95-eja5wvx14gcvio21wxo0jjot1",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kulopz5455sp/s-hnwpzb56u2-00xt19v-f3o94fbf8pwvxe4k6o7ilvi0z. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "864310b83b1745524d285f187df45e9ce19d4a02f1f129769660026b4d3d1014",
+        "allocated_bytes_upper_bound": 129544192,
+        "entries": 261,
+        "newest_mtime_ns": 1793964513225449552
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T12:48:01.105432+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kulopz5455sp/s-hnwnx14ymt-0jlbp95-eja5wvx14gcvio21wxo0jjot1",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1kulopz5455sp/s-hnwpzb56u2-00xt19v-f3o94fbf8pwvxe4k6o7ilvi0z. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "864310b83b1745524d285f187df45e9ce19d4a02f1f129769660026b4d3d1014",
+        "allocated_bytes_upper_bound": 129544192,
+        "entries": 261,
+        "newest_mtime_ns": 1793964513225449552
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T12:48:01.887166+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1qyses8t2cztp/s-hnwnw8n08h-1cq8zni-3q9bbgkrr5o1hj48zatil2qhb",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1qyses8t2cztp/s-hnwptoer2r-11e6dkl-502e449vqykr4nn8stj3mg7ey. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "3da33ba26b62ba4486434527d236574f3a12898a193fdfbcf4441727b1a57d94",
+        "allocated_bytes_upper_bound": 47816704,
+        "entries": 5,
+        "newest_mtime_ns": 1793964462326450070
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T12:48:01.887166+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1qyses8t2cztp/s-hnwnw8n08h-1cq8zni-3q9bbgkrr5o1hj48zatil2qhb",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-1qyses8t2cztp/s-hnwptoer2r-11e6dkl-502e449vqykr4nn8stj3mg7ey. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "3da33ba26b62ba4486434527d236574f3a12898a193fdfbcf4441727b1a57d94",
+        "allocated_bytes_upper_bound": 47816704,
+        "entries": 5,
+        "newest_mtime_ns": 1793964462326450070
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T12:48:02.559473+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-25cr5mxdbo9w3/s-hnwomn6t2m-0htqviz-ctnt029osg9cq85ekyzdvzey1",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-25cr5mxdbo9w3/s-hnwptoer2o-1nyinc0-1tu15iihxnj02a36g2q4ygm6m. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "c668909e3f5acf780e03c72bca25785dab9c06f60463445219882828d92b5b7f",
+        "allocated_bytes_upper_bound": 63467520,
+        "entries": 4,
+        "newest_mtime_ns": 1793966059111264135
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T12:48:02.559473+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-25cr5mxdbo9w3/s-hnwomn6t2m-0htqviz-ctnt029osg9cq85ekyzdvzey1",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-25cr5mxdbo9w3/s-hnwptoer2o-1nyinc0-1tu15iihxnj02a36g2q4ygm6m. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "c668909e3f5acf780e03c72bca25785dab9c06f60463445219882828d92b5b7f",
+        "allocated_bytes_upper_bound": 63467520,
+        "entries": 4,
+        "newest_mtime_ns": 1793966059111264135
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T12:48:03.249381+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwory5wbc-0rip5mo-6z902ufbq98p8ew51m069u5dn",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwq261t0f-0tkayh3-82woby03ltpg9s9h1zxruy1ev. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "56f0f996ebfb13ce8a37d8aee1e7af649008f3f54ed4664f7931686fd5fba46c",
+        "allocated_bytes_upper_bound": 67137536,
+        "entries": 4,
+        "newest_mtime_ns": 1793966385063245960
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T12:48:03.249381+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwory5wbc-0rip5mo-6z902ufbq98p8ew51m069u5dn",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-346vpgscmtlai/s-hnwq261t0f-0tkayh3-82woby03ltpg9s9h1zxruy1ev. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "56f0f996ebfb13ce8a37d8aee1e7af649008f3f54ed4664f7931686fd5fba46c",
+        "allocated_bytes_upper_bound": 67137536,
+        "entries": 4,
+        "newest_mtime_ns": 1793966385063245960
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T12:48:03.996622+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwopbj7yj-01gkklx-946c9qpp0qi8ly5pr05g8enzg",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwpzb55i1-0nbnm7v-b7lvgh592pgfvpcw3ccwqtqsq. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "c4176823a9ec43ffb895db2a64ec36ba1d2c80039ee910d16a8bc53b2b750098",
+        "allocated_bytes_upper_bound": 1766559744,
+        "entries": 260,
+        "newest_mtime_ns": 1793966356863072886
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T12:48:03.996622+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwopbj7yj-01gkklx-946c9qpp0qi8ly5pr05g8enzg",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_platform-3i2uw8d86o5ai/s-hnwpzb55i1-0nbnm7v-b7lvgh592pgfvpcw3ccwqtqsq. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "c4176823a9ec43ffb895db2a64ec36ba1d2c80039ee910d16a8bc53b2b750098",
+        "allocated_bytes_upper_bound": 1766559744,
+        "entries": 260,
+        "newest_mtime_ns": 1793966356863072886
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    },
+    {
+      "time": "2026-11-06T12:48:04.787477+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1a9q2k13gmc8n/s-hnwnzrgnd0-0ond2jp-ag8o7r9o5rul3k4abupp8hij1",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1a9q2k13gmc8n/s-hnwq294rat-1dgrlyf-17tpv7wesj0zzq2xh39382tkg. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "4d6d55cdd0912462d0b2a607596f443894acb6b363c71ca1c19dc1334d3cf0c8",
+        "allocated_bytes_upper_bound": 2240512,
+        "entries": 4,
+        "newest_mtime_ns": 1793964673046632545
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "starting"
+    },
+    {
+      "time": "2026-11-06T12:48:04.787477+00:00",
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1a9q2k13gmc8n/s-hnwnzrgnd0-0ond2jp-ag8o7r9o5rul3k4abupp8hij1",
+      "kind": "build-cache",
+      "reason": "Superseded finalized rustc incremental session",
+      "evidence": "Rust compiler cache protocol (https://github.com/rust-lang/rust/blob/main/compiler/rustc_incremental/src/persist/fs.rs); newest finalized session for this exact crate/configuration remains /home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_priv_helper-1a9q2k13gmc8n/s-hnwq294rat-1dgrlyf-17tpv7wesj0zzq2xh39382tkg. Session advisory lock is acquired exclusively during deletion; no compiler process is running. Source, final binaries, dependency libraries and current cache retained.",
+      "snapshot": {
+        "digest": "4d6d55cdd0912462d0b2a607596f443894acb6b363c71ca1c19dc1334d3cf0c8",
+        "allocated_bytes_upper_bound": 2240512,
+        "entries": 4,
+        "newest_mtime_ns": 1793964673046632545
+      },
+      "process_reviews": [
+        {
+          "pid": 1224,
+          "comm": "(sd-pam)",
+          "start_ticks": "588",
+          "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        },
+        {
+          "pid": 3022,
+          "comm": "polkit-kde-auth",
+          "start_ticks": "2792",
+          "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+          "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+        }
+      ],
+      "status": "removed"
+    }
+  ]
+}

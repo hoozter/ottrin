@@ -1,0 +1,68 @@
+{
+  "input": {
+    "source_revision": "d5ab3f339e998c981d214bf26afb468f6d26d08a",
+    "source_test_sha256": "a773fd7ef77540325f80306f3519dd3ce0319e2dd04517db17693a53c76fb786",
+    "test_sha256": "6a688f00bdd3741693a37daa2f05bd797eab2c3e31263a93110e4d7d34b68df3",
+    "source_bytes": 658782771,
+    "staged_bytes": 637323755,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 498200576,
+      "sha256": "6322f5a580372435e4f20f9cd5f88c8feab4146164af48420674c83c351984f4"
+    },
+    "actor_sha256": "fcdcc82a6b8010aae726b857f7bc7c2da894a1706226f00c1ff84a55c030c41d",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "1cea599a8541908c6063f06a6eb68ec5f8ac3b9e61c826cf5d799f4cb4537125",
+    "changed_product_sources": {
+      "crates/ottrin-app/src/portal.rs": "139ef6bd885574025b8e588302261e3ad6f5af8041891a308d47382416e0bce6",
+      "crates/ottrin-app/tests/fixtures/portal-chooser.py": "eab3c74843c606831ecc5e630d0fd8d019ba6e830f29ccb097ff077ed283833a",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "a12b07d6854969d9395fed2bc91babd3496891b9fda01960f1a2f6e9f347bf64",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "82d27ab21b4724105f680acf1058596c5a1fab9708d66517e32e102e83aea476",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_action.rs": "5142c19612cb77e21ffb6538c2c406a9a14faa93555ed7f5dfa6b9a4d19b6484",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "1d3130d466627a1bfe2a6f1a031c7c6d94ea769857efbe8bcc62473b20e3d2a8",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "dc871bc27616db1a7dae8244e720bdd7c7e61ce2650b71b57cecae7a3caaf9fb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "dde3591204fae2787e7cc9bf0ea952c44d2dd37d833bfe709f59a60764e5ebac",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "c54116fc749ff65fee54ae13099116c409426bccec9a45978507da4cc2d32a3c",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "c4f2feb59917371dd6e3c8b1cb437e2c5702ab67f261d6053a7bb3d02caa7c75"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "system": {
+    "error": "SYSTEM native assertions failed: caller private helper",
+    "phase": "caller private helper",
+    "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+    "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 31\r\nat <ScriptBlock>, <No file>: line 1",
+    "status": "failed",
+    "runs": [
+      {
+        "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... caller overwrite source_directory=false case=0: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=false case=1: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=true case=0: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=true case=1: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller cleanup discovery source_directory=false undo=false: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=false undo=false: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=false undo=false: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller cleanup discovery source_directory=false undo=true: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=false undo=true: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=false undo=true: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller public cohort source_directory=false interrupted=false: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=false interrupted=false: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public cohort source_directory=false interrupted=true: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=false interrupted=true: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public shared cohort source_directory=false interrupted=false: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=false interrupted=false: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller public shared cohort source_directory=false interrupted=true: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=false interrupted=true: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller cleanup discovery source_directory=true undo=false: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=true undo=false: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=true undo=false: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller cleanup discovery source_directory=true undo=true: readonly payload/metadata status, cancellation and journal preservation passed\ncaller metadata source_directory=true undo=true: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=true undo=true: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller public cohort source_directory=true interrupted=false: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=true interrupted=false: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public cohort source_directory=true interrupted=true: canonical admission, readonly original-cohort recovery and idempotent retirement passed\ncaller cohort source_directory=true interrupted=true: mixed payloads, canonical fresh admission, cancellation, private log lifecycle, ordered metadata recovery and public preservation passed\ncaller public shared cohort source_directory=true interrupted=false: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=true interrupted=false: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller public shared cohort source_directory=true interrupted=true: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed\ncaller shared cohort source_directory=true interrupted=true: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed\ncaller receipt source_directory=false: unified execution, canonical receipt refresh, public Undo and idempotent replay passed\ncaller resume source_directory=false case=0: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=1: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=2: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=3: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller journal source_directory=false: staging, reopen, plan and three Begin recovery cases passed\ncaller receipt source_directory=true: unified execution, canonical receipt refresh, public Undo and idempotent replay passed\ncaller resume source_directory=true case=0: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=1: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=2: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=3: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller journal source_directory=true: staging, reopen, plan and three Begin recovery cases passed\nFAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::system_helper\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 233.92s\n\n",
+        "timed_out": false,
+        "case": "caller private helper",
+        "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (8276) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (8276) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs:953:10:\ncalled `Result::unwrap()` on an `Err` value: CopyCleanupRefused(\"filesystem operation failed: Windows Copy stream staging: Copy cleanup needs completed dependency evidence from 5c9209708ffb7396c1ff2f4380cd830d; \\\\\\\\?\\\\C:\\\\Windows\\\\Temp\\\\ottrin-msi-aefb34a202594546b78b5633c8b2de81\\\\system-only\\\\caller-fresh-recovery-false\\\\.ottrin-copy-2aeb77df6485aea3e89646adebda1c44\")\n",
+        "exit": 101
+      }
+    ]
+  },
+  "stack": "at Require, <No file>: line 5\r\nat <ScriptBlock>, <No file>: line 31\r\nat <ScriptBlock>, <No file>: line 1",
+  "error": "Native assertions failed: ordinary cross-principal client",
+  "phase": "ordinary cross-principal client",
+  "scope": "Ordinary-client/SYSTEM-companion caller registry creation/reopen/coordinator and native security/registry regressions; no full transaction, alternate-administrator UAC or package acceptance",
+  "identity": {
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "status": "failed",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::client ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::client\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 234.43s\n\n",
+      "case": "ordinary cross-principal client",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::client' (9632) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:333:61:\ncalled `Result::unwrap()` on an `Err` value: Error { kind: UnexpectedEof, message: \"failed to fill whole buffer\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 101
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "status": "native fixture failure; production dependency refusal retained",
+  "cause": "Fresh recovery cleanup ran after the journal fixture deliberately left unfinished creation dependencies in the same canonical registry. The cleanup guard correctly refused an incomplete peer, independent of object overlap.",
+  "error": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (8276) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (8276) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs:953:10:\ncalled `Result::unwrap()` on an `Err` value: CopyCleanupRefused(\"filesystem operation failed: Windows Copy stream staging: Copy cleanup needs completed dependency evidence from 5c9209708ffb7396c1ff2f4380cd830d; \\\\\\\\?\\\\C:\\\\Windows\\\\Temp\\\\ottrin-msi-aefb34a202594546b78b5633c8b2de81\\\\system-only\\\\caller-fresh-recovery-false\\\\.ottrin-copy-2aeb77df6485aea3e89646adebda1c44\")\n",
+  "correction": "Run source-free recovery/public cleanup before intentionally incomplete journal controls. Keep every case and all production refusal checks; no record deletion or altered terminal evidence.",
+  "archive_sha256": "2da239621c5d25feb0b6a34ade610cc775c234489aeefa4971bd67ec3ef9744a",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "production_sources_unchanged_by_correction": true
+}

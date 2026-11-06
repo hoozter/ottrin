@@ -1,0 +1,14 @@
+[
+  {
+    "file": "linux-app-tests.log",
+    "original_sha256": "4e75cef3d3212de3d109772d73044f24d75d999034298b5374a692cd53158977",
+    "normalized_sha256": "5d22bb908c23778fdd9d027c3e07c9e7eb717905a7feafbb58a01315c1bd40db",
+    "change": "Trailing blank lines only; test output and assertions unchanged"
+  },
+  {
+    "file": "replacement-helper-test.log",
+    "original_sha256": "37d9ac86dcf27c63f3b501557fe735026389fc7d4ff8e77c56b36581cbd258c1",
+    "normalized_sha256": "72df2d36ab4b1b4e86e76fcac2e6471f132c608b6f3f5c21f2688449424f2de8",
+    "change": "Trailing blank lines only; test output and assertions unchanged"
+  }
+]

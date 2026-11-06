@@ -1,0 +1,27 @@
+{
+  "tests": [
+    "windows_native_copy_cleanup_protocol_binds_terminal_evidence_and_ordered_progress",
+    "windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order",
+    "windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission",
+    "windows_native_copy_cleanup_configured_registry_writer_supports_registry_destinations",
+    "windows_native_copy_cleanup_unrecognized_registry_names_stay_visible_and_block_mutation",
+    "windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryable",
+    "windows_native_copy_cleanup_group_mixed_refuses_foreign_changes_during_execution",
+    "windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+    "windows_native_copy_cohort_replays_later_pending_member",
+    "windows_native_copy_cohort_torn_checkpoint_replays_only_validated_prefix",
+    "windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl",
+    "windows_native_copy_cohort_preserves_lossless_native_paths",
+    "windows_native_copy_cohort_refuses_tail_after_completed_prefix",
+    "windows_native_copy_cohort_fences_new_copy_and_unselected_undo"
+  ],
+  "scope": "All cleanup.rs parent sections directly using public configured/pending cleanup or discovery; prior cohort engine evidence retains its own source scope",
+  "caller_cases": "Existing single/mixed/shared core flows now finish through public plans; pending metadata and read-only payload/metadata discovery use caller authority; original sources/preferences/index evidence remains checked",
+  "expected_top_level_passes": 16,
+  "expected_top_level_invocations": 16,
+  "case_deadlines_seconds": {
+    "caller_client_and_helper": 300,
+    "ordinary_case": 300,
+    "producer": 1200
+  }
+}

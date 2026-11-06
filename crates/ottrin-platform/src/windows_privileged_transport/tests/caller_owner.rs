@@ -861,13 +861,16 @@ fn system_helper() {
             },
         );
     }
+    // Cleanup needs a terminal dependency catalog. The journal controls below
+    // deliberately retain incomplete creation states, so run recovery first.
     for source in [&source_file, &source_directory] {
-        crate::WindowsCopyRegistry::exercise_caller_journals(
+        crate::WindowsCopyRegistry::exercise_caller_recovery(
             &context,
             &parent,
             source,
             &preferences,
             &index,
+            || Arc::new(channel.caller_copy_context().unwrap()),
             |operation| {
                 context
                     .with_caller_token(|| {
@@ -879,13 +882,12 @@ fn system_helper() {
         );
     }
     for source in [&source_file, &source_directory] {
-        crate::WindowsCopyRegistry::exercise_caller_recovery(
+        crate::WindowsCopyRegistry::exercise_caller_journals(
             &context,
             &parent,
             source,
             &preferences,
             &index,
-            || Arc::new(channel.caller_copy_context().unwrap()),
             |operation| {
                 context
                     .with_caller_token(|| {

@@ -1,0 +1,12 @@
+{
+  "reference_commit": "d5ab3f339e998c981d214bf26afb468f6d26d08a",
+  "sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29457641472,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49634570240
+  },
+  "evidence_root": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-public-cleanup-current",
+  "evidence_root_initial_bytes": 4096,
+  "purpose": "Public caller cleanup/pending/discovery admissions using existing cohort writer; reuse shared compiler caches; owned native fixture teardown"
+}

@@ -215,6 +215,40 @@ impl AnchoredRoot {
         result
     }
 
+    /// Admit one confirmed cleanup cohort through this registry's retained
+    /// authority. The plan reopens the same canonical binding before mutations.
+    pub fn cleanup_plan_with_progress(
+        &self,
+        ids: &[String],
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<super::journal::RetainedCopyCleanupPlan, PlatformError> {
+        self.validate()?;
+        let result = super::journal::RetainedCopyCleanupPlan::observe_for_registry(
+            &self.authority,
+            self.path(),
+            ids,
+            progress,
+        );
+        self.validate()?;
+        result
+    }
+
+    /// Recover the complete original metadata cohort without trusting a list
+    /// of surviving IDs or creating/repairing any state during inspection.
+    pub fn pending_cleanup_plan_with_progress(
+        &self,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Option<super::journal::RetainedCopyCleanupPlan>, PlatformError> {
+        self.validate()?;
+        let result = super::journal::RetainedCopyCleanupPlan::pending_for_registry(
+            &self.authority,
+            self.path(),
+            progress,
+        );
+        self.validate()?;
+        result
+    }
+
     pub(crate) fn for_caller_profile(
         caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
         sources: &[PathBuf],

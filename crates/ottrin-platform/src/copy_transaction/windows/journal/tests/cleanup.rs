@@ -5851,7 +5851,8 @@ fn windows_native_copy_cohort_replays_later_pending_member() {
         );
         drop(group);
         let before = namespace_contents(root.path());
-        let mut fresh = super::super::cleanup_group::Observation::pending_at(
+        let mut fresh = super::super::cleanup_group::Observation::pending_with(
+            &Authority::Process,
             &root.path().join("central"),
             |_| Ok(()),
         )

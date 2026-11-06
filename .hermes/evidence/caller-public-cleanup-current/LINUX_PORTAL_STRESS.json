@@ -1,0 +1,133 @@
+{
+  "status": "pass 20 repeated parallel portal test cycles",
+  "cycles": 20,
+  "test_passes": 80,
+  "source": {
+    "crates/ottrin-app/src/portal.rs": "139ef6bd885574025b8e588302261e3ad6f5af8041891a308d47382416e0bce6",
+    "crates/ottrin-app/tests/fixtures/portal-chooser.py": "eab3c74843c606831ecc5e630d0fd8d019ba6e830f29ccb097ff077ed283833a"
+  },
+  "executable_sha256": "17ed327ba4e67c87ce7398fb33f14905fbfec48c2fff331b85cbd429bc4aba11",
+  "runs": [
+    {
+      "iteration": 1,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 2,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 3,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 4,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 5,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 6,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 7,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 8,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 9,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 10,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 11,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 12,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 13,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 14,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 15,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 16,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 17,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 18,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 19,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    },
+    {
+      "iteration": 20,
+      "exit": 0,
+      "stdout": "\nrunning 4 tests\ntest portal::tests::completed_request_cleanup_does_not_cancel_an_accepted_reply ... ok\ntest portal::tests::file_chooser_version_property_matches_the_desktop_portal_contract ... ok\ntest portal::tests::portal_close_releases_the_input_lease_and_reaps_a_graceful_chooser ... ok\ntest portal::tests::unresponsive_chooser_is_stopped_through_its_pinned_pidfd ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 3.01s\n\n",
+      "stderr": ""
+    }
+  ],
+  "teardown": "owned process groups stopped/reaped per cycle and disposable profile removed"
+}

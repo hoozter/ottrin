@@ -935,6 +935,49 @@ pub(in super::super) fn exercise_caller_recovery(
             .undo_plan_with_progress(&id, |_| Ok(()))
             .is_err()
     );
+    let ids = vec![id.clone()];
+    assert!(
+        fresh_registry
+            .pending_cleanup_plan_with_progress(|_| Ok(()))
+            .unwrap()
+            .is_none()
+    );
+    assert!(RetainedCopyCleanupPlan::observe_at(fresh_registry.path(), &ids, |_| Ok(())).is_err());
+    assert!(
+        fresh_registry
+            .cleanup_plan_with_progress(&ids, |_| Err(io("owned public cleanup cancellation")))
+            .is_err()
+    );
+    let mut cleanup = fresh_registry
+        .cleanup_plan_with_progress(&ids, |_| Ok(()))
+        .unwrap();
+    assert!(
+        cleanup
+            .reclaim(|_| Err(io("owned public cleanup cancellation")))
+            .is_err()
+    );
+    cleanup.reclaim(|_| Ok(())).unwrap();
+    assert!(cleanup.complete());
+    assert_eq!(cleanup.transaction_ids(), vec![id.as_str()]);
+    assert_eq!(cleanup.completed_transaction_ids(), vec![id.as_str()]);
+    cleanup.reclaim(|_| Ok(())).unwrap();
+    assert!(
+        !fresh_registry
+            .retained_with_progress(|_| Ok(()))
+            .unwrap()
+            .iter()
+            .any(|row| row.transaction_id.as_deref() == Some(id.as_str()))
+    );
+    assert!(
+        fresh_registry
+            .pending_cleanup_plan_with_progress(|_| Ok(()))
+            .unwrap()
+            .is_none()
+    );
+    exercise_foreign_cleanup_registry(caller, protected_parent, &ids, directory);
+    println!(
+        "caller public cleanup source_directory={directory}: single-member admission, cancellation, original cohort IDs, idempotent retirement and foreign-root refusal passed"
+    );
     assert_eq!(manager.binding().unwrap(), binding);
     let mut after = None;
     as_caller(&mut || after = Some(observe()));
@@ -1177,6 +1220,8 @@ pub(in super::super) fn exercise_caller_cleanup(
         .unwrap();
         assert!(snapshot.state.cleanup.as_ref().unwrap().payload_removed);
         drop(snapshot);
+        let discovery_ids = vec![snapshot_id(&authority, &parent, manager.root(), &name)];
+        assert_cleanup_discovery(&manager, &authority, &discovery_ids);
         let plan = completion
             .begin(&parent, manager.root(), |_| Ok(()))
             .unwrap();
@@ -1227,6 +1272,10 @@ pub(in super::super) fn exercise_caller_cleanup(
         )
         .unwrap();
         assert_eq!(restored, plan);
+        assert_cleanup_discovery(&fresh_registry, &fresh, &discovery_ids);
+        println!(
+            "caller cleanup discovery source_directory={directory} undo={undo}: readonly payload/metadata status, cancellation and journal preservation passed"
+        );
         let central = fresh_registry.writable_root().unwrap();
         assert!(restored.finish(&parent, &central, |_| Ok(())).is_err());
         assert_eq!(
@@ -1526,9 +1575,71 @@ fn exercise_caller_cohort(
             assert!(Observation::observe_at(manager.path(), &ids, |_| Ok(())).is_err());
             group = Observation::observe_with(&next, manager.path(), &ids, |_| Ok(())).unwrap();
         }
-        group.reclaim_all(|_| Ok(())).unwrap();
-        assert!(group.complete());
-        group.reclaim_all(|_| Ok(())).unwrap();
+        drop(group);
+        let public_caller = recapture();
+        let public_registry = public_caller.copy_registry(&[], false).unwrap().unwrap();
+        let mut cleanup = if interrupted {
+            let before = cleanup_journal_bytes(
+                &public_registry,
+                &Authority::Caller(Arc::clone(&public_caller)),
+                &ids,
+            );
+            assert!(
+                public_registry
+                    .pending_cleanup_plan_with_progress(|_| Err(io(
+                        "owned pending cleanup cancellation"
+                    )))
+                    .is_err()
+            );
+            let pending = public_registry
+                .pending_cleanup_plan_with_progress(|_| Ok(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                cleanup_journal_bytes(
+                    &public_registry,
+                    &Authority::Caller(Arc::clone(&public_caller)),
+                    &ids
+                ),
+                before
+            );
+            assert_cleanup_discovery(
+                &public_registry,
+                &Authority::Caller(Arc::clone(&public_caller)),
+                &ids,
+            );
+            pending
+        } else {
+            assert!(
+                public_registry
+                    .pending_cleanup_plan_with_progress(|_| Ok(()))
+                    .unwrap()
+                    .is_none()
+            );
+            public_registry
+                .cleanup_plan_with_progress(&ids, |_| Ok(()))
+                .unwrap()
+        };
+        assert_eq!(
+            cleanup.transaction_ids(),
+            ids.iter().map(String::as_str).collect::<Vec<_>>()
+        );
+        cleanup.reclaim(|_| Ok(())).unwrap();
+        assert!(cleanup.complete());
+        assert_eq!(
+            cleanup.completed_transaction_ids(),
+            ids.iter().map(String::as_str).collect::<Vec<_>>()
+        );
+        cleanup.reclaim(|_| Ok(())).unwrap();
+        assert!(
+            public_registry
+                .pending_cleanup_plan_with_progress(|_| Ok(()))
+                .unwrap()
+                .is_none()
+        );
+        println!(
+            "caller public cohort source_directory={directory} interrupted={interrupted}: canonical admission, readonly original-cohort recovery and idempotent retirement passed"
+        );
         let coordinator = manager.cohorts(false).unwrap().unwrap();
         assert!(
             windows_fs::directory_children_limited(coordinator.root(), 1)
@@ -1816,9 +1927,52 @@ fn exercise_caller_shared_cohort(
             let next = Authority::Caller(recapture());
             group = Observation::observe_with(&next, manager.path(), &ids, |_| Ok(())).unwrap();
         }
-        group.reclaim_all(|_| Ok(())).unwrap();
-        assert!(group.complete());
-        group.reclaim_all(|_| Ok(())).unwrap();
+        drop(group);
+        let public_caller = recapture();
+        let public_registry = public_caller.copy_registry(&[], false).unwrap().unwrap();
+        assert!(
+            public_registry
+                .pending_cleanup_plan_with_progress(|_| Ok(()))
+                .unwrap()
+                .is_none()
+        );
+        let before = cleanup_journal_bytes(
+            &public_registry,
+            &Authority::Caller(Arc::clone(&public_caller)),
+            &ids,
+        );
+        assert!(
+            public_registry
+                .cleanup_plan_with_progress(&ids, |_| Err(io("owned shared cleanup cancellation")))
+                .is_err()
+        );
+        let mut cleanup = public_registry
+            .cleanup_plan_with_progress(&ids, |_| Ok(()))
+            .unwrap();
+        assert_eq!(
+            cleanup_journal_bytes(
+                &public_registry,
+                &Authority::Caller(Arc::clone(&public_caller)),
+                &ids
+            ),
+            before
+        );
+        cleanup.reclaim(|_| Ok(())).unwrap();
+        assert!(cleanup.complete());
+        assert_eq!(
+            cleanup.completed_transaction_ids(),
+            ids.iter().map(String::as_str).collect::<Vec<_>>()
+        );
+        cleanup.reclaim(|_| Ok(())).unwrap();
+        assert!(
+            public_registry
+                .pending_cleanup_plan_with_progress(|_| Ok(()))
+                .unwrap()
+                .is_none()
+        );
+        println!(
+            "caller public shared cohort source_directory={directory} interrupted={interrupted}: canonical admission, cancellation, physical-unlink recovery and idempotent retirement passed"
+        );
         for ((parent, header), expected) in parents.iter().zip(&headers).zip(&public) {
             assert!(
                 matches!(authority.probe(parent, &header.stage_name()), Err(error) if error.kind()==std::io::ErrorKind::NotFound)
@@ -1855,4 +2009,84 @@ fn exercise_caller_shared_cohort(
             "caller shared cohort source_directory={directory} interrupted={interrupted}: caller-owned aliases, coordinated unlink, fresh recovery, outside-link preservation and ordered retirement passed"
         );
     }
+}
+
+fn snapshot_id(authority: &Authority, parent: &File, central: &File, name: &OsStr) -> String {
+    Snapshot::load(authority, parent, central, name, SnapshotAccess::Read)
+        .unwrap()
+        .state
+        .header
+        .unwrap()
+        .transaction
+}
+fn cleanup_journal_bytes(
+    manager: &super::super::registry::AnchoredRoot,
+    authority: &Authority,
+    ids: &[String],
+) -> Vec<Vec<u8>> {
+    ids.iter()
+        .map(|id| {
+            discovery::RegisteredJournal::open(
+                authority,
+                manager.root(),
+                &OsString::from(format!("{id}.copy-journal")),
+            )
+            .unwrap()
+            .bytes
+        })
+        .collect()
+}
+fn assert_cleanup_discovery(
+    manager: &super::super::registry::AnchoredRoot,
+    authority: &Authority,
+    ids: &[String],
+) {
+    let before = cleanup_journal_bytes(manager, authority, ids);
+    assert!(
+        manager
+            .retained_with_progress(|_| Err(io("owned cleanup discovery cancellation")))
+            .is_err()
+    );
+    let rows = manager.retained_with_progress(|_| Ok(())).unwrap();
+    for id in ids {
+        let row = rows
+            .iter()
+            .find(|row| row.transaction_id.as_deref() == Some(id.as_str()))
+            .unwrap();
+        assert_eq!(
+            row.evidence,
+            WindowsCopyRecoveryEvidence::VerifiedCleanup,
+            "{row:?}"
+        );
+    }
+    assert_eq!(cleanup_journal_bytes(manager, authority, ids), before);
+}
+fn exercise_foreign_cleanup_registry(
+    caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    protected_parent: &File,
+    ids: &[String],
+    directory: bool,
+) {
+    let parent = caller
+        .create_private_entry(
+            protected_parent,
+            OsStr::new(&format!("foreign-cleanup-registry-{directory}")),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+    let foreign = caller.copy_registry_under(parent, true).unwrap().unwrap();
+    let binding = foreign.binding().unwrap();
+    let names = windows_fs::directory_children_limited(foreign.root(), 8).unwrap();
+    assert!(foreign.cleanup_plan_with_progress(ids, |_| Ok(())).is_err());
+    assert!(
+        foreign
+            .pending_cleanup_plan_with_progress(|_| Ok(()))
+            .is_err()
+    );
+    assert_eq!(foreign.binding().unwrap(), binding);
+    assert_eq!(
+        windows_fs::directory_children_limited(foreign.root(), 8).unwrap(),
+        names
+    );
 }

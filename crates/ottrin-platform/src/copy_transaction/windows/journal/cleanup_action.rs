@@ -23,7 +23,14 @@ impl RetainedCopyCleanupPlan {
         root: &Path,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Option<Self>, PlatformError> {
-        cleanup_group::Observation::pending_at(root, progress)
+        Self::pending_for_registry(&Authority::Process, root, progress)
+    }
+    pub(in crate::copy_transaction::windows) fn pending_for_registry(
+        authority: &Authority,
+        root: &Path,
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Option<Self>, PlatformError> {
+        cleanup_group::Observation::pending_with(authority, root, progress)
             .map(|group| group.map(|group| Self { group }))
     }
     pub fn observe(
@@ -38,8 +45,21 @@ impl RetainedCopyCleanupPlan {
         transaction_ids: &[String],
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        Self::observe_for_registry(&Authority::Process, root, transaction_ids, progress)
+    }
+    pub(in crate::copy_transaction::windows) fn observe_for_registry(
+        authority: &Authority,
+        root: &Path,
+        transaction_ids: &[String],
+        progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
         Ok(Self {
-            group: cleanup_group::Observation::observe_at(root, transaction_ids, progress)?,
+            group: cleanup_group::Observation::observe_with(
+                authority,
+                root,
+                transaction_ids,
+                progress,
+            )?,
         })
     }
 

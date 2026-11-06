@@ -1225,6 +1225,7 @@ impl Observation {
         Ok(())
     }
 
+    #[cfg(test)]
     pub(super) fn observe_at(
         path: &Path,
         ids: &[String],
@@ -1392,10 +1393,12 @@ impl Observation {
         })
     }
 
-    pub(super) fn pending_at(
+    pub(super) fn pending_with(
+        authority: &Authority,
         path: &Path,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Option<Self>, PlatformError> {
-        cohort::pending_at(&Authority::Process, path, &mut cancel)
+        authority.validate()?;
+        cohort::pending_at(authority, path, &mut cancel)
     }
 }

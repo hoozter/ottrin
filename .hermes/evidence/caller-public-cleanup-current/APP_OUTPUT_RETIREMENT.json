@@ -1,0 +1,89 @@
+[
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-453b84cdfc3092af",
+    "old_sha256": "8efe6e00972a89b6eb9f2a99fc8c1e942d567e51b74f6dfd8ac2bedcdcc4caa9",
+    "old_bytes": 820855168,
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-6d57c5a12ec3ca68",
+    "replacement_sha256": "154841ad5a0bd9a67002aae6e5ec0d2ecf465979339e68dd1001c90f836cda89",
+    "matching_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 17573561801879140266,
+      "profile": 6367705407909804931,
+      "path": 3586702553900163283,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "replacement_smoke": {
+      "exit": 0,
+      "stdout": "Ottrin \u2014 find, inspect, and manage files\n\nUsage:\n  ottrin portal                   Run the desktop file-dialog backend\n  ottrin portal enable|disable|apply|status [--json]\n                                 Manage optional desktop file dialogs\n  ottrin folders enable|disable|status [--json]\n                                 Manage optional folder integration\n  ottrin picker                   Open an Ottrin chooser using a JSON stdin request\n    --cancel-on-disconnect        Read one JSON line and cancel when the caller closes stdin\n  ottrin                         Open the file manager\n  ottrin <FILE>                  Open the file directly in Quick Inspector\n  ottrin <DIRECTORY>             Open the file manager in that directory\n  ottrin file-manager           Run the on-demand desktop file-manager interface\n  ottrin --properties <PATH>... Show a read-only themed properties window\n  ottrin --select <PATH>         Reveal an entry in its parent folder\n  ottrin search <QUERY> [--json] Search indexed files (-s)\n                       [--content] Also search the configured content folders\n                       [--limit N] [--offset N] Select a result page\n  ottrin index [update] [--json]\n                                 Update the configured search index\n  ottrin index ensure            Start this package's user index and wait for readiness\n  ottrin index status [--json]   Show persisted index status without starting it\n  ottrin index rebuild [--json]\n                                 Build and atomically publish a fresh index\n  ottrin preview <FILE>          Open the full Quick Inspector (-p)\n  ottrin drop status             Show Drop Folder state\n  ottrin drop copy <PATH>\u2026       Copy paths into the Drop Folder\n\nOptions (GUI options may appear before or after the file/directory target):\n  --renderer opengl  Recovery override for a compatible OpenGL driver\n  --helper-path PATH Developer override for privileged helper discovery\n  --uninstall        Remove Ottrin background jobs and generated data\n  --purge-config     With --uninstall, also remove saved preferences\nUse -- before a literal option-like target or search query.\n",
+      "stderr": ""
+    },
+    "preserved_stable_hardlink": "/home/campbell/Projects/Ottrin/target/debug/ottrin-app"
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-8443172d8770f5ec",
+    "old_sha256": "8d197966bfd3d84e976feb7dcb622f6d387743063eeb5cc20aa50c7a1c36aa85",
+    "old_bytes": 759574752,
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_app-f0e299e85f6fae93",
+    "replacement_sha256": "17ed327ba4e67c87ce7398fb33f14905fbfec48c2fff331b85cbd429bc4aba11",
+    "matching_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[]",
+      "target": 17573561801879140266,
+      "profile": 1169666772337208464,
+      "path": 3586702553900163283,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "verification": "LINUX_TEST_INPUT.json all49; LINUX_PORTAL_STRESS.json 80 repeated passes; historical worksheet portal stress terminal and replaced by this current verified run."
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-56888d836df3e486",
+    "old_sha256": "96d9f96aa0f0a958a88c099b21b21960f60f30b35def911cf9320d6b404edbf2",
+    "old_bytes": 371900080,
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-d398b8439babaf00",
+    "replacement_sha256": "8a7f9014b2ecb3407fceec7a444158313ae9f3f9786f336f96e067f4122d54a7",
+    "matching_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[\"default\"]",
+      "target": 14746021376956857801,
+      "profile": 6367705407909804931,
+      "path": 3253767240901611248,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "replacement_smoke": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "ottrin-legacy-doc-render: usage: ottrin-legacy-doc-render --input <path> --output <path>\n"
+    },
+    "preserved_stable_hardlink": "/home/campbell/Projects/Ottrin/target/debug/ottrin-legacy-doc-render"
+  },
+  {
+    "old": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-c99a2c8a217e41b4",
+    "old_sha256": "ebc134b8c923c4b29bc4906593907a2d5492bd09d2294540def143f95bc31a3f",
+    "old_bytes": 374359264,
+    "replacement": "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_legacy_doc_render-d398b8439babaf00",
+    "replacement_sha256": "8a7f9014b2ecb3407fceec7a444158313ae9f3f9786f336f96e067f4122d54a7",
+    "matching_settings": {
+      "rustc": 18276270781310494267,
+      "features": "[\"default\"]",
+      "target": 14746021376956857801,
+      "profile": 6367705407909804931,
+      "path": 3253767240901611248,
+      "rustflags": [],
+      "config": 8247474407144887393,
+      "compile_kind": 0
+    },
+    "replacement_smoke": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "ottrin-legacy-doc-render: usage: ottrin-legacy-doc-render --input <path> --output <path>\n"
+    },
+    "preserved_stable_hardlink": "/home/campbell/Projects/Ottrin/target/debug/ottrin-legacy-doc-render"
+  }
+]
