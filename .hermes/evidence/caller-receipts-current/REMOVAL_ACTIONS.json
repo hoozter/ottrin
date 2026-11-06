@@ -1,0 +1,662 @@
+[
+  {
+    "time": "2026-11-06T07:00:05.166700+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/RESULTS.zip",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "751d944720402942af0e059d236eb1b8dd05e2348485c01091538845f3a643a6",
+      "allocated_bytes_upper_bound": 8192,
+      "entries": 1,
+      "newest_mtime_ns": 1793948234198775897
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:00:05.166700+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/RESULTS.zip",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "751d944720402942af0e059d236eb1b8dd05e2348485c01091538845f3a643a6",
+      "allocated_bytes_upper_bound": 8192,
+      "entries": 1,
+      "newest_mtime_ns": 1793948234198775897
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:00:05.399146+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/desktop-ready.png",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "3f02657c8818caaef20c061b0c59e8749a95cb1fb00529cf6f2d10803dbf0441",
+      "allocated_bytes_upper_bound": 2527232,
+      "entries": 1,
+      "newest_mtime_ns": 1793947972615890184
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:00:05.399146+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/desktop-ready.png",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "3f02657c8818caaef20c061b0c59e8749a95cb1fb00529cf6f2d10803dbf0441",
+      "allocated_bytes_upper_bound": 2527232,
+      "entries": 1,
+      "newest_mtime_ns": 1793947972615890184
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:00:05.657854+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/privacy-accepted-0.png",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "c58c257abff4ac87ad462acf37e0de7aff240663e226dde5ed3202bf659da749",
+      "allocated_bytes_upper_bound": 12288,
+      "entries": 1,
+      "newest_mtime_ns": 1793947953783753694
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:00:05.657854+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/privacy-accepted-0.png",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "c58c257abff4ac87ad462acf37e0de7aff240663e226dde5ed3202bf659da749",
+      "allocated_bytes_upper_bound": 12288,
+      "entries": 1,
+      "newest_mtime_ns": 1793947953783753694
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:00:05.890147+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/privacy-accepted-1.png",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "c6469cd9c6113527368591dfa6223ac7db0d627195b0292ef882c47463340f90",
+      "allocated_bytes_upper_bound": 1626112,
+      "entries": 1,
+      "newest_mtime_ns": 1793947969794869746
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:00:05.890147+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/privacy-accepted-1.png",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "c6469cd9c6113527368591dfa6223ac7db0d627195b0292ef882c47463340f90",
+      "allocated_bytes_upper_bound": 1626112,
+      "entries": 1,
+      "newest_mtime_ns": 1793947969794869746
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:00:06.127608+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/controller.ps1",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "36bc7e27cc1ed7f63a36217d0196b448be4c3ecab7cab3695cdffeaa11377a2f",
+      "allocated_bytes_upper_bound": 8192,
+      "entries": 1,
+      "newest_mtime_ns": 1793947817424327438
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:00:06.127608+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native/controller.ps1",
+    "kind": "test-fixture",
+    "reason": "Consumed failed caller receipt trial export, readiness image or disposable bootstrap controller",
+    "evidence": "Normalized failed results, source/build/executable binding and archive digest retained in RECEIPT_HANDOFF_FINDING.json/FIRST_ATTEMPT_INPUT.json; independent VM/disks/console/observer/profile teardown verified. No current consumers.",
+    "snapshot": {
+      "digest": "36bc7e27cc1ed7f63a36217d0196b448be4c3ecab7cab3695cdffeaa11377a2f",
+      "allocated_bytes_upper_bound": 8192,
+      "entries": 1,
+      "newest_mtime_ns": 1793947817424327438
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:10:00.392344+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/RESULTS.zip",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "63e21165cd6a1eea6e1c46b26cb2307057a076e0cdb17fd515e5c5e253090cd8",
+      "allocated_bytes_upper_bound": 12288,
+      "entries": 1,
+      "newest_mtime_ns": 1793948863207264907
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:10:00.392344+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/RESULTS.zip",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "63e21165cd6a1eea6e1c46b26cb2307057a076e0cdb17fd515e5c5e253090cd8",
+      "allocated_bytes_upper_bound": 12288,
+      "entries": 1,
+      "newest_mtime_ns": 1793948863207264907
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:10:00.657501+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/desktop-ready.png",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "a9a2c748b9c3be834a814549c5b676bc00ce5f91087c64c4b301f085a19b6d3d",
+      "allocated_bytes_upper_bound": 2150400,
+      "entries": 1,
+      "newest_mtime_ns": 1793948589951319884
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:10:00.657501+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/desktop-ready.png",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "a9a2c748b9c3be834a814549c5b676bc00ce5f91087c64c4b301f085a19b6d3d",
+      "allocated_bytes_upper_bound": 2150400,
+      "entries": 1,
+      "newest_mtime_ns": 1793948589951319884
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:10:00.909302+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/privacy-accepted-0.png",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "1bf81ebc377ff0c18614241261eaff0b6829d39aae607f1deccf855949042869",
+      "allocated_bytes_upper_bound": 12288,
+      "entries": 1,
+      "newest_mtime_ns": 1793948570958184463
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:10:00.909302+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/privacy-accepted-0.png",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "1bf81ebc377ff0c18614241261eaff0b6829d39aae607f1deccf855949042869",
+      "allocated_bytes_upper_bound": 12288,
+      "entries": 1,
+      "newest_mtime_ns": 1793948570958184463
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:10:01.190531+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/privacy-accepted-1.png",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "e87a59fb4205476e24de99794e9c0d35a4e172e4ed52948db957c296c73ff2b0",
+      "allocated_bytes_upper_bound": 1212416,
+      "entries": 1,
+      "newest_mtime_ns": 1793948587166300029
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:10:01.190531+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/privacy-accepted-1.png",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "e87a59fb4205476e24de99794e9c0d35a4e172e4ed52948db957c296c73ff2b0",
+      "allocated_bytes_upper_bound": 1212416,
+      "entries": 1,
+      "newest_mtime_ns": 1793948587166300029
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:10:01.452387+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/controller.ps1",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "86071d5c3196e724fcae535add704fc30abdc75c274420af30ca3cd80118c783",
+      "allocated_bytes_upper_bound": 8192,
+      "entries": 1,
+      "newest_mtime_ns": 1793948439996899546
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:10:01.452387+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/native-fixed/controller.ps1",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "86071d5c3196e724fcae535add704fc30abdc75c274420af30ca3cd80118c783",
+      "allocated_bytes_upper_bound": 8192,
+      "entries": 1,
+      "newest_mtime_ns": 1793948439996899546
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  },
+  {
+    "time": "2026-11-06T07:10:01.700479+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/test-build.jsonl",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "521a667f236741fe4b03c7e43a86b3dfee63338db965fa2d3877d23478fdf193",
+      "allocated_bytes_upper_bound": 364544,
+      "entries": 1,
+      "newest_mtime_ns": 1793948289683173913
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "starting"
+  },
+  {
+    "time": "2026-11-06T07:10:01.700479+00:00",
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current/test-build.jsonl",
+    "kind": "test-fixture",
+    "reason": "Consumed final caller receipt native export, readiness image, disposable controller or compiler JSONL",
+    "evidence": "Exact source/build/staged executable hashes, compiler profiles/JSONL digest, normalized seven result records, 102 native passes and independent VM/disks/console/observer/profile teardown retained in acceptance receipts. Current paired test binaries, shared caches and stable packages remain; no current consumers.",
+    "snapshot": {
+      "digest": "521a667f236741fe4b03c7e43a86b3dfee63338db965fa2d3877d23478fdf193",
+      "allocated_bytes_upper_bound": 364544,
+      "entries": 1,
+      "newest_mtime_ns": 1793948289683173913
+    },
+    "process_reviews": [
+      {
+        "pid": 1224,
+        "comm": "(sd-pam)",
+        "start_ticks": "588",
+        "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      },
+      {
+        "pid": 3022,
+        "comm": "polkit-kde-auth",
+        "start_ticks": "2792",
+        "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+        "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+      }
+    ],
+    "status": "removed"
+  }
+]

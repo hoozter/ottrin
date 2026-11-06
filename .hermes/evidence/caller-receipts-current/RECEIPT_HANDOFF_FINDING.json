@@ -1,0 +1,22 @@
+{
+  "status": "reproduced and resolved in corrected native run",
+  "input": "FIRST_ATTEMPT_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "archive_sha256": "cb170a612ab3bc3f82e3d35c778480077fae1e0923c7452587889c9a474320b3",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "error": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (1876) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (1876) panicked at crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs:220:92:\ncalled `Result::unwrap()` on an `Err` value: Io(\"Windows Copy stream staging: Access is denied. (os error 5)\")\n",
+  "source_finding": "session_receipt validated completion with caller authority, then passed Process into RetainedCopyUndoPlan::admit; that handoff now forwards its authority argument. Adjacent refresh and execution paths retain their existing caller authority.",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "final_verification": "VERIFICATION.json"
+}

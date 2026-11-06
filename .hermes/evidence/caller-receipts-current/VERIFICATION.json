@@ -1,0 +1,27 @@
+{
+  "status": "pass unified caller creation execution, completion receipt refresh and public Undo",
+  "archive_sha256": "0b372cedf9216cc59f42b88d7e480be95950f3e993a54898af6786db9a81afea",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 25,
+  "top_level_passes": 102,
+  "compiler_jsonl_sha256": "cd3c793b0c6938a50e44d1d1ef25913e9162ecf82f91c6926e0316a86504c132",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "limits": [
+    "Caller mutation-prefix, readonly and link publication recovery remain separate native gates",
+    "Caller creation unified execution, canonical completion receipt admission/refresh and source-free public Undo only; full dispatcher, overwrite and restored discovery/resume/cleanup remain incomplete",
+    "Original retention/overwrite, caller-aware discovery/resume/cleanup, real alternate-admin UAC, caller links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

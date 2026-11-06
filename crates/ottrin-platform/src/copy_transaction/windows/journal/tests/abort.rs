@@ -141,7 +141,14 @@ fn windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name
         let parent = owner(&parent_path);
         let central = owner(&registry);
         assert!(
-            PermissionStage::publish(&parent, &central, &header.stage_name(), |_| Ok(())).is_err()
+            PermissionStage::publish(
+                &Authority::Process,
+                &parent,
+                &central,
+                &header.stage_name(),
+                |_| Ok(())
+            )
+            .is_err()
         );
     }
     let status = discovery::discover_at(&registry).unwrap();

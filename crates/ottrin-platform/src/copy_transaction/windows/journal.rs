@@ -184,7 +184,8 @@ impl DestinationAdmission {
                 }
                 continue;
             }
-            let peer = discovery::RegisteredJournal::dependency(central, name)?;
+            let peer =
+                discovery::RegisteredJournal::dependency(&Authority::Process, central, name)?;
             let header = peer.state.header.as_ref().unwrap();
             if !peer.state.dependency_claims_complete() {
                 return Err(io("Overwrite needs completed Copy dependency evidence"));
@@ -2526,6 +2527,20 @@ impl<'a> DurableStage<'a> {
         max_entries: usize,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<crate::PathMoveUndoReceipt, PlatformError> {
+        // Bind the canonical caller registry before the first stage/claim write
+        // and hold its ancestry/anchor admission through receipt construction.
+        let registry_guard = if matches!(destination.authority, Authority::Caller(_)) {
+            let path = windows_fs::location(central).map_err(io)?;
+            let (observed, manager) = destination.authority.registry_directory(&path)?;
+            if stable_identity_from_handle(&observed).map_err(io)?
+                != stable_identity_from_handle(central).map_err(io)?
+            {
+                return Err(io("Caller Copy registry changed before execution"));
+            }
+            manager
+        } else {
+            None
+        };
         let mut staged = Self::create(
             source,
             parent,
@@ -2543,7 +2558,7 @@ impl<'a> DurableStage<'a> {
             drop(staged);
             if destination.original.is_some() {
                 let snapshot = Snapshot::load(
-                    &Authority::Process,
+                    &destination.authority,
                     parent,
                     central,
                     &name,
@@ -2553,13 +2568,29 @@ impl<'a> DurableStage<'a> {
                 journal.prepare_original(max_entries, &mut progress)?;
                 journal.move_original(None, OriginalMove::Retain, &mut progress)?;
             }
-            let mut publication = PermissionStage::publish(parent, central, &name, &mut progress)?;
+            let mut publication = PermissionStage::publish(
+                &destination.authority,
+                parent,
+                central,
+                &name,
+                &mut progress,
+            )?;
             publication.apply(&mut progress)?;
             drop(publication);
-            discovery::session_receipt(parent, central, &name, &mut progress)
+            let receipt = discovery::session_receipt(
+                &destination.authority,
+                parent,
+                central,
+                &name,
+                &mut progress,
+            )?;
+            if let Some(manager) = &registry_guard {
+                manager.validate()?;
+            }
+            Ok(receipt)
         })();
         result.map_err(|error| {
-            let committed = inspect(parent, central, &name).is_ok_and(|state| state.completion_verified)
+            let committed = Snapshot::load(&destination.authority, parent, central, &name, SnapshotAccess::Inspect).is_ok_and(|snapshot| snapshot.state.completion_verified)
                 || matches!(error, PlatformError::CommittedCleanupPending { .. });
             let transaction = transaction.display().to_string();
             let message = format!("{error}; Copy data and recovery evidence remain at the transaction's recorded locations");
@@ -2698,10 +2729,15 @@ fn resume_bound_copy(
     binding: &CopyResumeBinding,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
-    super::registry::require_uncoordinated(central)?;
+    super::registry::require_uncoordinated(&Authority::Process, central)?;
     let mut binding = binding.clone();
-    let mut retained =
-        RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
+    let mut retained = RetainedStage::open(
+        &Authority::Process,
+        parent,
+        central,
+        &binding.header.stage_name(),
+        &mut progress,
+    )?;
     if retained.snapshot.state.original_retain_intent
         && retained.snapshot.state.original_retained.is_none()
     {
@@ -2729,8 +2765,13 @@ fn resume_bound_copy(
             &mut progress,
         )?;
         drop(journal);
-        retained =
-            RetainedStage::open(parent, central, &binding.header.stage_name(), &mut progress)?;
+        retained = RetainedStage::open(
+            &Authority::Process,
+            parent,
+            central,
+            &binding.header.stage_name(),
+            &mut progress,
+        )?;
         binding.original_retained = retained.retained_original_version().cloned();
     }
     if retained.snapshot.state.completion_verified {
@@ -2744,12 +2785,13 @@ fn resume_bound_copy(
 
 impl PermissionStage {
     pub(super) fn publish(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        let retained = RetainedStage::open(parent, central, name, &mut progress)?;
+        let retained = RetainedStage::open(authority, parent, central, name, &mut progress)?;
         Self::from_retained(retained, None, progress)
     }
     fn from_retained(
@@ -3108,6 +3150,7 @@ fn stage_error(stage: &namespace::PrivateStage<'_>, error: PlatformError) -> Pla
 }
 
 #[derive(Debug)]
+#[cfg(test)]
 pub(super) struct Inspection {
     #[cfg(test)]
     pub(super) entries: usize,
@@ -3393,6 +3436,7 @@ impl Snapshot {
     }
 }
 /// Journal-only inspection never grants publication, restoration or deletion.
+#[cfg(test)]
 pub(super) fn inspect(
     parent: &File,
     central: &File,
@@ -3550,18 +3594,13 @@ pub(super) struct RetainedStage<'a> {
 }
 impl<'a> RetainedStage<'a> {
     pub(super) fn open(
+        authority: &Authority,
         parent: &'a File,
         central: &'a File,
         name: &OsStr,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        let snapshot = Snapshot::load(
-            &Authority::Process,
-            parent,
-            central,
-            name,
-            SnapshotAccess::Read,
-        )?;
+        let snapshot = Snapshot::load(authority, parent, central, name, SnapshotAccess::Read)?;
         Self::from_snapshot(parent, central, snapshot, progress)
     }
     fn from_snapshot(
@@ -3855,7 +3894,14 @@ pub(super) fn undo_completed_copy(
     name: &OsStr,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
-    undo_bound_copy(parent, central, name, None, &mut progress)
+    undo_bound_copy(
+        &Authority::Process,
+        parent,
+        central,
+        name,
+        None,
+        &mut progress,
+    )
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -3868,18 +3914,13 @@ struct CopyUndoBinding {
 }
 
 fn read_undo_snapshot(
+    authority: &Authority,
     parent: &File,
     central: &File,
     name: &OsStr,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Snapshot, PlatformError> {
-    let snapshot = Snapshot::load(
-        &Authority::Process,
-        parent,
-        central,
-        name,
-        SnapshotAccess::Read,
-    )?;
+    let snapshot = Snapshot::load(authority, parent, central, name, SnapshotAccess::Read)?;
     if !snapshot.state.completion_verified || snapshot.state.cleanup.is_some() {
         return Err(io("Copy has no completed receipt; Undo refused"));
     }
@@ -3895,14 +3936,15 @@ fn read_undo_snapshot(
     }
 }
 fn undo_bound_copy(
+    authority: &Authority,
     parent: &File,
     central: &File,
     name: &OsStr,
     binding: Option<&CopyUndoBinding>,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
-    super::registry::require_uncoordinated(central)?;
-    let snapshot = read_undo_snapshot(parent, central, name, &mut progress)?;
+    super::registry::require_uncoordinated(authority, central)?;
+    let snapshot = read_undo_snapshot(authority, parent, central, name, &mut progress)?;
     if let Some(binding) = binding {
         let (copy, original) = pending_undo_epochs(parent, &snapshot)?;
         if binding
@@ -3949,13 +3991,7 @@ fn undo_bound_copy(
     }
     let expected = snapshot.bytes.clone();
     drop(snapshot);
-    let snapshot = Snapshot::load(
-        &Authority::Process,
-        parent,
-        central,
-        name,
-        SnapshotAccess::Write,
-    )?;
+    let snapshot = Snapshot::load(authority, parent, central, name, SnapshotAccess::Write)?;
     if snapshot.bytes != expected {
         return Err(io("Copy journal changed before Undo writer acquisition"));
     }
@@ -3969,7 +4005,7 @@ fn undo_bound_copy(
     }
     let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
     let root_name = snapshot.root_name(parent)?;
-    let mut root = windows_fs::PerObjectFile::open(parent, &root_name).map_err(io)?;
+    let mut root = authority.open_candidate(parent, &root_name)?;
     if let Some(expected) = binding.and_then(|binding| binding.pending_copy.as_ref())
         && snapshot.state.copy_rename_at(&root_name) == Some(RenameKind::Withdraw)
         && !snapshot.state.admitted_rename_matches(
@@ -4008,7 +4044,9 @@ fn undo_bound_copy(
         drop(tree);
         if needs_rename {
             undo_handoff(journal.sequence)?;
-            crate::move_transaction::rename_windows_handle_no_replace(&root, parent, &candidate)?;
+            journal.authority.file_operation(|| {
+                crate::move_transaction::rename_windows_handle_no_replace(&root, parent, &candidate)
+            })?;
             boundary(journal.sequence, Step::UndoRenamed)?;
         }
         root = journal.reopen_readonly(0, parent, &candidate, root, &mut progress)?;
@@ -4070,12 +4108,13 @@ pub(super) struct CompletedCopy<'a> {
 }
 impl<'a> CompletedCopy<'a> {
     pub(super) fn open(
+        authority: &Authority,
         parent: &'a File,
         central: &'a File,
         name: &OsStr,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        let retained = RetainedStage::open(parent, central, name, progress)?;
+        let retained = RetainedStage::open(authority, parent, central, name, progress)?;
         if retained.snapshot.state.undo_intent {
             return Err(io(
                 "Copy is retracting or undone; completed-copy receipt unavailable",
@@ -4689,7 +4728,10 @@ mod tests {
             if published {
                 drop(staged);
                 let mut publication =
-                    PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+                    PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| {
+                        Ok(())
+                    })
+                    .unwrap();
                 publication.apply(|_| Ok(())).unwrap();
             } else {
                 let mut staged = staged;
@@ -4703,8 +4745,16 @@ mod tests {
             if published {
                 set_case_policy(&parent, false);
             }
-            assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
-            assert!(RetainedStage::open(&parent, &central, &name, &mut |_| Ok(())).is_err());
+            assert!(
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
+            assert!(
+                RetainedStage::open(&Authority::Process, &parent, &central, &name, &mut |_| Ok(
+                    ()
+                ))
+                .is_err()
+            );
             assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
             assert_eq!(std::fs::read(&local).unwrap(), before);
             assert_eq!(std::fs::read(&mirror).unwrap(), before);
@@ -4767,8 +4817,14 @@ mod tests {
                     let name = staged.stage.name.clone();
                     let candidate = staged.stage.candidate_name.clone();
                     drop(staged);
-                    let mut publication =
-                        PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+                    let mut publication = PermissionStage::publish(
+                        &Authority::Process,
+                        &parent,
+                        &central,
+                        &name,
+                        |_| Ok(()),
+                    )
+                    .unwrap();
                     publication.apply(|_| Ok(())).unwrap();
                     drop(publication);
                     let copied = destination.join("copy");
@@ -4843,7 +4899,10 @@ mod tests {
         set_case_policy(&owner(&candidate), false);
         let before = std::fs::read(&local).unwrap();
         assert_eq!(before, std::fs::read(&mirror).unwrap());
-        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
         assert_eq!(std::fs::read(local).unwrap(), before);
         assert_eq!(std::fs::read(mirror).unwrap(), before);
         assert!(!windows_fs::directory_case_sensitive(&owner(&candidate)).unwrap());
@@ -4896,7 +4955,16 @@ mod tests {
             let local = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&local).unwrap();
             if overwrite {
-                assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+                assert!(
+                    PermissionStage::publish(
+                        &Authority::Process,
+                        &parent,
+                        &central,
+                        &name,
+                        |_| Ok(())
+                    )
+                    .is_err()
+                );
                 assert_eq!(
                     std::fs::read(root.path().join("destination/moved-original")).unwrap(),
                     b"approved original"
@@ -5246,7 +5314,8 @@ mod tests {
     fn overwrite_publish(root: &Path, name: &OsStr) -> Result<(), PlatformError> {
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        PermissionStage::publish(&parent, &central, name, |_| Ok(()))?.apply(|_| Ok(()))
+        PermissionStage::publish(&Authority::Process, &parent, &central, name, |_| Ok(()))?
+            .apply(|_| Ok(()))
     }
     fn overwrite_undo(root: &Path, name: &OsStr) -> Result<(), PlatformError> {
         undo_completed_copy(
@@ -5319,11 +5388,18 @@ mod tests {
             assert_overwrite_versions(root.path(), &name, directory);
             let parent = owner(&root.path().join("destination"));
             let central = owner(&root.path().join("central"));
-            let receipt = CompletedCopy::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            let receipt =
+                CompletedCopy::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             assert_eq!(receipt.entry_count(), 3);
             drop(receipt);
-            let mut undo =
-                RetainedCopyUndoPlan::admit(&root.path().join("central"), &id, |_| Ok(())).unwrap();
+            let mut undo = RetainedCopyUndoPlan::admit(
+                &Authority::Process,
+                &root.path().join("central"),
+                &id,
+                |_| Ok(()),
+            )
+            .unwrap();
             assert_eq!(undo.path_pairs().len(), 2);
             undo.undo_next().unwrap();
             assert_eq!(undo.remaining(), 0);
@@ -5531,11 +5607,13 @@ mod tests {
             WindowsCopyRecoveryEvidence::VerifiedOriginal
         );
 
-        let mut undo =
-            RetainedCopyUndoPlan::admit(&root.path().join("central"), &header.transaction, |_| {
-                Ok(())
-            })
-            .unwrap();
+        let mut undo = RetainedCopyUndoPlan::admit(
+            &Authority::Process,
+            &root.path().join("central"),
+            &header.transaction,
+            |_| Ok(()),
+        )
+        .unwrap();
         assert_eq!(undo.admitted_phase(), WindowsCopyPhase::UndoPending);
         undo.undo_next().unwrap();
         assert_eq!(
@@ -6372,6 +6450,7 @@ mod tests {
             drop(journal);
             assert!(
                 PermissionStage::publish(
+                    &Authority::Process,
                     &owner(&root.path().join("destination")),
                     &owner(&root.path().join("central")),
                     &name,
@@ -6566,7 +6645,8 @@ mod tests {
         let candidate = staged.stage.candidate_name.clone();
         drop((staged, src));
         let mut application =
-            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         assert!(!root.path().join("destination").join(candidate).exists());
         assert!(application.journal.state.published);
         assert_eq!(application.completed(), 0);
@@ -6605,10 +6685,13 @@ mod tests {
         );
         // Recovery requires no source path or handles and never reapplies exact ACLs.
         std::fs::remove_dir_all(root.path().join("source")).unwrap();
-        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        let retained =
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).unwrap();
         assert_eq!(retained.entry_count(), 3);
         drop(retained);
-        let mut again = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut again =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         again.apply(|_| Ok(())).unwrap();
         assert_eq!(again.journal.length, length);
     }
@@ -6624,7 +6707,9 @@ mod tests {
             let staged = stage(&src, &parent, &central).unwrap();
             let name = staged.stage.name.clone();
             drop((staged, src));
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             if !cancel {
                 FAULT.with(|f| f.set(Some((24, Step::CentralFlushed, false))));
             }
@@ -6646,11 +6731,16 @@ mod tests {
             let report = inspect(&parent, &central, &name).unwrap();
             assert_eq!(report.completion_entries, 1);
             assert!(!report.completion_verified);
-            assert!(CompletedCopy::open(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(
+                CompletedCopy::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
             let journal = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&journal).unwrap();
             std::fs::remove_dir_all(root.path().join("source")).unwrap();
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             app.apply(|_| Ok(())).unwrap();
             drop(app);
             let after = std::fs::read(journal).unwrap();
@@ -6670,7 +6760,9 @@ mod tests {
                     .count(),
                 1
             );
-            let receipt = CompletedCopy::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            let receipt =
+                CompletedCopy::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             assert_eq!(receipt.entry_count(), 3);
             assert!(receipt.root_version().directory);
             receipt.revalidate(|_| Ok(())).unwrap();
@@ -6687,7 +6779,9 @@ mod tests {
             let staged = stage(&src, &parent, &central).unwrap();
             let name = staged.stage.name.clone();
             drop((staged, src));
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             if !sealed {
                 FAULT.with(|f| f.set(Some((12, Step::CentralFlushed, false))));
             }
@@ -6700,7 +6794,9 @@ mod tests {
             let state = decode(&before).unwrap().state;
             let recorded = &state.final_versions[0];
             if sealed {
-                let receipt = CompletedCopy::open(&parent, &central, &name, |_| Ok(())).unwrap();
+                let receipt =
+                    CompletedCopy::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                        .unwrap();
                 assert_eq!(receipt.root_version(), recorded);
                 receipt.revalidate(|_| Ok(())).unwrap();
             }
@@ -6725,8 +6821,14 @@ mod tests {
                 &comparable, recorded,
                 "only the native change time may differ"
             );
-            assert!(CompletedCopy::open(&parent, &central, &name, |_| Ok(())).is_err());
-            assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(
+                CompletedCopy::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
+            assert!(
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
             assert_eq!(std::fs::read(journal).unwrap(), before);
             assert_eq!(std::fs::read(&target).unwrap(), b"original data");
             assert_eq!(
@@ -6761,7 +6863,9 @@ mod tests {
             staged_resume_fixture_at(path, destination, nested, readonly, registry);
         let parent = owner(destination);
         let central = owner(registry.unwrap_or(&path.join("central")));
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         app.apply(|_| Ok(())).unwrap();
         (name, candidate, cleanup)
     }
@@ -6991,7 +7095,9 @@ mod tests {
         std::fs::write(registry.join(header.central_name()), &rewritten).unwrap();
         let parent = owner(&root.path().join("destination"));
         let central = owner(&registry);
-        drop(RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap());
+        drop(
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).unwrap(),
+        );
         assert!(
             plan.resume(|_| Ok(())).is_err(),
             "Fresh coherent evidence must not replace an earlier admission's frozen evidence"
@@ -7215,8 +7321,9 @@ mod tests {
             FAULT.with(|f| f.set(Some((sequence, Step::CentralFlushed, false))));
             let parent = owner(&destination);
             let central = owner(&registry);
-            let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
-                .and_then(|mut stage| stage.apply(|_| Ok(())));
+            let result =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .and_then(|mut stage| stage.apply(|_| Ok(())));
             FAULT.with(|f| f.set(None));
             assert!(result.is_err());
             let state = decode(&std::fs::read(destination.join(&name).join(LOCAL)).unwrap())
@@ -7452,8 +7559,14 @@ mod tests {
             let report = inspect(&parent, &central, &name).unwrap();
             assert!(report.undone);
             assert!(!report.undo_pending);
-            assert!(CompletedCopy::open(&parent, &central, &name, |_| Ok(())).is_err());
-            assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(
+                CompletedCopy::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
+            assert!(
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
             let journal = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&journal).unwrap();
             undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
@@ -7780,7 +7893,9 @@ mod tests {
             statuses[0].evidence,
             WindowsCopyRecoveryEvidence::VerifiedTree
         );
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         app.apply(|_| Ok(())).unwrap();
         drop(app);
         assert_eq!(observe()[0].phase, Some(WindowsCopyPhase::Completed));
@@ -8054,7 +8169,9 @@ mod tests {
         let staged = stage(&src, &parent, &central).unwrap();
         let name = staged.stage.name.clone();
         drop((staged, src));
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         app.apply(|_| Ok(())).unwrap();
         drop(app);
         let statuses =
@@ -8103,8 +8220,9 @@ mod tests {
             let name = staged.stage.name.clone();
             drop((staged, src));
             FAULT.with(|f| f.set(Some((sequence, step, false))));
-            let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
-                .and_then(|mut app| app.apply(|_| Ok(())));
+            let result =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .and_then(|mut app| app.apply(|_| Ok(())));
             FAULT.with(|f| f.set(None));
             assert!(result.is_err(), "did not reach {sequence} {step:?}");
             assert_eq!(
@@ -8114,7 +8232,16 @@ mod tests {
             if step == Step::LocalFlushed {
                 let path = root.path().join("destination").join(&name).join(LOCAL);
                 let bytes = std::fs::read(&path).unwrap();
-                assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+                assert!(
+                    PermissionStage::publish(
+                        &Authority::Process,
+                        &parent,
+                        &central,
+                        &name,
+                        |_| Ok(())
+                    )
+                    .is_err()
+                );
                 assert_eq!(
                     std::fs::read(path).unwrap(),
                     bytes,
@@ -8122,7 +8249,10 @@ mod tests {
                 );
             } else {
                 std::fs::remove_dir_all(root.path().join("source")).unwrap();
-                let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                let mut app =
+                    PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| {
+                        Ok(())
+                    })
                     .unwrap_or_else(|error| panic!("reopen {sequence} {step:?}: {error}"));
                 app.apply(|_| Ok(()))
                     .unwrap_or_else(|error| panic!("apply {sequence} {step:?}: {error}"));
@@ -8176,10 +8306,22 @@ mod tests {
             let central = owner(&root.path().join("central"));
             let name = stage_name(&root.path().join("destination"));
             if step == Step::LocalFlushed {
-                assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+                assert!(
+                    PermissionStage::publish(
+                        &Authority::Process,
+                        &parent,
+                        &central,
+                        &name,
+                        |_| Ok(())
+                    )
+                    .is_err()
+                );
             } else {
                 std::fs::remove_dir_all(root.path().join("source")).unwrap();
-                let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+                let mut app =
+                    PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| {
+                        Ok(())
+                    })
                     .unwrap_or_else(|error| panic!("reopen exit {sequence} {step:?}: {error}"));
                 app.apply(|_| Ok(())).unwrap();
                 assert_eq!(app.completed(), 3);
@@ -8204,7 +8346,10 @@ mod tests {
         drop((staged, src));
         let external = root.path().join("destination/copy");
         std::fs::write(&external, b"external occupant").unwrap();
-        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
         assert_eq!(std::fs::read(&external).unwrap(), b"external occupant");
         assert_eq!(
             std::fs::read(
@@ -8217,7 +8362,9 @@ mod tests {
             b"original data"
         );
         std::fs::remove_file(external).unwrap();
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         app.apply(|_| Ok(())).unwrap();
         assert_eq!(app.completed(), 3);
     }
@@ -8266,7 +8413,9 @@ mod tests {
             let name = staged.stage.name.clone();
             let candidate = staged.stage.candidate_name.clone();
             drop((staged, src));
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             app.apply(|_| Ok(())).unwrap();
             assert_eq!(app.completed(), 1);
             assert_eq!(links::capture(&app.candidates[0]).unwrap(), raw);
@@ -8313,7 +8462,10 @@ mod tests {
         std::fs::hard_link(&file, &alias).unwrap();
         let before =
             std::fs::read(root.path().join("destination").join(&name).join(LOCAL)).unwrap();
-        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
         assert!(!root.path().join("destination/copy").exists());
         assert_eq!(std::fs::read(&alias).unwrap(), b"original data");
         assert_eq!(
@@ -8321,7 +8473,9 @@ mod tests {
             before
         );
         std::fs::remove_file(alias).unwrap();
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         app.apply(|_| Ok(())).unwrap();
         assert_eq!(app.completed(), 1);
     }
@@ -8337,7 +8491,9 @@ mod tests {
             drop(staged.prepare_destination_security(|| Ok(())).unwrap());
             let name = staged.stage.name.clone();
             drop((staged, src));
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             let result = app.apply(|_| {
                 if inspect(&parent, &central, &name)?.permissions_completed == completed {
                     Err(io("cancelled permission application"))
@@ -8362,7 +8518,9 @@ mod tests {
                 b"original data"
             );
             std::fs::remove_dir_all(root.path().join("source")).unwrap();
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             app.apply(|_| Ok(())).unwrap();
             assert_eq!(app.completed(), 3);
         }
@@ -8378,7 +8536,9 @@ mod tests {
         drop(staged.prepare_destination_security(|| Ok(())).unwrap());
         let name = staged.stage.name.clone();
         drop((staged, src));
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         FAULT.with(|f| f.set(Some((19, Step::PermissionsChanged, false))));
         let result = app.apply(|_| Ok(()));
         FAULT.with(|f| f.set(None));
@@ -8391,7 +8551,10 @@ mod tests {
         drop(file);
         let path = root.path().join("destination").join(&name).join(LOCAL);
         let before = std::fs::read(&path).unwrap();
-        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
         assert_eq!(std::fs::read(path).unwrap(), before);
         unchanged.validate_parent(&owner(&changed)).unwrap();
         assert_eq!(
@@ -8422,7 +8585,10 @@ mod tests {
             "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)",
         );
         let unchanged = security::DestinationSecurity::capture(&parent, true).unwrap();
-        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
         assert!(!root.path().join("destination/copy").exists());
         assert_eq!(std::fs::read(path).unwrap(), before);
         unchanged.validate_parent(&parent).unwrap();
@@ -8776,7 +8942,9 @@ mod tests {
             let central = owner(&root.join("central"));
             let name = stage_name(&root.join("destination"));
             FAULT.with(|f| f.set(Some((sequence, step, true))));
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             let _ = app.apply(|_| Ok(()));
             panic!("source-free child did not reach crash boundary");
         }
@@ -8788,7 +8956,9 @@ mod tests {
         let _ = staged.prepare_destination_security(|| Ok(()));
         let name = staged.stage.name.clone();
         drop((staged, src));
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         let _ = app.apply(|_| Ok(()));
         panic!("child did not reach crash boundary");
     }
@@ -8816,7 +8986,8 @@ mod tests {
                     b"original data"
                 );
                 assert!(!root.path().join("destination/copy").exists());
-                let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
+                let retained =
+                    RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()));
                 assert_eq!(retained.is_ok(), step == "central" && sequence >= 10);
                 if let Ok(retained) = retained {
                     if sequence >= 11 {
@@ -8924,7 +9095,8 @@ mod tests {
             Err(PlatformError::DestinationExists(_))
         ));
         let mut publication =
-            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         publication.apply(|_| Ok(())).unwrap();
         drop(publication);
         undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
@@ -9146,7 +9318,8 @@ mod tests {
             .join(&staged.stage.candidate_name);
         drop((staged, src));
         std::fs::remove_dir_all(root.path().join("source")).unwrap();
-        let validated = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        let validated =
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).unwrap();
         assert_eq!(validated.entry_count(), 6);
         validated.revalidate(|_| Ok(())).unwrap();
         assert!(
@@ -9186,14 +9359,23 @@ mod tests {
                 assert!(result.is_err());
                 let name = stage_name(&root.path().join("destination"));
                 assert!(!inspect(&parent, &central, &name).unwrap().verified);
-                assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err());
+                assert!(
+                    RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                        .is_err()
+                );
             } else {
                 let staged = stage(&src, &parent, &central).unwrap();
                 let name = staged.stage.name.clone();
                 assert!(staged.inspect(&central).unwrap().verified);
-                assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err());
+                assert!(
+                    RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                        .is_err()
+                );
                 drop(staged);
-                assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_ok());
+                assert!(
+                    RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                        .is_ok()
+                );
             }
         }
     }
@@ -9244,9 +9426,10 @@ mod tests {
             let handle = owner(&file);
             evidence.apply_final_metadata(&handle).unwrap();
             drop(handle);
-            let error = RetainedStage::open(&parent, &central, &name, |_| Ok(()))
-                .err()
-                .expect("altered stream must be refused");
+            let error =
+                RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .err()
+                    .expect("altered stream must be refused");
             assert!(
                 error.to_string().contains("stream contents changed"),
                 "expected content hash refusal, got: {error}"
@@ -9301,7 +9484,8 @@ mod tests {
                 .unwrap(),
             }
             assert!(
-                RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err(),
+                RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err(),
                 "mode {mode}"
             );
             assert_eq!(
@@ -9352,7 +9536,9 @@ mod tests {
                 std::fs::remove_file(&link).unwrap();
                 std::fs::remove_file(&target).unwrap();
             }
-            let validated = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            let validated =
+                RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             assert_eq!(validated.entry_count(), 1);
             validated.revalidate(|_| Ok(())).unwrap();
             assert!(!target.exists());
@@ -9376,11 +9562,13 @@ mod tests {
         drop(staged);
         let mut cancelled = false;
         assert!(
-            RetainedStage::open(&parent, &central, &name, |bytes| if bytes > 0 {
-                cancelled = true;
-                Err(io("cancelled retained scan"))
-            } else {
-                Ok(())
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |bytes| {
+                if bytes > 0 {
+                    cancelled = true;
+                    Err(io("cancelled retained scan"))
+                } else {
+                    Ok(())
+                }
             })
             .is_err()
         );
@@ -9395,7 +9583,9 @@ mod tests {
                 .open(candidate.join("nested/file"))
                 .is_ok()
         );
-        assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_ok());
+        assert!(
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).is_ok()
+        );
     }
     #[test]
     fn windows_native_copy_private_security_records_and_rejects_permission_drift() {
@@ -9456,7 +9646,8 @@ mod tests {
             }
             drop(changed_handle);
             assert!(
-                RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err(),
+                RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err(),
                 "mode {mode}"
             );
             assert_eq!(std::fs::read(&file).unwrap(), b"original data");
@@ -9487,7 +9678,7 @@ mod tests {
             .join("nested/file");
         drop(staged);
         let mut changed = false;
-        let result = RetainedStage::open(&parent, &central, &name, |bytes| {
+        let result = RetainedStage::open(&Authority::Process, &parent, &central, &name, |bytes| {
             if bytes > 0 && !changed {
                 super::super::tests::set_dacl(&file, "D:P(A;OICI;FA;;;OW)(A;;FR;;;WD)");
                 changed = true;
@@ -9600,7 +9791,8 @@ mod tests {
         );
         drop((plan, staged, src));
         std::fs::remove_dir_all(root.path().join("source")).unwrap();
-        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        let retained =
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).unwrap();
         let plan = retained.plan_destination_security(|| Ok(())).unwrap();
         assert_eq!(serde_json::to_value(plan.evidence()).unwrap(), expected);
         plan.validate().unwrap();
@@ -9628,7 +9820,9 @@ mod tests {
             assert_eq!(plan.entry_count(), 1);
             let expected = serde_json::to_value(plan.evidence()).unwrap();
             drop((plan, staged, src));
-            let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+            let retained =
+                RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             let plan = retained.plan_destination_security(|| Ok(())).unwrap();
             assert_eq!(serde_json::to_value(plan.evidence()).unwrap(), expected);
             assert!(!missing.exists());
@@ -9665,7 +9859,8 @@ mod tests {
         assert_eq!(staged.journal.length, length);
         drop((staged, src));
         std::fs::remove_dir_all(root.path().join("source")).unwrap();
-        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        let retained =
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).unwrap();
         assert!(retained.plan_destination_security(|| Ok(())).is_err());
         assert!(!root.path().join("destination/copy").exists());
     }
@@ -9702,7 +9897,8 @@ mod tests {
                     .join(&staged.stage.candidate_name);
                 drop((staged, src));
                 std::fs::remove_dir_all(root.path().join("source")).unwrap();
-                let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(()));
+                let retained =
+                    RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()));
                 if step == Step::LocalFlushed {
                     assert!(retained.is_err());
                 } else {
@@ -9787,7 +9983,8 @@ mod tests {
         );
         std::fs::write(&local, &patched).unwrap();
         std::fs::write(&mirror, &patched).unwrap();
-        let retained = RetainedStage::open(&parent, &central, &name, |_| Ok(())).unwrap();
+        let retained =
+            RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(())).unwrap();
         let error = retained
             .plan_destination_security(|| Ok(()))
             .err()
@@ -10060,7 +10257,9 @@ mod tests {
                 nested,
             ));
             drop((staged, src));
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             app.apply(|_| Ok(())).unwrap();
             assert_eq!(app.completed(), if nested { 3 } else { 1 });
             drop(app);
@@ -10076,7 +10275,9 @@ mod tests {
             assert_eq!(std::fs::read(&cleanup.0[0]).unwrap(), b"original data");
             let journal = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&journal).unwrap();
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             app.apply(|_| Ok(())).unwrap();
             drop(app);
             assert_eq!(std::fs::read(journal).unwrap(), before);
@@ -10142,8 +10343,14 @@ mod tests {
                         assert_eq!(status.code(), Some(86), "{sequence} {step:?}");
                     } else {
                         FAULT.with(|f| f.set(Some((sequence, step, false))));
-                        let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
-                            .and_then(|mut app| app.apply(|_| Ok(())));
+                        let result = PermissionStage::publish(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            &name,
+                            |_| Ok(()),
+                        )
+                        .and_then(|mut app| app.apply(|_| Ok(())));
                         FAULT.with(|f| f.set(None));
                         assert!(result.is_err(), "{sequence} {step:?}");
                     }
@@ -10151,15 +10358,25 @@ mod tests {
                     let before = std::fs::read(&journal).unwrap();
                     if step == Step::LocalFlushed {
                         assert!(
-                            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err()
+                            PermissionStage::publish(
+                                &Authority::Process,
+                                &parent,
+                                &central,
+                                &name,
+                                |_| Ok(())
+                            )
+                            .is_err()
                         );
                         assert_eq!(std::fs::read(journal).unwrap(), before);
                     } else {
-                        let mut app =
-                            PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
-                                .unwrap_or_else(|error| {
-                                    panic!("resume {sequence} {step:?}: {error}")
-                                });
+                        let mut app = PermissionStage::publish(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            &name,
+                            |_| Ok(()),
+                        )
+                        .unwrap_or_else(|error| panic!("resume {sequence} {step:?}: {error}"));
                         app.apply(|_| Ok(())).unwrap();
                         drop(app);
                         assert!(std::fs::read(&journal).unwrap().starts_with(&before));
@@ -10191,19 +10408,20 @@ mod tests {
         cleanup.0.push(candidate.clone());
         drop((staged, src));
         let mut cancelled = false;
-        let result = PermissionStage::publish(&parent, &central, &name, |bytes| {
-            if bytes > 0
-                && !std::fs::metadata(&candidate)
-                    .unwrap()
-                    .permissions()
-                    .readonly()
-            {
-                cancelled = true;
-                Err(io("cancelled readonly verification"))
-            } else {
-                Ok(())
-            }
-        });
+        let result =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |bytes| {
+                if bytes > 0
+                    && !std::fs::metadata(&candidate)
+                        .unwrap()
+                        .permissions()
+                        .readonly()
+                {
+                    cancelled = true;
+                    Err(io("cancelled readonly verification"))
+                } else {
+                    Ok(())
+                }
+            });
         assert!(cancelled);
         assert!(result.is_err());
         assert!(!root.path().join("destination/copy").exists());
@@ -10211,7 +10429,9 @@ mod tests {
         assert_eq!(report.readonly_reopening, Some(0));
         assert_eq!(report.completion_entries, 0);
         assert!(!report.completion_verified);
-        let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+        let mut app =
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         app.apply(|_| Ok(())).unwrap();
         assert!(
             std::fs::metadata(&cleanup.0[1])
@@ -10238,7 +10458,10 @@ mod tests {
         cleanup.0.push(candidate.clone());
         drop((staged, src));
         FAULT.with(|f| f.set(Some((9, Step::ReadonlyWritable, false))));
-        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
         FAULT.with(|f| f.set(None));
         assert!(
             !std::fs::metadata(&candidate)
@@ -10258,7 +10481,10 @@ mod tests {
         drop(file);
         let journal = root.path().join("destination").join(&name).join(LOCAL);
         let before = std::fs::read(&journal).unwrap();
-        assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+        assert!(
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .is_err()
+        );
         assert_eq!(std::fs::read(journal).unwrap(), before);
         assert_eq!(std::fs::read(&candidate).unwrap(), b"external data");
         assert!(
@@ -10298,7 +10524,9 @@ mod tests {
             let path = root.path().join("destination").join(&name).join(LOCAL);
             let before = std::fs::read(&path).unwrap();
             std::fs::remove_dir_all(root.path().join("source")).unwrap();
-            let mut app = PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            let mut app =
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             app.apply(|_| Ok(())).unwrap();
             assert_eq!(app.completed(), 3);
             drop(app);
@@ -10356,7 +10584,13 @@ mod tests {
                         assert_eq!(status.code(), Some(86));
                     } else {
                         FAULT.with(|f| f.set(Some((sequence, step, false))));
-                        let result = PermissionStage::publish(&parent, &central, &name, |_| Ok(()));
+                        let result = PermissionStage::publish(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            &name,
+                            |_| Ok(()),
+                        );
                         FAULT.with(|f| f.set(None));
                         assert!(result.is_err());
                     }
@@ -10364,12 +10598,25 @@ mod tests {
                     let before = std::fs::read(&path).unwrap();
                     if step == Step::LocalFlushed {
                         assert!(
-                            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err()
+                            PermissionStage::publish(
+                                &Authority::Process,
+                                &parent,
+                                &central,
+                                &name,
+                                |_| Ok(())
+                            )
+                            .is_err()
                         );
                         assert_eq!(std::fs::read(path).unwrap(), before);
                     } else {
-                        let mut app =
-                            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+                        let mut app = PermissionStage::publish(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            &name,
+                            |_| Ok(()),
+                        )
+                        .unwrap();
                         app.apply(|_| Ok(())).unwrap();
                         assert_eq!(app.completed(), 3);
                         drop(app);

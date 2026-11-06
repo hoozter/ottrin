@@ -55,7 +55,10 @@ fn windows_native_copy_verification_cancellation_keeps_unpublished_durable_stage
         .unwrap(),
         original
     );
-    assert!(PermissionStage::publish(&parent, &central, &name, |_| Ok(())).is_err());
+    assert!(
+        PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+            .is_err()
+    );
     assert_eq!(
         std::fs::read(root.path().join("destination").join(&name).join(LOCAL)).unwrap(),
         bytes

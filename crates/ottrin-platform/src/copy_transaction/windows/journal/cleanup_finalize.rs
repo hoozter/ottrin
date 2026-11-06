@@ -140,7 +140,7 @@ pub(super) fn prepare(
         .and_then(|text| text.strip_prefix(".ottrin-copy-"))
         .ok_or_else(|| io("invalid Copy cleanup stage name"))?;
     let central_name = OsString::from(format!("{id}.copy-journal"));
-    let control = discovery::RegisteredJournal::open(central, &central_name)?;
+    let control = discovery::RegisteredJournal::open(&Authority::Process, central, &central_name)?;
     let authorized = control
         .state
         .cleanup
@@ -543,6 +543,7 @@ impl Plan {
             .and_then(|text| text.strip_prefix(".ottrin-copy-"))
             .ok_or_else(|| io("invalid Copy cleanup stage name"))?;
         let control = discovery::RegisteredJournal::open(
+            &Authority::Process,
             central,
             &OsString::from(format!("{id}.copy-journal")),
         )?;
@@ -638,7 +639,12 @@ impl Plan {
             action.flush(parent)?;
             return action.flush(central);
         };
-        let control = discovery::RegisteredJournal::from_file(central, &central_name, file)?;
+        let control = discovery::RegisteredJournal::from_file(
+            &Authority::Process,
+            central,
+            &central_name,
+            file,
+        )?;
         if control.state.header.as_ref() != Some(&self.header)
             || <[u8; 32]>::from(Sha256::digest(&control.bytes)) != self.digest
             || !control

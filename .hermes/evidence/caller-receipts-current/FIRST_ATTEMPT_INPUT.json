@@ -1,0 +1,101 @@
+{
+  "SOURCE_INPUT.json": {
+    "reference_commit": "1583f3a9c89fd37a8f2f284b909ce68490ff0367",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "970b1ef16ad27636647fec6377c9d645f8f389288ca8775a0be616735dcf0aee",
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f4146cb81cc68d5c6cb6dcfe0969e50b072fb6e172f9b55ca346a2329517eea5",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "45ccef5642dc9d324a819f8992237d1c1f39d2de8b34b8da9c66bd90268fc967",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/abort.rs": "7d957f960796d03dee2247480d971507e679c9a6bfeeb161334a19018d65fbde",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "8bf5edbb4fb489e11457271fdd6de992bb91be7be12d2efad78eb47202498e03",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "58ca5f6144ef716b0570c3c3b43e7fa5a631ebd26f2454130b72c600f20c4820",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "f91c31ddcbd5f79cb5de4743de4e021c9ddfe158f1c9000d2f2074b45acb0c46",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "e02fe986420041102be575ee23741a1f8cc504a9177ce9985014daa9d3a3a343",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_peer.rs": "00c07386c5bb7cbe66085152a9bc0a999dbfbbb1348a0947a8d1c30d5212d86b",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "aefbb1f530bb7d3153c388e74d716ce0a5050dffae6f1c81339f1d6526e58675",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "c3f43a89d247c583af0a9b9e437b49e0a96f73c68d6cfed1fbb25e049a2de1ba",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort.rs": "c65e4e3f8d5472f331aa19500d765ce39cb69a384084cc9aa81ae104583f75d0",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/blocked_io.rs": "9d9dac20f68f94e64075be22ccf9379c79d697f9f0531fdd7780f97594d380b0",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_processes.rs": "90a6821e7ec1be04c95f9fc66ec964eaa6d467f28d7b6f0201a0eca4e76b1e1f",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_repair.rs": "63746955e3f20d102bb1750f46b88b165af3bcff88acdf1081e546637d616230",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "931bbba8c04f5faa9c76f99e38242c0da28ed8b34edede3a7bebaa191bdb0be4",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "966c18c1f28eef4144735e86074a94dc05c84f968ca8bd2a28e147c251e72854",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/disk_full.rs": "421d711c6f3dd22ec4e0b9aa16f7b90a3c15f15497502361c15ab18952f78e28",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/sparse_workflow.rs": "905a849db4bba170575d36b67a4844f27586dcd959ea06c108ab49c38aaa4afb",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/throttled_io.rs": "38233cc6a7fa50e22121e61f4bcf79120c8bc7d50f49f9a5dd27ffc0855b4986",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/verification_cancel.rs": "59312e105ef226c7e28e9c2cf242f418d2df2a980325f2c4a3a053a648643715",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "896f18873768f9896cb7e809658cd262641b73b5a40154a7065488e67e9aab47"
+    },
+    "scope": "Unified caller creation staging/publication/completion receipt admission and refresh, canonical registry gating before writes, runtime authority retained in opaque Undo plans and source-free public Undo; not dispatcher, overwrite or restored discovery/resume/cleanup completion."
+  },
+  "NATIVE_TEST_INPUT.json": {
+    "source": {
+      "reference_commit": "1583f3a9c89fd37a8f2f284b909ce68490ff0367",
+      "files": {
+        "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "970b1ef16ad27636647fec6377c9d645f8f389288ca8775a0be616735dcf0aee",
+        "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "f4146cb81cc68d5c6cb6dcfe0969e50b072fb6e172f9b55ca346a2329517eea5",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "45ccef5642dc9d324a819f8992237d1c1f39d2de8b34b8da9c66bd90268fc967",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/abort.rs": "7d957f960796d03dee2247480d971507e679c9a6bfeeb161334a19018d65fbde",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "8bf5edbb4fb489e11457271fdd6de992bb91be7be12d2efad78eb47202498e03",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_dependencies.rs": "58ca5f6144ef716b0570c3c3b43e7fa5a631ebd26f2454130b72c600f20c4820",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "f91c31ddcbd5f79cb5de4743de4e021c9ddfe158f1c9000d2f2074b45acb0c46",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": "e02fe986420041102be575ee23741a1f8cc504a9177ce9985014daa9d3a3a343",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_peer.rs": "00c07386c5bb7cbe66085152a9bc0a999dbfbbb1348a0947a8d1c30d5212d86b",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "aefbb1f530bb7d3153c388e74d716ce0a5050dffae6f1c81339f1d6526e58675",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/name_release.rs": "c3f43a89d247c583af0a9b9e437b49e0a96f73c68d6cfed1fbb25e049a2de1ba",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort.rs": "c65e4e3f8d5472f331aa19500d765ce39cb69a384084cc9aa81ae104583f75d0",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/blocked_io.rs": "9d9dac20f68f94e64075be22ccf9379c79d697f9f0531fdd7780f97594d380b0",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_processes.rs": "90a6821e7ec1be04c95f9fc66ec964eaa6d467f28d7b6f0201a0eca4e76b1e1f",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_repair.rs": "63746955e3f20d102bb1750f46b88b165af3bcff88acdf1081e546637d616230",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "931bbba8c04f5faa9c76f99e38242c0da28ed8b34edede3a7bebaa191bdb0be4",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/creation_times.rs": "966c18c1f28eef4144735e86074a94dc05c84f968ca8bd2a28e147c251e72854",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/disk_full.rs": "421d711c6f3dd22ec4e0b9aa16f7b90a3c15f15497502361c15ab18952f78e28",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/sparse_workflow.rs": "905a849db4bba170575d36b67a4844f27586dcd959ea06c108ab49c38aaa4afb",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/throttled_io.rs": "38233cc6a7fa50e22121e61f4bcf79120c8bc7d50f49f9a5dd27ffc0855b4986",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/verification_cancel.rs": "59312e105ef226c7e28e9c2cf242f418d2df2a980325f2c4a3a053a648643715",
+        "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "896f18873768f9896cb7e809658cd262641b73b5a40154a7065488e67e9aab47"
+      },
+      "scope": "Unified caller creation staging/publication/completion receipt admission and refresh, canonical registry gating before writes, runtime authority retained in opaque Undo plans and source-free public Undo; not dispatcher, overwrite or restored discovery/resume/cleanup completion."
+    },
+    "artifacts": [
+      {
+        "crate": "ottrin_ui",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+        "sha256": "98cb13e603d781baa2e94e7eda7a5cc0932564fc22d566369ba670a0f29d8d81",
+        "bytes": 772415715,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      },
+      {
+        "crate": "ottrin_platform",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+        "sha256": "0583e98f3f182cc824d70a9e10ea9da2ca1349a4b144ba697d2d3ec915392872",
+        "bytes": 556572237,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      }
+    ],
+    "compiler_jsonl_sha256": "a2e14876771e278497f41601b48bbb4a453e084b31938c16873e19adf1366c59"
+  },
+  "BUILD_BINDING.json": {
+    "status": "pass source/build/staged executable binding; native result pending",
+    "source": "SOURCE_INPUT.json",
+    "build": "NATIVE_TEST_INPUT.json",
+    "native": "native/APPLICATION_INPUT.json",
+    "source_files": 22,
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 417486848,
+      "sha256": "ae72f81e4ec2e432f8e654b2af4e932e537762ce4954cf4e29f5b2378da4abf3"
+    }
+  }
+}

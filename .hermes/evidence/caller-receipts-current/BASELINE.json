@@ -1,0 +1,10 @@
+{
+  "sizes": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30178986666,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48866541647
+  },
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471343738880 26131517440  95% /\n",
+  "purpose": "Unified caller creation execution, canonical completion/Undo receipt admission, refresh and source-free public Undo; shared caches and registered native teardown"
+}

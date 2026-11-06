@@ -148,6 +148,7 @@ impl Observation {
             .as_deref()
             .ok_or_else(|| io("Copy has no recorded peer unlink intent"))?;
         let record = discovery::RegisteredJournal::dependency(
+            &Authority::Process,
             central,
             &OsString::from(format!("{}.copy-journal", proof.transaction)),
         )?;

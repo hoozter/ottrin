@@ -139,7 +139,7 @@ fn perform(root: &Path, orphan: bool) -> Result<(), PlatformError> {
         let name = windows_fs::directory_children_limited(&central, 1)
             .map_err(io)?
             .remove(0);
-        let control = discovery::RegisteredJournal::open(&central, &name)?;
+        let control = discovery::RegisteredJournal::open(&Authority::Process, &central, &name)?;
         let transaction = control.state.header.as_ref().unwrap().transaction.clone();
         drop((control, central));
         let mut plan =

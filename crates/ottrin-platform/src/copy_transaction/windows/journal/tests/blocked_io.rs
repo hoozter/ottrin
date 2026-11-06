@@ -82,7 +82,8 @@ fn blocked_cases(operation: &str) {
             let parent = owner(&destination);
             let central = owner(&registry);
             let mut publication =
-                PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+                PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
             publication.apply(|_| Ok(())).unwrap();
             drop(publication);
             if operation == "cleanup" {
@@ -99,7 +100,14 @@ fn blocked_cases(operation: &str) {
             } else {
                 Recovery::SessionUndo {
                     receipt: Box::new(
-                        discovery::session_receipt(&parent, &central, &name, |_| Ok(())).unwrap(),
+                        discovery::session_receipt(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            &name,
+                            |_| Ok(()),
+                        )
+                        .unwrap(),
                     ),
                     complete: false,
                 }

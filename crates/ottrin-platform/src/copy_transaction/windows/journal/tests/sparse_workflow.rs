@@ -71,7 +71,8 @@ fn sparse_workflow(root: &Path, destination: &Path) {
         let id = staged.journal.header.transaction.clone();
         drop((src, staged));
         let mut publication =
-            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         publication.apply(|_| Ok(())).unwrap();
         drop(publication);
         let published = destination.join("copy/nested/file");

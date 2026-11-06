@@ -182,7 +182,8 @@ impl Dependencies {
                 }
                 continue;
             }
-            let peer = discovery::RegisteredJournal::dependency(central, name)?;
+            let peer =
+                discovery::RegisteredJournal::dependency(&Authority::Process, central, name)?;
             let other = peer.state.header.as_ref().unwrap();
             // Active incomplete manifests can still add creation claims. An
             // ended peer is frozen, but only a matching, leased pair can certify

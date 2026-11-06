@@ -78,15 +78,17 @@ pub(super) fn configured_path() -> Result<PathBuf, PlatformError> {
 
 /// Other Copy writers must not invalidate an interrupted cohort's frozen
 /// catalog. This is a refusal gate, never authority to mutate or repair state.
-pub(super) fn require_uncoordinated(central: &File) -> Result<(), PlatformError> {
+pub(super) fn require_uncoordinated(
+    authority: &Authority,
+    central: &File,
+) -> Result<(), PlatformError> {
     let path = windows_fs::location(central).map_err(io)?;
-    let parent = windows_fs::open_directory(
+    let parent = authority.directory(
         path.parent()
             .ok_or_else(|| io("Copy registry has no parent"))?,
         FILE_GENERIC_READ,
-    )
-    .map_err(io)?;
-    match child(
+    )?;
+    match authority.open_child(
         &parent,
         OsStr::new(COHORTS_ROOT),
         true,
@@ -97,8 +99,13 @@ pub(super) fn require_uncoordinated(central: &File) -> Result<(), PlatformError>
         Err(error) => return Err(io(error)),
         Ok(file) => drop(file),
     }
-    let manager = AnchoredRoot::open_at(&path, false)?
-        .ok_or_else(|| io("Copy registry admission is missing"))?;
+    let manager = match authority {
+        Authority::Process => AnchoredRoot::open_at(&path, false)?,
+        Authority::Caller(caller) => {
+            AnchoredRoot::for_caller_profile(Arc::clone(caller), &[], false)?
+        }
+    }
+    .ok_or_else(|| io("Copy registry admission is missing"))?;
     if stable_identity_from_handle(manager.root()).map_err(io)?
         != stable_identity_from_handle(central).map_err(io)?
     {

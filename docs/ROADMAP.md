@@ -99,14 +99,25 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    Both actual source contexts publish, finish permissions, reopen completed payload
    evidence and replay through a fresh writer. A reproduced post-rename access denial
    was fixed at the remaining process-authority binding check; operation-specific IO
-   diagnostics preserve typed refusals. Current receipt:
-   `caller-publication-current/ACCEPTANCE.json`; prior retained-tree, paired-journal,
-   claim and final-permission receipts retain their original scopes. These are component controls,
+   diagnostics preserve typed refusals. Unified caller creation execution now holds
+   canonical registry admission before its first stage/claim write and through
+   completion receipt construction. Shared staging/publication/completion readers
+   select authority explicitly; opaque Undo plans retain the live authenticated
+   context across canonical admission, refresh, native-ID parent reopening and
+   source-free public Undo. Actual file and four-entry directory flows finish both
+   the manual publication/receipt path and unified execute-with-receipt path;
+   repeated Undo, wrong-process refusal, cancelled refresh and foreign registry
+   refusal before any destination/registry entry write pass. Source and pinned
+   preferences/index bytes, identities and security remain unchanged. A reproduced
+   missed Process selection at the receipt-to-Undo admission handoff is fixed.
+   Current receipt: `caller-receipts-current/ACCEPTANCE.json`; prior publication,
+   retained-tree, paired-journal, claim and final-permission receipts retain their
+   original scopes. These are component controls,
    not completed caller Copy, whole retained recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
    registry admission through the entire operation; caller creation mutation-prefix,
-   readonly/link publication recovery, original retention/overwrite, receipts
-   and restored discovery/resume/Undo/cleanup. Those entry points still select
+   readonly/link publication recovery, original retention/overwrite and authenticated
+   restored discovery/resume/Undo/cleanup entry points. Those entry points still select
    Process authority until their caller-aware integration is connected.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
    package/profile contexts. Creation-inheritance and original-token finalization

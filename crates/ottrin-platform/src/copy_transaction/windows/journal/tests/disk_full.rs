@@ -444,8 +444,14 @@ fn windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage(
             .is_err()
     );
     assert!(
-        PermissionStage::publish(&owner(&destination), &owner(&registry), &name, |_| Ok(()))
-            .is_err()
+        PermissionStage::publish(
+            &Authority::Process,
+            &owner(&destination),
+            &owner(&registry),
+            &name,
+            |_| Ok(())
+        )
+        .is_err()
     );
     assert_eq!(std::fs::read(&local).unwrap(), before);
     assert_eq!(std::fs::read(&mirror).unwrap(), before);

@@ -105,6 +105,7 @@ fn forward(root: &Path, name: &OsStr, overwrite: bool) -> Result<(), PlatformErr
         original_journal(root, name).move_original(None, OriginalMove::Retain, |_| Ok(()))?;
     }
     PermissionStage::publish(
+        &Authority::Process,
         &owner(&root.join("destination")),
         &owner(&root.join("central")),
         name,
@@ -417,6 +418,7 @@ fn windows_native_copy_creation_fault_and_exit_prefixes_recover_or_preserve_dive
                             inverse(root.path(), &name).unwrap();
                         } else {
                             PermissionStage::publish(
+                                &Authority::Process,
                                 &owner(&root.path().join("destination")),
                                 &owner(&root.path().join("central")),
                                 &name,

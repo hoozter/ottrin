@@ -209,6 +209,117 @@ pub(in super::super) fn exercise_caller_journals(
     replay.apply(|_| Ok(())).unwrap();
     assert!(replay.journal.state.completion_verified);
     drop(replay);
+    use crate::PlatformOps;
+    assert!(
+        discovery::session_receipt(&Authority::Process, &parent, manager.root(), &name, |_| Ok(
+            ()
+        ))
+        .is_err()
+    );
+    let receipt =
+        discovery::session_receipt(&authority, &parent, manager.root(), &name, |_| Ok(())).unwrap();
+    assert!(
+        receipt
+            .refresh_windows_copy_undo(|_| Err(io("owned caller refresh cancellation")))
+            .is_err()
+    );
+    let receipt = receipt.refresh_windows_copy_undo(|_| Ok(())).unwrap();
+    crate::DefaultPlatform
+        .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+        .unwrap();
+    crate::DefaultPlatform
+        .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+        .unwrap();
+    let snapshot = Snapshot::load(
+        &authority,
+        &parent,
+        manager.root(),
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap();
+    assert!(snapshot.state.undo_complete());
+    assert!(
+        !authority
+            .identity_at(
+                &parent,
+                OsStr::new("copy"),
+                snapshot.state.final_versions[0].identity
+            )
+            .unwrap()
+    );
+    snapshot.revalidate(&parent, manager.root()).unwrap();
+    drop((snapshot, receipt));
+
+    // Exercise the actual unified staging/publication/receipt path too; the
+    // source and canonical registry admission remain pinned across its lifetime.
+    let execute_parent = windows_fs::create_private(
+        protected_parent,
+        OsStr::new(&format!("caller-execute-{directory}")),
+        true,
+        sharing,
+    )
+    .unwrap();
+    let destination =
+        DestinationAdmission::creation(&authority, &execute_parent, OsStr::new("copy")).unwrap();
+    let foreign_registry = windows_fs::create_private(
+        protected_parent,
+        OsStr::new(&format!("foreign-execute-registry-{directory}")),
+        true,
+        sharing,
+    )
+    .unwrap();
+    assert!(
+        DurableStage::execute_with_receipt(
+            source,
+            &execute_parent,
+            &foreign_registry,
+            &destination,
+            OsStr::new("caller-source"),
+            16,
+            |_| Ok(())
+        )
+        .is_err()
+    );
+    assert!(
+        windows_fs::directory_children_limited(&execute_parent, 1)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        windows_fs::directory_children_limited(&foreign_registry, 1)
+            .unwrap()
+            .is_empty()
+    );
+    let receipt = DurableStage::execute_with_receipt(
+        source,
+        &execute_parent,
+        manager.root(),
+        &destination,
+        OsStr::new("caller-source"),
+        16,
+        |_| Ok(()),
+    )
+    .unwrap();
+    let receipt = receipt.refresh_windows_copy_undo(|_| Ok(())).unwrap();
+    let identity = receipt.identity.windows;
+    assert!(
+        authority
+            .identity_at(&execute_parent, OsStr::new("copy"), identity)
+            .unwrap()
+    );
+    crate::DefaultPlatform
+        .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+        .unwrap();
+    assert!(
+        !authority
+            .identity_at(&execute_parent, OsStr::new("copy"), identity)
+            .unwrap()
+    );
+    drop(receipt);
+    println!(
+        "caller receipt source_directory={directory}: unified execution, canonical receipt refresh, public Undo and idempotent replay passed"
+    );
     // Begin-only records permit reservation release, whether already published
     // or left at the complete preparation name. An intent forbids that release.
     struct ResetFault;

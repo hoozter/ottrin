@@ -90,7 +90,8 @@ fn run_case(operation: &str) {
         let parent = owner(&destination);
         let central = owner(&registry);
         let mut publication =
-            PermissionStage::publish(&parent, &central, &name, |_| Ok(())).unwrap();
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                .unwrap();
         publication.apply(|_| Ok(())).unwrap();
         if operation == "cleanup" {
             drop(publication);
@@ -119,9 +120,13 @@ fn run_case(operation: &str) {
         )),
         "undo" => Recovery::SessionUndo {
             receipt: Box::new(
-                discovery::session_receipt(&owner(&destination), &owner(&registry), &name, |_| {
-                    Ok(())
-                })
+                discovery::session_receipt(
+                    &Authority::Process,
+                    &owner(&destination),
+                    &owner(&registry),
+                    &name,
+                    |_| Ok(()),
+                )
                 .unwrap(),
             ),
             complete: false,

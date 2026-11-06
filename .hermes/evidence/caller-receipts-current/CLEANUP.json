@@ -1,0 +1,33 @@
+{
+  "status": "complete task-owned two-trial native/build cleanup",
+  "baseline": "BASELINE.json",
+  "target_bytes_after": {
+    "target/debug/deps": 23815171724,
+    "target/debug/incremental": 25263960526,
+    "target/x86_64-pc-windows-gnu/debug/deps": 30184273201,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 48875744941
+  },
+  "target_byte_changes": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 5286535,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 9203294
+  },
+  "obsolete_incremental_sessions_removed": 22,
+  "measured_incremental_free_delta_bytes": 2755018752,
+  "consumed_outputs_removed": 11,
+  "final_incremental_candidates": 0,
+  "retained_task_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-receipts-current",
+      "purpose": "Compact final source/build/native acceptance plus reproduced receipt handoff failure input/result binding, cleanup receipts and bound fixture scripts"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Current paired native Windows platform/UI test executables and useful shared compiler caches; exact current artifact/profile binding in NATIVE_TEST_INPUT.json"
+    }
+  ],
+  "remaining_task_created_disposable_storage": [],
+  "packages": "PRESERVED_PACKAGES.json",
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471419199488 26056056832  95% /\n"
+}

@@ -10,6 +10,26 @@ pub(super) enum Authority {
     Process,
     Caller(Arc<crate::windows_privileged_transport::CallerCopyContext>),
 }
+// Opaque in-memory plans compare authority conservatively: only the same held
+// authenticated context is equal. No persisted fields can recreate this value.
+impl std::fmt::Debug for Authority {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::Process => "Process",
+            Self::Caller(_) => "AuthenticatedCaller",
+        })
+    }
+}
+impl PartialEq for Authority {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Process, Self::Process) => true,
+            (Self::Caller(a), Self::Caller(b)) => Arc::ptr_eq(a, b),
+            _ => false,
+        }
+    }
+}
+impl Eq for Authority {}
 impl Authority {
     pub(super) fn validate(&self) -> Result<(), PlatformError> {
         match self {
@@ -183,6 +203,52 @@ impl Authority {
         self.validate()?;
         namespace::validate_binding_with(parent, expected, || self.probe(parent, name))?;
         self.validate()
+    }
+    pub(super) fn directory(&self, path: &Path, access: u32) -> Result<File, PlatformError> {
+        self.file_operation(|| windows_fs::open_directory(path, access).map_err(io))
+    }
+    pub(super) fn registry_directory(
+        &self,
+        path: &Path,
+    ) -> Result<(File, Option<super::registry::AnchoredRoot>), PlatformError> {
+        let file = self.directory(path, FILE_GENERIC_READ)?;
+        let manager = match self {
+            Self::Process => None,
+            Self::Caller(caller) => {
+                let manager = super::registry::AnchoredRoot::for_caller_profile(
+                    Arc::clone(caller),
+                    &[],
+                    false,
+                )?
+                .ok_or_else(|| io("Caller Copy registry is unavailable"))?;
+                if stable_identity_from_handle(&file).map_err(io)?
+                    != stable_identity_from_handle(manager.root()).map_err(io)?
+                {
+                    return Err(io("Copy registry is not the caller's canonical registry"));
+                }
+                manager.validate()?;
+                Some(manager)
+            }
+        };
+        Ok((file, manager))
+    }
+    pub(super) fn resolve_parent(
+        &self,
+        central: &File,
+        identity: WindowsStableIdentity,
+        access: u32,
+        mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<File, PlatformError> {
+        let access = if matches!(self, Self::Caller(_))
+            && access & windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED != 0
+        {
+            access | FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC
+        } else {
+            access
+        };
+        self.file_operation(|| {
+            windows_fs::Volumes::new(central)?.resolve(identity, access, &mut progress)
+        })
     }
     pub(super) fn writable_parent(&self, path: &Path) -> Result<File, PlatformError> {
         self.validate()?;

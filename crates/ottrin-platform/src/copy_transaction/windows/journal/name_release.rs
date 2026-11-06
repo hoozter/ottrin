@@ -26,7 +26,8 @@ impl RetainedCopyNameReleasePlan {
         progress(0)?;
         let registry =
             AnchoredRoot::open_at(root, false)?.ok_or_else(|| io("Copy registry is missing"))?;
-        let record = discovery::RegisteredJournal::open(registry.root(), &name)?;
+        let record =
+            discovery::RegisteredJournal::open(&Authority::Process, registry.root(), &name)?;
         let header = record.state.header.as_ref().unwrap();
         let parent = windows_fs::Volumes::new(registry.root())?.resolve(
             header.parent,
@@ -87,7 +88,7 @@ impl RetainedCopyNameReleasePlan {
         progress(0)?;
         let registry = AnchoredRoot::open_at(&self.registry, false)?
             .ok_or_else(|| io("Copy registry disappeared"))?;
-        super::super::registry::require_uncoordinated(registry.root())?;
+        super::super::registry::require_uncoordinated(registry.authority(), registry.root())?;
         if registry.anchor_identity() != self.registry_anchor
             || stable_identity_from_handle(registry.root()).map_err(io)? != self.header.central
             || windows_fs::location(registry.root()).map_err(io)? != self.registry

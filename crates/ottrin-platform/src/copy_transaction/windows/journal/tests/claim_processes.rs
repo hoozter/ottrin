@@ -200,10 +200,16 @@ fn windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit() {
         }
         std::fs::remove_dir_all(root.path().join("source")).unwrap();
         for (target, stage) in owners {
-            PermissionStage::publish(&parent, &central, OsStr::new(&stage), |_| Ok(()))
-                .unwrap()
-                .apply(|_| Ok(()))
-                .unwrap();
+            PermissionStage::publish(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new(&stage),
+                |_| Ok(()),
+            )
+            .unwrap()
+            .apply(|_| Ok(()))
+            .unwrap();
             assert_eq!(
                 std::fs::read(
                     root.path()

@@ -241,8 +241,14 @@ fn windows_native_copy_cleanup_protocol_binds_terminal_evidence_and_ordered_prog
             drop(writer);
             let parent = owner(&root.path().join("destination"));
             let central = owner(&root.path().join("central"));
-            assert!(read_undo_snapshot(&parent, &central, &name, |_| Ok(())).is_err());
-            assert!(RetainedStage::open(&parent, &central, &name, |_| Ok(())).is_err());
+            assert!(
+                read_undo_snapshot(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
+            assert!(
+                RetainedStage::open(&Authority::Process, &parent, &central, &name, |_| Ok(()))
+                    .is_err()
+            );
             let statuses = discover_at(&root.path().join("central")).unwrap();
             assert_eq!(statuses[0].phase, Some(WindowsCopyPhase::CleaningUp));
             assert_eq!(
@@ -1416,7 +1422,7 @@ fn cleanup_peer_fixture_layout(
         }
         drop(journal);
         if !root_file {
-            PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+            PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
                 .unwrap()
                 .apply(|_| Ok(()))
                 .unwrap();
@@ -1439,7 +1445,7 @@ fn cleanup_peer_fixture_layout(
                 .move_original(None, OriginalMove::Retain, |_| Ok(()))
                 .unwrap();
             drop(journal);
-            PermissionStage::publish(&parent, &central, name, |_| Ok(()))
+            PermissionStage::publish(&Authority::Process, &parent, &central, name, |_| Ok(()))
                 .unwrap()
                 .apply(|_| Ok(()))
                 .unwrap();
@@ -1669,10 +1675,16 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                                 .move_original(None, OriginalMove::Retain, |_| Ok(()))
                                 .unwrap();
                         }
-                        PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
-                            .unwrap()
-                            .apply(|_| Ok(()))
-                            .unwrap();
+                        PermissionStage::publish(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            &name,
+                            |_| Ok(()),
+                        )
+                        .unwrap()
+                        .apply(|_| Ok(()))
+                        .unwrap();
                         if undone {
                             undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
                         }
@@ -2244,7 +2256,7 @@ fn cleanup_chain_at(
                 .move_original(None, OriginalMove::Retain, |_| Ok(()))
                 .unwrap();
         }
-        PermissionStage::publish(&parent, &central, &name, |_| Ok(()))
+        PermissionStage::publish(&Authority::Process, &parent, &central, &name, |_| Ok(()))
             .unwrap()
             .apply(|_| Ok(()))
             .unwrap();
@@ -2558,6 +2570,7 @@ fn windows_native_copy_cleanup_group_observation_admits_chains_and_retained_alia
             assert_eq!(namespace_contents(root.path()), before);
             let central = owner(&root.path().join("central"));
             let record = super::super::discovery::RegisteredJournal::open(
+                &Authority::Process,
                 &central,
                 &OsString::from(format!("{}.copy-journal", ids[0])),
             )
@@ -2728,9 +2741,12 @@ fn windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_fr
                 std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_700_000_000),
             ))
             .unwrap();
-        let record =
-            super::super::discovery::RegisteredJournal::open(&central, &headers[1].central_name())
-                .unwrap();
+        let record = super::super::discovery::RegisteredJournal::open(
+            &Authority::Process,
+            &central,
+            &headers[1].central_name(),
+        )
+        .unwrap();
         assert!(group.selection.admits(&record).is_err());
     }
 }
@@ -3405,8 +3421,12 @@ fn windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_fir
         {
             let central = owner(&root.path().join("central"));
             for header in &headers {
-                let record =
-                    discovery::RegisteredJournal::open(&central, &header.central_name()).unwrap();
+                let record = discovery::RegisteredJournal::open(
+                    &Authority::Process,
+                    &central,
+                    &header.central_name(),
+                )
+                .unwrap();
                 assert!(
                     record
                         .state

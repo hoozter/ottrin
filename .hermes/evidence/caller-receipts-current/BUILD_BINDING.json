@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable and native runtime binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-fixed/APPLICATION_INPUT.json",
+  "source_files": 22,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 417486848,
+    "sha256": "f863a5cdfc5601d3cfd4ab8deb4063fce94d0a4ff62c752bf3a38d878300f8e0"
+  },
+  "native_result": "pass unified caller creation execution, completion receipt refresh and public Undo"
+}

@@ -28,14 +28,20 @@ impl RetainedCopyResumePlan {
         registry_id(&name).ok_or_else(|| io("invalid Copy transaction ID"))?;
         progress(0)?;
         let central = open_directory(root, FILE_GENERIC_READ).map_err(io)?;
-        let (bytes, state) = registered_journal(&central, &name)?;
+        let (bytes, state) = registered_journal(&Authority::Process, &central, &name)?;
         if !state.verified || state.completion_verified || state.undo_intent {
             return Err(io("Copy is not a verified unfinished forward transaction"));
         }
         let header = state.header.as_ref().unwrap();
         let parent =
             Volumes::new(&central)?.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
-        let retained = RetainedStage::open(&parent, &central, &header.stage_name(), &mut progress)?;
+        let retained = RetainedStage::open(
+            &Authority::Process,
+            &parent,
+            &central,
+            &header.stage_name(),
+            &mut progress,
+        )?;
         if retained.snapshot.bytes != bytes {
             return Err(io("Copy journals changed during forward admission"));
         }
@@ -95,7 +101,11 @@ impl RetainedCopyResumePlan {
         if stable_identity_from_handle(&central).map_err(io)? != self.binding.header.central {
             return Err(io("Copy registry was replaced; resume refused"));
         }
-        let (_, state) = registered_journal(&central, &self.binding.header.central_name())?;
+        let (_, state) = registered_journal(
+            &Authority::Process,
+            &central,
+            &self.binding.header.central_name(),
+        )?;
         if state.header.as_ref() != Some(&self.binding.header) {
             return Err(io("Copy journal was replaced; resume refused"));
         }
@@ -113,17 +123,18 @@ impl RetainedCopyResumePlan {
 /// Bridge a freshly verified completion into the ordinary session receipt.
 /// The persisted journals remain authoritative; paths alone grant no Undo.
 pub(super) fn session_receipt(
+    authority: &Authority,
     parent: &File,
     central: &File,
     name: &OsStr,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<crate::PathMoveUndoReceipt, PlatformError> {
-    let completed = CompletedCopy::open(parent, central, name, &mut progress)?;
+    let completed = CompletedCopy::open(authority, parent, central, name, &mut progress)?;
     let state = &completed.retained.snapshot.state;
     let header = state.header.as_ref().unwrap();
     let location = windows_fs::location(parent).map_err(io)?;
     let registry = windows_fs::location(central).map_err(io)?;
-    let plan = RetainedCopyUndoPlan::admit(&registry, &header.transaction, progress)?;
+    let plan = RetainedCopyUndoPlan::admit(authority, &registry, &header.transaction, progress)?;
     if &plan.binding.header != header || plan.binding.completion_digest != completion_digest(state)?
     {
         return Err(io(
@@ -150,10 +161,12 @@ pub(super) fn session_receipt(
     })
 }
 
-/// Opaque action admission, distinct from public presentation fields. No file
-/// handles survive admission; execution reopens and checks the bound identities.
+/// Opaque action admission, distinct from public presentation fields. No
+/// payload handles survive admission; authenticated caller/profile context stays
+/// pinned. Execution reopens and checks the bound identities.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RetainedCopyUndoPlan {
+    authority: Authority,
     registry: PathBuf,
     binding: Box<CopyUndoBinding>,
     publication: PathBuf,
@@ -170,7 +183,12 @@ impl RetainedCopyUndoPlan {
         &self,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        let current = Self::admit(&self.registry, &self.binding.header.transaction, progress)?;
+        let current = Self::admit(
+            &self.authority,
+            &self.registry,
+            &self.binding.header.transaction,
+            progress,
+        )?;
         if current.binding.header != self.binding.header
             || current.binding.completion_digest != self.binding.completion_digest
         {
@@ -193,7 +211,8 @@ impl RetainedCopyUndoPlan {
         Ok(receipt)
     }
 
-    pub(crate) fn admit(
+    pub(in crate::copy_transaction::windows) fn admit(
+        authority: &Authority,
         root: &Path,
         transaction_id: &str,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
@@ -202,12 +221,18 @@ impl RetainedCopyUndoPlan {
         // Validate before any filesystem access, including relative components.
         registry_id(&name).ok_or_else(|| io("invalid Copy transaction ID"))?;
         progress(0)?;
-        let central = open_directory(root, FILE_GENERIC_READ).map_err(io)?;
-        let (bytes, state) = registered_journal(&central, &name)?;
+        let (central, manager) = authority.registry_directory(root)?;
+        let (bytes, state) = registered_journal(authority, &central, &name)?;
         let header = state.header.as_ref().unwrap();
         let parent =
-            Volumes::new(&central)?.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?;
-        let snapshot = read_undo_snapshot(&parent, &central, &header.stage_name(), &mut progress)?;
+            authority.resolve_parent(&central, header.parent, FILE_GENERIC_READ, &mut progress)?;
+        let snapshot = read_undo_snapshot(
+            authority,
+            &parent,
+            &central,
+            &header.stage_name(),
+            &mut progress,
+        )?;
         if snapshot.bytes != bytes || !snapshot.state.completion_verified {
             return Err(io(
                 "Copy has no stable completed receipt; Undo admission refused",
@@ -226,7 +251,11 @@ impl RetainedCopyUndoPlan {
             snapshot.root_name(&parent)?
         };
         let (pending_copy, pending_original) = pending_undo_epochs(&parent, &snapshot)?;
+        if let Some(manager) = &manager {
+            manager.validate()?;
+        }
         Ok(Self {
+            authority: authority.clone(),
             registry: windows_fs::location(&central).map_err(io)?,
             binding: Box::new(CopyUndoBinding {
                 header: header.clone(),
@@ -278,26 +307,35 @@ impl RetainedCopyUndoPlan {
             return Err(io("Copy Undo is already complete"));
         }
         progress(0)?;
-        let central = open_directory(&self.registry, FILE_GENERIC_READ).map_err(io)?;
+        let (central, manager) = self.authority.registry_directory(&self.registry)?;
         if stable_identity_from_handle(&central).map_err(io)? != self.binding.header.central {
             return Err(io("Copy registry was replaced; Undo refused"));
         }
-        let (_, state) = registered_journal(&central, &self.binding.header.central_name())?;
+        let (_, state) = registered_journal(
+            &self.authority,
+            &central,
+            &self.binding.header.central_name(),
+        )?;
         if state.header.as_ref() != Some(&self.binding.header) {
             return Err(io("Copy journal was replaced; Undo refused"));
         }
-        let parent = Volumes::new(&central)?.resolve(
+        let parent = self.authority.resolve_parent(
+            &central,
             self.binding.header.parent,
             windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED,
             &mut progress,
         )?;
         undo_bound_copy(
+            &self.authority,
             &parent,
             &central,
             &self.binding.header.stage_name(),
             Some(&self.binding),
             progress,
         )?;
+        if let Some(manager) = &manager {
+            manager.validate()?;
+        }
         self.remaining = false;
         Ok(())
     }
@@ -405,26 +443,40 @@ pub(super) fn registry_candidate(name: &OsStr) -> bool {
             })
 }
 
-fn registered_journal(central: &File, name: &OsStr) -> Result<(Vec<u8>, State), PlatformError> {
-    let record = RegisteredJournal::open(central, name)?;
+fn registered_journal(
+    authority: &Authority,
+    central: &File,
+    name: &OsStr,
+) -> Result<(Vec<u8>, State), PlatformError> {
+    let record = RegisteredJournal::open(authority, central, name)?;
     Ok((record.bytes, record.state))
 }
 
 /// A dependency observation keeps its read-only lease alive, so a peer cannot
 /// replace or append to the record while another transaction reclaims payloads.
 pub(super) struct RegisteredJournal {
+    authority: Authority,
     pub(super) file: File,
     pub(super) bytes: Vec<u8>,
     pub(super) state: State,
 }
 impl RegisteredJournal {
-    pub(super) fn open(central: &File, name: &OsStr) -> Result<Self, PlatformError> {
-        Self::with_access(central, name, FILE_GENERIC_READ)
+    pub(super) fn open(
+        authority: &Authority,
+        central: &File,
+        name: &OsStr,
+    ) -> Result<Self, PlatformError> {
+        Self::with_access(authority, central, name, FILE_GENERIC_READ)
     }
-    pub(super) fn dependency(central: &File, name: &OsStr) -> Result<Self, PlatformError> {
+    pub(super) fn dependency(
+        authority: &Authority,
+        central: &File,
+        name: &OsStr,
+    ) -> Result<Self, PlatformError> {
         // DELETE participates in Windows' closed-handle writable-mapping exclusion.
         // This control lease never calls a mutation API on the peer.
         Self::with_access(
+            authority,
             central,
             name,
             FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::DELETE,
@@ -440,7 +492,7 @@ impl RegisteredJournal {
     ) -> Result<Vec<File>, PlatformError> {
         let header = self.state.header.as_ref().unwrap();
         let snapshot = Snapshot::read_with_control(
-            &Authority::Process,
+            &self.authority,
             &parent,
             central,
             &header.stage_name(),
@@ -451,25 +503,20 @@ impl RegisteredJournal {
         }
         Ok(vec![snapshot.local, snapshot.stage, parent])
     }
-    fn with_access(central: &File, name: &OsStr, access: u32) -> Result<Self, PlatformError> {
+    fn with_access(
+        authority: &Authority,
+        central: &File,
+        name: &OsStr,
+        access: u32,
+    ) -> Result<Self, PlatformError> {
         registry_id(name).ok_or_else(|| io("invalid Copy transaction ID"))?;
-        let file = unsafe {
-            windows_fs::open_relative(
-                central,
-                name,
-                RelativeOptions {
-                    directory: Some(false),
-                    create_new: false,
-                    access,
-                    sharing: FILE_SHARE_READ,
-                    security: ptr::null(),
-                },
-            )
-        }
-        .map_err(io)?;
-        Self::from_file(central, name, file)
+        let file = authority
+            .open_child(central, name, false, access, FILE_SHARE_READ)
+            .map_err(io)?;
+        Self::from_file(authority, central, name, file)
     }
     pub(super) fn from_file(
+        authority: &Authority,
         central: &File,
         name: &OsStr,
         file: File,
@@ -486,14 +533,16 @@ impl RegisteredJournal {
         if header.transaction != id
             || header.central != stable_identity_from_handle(central).map_err(io)?
             || header.central_file != actual
-            || header.creator != windows_fs::current_owner()?
+            || header.creator != authority.owner()?
         {
             return Err(io(
                 "Copy central journal identity or creator does not match",
             ));
         }
         header.central_security.validate(&file, &header.creator)?;
+        authority.validate()?;
         Ok(Self {
+            authority: authority.clone(),
             file,
             bytes,
             state: decoded.state,
@@ -565,7 +614,7 @@ pub fn discover_at_with_progress(
             continue;
         }
         let result = (|| {
-            let (bytes, state) = registered_journal(&central, &name)?;
+            let (bytes, state) = registered_journal(&Authority::Process, &central, &name)?;
             let header = state.header.as_ref().unwrap();
             status.phase = Some(phase(&state));
             status.source_label = Some(OsString::from_wide(&header.source_label));
@@ -615,7 +664,7 @@ pub fn discover_at_with_progress(
                         &mut progress,
                     )?;
                 }
-                let (current, _) = registered_journal(&central, &name)?;
+                let (current, _) = registered_journal(&Authority::Process, &central, &name)?;
                 if current != bytes {
                     return Err(io("Copy cleanup record changed during discovery"));
                 }
@@ -656,8 +705,13 @@ pub fn discover_at_with_progress(
                 return Ok(WindowsCopyRecoveryEvidence::UnverifiedStage);
             }
             drop(snapshot);
-            let retained =
-                RetainedStage::open(&parent, &central, &header.stage_name(), &mut progress)?;
+            let retained = RetainedStage::open(
+                &Authority::Process,
+                &parent,
+                &central,
+                &header.stage_name(),
+                &mut progress,
+            )?;
             if retained.snapshot.bytes != bytes {
                 return Err(io("Copy journals changed during payload discovery"));
             }
@@ -696,7 +750,7 @@ pub(crate) fn restore_undo_at(
     root: &Path,
     id: &str,
 ) -> Result<RetainedCopyUndoPlan, PlatformError> {
-    RetainedCopyUndoPlan::admit(root, id, |_| Ok(()))
+    RetainedCopyUndoPlan::admit(&Authority::Process, root, id, |_| Ok(()))
 }
 pub(crate) fn restore_undo(id: &str) -> Result<RetainedCopyUndoPlan, PlatformError> {
     let registry = super::super::registry::AnchoredRoot::open_at(

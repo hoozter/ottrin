@@ -85,7 +85,8 @@ impl Selection {
                 }
                 continue;
             };
-            let record = discovery::RegisteredJournal::dependency(central, name)?;
+            let record =
+                discovery::RegisteredJournal::dependency(&Authority::Process, central, name)?;
             let header = record.state.header.as_ref().unwrap();
             records.insert(
                 name.clone(),
@@ -324,7 +325,11 @@ impl Selection {
         self.security.validate(central, &self.creator)?;
         for name in self.records.keys() {
             cancel(0)?;
-            self.check(&discovery::RegisteredJournal::dependency(central, name)?)?;
+            self.check(&discovery::RegisteredJournal::dependency(
+                &Authority::Process,
+                central,
+                name,
+            )?)?;
         }
         Ok(())
     }
@@ -521,6 +526,7 @@ impl Observation {
                 continue;
             }
             let record = discovery::RegisteredJournal::dependency(
+                &Authority::Process,
                 &central,
                 &member.header().central_name(),
             )?;
@@ -1171,6 +1177,7 @@ impl Observation {
         for (member_index, id) in ids.iter().enumerate() {
             cancel(0)?;
             let record = discovery::RegisteredJournal::open(
+                &Authority::Process,
                 central,
                 &OsString::from(format!("{id}.copy-journal")),
             )?;
@@ -1235,8 +1242,11 @@ impl Observation {
         let mut references = BTreeSet::new();
         for (index, member) in members.iter().enumerate() {
             cancel(0)?;
-            let record =
-                discovery::RegisteredJournal::open(central, &member.header().central_name())?;
+            let record = discovery::RegisteredJournal::open(
+                &Authority::Process,
+                central,
+                &member.header().central_name(),
+            )?;
             selection.check(&record)?;
             for identity in cleanup_dependencies::references(&record.state) {
                 if let Some(owners) = protected.get(&identity.object_key()) {

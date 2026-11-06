@@ -335,8 +335,35 @@ invocations and strict paired Windows platform/UI lint pass. Failed input/result
 bindings and the final acceptance are retained at
 `.hermes/evidence/caller-publication-current/ACCEPTANCE.json`.
 
+The unified creation executor now holds canonical caller registry admission before
+its first claim/stage write and through receipt construction. The shared retained,
+publication and completion constructors require explicit runtime authority; ordinary
+callers select Process. Completion/Undo receipt admission and refresh retain caller
+authority, validate the caller's canonical anchored registry, reopen the parent by
+native identity under scoped helper access and revalidate both journal mirrors and
+completed payload evidence. Opaque live Undo plans retain authenticated caller/profile
+context, not payload handles; no saved path, SID or ACL recreates authority. Their
+runtime authority equality is conservative: only aliases of the same authenticated
+context compare equal. Registered journal leases also retain their authority through
+paired observations. Undo uses genuine per-object reopening, scoped rename and the
+same creation-time recovery bindings. The uncoordinated-cohort refusal gate inspects
+the selected caller's registry ancestry and sibling, without provisioning it.
+
+Actual file and four-entry directory fixtures exercise the manual published receipt
+and the full unified execute-with-receipt path, canonical refresh, source-free public
+Undo and repeated Undo. Wrong process authority, cancellation and a foreign registry
+are refused; the latter leaves both foreign registry and destination empty. Original
+source evidence and pinned preferences/index bytes, native IDs and permissions remain
+unchanged. A first native trial reproduced a missed Process argument at the session
+receipt's Undo-admission handoff. The corrected trial passes all 102 tests across 25
+native invocations and strict paired Windows platform/UI lint; failed source/result
+binding and final acceptance are retained at
+`.hermes/evidence/caller-receipts-current/ACCEPTANCE.json`.
+
 This does not complete caller mutation-prefix/readonly/link publication recovery,
-original retention/overwrite, receipts or retained discovery/resume/Undo/cleanup.
+original retention/overwrite or authenticated restored discovery/resume/Undo/cleanup
+entry points. Live caller receipts/public Undo do not establish process-restart or
+complete helper-dispatcher/UAC acceptance.
 The actual dispatcher must retain original source pins and canonical registry
 admission for the entire operation. Actual alternate-administrator UAC, caller
 links, in-place TokenOwner mutation and package/profile contexts remain separate.
