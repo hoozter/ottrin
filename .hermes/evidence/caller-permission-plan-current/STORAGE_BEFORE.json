@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-11-06T03:02:35.515389+00:00",
+  "bytes": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30173682162,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48845237860
+  },
+  "purpose": "Same paired GNU platform/UI graph; caller-bound permission planning/application/restoration"
+}

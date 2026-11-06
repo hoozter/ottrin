@@ -1,0 +1,6 @@
+{
+  "status": "native failure retained",
+  "native": "native-initial",
+  "error": "Exact published owner/group/DACL differs after helper-side final application; projection comparisons had passed before mutation",
+  "scope": "First permission-plan helper application, test line651; inspect case/entry/native expected and actual before changing production policy"
+}

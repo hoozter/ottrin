@@ -1,0 +1,91 @@
+{
+  "scope": "Up to latest200 workflow runs; includes all returned runs since2026-11-04 UTC. This records workflow failures, not email count.",
+  "returned_runs": 163,
+  "recent_runs": 46,
+  "conclusions": {
+    "success": 32,
+    "failure": 7,
+    "cancelled": 7
+  },
+  "per_day": {
+    "2026-11-04": {
+      "failure": 2,
+      "success": 14,
+      "cancelled": 6
+    },
+    "2026-11-05": {
+      "failure": 5,
+      "success": 16,
+      "cancelled": 1
+    },
+    "2026-11-06": {
+      "success": 2
+    }
+  },
+  "failed_runs": [
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-11-05T23:54:03Z",
+      "databaseId": 42132867918,
+      "headSha": "1ba0d8d33947f371dcfb9825f7144853a33a86d2",
+      "status": "completed",
+      "workflowName": "ci"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-11-05T12:36:25Z",
+      "databaseId": 42028570906,
+      "headSha": "f71a53839cc753fc91a0378b0818b6e083aa49eb",
+      "status": "completed",
+      "workflowName": "ci"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-11-05T10:24:35Z",
+      "databaseId": 42010460579,
+      "headSha": "2f9e1c5f5a90caae1e930d36d9a16856e44ae2f0",
+      "status": "completed",
+      "workflowName": "ci"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-11-05T06:45:10Z",
+      "databaseId": 41982529608,
+      "headSha": "8d69ce98c7d6f25aa12025c67b205c035785d970",
+      "status": "completed",
+      "workflowName": "ci"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-11-05T05:00:02Z",
+      "databaseId": 41971204224,
+      "headSha": "b961609554cdf72cd42dd9d4e059582a64eac92b",
+      "status": "completed",
+      "workflowName": "ci"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-11-04T23:51:43Z",
+      "databaseId": 41936995231,
+      "headSha": "f2450e7587b5d5ff14763e23dac8f8e6119bebb1",
+      "status": "completed",
+      "workflowName": "ci"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-11-04T04:31:00Z",
+      "databaseId": 41773667747,
+      "headSha": "6f0a58e98786878811b84e8df05c75e686d6424e",
+      "status": "completed",
+      "workflowName": "ci"
+    }
+  ],
+  "latest": {
+    "conclusion": "success",
+    "createdAt": "2026-11-06T02:31:08Z",
+    "databaseId": 42150828538,
+    "headSha": "a9bf73d021af88793bb13840c52a19eda22c70ed",
+    "status": "completed",
+    "workflowName": "ci"
+  }
+}

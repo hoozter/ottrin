@@ -1,0 +1,756 @@
+{
+  "latest_verified_run": {
+    "conclusion": "success",
+    "headSha": "a9bf73d021af88793bb13840c52a19eda22c70ed",
+    "jobs": [
+      {
+        "completedAt": "2026-11-06T02:35:01Z",
+        "conclusion": "success",
+        "databaseId": 127673383993,
+        "name": "search-performance (windows-latest)",
+        "startedAt": "2026-11-06T02:31:11Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-06T02:31:13Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-06T02:31:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:49Z",
+            "conclusion": "success",
+            "name": "Checkout",
+            "number": 2,
+            "startedAt": "2026-11-06T02:31:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:00Z",
+            "conclusion": "success",
+            "name": "Setup Rust",
+            "number": 3,
+            "startedAt": "2026-11-06T02:31:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:24Z",
+            "conclusion": "success",
+            "name": "Cache Rust build",
+            "number": 4,
+            "startedAt": "2026-11-06T02:32:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:55Z",
+            "conclusion": "success",
+            "name": "Release benchmark smoke test",
+            "number": 5,
+            "startedAt": "2026-11-06T02:32:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:57Z",
+            "conclusion": "success",
+            "name": "Upload benchmark artifact",
+            "number": 6,
+            "startedAt": "2026-11-06T02:34:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:57Z",
+            "conclusion": "success",
+            "name": "Post Cache Rust build",
+            "number": 11,
+            "startedAt": "2026-11-06T02:34:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:59Z",
+            "conclusion": "success",
+            "name": "Post Checkout",
+            "number": 12,
+            "startedAt": "2026-11-06T02:34:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:59Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 13,
+            "startedAt": "2026-11-06T02:34:59Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/hoozter/ottrin/actions/runs/42150828538/job/127673383993"
+      },
+      {
+        "completedAt": "2026-11-06T02:32:51Z",
+        "conclusion": "success",
+        "databaseId": 127673384114,
+        "name": "search-performance (ubuntu-latest)",
+        "startedAt": "2026-11-06T02:31:11Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-06T02:31:13Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-06T02:31:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:29Z",
+            "conclusion": "success",
+            "name": "Checkout",
+            "number": 2,
+            "startedAt": "2026-11-06T02:31:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:41Z",
+            "conclusion": "success",
+            "name": "Setup Rust",
+            "number": 3,
+            "startedAt": "2026-11-06T02:31:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:49Z",
+            "conclusion": "success",
+            "name": "Cache Rust build",
+            "number": 4,
+            "startedAt": "2026-11-06T02:31:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:48Z",
+            "conclusion": "success",
+            "name": "Release benchmark smoke test",
+            "number": 5,
+            "startedAt": "2026-11-06T02:31:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:49Z",
+            "conclusion": "success",
+            "name": "Upload benchmark artifact",
+            "number": 6,
+            "startedAt": "2026-11-06T02:32:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:49Z",
+            "conclusion": "success",
+            "name": "Post Cache Rust build",
+            "number": 11,
+            "startedAt": "2026-11-06T02:32:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:50Z",
+            "conclusion": "success",
+            "name": "Post Checkout",
+            "number": 12,
+            "startedAt": "2026-11-06T02:32:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:50Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 13,
+            "startedAt": "2026-11-06T02:32:50Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/hoozter/ottrin/actions/runs/42150828538/job/127673384114"
+      },
+      {
+        "completedAt": "2026-11-06T02:40:43Z",
+        "conclusion": "success",
+        "databaseId": 127673384228,
+        "name": "verify (ubuntu-latest)",
+        "startedAt": "2026-11-06T02:31:11Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-06T02:31:14Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-06T02:31:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:26Z",
+            "conclusion": "success",
+            "name": "Checkout",
+            "number": 2,
+            "startedAt": "2026-11-06T02:31:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:35Z",
+            "conclusion": "success",
+            "name": "Setup Rust",
+            "number": 3,
+            "startedAt": "2026-11-06T02:31:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:57Z",
+            "conclusion": "success",
+            "name": "Cache Rust build",
+            "number": 4,
+            "startedAt": "2026-11-06T02:31:35Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:28Z",
+            "conclusion": "success",
+            "name": "Install Linux system dependencies",
+            "number": 5,
+            "startedAt": "2026-11-06T02:31:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:28Z",
+            "conclusion": "success",
+            "name": "Prepare Linux process isolation",
+            "number": 6,
+            "startedAt": "2026-11-06T02:32:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:29Z",
+            "conclusion": "success",
+            "name": "Prepare pinned search provider",
+            "number": 7,
+            "startedAt": "2026-11-06T02:32:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:29Z",
+            "conclusion": "skipped",
+            "name": "Verify native MSIX manifest template",
+            "number": 8,
+            "startedAt": "2026-11-06T02:32:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:32Z",
+            "conclusion": "success",
+            "name": "Cargo fmt",
+            "number": 9,
+            "startedAt": "2026-11-06T02:32:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:48Z",
+            "conclusion": "success",
+            "name": "Cargo check",
+            "number": 10,
+            "startedAt": "2026-11-06T02:32:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:33:30Z",
+            "conclusion": "success",
+            "name": "Prepare production Linux HTML sandbox",
+            "number": 11,
+            "startedAt": "2026-11-06T02:32:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:33:31Z",
+            "conclusion": "success",
+            "name": "Verify production HTML pixels and executable mapping policy",
+            "number": 12,
+            "startedAt": "2026-11-06T02:33:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:33:31Z",
+            "conclusion": "skipped",
+            "name": "Check Windows Move ownership before workspace suite",
+            "number": 13,
+            "startedAt": "2026-11-06T02:33:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:33:31Z",
+            "conclusion": "skipped",
+            "name": "Check Windows Office contracts before workspace suite",
+            "number": 14,
+            "startedAt": "2026-11-06T02:33:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:33:31Z",
+            "conclusion": "skipped",
+            "name": "Check Windows native preview boundary before workspace suite",
+            "number": 15,
+            "startedAt": "2026-11-06T02:33:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:33:31Z",
+            "conclusion": "skipped",
+            "name": "Check Windows Move UI recovery before workspace suite",
+            "number": 16,
+            "startedAt": "2026-11-06T02:33:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:33:31Z",
+            "conclusion": "skipped",
+            "name": "Check Windows index transport before workspace suite",
+            "number": 17,
+            "startedAt": "2026-11-06T02:33:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:37:01Z",
+            "conclusion": "success",
+            "name": "Cargo test",
+            "number": 18,
+            "startedAt": "2026-11-06T02:33:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:37:13Z",
+            "conclusion": "success",
+            "name": "Verify production Linux desktop integration",
+            "number": 19,
+            "startedAt": "2026-11-06T02:37:01Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:37:14Z",
+            "conclusion": "success",
+            "name": "Upload Linux portal evidence",
+            "number": 20,
+            "startedAt": "2026-11-06T02:37:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:37:31Z",
+            "conclusion": "success",
+            "name": "Cargo clippy",
+            "number": 21,
+            "startedAt": "2026-11-06T02:37:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:37:31Z",
+            "conclusion": "success",
+            "name": "Report Linux build storage",
+            "number": 22,
+            "startedAt": "2026-11-06T02:37:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:35Z",
+            "conclusion": "success",
+            "name": "Release build",
+            "number": 23,
+            "startedAt": "2026-11-06T02:37:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:35Z",
+            "conclusion": "skipped",
+            "name": "Verify Windows executable icons",
+            "number": 24,
+            "startedAt": "2026-11-06T02:40:35Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:35Z",
+            "conclusion": "success",
+            "name": "Prepare release-build artifact",
+            "number": 25,
+            "startedAt": "2026-11-06T02:40:35Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:38Z",
+            "conclusion": "success",
+            "name": "Upload release-build artifact",
+            "number": 26,
+            "startedAt": "2026-11-06T02:40:35Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:38Z",
+            "conclusion": "skipped",
+            "name": "Upload Windows native boundary failure diagnostics",
+            "number": 27,
+            "startedAt": "2026-11-06T02:40:38Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:39Z",
+            "conclusion": "success",
+            "name": "Retire production Linux HTML integration",
+            "number": 28,
+            "startedAt": "2026-11-06T02:40:38Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:39Z",
+            "conclusion": "success",
+            "name": "Retire pinned search provider",
+            "number": 29,
+            "startedAt": "2026-11-06T02:40:39Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:40Z",
+            "conclusion": "success",
+            "name": "Upload Linux HTML sandbox evidence",
+            "number": 30,
+            "startedAt": "2026-11-06T02:40:39Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:40Z",
+            "conclusion": "success",
+            "name": "Post Cache Rust build",
+            "number": 59,
+            "startedAt": "2026-11-06T02:40:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:40Z",
+            "conclusion": "success",
+            "name": "Post Checkout",
+            "number": 60,
+            "startedAt": "2026-11-06T02:40:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:41Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 61,
+            "startedAt": "2026-11-06T02:40:41Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/hoozter/ottrin/actions/runs/42150828538/job/127673384228"
+      },
+      {
+        "completedAt": "2026-11-06T03:22:57Z",
+        "conclusion": "success",
+        "databaseId": 127673384266,
+        "name": "verify (windows-latest)",
+        "startedAt": "2026-11-06T02:31:11Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-06T02:31:13Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-06T02:31:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:37Z",
+            "conclusion": "success",
+            "name": "Checkout",
+            "number": 2,
+            "startedAt": "2026-11-06T02:31:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:31:50Z",
+            "conclusion": "success",
+            "name": "Setup Rust",
+            "number": 3,
+            "startedAt": "2026-11-06T02:31:37Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:30Z",
+            "conclusion": "success",
+            "name": "Cache Rust build",
+            "number": 4,
+            "startedAt": "2026-11-06T02:31:50Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:30Z",
+            "conclusion": "skipped",
+            "name": "Install Linux system dependencies",
+            "number": 5,
+            "startedAt": "2026-11-06T02:32:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:30Z",
+            "conclusion": "skipped",
+            "name": "Prepare Linux process isolation",
+            "number": 6,
+            "startedAt": "2026-11-06T02:32:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:33Z",
+            "conclusion": "success",
+            "name": "Prepare pinned search provider",
+            "number": 7,
+            "startedAt": "2026-11-06T02:32:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:40Z",
+            "conclusion": "success",
+            "name": "Verify native MSIX manifest template",
+            "number": 8,
+            "startedAt": "2026-11-06T02:32:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:32:46Z",
+            "conclusion": "success",
+            "name": "Cargo fmt",
+            "number": 9,
+            "startedAt": "2026-11-06T02:32:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:00Z",
+            "conclusion": "success",
+            "name": "Cargo check",
+            "number": 10,
+            "startedAt": "2026-11-06T02:32:46Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:00Z",
+            "conclusion": "skipped",
+            "name": "Prepare production Linux HTML sandbox",
+            "number": 11,
+            "startedAt": "2026-11-06T02:34:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:34:00Z",
+            "conclusion": "skipped",
+            "name": "Verify production HTML pixels and executable mapping policy",
+            "number": 12,
+            "startedAt": "2026-11-06T02:34:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:17Z",
+            "conclusion": "success",
+            "name": "Check Windows Move ownership before workspace suite",
+            "number": 13,
+            "startedAt": "2026-11-06T02:34:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:40:55Z",
+            "conclusion": "success",
+            "name": "Check Windows Office contracts before workspace suite",
+            "number": 14,
+            "startedAt": "2026-11-06T02:40:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:41:05Z",
+            "conclusion": "success",
+            "name": "Check Windows native preview boundary before workspace suite",
+            "number": 15,
+            "startedAt": "2026-11-06T02:40:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:43:16Z",
+            "conclusion": "success",
+            "name": "Check Windows Move UI recovery before workspace suite",
+            "number": 16,
+            "startedAt": "2026-11-06T02:41:05Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T02:43:59Z",
+            "conclusion": "success",
+            "name": "Check Windows index transport before workspace suite",
+            "number": 17,
+            "startedAt": "2026-11-06T02:43:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:15:28Z",
+            "conclusion": "success",
+            "name": "Cargo test",
+            "number": 18,
+            "startedAt": "2026-11-06T02:43:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:15:28Z",
+            "conclusion": "skipped",
+            "name": "Verify production Linux desktop integration",
+            "number": 19,
+            "startedAt": "2026-11-06T03:15:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:15:28Z",
+            "conclusion": "skipped",
+            "name": "Upload Linux portal evidence",
+            "number": 20,
+            "startedAt": "2026-11-06T03:15:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:15:55Z",
+            "conclusion": "success",
+            "name": "Cargo clippy",
+            "number": 21,
+            "startedAt": "2026-11-06T03:15:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:15:55Z",
+            "conclusion": "skipped",
+            "name": "Report Linux build storage",
+            "number": 22,
+            "startedAt": "2026-11-06T03:15:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:48Z",
+            "conclusion": "success",
+            "name": "Release build",
+            "number": 23,
+            "startedAt": "2026-11-06T03:15:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:50Z",
+            "conclusion": "success",
+            "name": "Verify Windows executable icons",
+            "number": 24,
+            "startedAt": "2026-11-06T03:22:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:50Z",
+            "conclusion": "success",
+            "name": "Prepare release-build artifact",
+            "number": 25,
+            "startedAt": "2026-11-06T03:22:50Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:53Z",
+            "conclusion": "success",
+            "name": "Upload release-build artifact",
+            "number": 26,
+            "startedAt": "2026-11-06T03:22:50Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:53Z",
+            "conclusion": "skipped",
+            "name": "Upload Windows native boundary failure diagnostics",
+            "number": 27,
+            "startedAt": "2026-11-06T03:22:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:53Z",
+            "conclusion": "skipped",
+            "name": "Retire production Linux HTML integration",
+            "number": 28,
+            "startedAt": "2026-11-06T03:22:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:53Z",
+            "conclusion": "success",
+            "name": "Retire pinned search provider",
+            "number": 29,
+            "startedAt": "2026-11-06T03:22:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:53Z",
+            "conclusion": "skipped",
+            "name": "Upload Linux HTML sandbox evidence",
+            "number": 30,
+            "startedAt": "2026-11-06T03:22:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:53Z",
+            "conclusion": "success",
+            "name": "Post Cache Rust build",
+            "number": 59,
+            "startedAt": "2026-11-06T03:22:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:56Z",
+            "conclusion": "success",
+            "name": "Post Checkout",
+            "number": 60,
+            "startedAt": "2026-11-06T03:22:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-06T03:22:56Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 61,
+            "startedAt": "2026-11-06T03:22:56Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/hoozter/ottrin/actions/runs/42150828538/job/127673384266"
+      }
+    ],
+    "status": "completed"
+  },
+  "reviewed_recent_failures": [
+    {
+      "run": 42132867918,
+      "failure": "Synthetic streamed-plan fixture used spare ACL capacity after canonical evidence validation; later fixed; newest full Windows suite passes"
+    },
+    {
+      "run": 42028570906,
+      "failure": "MSIX manifest native validation; newest validation passes"
+    },
+    {
+      "run": 42010460579,
+      "failure": "Cargo fmt both platforms; newest fmt passes"
+    },
+    {
+      "run": 41982529608,
+      "failure": "Linux release build exhausted hosted disk (os error28); newest release build passes"
+    },
+    {
+      "run": 41971204224,
+      "failure": "Windows native job output/cancellation tests; newest Windows suite passes"
+    },
+    {
+      "run": 41936995231,
+      "failure": "Windows content-search regressions; latest full Windows suite and search-performance jobs pass"
+    },
+    {
+      "run": 41773667747,
+      "failure": "Windows PowerShell multiline/comment/Unicode indexing test; latest full Windows suite passes"
+    }
+  ],
+  "scope": "All seven failed runs since2026-11-04 UTC were inspected, along with the latest successful full four-job run. Aggregate window in HOSTED_CI_RECENT_RUNS.json. Historical emails do not establish current failure. Local caller-plan trial is separate."
+}

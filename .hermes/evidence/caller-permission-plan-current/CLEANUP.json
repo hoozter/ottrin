@@ -1,0 +1,30 @@
+{
+  "status": "complete owned native teardown and consumed-output cleanup",
+  "observed_at": "2026-11-06T03:48:13.062311+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23823106048,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25358307328,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30194524160,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48954650624
+  },
+  "obsolete_incremental_sessions_removed": 28,
+  "measured_cumulative_incremental_free_deltas": 4939165696,
+  "final_incremental_candidates": 0,
+  "consumed_targets_removed": 21,
+  "native_trials": 4,
+  "independent_checks": "All four owned guest trials removed their domain/two volumes/fixture and private viewer/observer/profile. Final native inventory contains only the four protected off domains, their disks and standalone stock-client base.",
+  "available_bytes": 26447962112,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-permission-plan-current",
+      "bytes_at_accounting": 1245184,
+      "purpose": "Compact exact source/build/native/diagnosis/CI/cleanup receipts and bound generic actors/producer; no compiled fixtures, screenshots, raw compiler stream or generated bootstrap controller"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Useful shared caches and latest paired GNU platform/UI test executables for remaining caller claims/journal/recovery integration; no extra target tree"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

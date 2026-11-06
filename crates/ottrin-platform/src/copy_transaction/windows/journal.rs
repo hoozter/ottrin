@@ -2900,6 +2900,7 @@ impl PermissionStage {
         let recorded = journal.state.planned.as_ref().unwrap().at_root(&root_name);
         let plan =
             security::TreeSecurityPlan::capture_at(
+                &super::authority::Authority::Process,
                 parent,
                 journal.state.nodes.iter().zip(&candidates).enumerate().map(
                     |(index, (node, file))| security::SecurityEntry {
@@ -3656,6 +3657,7 @@ impl HeldTree {
             .as_ref()
             .map(|plan| plan.at_root(&self.root_name));
         let plan = security::TreeSecurityPlan::capture_at(
+            &super::authority::Authority::Process,
             parent,
             state
                 .nodes

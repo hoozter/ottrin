@@ -59,21 +59,25 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current native component acceptance: 55 top-level passes across 12 invocations,
+   Current native component acceptance: 59 top-level passes across 13 invocations,
    using ordinary-user and SYSTEM roles. Registry/private staging share explicit
-   authority; real tree/payload staging and required naming policy pass. Dedicated
-   caller candidate controls now pass 15 same-parent original-token audit/label
-   inheritance comparisons and two per-object DACL finalization scenarios,
-   including cloned handles and populated unprotected descendants. No production
-   candidate-creation change was needed. The broader metadata/sparse/tree/link,
-   profile/registry/security/codec/torn-checkpoint regressions and strict paired
-   Windows platform/UI lint pass. Receipt:
-   `caller-candidate-security-current/ACCEPTANCE.json`. These are component
-   controls, not durable caller Copy, whole permission recovery or package/UAC
-   acceptance.
+   authority; real tree/payload staging and required naming policy pass. Final
+   permission plans now retain caller authority, derive the whole graph from one
+   original-token snapshot, apply under the helper and re-admit saved phases.
+   Six native parent policies cover 30 entry updates and 30 already-final pending
+   replays; all projected descriptors match actual original-token references,
+   unrelated entries remain unchanged and parent-policy drift refuses. The real
+   staged tree also applies its retained root policy. A reproduced helper-side
+   inheritance failure is fixed by retaining scoped file privileges during the
+   native permission update; exact descriptor checks remain mandatory.
+   Existing 15 audit/label inheritance comparisons, two per-object scenarios and
+   metadata/sparse/tree/link/profile/registry/security/codec/torn-checkpoint
+   regressions pass, as does strict paired Windows platform/UI lint. Receipt:
+   `caller-permission-plan-current/ACCEPTANCE.json`. These are component controls,
+   not durable caller Copy, complete journal recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
    registry admission; caller authority in destination claims, stage/local/central
-   journals, helper-side final security, receipts and restored Undo/cleanup.
+   journals, durable final-permission recovery, receipts and restored Undo/cleanup.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
    package/profile contexts. Creation-inheritance and original-token finalization
    controls do not substitute for that complete transaction/recovery proof.

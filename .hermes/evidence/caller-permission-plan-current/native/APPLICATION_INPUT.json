@@ -1,0 +1,31 @@
+{
+  "source_revision": "41e2c996f905df2319f1d6e10ede508fc8df8b89",
+  "source_test_sha256": "d1a2bbb76ac23da8e4db9594ec1e3d80941e5635f8404ac4e5aa8d2314ecded0",
+  "test_sha256": "2a6113c18a9bfb08cb542cd8f73f60e4724d938779115b3f5fbadf5b2dfa4148",
+  "source_bytes": 547116093,
+  "staged_bytes": 525657077,
+  "strip_command": [
+    "x86_64-w64-mingw32-strip",
+    "--strip-debug"
+  ],
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 410098176,
+    "sha256": "3e6d7ce3aa0bfe97a59d49185bc9eb9febf53433c9d8a4e982c7bc8197bbcd64"
+  },
+  "actor_sha256": "af690abb41ed0052cb4d4d1e1a3d09d6872e9142ed52072c9e894e11f4de1db5",
+  "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+  "system_companion_sha256": "f807138c9aba5a44585151fbae0fa1a1228c9f3b3086e8f268246b595fc365e7",
+  "changed_product_sources": {
+    "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "8d0e029fb3ceffa73eafd063771ab57ef95f0fa2c2168c2468030355629d9c0b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "6227dd1763dcea682d7d47bfd392ab3f906e6181da0fae256491c68d308e6503",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "f6db136d618bcffc6da22764b0bcbeec35d4cd90abc5084b511739ccbc3c187c",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "90b03fbec86fef9d5e3b08dfb88a3d452b3734051a6116ee045d3cd251f5bd09",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "b15ceb2911bce32ea78b65077f23a780d1049625218ae6e07193b3836376d973",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "740b8aff1e40ed416203e1c2cf8de699be378ca9b23007c1c15bf4e2dd92faba",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "ae9cceb3c13bddbf7339ed73700230bbe8fb5a87dedab03eb233131a3ec3701f",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "554959d939e9f8e40351f1ac25abcefde4ac0719fb48983c18974fcd88642c44",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "87b477d9a2291135588b42d48e076ff14e2ef97408791686eae582b9ce95eea5"
+  },
+  "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+}

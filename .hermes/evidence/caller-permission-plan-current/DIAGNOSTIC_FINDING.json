@@ -1,0 +1,11 @@
+{
+  "status": "reproduced exact descriptor mismatch",
+  "trial": "native-diagnostic",
+  "case": 2,
+  "entry": 0,
+  "parent_policy": "D:P(A;OICI;FA;;;CO)(A;;FA;;;OW)",
+  "observation": "All five projected descriptors equal actual original-token references before application. First two parent policies complete full five-entry application/re-admission controls. In third policy root SetSecurityInfo returns success but observed DACL has zero ACEs; expected has two creator-owner ACEs. Owner/group and auto-inherited control match.",
+  "hypothesis": "SetSecurityInfo native parent-inheritance work loses caller-owner-only parent access after temporary helper file privileges have been restored.",
+  "proposed_change": "For explicit caller authority only, run the existing native SetSecurityInfo call inside the existing helper thread file-privilege scope; preserve exact parent, candidate and postcondition checks. Descriptor derivation stays bound to one original caller token snapshot.",
+  "acceptance": "Not established; retain full six-policy native matrix including original-token references, unrelated-entry preservation and saved-phase re-admission."
+}

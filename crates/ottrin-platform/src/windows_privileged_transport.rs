@@ -404,17 +404,7 @@ impl CallerCopyContext {
         &self,
         directory: bool,
     ) -> io::Result<crate::copy_transaction::CallerCreationSecurity> {
-        self.validate()?;
-        let token = process_token(
-            &self.caller.process,
-            TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_IMPERSONATE,
-        )?;
-        if CallerIdentity::capture(&token)? != self.caller.identity {
-            return Err(io::Error::new(
-                io::ErrorKind::PermissionDenied,
-                "Caller token changed before private creation",
-            ));
-        }
+        let token = self.snapshot_token()?;
         let policy = crate::copy_transaction::CallerCreationSecurity::capture(
             &token,
             &self.caller.identity.owner,
@@ -444,9 +434,9 @@ impl CallerCopyContext {
             )
         })
     }
-    /// Snapshot the kernel-bound original token, compare its immutable admitted
-    /// identity, and restore the exact previous thread token on every exit.
-    fn with_caller_token<T>(&self, operation: impl FnOnce() -> io::Result<T>) -> io::Result<T> {
+    /// Duplicate the kernel-bound original token and check the immutable
+    /// admitted principals. Derivation uses this snapshot, never helper policy.
+    pub(crate) fn snapshot_token(&self) -> io::Result<OwnedHandle> {
         self.validate()?;
         let source = process_token(&self.caller.process, TOKEN_QUERY | TOKEN_DUPLICATE)?;
         let mut raw = ptr::null_mut();
@@ -467,10 +457,16 @@ impl CallerCopyContext {
         if CallerIdentity::capture(&token)? != self.caller.identity {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
-                "Caller token changed before private metadata operation",
+                "Caller token changed before Copy policy snapshot",
             ));
         }
         self.validate()?;
+        Ok(token)
+    }
+    /// A required native operation may need the original effective subject.
+    /// Restore the exact prior thread token on every exit.
+    fn with_caller_token<T>(&self, operation: impl FnOnce() -> io::Result<T>) -> io::Result<T> {
+        let token = self.snapshot_token()?;
         let result = crate::windows_fs::with_thread_token(&token, operation);
         self.validate()?;
         result

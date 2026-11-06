@@ -1,0 +1,45 @@
+{
+  "source": {
+    "reference_commit": "41e2c996f905df2319f1d6e10ede508fc8df8b89",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "8d0e029fb3ceffa73eafd063771ab57ef95f0fa2c2168c2468030355629d9c0b",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "6227dd1763dcea682d7d47bfd392ab3f906e6181da0fae256491c68d308e6503",
+      "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "f6db136d618bcffc6da22764b0bcbeec35d4cd90abc5084b511739ccbc3c187c",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "90b03fbec86fef9d5e3b08dfb88a3d452b3734051a6116ee045d3cd251f5bd09",
+      "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "7e078a1690072d5a971fed6be6ff914ac155d8d516cbd78a4a8a303e8b51a47d",
+      "crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs": "b674674a6550f2cb389c29e2ba2905a86ffeade18ec5fb9758072a6fca5b79d8",
+      "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "ae9cceb3c13bddbf7339ed73700230bbe8fb5a87dedab03eb233131a3ec3701f",
+      "crates/ottrin-platform/src/windows_privileged_transport.rs": "554959d939e9f8e40351f1ac25abcefde4ac0719fb48983c18974fcd88642c44",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "0457b3a4226fda71a79a08d14e2a78d1d9f4d1ac20c94f2de28f20481a6d9d85"
+    },
+    "scope": "Caller-token snapshot and explicit whole-tree final permission authority; native projection/helper apply/saved-phase readmission; no full durable operation or package/UAC gate"
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "2b00844e65605f9b94a9972892fe8f59edfc883d5104119f9e4cfc2b566af01f",
+      "bytes": 772294192,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    },
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "4fc1a1863bb68698428092af757935713384c48700878fbe7dd7e44ff08622bb",
+      "bytes": 547112229,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    }
+  ]
+}

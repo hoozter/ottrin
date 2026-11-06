@@ -1,0 +1,8 @@
+{
+  "status": "fixture lifecycle defect reproduced",
+  "trial": "native-client-timeout",
+  "original_client_failure": "Local pipe I/O timed out at caller_owner.rs:329",
+  "helper_failure": "Original application process has exited, later in real private staging after all six permission-plan scenarios completed",
+  "cause": "Fixture kept the five-second transport-default timeout while production requests already disable elapsed-operation I/O timeouts. Enlarged native control set exceeded five seconds.",
+  "correction": "Use production operation-wait semantics in fixture. Existing outer actor remains bounded180seconds and kills the owned process tree on timeout; disconnects still fail immediately. No production liveness check or permission assertion relaxed."
+}

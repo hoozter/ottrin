@@ -386,6 +386,16 @@ pub(super) fn exercise_caller_staging(
         )
         .is_err()
     );
+    // The retained root policy must keep caller authority after its whole-tree
+    // holder is consumed; this remains a component, not publication authority.
+    let plan = staged
+        .destination_security_plan(parent, &stage.candidate_name, || Ok(()))
+        .unwrap();
+    assert_eq!(plan.entry_count(), 4);
+    let policy = plan.into_root_policy();
+    policy.apply(parent, &stage.candidate_name, &root).unwrap();
+    policy.validate_candidate(&root).unwrap();
+    stage.validate_candidate(&root, true).unwrap();
     context.validate().unwrap();
 }
 #[cfg(test)]

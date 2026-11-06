@@ -1,0 +1,26 @@
+[
+  {
+    "path": "native-initial/readiness.log",
+    "before_sha256": "46e6573459d4362b54f2a638f6684bd0a16173b8f6c579762a0d1a3706adf5fa",
+    "after_sha256": "30d61f58a907999ace7b9220d860bc450239c6d4890994adfcf0097b3af6099e",
+    "change": "CRLF to LF only"
+  },
+  {
+    "path": "native-diagnostic/readiness.log",
+    "before_sha256": "eda9b0051e1b81618208c83fe9aa4d95f6fa4caad25716a16748e2121cafcfb9",
+    "after_sha256": "1ce73011948895ecb35ac77f0abaf36dcd6a9b981c338c27f2d47ee1b172e9fb",
+    "change": "CRLF to LF only"
+  },
+  {
+    "path": "native-client-timeout/readiness.log",
+    "before_sha256": "1c0beb055aaab18cc6759c585301e35abe416c6633cbd4dc034daf77dc4d4a63",
+    "after_sha256": "1e01db1667805a2a9d9def5e92edab93c3cde022650eaa9e603352b23a24893b",
+    "change": "CRLF to LF only"
+  },
+  {
+    "path": "native/readiness.log",
+    "before_sha256": "1e9c2726ee02e0310dabb28da37dd2fffb527ecfa1444859454348bfba4a93eb",
+    "after_sha256": "66734a9478c02de9e3a8ad46462798dbeaf58f5e280f1a8de85db5469bf0a8d5",
+    "change": "CRLF to LF only"
+  }
+]

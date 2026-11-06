@@ -21,6 +21,8 @@ pub(crate) use caller_private::{
 };
 mod tree;
 pub(crate) use caller_profile::{CallerDirectoryBinding, CallerProfile, CallerRegistryParent};
+#[cfg(test)]
+pub(super) use tree::tests::exercise_caller_permission_plan;
 pub(super) use tree::{
     PermissionProgress, PlannedEntry, SecurityEntry, SecurityPlanHeader, TreeSecurityEvidence,
     TreeSecurityPlan,
@@ -291,6 +293,7 @@ fn derive(
 /// New-copy ownership and DACL follow an ordinary new child at the destination.
 /// Source ACLs and the private staging DACL are deliberately not creator inputs.
 pub(super) struct DestinationSecurity {
+    authority: super::authority::Authority,
     parent: WindowsStableIdentity,
     parent_security: Parts,
     directory: bool,
@@ -300,9 +303,15 @@ pub(super) struct DestinationSecurity {
 impl DestinationSecurity {
     #[cfg(test)]
     pub(super) fn capture(parent: &File, directory: bool) -> Result<Self, PlatformError> {
-        Self::capture_with_token(parent, directory, &windows_fs::current_token()?)
+        Self::capture_with_token(
+            &super::authority::Authority::Process,
+            parent,
+            directory,
+            &windows_fs::current_token()?,
+        )
     }
     fn capture_with_token(
+        authority: &super::authority::Authority,
         parent: &File,
         directory: bool,
         token: &OwnedHandle,
@@ -321,6 +330,7 @@ impl DestinationSecurity {
             SEF_DACL_AUTO_INHERIT,
         )?;
         let result = Self {
+            authority: authority.clone(),
             parent: identity,
             parent_security,
             directory,
@@ -331,6 +341,7 @@ impl DestinationSecurity {
         Ok(result)
     }
     pub(super) fn validate_parent(&self, parent: &File) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         let mut security = capture(parent)?;
         if stable_identity_from_handle(parent).map_err(io)? != self.parent
             || parts(security.as_mut_ptr().cast())? != self.parent_security
@@ -353,7 +364,7 @@ impl DestinationSecurity {
         if !supported {
             return Err(io("destination entry type does not match security policy"));
         }
-        namespace::validate_binding(parent, name, identity)?;
+        self.authority.binding(parent, name, identity)?;
         Ok(())
     }
     pub(super) fn matches_candidate(&self, candidate: &File) -> Result<bool, PlatformError> {
@@ -392,20 +403,32 @@ impl DestinationSecurity {
         {
             return Err(io(std::io::Error::last_os_error()));
         }
-        let error = unsafe {
-            SetSecurityInfo(
-                candidate.as_raw_handle().cast(),
-                SE_FILE_OBJECT,
-                DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION,
-                ptr::null_mut(),
-                ptr::null_mut(),
-                dacl,
-                ptr::null(),
-            )
+        let apply = || {
+            let error = unsafe {
+                SetSecurityInfo(
+                    candidate.as_raw_handle().cast(),
+                    SE_FILE_OBJECT,
+                    DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    dacl,
+                    ptr::null(),
+                )
+            };
+            if error != 0 {
+                return Err(std::io::Error::from_raw_os_error(error as i32));
+            }
+            Ok(())
         };
-        if error != 0 {
-            return Err(io(std::io::Error::from_raw_os_error(error as i32)));
+        // SetSecurityInfo reads the native parent again for inheritance. The
+        // helper must retain its scoped file privileges during that operation,
+        // including when the caller-owned parent does not grant helper access.
+        // The descriptor itself still derives from the original caller token.
+        match &self.authority {
+            super::authority::Authority::Process => apply(),
+            super::authority::Authority::Caller(_) => windows_fs::with_file_privileges(apply),
         }
+        .map_err(io)?;
         self.validate_candidate(candidate)?;
         self.binding(parent, name, candidate)?;
         Ok(())
@@ -483,7 +506,7 @@ pub(super) mod tests {
             .open(path)
             .unwrap()
     }
-    fn dacl(file: &File, sddl: &str) {
+    pub(super) fn dacl(file: &File, sddl: &str) {
         let descriptor = LocalSecurity::from_sddl(sddl).unwrap();
         let (mut present, mut defaulted, mut acl) = (0, 0, ptr::null_mut());
         assert_ne!(

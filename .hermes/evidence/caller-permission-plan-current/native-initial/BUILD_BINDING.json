@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "source_files": 9,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 410095104,
+    "sha256": "1da7fee164e3a119eca39fff3a462ee778a97e24112275a143051600cfd97f9b"
+  },
+  "native_result": "pending"
+}

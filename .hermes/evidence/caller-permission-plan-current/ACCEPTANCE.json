@@ -1,0 +1,33 @@
+{
+  "status": "pass original-caller whole-tree permission plan and regressions",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 59,
+  "native_invocations": 13,
+  "permission_parent_policies": 6,
+  "permission_entries": 30,
+  "coverage": [
+    "One immutable original-token snapshot derives the complete final permission graph",
+    "Explicit in-memory caller authority retained through graph/context/native namespace checks and consumed root policy",
+    "Five-node graphs under six actual native inheritance policies match actual original-token references",
+    "Thirty helper-side per-entry updates preserve unrelated entries; thirty already-final pending replays do not change native versions",
+    "Serialized plan re-admitted at every pending/completed phase; forged helper creator refused before mutation",
+    "Actual parent DACL drift refuses without additional candidate mutation",
+    "Real four-entry staged tree derives and applies retained root policy under helper",
+    "Existing caller candidate15 inheritance and2 per-object controls plus source/profile/registry/staging/tree/metadata/sparse/security/codec/torn-checkpoint regressions pass"
+  ],
+  "runtime_fix": "Caller-authorized SetSecurityInfo retains scoped helper backup/restore privileges for native parent-inheritance work, restoring prior thread token. Exact postconditions are unchanged.",
+  "fixture_fix": "Client uses existing production operation-wait semantics; outer owned180-second actor and disconnect detection remain",
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "0f2f128491b8ad861f64ac9e6eb6585962b75e1502040e75eedaed44bd32e6bf"
+  },
+  "limits": [
+    "No durable caller claims/journal integration, actual alternate-admin UAC, enabled administrator Copy, package or complete-roadmap acceptance",
+    "Serialized identity/ACL evidence never chooses runtime authority; journal callers remain explicit Process until integrated",
+    "Stable packages preserved; administrator Copy remains disabled"
+  ]
+}

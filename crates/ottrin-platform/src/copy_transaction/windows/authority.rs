@@ -23,6 +23,13 @@ impl Authority {
             Self::Caller(caller) => caller.default_file_owner_sid().map(Vec::from).map_err(io),
         }
     }
+    pub(super) fn token(&self) -> Result<std::os::windows::io::OwnedHandle, PlatformError> {
+        self.validate()?;
+        match self {
+            Self::Process => windows_fs::current_token(),
+            Self::Caller(caller) => caller.snapshot_token().map_err(io),
+        }
+    }
     pub(super) fn create(
         &self,
         parent: &File,

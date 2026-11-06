@@ -1,4 +1,5 @@
 //! Whole-tree native DACL projection and explicitly authorized per-entry application.
+use super::super::authority::Authority;
 use super::super::{EntryVersion, version};
 use super::*;
 use std::{collections::BTreeSet, ffi::OsString, os::windows::ffi::OsStrExt};
@@ -172,6 +173,7 @@ struct Entry {
 /// Evidence is journaled before mutation; applying requires a separate typed
 /// capability and a pending intent. This type never publishes or cleans up.
 pub(in super::super) struct TreeSecurityPlan {
+    authority: Authority,
     parent: File,
     creator: Vec<u8>,
     entries: Vec<Entry>,
@@ -182,11 +184,13 @@ impl TreeSecurityPlan {
     }
 
     pub(in super::super) fn capture<'a>(
+        authority: &Authority,
         parent: &File,
         inputs: impl IntoIterator<Item = SecurityEntry<'a>>,
         progress: impl FnMut() -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         Self::capture_at(
+            authority,
             parent,
             inputs,
             None,
@@ -195,6 +199,7 @@ impl TreeSecurityPlan {
         )
     }
     pub(in super::super) fn capture_at<'a>(
+        authority: &Authority,
         parent: &File,
         inputs: impl IntoIterator<Item = SecurityEntry<'a>>,
         recorded: Option<&TreeSecurityEvidence>,
@@ -204,7 +209,7 @@ impl TreeSecurityPlan {
         if recorded.is_none() && phase != PermissionProgress::default() {
             return Err(io("Copy permission phase has no sealed plan"));
         }
-        let token = windows_fs::current_token()?;
+        let token = authority.token()?;
         let creator = windows_fs::owner_for_token(&token)?;
         let mut entries: Vec<Entry> = Vec::new();
         let mut names = BTreeSet::new();
@@ -225,8 +230,8 @@ impl TreeSecurityPlan {
                 if input.parent.is_some() {
                     return Err(io("Copy security plan root has a parent"));
                 }
-                namespace::validate_binding(parent, &input.name, before.identity)?;
-                DestinationSecurity::capture_with_token(parent, input.directory, &token)?
+                authority.binding(parent, &input.name, before.identity)?;
+                DestinationSecurity::capture_with_token(authority, parent, input.directory, &token)?
             } else {
                 let p = input.parent.and_then(|p| entries.get(p)).ok_or_else(|| {
                     io("Copy security plan has a missing/forward parent or multiple roots")
@@ -236,7 +241,7 @@ impl TreeSecurityPlan {
                         "Copy security plan cannot create children under a file or link",
                     ));
                 }
-                namespace::validate_binding(&p.handle, &input.name, before.identity)?;
+                authority.binding(&p.handle, &input.name, before.identity)?;
                 let mut actual = capture(&p.handle)?;
                 let original_parent = parts(actual.as_mut_ptr().cast())?;
                 let (derived, expected) = derive(
@@ -247,6 +252,7 @@ impl TreeSecurityPlan {
                     SEF_DACL_AUTO_INHERIT,
                 )?;
                 let policy = DestinationSecurity {
+                    authority: authority.clone(),
                     parent: p.before.identity,
                     // The future apply must see the parent's FINAL permissions.
                     parent_security: p.policy.expected.clone(),
@@ -303,6 +309,7 @@ impl TreeSecurityPlan {
                 .sort_unstable_by(|a, b| a.encode_wide().cmp(b.encode_wide()));
         }
         let result = Self {
+            authority: authority.clone(),
             parent: parent.try_clone().map_err(io)?,
             creator,
             entries,
@@ -358,7 +365,7 @@ impl TreeSecurityPlan {
         if !phase.valid_for(self.entries.len()) {
             return Err(io("Copy permission progress exceeds its graph"));
         }
-        if windows_fs::current_owner()? != self.creator {
+        if self.authority.owner()? != self.creator {
             return Err(io("Copy security plan creator context changed"));
         }
         self.entries[0].policy.validate_parent(&self.parent)?;
@@ -376,7 +383,8 @@ impl TreeSecurityPlan {
             .parent
             .map(|p| &self.entries[p].handle)
             .unwrap_or(&self.parent);
-        namespace::validate_binding(parent, &entry.name, entry.before.identity)?;
+        self.authority
+            .binding(parent, &entry.name, entry.before.identity)?;
         let mut actual = capture(&entry.handle)?;
         let actual = parts(actual.as_mut_ptr().cast())?;
         let final_allowed = index < phase.completed || (index == phase.completed && phase.pending);
@@ -467,7 +475,7 @@ impl TreeSecurityPlan {
 }
 
 #[cfg(test)]
-mod tests {
+pub(super) mod tests {
     use super::*;
     fn parent(path: &std::path::Path) -> File {
         super::super::super::tests::parent(path)
@@ -538,6 +546,181 @@ mod tests {
             })
             .collect()
     }
+    pub(in super::super::super) fn exercise_caller_permission_plan(
+        context: &std::sync::Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        control: &File,
+        mut as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        let authority = Authority::Caller(std::sync::Arc::clone(context));
+        let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+        for (case, sddl) in [
+            "D:P(A;OICI;FA;;;OW)(A;OICI;FR;;;WD)",
+            "D:P(A;;FA;;;OW)",
+            "D:P(A;OICI;FA;;;CO)(A;;FA;;;OW)",
+            "D:P(D;OICI;GW;;;BG)(A;OICI;FA;;;OW)",
+            "D:P(A;OICINP;FA;;;OW)(A;;FA;;;OW)",
+            "D:P(A;OI;FA;;;OW)(A;CI;FA;;;CO)(A;;FA;;;OW)",
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let mut parent = None;
+            let mut reference = None;
+            as_caller(&mut || {
+                let p = ordinary(control, &format!("caller-plan-{case}"), true);
+                super::super::tests::dacl(&p, sddl);
+                reference = Some(graph(&p, false));
+                parent = Some(p);
+            });
+            let parent = parent.unwrap();
+            let reference = reference.unwrap();
+            let root = context
+                .create_private_candidate(&parent, OsStr::new("candidate"), true, sharing)
+                .unwrap();
+            let folder = context
+                .create_private_candidate(&root, OsStr::new("folder"), true, sharing)
+                .unwrap();
+            let file = context
+                .create_private_candidate(&root, OsStr::new("file"), false, sharing)
+                .unwrap();
+            let empty = context
+                .create_private_candidate(&root, OsStr::new("empty"), true, sharing)
+                .unwrap();
+            let leaf = context
+                .create_private_candidate(&folder, OsStr::new("leaf"), false, sharing)
+                .unwrap();
+            let candidates = [root, folder, file, empty, leaf];
+            let files: Vec<File> = candidates
+                .iter()
+                .map(|f| File::try_clone(f).unwrap())
+                .collect();
+            let before: Vec<_> = files.iter().map(observed).collect();
+            // Ambient helper admission must still refuse caller-private state.
+            assert!(
+                TreeSecurityPlan::capture(&Authority::Process, &parent, inputs(&files), || Ok(()))
+                    .is_err()
+            );
+            let plan =
+                TreeSecurityPlan::capture(&authority, &parent, inputs(&files), || Ok(())).unwrap();
+            let evidence: TreeSecurityEvidence =
+                serde_json::from_slice(&serde_json::to_vec(&plan.evidence()).unwrap()).unwrap();
+            assert_eq!(evidence.creator, context.default_file_owner_sid().unwrap());
+            for (i, expected) in reference.iter().enumerate() {
+                assert_eq!(
+                    plan.entries[i].policy.expected,
+                    observed(expected),
+                    "caller projection case={case} entry={i}"
+                );
+            }
+            assert_eq!(files.iter().map(observed).collect::<Vec<_>>(), before);
+            let mut foreign = evidence.clone();
+            foreign.creator = windows_fs::current_owner().unwrap();
+            assert_ne!(foreign.creator, evidence.creator);
+            assert!(
+                TreeSecurityPlan::capture_at(
+                    &authority,
+                    &parent,
+                    inputs(&files),
+                    Some(&foreign),
+                    PermissionProgress::default(),
+                    || Ok(())
+                )
+                .is_err()
+            );
+            assert_eq!(files.iter().map(observed).collect::<Vec<_>>(), before);
+            drop(plan);
+            for index in 0..files.len() {
+                let phase = PermissionProgress {
+                    completed: index,
+                    pending: true,
+                };
+                let mut plan = TreeSecurityPlan::capture_at(
+                    &authority,
+                    &parent,
+                    inputs(&files),
+                    Some(&evidence),
+                    phase,
+                    || Ok(()),
+                )
+                .unwrap();
+                let mut boundaries = Vec::new();
+                plan.apply_pending(phase, &candidates[index], |flushed| {
+                    boundaries.push(flushed);
+                    Ok(())
+                })
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "caller apply case={case} entry={index}: {error:?}; expected={:?}; actual={:?}",
+                        plan.entries[index].policy.expected,
+                        observed(&files[index])
+                    )
+                });
+                assert_eq!(boundaries, [false, true]);
+                for i in 0..files.len() {
+                    assert_eq!(
+                        observed(&files[i]),
+                        if i <= index {
+                            observed(&reference[i])
+                        } else {
+                            before[i].clone()
+                        },
+                        "helper application changed wrong entry: case={case}, at={index}, entry={i}"
+                    );
+                }
+                // A torn acknowledgement may re-admit the already-final pending
+                // entry. The same plan must verify it without reapplying ACLs.
+                let version_before = version(&files[index]).unwrap();
+                let mut replay = TreeSecurityPlan::capture_at(
+                    &authority,
+                    &parent,
+                    inputs(&files),
+                    Some(&evidence),
+                    phase,
+                    || Ok(()),
+                )
+                .unwrap();
+                replay
+                    .apply_pending(phase, &candidates[index], |_| Ok(()))
+                    .unwrap();
+                assert_eq!(version(&files[index]).unwrap(), version_before);
+                let complete = PermissionProgress {
+                    completed: index + 1,
+                    pending: false,
+                };
+                TreeSecurityPlan::capture_at(
+                    &authority,
+                    &parent,
+                    inputs(&files),
+                    Some(&evidence),
+                    complete,
+                    || Ok(()),
+                )
+                .unwrap()
+                .validate_at(complete)
+                .unwrap();
+            }
+            let complete = PermissionProgress {
+                completed: files.len(),
+                pending: false,
+            };
+            let finished = TreeSecurityPlan::capture_at(
+                &authority,
+                &parent,
+                inputs(&files),
+                Some(&evidence),
+                complete,
+                || Ok(()),
+            )
+            .unwrap();
+            as_caller(&mut || {
+                super::super::tests::dacl(&parent, "D:P(A;OICI;FA;;;OW)(A;OICI;FRFX;;;WD)")
+            });
+            let changed: Vec<_> = files.iter().map(observed).collect();
+            assert!(finished.validate_at(complete).is_err());
+            assert_eq!(files.iter().map(observed).collect::<Vec<_>>(), changed);
+        }
+        context.validate().unwrap();
+    }
     #[test]
     fn windows_native_copy_tree_security_projects_final_inheritance_against_kernel_trees() {
         for sddl in [
@@ -554,7 +737,9 @@ mod tests {
             let reference = graph(&p, false);
             let candidates = graph(&p, true);
             let before: Vec<_> = candidates.iter().map(observed).collect();
-            let plan = TreeSecurityPlan::capture(&p, inputs(&candidates), || Ok(())).unwrap();
+            let plan =
+                TreeSecurityPlan::capture(&Authority::Process, &p, inputs(&candidates), || Ok(()))
+                    .unwrap();
             assert_eq!(plan.entry_count(), 5);
             for (i, actual) in reference.iter().enumerate() {
                 assert_eq!(
@@ -590,7 +775,15 @@ mod tests {
         let p = parent(root.path());
         let files = graph(&p, true);
         let before: Vec<_> = files.iter().map(observed).collect();
-        assert!(TreeSecurityPlan::capture(&p, Vec::<SecurityEntry<'_>>::new(), || Ok(())).is_err());
+        assert!(
+            TreeSecurityPlan::capture(
+                &Authority::Process,
+                &p,
+                Vec::<SecurityEntry<'_>>::new(),
+                || Ok(())
+            )
+            .is_err()
+        );
         for mode in 0..6 {
             let mut entries = inputs(&files);
             match mode {
@@ -606,13 +799,13 @@ mod tests {
                 }
             }
             assert!(
-                TreeSecurityPlan::capture(&p, entries, || Ok(())).is_err(),
+                TreeSecurityPlan::capture(&Authority::Process, &p, entries, || Ok(())).is_err(),
                 "mode {mode}"
             );
         }
         let mut calls = 0;
         assert!(
-            TreeSecurityPlan::capture(&p, inputs(&files), || {
+            TreeSecurityPlan::capture(&Authority::Process, &p, inputs(&files), || {
                 calls += 1;
                 if calls == 3 {
                     Err(io("cancelled permission planning"))
@@ -624,7 +817,9 @@ mod tests {
         );
         assert_eq!(calls, 3);
         assert_eq!(files.iter().map(observed).collect::<Vec<_>>(), before);
-        assert!(TreeSecurityPlan::capture(&p, inputs(&files), || Ok(())).is_ok());
+        assert!(
+            TreeSecurityPlan::capture(&Authority::Process, &p, inputs(&files), || Ok(())).is_ok()
+        );
     }
     #[test]
     fn windows_native_copy_tree_security_revalidates_parent_private_permissions_and_membership() {
@@ -632,7 +827,9 @@ mod tests {
             let root = tempfile::tempdir().unwrap();
             let p = parent(root.path());
             let files = graph(&p, true);
-            let plan = TreeSecurityPlan::capture(&p, inputs(&files), || Ok(())).unwrap();
+            let plan =
+                TreeSecurityPlan::capture(&Authority::Process, &p, inputs(&files), || Ok(()))
+                    .unwrap();
             match mode {
                 0 => super::super::super::tests::set_dacl(
                     root.path(),
@@ -688,6 +885,7 @@ mod tests {
                 .unwrap();
             let before = observed(&candidate);
             let plan = TreeSecurityPlan::capture(
+                &Authority::Process,
                 &p,
                 [SecurityEntry {
                     parent: None,

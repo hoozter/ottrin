@@ -1,0 +1,19 @@
+{
+  "nonce": "dc45a148aa5242d1a96008f8e27a4ff5",
+  "system_companion_task": "OttrinOwnedCallerCompanion",
+  "profiles_before": [
+    "S-1-5-18|C:\\WINDOWS\\system32\\config\\systemprofile",
+    "S-1-5-19|C:\\WINDOWS\\ServiceProfiles\\LocalService",
+    "S-1-5-20|C:\\WINDOWS\\ServiceProfiles\\NetworkService",
+    "S-1-5-21-3790294415-2606194316-2422870471-1000|C:\\Users\\OttrinStockAdmin",
+    "S-1-5-21-3790294415-2606194316-2422870471-1001|C:\\Users\\defaultuser0"
+  ],
+  "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+  "status": "prepared",
+  "actor_sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+  "scope": "Fresh hosted Windows native file-only per-user controls; standalone QA identity,not an application publisher",
+  "phase": "ready for owned interactive reboot",
+  "root": "C:\\WINDOWS\\TEMP\\ottrin-msi-dc45a148aa5242d1a96008f8e27a4ff5",
+  "task": "OttrinOwnedMsiControl",
+  "account": "OTMSIdc45a148aa52"
+}

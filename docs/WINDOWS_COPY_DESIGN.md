@@ -131,7 +131,8 @@ is introduced.
 Ordinary `DurableStage` construction still selects ordinary authority. The caller
 fixture invokes this same private staging/payload engine with an observational
 journal adapter; it does not persist caller claims or durable journals, publish a
-file, derive/apply caller final destination policy, or admit receipt/Undo/cleanup.
+file, or admit receipt/Undo/cleanup. Its retained root final-policy check is now
+covered by the final permission-plan checkpoint below.
 The dispatcher must retain the canonical registry and pinned source admission and
 carry authority through those remaining transitions. Caller candidate creation and
 per-object ACL behavior now have the dedicated original-token controls below.
@@ -162,11 +163,53 @@ Native descriptor derivation follows
 All controls pass without changing production candidate creation. Exact source,
 executable, native results and teardown are recorded in
 `.hermes/evidence/caller-candidate-security-current/ACCEPTANCE.json`.
-The original-token finalization callback is a component control; helper-side final
-plans, claims, durable journals, receipts and restored Undo/cleanup still need
-explicit caller authority. This does not enable administrator Copy or establish
+The original-token finalization callback is a component control. Helper-side final
+plans are covered below; claims, durable journals, receipts and restored Undo/cleanup
+still need explicit caller authority. This does not enable administrator Copy or establish
 alternate-administrator UAC, in-place TokenOwner mutation, caller links or package
 profile-context acceptance.
+
+## Original-caller final permission plans
+
+`TreeSecurityPlan` and its retained `DestinationSecurity` policies carry explicit
+in-memory authority. One duplicated original caller token derives the complete
+graph through native inheritance; the helper token never supplies creator policy.
+Private candidate creation uses the same checked token-snapshot implementation.
+Caller/profile liveness, namespace binding and native parent security remain
+mandatory throughout validation and application. Consuming the graph into a root
+policy retains that authority.
+
+Saved plan bytes contain evidence, never a token selection or installable native
+descriptor. Re-admission freshly derives the graph with the admitted authority and
+compares the entire evidence and permission phase. Already-final pending entries
+are verified without repeating a native ACL update. Existing journal entry points
+explicitly select process authority; caller-aware durable claims/journals and
+recovery still need integration.
+
+Native testing reproduced `SetSecurityInfo` returning success with an empty DACL
+for a caller-owned parent with creator-owner inheritance when helper file
+privileges were no longer active. The policy's exact postcondition rejected that
+result. Caller-authorized application now retains the existing scoped helper
+backup/restore privileges during that native call and restores the previous thread
+token afterwards. The descriptor still comes from the original user, and no
+postcondition, parent check or per-object capability was weakened.
+
+Fresh ordinary-client/SYSTEM controls compare five-node graphs under six parent
+policies with actual original-token references. Thirty per-entry applications and
+thirty pending replays preserve unprocessed entries and pass saved-phase
+re-admission; forged creator evidence and changed parent DACLs refuse. The real
+four-entry private staging path also derives and applies its retained root policy.
+All 59 top-level tests across 13 native invocations and strict paired Windows
+platform/UI lint pass. Three earlier trials retain their failure evidence: initial
+and diagnostic inheritance failures, then a fixture-only five-second client timeout.
+The fixture now matches production operation waiting, with its existing outer
+180-second owned-process deadline and disconnect detection unchanged.
+
+Exact source/binary/native binding and teardown:
+`.hermes/evidence/caller-permission-plan-current/ACCEPTANCE.json`.
+This is final-permission component acceptance, not a durable caller operation,
+alternate-administrator UAC, packaged Copy or completed Undo/cleanup bridge.
+Administrator Copy remains disabled.
 
 ## Canonical native security evidence
 

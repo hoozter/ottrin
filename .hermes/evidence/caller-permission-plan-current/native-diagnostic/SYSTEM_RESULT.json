@@ -1,0 +1,14 @@
+{
+  "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+  "status": "failed",
+  "error": "SYSTEM native assertions failed: caller private helper",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::system_helper\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.56s\n\n",
+      "case": "caller private helper",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (1300) panicked at crates/ottrin-platform/src/copy_transaction/windows/security/tree.rs:652:21:\ncaller apply case=2 entry=0: Io(\"Windows Copy stream staging: published owner/group/DACL does not match destination policy\"); expected=Parts { owner: [1, 5, 0, 0, 0, 0, 0, 5, 21, 0, 0, 0, 143, 77, 235, 225, 140, 94, 87, 155, 199, 17, 106, 144, 234, 3, 0, 0], group: [1, 5, 0, 0, 0, 0, 0, 5, 21, 0, 0, 0, 143, 77, 235, 225, 140, 94, 87, 155, 199, 17, 106, 144, 1, 2, 0, 0], present: true, dacl: Some([2, 0, 64, 0, 2, 0, 0, 0, 0, 16, 36, 0, 255, 1, 31, 0, 1, 5, 0, 0, 0, 0, 0, 5, 21, 0, 0, 0, 143, 77, 235, 225, 140, 94, 87, 155, 199, 17, 106, 144, 234, 3, 0, 0, 0, 27, 20, 0, 255, 1, 31, 0, 1, 1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0]), control: 1024 }; actual=Parts { owner: [1, 5, 0, 0, 0, 0, 0, 5, 21, 0, 0, 0, 143, 77, 235, 225, 140, 94, 87, 155, 199, 17, 106, 144, 234, 3, 0, 0], group: [1, 5, 0, 0, 0, 0, 0, 5, 21, 0, 0, 0, 143, 77, 235, 225, 140, 94, 87, 155, 199, 17, 106, 144, 1, 2, 0, 0], present: true, dacl: Some([2, 0, 8, 0, 0, 0, 0, 0]), control: 1024 }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 101
+    }
+  ],
+  "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 30\r\nat <ScriptBlock>, <No file>: line 1"
+}

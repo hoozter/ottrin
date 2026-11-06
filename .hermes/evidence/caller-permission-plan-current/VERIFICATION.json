@@ -1,0 +1,29 @@
+{
+  "status": "pass original-caller whole-tree permission plan and regressions",
+  "archive_sha256": "4bf7a2fe98a8f8cd4ffc2a8272b6816ae102a85e089c57bf9a06b5167fcdc323",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "top_level_passes": 59,
+  "native_invocations": 13,
+  "permission_parent_policies": 6,
+  "permission_entries": 30,
+  "permission_replays": 30,
+  "audit_label_comparisons": 15,
+  "per_object_scenarios": 2,
+  "binding": "BUILD_BINDING.json",
+  "compiler_jsonl_sha256": "3f77b97ed9e3ef5cb5b146c9328f88d5c38376b7175bc9d954ab4463920f7ba4",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "private_console_observer_profile_absent": true
+  },
+  "scope": "Fresh ordinary original user and SYSTEM helper; caller-token projection compared to original-token created native references; helper-side exact per-entry final DACL application, saved phase re-admission, idempotent pending replay, preserved unprocessed entries and parent drift refusal; retained root policy applied by real staged-tree fixture",
+  "limits": "No durable caller claims/journal integration, actual alternate-admin UAC, enabled administrator Copy, package or complete-roadmap acceptance"
+}

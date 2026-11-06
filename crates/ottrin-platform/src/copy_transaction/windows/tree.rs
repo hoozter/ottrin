@@ -138,6 +138,7 @@ impl StagedTree {
     ) -> Result<security::TreeSecurityPlan, PlatformError> {
         self.namespace()?;
         let plan = security::TreeSecurityPlan::capture(
+            &self.authority,
             parent,
             self.entries
                 .iter()
