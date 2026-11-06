@@ -126,6 +126,17 @@ The exact current executable passes all nine native transport/lifecycle tests in
 VM/disks removed. Earlier failed fixture observations remain retained separately.
 This is a separate transport preflight; the full ordinary-caller run also passes.
 
+The invocation owner additionally passes two native parents exercising three
+actual child processes in `caller-invocation-current/ACCEPTANCE.json`. Disconnect,
+a lost terminal response and an actual response callback unwind all observe the
+retained process handle signalled before returning. The child deliberately keeps
+working after pipe closure; neither EOF nor a witness file alone can pass the
+assertion. Every child exits normally without its bounded watchdog intervening.
+Production source and the preceding nine stream cases are unchanged, and native
+VM/disks teardown is independently verified. This proves the invocation owner's
+process lifetime mechanism under a native same-user fixture; it does not replace
+actual ShellExecute/UAC, frontend or packaged helper acceptance.
+
 The command adapter forwards a single fallible progress callback through Copy,
 history admission, Undo, cleanup, Resume, end-attempt and name release. One freshly
 captured original-caller context still owns the entire request. Callback failure

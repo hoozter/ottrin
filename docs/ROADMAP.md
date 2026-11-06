@@ -53,9 +53,12 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `705cf309` has
-[run42285010531](https://github.com/hoozter/ottrin/actions/runs/42285010531), with
-all four jobs passed. Its preceding `1153775f` passes all four jobs in
+Published source `0405eb4a` has
+[run42296867973](https://github.com/hoozter/ottrin/actions/runs/42296867973): Linux
+verification and both search-performance jobs pass; Windows Cargo test is running.
+Its preceding `705cf309` passes all four jobs in
+[run42285010531](https://github.com/hoozter/ottrin/actions/runs/42285010531).
+Its preceding `1153775f` passes all four jobs in
 [run42275563764](https://github.com/hoozter/ottrin/actions/runs/42275563764).
 Wait for any active run to finish before another push, so `cancel-in-progress`
 does not interrupt it. Exact observed CI status is retained with delivery receipts.
@@ -133,6 +136,12 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
      the feature. Merge ordinary and administrator Windows history by transaction
      identity while preserving live receipt ownership; both use the caller's one
      canonical registry. Keep history and partial batch results honest.
+     Generalize the existing Linux-only helper history/receipt/cleanup paths,
+     rather than adding a parallel Windows Activity list. Wire explicit recovery
+     through the existing Windows recovery worker. Both discovery paths must
+     deduplicate all transaction IDs and retain live receipt/cleanup ownership;
+     ordinary discovery must not downgrade a protected helper receipt. Loading
+     helper history remains opt-in and must not request authentication at startup.
      The command adapter now forwards fallible engine progress through all seven
      command kinds; history callback failures fail the request instead of becoming
      damaged-record rows. All 16 native invocations and 137 framed requests pass,
@@ -168,8 +177,16 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
      The corrected nine-test native preflight now passes on the exact current
      executable, including disconnect cancellation before the blocking peer is
      released. SYSTEM-token scope and independent VM/volume teardown are bound in
-     `caller-stream-current/STREAM_PREFLIGHT_ACCEPTANCE.json`. This preflight does
+     `caller-stream-current/STREAM_PREFLIGHT_ACCEPTANCE.json`. This preflight
      is separate from the now-passing ordinary-caller/full recovery run.
+     The invocation owner also passes two native parent tests exercising three
+     actual child processes: disconnect, lost terminal response and callback
+     unwind all observe the retained process handle signalled before returning,
+     without the watchdog forcing termination. Exact inputs, unchanged production
+     and preceding stream-case bindings, strict Windows lint and independent VM/
+     disks teardown are in `caller-invocation-current/ACCEPTANCE.json`. These are
+     same-user native fixtures; actual ShellExecute/UAC helper and UI acceptance
+     remain separate. Stable packages are unchanged.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and the original-retention/restoration failure matrix,
      including readonly original roots.

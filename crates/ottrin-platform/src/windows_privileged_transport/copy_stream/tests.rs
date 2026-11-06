@@ -1,6 +1,8 @@
 use super::*;
 use std::sync::atomic::AtomicI32;
 
+mod invocation;
+
 type WorkerResult = (io::Result<()>, io::Result<[u8; 5]>);
 type WatchResult = (bool, io::Result<()>);
 
