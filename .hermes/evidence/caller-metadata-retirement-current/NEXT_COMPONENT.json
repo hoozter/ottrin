@@ -1,0 +1,42 @@
+{
+  "status": "next dependency-ready implementation after metadata native acceptance",
+  "source_reference": "72f21c52aa415049a45cf93ccbef6f22c58b8a67",
+  "remaining_process_authority_sites": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group.rs": {
+      "sha256": "e02fe986420041102be575ee23741a1f8cc504a9177ce9985014daa9d3a3a343",
+      "lines": [
+        74,
+        89,
+        329,
+        442,
+        518,
+        529,
+        624,
+        785,
+        844,
+        894,
+        948,
+        1111,
+        1169,
+        1180,
+        1210,
+        1246
+      ]
+    },
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_group/cohort.rs": {
+      "sha256": "edf303754cbbcb6999820b414e49e27dc2f35aa61a902e59e1c3f9d577fb92bf",
+      "lines": [
+        280,
+        386,
+        618
+      ]
+    }
+  },
+  "required_design": [
+    "Carry live Authority on runtime Group, never in serialized Selection/Plan/cohort records",
+    "Use admitted caller canonical registry guard and authority-aware parent resolution for all group paths",
+    "Propagate authority through Selection capture/validation, metadata in-group inspection, shared unlink preparation/execution and cohort log lifecycle",
+    "Keep whole-cohort mutation exclusion, paired intent and all native identity/security/content evidence; no caller selection grants authority",
+    "Add actual caller overlapping-cohort cleanup/restart coverage before public cleanup integration; maintain ordinary metadata/cohort controls"
+  ]
+}

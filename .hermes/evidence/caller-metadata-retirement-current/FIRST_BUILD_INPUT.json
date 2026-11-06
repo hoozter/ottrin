@@ -1,0 +1,55 @@
+{
+  "source": {
+    "reference_commit": "72f21c52aa415049a45cf93ccbef6f22c58b8a67",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "4c969e4d42838d82d40e8f593854546cbe5fee99ce0be1f72b852bb5f4bed159",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "10961faf902d25319b4e7228ff27eb56c4c6cbfce172f3457607114114ea7b3d",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "a8cb54a5aada8bee7c3245d9a78ca79eb71c0327d7e083e10f18a71068f9b91f",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "22d1f4cb36551864453bf1be973fbc307b3abad0db5294822b94057e8a73eca4"
+    },
+    "scope": "Explicit runtime authority through shared metadata intent inspection, ordered local/stage/central removal and fresh-context recovery; caller cohort/public cleanup remain separate."
+  },
+  "build": {
+    "source": {
+      "reference_commit": "72f21c52aa415049a45cf93ccbef6f22c58b8a67",
+      "files": {
+        "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "4c969e4d42838d82d40e8f593854546cbe5fee99ce0be1f72b852bb5f4bed159",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "10961faf902d25319b4e7228ff27eb56c4c6cbfce172f3457607114114ea7b3d",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "a8cb54a5aada8bee7c3245d9a78ca79eb71c0327d7e083e10f18a71068f9b91f",
+        "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "22d1f4cb36551864453bf1be973fbc307b3abad0db5294822b94057e8a73eca4"
+      },
+      "scope": "Explicit runtime authority through shared metadata intent inspection, ordered local/stage/central removal and fresh-context recovery; caller cohort/public cleanup remain separate."
+    },
+    "artifacts": [
+      {
+        "crate": "ottrin_ui",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+        "sha256": "12273c7282effc0794f335058398bf4718632f1958854122d1bc8ff48b5bb5ea",
+        "bytes": 772686143,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      },
+      {
+        "crate": "ottrin_platform",
+        "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+        "sha256": "e4ab8639d52090fa463d2494efc0057f3c0ab66a21c94c54352595ef2b2ab919",
+        "bytes": 603318510,
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 0,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        }
+      }
+    ],
+    "compiler_jsonl_sha256": "caf40f75701073a8f9375bf4fca4eaa8daa3f5e80a2d3bff1fdae426a314962a",
+    "command": "cargo test -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --lib --no-run --message-format=json"
+  },
+  "reason": "Tighten test: verify public contents after metadata retirement, not before. No runtime result accepted from this cancelled attempt."
+}

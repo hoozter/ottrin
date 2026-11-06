@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/windows-payload/Ottrin-0.1.0-windows-x64",
+      "kind": "build-cache",
+      "reason": "Superseded 41027a0 extracted Windows packaging stage",
+      "evidence": "Every one of 51 files matches the retained exact baseline NSIS installer after owned extraction; no extra/custom files or symlinks. Recorded source, hashes and hard-link counts in LEGACY_STAGE_COMPARISON.json. Current 8e805d31 candidate and baseline NSIS/MSI installers/sidecars remain; held diagnostic input references its own separate MSI and manifest. No native QA/Windows guest or compiler active. Packaging regenerates this stage and fails closed if missing."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    }
+  ]
+}

@@ -1164,7 +1164,6 @@ pub(in super::super) fn exercise_caller_cleanup(
                 .reclaim(&parent, manager.root(), |_| Ok(()))
                 .unwrap()
         };
-        drop(completion);
         assert!(
             matches!(authority.probe(&parent,&retained),Err(error) if error.kind()==std::io::ErrorKind::NotFound)
         );
@@ -1178,6 +1177,111 @@ pub(in super::super) fn exercise_caller_cleanup(
         .unwrap();
         assert!(snapshot.state.cleanup.as_ref().unwrap().payload_removed);
         drop(snapshot);
+        let plan = completion
+            .begin(&parent, manager.root(), |_| Ok(()))
+            .unwrap();
+        drop(completion);
+        assert!(
+            cleanup_finalize::Plan::observe(&parent, manager.root(), &name, |_| Ok(())).is_err()
+        );
+        let fresh_caller = recapture();
+        let fresh_registry = fresh_caller.copy_registry(&[], false).unwrap().unwrap();
+        let fresh = Authority::Caller(fresh_caller);
+        let metadata_bytes = Snapshot::load(
+            &fresh,
+            &parent,
+            fresh_registry.root(),
+            &name,
+            SnapshotAccess::Read,
+        )
+        .unwrap()
+        .bytes;
+        assert!(
+            cleanup_finalize::Plan::observe_with(
+                &fresh,
+                &parent,
+                fresh_registry.root(),
+                &name,
+                |_| Err(io("owned metadata cancellation"))
+            )
+            .is_err()
+        );
+        assert_eq!(
+            Snapshot::load(
+                &fresh,
+                &parent,
+                fresh_registry.root(),
+                &name,
+                SnapshotAccess::Read
+            )
+            .unwrap()
+            .bytes,
+            metadata_bytes
+        );
+        let restored = cleanup_finalize::Plan::observe_with(
+            &fresh,
+            &parent,
+            fresh_registry.root(),
+            &name,
+            |_| Ok(()),
+        )
+        .unwrap();
+        assert_eq!(restored, plan);
+        let central = fresh_registry.writable_root().unwrap();
+        assert!(restored.finish(&parent, &central, |_| Ok(())).is_err());
+        assert_eq!(
+            Snapshot::load(&fresh, &parent, &central, &name, SnapshotAccess::Read)
+                .unwrap()
+                .bytes,
+            metadata_bytes
+        );
+        if undo {
+            let sequence = Snapshot::load(&fresh, &parent, &central, &name, SnapshotAccess::Read)
+                .unwrap()
+                .sequence;
+            let reset = ResetFault;
+            FAULT.with(|slot| {
+                slot.set(Some((
+                    sequence,
+                    Step::CleanupMetadata {
+                        role: CleanupMetadataRole::Local,
+                        point: CleanupMetadataPoint::HandleClosed,
+                    },
+                    false,
+                )))
+            });
+            let error = restored
+                .finish_with(&fresh, &parent, &central, |_| Ok(()))
+                .unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("injected Copy journal flush boundary failure"),
+                "{error}"
+            );
+            drop(reset);
+            let next = Authority::Caller(recapture());
+            let resumed =
+                cleanup_finalize::Plan::observe_with(&next, &parent, &central, &name, |_| Ok(()))
+                    .unwrap();
+            resumed
+                .finish_with(&next, &parent, &central, |_| Ok(()))
+                .unwrap();
+            resumed
+                .finish_with(&next, &parent, &central, |_| Ok(()))
+                .unwrap();
+        } else {
+            restored
+                .finish_with(&fresh, &parent, &central, |_| Ok(()))
+                .unwrap();
+            restored
+                .finish_with(&fresh, &parent, &central, |_| Ok(()))
+                .unwrap();
+        }
+        fresh_registry.validate().unwrap();
+        assert!(
+            matches!(authority.probe(&parent,&name),Err(error) if error.kind()==std::io::ErrorKind::NotFound)
+        );
         if let Some(expected) = public {
             let file =
                 namespace::open_source_with(&authority, &parent, OsStr::new("copy"), None).unwrap();
@@ -1191,6 +1295,9 @@ pub(in super::super) fn exercise_caller_cleanup(
                 matches!(authority.probe(&parent,OsStr::new("copy")),Err(error) if error.kind()==std::io::ErrorKind::NotFound)
             );
         }
+        println!(
+            "caller metadata source_directory={directory} undo={undo}: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed"
+        );
         println!(
             "caller cleanup source_directory={directory} undo={undo}: retained payload deletion, cancellation, private authority and public data preservation passed"
         );

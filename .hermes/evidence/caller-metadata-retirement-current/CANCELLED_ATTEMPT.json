@@ -1,0 +1,7 @@
+{
+  "status": "owned cancellation finished; no native acceptance claimed",
+  "exit": 130,
+  "reason": "Move public content/identity preservation check after actual metadata retirement",
+  "independent_teardown": "VM/disks/private desktop/profile/processes removed; base remains off",
+  "prior_inputs": "FIRST_BUILD_INPUT.json"
+}

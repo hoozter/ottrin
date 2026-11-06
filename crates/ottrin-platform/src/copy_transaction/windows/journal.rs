@@ -1321,14 +1321,6 @@ fn decode_until(bytes: &[u8], limit: Option<u64>) -> Result<(Decoded, usize), Pl
         at,
     ))
 }
-fn bound(
-    parent: &File,
-    name: &OsStr,
-    identity: WindowsStableIdentity,
-) -> Result<(), PlatformError> {
-    namespace::validate_binding(parent, name, identity)
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum OriginalMove {
     Retain,

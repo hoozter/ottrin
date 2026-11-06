@@ -1,0 +1,25 @@
+{
+  "scope": "All prior 108 focused passes/31 top-level calls, four strengthened caller metadata flows and 12 affected ordinary metadata/cohort regressions",
+  "ordinary_metadata_cases": [
+    "windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order",
+    "windows_native_copy_cleanup_metadata_authority_requires_matching_intent_mirrors",
+    "windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission",
+    "windows_native_copy_cleanup_metadata_rechecks_control_before_any_unlink",
+    "windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_removal",
+    "windows_native_copy_cleanup_finalizes_metadata_and_replays_its_admitted_proof",
+    "windows_native_copy_cleanup_metadata_refuses_unknown_content_and_aliases",
+    "windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_first_unlink",
+    "windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal",
+    "windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+    "windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl",
+    "windows_native_copy_cohort_replays_later_pending_member"
+  ],
+  "expected_passes": 120,
+  "expected_top_level_invocations": 43,
+  "per_case_budget_seconds": {
+    "base": 180,
+    "metadata_matrix": 300
+  },
+  "producer_hard_budget_seconds": 1200,
+  "not_claimed": "Caller cohort/public cleanup, real client/helper restart/new connections/UAC/dispatcher/package acceptance"
+}

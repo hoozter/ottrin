@@ -1,0 +1,10 @@
+{
+  "reference_commit": "72f21c52aa415049a45cf93ccbef6f22c58b8a67",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "4c969e4d42838d82d40e8f593854546cbe5fee99ce0be1f72b852bb5f4bed159",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "46f49e38070da36c0b9ed0fb2e21f003da0f59ae0b8c58531fa91756b420b359",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_finalize.rs": "a8cb54a5aada8bee7c3245d9a78ca79eb71c0327d7e083e10f18a71068f9b91f",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup_tree.rs": "22d1f4cb36551864453bf1be973fbc307b3abad0db5294822b94057e8a73eca4"
+  },
+  "scope": "Caller-authority metadata retirement; public/source/preferences checks occur after removal. Paired intent, readonly fresh-context inspection, ordered deletion, local-unlink interruption and idempotent replay; cohort/public integration remains separate."
+}

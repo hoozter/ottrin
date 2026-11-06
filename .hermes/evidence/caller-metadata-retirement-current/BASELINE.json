@@ -1,0 +1,11 @@
+{
+  "reference_commit": "72f21c52aa415049a45cf93ccbef6f22c58b8a67",
+  "sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29852377088,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49384214528
+  },
+  "available": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/nvme0n1p2 502609965056 471698698240 25776558080  95% /\n",
+  "purpose": "Explicit caller authority through shared metadata retirement and fresh-context pending recovery; shared compiler graph, registered native teardown"
+}

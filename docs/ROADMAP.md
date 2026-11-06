@@ -73,9 +73,10 @@ fixture-only corrections are in `caller-cleanup-current/HOSTED_FAILURE.json` and
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current native component regression coverage: 200 test passes across 123
-   top-level invocations, including all 91 non-worker ordinary cleanup tests,
-   using ordinary-user and SYSTEM roles. Registry/private staging share explicit
+   Current metadata component coverage is 120 test passes across 43 top-level
+   invocations. The preceding payload component has 200 passes across 123
+   invocations, including all 91 non-worker ordinary cleanup tests; those receipts
+   retain their own source scope. Both use ordinary-user and SYSTEM roles. Registry/private staging share explicit
    authority; real tree/payload staging and required naming policy pass. Final
    permission plans now retain caller authority, derive the whole graph from one
    original-token snapshot, apply under the helper and re-admit saved phases.
@@ -160,12 +161,12 @@ fixture-only corrections are in `caller-cleanup-current/HOSTED_FAILURE.json` and
    Remaining: actual caller dispatcher retaining pinned source and canonical
    registry admission through the entire operation; complete caller creation mutation-prefix,
    readonly/link publication recovery, the complete original-retention/restoration
-   failure matrix (including readonly original roots), caller cohort/metadata
-   retirement and public cleanup admissions, and real client/helper restart with
+   failure matrix (including readonly original roots), caller cohort retirement
+   and public cleanup admissions, and real client/helper restart with
    newly authenticated connections.
    Fresh context captures of a live client do not prove process-restart recovery.
    Caller cleanup records can still report NeedsReview until their own authority
-   integration is complete; caller cohort/metadata cleanup is not yet accepted.
+   integration is complete; caller cohort/public cleanup is not yet accepted.
    Retained-payload cleanup now carries explicit caller
    authority through admission, dependency leases, remaining-tree reads/deletion,
    peer observations and completion proofs. Four actual file/directory cases pass
@@ -178,9 +179,24 @@ fixture-only corrections are in `caller-cleanup-current/HOSTED_FAILURE.json` and
    all 91 non-worker cleanup cases, with no production changes between builds.
    The initial whole-module 600-second timeout remains recorded; individually
    retained results include 199/223-second process-exit matrices. Metadata/cohort
-   retirement and public caller cleanup admissions remain unconverted. Evidence:
-   `.hermes/evidence/caller-cleanup-current/ACCEPTANCE.json`; this is independent
-   work, not an owner wait or whole caller-cleanup acceptance.
+   retirement and public caller cleanup admissions were unconverted at that scope.
+   Evidence: `.hermes/evidence/caller-cleanup-current/ACCEPTANCE.json`.
+   The next metadata component now uses explicit runtime caller authority for
+   paired-intent observation, no-follow reads, namespace checks, dependency proof
+   and ordered local/stage/central removal. Serialized removal Plans contain only
+   native evidence, never caller tokens. Four native file/directory × overwrite/
+   post-Undo cases pass same-client fresh-context inspection, cancelled observation,
+   wrong-process refusal before mutation, local-unlink interruption recovery and
+   idempotent replay. Public/source/preferences/index evidence is checked after
+   metadata retirement. All 120 test passes across 43 top-level invocations and
+   strict Windows platform/UI lint pass, including all 12 affected ordinary
+   metadata/cohort regressions. The ordinary audit-SACL test is intentionally
+   ignored without its privilege, then explicitly passes in the SYSTEM lane.
+   Owned VM/disks/private desktop/profile/process teardown is independently
+   verified. Current receipt:
+   `.hermes/evidence/caller-metadata-retirement-current/ACCEPTANCE.json`.
+   Caller cohort retirement and public cleanup admission remain dependency-ready
+   work, not owner waits or whole caller-cleanup acceptance.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
    package/profile contexts. Creation-inheritance and original-token finalization
    controls do not substitute for that complete transaction/recovery proof.

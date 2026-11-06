@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable and native runtime binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-final/APPLICATION_INPUT.json",
+  "source_files": 4,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 454778880,
+    "sha256": "570ba24098fe0d23c08f1b7b161c1569ffa8e201a5167a9305b1cbf74485c0d4"
+  },
+  "native_result": "pass caller metadata retirement and affected ordinary metadata/cohort regressions"
+}

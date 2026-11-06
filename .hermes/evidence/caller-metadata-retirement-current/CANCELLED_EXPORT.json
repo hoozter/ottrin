@@ -1,0 +1,22 @@
+{
+  "status": "cancelled attempt; no acceptance",
+  "archive_sha256": "aa7ed6ee60ea230e58ca504ac0a5801e94874dc24c2e3ccef38725f9e6d010ee",
+  "records": {
+    "results\\DESKTOP_READY.json": {
+      "nonce": "d32e976faf5c4929937cb00d64cff2ef",
+      "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+      "method": "Observed the owned account desktop through the private software console; privacy choices, when required, are recorded separately; no security or OOBE policy changes"
+    },
+    "results\\RESULT.json": {
+      "scope": "Ordinary-client/SYSTEM-companion caller registry creation/reopen/coordinator and native security/registry regressions; no full transaction, alternate-administrator UAC or package acceptance",
+      "status": "running",
+      "phase": "waiting for owned desktop",
+      "runs": [],
+      "identity": {
+        "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+        "administrator": false,
+        "session": 1
+      }
+    }
+  }
+}

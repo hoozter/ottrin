@@ -1,0 +1,50 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/OUTPUT_CLEANUP_CANDIDATES.json",
+      "kind": "test-fixture",
+      "reason": "Superseded intermediate progress observation",
+      "evidence": "Final exact source/build binding, normalized full results and independent teardown now retained in ACCEPTANCE/VERIFICATION/BUILD_BINDING and native-final JSON exports; documentation references final acceptance only."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/LIVE_BUILD_BINDING.json",
+      "kind": "test-fixture",
+      "reason": "Superseded intermediate progress observation",
+      "evidence": "Final exact source/build binding, normalized full results and independent teardown now retained in ACCEPTANCE/VERIFICATION/BUILD_BINDING and native-final JSON exports; documentation references final acceptance only."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/CALLER_COMPONENT_OBSERVATION.json",
+      "kind": "test-fixture",
+      "reason": "Superseded intermediate progress observation",
+      "evidence": "Final exact source/build binding, normalized full results and independent teardown now retained in ACCEPTANCE/VERIFICATION/BUILD_BINDING and native-final JSON exports; documentation references final acceptance only."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native-final/LIVE_PROGRESS.json",
+      "kind": "test-fixture",
+      "reason": "Superseded intermediate progress observation",
+      "evidence": "Final exact source/build binding, normalized full results and independent teardown now retained in ACCEPTANCE/VERIFICATION/BUILD_BINDING and native-final JSON exports; documentation references final acceptance only."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native-final/PROGRESS_OBSERVER_PROCESS.json",
+      "kind": "test-fixture",
+      "reason": "Superseded intermediate progress observation",
+      "evidence": "Final exact source/build binding, normalized full results and independent teardown now retained in ACCEPTANCE/VERIFICATION/BUILD_BINDING and native-final JSON exports; documentation references final acceptance only."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Independently reviewed unchanged protected session/authentication process; preserve. Native producer, guest, private desktop and observers terminal and absent; exact consumed fixture outputs have normalized receipts and hashes, no application/runtime consumers."
+    }
+  ]
+}

@@ -46,7 +46,11 @@ pub(super) fn absent(parent: &File, name: &OsStr) -> Result<(), PlatformError> {
     absent_with(&Authority::Process, parent, name)
 }
 
-fn absent_with(authority: &Authority, parent: &File, name: &OsStr) -> Result<(), PlatformError> {
+pub(super) fn absent_with(
+    authority: &Authority,
+    parent: &File,
+    name: &OsStr,
+) -> Result<(), PlatformError> {
     match entry(
         authority,
         parent,

@@ -1,0 +1,68 @@
+[
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native/INTERRUPTED_RESULTS.zip",
+    "bytes": 782,
+    "sha256": "aa7ed6ee60ea230e58ca504ac0a5801e94874dc24c2e3ccef38725f9e6d010ee",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native/controller.ps1",
+    "bytes": 6494,
+    "sha256": "05adda091e7ef63d0587d777fd76a0287d1f7b942d132ea7bd99e4450b3a34b9",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native/desktop-ready.png",
+    "bytes": 2522912,
+    "sha256": "e394dedcccb5c98fd322ee06373b7c758ff18627bf0e31af80dbe5c35ddee946",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native/privacy-accepted-1.png",
+    "bytes": 1494437,
+    "sha256": "4fa50d32824d9c57e9ddf1d239d677cd4b597736a8d7b4b4d8bb237792841b6c",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native-final/RESULTS.zip",
+    "bytes": 12061,
+    "sha256": "277c3af33c894d1142b5c9cdd4dfd48c8863f20189d5ac6dc13aadf21252235f",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native-final/controller.ps1",
+    "bytes": 6494,
+    "sha256": "05adda091e7ef63d0587d777fd76a0287d1f7b942d132ea7bd99e4450b3a34b9",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native-final/desktop-ready.png",
+    "bytes": 2142723,
+    "sha256": "2f3d5542ad03d42c3a3ed4d79cf76c5bf2b98497671db86374beb19f9e77b78f",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native-final/privacy-accepted-0.png",
+    "bytes": 9819,
+    "sha256": "afad41fb39510f61af45a0f6653b44941a39673057f7815bbf737d7fe8685dc2",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/native-final/privacy-accepted-1.png",
+    "bytes": 1211227,
+    "sha256": "58db59f8ab4c633bf37a5108ae1ab0c15377432dffff5fc9f19ef17dfd11c0cd",
+    "links": 1
+  },
+  {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current/test-build.jsonl",
+    "bytes": 360789,
+    "sha256": "346cd3b4b1aa586d65cb52c5cf45a9e9aa53e646b092b1293a3c4b6ea1e9e2d4",
+    "links": 1
+  }
+]

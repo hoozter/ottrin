@@ -1,0 +1,140 @@
+{
+  "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+  "status": "pass owned SYSTEM companion",
+  "phase": "metadata regression windows_native_copy_cohort_replays_later_pending_member",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::windows_native_copy_discovery_reports_bad_entries_without_hiding_valid_records_or_following_links ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.44s\n\n",
+      "timed_out": false,
+      "case": "SYSTEM discovery bad-record and link refusal",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... caller overwrite source_directory=false case=0: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=false case=1: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=true case=0: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller overwrite source_directory=true case=1: private original retention, publication, receipt refresh, public Undo and exact restoration passed\ncaller metadata source_directory=false undo=false: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=false undo=false: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller metadata source_directory=false undo=true: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=false undo=true: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller metadata source_directory=true undo=false: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=true undo=false: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller metadata source_directory=true undo=true: paired intent, read-only fresh admission, private authority, ordered removal and idempotent replay passed\ncaller cleanup source_directory=true undo=true: retained payload deletion, cancellation, private authority and public data preservation passed\ncaller receipt source_directory=false: unified execution, canonical receipt refresh, public Undo and idempotent replay passed\ncaller resume source_directory=false case=0: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=1: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=2: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=false case=3: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller journal source_directory=false: staging, reopen, plan and three Begin recovery cases passed\ncaller receipt source_directory=true: unified execution, canonical receipt refresh, public Undo and idempotent replay passed\ncaller resume source_directory=true case=0: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=1: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=2: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller resume source_directory=true case=3: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed\ncaller journal source_directory=true: staging, reopen, plan and three Begin recovery cases passed\ncaller fresh recovery source_directory=false: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed\ncaller fresh recovery source_directory=true: recaptured-context discovery, restored Resume, restored Undo, cancellation and readonly evidence passed\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 114.01s\n\n",
+      "timed_out": false,
+      "case": "caller private helper",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (6700) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:203:60:\nowned token-scope unwind\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::windows_native_copy_final_link_dacl_does_not_change_populated_targets ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.07s\n\n",
+      "timed_out": false,
+      "case": "SYSTEM native symbolic-link security",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 13 tests\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_accepts_regular_root_and_rejects_occupied_directory ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_budget_preflight_and_known_links_never_follow_targets ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_cancellation_retains_partial_candidate_and_original ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_candidate_and_source_child_changes_are_retained ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_candidate_stream_tampering_is_not_overwritten ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_child_rebinding_preserves_original_and_replacement ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_pinned_roots_survive_ancestor_alias_retarget ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_read_only_source_acl_needs_no_delete_or_write_access ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_refuses_destination_inside_source_before_child_creation ... ok\ntest copy_transaction::windows::tree::tests::windows_native_copy_tree_stages_populated_unicode_raw_names_streams_and_metadata ... ok\ntest copy_transaction::windows::tree::tests::windows_native_existing_tree_cancellation_and_budget_leave_original_intact ... ok\ntest copy_transaction::windows::tree::tests::windows_native_existing_tree_freezes_streams_security_and_original_aliases_readonly ... ok\ntest copy_transaction::windows::tree::tests::windows_native_existing_tree_refuses_changed_original_evidence_without_normalizing ... ok\n\ntest result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 566 filtered out; finished in 6.83s\n\n",
+      "timed_out": false,
+      "case": "native tree regressions with symbolic-link capability",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 4 tests\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_link_policies_match_native_links_without_targets ... ok\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_projects_final_inheritance_against_kernel_trees ... ok\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_refuses_bad_graphs_and_cancels_without_mutation ... ok\ntest copy_transaction::windows::security::tree::tests::windows_native_copy_tree_security_revalidates_parent_private_permissions_and_membership ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 575 filtered out; finished in 0.10s\n\n",
+      "timed_out": false,
+      "case": "native whole-tree security-plan regressions",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::destination_dacl_matches_kernel_created_file_inheritance_and_token_defaults ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.01s\n\n",
+      "timed_out": false,
+      "case": "SYSTEM destination default-DACL regression",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::security::tests::new_copy_candidate_inherits_the_real_parent_audit_sacl ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.02s\n\n",
+      "timed_out": false,
+      "case": "SYSTEM native audit-SACL security",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order ... \nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 109.05s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_metadata_failures_and_real_exits_recover_in_order",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_authority_requires_matching_intent_mirrors ... \nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\n\nrunning 1 test\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 22.63s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_metadata_authority_requires_matching_intent_mirrors",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 5.25s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_metadata_preserves_unknown_data_added_after_admission",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_rechecks_control_before_any_unlink ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.72s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_metadata_rechecks_control_before_any_unlink",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_removal ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 1.47s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_closed_handle_writable_mappings_block_metadata_removal",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_finalizes_metadata_and_replays_its_admitted_proof ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 14.80s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_finalizes_metadata_and_replays_its_admitted_proof",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_metadata_refuses_unknown_content_and_aliases ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 12.81s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_metadata_refuses_unknown_content_and_aliases",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_first_unlink ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 10.33s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_first_unlink",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 150.40s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertain_removal",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 7.25s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cleanup_configured_group_action_reclaims_mixed_cohort",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 21.05s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cohort_refuses_foreign_member_log_or_parent_acl",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "stdout": "\nrunning 1 test\ntest copy_transaction::windows::journal::tests::cleanup::windows_native_copy_cohort_replays_later_pending_member ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 578 filtered out; finished in 15.12s\n\n",
+      "timed_out": false,
+      "case": "metadata regression windows_native_copy_cohort_replays_later_pending_member",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

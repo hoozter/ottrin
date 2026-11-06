@@ -1,0 +1,14 @@
+    Checking ottrin-platform v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-platform)
+warning: function `bound` is never used
+    --> crates/ottrin-platform/src/copy_transaction/windows/journal.rs:1324:4
+     |
+1324 | fn bound(
+     |    ^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ottrin-platform` (lib) generated 1 warning
+    Checking ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+    Checking ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+warning: `ottrin-platform` (lib test) generated 1 warning (1 duplicate)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 6.06s

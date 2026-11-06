@@ -1,0 +1,5 @@
+{
+  "purpose": "Caller cleanup metadata retirement; separate from earlier caller file-attribute metadata receipt",
+  "baseline": "BASELINE.json",
+  "build_log_move": "Live compiler output file descriptors retained the same inodes after rename; earlier tracked leaf-metadata test-build.log restored byte-for-byte from HEAD. No product source or acceptance receipt replaced."
+}

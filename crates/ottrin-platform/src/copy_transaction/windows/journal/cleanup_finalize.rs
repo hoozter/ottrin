@@ -1,24 +1,17 @@
 //! Paired authority for ordered local-journal, empty-stage and central removal.
 use super::cleanup_dependencies::Dependencies;
 use super::cleanup_protocol::CleanupRecord;
-use super::cleanup_tree::{Remaining, absent, dispose};
+use super::cleanup_tree::{Remaining, absent_with, dispose};
 use super::*;
 use windows_sys::Win32::Storage::FileSystem::{DELETE, SYNCHRONIZE};
 
-fn optional(parent: &File, name: &OsStr, access: u32) -> Result<Option<File>, PlatformError> {
-    match unsafe {
-        windows_fs::open_relative(
-            parent,
-            name,
-            RelativeOptions {
-                directory: None,
-                create_new: false,
-                access,
-                sharing: FILE_SHARE_READ,
-                security: ptr::null(),
-            },
-        )
-    } {
+fn optional(
+    authority: &Authority,
+    parent: &File,
+    name: &OsStr,
+    access: u32,
+) -> Result<Option<File>, PlatformError> {
+    match authority.open_entry(parent, name, None, access, FILE_SHARE_READ) {
         Ok(file) => Ok(Some(file)),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
         Err(error) => Err(io(error)),
@@ -110,12 +103,13 @@ pub(super) fn metadata_files(
 }
 
 fn control_epoch(
+    authority: &Authority,
     control: &discovery::RegisteredJournal,
     central: &File,
     expected: &EntryVersion,
 ) -> Result<(), PlatformError> {
     let header = control.state.header.as_ref().unwrap();
-    bound(central, &header.central_name(), header.central_file)?;
+    authority.binding(central, &header.central_name(), header.central_file)?;
     namespace::validate_single_link(&control.file)?;
     header
         .central_security
@@ -418,7 +412,14 @@ impl Completion {
         )?;
         let control_version = versions[2].clone();
         drop((journal, dependencies));
-        plan.run(parent, central, Action::Inspect, None, &mut cancel)?;
+        plan.run(
+            &self.authority,
+            parent,
+            central,
+            Action::Inspect,
+            None,
+            &mut cancel,
+        )?;
         Ok(Authorized {
             plan,
             before_journal: self.journal,
@@ -511,6 +512,7 @@ impl Plan {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         self.run(
+            &Authority::Process,
             parent,
             central,
             Action::Inspect,
@@ -527,7 +529,17 @@ impl Plan {
         name: &OsStr,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        Self::observe_selected(parent, central, name, None, &mut cancel)
+        Self::observe_with(&Authority::Process, parent, central, name, &mut cancel)
+    }
+
+    pub(super) fn observe_with(
+        authority: &Authority,
+        parent: &File,
+        central: &File,
+        name: &OsStr,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<Self, PlatformError> {
+        Self::observe_selected(authority, parent, central, name, None, cancel)
     }
 
     pub(super) fn observe_in_group(
@@ -537,10 +549,18 @@ impl Plan {
         selection: &super::cleanup_group::Selection,
         cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        Self::observe_selected(parent, central, name, Some(selection), cancel)
+        Self::observe_selected(
+            &Authority::Process,
+            parent,
+            central,
+            name,
+            Some(selection),
+            cancel,
+        )
     }
 
     fn observe_selected(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
@@ -552,7 +572,7 @@ impl Plan {
             .and_then(|text| text.strip_prefix(".ottrin-copy-"))
             .ok_or_else(|| io("invalid Copy cleanup stage name"))?;
         let control = discovery::RegisteredJournal::open(
-            &Authority::Process,
+            authority,
             central,
             &OsString::from(format!("{id}.copy-journal")),
         )?;
@@ -574,7 +594,7 @@ impl Plan {
             .first()
             .map(|entry| OsString::from_wide(&entry.name));
         if let Some(name) = &retained {
-            absent(parent, name)?;
+            absent_with(authority, parent, name)?;
         }
         cancel(0)?;
         let plan = Self {
@@ -586,46 +606,77 @@ impl Plan {
             parent_security: security::owner_group_dacl_digest(parent)?,
         };
         drop(control);
-        plan.run(parent, central, Action::Inspect, selection, &mut cancel)?;
+        plan.run(
+            authority,
+            parent,
+            central,
+            Action::Inspect,
+            selection,
+            &mut cancel,
+        )?;
         Ok(plan)
     }
 
-    fn bindings(&self, parent: &File, central: &File) -> Result<(), PlatformError> {
+    fn bindings(
+        &self,
+        authority: &Authority,
+        parent: &File,
+        central: &File,
+    ) -> Result<(), PlatformError> {
+        authority.validate()?;
         self.header.validate_parent_policy(parent)?;
         if stable_identity_from_handle(parent).map_err(io)? != self.header.parent
             || stable_identity_from_handle(central).map_err(io)? != self.header.central
             || windows_fs::location(parent).map_err(io)? != self.parent_location
             || windows_fs::location(central).map_err(io)? != self.central_location
             || security::owner_group_dacl_digest(parent)? != self.parent_security
-            || windows_fs::current_owner()? != self.header.creator
+            || authority.owner()? != self.header.creator
         {
             return Err(io("Copy cleanup metadata action admission changed"));
         }
         if let Some(name) = &self.retained {
-            absent(parent, name)?;
+            absent_with(authority, parent, name)?;
         }
-        Ok(())
+        authority.validate()
     }
 
     pub(super) fn finish(
         &self,
         parent: &File,
         central: &File,
+        cancel: impl FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        self.finish_with(&Authority::Process, parent, central, cancel)
+    }
+
+    pub(super) fn finish_with(
+        &self,
+        authority: &Authority,
+        parent: &File,
+        central: &File,
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
-        self.run(parent, central, Action::Remove, None, &mut cancel)
-            .map_err(|error| PlatformError::CleanupPending {
-                transaction: self
-                    .parent_location
-                    .join(self.header.stage_name())
-                    .display()
-                    .to_string(),
-                message: format!("{error}; metadata cleanup stopped, unknown entries retained"),
-            })
+        self.run(
+            authority,
+            parent,
+            central,
+            Action::Remove,
+            None,
+            &mut cancel,
+        )
+        .map_err(|error| PlatformError::CleanupPending {
+            transaction: self
+                .parent_location
+                .join(self.header.stage_name())
+                .display()
+                .to_string(),
+            message: format!("{error}; metadata cleanup stopped, unknown entries retained"),
+        })
     }
 
     fn run(
         &self,
+        authority: &Authority,
         parent: &File,
         central: &File,
         action: Action,
@@ -638,22 +689,18 @@ impl Plan {
             ));
         }
         cancel(0)?;
-        self.bindings(parent, central)?;
+        self.bindings(authority, parent, central)?;
         let central_name = self.header.central_name();
         let stage_name = self.header.stage_name();
-        let Some(file) = optional(central, &central_name, action.file_access())? else {
+        let Some(file) = optional(authority, central, &central_name, action.file_access())? else {
             // Only a previously admitted intent may report this terminal replay.
-            absent(parent, &stage_name)?;
-            absent(central, &central_name)?;
+            absent_with(authority, parent, &stage_name)?;
+            absent_with(authority, central, &central_name)?;
             action.flush(parent)?;
             return action.flush(central);
         };
-        let control = discovery::RegisteredJournal::from_file(
-            &Authority::Process,
-            central,
-            &central_name,
-            file,
-        )?;
+        let control =
+            discovery::RegisteredJournal::from_file(authority, central, &central_name, file)?;
         if control.state.header.as_ref() != Some(&self.header)
             || <[u8; 32]>::from(Sha256::digest(&control.bytes)) != self.digest
             || !control
@@ -668,7 +715,7 @@ impl Plan {
         let sequence = decoded.sequence;
         let progress = control.state.cleanup.as_ref().unwrap();
         let mut dependencies = Dependencies::open_selected(
-            &Authority::Process,
+            authority,
             central,
             &control.state,
             &progress.manifest,
@@ -686,6 +733,7 @@ impl Plan {
         action.flush(parent)?;
         action.flush(central)?;
         if let Some(stage) = optional(
+            authority,
             parent,
             &stage_name,
             if action == Action::Remove {
@@ -707,7 +755,9 @@ impl Plan {
                 return Err(io("Copy cleanup stage contains unknown entries"));
             }
             action.flush(&stage)?;
-            if let Some(local) = optional(&stage, OsStr::new(LOCAL), action.file_access())? {
+            if let Some(local) =
+                optional(authority, &stage, OsStr::new(LOCAL), action.file_access())?
+            {
                 let local_version = metadata(
                     &local,
                     self.header.local_file,
@@ -716,12 +766,12 @@ impl Plan {
                     Some(&control.bytes),
                     cancel,
                 )?;
-                self.bindings(parent, central)?;
+                self.bindings(authority, parent, central)?;
                 dependencies.validate(central)?;
-                control_epoch(&control, central, &central_version)?;
-                bound(parent, &stage_name, self.header.stage)?;
-                bound(&stage, OsStr::new(LOCAL), self.header.local_file)?;
-                bound(central, &central_name, self.header.central_file)?;
+                control_epoch(authority, &control, central, &central_version)?;
+                authority.binding(parent, &stage_name, self.header.stage)?;
+                authority.binding(&stage, OsStr::new(LOCAL), self.header.local_file)?;
+                authority.binding(central, &central_name, self.header.central_file)?;
                 if super::super::version(&local)? != local_version
                     || super::super::version(&stage)? != stage_version
                 {
@@ -730,7 +780,7 @@ impl Plan {
                 if action == Action::Inspect {
                     return Ok(());
                 }
-                dispose(&local)?;
+                authority.file_operation(|| dispose(&local))?;
                 metadata_boundary(
                     sequence,
                     CleanupMetadataRole::Local,
@@ -742,7 +792,7 @@ impl Plan {
                     CleanupMetadataRole::Local,
                     CleanupMetadataPoint::HandleClosed,
                 )?;
-                absent(&stage, OsStr::new(LOCAL))?;
+                absent_with(authority, &stage, OsStr::new(LOCAL))?;
                 stage.sync_all().map_err(io)?;
                 metadata_boundary(
                     sequence,
@@ -772,14 +822,14 @@ impl Plan {
             {
                 return Err(io("Copy cleanup empty stage changed"));
             }
-            self.bindings(parent, central)?;
+            self.bindings(authority, parent, central)?;
             dependencies.validate(central)?;
-            control_epoch(&control, central, &central_version)?;
-            bound(parent, &stage_name, self.header.stage)?;
+            control_epoch(authority, &control, central, &central_version)?;
+            authority.binding(parent, &stage_name, self.header.stage)?;
             if action == Action::Inspect {
                 return Ok(());
             }
-            dispose(&stage)?;
+            authority.file_operation(|| dispose(&stage))?;
             metadata_boundary(
                 sequence,
                 CleanupMetadataRole::Stage,
@@ -791,7 +841,7 @@ impl Plan {
                 CleanupMetadataRole::Stage,
                 CleanupMetadataPoint::HandleClosed,
             )?;
-            absent(parent, &stage_name)?;
+            absent_with(authority, parent, &stage_name)?;
             parent.sync_all().map_err(io)?;
             metadata_boundary(
                 sequence,
@@ -802,10 +852,10 @@ impl Plan {
                 dependencies.own_root_removed(central, &stage_name)?;
             }
         }
-        self.bindings(parent, central)?;
+        self.bindings(authority, parent, central)?;
         dependencies.validate(central)?;
-        absent(parent, &stage_name)?;
-        bound(central, &central_name, self.header.central_file)?;
+        absent_with(authority, parent, &stage_name)?;
+        authority.binding(central, &central_name, self.header.central_file)?;
         if metadata(
             &control.file,
             self.header.central_file,
@@ -820,7 +870,7 @@ impl Plan {
         if action == Action::Inspect {
             return Ok(());
         }
-        dispose(&control.file)?;
+        authority.file_operation(|| dispose(&control.file))?;
         metadata_boundary(
             sequence,
             CleanupMetadataRole::Central,
@@ -832,7 +882,7 @@ impl Plan {
             CleanupMetadataRole::Central,
             CleanupMetadataPoint::HandleClosed,
         )?;
-        absent(central, &central_name)?;
+        absent_with(authority, central, &central_name)?;
         central.sync_all().map_err(io)?;
         metadata_boundary(
             sequence,

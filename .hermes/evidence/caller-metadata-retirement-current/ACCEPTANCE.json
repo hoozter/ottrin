@@ -1,0 +1,25 @@
+{
+  "status": "pass caller metadata retirement and affected ordinary metadata/cohort regressions",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 120,
+  "native_invocations": 43,
+  "coverage": [
+    "Explicit retained caller authority throughout paired metadata-intent observation, no-follow opens, namespace checks, dependency proof, ordered local/stage/central native removal and idempotent replay; serialized Plan stays evidence only",
+    "Actual file and four-entry directory, overwrite-retained-original and post-Undo-retained-copy cleanup; same authenticated client recaptured contexts; cancellation and wrong-process refusal preserve journal bytes; injected local-unlink interruption recovers from central intent; original source/public data/preferences/index evidence checked after metadata retirement",
+    "Prior 108 focused test passes plus 12 exact ordinary metadata/cohort parent regressions, including abrupt-exit matrix, private-security/stream/mapping refusals, mutation-after-admission and uncertain group removal"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "f51ecd8f385eb7278429b7118638885f9add5299405436ca1e060142dfdb39bb"
+  },
+  "limits": [
+    "Caller metadata retirement component only; caller cohort and public cleanup integration remain incomplete; Administrator Copy stays disabled",
+    "Fresh contexts of the same live authenticated client do not prove actual client/helper restart, new authenticated connections or alternate-administrator UAC",
+    "Full dispatcher, complete caller prefix/readonly/link/alias failure matrices, TokenOwner mutation and packaged profile contexts remain required",
+    "Stable application packages unchanged; hosted acceptance remains separate"
+  ]
+}

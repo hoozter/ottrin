@@ -1,0 +1,8 @@
+{
+  "status": "pass chunked verified owned output",
+  "guest_path": "C:\\WINDOWS\\TEMP\\ottrin-msi-d32e976faf5c4929937cb00d64cff2ef\\interrupted-results.zip",
+  "bytes": 782,
+  "sha256": "aa7ed6ee60ea230e58ca504ac0a5801e94874dc24c2e3ccef38725f9e6d010ee",
+  "chunk_bytes": 65536,
+  "uncertain_read_recovery": "Seek to exact original offset before retry; no process restart"
+}

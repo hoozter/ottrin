@@ -1896,3 +1896,30 @@ already-undone operation. A distinct non-destructive finish-release admission an
 visible pending-release status after restart remain necessary; cleanup reaches
 the writer but also authorizes deletion of retained payload. Repair-I/O interruption,
 physical-power and the remaining claim reclamation/workflow gates stay open.
+
+
+### Caller-authorized metadata retirement
+
+The shared metadata engine accepts explicit runtime Authority for paired-intent
+observation and execution. It uses that authority for native no-follow opens,
+creator checks, dependency admission, namespace bindings, absence proofs and
+native file dispositions. Completion retains its authenticated context through
+the metadata-intent writer handoff. A serialized Plan stores exact evidence only;
+executing or re-observing it requires separately admitted live authority.
+
+The four native caller file/directory × overwrite-retained-original/post-Undo-
+retained-copy scenarios pass. Independently recaptured contexts of the same live
+client re-observe paired intent without writing. Cancellation and wrong-process
+execution preserve journal bytes. An interrupted local-journal removal resumes
+from the surviving central intent, and completed removal replays idempotently.
+Public content/native identities and source/preferences/index evidence are
+checked after metadata retirement. Strict Windows platform/UI lint passes.
+All 120 test passes across 43 top-level invocations pass, including the 12
+affected ordinary metadata/cohort parent regressions. The ordinary audit-SACL
+test requires its dedicated SYSTEM lane, where it explicitly passes. Source,
+compiler profile, executable text, actor sources and normalized native results
+are bound in `.hermes/evidence/caller-metadata-retirement-current/ACCEPTANCE.json`.
+VM/disks/private desktop/profile/process teardown is independently verified.
+Caller cohort retirement, public cleanup entry points, real process restart/new
+connections, alternate-administrator UAC and packaged/profile acceptance remain
+separate. Administrator Copy remains disabled.

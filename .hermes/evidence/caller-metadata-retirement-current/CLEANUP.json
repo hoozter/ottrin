@@ -1,0 +1,51 @@
+{
+  "status": "owned cleanup finished; current deliverables and useful caches preserved",
+  "before_sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29852377088,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49384214528
+  },
+  "after_sizes": {
+    "target/debug/deps": 23823106048,
+    "target/debug/incremental": 25358307328,
+    "target/x86_64-pc-windows-gnu/debug/deps": 29860347904,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 49403625472
+  },
+  "size_deltas": {
+    "target/debug/deps": 0,
+    "target/debug/incremental": 0,
+    "target/x86_64-pc-windows-gnu/debug/deps": 7970816,
+    "target/x86_64-pc-windows-gnu/debug/incremental": 19410944
+  },
+  "obsolete_incremental_sessions_removed": 20,
+  "incremental_filesystem_delta": 3962949632,
+  "legacy_extracted_stage_files": 51,
+  "legacy_stage_receipt": "LEGACY_STAGE_COMPARISON.json",
+  "legacy_stage_filesystem_delta": 127733760,
+  "consumed_output_targets": 13,
+  "output_filesystem_delta": 7786496,
+  "native_teardown": "VERIFICATION.json independent teardown; both OWNER receipts terminal",
+  "final_incremental_candidates": 0,
+  "remaining_task_created_storage": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-metadata-retirement-current",
+      "purpose": "Compact source/build/native/cleanup receipts and reusable QA scripts",
+      "pending_consumer": "Roadmap continuation and verification provenance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "purpose": "Current same-configuration reusable native test executable for next caller/cohort component",
+      "pending_consumer": "Roadmap continuation and verification provenance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "purpose": "Current same-configuration reusable native test executable for next caller/cohort component",
+      "pending_consumer": "Roadmap continuation and verification provenance"
+    }
+  ],
+  "preserved_packages": "PRESERVED_PACKAGES.json",
+  "limits": "Measured free-space deltas are observations amid other system activity; not summed allocated cache sizes",
+  "superseded_interim_targets": 5,
+  "interim_cleanup_receipt": "INTERIM_CLEANUP.json"
+}
