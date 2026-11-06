@@ -1,0 +1,19 @@
+{
+  "status": "pass exact native export/source/build binding and owned host teardown",
+  "archive_sha256": "388c55730b69ec4847e6f090596a761785d955b719d0368fecc354d333ef624c",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "source_build_verified": true,
+  "native_invocations": 7,
+  "named_top_level_passes": 25,
+  "unique_named_cases": 24,
+  "separate_roles": "ordinary interactive user and authenticated SYSTEM helper",
+  "both_owned_desktops_and_profiles_absent": true
+}

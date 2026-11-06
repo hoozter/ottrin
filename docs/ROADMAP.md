@@ -2,7 +2,7 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-05. This is the single active queue. Historical sections and
+Updated 2026-11-06. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
@@ -53,92 +53,30 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-1. Finish Windows administrator Copy recovery: original caller's canonical
-   registry/profile ownership, receipt, Undo and cleanup bridge. The ordinary-user
-   durable metadata coordinator is implemented; 28 focused native core checks pass
-   across 21 invocations, including process exits at publication/checkpoint/retirement,
-   torn checkpoint replay, strict original-selection recovery, changed/corrupt
-   evidence refusal and existing registry/claim regressions. Evidence:
-   `cohort-coordinator-current/ACCEPTANCE.json`. The later Activity restart bridge
-   and Copy/Undo mutation fence now pass five corrected-build native invocations,
-   including the full 29-scenario Activity integration. Its first run found a
-   later-member replay ordering defect; recovery now finishes the saved pending
-   member before visiting remaining members. New middle/final-member interruption
-   regressions and the existing uncertain-removal matrix pass without weakening
-   the per-member refusal gate. Strict Windows platform/UI lint and the focused
-   four-case Linux Activity cleanup regression pass. Owned guests, disks, desktops,
-   profiles and consumed transports are removed. This is source/controller
-   acceptance, not a new package or a complete administrator-Copy gate.
-   The path-only caller locator is now replaced by an authenticated caller context:
-   frozen native TokenUser and default TokenOwner remain distinct, and the registered
-   Local AppData directory is pinned by native identity, location, owner/group/DACL
-   and case policy. Six focused native checks pass: actual owned-directory/DACL
-   substitution refusal, ordinary content changes, poisoned environment, process
-   exit and existing transport identity/frame regressions. Receipt:
-   `caller-context-current/ACCEPTANCE.json`. That snapshot was read-only and granted
-   no recovery-registry or file-mutation authority. Alternate-administrator, package
-   identity and actual in-place TokenOwner mutation are not proven by these cases.
-   A separate ordinary-client/SYSTEM-companion experiment now exercises the real
-   authenticated pipe with distinct kernel principals and a poisoned helper
-   environment. The canonical private creator succeeds in caller-writable storage,
-   and the helper can write through the already granted caller-owned handle after
-   restoring its identity. In the protected SYSTEM/Administrators-only directory,
-   creation under the original token fails with native Access denied (5), despite
-   a preopened elevated parent handle. Whole-operation caller impersonation is
-   therefore not the protected-creation bridge. Authenticated private-file reopen was still missing at that snapshot; its later
-   primitive acceptance is recorded below. Full transaction integration remains required.
-   The first fixture incorrectly assumed the parent owner equalled SYSTEM's default
-   owner; it now verifies the actual restrictive native DACL and allowed owner.
-   A subsequent native pass exposed a receipt-export failure. Private payload is
-   now separate from reports, exporter diagnostics are retained, and the corrected
-   case passes both native roles and exact report transfer. All owned guest disks,
-   processes, desktops, profiles and consumed transports are removed. This remains
-   mechanism evidence; no production Copy or alternate-administrator acceptance.
-   Evidence: `caller-owner-probe-current/`. The preceding coordinator checkpoint
-   passed all four hosted jobs in run42105264888; that does not cover this probe.
-   Atomic original-caller private entry creation is now implemented. The context
-   also freezes the native primary group. A native descriptor derived from the
-   original token must match that admitted owner/group; only a temporary duplicate
-   helper thread token enables backup/restore rights. All full native private
-   owner/group/DACL/control postconditions remain enforced. Private descriptors
-   request no auto-inheritance; the first run exposed an incorrect auto-inheritance
-   request (derived 0x1400 versus kernel 0x1000), corrected at descriptor creation.
-   Current exact-source acceptance is fourteen named passes across five native
-   invocations: client/helper protected creation, frozen identity mismatch refusal,
-   unchanged existing own/foreign entries, caller-readable output, no ordinary
-   helper reopen, exact/nested thread-token restoration and thread isolation;
-   ten ordinary Copy security cases, plus native link/audit cases under SYSTEM.
-   Receipt: `caller-private-create-current/ACCEPTANCE.json`. Strict Windows
-   platform/UI lint passes. All owned cases/disks/desktops/profiles/processes and
-   consumed outputs are removed; stable packages remain unchanged.
-   The additional SYSTEM destination-default failure is now resolved: the SDK
-   reserved 60 ACL bytes for the same 52 bytes of rules stored by the kernel.
-   Native evidence now validates and records only occupied ACL bytes, retaining
-   all ordered ACEs, identities and control flags; serialized padding is refused.
-   Native descriptors and permission application are unchanged. Current exact-source
-   acceptance is sixteen named passes across six invocations, including native
-   allocation/mask/cache controls, the original SYSTEM scheduled-task regression,
-   later parent propagation, ordinary security, caller creation and link/audit
-   checks. Receipt: `destination-security-current/ACCEPTANCE.json`. Strict Windows
-   platform/UI lint passes; both guests and consumed outputs are removed. This
-   closes the comparison defect, not the remaining original-caller registry,
-   staging, destination-token, receipt, Undo or cleanup integration.
-   Identity-bound authenticated private reopen now passes the ordinary-client/SYSTEM
-   fixture. Read-only handles refuse writes; writable reopen succeeds. Missing,
-   replaced, foreign/nonprivate or changed-DACL entries are refused without creating
-   or repairing them. Caller/profile liveness and exact token restoration remain
-   enforced. Six invocations retain sixteen named passes, including the existing
-   native security regressions. Receipt: `caller-private-reopen-current/ACCEPTANCE.json`.
-   This primitive does not admit serialized identities by themselves: canonical
-   anchors, complete journals and transaction authority still require integration.
-   Strict paired Windows platform/UI lint passes; owned guest/desktop/profile,
-   volumes, consumed transports and superseded incremental sessions are removed.
-   The coordinator's registry-parent security fixture still changes a group, not
-   a literal DACL; the new profile-DACL test has its separate profile-only scope.
-   Administrator Copy stays disabled. Original-caller registry initialization,
-   transaction-wide private-file ownership, receipt/Undo/cleanup bridging and cross-administrator/
-   package-context proof remain required before helper enablement. Current downloads remain Linuxbee/Windows8e. Missing member IDs
-   never license deletion or a completed original-batch history claim.
+1. Finish Windows administrator Copy using the original caller's canonical
+   profile/registry, destination claims, stage/journal, metadata/final-permission
+   token, receipts, Undo and cleanup authority. Administrator Copy stays disabled.
+   The ordinary durable coordinator and Activity restart/mutation fence have their
+   scoped native acceptance. Authenticated caller context, private creation/reopen,
+   and now held caller registry/coordinator authority are implemented components.
+   Current source acceptance: 25 named passes across seven ordinary-user/SYSTEM
+   invocations, including both inherited naming policies, narrow flush-handle
+   rights, exact helper-token restoration, unchanged refusal of altered/foreign/
+   unanchored state, nine ordinary registry/namespace regressions, eleven ordinary
+   security cases and SYSTEM link/default-DACL/audit cases. Strict paired Windows
+   platform/UI lint passes. Both owned guests/disks/desktops/profiles and consumed
+   outputs are removed. Receipt: `caller-registry-current/ACCEPTANCE.json`.
+   Remaining: canonical `Ottrin/State` ancestry and source-overlap admission;
+   authority through claims, staging, complete journals, final destination security,
+   receipts and restored Undo/cleanup plans; original-token authority for required
+   naming-policy changes on caller-owned candidates; actual alternate-admin,
+   in-place TokenOwner-mutation and package-context proof. Already-inherited
+   registry naming is verified without an unnecessary setter; it is not full
+   metadata support. The parent-group fixture remains distinct from a literal
+   parent-DACL test. Root-DACL refusal has its separate caller-registry scope.
+   Missing member IDs never license deletion or a completed original-batch claim.
+   These are independently executable implementation/QA gates, not owner waits.
+   See the historical caller checkpoints below for earlier exact-source scopes.
 2. Finish U05–U08 interface/theme consistency and property mapping. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.
@@ -192,6 +130,99 @@ ordered work and usable paths above. Current25 acceptance and delivery receipts
 are `MSIX_CONTEXTS_ACCEPTANCE.json`, `MSIX_ENABLED_UPDATE_ACCEPTANCE.json`,
 `NATIVE_WINDOWS_UI_ACCEPTANCE.json` and `WINDOWS_DELIVERY.json` in
 `.hermes/evidence/packaged-shell-current/`.
+
+#### Windows caller authority checkpoints through `1ba0d8d3`
+
+These snapshots explain the earlier experiments and acceptance limits; the active
+queue above is authoritative for remaining work.
+
+Finish Windows administrator Copy recovery: original caller's canonical
+registry/profile ownership, receipt, Undo and cleanup bridge. The ordinary-user
+durable metadata coordinator is implemented; 28 focused native core checks pass
+across 21 invocations, including process exits at publication/checkpoint/retirement,
+torn checkpoint replay, strict original-selection recovery, changed/corrupt
+evidence refusal and existing registry/claim regressions. Evidence:
+`cohort-coordinator-current/ACCEPTANCE.json`. The later Activity restart bridge
+and Copy/Undo mutation fence now pass five corrected-build native invocations,
+including the full 29-scenario Activity integration. Its first run found a
+later-member replay ordering defect; recovery now finishes the saved pending
+member before visiting remaining members. New middle/final-member interruption
+regressions and the existing uncertain-removal matrix pass without weakening
+the per-member refusal gate. Strict Windows platform/UI lint and the focused
+four-case Linux Activity cleanup regression pass. Owned guests, disks, desktops,
+profiles and consumed transports are removed. This is source/controller
+acceptance, not a new package or a complete administrator-Copy gate.
+The path-only caller locator is now replaced by an authenticated caller context:
+frozen native TokenUser and default TokenOwner remain distinct, and the registered
+Local AppData directory is pinned by native identity, location, owner/group/DACL
+and case policy. Six focused native checks pass: actual owned-directory/DACL
+substitution refusal, ordinary content changes, poisoned environment, process
+exit and existing transport identity/frame regressions. Receipt:
+`caller-context-current/ACCEPTANCE.json`. That snapshot was read-only and granted
+no recovery-registry or file-mutation authority. Alternate-administrator, package
+identity and actual in-place TokenOwner mutation are not proven by these cases.
+A separate ordinary-client/SYSTEM-companion experiment now exercises the real
+authenticated pipe with distinct kernel principals and a poisoned helper
+environment. The canonical private creator succeeds in caller-writable storage,
+and the helper can write through the already granted caller-owned handle after
+restoring its identity. In the protected SYSTEM/Administrators-only directory,
+creation under the original token fails with native Access denied (5), despite
+a preopened elevated parent handle. Whole-operation caller impersonation is
+therefore not the protected-creation bridge. Authenticated private-file reopen was still missing at that snapshot; its later
+primitive acceptance is recorded below. Full transaction integration remains required.
+The first fixture incorrectly assumed the parent owner equalled SYSTEM's default
+owner; it now verifies the actual restrictive native DACL and allowed owner.
+A subsequent native pass exposed a receipt-export failure. Private payload is
+now separate from reports, exporter diagnostics are retained, and the corrected
+case passes both native roles and exact report transfer. All owned guest disks,
+processes, desktops, profiles and consumed transports are removed. This remains
+mechanism evidence; no production Copy or alternate-administrator acceptance.
+Evidence: `caller-owner-probe-current/`. The preceding coordinator checkpoint
+passed all four hosted jobs in run42105264888; that does not cover this probe.
+Atomic original-caller private entry creation is now implemented. The context
+also freezes the native primary group. A native descriptor derived from the
+original token must match that admitted owner/group; only a temporary duplicate
+helper thread token enables backup/restore rights. All full native private
+owner/group/DACL/control postconditions remain enforced. Private descriptors
+request no auto-inheritance; the first run exposed an incorrect auto-inheritance
+request (derived 0x1400 versus kernel 0x1000), corrected at descriptor creation.
+Current exact-source acceptance is fourteen named passes across five native
+invocations: client/helper protected creation, frozen identity mismatch refusal,
+unchanged existing own/foreign entries, caller-readable output, no ordinary
+helper reopen, exact/nested thread-token restoration and thread isolation;
+ten ordinary Copy security cases, plus native link/audit cases under SYSTEM.
+Receipt: `caller-private-create-current/ACCEPTANCE.json`. Strict Windows
+platform/UI lint passes. All owned cases/disks/desktops/profiles/processes and
+consumed outputs are removed; stable packages remain unchanged.
+The additional SYSTEM destination-default failure is now resolved: the SDK
+reserved 60 ACL bytes for the same 52 bytes of rules stored by the kernel.
+Native evidence now validates and records only occupied ACL bytes, retaining
+all ordered ACEs, identities and control flags; serialized padding is refused.
+Native descriptors and permission application are unchanged. Current exact-source
+acceptance is sixteen named passes across six invocations, including native
+allocation/mask/cache controls, the original SYSTEM scheduled-task regression,
+later parent propagation, ordinary security, caller creation and link/audit
+checks. Receipt: `destination-security-current/ACCEPTANCE.json`. Strict Windows
+platform/UI lint passes; both guests and consumed outputs are removed. This
+closes the comparison defect, not the remaining original-caller registry,
+staging, destination-token, receipt, Undo or cleanup integration.
+Identity-bound authenticated private reopen now passes the ordinary-client/SYSTEM
+fixture. Read-only handles refuse writes; writable reopen succeeds. Missing,
+replaced, foreign/nonprivate or changed-DACL entries are refused without creating
+or repairing them. Caller/profile liveness and exact token restoration remain
+enforced. Six invocations retain sixteen named passes, including the existing
+native security regressions. Receipt: `caller-private-reopen-current/ACCEPTANCE.json`.
+This primitive does not admit serialized identities by themselves: canonical
+anchors, complete journals and transaction authority still require integration.
+Strict paired Windows platform/UI lint passes; owned guest/desktop/profile,
+volumes, consumed transports and superseded incremental sessions are removed.
+The coordinator's registry-parent security fixture still changes a group, not
+a literal DACL; the new profile-DACL test has its separate profile-only scope.
+Administrator Copy stays disabled. Original-caller registry initialization,
+transaction-wide private-file ownership, receipt/Undo/cleanup bridging and cross-administrator/
+package-context proof remain required before helper enablement. Current downloads remain Linuxbee/Windows8e. Missing member IDs
+never license deletion or a completed original-batch history claim.
+#### Earlier delivery and integration investigations
 
 Earlier investigation source `9f81685e` adds API names, HKCU paths and numeric Windows errors
 at transaction boundaries; all four exact-source hosted jobs passed in

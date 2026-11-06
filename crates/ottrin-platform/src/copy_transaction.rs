@@ -23,7 +23,7 @@ pub(super) use windows::{MAX_COPY_ENTRIES, copy_configured};
 pub use windows::{
     RetainedCopyAbortPlan, RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan,
     RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
-    WindowsRetainedCopyStatus,
+    WindowsCopyRegistry, WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub(super) use windows::{

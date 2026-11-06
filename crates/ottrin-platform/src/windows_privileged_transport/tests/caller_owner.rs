@@ -312,7 +312,7 @@ fn system_helper() {
         panic!("Wrong owned probe request")
     };
     assert_eq!(path, root.join("system-only"));
-    let context = channel.caller_copy_context().unwrap();
+    let context = Arc::new(channel.caller_copy_context().unwrap());
     let helper_token = crate::windows_fs::current_token().unwrap();
     let helper_user = crate::windows_fs::user_for_token(&helper_token).unwrap();
     let helper_owner = crate::windows_fs::owner_for_token(&helper_token).unwrap();
@@ -657,6 +657,8 @@ fn system_helper() {
         helper_user
     );
     assert_eq!(system_parent_policy(&parent), parent_owner);
+    crate::WindowsCopyRegistry::exercise_caller_authority(&context, &parent);
+    assert_eq!(token_state(), original_helper_state);
     context.validate().unwrap();
     channel.write_response(&PrivilegedResponse {
         status:PrivilegedStatus::Success, payload:None,
@@ -673,6 +675,9 @@ fn system_helper() {
             "nested_privileged_thread_restored":true,
             "foreign_owner_entry_refused_without_data_or_security_change":true,
             "derived_policy_refuses_owner_or_group_outside_admitted_identity":true,
+            "authenticated_registry_creation_reopen_and_coordinator":true,
+            "registry_refuses_ambient_helper_admission_or_altered_foreign_unanchored_state":true,
+            "registry_flush_handles_have_no_delete_or_write_dac":true,
             "identity_bound_private_reopen":true,
             "read_only_reopen_denies_writes":true,
             "foreign_nonprivate_changed_policy_reopen_refused":true,

@@ -291,6 +291,23 @@ impl CallerCopyContext {
         self.profile.validate().map_err(io::Error::other)?;
         self.caller.validate()
     }
+    /// Open the fixed Copy registry under an independently admitted parent.
+    /// The returned holder retains this authenticated context for every native
+    /// validation/reopen. This does not select the profile ancestry or admit
+    /// transaction journals; the engine must establish those before mutation.
+    pub fn copy_registry_under(
+        self: &Arc<Self>,
+        parent: std::fs::File,
+        initialize: bool,
+    ) -> io::Result<Option<crate::WindowsCopyRegistry>> {
+        self.validate()?;
+        crate::copy_transaction::WindowsCopyRegistry::for_caller(
+            parent,
+            Arc::clone(self),
+            initialize,
+        )
+        .map_err(io::Error::other)
+    }
     pub fn local_app_data(&self) -> io::Result<&Path> {
         self.validate()?;
         Ok(self.profile.path())

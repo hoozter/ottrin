@@ -1,0 +1,31 @@
+{
+  "status": "pass caller-held registry/coordinator authority under an independently admitted parent",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native-fixed/RESULT.json",
+  "transfer_and_binding": "VERIFICATION.json",
+  "native_invocations": 7,
+  "named_top_level_passes": 25,
+  "unique_named_cases": 24,
+  "coverage": [
+    "Actual ordinary-client/SYSTEM-helper authenticated channel, frozen original owner/group/profile and poisoned helper environment",
+    "Caller-owned central registry and marker creation, read-only discovery without initialization, held caller-context validation, exact fresh reopen and sibling cleanup coordinator authority",
+    "Case-sensitive and insensitive native parent inheritance; direct redundant same-policy write denial versus observed-policy success; required different policy still denied without mutation",
+    "Exact native registry flush access mask excludes DELETE and WRITE_DAC",
+    "Refusal without repair/adoption of altered-DACL, foreign and unanchored state; saved native private security, bytes and binding preserved",
+    "Nine ordinary registry/namespace regressions including process arbitration, case/native name rules, replacement refusal and configured Copy/discovery/source-free Undo",
+    "Eleven ordinary security regressions and SYSTEM link, default-DACL and audit-SACL cases; exact helper thread token/privileges restored"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "891fa2992ce1c4beed2f63533c43053729ed273f10fb48a8ddca2f390a7ef5c4"
+  },
+  "limits": [
+    "No canonical original-profile Ottrin/State ancestry provisioning or source-overlap integration in a caller dispatcher yet",
+    "Caller authority not yet propagated across destination claims, staging, journal, final permissions, receipts, saved Undo and cleanup plans",
+    "Required naming-policy changes on caller-owned transaction candidates need original-token authority; inherited registry policy is not full metadata support",
+    "No alternate-administrator UAC, in-place original TokenOwner mutation or packaged helper acceptance; administrator Copy remains disabled",
+    "No new deliverable package, whole interface or whole-roadmap acceptance"
+  ]
+}

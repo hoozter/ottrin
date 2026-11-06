@@ -1,0 +1,11 @@
+{
+  "status": "confirmed and resolved for already-inherited registry naming policy",
+  "initial_result": "native-initial/RESULT.json",
+  "initial_source": "native-initial/PRODUCT_SOURCE_PATCH.json",
+  "observation": "Held caller-owned central registry creation/reopen/flush-right assertions passed; sibling coordinator initialization failed with Access denied. Eleven ordinary security and nine ordinary registry regressions passed.",
+  "hypothesis_and_fix": "A same-value naming-policy setter rechecks effective subject permissions on the caller-owned directory. Observe and accept an already-correct native naming policy after ordinary-directory/empty checks; required changes still call the native setter and retain its failures/postcondition.",
+  "verification": "Both insensitive and sensitive cases pass: direct same-policy native write returns error5, observed inherited flag matches, ensure operation succeeds without changing security, a genuinely different requested flag still returns denial, and coordinator construction/reopen retains exact case policy.",
+  "official_context": "https://learn.microsoft.com/en-us/windows/wsl/case-sensitivity#modify-case-sensitivity",
+  "limits": "Required case-policy changes for caller-owned transaction candidates remain a distinct original-token authority integration step; an inherited registry policy does not close full metadata/stage/transaction support.",
+  "fixed_result": "native-fixed/RESULT.json"
+}

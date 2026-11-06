@@ -33,8 +33,7 @@ pub(super) fn validate_binding(
     name: &OsStr,
     expected: WindowsStableIdentity,
 ) -> Result<(), PlatformError> {
-    let before = directory_identity(parent)?;
-    let observed = unsafe {
+    validate_binding_with(parent, expected, || unsafe {
         windows_fs::open_relative(
             parent,
             name,
@@ -46,8 +45,18 @@ pub(super) fn validate_binding(
                 security: ptr::null(),
             },
         )
-    }
-    .map_err(io)?;
+    })
+}
+
+/// The authority supplies its single-component, no-follow presence opener.
+/// Native parent/leaf identity comparison remains one implementation.
+pub(super) fn validate_binding_with(
+    parent: &File,
+    expected: WindowsStableIdentity,
+    open: impl FnOnce() -> std::io::Result<File>,
+) -> Result<(), PlatformError> {
+    let before = directory_identity(parent)?;
+    let observed = open().map_err(io)?;
     if stable_identity_from_handle(&observed).map_err(io)? != expected
         || directory_identity(parent)? != before
     {

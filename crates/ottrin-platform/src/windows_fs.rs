@@ -125,6 +125,14 @@ pub(crate) fn set_empty_directory_case_policy(directory: &File, expected: bool) 
         ));
     }
     directory_children_limited(directory, 0)?;
+    // Newly created NTFS directories inherit their parent's naming policy.
+    // An unnecessary setter can recheck the effective subject's DACL rights
+    // even though the held handle already has write-attributes access. Observe
+    // an already-correct policy without a redundant write; actual changes still
+    // require the native setter and its exact postcondition.
+    if directory_case_sensitive(directory)? == expected {
+        return Ok(());
+    }
     let value = FILE_CASE_SENSITIVE_INFORMATION {
         Flags: if expected {
             windows_sys::Win32::System::SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR
@@ -535,7 +543,7 @@ pub(crate) unsafe fn create_private_for_caller(
 pub(crate) fn open_existing_for_caller(
     parent: &File,
     name: &OsStr,
-    directory: bool,
+    directory: Option<bool>,
     access: u32,
     sharing: u32,
 ) -> io::Result<File> {
@@ -544,7 +552,7 @@ pub(crate) fn open_existing_for_caller(
             parent,
             name,
             RelativeOptions {
-                directory: Some(directory),
+                directory,
                 create_new: false,
                 access,
                 sharing,

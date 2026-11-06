@@ -1,0 +1,32 @@
+{
+  "status": "complete owned teardown and consumed-output cleanup",
+  "observed_at": "2026-11-06T00:23:26.763834+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "shared_root_bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 31113172629,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48836676615
+  },
+  "removed_obsolete_incremental_sessions": 22,
+  "measured_incremental_free_delta_bytes": 2771263488,
+  "available_bytes": 25927315456,
+  "native_scopes": [
+    "native-initial/OWNER.json",
+    "native-fixed/OWNER.json"
+  ],
+  "host_verification": "Both owned domains, disk sets, private HOME/desktops/viewers/observers and fixture paths absent; protected bases remain off",
+  "consumed_outputs": "Nine exact targets in CLEANUP_REMOVALS.json removed through the guarded helper; initial source patch retained as exact JSON",
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-registry-current",
+      "bytes_before_final_receipts": 787866,
+      "purpose": "Compact native/source/build/failure/teardown receipts and reproducible actors; compiler JSONL and viewer text diagnostics support exact source/build provenance"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Shared compiler caches and newest paired Windows platform/UI native test artifacts for canonical caller profile/transaction integration; no extra target trees/configurations"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

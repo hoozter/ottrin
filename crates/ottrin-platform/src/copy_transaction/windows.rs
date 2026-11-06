@@ -29,6 +29,7 @@ pub(crate) use journal::{
     restore_resume_at as restore_windows_copy_resume_at, restore_undo as restore_windows_copy_undo,
     restore_undo_at as restore_windows_copy_undo_at,
 };
+pub use registry::AnchoredRoot as WindowsCopyRegistry;
 mod links;
 mod metadata;
 mod namespace;

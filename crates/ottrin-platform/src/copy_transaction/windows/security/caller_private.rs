@@ -35,7 +35,7 @@ pub(crate) fn open_caller_private_entry(
             0
         };
     let file = windows_fs::with_file_privileges(|| {
-        windows_fs::open_existing_for_caller(parent, name, directory, access, sharing)
+        windows_fs::open_existing_for_caller(parent, name, Some(directory), access, sharing)
     })?;
     if stable_identity_from_handle(&file).map_err(std::io::Error::other)? != expected {
         return Err(std::io::Error::new(
@@ -43,13 +43,7 @@ pub(crate) fn open_caller_private_entry(
             "private entry identity changed; data retained",
         ));
     }
-    let observed = PrivateSecurity::capture(&file, owner).map_err(std::io::Error::other)?;
-    if observed.0.group != group {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::PermissionDenied,
-            "private caller group changed; data retained",
-        ));
-    }
+    PrivateSecurity::capture_for_caller(&file, owner, group)?;
     Ok(file)
 }
 impl CallerCreationSecurity {

@@ -9,6 +9,7 @@ use std::{
     os::windows::ffi::OsStrExt,
     path::{Path, PathBuf},
     ptr,
+    sync::Arc,
 };
 use windows_sys::Win32::Storage::FileSystem::*;
 
@@ -44,7 +45,10 @@ pub(super) struct Binding {
     cases: (bool, bool),
 }
 
-pub(super) struct AnchoredRoot {
+/// Held registry admission. Private creation/reopen retains its authenticated
+/// caller authority; this alone does not admit a Copy transaction or cleanup.
+pub struct AnchoredRoot {
+    authority: Authority,
     root: File,
     anchor_name: OsString,
     expected_case: Option<bool>,
@@ -56,6 +60,122 @@ pub(super) struct AnchoredRoot {
     path: PathBuf,
     cases: (bool, bool),
     parent_security: [u8; 32],
+}
+
+#[derive(Clone)]
+enum Authority {
+    Process,
+    Caller(Arc<crate::windows_privileged_transport::CallerCopyContext>),
+}
+impl Authority {
+    fn validate(&self) -> Result<(), PlatformError> {
+        match self {
+            Self::Process => Ok(()),
+            Self::Caller(caller) => caller.validate().map_err(io),
+        }
+    }
+    fn owner(&self) -> Result<Vec<u8>, PlatformError> {
+        match self {
+            Self::Process => windows_fs::current_owner(),
+            Self::Caller(caller) => caller.default_file_owner_sid().map(Vec::from).map_err(io),
+        }
+    }
+    fn create(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        directory: bool,
+        sharing: u32,
+    ) -> std::io::Result<File> {
+        match self {
+            Self::Process => windows_fs::create_private(parent, name, directory, sharing),
+            Self::Caller(caller) => caller.create_private_entry(parent, name, directory, sharing),
+        }
+    }
+    fn child(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        directory: bool,
+        access: u32,
+        sharing: u32,
+    ) -> std::io::Result<File> {
+        match self {
+            Self::Process => child(parent, name, directory, access, sharing),
+            Self::Caller(caller) => {
+                caller.validate()?;
+                let file = windows_fs::with_file_privileges(|| {
+                    windows_fs::open_existing_for_caller(
+                        parent,
+                        name,
+                        Some(directory),
+                        access,
+                        sharing,
+                    )
+                })?;
+                security::PrivateSecurity::capture_for_caller(
+                    &file,
+                    caller.default_file_owner_sid()?,
+                    caller.default_file_group_sid()?,
+                )?;
+                caller.validate()?;
+                Ok(file)
+            }
+        }
+    }
+    fn probe(&self, parent: &File, name: &OsStr) -> std::io::Result<File> {
+        let open = || unsafe {
+            windows_fs::open_relative(
+                parent,
+                name,
+                windows_fs::RelativeOptions {
+                    directory: None,
+                    create_new: false,
+                    access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    security: ptr::null(),
+                },
+            )
+        };
+        match self {
+            Self::Process => open(),
+            Self::Caller(caller) => {
+                caller.validate()?;
+                let file = windows_fs::with_file_privileges(|| {
+                    windows_fs::open_existing_for_caller(
+                        parent,
+                        name,
+                        None,
+                        FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    )
+                })?;
+                caller.validate()?;
+                Ok(file)
+            }
+        }
+    }
+    fn binding(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        expected: WindowsStableIdentity,
+    ) -> Result<(), PlatformError> {
+        self.validate()?;
+        namespace::validate_binding_with(parent, expected, || self.probe(parent, name))?;
+        self.validate()
+    }
+    fn writable_parent(&self, path: &Path) -> Result<File, PlatformError> {
+        self.validate()?;
+        let open = || windows_fs::open_directory(path, FILE_GENERIC_READ | FILE_GENERIC_WRITE);
+        let file = match self {
+            Self::Process => open(),
+            Self::Caller(_) => windows_fs::with_file_privileges(open),
+        }
+        .map_err(io)?;
+        self.validate()?;
+        Ok(file)
+    }
 }
 
 pub(super) fn configured_path() -> Result<PathBuf, PlatformError> {
@@ -181,6 +301,24 @@ fn parent_directory(path: &Path, initialize: bool) -> Result<Option<File>, Platf
 }
 
 impl AnchoredRoot {
+    /// The engine must independently admit this held parent and reject source
+    /// overlap before initialization. No caller-supplied path, SID or saved ACL
+    /// selects authority. Missing discovery never provisions state.
+    pub(crate) fn for_caller(
+        parent: File,
+        caller: Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        initialize: bool,
+    ) -> Result<Option<Self>, PlatformError> {
+        Self::open_under(
+            parent,
+            OsStr::new("copies"),
+            OsStr::new(ANCHOR),
+            None,
+            initialize,
+            Authority::Caller(caller),
+        )
+    }
+
     /// Read-only admission never initializes directories, anchors or journals.
     /// Existing unanchored/partial/foreign state is retained and refused.
     pub(super) fn open_at(path: &Path, initialize: bool) -> Result<Option<Self>, PlatformError> {
@@ -206,7 +344,14 @@ impl AnchoredRoot {
         let Some(parent) = parent_directory(parent_path, initialize)? else {
             return Ok(None);
         };
-        Self::open_under(parent, name, OsStr::new(ANCHOR), None, initialize)
+        Self::open_under(
+            parent,
+            name,
+            OsStr::new(ANCHOR),
+            None,
+            initialize,
+            Authority::Process,
+        )
     }
 
     /// A destination-local namespace lets the filesystem arbitrate target names
@@ -220,6 +365,7 @@ impl AnchoredRoot {
             OsStr::new(CLAIMS_ANCHOR),
             Some(expected),
             initialize,
+            Authority::Process,
         )
     }
 
@@ -229,11 +375,7 @@ impl AnchoredRoot {
     pub(super) fn cohorts(&self, initialize: bool) -> Result<Option<Self>, PlatformError> {
         self.validate()?;
         let parent = if initialize {
-            windows_fs::open_directory(
-                &self.parent_location,
-                FILE_GENERIC_READ | FILE_GENERIC_WRITE,
-            )
-            .map_err(io)?
+            self.authority.writable_parent(&self.parent_location)?
         } else {
             self.parent.try_clone().map_err(io)?
         };
@@ -250,6 +392,7 @@ impl AnchoredRoot {
             OsStr::new(COHORTS_ANCHOR),
             Some(self.cases.0),
             initialize,
+            self.authority.clone(),
         )?;
         self.validate()?;
         Ok(result)
@@ -273,6 +416,7 @@ impl AnchoredRoot {
             OsStr::new(&marker),
             Some(expected),
             initialize,
+            Authority::Process,
         )
     }
 
@@ -282,7 +426,9 @@ impl AnchoredRoot {
         anchor_name: &OsStr,
         expected_case: Option<bool>,
         initialize: bool,
+        authority: Authority,
     ) -> Result<Option<Self>, PlatformError> {
+        authority.validate()?;
         if !stable_identity_from_handle(&parent)
             .map_err(io)?
             .is_directory_without_reparse()
@@ -295,8 +441,8 @@ impl AnchoredRoot {
             return Err(io("Copy root and anchor names must differ"));
         }
         let parent_location = windows_fs::location(&parent).map_err(io)?;
-        let creator = windows_fs::current_owner()?;
-        let marker = match child(
+        let creator = authority.owner()?;
+        let marker = match authority.child(
             &parent,
             anchor_name,
             false,
@@ -305,19 +451,7 @@ impl AnchoredRoot {
         ) {
             Ok(file) => file,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                match unsafe {
-                    windows_fs::open_relative(
-                        &parent,
-                        name,
-                        windows_fs::RelativeOptions {
-                            directory: None,
-                            create_new: false,
-                            access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-                            sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                            security: ptr::null(),
-                        },
-                    )
-                } {
+                match authority.probe(&parent, name) {
                     Ok(_) => {
                         return Err(io(
                             "Copy private root exists without its identity anchor; retained for review",
@@ -331,18 +465,19 @@ impl AnchoredRoot {
                 }
                 // Reserve the external anchor before creating the registry. A
                 // partial setup never authorizes adoption or automatic deletion.
-                let mut marker =
-                    windows_fs::create_private(&parent, anchor_name, false, FILE_SHARE_READ)
-                        .map_err(io)?;
+                let mut marker = authority
+                    .create(&parent, anchor_name, false, FILE_SHARE_READ)
+                    .map_err(io)?;
                 let result = (|| {
                     parent.sync_all().map_err(io)?;
-                    let root = windows_fs::create_private(
-                        &parent,
-                        name,
-                        true,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    )
-                    .map_err(io)?;
+                    let root = authority
+                        .create(
+                            &parent,
+                            name,
+                            true,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        )
+                        .map_err(io)?;
                     if let Some(expected) = expected_case {
                         windows_fs::set_empty_directory_case_policy(&root, expected).map_err(io)?;
                     }
@@ -363,14 +498,15 @@ impl AnchoredRoot {
                 })();
                 result.map_err(|error| PlatformError::CleanupPending {transaction:parent_location.display().to_string(),message:format!("Copy private root setup needs review: {error}; anchor and any directory retained")})?;
                 drop(marker);
-                child(
-                    &parent,
-                    anchor_name,
-                    false,
-                    FILE_GENERIC_READ,
-                    FILE_SHARE_READ,
-                )
-                .map_err(io)?
+                authority
+                    .child(
+                        &parent,
+                        anchor_name,
+                        false,
+                        FILE_GENERIC_READ,
+                        FILE_SHARE_READ,
+                    )
+                    .map_err(io)?
             }
             Err(error) => return Err(io(error)),
         };
@@ -413,15 +549,17 @@ impl AnchoredRoot {
         } else {
             FILE_GENERIC_READ
         };
-        let root = child(
-            &parent,
-            name,
-            true,
-            access,
-            FILE_SHARE_READ | FILE_SHARE_WRITE,
-        )
-        .map_err(io)?;
+        let root = authority
+            .child(
+                &parent,
+                name,
+                true,
+                access,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+            )
+            .map_err(io)?;
         let result = Self {
+            authority,
             parent_security: security::owner_group_dacl_digest(&parent)?,
             cases: (
                 windows_fs::directory_case_sensitive(&parent).map_err(io)?,
@@ -467,7 +605,7 @@ impl AnchoredRoot {
     pub(super) fn anchor_identity(&self) -> WindowsStableIdentity {
         self.record.marker
     }
-    pub(super) fn root(&self) -> &File {
+    pub fn root(&self) -> &File {
         &self.root
     }
     pub(super) fn path(&self) -> &Path {
@@ -475,16 +613,18 @@ impl AnchoredRoot {
     }
     /// Reopen only this already anchored root with directory-flush rights.
     /// Discovery remains read-only; this never initializes or repairs state.
-    pub(super) fn writable_root(&self) -> Result<File, PlatformError> {
+    pub fn writable_root(&self) -> Result<File, PlatformError> {
         self.validate()?;
-        let root = child(
-            &self.parent,
-            self.path.file_name().unwrap(),
-            true,
-            FILE_GENERIC_READ | FILE_GENERIC_WRITE,
-            FILE_SHARE_READ | FILE_SHARE_WRITE,
-        )
-        .map_err(io)?;
+        let root = self
+            .authority
+            .child(
+                &self.parent,
+                self.path.file_name().unwrap(),
+                true,
+                FILE_GENERIC_READ | FILE_GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+            )
+            .map_err(io)?;
         if stable_identity_from_handle(&root).map_err(io)? != self.record.root {
             return Err(io(
                 "Copy private root changed while acquiring directory-flush rights",
@@ -494,13 +634,14 @@ impl AnchoredRoot {
         self.validate()?;
         Ok(root)
     }
-    pub(super) fn validate(&self) -> Result<(), PlatformError> {
+    pub fn validate(&self) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         if !self.record.root.is_directory_without_reparse()
             || windows_fs::location(&self.parent).map_err(io)? != self.parent_location
             || stable_identity_from_handle(&self.parent).map_err(io)? != self.record.parent
             || stable_identity_from_handle(&self.root).map_err(io)? != self.record.root
             || stable_identity_from_handle(&self.marker).map_err(io)? != self.record.marker
-            || windows_fs::current_owner()? != self.record.creator
+            || self.authority.owner()? != self.record.creator
             || security::owner_group_dacl_digest(&self.parent)? != self.parent_security
             || windows_fs::directory_case_sensitive(&self.parent).map_err(io)? != self.cases.0
             || windows_fs::directory_case_sensitive(&self.root).map_err(io)? != self.cases.1
@@ -520,12 +661,291 @@ impl AnchoredRoot {
                 "Copy claim namespace case policy changed; root retained without repair",
             ));
         }
-        namespace::validate_binding(&self.parent, &self.anchor_name, self.record.marker)?;
-        namespace::validate_binding(
+        self.authority
+            .binding(&self.parent, &self.anchor_name, self.record.marker)?;
+        self.authority.binding(
             &self.parent,
             self.path.file_name().unwrap(),
             self.record.root,
         )
+    }
+}
+
+#[cfg(test)]
+impl AnchoredRoot {
+    pub(crate) fn exercise_caller_authority(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        protected_parent: &File,
+    ) {
+        use std::io::{Seek, SeekFrom, Write};
+        use std::os::windows::io::AsRawHandle;
+        use windows_sys::Wdk::Storage::FileSystem::{
+            FILE_ACCESS_INFORMATION, FileAccessInformation, NtQueryInformationFile,
+        };
+        use windows_sys::Win32::Security::{
+            Authorization::{SE_FILE_OBJECT, SetSecurityInfo},
+            DACL_SECURITY_INFORMATION, GetSecurityDescriptorDacl,
+            PROTECTED_DACL_SECURITY_INFORMATION,
+        };
+        use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
+        fn bytes(file: &File) -> Vec<u8> {
+            let mut reader = file.try_clone().unwrap();
+            reader.seek(SeekFrom::Start(0)).unwrap();
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).unwrap();
+            bytes
+        }
+        fn widen(file: &File) {
+            let policy =
+                windows_fs::LocalSecurity::from_sddl("D:P(A;;FA;;;OW)(A;;FR;;;WD)").unwrap();
+            let (mut present, mut defaulted, mut acl) = (0, 0, ptr::null_mut());
+            assert_ne!(
+                unsafe {
+                    GetSecurityDescriptorDacl(
+                        policy.as_raw(),
+                        &mut present,
+                        &mut acl,
+                        &mut defaulted,
+                    )
+                },
+                0
+            );
+            assert_eq!(
+                unsafe {
+                    SetSecurityInfo(
+                        file.as_raw_handle().cast(),
+                        SE_FILE_OBJECT,
+                        DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                        ptr::null_mut(),
+                        ptr::null_mut(),
+                        acl,
+                        ptr::null(),
+                    )
+                },
+                0
+            );
+        }
+        let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+        for sensitive in [false, true] {
+            let parent = windows_fs::create_private(
+                protected_parent,
+                OsStr::new(&format!("registry-authority-{sensitive} Ω")),
+                true,
+                sharing,
+            )
+            .unwrap();
+            windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
+            let control = caller
+                .create_private_entry(&parent, OsStr::new("naming-control"), true, sharing)
+                .unwrap();
+            assert_eq!(
+                windows_fs::directory_case_sensitive(&control).unwrap(),
+                sensitive
+            );
+            let before_policy = security::owner_group_dacl_digest(&control).unwrap();
+            let value = windows_sys::Wdk::Storage::FileSystem::FILE_CASE_SENSITIVE_INFORMATION {
+                Flags: if sensitive {
+                    windows_sys::Win32::System::SystemServices::FILE_CS_FLAG_CASE_SENSITIVE_DIR
+                } else {
+                    0
+                },
+            };
+            let mut status = IO_STATUS_BLOCK::default();
+            let raw_set = unsafe {
+                windows_sys::Wdk::Storage::FileSystem::NtSetInformationFile(
+                    control.as_raw_handle().cast(),
+                    &mut status,
+                    ptr::from_ref(&value).cast(),
+                    std::mem::size_of_val(&value) as u32,
+                    windows_sys::Wdk::Storage::FileSystem::FileCaseSensitiveInformation,
+                )
+            };
+            assert_eq!(
+                unsafe { windows_sys::Win32::Foundation::RtlNtStatusToDosError(raw_set) },
+                5,
+                "Native same-policy write must reproduce the caller-owned coordinator failure"
+            );
+            windows_fs::set_empty_directory_case_policy(&control, sensitive).unwrap();
+            assert!(
+                windows_fs::set_empty_directory_case_policy(&control, !sensitive).is_err(),
+                "A required policy change must still report native access denial"
+            );
+            assert_eq!(
+                windows_fs::directory_case_sensitive(&control).unwrap(),
+                sensitive
+            );
+            assert_eq!(
+                security::owner_group_dacl_digest(&control).unwrap(),
+                before_policy
+            );
+            let parent_id = stable_identity_from_handle(&parent).unwrap();
+            let names_before = windows_fs::directory_children_limited(&parent, 8).unwrap();
+            assert!(
+                caller
+                    .copy_registry_under(parent.try_clone().unwrap(), false)
+                    .unwrap()
+                    .is_none()
+            );
+            assert_eq!(
+                windows_fs::directory_children_limited(&parent, 8).unwrap(),
+                names_before
+            );
+            let root = caller
+                .copy_registry_under(parent.try_clone().unwrap(), true)
+                .unwrap()
+                .unwrap();
+            let original_binding = root.binding().unwrap();
+            let original_marker = bytes(&root.marker);
+            let owner = caller.default_file_owner_sid().unwrap();
+            let group = caller.default_file_group_sid().unwrap();
+            assert_eq!(root.record.creator, owner);
+            assert_ne!(root.record.creator, windows_fs::current_owner().unwrap());
+            security::PrivateSecurity::capture_for_caller(root.root(), owner, group).unwrap();
+            security::PrivateSecurity::capture_for_caller(&root.marker, owner, group).unwrap();
+            let writer = root.writable_root().unwrap();
+            writer.sync_all().unwrap();
+            let mut info = FILE_ACCESS_INFORMATION::default();
+            let mut status = IO_STATUS_BLOCK::default();
+            assert_eq!(
+                unsafe {
+                    NtQueryInformationFile(
+                        writer.as_raw_handle().cast(),
+                        &mut status,
+                        ptr::from_mut(&mut info).cast(),
+                        std::mem::size_of_val(&info) as u32,
+                        FileAccessInformation,
+                    )
+                },
+                0
+            );
+            assert_eq!(
+                info.AccessFlags & (DELETE | WRITE_DAC),
+                0,
+                "Registry flush handles must not acquire publication/delete rights"
+            );
+            assert_eq!(info.AccessFlags & FILE_GENERIC_WRITE, FILE_GENERIC_WRITE);
+            assert!(root.cohorts(false).unwrap().is_none());
+            let coordinator = root.cohorts(true).unwrap().unwrap();
+            assert_eq!(coordinator.record.creator, owner);
+            assert_eq!(coordinator.record.case_policy, Some(sensitive));
+            assert_eq!(
+                windows_fs::directory_case_sensitive(coordinator.root()).unwrap(),
+                sensitive
+            );
+            security::PrivateSecurity::capture_for_caller(coordinator.root(), owner, group)
+                .unwrap();
+            coordinator.writable_root().unwrap().sync_all().unwrap();
+            let coordinator_binding = coordinator.binding().unwrap();
+            drop(coordinator);
+            assert_eq!(
+                root.cohorts(false).unwrap().unwrap().binding().unwrap(),
+                coordinator_binding
+            );
+            assert!(
+                windows_fs::directory_children_limited(root.root(), 1)
+                    .unwrap()
+                    .is_empty()
+            );
+            assert_eq!(root.binding().unwrap(), original_binding);
+            drop((writer, root));
+            let reopened = caller
+                .copy_registry_under(parent.try_clone().unwrap(), false)
+                .unwrap()
+                .unwrap();
+            assert_eq!(reopened.binding().unwrap(), original_binding);
+            assert_eq!(bytes(&reopened.marker), original_marker);
+            assert!(
+                Self::open_at(reopened.path(), false).is_err(),
+                "A helper's ambient identity must not admit a caller registry"
+            );
+            assert_eq!(stable_identity_from_handle(&parent).unwrap(), parent_id);
+            let policy_handle = reopened
+                .authority
+                .child(
+                    &parent,
+                    OsStr::new("copies"),
+                    true,
+                    FILE_GENERIC_READ | WRITE_DAC,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                )
+                .unwrap();
+            widen(&policy_handle);
+            let altered = security::owner_group_dacl_digest(reopened.root()).unwrap();
+            assert!(reopened.validate().is_err());
+            assert!(reopened.writable_root().is_err());
+            drop(reopened);
+            for initialize in [false, true] {
+                assert!(
+                    caller
+                        .copy_registry_under(parent.try_clone().unwrap(), initialize)
+                        .is_err()
+                );
+                assert_eq!(
+                    security::owner_group_dacl_digest(&policy_handle).unwrap(),
+                    altered
+                );
+            }
+        }
+        // Refuse unanchored caller-owned data without leaving a marker.
+        let unanchored = windows_fs::create_private(
+            protected_parent,
+            OsStr::new("unanchored-registry"),
+            true,
+            sharing,
+        )
+        .unwrap();
+        let saved = caller
+            .create_private_entry(&unanchored, OsStr::new("copies"), true, sharing)
+            .unwrap();
+        let mut saved_file = caller
+            .create_private_entry(&saved, OsStr::new("user-data"), false, sharing)
+            .unwrap();
+        saved_file
+            .write_all(b"preserve unanchored caller data")
+            .unwrap();
+        saved_file.sync_all().unwrap();
+        for initialize in [false, true] {
+            assert!(
+                caller
+                    .copy_registry_under(unanchored.try_clone().unwrap(), initialize)
+                    .is_err()
+            );
+            assert_eq!(bytes(&saved_file), b"preserve unanchored caller data");
+            assert_eq!(
+                windows_fs::directory_children_limited(&unanchored, 8).unwrap(),
+                vec![OsString::from("copies")]
+            );
+        }
+        // Existing helper-owned anchors/roots cannot be adopted by the caller.
+        let foreign = windows_fs::create_private(
+            protected_parent,
+            OsStr::new("foreign-registry"),
+            true,
+            sharing,
+        )
+        .unwrap();
+        let foreign_root = Self::open_under(
+            foreign.try_clone().unwrap(),
+            OsStr::new("copies"),
+            OsStr::new(ANCHOR),
+            None,
+            true,
+            Authority::Process,
+        )
+        .unwrap()
+        .unwrap();
+        let foreign_binding = foreign_root.binding().unwrap();
+        let foreign_marker = bytes(&foreign_root.marker);
+        for initialize in [false, true] {
+            assert!(
+                caller
+                    .copy_registry_under(foreign.try_clone().unwrap(), initialize)
+                    .is_err()
+            );
+            assert_eq!(foreign_root.binding().unwrap(), foreign_binding);
+            assert_eq!(bytes(&foreign_root.marker), foreign_marker);
+        }
+        caller.validate().unwrap();
     }
 }
 

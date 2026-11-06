@@ -215,6 +215,20 @@ impl PrivateSecurity {
         }
         Ok(result)
     }
+    pub(super) fn capture_for_caller(
+        file: &File,
+        creator: &[u8],
+        group: &[u8],
+    ) -> std::io::Result<Self> {
+        let observed = Self::capture(file, creator).map_err(std::io::Error::other)?;
+        if observed.0.group != group {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "private caller group changed; data retained",
+            ));
+        }
+        Ok(observed)
+    }
     pub(super) fn validate(&self, file: &File, creator: &[u8]) -> Result<(), PlatformError> {
         if Self::capture(file, creator)? != *self {
             return Err(io("private Copy owner/group/DACL changed; data retained"));

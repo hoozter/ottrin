@@ -82,7 +82,7 @@ pub use copy_recovery::{
 pub use copy_transaction::{
     RetainedCopyAbortPlan, RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan,
     RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
-    WindowsRetainedCopyStatus,
+    WindowsCopyRegistry, WindowsRetainedCopyStatus,
 };
 #[cfg(target_os = "windows")]
 pub fn discover_retained_copy_transactions_at(

@@ -1,0 +1,7 @@
+{
+  "status": "same matched paired compiler configuration and stable artifact paths reused",
+  "old_input": "caller-private-reopen-current/NATIVE_TEST_INPUT.json",
+  "new_input": "NATIVE_TEST_INPUT.json",
+  "superseded_executables": "Cargo replaced both same-path test executables; no extra target tree, differently configured replacement, old dep-info or old fingerprint created by this task",
+  "preserved": "Current paired executables, exact fingerprints/dependencies and useful compiler caches retained for pending original-caller profile and transaction consumers"
+}

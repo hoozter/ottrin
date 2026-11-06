@@ -29,6 +29,38 @@ reopen, read-only write denial and unchanged refusal cases; it does not establis
 alternate-administrator UAC or packaged Copy acceptance. See
 `.hermes/evidence/caller-private-reopen-current/ACCEPTANCE.json`.
 
+## Held original-caller registry authority
+
+`CallerCopyContext::copy_registry_under` opens the fixed `copies` root and external
+anchor under an independently admitted native parent. The returned
+`WindowsCopyRegistry` is the existing anchored-root implementation with explicit
+process or authenticated-caller authority. The authority is held in memory, never
+serialized into a binding. Caller creation derives live native security from the
+original token; caller reopen checks its frozen owner/group and private DACL.
+Namespace identity validation uses the appropriate no-follow native opener through
+one shared validator. Read-only discovery does not create state.
+
+The registry holder retains caller/profile liveness checks for validation and
+writable reopen. Its sibling cleanup coordinator receives the same authority.
+Directory-flush handles retain the existing read/write mask without `DELETE` or
+`WRITE_DAC`. Naming-policy initialization first observes the live native flag after
+ordinary-directory and emptiness checks. An already-correct inherited value
+requires no write. A different value still requires the native setter, its access
+checks and exact postcondition. This does not grant the helper authority to change
+a caller-owned candidate's naming policy; such required metadata changes remain
+part of the original-token transaction integration. Anchor identity, parent location/security/case policy, root identity
+and complete private security still require exact validation. Existing foreign,
+unanchored or altered state is retained and refused, never repaired or adopted.
+
+This constructor requires the engine to admit its parent and reject source overlap
+before initialization. It does not provision the original profile's `Ottrin/State`
+ancestry, convert destination claims or carry authority through all saved
+journal/receipt/Undo/cleanup plans. Ordinary configured entry points retain their
+ordinary-process environment locator; helper entry points must not use it to
+select caller state. Administrator Copy stays disabled pending the complete bridge
+and native alternate-administrator/package acceptance. This section describes the
+source contract; exact native acceptance is recorded separately in the roadmap.
+
 ## Canonical native security evidence
 
 DACL evidence contains the native ACL header and all ordered access-control entry
