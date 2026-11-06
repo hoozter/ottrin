@@ -12,7 +12,8 @@ pub(in super::super) fn exercise_caller_journals(
 ) {
     let authority = Authority::Caller(Arc::clone(caller));
     let source_path = windows_fs::location(source).unwrap();
-    let source_pin = tree::PinnedTree::open(source, 16, &mut |_| Ok(())).unwrap();
+    let source_pin =
+        tree::PinnedTree::open(&Authority::Process, source, 16, &mut |_| Ok(())).unwrap();
     let source_evidence = source_pin.freeze_existing(|_| Ok(())).unwrap();
     let directory = source_pin.root().directory;
     let manager = caller
@@ -588,4 +589,215 @@ fn exercise_caller_resume(
             "caller resume source_directory={directory} case={case}: fresh admission, cancellation preservation, completion, readonly replay and public Undo passed"
         );
     }
+}
+
+/// Preserve caller-private existing data through retention, interrupted rename,
+/// final publication, public Undo and idempotent restoration.
+pub(in super::super) fn exercise_caller_overwrite(
+    caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    protected_parent: &File,
+    source: &File,
+    preferences: &File,
+    index: &File,
+    mut as_caller: impl FnMut(&mut dyn FnMut()),
+) {
+    let authority = Authority::Caller(Arc::clone(caller));
+    let source_pin = tree::PinnedTree::open(&authority, source, 16, &mut |_| Ok(())).unwrap();
+    let source_evidence = source_pin.freeze_existing(|_| Ok(())).unwrap();
+    let directory = source_pin.root().directory;
+    let source_path = windows_fs::location(source).unwrap();
+    let manager = caller.copy_registry(&[source_path], true).unwrap().unwrap();
+    let registry_binding = manager.binding().unwrap();
+    let observe = || {
+        [preferences, index].map(|file| {
+            (
+                read(file).unwrap(),
+                stable_identity_from_handle(file).unwrap(),
+                security::owner_group_dacl_digest(file).unwrap(),
+            )
+        })
+    };
+    let mut before = None;
+    as_caller(&mut || before = Some(observe()));
+    let before = before.unwrap();
+    struct ResetFault;
+    impl Drop for ResetFault {
+        fn drop(&mut self) {
+            FAULT.with(|fault| fault.set(None));
+        }
+    }
+    use crate::PlatformOps;
+    for case in 0..2 {
+        let parent = windows_fs::create_private(
+            protected_parent,
+            OsStr::new(&format!("caller-overwrite-{directory}-{case}")),
+            true,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+        let mut original = authority
+            .create(
+                &parent,
+                OsStr::new("copy"),
+                directory,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            )
+            .unwrap();
+        if directory {
+            let nested = authority
+                .create(
+                    &original,
+                    OsStr::new("Nested"),
+                    true,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                )
+                .unwrap();
+            let mut old = authority
+                .create(
+                    &nested,
+                    OsStr::new("old.txt"),
+                    false,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                )
+                .unwrap();
+            old.write_all(b"original nested payload").unwrap();
+            old.sync_all().unwrap();
+            drop(old);
+            drop(nested);
+            let mut old = authority
+                .create(
+                    &original,
+                    OsStr::new("root.txt"),
+                    false,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                )
+                .unwrap();
+            old.write_all(b"original root payload").unwrap();
+            old.sync_all().unwrap();
+        } else {
+            original.write_all(b"original file payload").unwrap();
+        }
+        original.sync_all().unwrap();
+        let baseline = tree::PinnedTree::open(&authority, &original, 16, &mut |_| Ok(()))
+            .unwrap()
+            .freeze_existing(|_| Ok(()))
+            .unwrap();
+        let original_id = baseline.entries[0].version.identity;
+        drop(original);
+        let destination = DestinationAdmission::overwrite(
+            &authority,
+            &parent,
+            OsStr::new("copy"),
+            16,
+            |_| Ok(()),
+        )
+        .unwrap();
+        let receipt = if case == 0 {
+            DurableStage::execute_with_receipt(
+                source,
+                &parent,
+                manager.root(),
+                &destination,
+                OsStr::new("unavailable-source-label"),
+                16,
+                |_| Ok(()),
+            )
+            .unwrap()
+        } else {
+            let _dependencies = destination
+                .guard_overwrite_dependencies(&parent, manager.root(), |_| Ok(()))
+                .unwrap();
+            let mut staged = DurableStage::create(
+                source,
+                &parent,
+                manager.root(),
+                &destination,
+                OsStr::new("unavailable-source-label"),
+                16,
+                |_| Ok(()),
+            )
+            .unwrap();
+            drop(staged.prepare_destination_security(|| Ok(())).unwrap());
+            let name = staged.stage.name.clone();
+            let id = staged.journal.header.transaction.clone();
+            drop(staged);
+            let snapshot = Snapshot::load(
+                &authority,
+                &parent,
+                manager.root(),
+                &name,
+                SnapshotAccess::Write,
+            )
+            .unwrap();
+            let mut journal = Journal::from_snapshot(&parent, manager.root(), snapshot).unwrap();
+            journal.prepare_original(16, |_| Ok(())).unwrap();
+            let sequence = journal.sequence + 1;
+            let reset = ResetFault;
+            FAULT.with(|fault| fault.set(Some((sequence, Step::OriginalRenamed, false))));
+            let error = journal
+                .move_original(None, OriginalMove::Retain, |_| Ok(()))
+                .unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("injected Copy journal flush boundary failure"),
+                "{error}"
+            );
+            drop(reset);
+            drop(journal);
+            let mut plan = RetainedCopyResumePlan::admit(
+                &authority,
+                &windows_fs::location(manager.root()).unwrap(),
+                &id,
+                |_| Ok(()),
+            )
+            .unwrap();
+            plan.resume(|_| Ok(())).unwrap();
+            assert!(plan.complete());
+            discovery::session_receipt(&authority, &parent, manager.root(), &name, |_| Ok(()))
+                .unwrap()
+        };
+        assert!(
+            authority
+                .identity_at(&parent, OsStr::new("copy"), receipt.identity.windows)
+                .unwrap()
+        );
+        assert_ne!(receipt.identity.windows, original_id);
+        let receipt = receipt.refresh_windows_copy_undo(|_| Ok(())).unwrap();
+        crate::DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
+        crate::DefaultPlatform
+            .undo_copy_with_receipt(&receipt, &mut |_| Ok(()))
+            .unwrap();
+        assert!(
+            authority
+                .identity_at(&parent, OsStr::new("copy"), original_id)
+                .unwrap()
+        );
+        let restored =
+            namespace::open_source_with(&authority, &parent, OsStr::new("copy"), None).unwrap();
+        let actual = tree::PinnedTree::open(&authority, &restored, 16, &mut |_| Ok(()))
+            .unwrap()
+            .freeze_existing(|_| Ok(()))
+            .unwrap();
+        let mut expected = baseline.clone();
+        expected.entries[0].version.changed = actual.entries[0].version.changed;
+        assert_eq!(
+            actual, expected,
+            "Original contents, IDs, membership, metadata and permissions must survive both renames"
+        );
+        manager.validate().unwrap();
+        println!(
+            "caller overwrite source_directory={directory} case={case}: private original retention, publication, receipt refresh, public Undo and exact restoration passed"
+        );
+    }
+    assert_eq!(manager.binding().unwrap(), registry_binding);
+    let mut after = None;
+    as_caller(&mut || after = Some(observe()));
+    assert_eq!(after.unwrap(), before);
+    source_pin
+        .validate_existing(&source_evidence, &mut |_| Ok(()))
+        .unwrap();
+    caller.validate().unwrap();
 }

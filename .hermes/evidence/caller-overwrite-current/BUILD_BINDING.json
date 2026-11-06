@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable and native runtime binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "source_files": 10,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 428277760,
+    "sha256": "94f1b1357f1b00f2261aedecf7bcdb6f0984db70516ab6366a0e54f6f9d6dbe2"
+  },
+  "native_result": "pass caller overwrite private original retention, interrupted rename recovery and exact public Undo restoration"
+}

@@ -1,4 +1,5 @@
 //! Pinned native source-tree preflight and private child staging. No publication.
+use super::authority::Authority;
 use super::{
     EntryVersion, PlatformError, WindowsStableIdentity, io, metadata, namespace, security,
     stable_identity_from_handle, version,
@@ -25,6 +26,7 @@ struct Entry {
 }
 
 pub(super) struct StagedTree {
+    source_authority: Authority,
     authority: super::authority::Authority,
     entries: Vec<Entry>,
 }
@@ -36,6 +38,7 @@ fn children(handle: &File, limit: usize) -> Result<Vec<OsString>, PlatformError>
 impl StagedTree {
     fn bindings(&self) -> Result<(), PlatformError> {
         self.authority.validate()?;
+        self.source_authority.validate()?;
         for entry in &self.entries {
             if version(&entry.source.handle)? != entry.source.before
                 || stable_identity_from_handle(&entry.candidate).map_err(io)?
@@ -45,7 +48,7 @@ impl StagedTree {
             }
             if let Some(parent) = entry.source.parent {
                 let parent = &self.entries[parent];
-                namespace::validate_binding(
+                self.source_authority.binding(
                     &parent.source.handle,
                     &entry.source.name,
                     entry.source.before.identity,
@@ -191,6 +194,7 @@ pub(super) trait StagingJournal {
 }
 
 pub(super) struct PinnedTree {
+    authority: Authority,
     sources: Vec<SourceEntry>,
 }
 
@@ -220,13 +224,14 @@ impl PinnedTree {
         &self,
         mut progress: impl FnMut() -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         for source in &self.sources {
             progress()?;
             if version(&source.handle)? != source.before {
                 return Err(io("existing tree version changed during observation"));
             }
             if let Some(parent) = source.parent {
-                namespace::validate_binding(
+                self.authority.binding(
                     &self.sources[parent].handle,
                     &source.name,
                     source.before.identity,
@@ -240,7 +245,7 @@ impl PinnedTree {
                 return Err(io("existing tree membership changed during observation"));
             }
         }
-        Ok(())
+        self.authority.validate()
     }
 
     /// Read through the existing no-follow source traversal and backup codec.
@@ -321,10 +326,12 @@ impl PinnedTree {
     /// Complete source discovery before creating destination entries. No links
     /// are traversed and no source DELETE/data-write access is requested.
     pub(super) fn open(
+        authority: &Authority,
         source: &File,
         max_entries: usize,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        authority.validate()?;
         if max_entries == 0 {
             return Err(io("tree entry budget is zero"));
         }
@@ -345,7 +352,8 @@ impl PinnedTree {
                 )?;
                 for name in &names {
                     progress(0)?;
-                    let handle = namespace::open_source(&sources[index].handle, name, None)?;
+                    let handle =
+                        namespace::open_source_with(authority, &sources[index].handle, name, None)?;
                     let before = version(&handle)?;
                     sources.push(SourceEntry {
                         handle,
@@ -359,7 +367,10 @@ impl PinnedTree {
             }
             index += 1;
         }
-        Ok(Self { sources })
+        Ok(Self {
+            authority: authority.clone(),
+            sources,
+        })
     }
     pub(super) fn root(&self) -> &EntryVersion {
         &self.sources[0].before
@@ -449,6 +460,7 @@ impl PinnedTree {
             });
         }
         let result = StagedTree {
+            source_authority: self.authority.clone(),
             entries,
             authority: authority.clone(),
         };
@@ -487,7 +499,7 @@ pub(super) fn stage_tree_unjournaled(
         }
     }
     // The no-journal adapter exists only for the earlier codec/component cases.
-    let tree = PinnedTree::open(source, max_entries, &mut progress)?;
+    let tree = PinnedTree::open(&Authority::Process, source, max_entries, &mut progress)?;
     tree.stage(
         candidate,
         candidate,
@@ -536,7 +548,7 @@ mod tests {
     }
 
     fn freeze(path: &Path) -> ExistingTreeEvidence {
-        PinnedTree::open(&read(path), 64, |_| Ok(()))
+        PinnedTree::open(&Authority::Process, &read(path), 64, |_| Ok(()))
             .unwrap()
             .freeze_existing(|_| Ok(()))
             .unwrap()
@@ -560,7 +572,7 @@ mod tests {
             "Directory named data and EA must be observed"
         );
         let bytes = super::super::evidence_digest(&before).unwrap();
-        let tree = PinnedTree::open(&read(&path), 64, |_| Ok(())).unwrap();
+        let tree = PinnedTree::open(&Authority::Process, &read(&path), 64, |_| Ok(())).unwrap();
         tree.validate_existing(&before, |_| Ok(())).unwrap();
         assert_eq!(
             super::super::evidence_digest(&tree.freeze_existing(|_| Ok(())).unwrap()).unwrap(),
@@ -612,7 +624,7 @@ mod tests {
                 "membership" => std::fs::write(path.join("added"), b"external addition").unwrap(),
                 _ => unreachable!(),
             }
-            let tree = PinnedTree::open(&read(&path), 64, |_| Ok(())).unwrap();
+            let tree = PinnedTree::open(&Authority::Process, &read(&path), 64, |_| Ok(())).unwrap();
             if before.entries.len() == tree.sources.len() {
                 // Prove the streams, security, alias and identity evidence is
                 // checked even when cached timestamps match the new metadata.
@@ -641,8 +653,8 @@ mod tests {
         let path = root.path().join("original");
         populate(&path);
         let before = freeze(&path);
-        assert!(PinnedTree::open(&read(&path), 2, |_| Ok(())).is_err());
-        let tree = PinnedTree::open(&read(&path), 64, |_| Ok(())).unwrap();
+        assert!(PinnedTree::open(&Authority::Process, &read(&path), 2, |_| Ok(())).is_err());
+        let tree = PinnedTree::open(&Authority::Process, &read(&path), 64, |_| Ok(())).unwrap();
         for stop in [0, 7, 16] {
             let mut calls = 0;
             let result = tree.freeze_existing(|_| {

@@ -231,8 +231,6 @@ fn copy_admitted_source(
                 journal::DestinationAdmission::creation(&Authority::Process, &parent, &target)?
             }
         };
-        let _dependencies =
-            admission.guard_overwrite_dependencies(&parent, central, &mut guarded_progress)?;
         let result = journal::DurableStage::execute_with_receipt(
             &source.file,
             &parent,

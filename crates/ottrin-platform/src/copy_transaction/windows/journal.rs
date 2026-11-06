@@ -25,7 +25,7 @@ use windows_sys::Win32::Storage::FileSystem::{
 mod caller;
 mod claims;
 #[cfg(test)]
-pub(super) use caller::exercise_caller_journals;
+pub(super) use caller::{exercise_caller_journals, exercise_caller_overwrite};
 #[cfg(test)]
 pub(super) use claims::exercise_caller_claims;
 mod cleanup;
@@ -129,15 +129,15 @@ impl DestinationAdmission {
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         let mut result = Self::at_parent(authority, parent, target)?;
-        let root = namespace::open_source(parent, target, None)?;
-        let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
+        let root = namespace::open_source_with(authority, parent, target, None)?;
+        let tree = tree::PinnedTree::open(authority, &root, max_entries, &mut progress)?;
         let evidence = tree.freeze_existing(&mut progress)?;
         let canonical = windows_fs::location(&root).map_err(io)?;
         result.target = canonical
             .file_name()
             .ok_or_else(|| io("Overwrite target has no native leaf"))?
             .to_os_string();
-        namespace::validate_binding(parent, &result.target, tree.root().identity)?;
+        authority.binding(parent, &result.target, tree.root().identity)?;
         result.original_objects = evidence
             .entries
             .iter()
@@ -166,14 +166,14 @@ impl DestinationAdmission {
         if self.original_objects.is_empty() {
             return Ok(Vec::new());
         }
-        let creator = windows_fs::current_owner()?;
+        let creator = self.authority.owner()?;
         let security = security::PrivateSecurity::capture(central, &creator)?;
         let stamp = super::version(central)?;
         let names =
             windows_fs::directory_children_limited(central, discovery::MAX_REGISTRY_ENTRIES)
                 .map_err(io)?;
         let mut leases = Vec::new();
-        let mut volumes = windows_fs::Volumes::new(central)?;
+
         for name in &names {
             progress(0)?;
             if discovery::registry_id(name).is_none() {
@@ -184,8 +184,7 @@ impl DestinationAdmission {
                 }
                 continue;
             }
-            let peer =
-                discovery::RegisteredJournal::dependency(&Authority::Process, central, name)?;
+            let peer = discovery::RegisteredJournal::dependency(&self.authority, central, name)?;
             let header = peer.state.header.as_ref().unwrap();
             if !peer.state.dependency_claims_complete() {
                 return Err(io("Overwrite needs completed Copy dependency evidence"));
@@ -193,7 +192,12 @@ impl DestinationAdmission {
             let peer_parent = if header.parent == self.parent {
                 parent.try_clone().map_err(io)?
             } else {
-                volumes.resolve(header.parent, FILE_GENERIC_READ, &mut progress)?
+                self.authority.resolve_parent(
+                    central,
+                    header.parent,
+                    FILE_GENERIC_READ,
+                    &mut progress,
+                )?
             };
             leases.extend(peer.paired_leases(peer_parent, central)?);
             if cleanup_dependencies::references(&peer.state)
@@ -239,11 +243,12 @@ impl DestinationAdmission {
     fn validate(&self, parent: &File) -> Result<(), PlatformError> {
         self.validate_parent(parent)?;
         if let Some((expected, _)) = &self.original {
-            let root = namespace::open_source(parent, &self.target, None)?;
+            let root = namespace::open_source_with(&self.authority, parent, &self.target, None)?;
             if super::version(&root)? != *expected {
                 return Err(io("Overwrite destination changed since admission"));
             }
-            namespace::validate_binding(parent, &self.target, expected.identity)
+            self.authority
+                .binding(parent, &self.target, expected.identity)
         } else {
             match self.authority.probe(parent, &self.target) {
                 Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
@@ -1758,8 +1763,8 @@ impl Journal {
             return Err(io("Creation admission cannot become an overwrite"));
         }
         let target = OsString::from_wide(&self.header.target);
-        let root = namespace::open_source(&self.parent_dir, &target, None)?;
-        let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
+        let root = namespace::open_source_with(&self.authority, &self.parent_dir, &target, None)?;
+        let tree = tree::PinnedTree::open(&self.authority, &root, max_entries, &mut progress)?;
         self.authority
             .binding(&self.parent_dir, &target, tree.root().identity)?;
         let evidence = tree.freeze_existing(&mut progress)?;
@@ -1960,8 +1965,13 @@ impl Journal {
         };
         let name = resolve(intent, completed.is_some())?;
         self.state.validate_creation_location(kind, &name)?;
-        let read = namespace::open_source(&self.parent_dir, &name, None)?;
-        let tree = tree::PinnedTree::open(&read, evidence.entries.len(), &mut progress)?;
+        let read = namespace::open_source_with(&self.authority, &self.parent_dir, &name, None)?;
+        let tree = tree::PinnedTree::open(
+            &self.authority,
+            &read,
+            evidence.entries.len(),
+            &mut progress,
+        )?;
         validate(&tree, &name, intent, &mut progress)?;
         if let Some(admitted) = admitted
             && name == to
@@ -2047,9 +2057,14 @@ impl Journal {
                 ));
             }
         };
-        let root = windows_fs::PerObjectFile::open(&self.parent_dir, &name).map_err(io)?;
+        let root = self.authority.open_candidate(&self.parent_dir, &name)?;
         self.state.validate_creation_location(kind, &name)?;
-        let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        let tree = tree::PinnedTree::open(
+            &self.authority,
+            &root,
+            evidence.entries.len(),
+            &mut progress,
+        )?;
         if name == observed_name && tree.root() != &observed_version {
             return Err(io("Original metadata changed at writer handoff"));
         }
@@ -2070,17 +2085,24 @@ impl Journal {
         progress(0)?;
         root.sync_all().map_err(io)?;
         if name != to {
-            crate::move_transaction::rename_windows_handle_no_replace(
-                &root,
-                &self.parent_dir,
-                &to,
-            )?;
+            self.authority.file_operation(|| {
+                crate::move_transaction::rename_windows_handle_no_replace(
+                    &root,
+                    &self.parent_dir,
+                    &to,
+                )
+            })?;
         }
         boundary(self.sequence, Step::OriginalRenamed)?;
         root.sync_all().map_err(io)?;
         self.parent_dir.sync_all().map_err(io)?;
         boundary(self.sequence, Step::OriginalFlushed)?;
-        let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        let tree = tree::PinnedTree::open(
+            &self.authority,
+            &root,
+            evidence.entries.len(),
+            &mut progress,
+        )?;
         self.state.validate_creation_epoch(kind, tree.root())?;
         let mut expected = evidence.clone();
         let mut version = base.clone();
@@ -2092,7 +2114,12 @@ impl Journal {
             .binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
         drop(tree);
         self.finish_creation(kind, &root)?;
-        let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
+        let tree = tree::PinnedTree::open(
+            &self.authority,
+            &root,
+            evidence.entries.len(),
+            &mut progress,
+        )?;
         self.state.validate_creation_epoch(kind, tree.root())?;
         let mut expected = evidence;
         let mut version = base;
@@ -2444,7 +2471,7 @@ impl<'a> DurableStage<'a> {
         let authority = &destination.authority;
         destination.validate(parent)?;
         windows_fs::valid_component(source_label).map_err(io)?;
-        let source = tree::PinnedTree::open(source, max_entries, &mut progress)?;
+        let source = tree::PinnedTree::open(authority, source, max_entries, &mut progress)?;
         source.reject_destination_parent(parent)?;
         source.reject_destination_parent(central)?;
         destination.validate(parent)?;
@@ -2541,6 +2568,8 @@ impl<'a> DurableStage<'a> {
         } else {
             None
         };
+        let _dependencies =
+            destination.guard_overwrite_dependencies(parent, central, &mut progress)?;
         let mut staged = Self::create(
             source,
             parent,
@@ -2870,7 +2899,8 @@ impl PermissionStage {
                 .validate(&root, &snapshot.state.header.as_ref().unwrap().creator)?;
         }
 
-        let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
+        let original =
+            HeldOriginal::open(&snapshot.authority, parent, &snapshot.state, &mut progress)?;
         let mut journal = Journal::from_snapshot(parent, central, snapshot)
             .map_err(|error| publication_context("admitting journal writer", error))?;
         journal
@@ -3501,12 +3531,14 @@ struct RetainedEntry {
 /// handles alive and revalidate before any later transaction phase; publication
 /// and guarded mutation require their own state/rights/namespace protocol.
 struct HeldOriginal {
+    authority: Authority,
     tree: tree::PinnedTree,
     evidence: tree::ExistingTreeEvidence,
     name: OsString,
 }
 impl HeldOriginal {
     fn open(
+        authority: &Authority,
         parent: &File,
         state: &State,
         progress: &mut impl FnMut(u64) -> Result<(), PlatformError>,
@@ -3538,8 +3570,8 @@ impl HeldOriginal {
             )
         };
         let name = match (
-            Authority::Process.identity_at(parent, &from, base.identity)?,
-            Authority::Process.identity_at(parent, &to, base.identity)?,
+            authority.identity_at(parent, &from, base.identity)?,
+            authority.identity_at(parent, &to, base.identity)?,
         ) {
             (true, false) if completed.is_none() => from,
             (false, true) if intent => to.clone(),
@@ -3555,8 +3587,13 @@ impl HeldOriginal {
             RenameKind::RetainOriginal
         };
         state.validate_creation_location(kind, &name)?;
-        let root = namespace::open_source(parent, &name, None)?;
-        let tree = tree::PinnedTree::open(&root, plan.evidence.entries.len(), &mut *progress)?;
+        let root = namespace::open_source_with(authority, parent, &name, None)?;
+        let tree = tree::PinnedTree::open(
+            authority,
+            &root,
+            plan.evidence.entries.len(),
+            &mut *progress,
+        )?;
         let mut evidence = plan.evidence.clone();
         evidence.entries[0].version = completed.unwrap_or(base).clone();
         if intent && completed.is_none() && name == to {
@@ -3565,6 +3602,7 @@ impl HeldOriginal {
             evidence.entries[0].version.changed = tree.root().changed;
         }
         let held = Self {
+            authority: authority.clone(),
             tree,
             evidence,
             name,
@@ -3579,7 +3617,7 @@ impl HeldOriginal {
     ) -> Result<(), PlatformError> {
         self.tree
             .validate_existing(&self.evidence, &mut *progress)?;
-        namespace::validate_binding(
+        self.authority.binding(
             parent,
             &self.name,
             self.evidence.entries[0].version.identity,
@@ -3624,7 +3662,8 @@ impl<'a> RetainedStage<'a> {
             None,
             &mut progress,
         )?;
-        let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
+        let original =
+            HeldOriginal::open(&snapshot.authority, parent, &snapshot.state, &mut progress)?;
         let result = Self {
             parent,
             central,
@@ -3928,7 +3967,8 @@ fn read_undo_snapshot(
     if snapshot.state.undone.is_some() && snapshot.state.original.is_some() {
         // The replacement was already durably withdrawn. Restoring the original
         // must not depend on its private copy remaining unchanged afterward.
-        let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
+        let original =
+            HeldOriginal::open(&snapshot.authority, parent, &snapshot.state, &mut progress)?;
         snapshot.revalidate(parent, central)?;
         drop(original);
         Ok(snapshot)
@@ -4004,7 +4044,7 @@ fn undo_bound_copy(
             progress,
         );
     }
-    let original = HeldOriginal::open(parent, &snapshot.state, &mut progress)?;
+    let original = HeldOriginal::open(&snapshot.authority, parent, &snapshot.state, &mut progress)?;
     let root_name = snapshot.root_name(parent)?;
     let mut root = authority.open_candidate(parent, &root_name)?;
     if let Some(expected) = binding.and_then(|binding| binding.pending_copy.as_ref())
@@ -6597,6 +6637,7 @@ mod tests {
                     1
                 );
                 let current = tree::PinnedTree::open(
+                    &Authority::Process,
                     &source(&root.path().join("destination/copy")),
                     100,
                     |_| Ok(()),

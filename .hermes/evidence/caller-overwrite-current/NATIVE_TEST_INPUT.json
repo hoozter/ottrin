@@ -1,0 +1,47 @@
+{
+  "source": {
+    "reference_commit": "567c89df5a446147fb2808756507c2582ebaa6df",
+    "files": {
+      "crates/ottrin-platform/src/copy_transaction/windows/dispatch.rs": "5734d0da2492e608d2e5d7bf69638a27b099df7709f4e71717340dd7b0597e74",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "8b99139b153a9db2a2f632937a5a6d95d53be5357e5d89fda9900cf7ba4853d9",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/caller.rs": "b3ad8777b71b5bcbcc9f034ee5ea811e3008b3441784041cabae380859a87a29",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/cleanup.rs": "1f7a8484ba307af949007af1648e5b76abe6c89a9450754f892bf56fead2ea92",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/discovery.rs": "9195ba9026455555eff05b3b2f46bdb576f4c38173c6ccba8c126bf1ba01e360",
+      "crates/ottrin-platform/src/copy_transaction/windows/journal/rename_creation.rs": "12e5950f854ae5147027d7ace275f03b12b81440d27ab541ed69fbafecf5b1ff",
+      "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "7b36fb2bb8b01a78dc31bad9a6443fd8290f57fc9899570f10976d623f37379e",
+      "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "8d5d324122e8593bd6b890c106f250e74eb096632ee1ef0df65bb3bf8ffacdad",
+      "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "a4677864971c5d991cf6996684ea71fd4650441691c167d1ec8240366065f728",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "300f6bf016096e4e0ff15a07dbf5473f3d1dadcfe1cba7af0092f474b4b4c726"
+    },
+    "scope": "Caller-private original overwrite admission, mandatory shared dependency guard, retention/publication/restoration, interrupted original rename recovery and exact public Undo. Shared pinned trees retain explicit read authority. Not all prefixes, readonly originals, links, external dispatcher/restart/cleanup or UAC acceptance."
+  },
+  "artifacts": [
+    {
+      "crate": "ottrin_ui",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-d30c94064a40f3a8.exe",
+      "sha256": "5a2002d85f14842906f240980741c0d3fa60b7d7881a27f9c5684a0f4261e07c",
+      "bytes": 772497714,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    },
+    {
+      "crate": "ottrin_platform",
+      "executable": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-68234f2fddd53855.exe",
+      "sha256": "87fabbab48982e5d6ee681e4491ce14f388911e5e387582be24176a007b12a54",
+      "bytes": 569659086,
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      }
+    }
+  ],
+  "compiler_jsonl_sha256": "4b8508a761246266f2d40c09afaf14d4a79ee7fc6a07cfec7e29ba81cd86b429"
+}

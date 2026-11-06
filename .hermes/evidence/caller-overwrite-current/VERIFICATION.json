@@ -1,0 +1,27 @@
+{
+  "status": "pass caller overwrite private original retention, interrupted rename recovery and exact public Undo restoration",
+  "archive_sha256": "1d8869058004c67cebbf343e65b7f0417702df1f9c46cfb8fa8c8ee7647d474f",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 29,
+  "top_level_passes": 106,
+  "compiler_jsonl_sha256": "4b8508a761246266f2d40c09afaf14d4a79ee7fc6a07cfec7e29ba81cd86b429",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "console_observer_profile_absent": true
+  },
+  "limits": [
+    "Complete caller mutation-prefix coverage, readonly original-root retention and readonly/link publication recovery remain separate native gates",
+    "Live-context creation/overwrite recovery and public Undo components only; full dispatcher, all prefix/readonly/link cases and external restarted/authenticated discovery/resume/Undo/cleanup entry points remain incomplete",
+    "Complete original-retention/restoration failure matrix, authenticated discovery/cleanup and restart-context recovery, real alternate-admin UAC, caller links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

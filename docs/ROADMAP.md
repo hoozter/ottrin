@@ -59,7 +59,7 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current native component acceptance: 104 top-level passes across 27 invocations,
+   Current native component acceptance: 106 top-level passes across 29 invocations,
    using ordinary-user and SYSTEM roles. Registry/private staging share explicit
    authority; real tree/payload staging and required naming policy pass. Final
    permission plans now retain caller authority, derive the whole graph from one
@@ -118,13 +118,24 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    pending. Wrong process is refused; cancelled resume preserves journal bytes;
    completed replay appends no records and public Undo succeeds afterward. Ordinary
    source-free/readonly completed replay and publication/permission outcome retries
-   also pass. Current receipt: `caller-resume-current/ACCEPTANCE.json`; prior receipt,
-   publication, retained-tree, paired-journal, claim and final-permission receipts
-   retain their original scopes. These are component controls,
+   also pass. Caller-aware overwrite now admits and validates private original trees,
+   retains their read authority through original planning/rename/restoration and
+   preserves that authority in dependency leases and held-original proofs. The
+   shared executor owns the dependency guard for all caller/ordinary entry paths.
+   Actual file and four-entry directory sources overwrite caller-private originals
+   through direct execution and recovery after an unacknowledged original rename.
+   Receipt refresh and repeated public Undo restore original IDs, streams, membership,
+   owner/group/DACL digests and all observed metadata except legitimate rename change
+   time. Source and pinned preferences/index evidence remain unchanged. Ordinary
+   overwrite source-free replay and drift/occupant refusals pass too. Current receipt:
+   `caller-overwrite-current/ACCEPTANCE.json`; prior resume, receipt, publication,
+   retained-tree, paired-journal, claim and permission receipts retain their scopes.
+   These are component controls,
    not completed caller Copy, whole retained recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
    registry admission through the entire operation; complete caller creation mutation-prefix,
-   readonly/link publication recovery, original retention/overwrite and authenticated
+   readonly/link publication recovery, the complete original-retention/restoration
+   failure matrix (including readonly original roots) and authenticated
    restored discovery/resume/Undo/cleanup entry points. Those entry points still select
    Process authority until their caller-aware integration is connected.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and

@@ -1049,8 +1049,9 @@ impl<'a> HeldCleanup<'a> {
                 &mut progress,
             )?)
         } else if state.original.is_some() {
-            let original = HeldOriginal::open(parent, state, &mut progress)?
-                .ok_or_else(|| io("Completed overwrite has no retained original proof"))?;
+            let original =
+                HeldOriginal::open(&snapshot.authority, parent, state, &mut progress)?
+                    .ok_or_else(|| io("Completed overwrite has no retained original proof"))?;
             if original.name != header.original_name() {
                 return Err(io("Copy cleanup original is not at its retained name"));
             }

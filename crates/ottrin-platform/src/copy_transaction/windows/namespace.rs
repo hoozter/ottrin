@@ -338,7 +338,7 @@ pub(super) fn exercise_caller_staging(
         created: false,
         complete: false,
     };
-    let pinned = tree::PinnedTree::open(&source, 16, &mut |_| Ok(())).unwrap();
+    let pinned = tree::PinnedTree::open(&Authority::Process, &source, 16, &mut |_| Ok(())).unwrap();
     events
         .intent(0, None, &stage.candidate_name, pinned.root())
         .unwrap();

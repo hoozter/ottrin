@@ -255,7 +255,7 @@ impl RetainedCopyUndoPlan {
         let location = windows_fs::location(&parent).map_err(io)?;
         let observed_name = if snapshot.state.undone.is_some() && snapshot.state.original.is_some()
         {
-            HeldOriginal::open(&parent, &snapshot.state, &mut progress)?
+            HeldOriginal::open(&snapshot.authority, &parent, &snapshot.state, &mut progress)?
                 .unwrap()
                 .name
         } else {
@@ -695,8 +695,13 @@ pub fn discover_at_with_progress(
                 return Err(io("Copy mirror changed during discovery"));
             }
             if snapshot.state.undone.is_some() && snapshot.state.original.is_some() {
-                let original = HeldOriginal::open(&parent, &snapshot.state, &mut progress)?
-                    .ok_or_else(|| io("withdrawn overwrite has no original evidence"))?;
+                let original = HeldOriginal::open(
+                    &snapshot.authority,
+                    &parent,
+                    &snapshot.state,
+                    &mut progress,
+                )?
+                .ok_or_else(|| io("withdrawn overwrite has no original evidence"))?;
                 status.owned_location = Some(location.join(&original.name));
                 snapshot.revalidate(&parent, &central)?;
                 return Ok(WindowsCopyRecoveryEvidence::VerifiedOriginal);

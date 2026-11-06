@@ -1,0 +1,26 @@
+{
+  "status": "pass caller overwrite private original retention, interrupted rename recovery and exact public Undo restoration",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 106,
+  "native_invocations": 29,
+  "coverage": [
+    "Pinned existing/source trees retain read authority; original destination admission, dependency leases, planning, retention, restore and namespace checks use the authenticated caller; overwrite dependency admission is mandatory in the shared executor",
+    "Actual file and four-entry directory sources replace caller-private originals through direct execution and interrupted original-rename recovery; receipt refresh and repeated public Undo restore original IDs, payloads, children, security and metadata except legitimate rename change time; prior caller recovery/receipt controls remain",
+    "Ordinary source-free publication/permission replay and receipt/public Undo still pass with shared retained verifier",
+    "Prior caller paired-journal, Begin recovery, claim, profile, token, metadata, tree/security and codec regressions pass"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "01b9e63db8d2de2603832ef8b468f26512c43075834adebd15234757d10f2684"
+  },
+  "limits": [
+    "Complete caller mutation-prefix coverage, readonly original-root retention and readonly/link publication recovery remain separate native gates",
+    "Live-context creation/overwrite recovery and public Undo components only; full dispatcher, all prefix/readonly/link cases and external restarted/authenticated discovery/resume/Undo/cleanup entry points remain incomplete",
+    "Complete original-retention/restoration failure matrix, authenticated discovery/cleanup and restart-context recovery, real alternate-admin UAC, caller links, TokenOwner mutation and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

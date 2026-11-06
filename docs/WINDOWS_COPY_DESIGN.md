@@ -380,8 +380,34 @@ The checkpoint has 104 passing tests across 27 native invocations and strict pai
 Windows platform/UI lint. Evidence:
 `.hermes/evidence/caller-resume-current/ACCEPTANCE.json`.
 
+Overwrite now retains caller authority through original destination admission,
+namespace checks, dependency observation, original evidence preparation, both native
+renames and held-original verification. The shared pinned-tree reader requires explicit
+read authority and keeps it through descendant opening and binding/content/security
+validation. Staged trees retain source and destination authorities for their respective
+bindings. Ordinary callers explicitly select Process; original/source data is never
+assigned the staged copy's permissions. Original root capabilities use the same genuine
+native per-object reopen path; scoped helper access covers retention/restoration renames.
+Registered dependency records retain their caller authority and native-ID parent resolution.
+The dependency guard moved from the outer dispatcher into the shared execute-with-receipt
+engine, retaining its leases across the whole operation, so direct callers cannot omit it.
+
+Before preservation tests intentionally leave unfinished peers, both actual source
+contexts replace caller-private originals (a file and four-entry directory) in two ways:
+unified execution and interruption immediately after the original retention rename.
+Fresh forward admission finishes the latter, then receipt refresh and public Undo restore
+the exact original. Repeated Undo is idempotent. Baseline comparisons verify original IDs,
+streams, links, compression, membership, case policy, owner/group/DACL digests and metadata;
+only root change time is updated for the legitimate renames. No original permissions are
+rewritten. Source and pinned preferences/index bytes, identities and permissions remain
+unchanged. Ordinary source-free overwrite replay and drift/occupant refusals also pass.
+The checkpoint has 106 passing tests across 29 native invocations and strict paired
+Windows platform/UI lint. Evidence:
+`.hermes/evidence/caller-overwrite-current/ACCEPTANCE.json`.
+
 This does not complete the full caller mutation-prefix matrix, readonly/link
-publication recovery, original retention/overwrite or authenticated externally
+publication recovery, the complete original-retention/restoration failure matrix
+(including readonly original roots) or authenticated externally
 restored discovery/resume/Undo/cleanup
 entry points. Live caller receipts/public Undo do not establish process-restart or
 complete helper-dispatcher/UAC acceptance.

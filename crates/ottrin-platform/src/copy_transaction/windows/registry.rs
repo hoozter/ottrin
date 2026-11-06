@@ -1149,6 +1149,23 @@ impl AnchoredRoot {
 
 #[cfg(test)]
 impl AnchoredRoot {
+    pub(crate) fn exercise_caller_overwrite(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &File,
+        preferences: &File,
+        index: &File,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_overwrite(
+            caller,
+            parent,
+            source,
+            preferences,
+            index,
+            as_caller,
+        );
+    }
     pub(crate) fn exercise_caller_journals(
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         parent: &File,

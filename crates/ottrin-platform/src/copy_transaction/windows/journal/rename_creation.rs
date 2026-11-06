@@ -19,7 +19,7 @@ pub(super) fn pending_undo_epochs(
         None
     };
     let original = if state.original_restore_intent && state.original_restored.is_none() {
-        let held = HeldOriginal::open(parent, state, &mut |_| Ok(()))?;
+        let held = HeldOriginal::open(&snapshot.authority, parent, state, &mut |_| Ok(()))?;
         held.filter(|held| held.name == OsString::from_wide(&state.header.as_ref().unwrap().target))
             .map(|held| held.tree.root().clone())
     } else {

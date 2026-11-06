@@ -824,6 +824,25 @@ fn system_helper() {
     assert_eq!(token_state(), original_helper_state);
     let source_directory =
         crate::windows_fs::open_directory(&source_tree, FILE_GENERIC_READ).unwrap();
+    // Finish both overwrite contexts before journal preservation cases leave
+    // intentionally unfinished peers in the canonical registry.
+    for source in [&source_file, &source_directory] {
+        crate::WindowsCopyRegistry::exercise_caller_overwrite(
+            &context,
+            &parent,
+            source,
+            &preferences,
+            &index,
+            |operation| {
+                context
+                    .with_caller_token(|| {
+                        operation();
+                        Ok(())
+                    })
+                    .unwrap();
+            },
+        );
+    }
     for source in [&source_file, &source_directory] {
         crate::WindowsCopyRegistry::exercise_caller_journals(
             &context,
