@@ -99,10 +99,13 @@ fn main() {
     if let IoMode::Pipe {
         channel: Some(channel),
         ..
-    } = &mode
-        && let Some(response) = channel.execute_copy_command(&req.command)
+    } = &mut mode
+        && let Some(result) = channel.serve_copy_command(&req.command)
     {
-        write_response(&mut mode, response);
+        if let Err(error) = result {
+            eprintln!("Administrator Copy stream failed: {error}");
+            std::process::exit(1);
+        }
         return;
     }
 

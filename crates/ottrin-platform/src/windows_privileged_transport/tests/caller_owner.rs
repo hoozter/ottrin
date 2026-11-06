@@ -3,6 +3,7 @@
 use super::*;
 mod copy_commands;
 mod recovery_commands;
+mod stream_commands;
 use serde_json::{Value, json};
 use std::io::Seek;
 use windows_sys::Win32::Security::{

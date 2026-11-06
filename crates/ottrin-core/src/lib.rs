@@ -1306,7 +1306,7 @@ pub struct PrivilegedContext {
 }
 
 /// Exact wire contract required by both the caller and elevated helper.
-pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 4;
+pub const PRIVILEGED_HELPER_PROTOCOL_VERSION: u32 = 5;
 
 /// Request payload sent from unprivileged app process to elevated helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

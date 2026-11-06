@@ -5,8 +5,32 @@ use ottrin_core::{ConflictAction, FileCommand, PrivilegedCopyHistoryState, Privi
 const READY: &str = "owned caller Copy command route ready";
 const DONE: &str = "owned caller Copy command route complete";
 const STOP: &str = "owned caller Copy stop callback";
+const STREAM: &str = "owned caller Copy streamed command";
 
-fn request(command: PrivilegedCommand, reason: &str) -> PrivilegedRequest {
+pub(super) fn streamed(
+    pipe: &mut LocalPipeStream,
+    command: PrivilegedCommand,
+) -> (PrivilegedResponse, Vec<u64>) {
+    let mut values = Vec::new();
+    let response = crate::windows_privileged_transport::copy_stream::exchange(
+        pipe,
+        &request(command, STREAM),
+        &mut |bytes| {
+            values.push(bytes);
+            Ok(())
+        },
+    )
+    .unwrap();
+    assert_eq!(
+        response.status,
+        PrivilegedStatus::Success,
+        "{:?}",
+        response.message
+    );
+    (response, values)
+}
+
+pub(super) fn request(command: PrivilegedCommand, reason: &str) -> PrivilegedRequest {
     PrivilegedRequest {
         protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
         command,
@@ -41,7 +65,7 @@ fn copy(
     };
     receipt
 }
-fn history(pipe: &mut LocalPipeStream) -> Vec<ottrin_core::PrivilegedCopyHistoryEntry> {
+pub(super) fn history(pipe: &mut LocalPipeStream) -> Vec<ottrin_core::PrivilegedCopyHistoryEntry> {
     let response = exchange(pipe, PrivilegedCommand::DiscoverCopyHistory);
     assert_eq!(
         response.status,
@@ -117,6 +141,45 @@ pub(super) fn client(pipe: &mut LocalPipeStream, root: &Path, source: &Path) {
     println!(
         "caller helper seven command kinds stop before work with unchanged history and no completed Copy references"
     );
+    let (response, progress) = streamed(
+        pipe,
+        PrivilegedCommand::File(FileCommand::Copy {
+            sources: vec![wire_file.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Rename,
+        }),
+    );
+    let Some(PrivilegedPayload::Copy(reference)) = response.payload else {
+        panic!("Stream omitted Copy receipt")
+    };
+    assert_eq!(reference.completed_sources, 1);
+    assert_eq!(reference.transactions.len(), 1);
+    assert!(progress.iter().any(|bytes| *bytes > 0));
+    let (response, _) = streamed(pipe, PrivilegedCommand::DiscoverCopyHistory);
+    let Some(PrivilegedPayload::CopyHistory(entries)) = response.payload else {
+        panic!("Stream omitted history")
+    };
+    assert!(entries.iter().any(
+        |entry| entry.reference.transactions == reference.transactions
+            && entry.recovery == PrivilegedCopyHistoryState::UndoAvailable
+    ));
+    streamed(
+        pipe,
+        PrivilegedCommand::UndoCopy {
+            transactions: reference.transactions.clone(),
+        },
+    );
+    streamed(
+        pipe,
+        PrivilegedCommand::CleanupCopy {
+            transactions: reference.transactions,
+        },
+    );
+    println!(
+        "caller helper streamed Copy/history/Undo/cleanup: actual byte progress, original-caller publication and actionable receipts passed"
+    );
+    super::stream_commands::source_stop(pipe, &wire_file, &destination, None);
+    super::stream_commands::source_stop(pipe, &wire_file, &destination, Some(&tree));
     for source in [wire_file.as_path(), tree.as_path()] {
         let first = copy(
             pipe,
@@ -428,6 +491,48 @@ pub(super) fn serve(
             ));
             assert!(channel.execute_copy_command(&request.command).is_none());
             break;
+        }
+        if matches!(
+            request.context.reason.as_deref(),
+            Some(STREAM) | Some(super::stream_commands::REASON)
+        ) {
+            channel
+                .serve_copy_command(&request.command)
+                .unwrap()
+                .unwrap();
+            assert_eq!(token_state(), original_token);
+            if let PrivilegedCommand::File(FileCommand::Copy {
+                sources,
+                destination,
+                ..
+            }) = &request.command
+            {
+                let caller = Arc::new(channel.caller_copy_context().unwrap());
+                let published = if request.context.reason.as_deref()
+                    == Some(super::stream_commands::REASON)
+                {
+                    assert!((1..=2).contains(&sources.len()));
+                    let (stopped, prefix) = sources.split_last().unwrap();
+                    assert_eq!(
+                        std::fs::symlink_metadata(destination.join(stopped.file_name().unwrap()))
+                            .unwrap_err()
+                            .kind(),
+                        std::io::ErrorKind::NotFound
+                    );
+                    prefix
+                } else {
+                    assert_eq!(sources.len(), 1);
+                    sources.as_slice()
+                };
+                for source in published {
+                    crate::WindowsCopyRegistry::assert_caller_wire_publication(
+                        Arc::clone(&caller),
+                        &destination.join(source.file_name().unwrap()),
+                    );
+                }
+            }
+            count += 1;
+            continue;
         }
         let response = if request.context.reason.as_deref() == Some(STOP) {
             let mut callbacks = 0;

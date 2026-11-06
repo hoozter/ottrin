@@ -1273,6 +1273,16 @@ pub trait PlatformOps: Send + Sync {
         &self,
         request: &PrivilegedRequest,
     ) -> Result<PrivilegedResponse, PlatformError>;
+    /// Windows Copy streams progress and accepts Stop during pending native IO.
+    /// Other backends only perform this initial cancellation check.
+    fn execute_privileged_with_progress(
+        &self,
+        request: &PrivilegedRequest,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<PrivilegedResponse, PlatformError> {
+        progress(0)?;
+        self.execute_privileged(request)
+    }
     fn privileged_availability(&self) -> PrivilegedAvailability;
 }
 
@@ -2106,7 +2116,7 @@ impl PlatformOps for DefaultPlatform {
         }
         #[cfg(target_os = "windows")]
         {
-            execute_privileged_windows(request)
+            execute_privileged_windows(request, &mut |_| Ok(()))
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
@@ -2119,6 +2129,18 @@ impl PlatformOps for DefaultPlatform {
                 payload: None,
             })
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    fn execute_privileged_with_progress(
+        &self,
+        request: &PrivilegedRequest,
+        progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+    ) -> Result<PrivilegedResponse, PlatformError> {
+        request
+            .validate_protocol()
+            .map_err(|error| PlatformError::Io(error.into()))?;
+        execute_privileged_windows(request, progress)
     }
 
     fn privileged_availability(&self) -> PrivilegedAvailability {
@@ -2736,11 +2758,13 @@ fn execute_privileged_linux(
 #[cfg(target_os = "windows")]
 fn execute_privileged_windows(
     request: &PrivilegedRequest,
+    progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<PrivilegedResponse, PlatformError> {
     windows_privileged_transport::execute(
         &resolve_helper_name("ottrin-priv-helper.exe"),
         request.command.requires_copy_recovery(),
         request,
+        progress,
     )
 }
 
@@ -4329,6 +4353,27 @@ pub fn read_file_properties(path: &Path) -> Result<FileProperties, PlatformError
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn privileged_copy_progress_stops_before_helper_preflight() {
+        use super::*;
+        let request = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+            command: ottrin_core::PrivilegedCommand::DiscoverCopyHistory,
+            context: ottrin_core::PrivilegedContext {
+                reason: None,
+                cwd: None,
+            },
+        };
+        let mut calls = 0;
+        let result = DefaultPlatform.execute_privileged_with_progress(&request, &mut |_| {
+            calls += 1;
+            Err(PlatformError::Io("Owned preflight Stop".into()))
+        });
+        assert_eq!(calls, 1);
+        assert!(
+            matches!(result, Err(PlatformError::Io(message)) if message == "Owned preflight Stop")
+        );
+    }
     use super::*;
 
     #[cfg(unix)]

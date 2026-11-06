@@ -30,6 +30,8 @@ use windows_sys::Win32::UI::Shell::{
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::SW_HIDE;
 
+mod copy_stream;
+
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
 const PREFIX: &str = r"\\.\pipe\ottrin.priv.";
 
@@ -61,7 +63,7 @@ fn write_json(stream: &mut LocalPipeStream, value: &impl Serialize) -> io::Resul
     stream.write_all(&bytes)
 }
 
-fn read_json<T: DeserializeOwned>(stream: &mut LocalPipeStream) -> io::Result<T> {
+fn read_json<T: DeserializeOwned>(stream: &mut impl Read) -> io::Result<T> {
     let mut header = [0; 4];
     stream.read_exact(&mut header)?;
     let mut frame = stream.take(u64::from(u32::from_be_bytes(header)));
@@ -573,20 +575,42 @@ impl HelperChannel {
         if !command.requires_copy_recovery() {
             return None;
         }
-        Some(match self.caller_copy_context() {
-            Ok(caller) => crate::privileged_copy::execute(Arc::new(caller), command, progress),
-            Err(error) => PrivilegedResponse {
-                status: PrivilegedStatus::Failed,
-                message: Some(error.to_string()),
-                payload: None,
-            },
-        })
+        Some(execute_copy_for_caller(&self.caller, command, progress))
     }
     pub fn caller_copy_context(&self) -> io::Result<CallerCopyContext> {
         CallerCopyContext::capture(Arc::clone(&self.caller))
     }
+    /// Serve one Copy operation's progress and terminal response on this same
+    /// authenticated connection. A Stop byte never supplies caller authority.
+    pub fn serve_copy_command(
+        &mut self,
+        command: &ottrin_core::PrivilegedCommand,
+    ) -> Option<io::Result<()>> {
+        if !command.requires_copy_recovery() {
+            return None;
+        }
+        let caller = Arc::clone(&self.caller);
+        Some(copy_stream::serve(&mut self.stream, |progress| {
+            execute_copy_for_caller(&caller, command, progress)
+        }))
+    }
     pub fn write_response(&mut self, response: &PrivilegedResponse) -> io::Result<()> {
         write_json(&mut self.stream, response)
+    }
+}
+
+fn execute_copy_for_caller(
+    caller: &Arc<CallerProcess>,
+    command: &ottrin_core::PrivilegedCommand,
+    progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
+) -> PrivilegedResponse {
+    match CallerCopyContext::capture(Arc::clone(caller)) {
+        Ok(caller) => crate::privileged_copy::execute(Arc::new(caller), command, progress),
+        Err(error) => PrivilegedResponse {
+            status: PrivilegedStatus::Failed,
+            message: Some(error.to_string()),
+            payload: None,
+        },
     }
 }
 
@@ -653,11 +677,42 @@ fn launch(helper: &Path, nonce: &str) -> io::Result<OwnedHandle> {
     Ok(unsafe { OwnedHandle::from_raw_handle(info.hProcess) })
 }
 
+struct CopyInvocation {
+    stream: Option<LocalPipeStream>,
+    process: Option<OwnedHandle>,
+}
+
+impl CopyInvocation {
+    fn finish(&mut self) -> io::Result<()> {
+        // EOF reaches the helper's independent cancellation reader before we
+        // wait, including when the application callback is unwinding.
+        drop(self.stream.take());
+        if let Some(process) = self.process.take() {
+            // SAFETY: ShellExecute transferred this retained synchronize handle;
+            // it stays live through the wait, preventing PID reuse.
+            if unsafe { WaitForSingleObject(process.as_raw_handle(), u32::MAX) } != WAIT_OBJECT_0 {
+                return Err(io::Error::last_os_error());
+            }
+        }
+        Ok(())
+    }
+}
+
+impl Drop for CopyInvocation {
+    fn drop(&mut self) {
+        if let Err(error) = self.finish() {
+            tracing::error!(%error, "Could not observe administrator Copy helper exit");
+        }
+    }
+}
+
 pub(crate) fn execute(
     helper: &str,
     copy_recovery: bool,
     request: &PrivilegedRequest,
+    progress: &mut dyn FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<PrivilegedResponse, PlatformError> {
+    progress(0)?;
     let helper = helper_protocol::check(helper, copy_recovery)
         .map_err(PlatformError::PrivilegedHelperUnavailable)?;
     let mut random = [0; 16];
@@ -714,9 +769,27 @@ pub(crate) fn execute(
             )));
         }
     };
-    write_json(&mut stream, request).map_err(io_error)?;
     // File operations can legitimately take a long time. A disconnected/crashed
     // helper closes the pipe immediately; elapsed operation time is not a failure.
+    if request.command.requires_copy_recovery() {
+        let mut invocation = CopyInvocation {
+            stream: Some(stream),
+            process: Some(process),
+        };
+        let response =
+            copy_stream::exchange(invocation.stream.as_mut().unwrap(), request, progress);
+        return match (response, invocation.finish()) {
+            (outcome, Ok(())) => outcome,
+            (Ok(mut response), Err(error)) => {
+                copy_stream::response_error(&mut response, error);
+                Ok(response)
+            }
+            (Err(operation), Err(exit)) => Err(PlatformError::Io(format!(
+                "{operation}; helper exit: {exit}"
+            ))),
+        };
+    }
+    write_json(&mut stream, request).map_err(io_error)?;
     stream.set_io_timeout(Duration::MAX);
     read_json(&mut stream).map_err(|error| PlatformError::Io(format!("Administrator helper response failed: {error}. The operation may have changed files; review its destination and recovery history before retrying.")))
 }
@@ -1197,7 +1270,7 @@ mod tests {
                 cwd: None,
             },
         };
-        let response = execute(&helper, false, &request).unwrap();
+        let response = execute(&helper, false, &request, &mut |_| Ok(())).unwrap();
         match std::env::var("OTTRIN_QA_UAC_EXPECT").unwrap().as_str() {
             "cancel" => {
                 assert_eq!(response.status, PrivilegedStatus::Denied);

@@ -85,11 +85,46 @@ native assertions and independent teardown are checked in
 `.hermes/evidence/caller-recovery-routing-current/ACCEPTANCE.json`.
 The duplicate wrapper log's UTF8-to-ANSI artifact is exactly reconciled against the
 independently exported native log; `WRAPPER_ENCODING.json` retains that limitation
-and the original used actor. The fixture's corrected explicit UTF8 read has not
-been rerun in a guest. No assertions or result fields are omitted. This setup is
+and the original used actor. That historical receipt retains its encoding limitation; the newer protocol5
+run below independently verifies exact UTF8 wrapper/native equality. No assertions
+or result fields are omitted. This setup is
 not public-dispatcher mutation-prefix or new-process/reconnection acceptance.
 
 ## Operation progress and Stop
+
+Protocol5 adds typed progress and terminal frames for Windows Copy operations,
+plus one Stop control byte on the same authenticated duplex connection. The
+client checks cancellation again after elevation/connection and before sending
+request bytes. A control reader can stop the helper's operation-owned synchronous
+IO thread even while filesystem admission is blocked. All control/response readers
+and the native IO watcher are joined before completion. A lost terminal response
+closes the pipe and waits for the launched helper to exit before returning an
+uncertain-operation error. Completed-prefix receipts survive operation or stream
+cleanup errors; a completed operation wins a late Stop race.
+
+This implementation passes all 26 native invocations and 150 authenticated framed
+requests in `caller-stream-current/ACCEPTANCE.json`: nine pipe/lifecycle cases,
+actual streamed caller Copy/history/Undo/cleanup, and real source-oplock Stop with
+zero completed members or an already completed directory prefix. Both Stop cases
+report native error995 before the blocking lease is released; completed-prefix
+receipts remain actionable through streamed history, Undo and cleanup. Exact
+source/executable/export bindings, UTF8 wrapper/native equality and independent
+VM/disks/private desktop/profile teardown pass. Linux also passes 66 scoped tests
+and nine actual unprivileged helper protocol/action probes. These cases do not establish Windows frontend, actual UAC,
+the entire caller failure-prefix matrix or packaged acceptance. Protocol4 helpers
+are rejected; future application packages require a matching helper. Current
+stable packages retain their earlier accepted source/protocol scopes.
+The first run was deliberately interrupted after source review found a
+cancel-before-next-read race during callback unwinding. Its registered teardown
+removed all owned resources; no partial runtime scope is accepted. The reader now
+checks a stop flag around bounded reads while preserving partial JSON frames.
+Invocation teardown closes the connection and observes helper exit on unwinding.
+Panic, fragmented-frame and no-pending-read cases are in the fresh native lane;
+exact pre-correction source and interruption evidence remain with its receipts.
+The exact current executable passes all nine native transport/lifecycle tests in
+`STREAM_PREFLIGHT_ACCEPTANCE.json`, under the guest-agent SYSTEM token, with owned
+VM/disks removed. Earlier failed fixture observations remain retained separately.
+This is a separate transport preflight; the full ordinary-caller run also passes.
 
 The command adapter forwards a single fallible progress callback through Copy,
 history admission, Undo, cleanup, Resume, end-attempt and name release. One freshly
@@ -107,7 +142,7 @@ still passes; exact UTF8 wrapper/native receipt equality, source/build binding a
 independent teardown pass in `.hermes/evidence/caller-progress-current/ACCEPTANCE.json`.
 These pre-work stops do not establish mid-operation or blocked-helper cancellation.
 
-Progress/cancellation frames over the authenticated pipe and Windows frontend
+Native acceptance of progress/cancellation frames and Windows frontend
 integration remain required. Stop must reach the running helper even when its
 filesystem thread is blocked, preserve its original caller binding, and await a
 terminal result before releasing Activity ownership. A requested Stop is not

@@ -53,12 +53,12 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `1153775f` has
+Published source `705cf309` has
+[run42285010531](https://github.com/hoozter/ottrin/actions/runs/42285010531), with
+all four jobs passed. Its preceding `1153775f` passes all four jobs in
 [run42275563764](https://github.com/hoozter/ottrin/actions/runs/42275563764).
-At the progress-callback checkpoint, Linux verification and both search-performance
-jobs pass; Windows verification is still running. The exact observed job state is
-in `caller-progress-current/HOSTED_PREVIOUS_RUN.json`. Wait for that run to finish
-before another push, so `cancel-in-progress` does not interrupt it.
+Wait for any active run to finish before another push, so `cancel-in-progress`
+does not interrupt it. Exact observed CI status is retained with delivery receipts.
 Its preceding `9b6ca438` passes all four hosted jobs in
 [run42257541740](https://github.com/hoozter/ottrin/actions/runs/42257541740).
 Its preceding `4861b17a` also passes all four jobs in
@@ -102,7 +102,7 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
    corrections and acceptance: `.hermes/evidence/caller-routing-current/`.
    Stable application packages are unchanged; administrator Copy stays disabled.
 
-   The current source change introduces protocol4 explicit Resume, end-attempt and
+   The protocol4 checkpoint introduced explicit Resume, end-attempt and
    name-release requests, with specific recovery/ended/cleanup-pending history.
    Sixty-five scoped Linux core/platform/UI/helper tests and strict Windows/Linux
    lint pass, together with nine actual Linux helper protocol/action probes.
@@ -139,10 +139,37 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
      including seven pre-work callback cancellations, actual engine/byte callbacks,
      three history-error policy tests and the full preceding recovery lane. Exact
      UTF8 wrapper/native receipt equality, source/build binding and independent
-     teardown pass in `caller-progress-current/ACCEPTANCE.json`. Transport frames
-     and blocked-helper Stop remain open; callback-only cancellation does not
-     establish them. Only Windows-gated source changed; Linux acceptance retains
+     teardown pass in `caller-progress-current/ACCEPTANCE.json`. At that checkpoint,
+     transport frames and blocked-helper Stop remained open; callback-only
+     cancellation did not establish them. Only Windows-gated source changed; Linux acceptance retains
      its previous scope. Stable application packages are unchanged.
+     Protocol5 now implements typed progress/terminal frames, same-connection Stop,
+     blocked synchronous IO cancellation, post-elevation pre-send cancellation and
+     helper-exit observation after a lost result. All 26 native invocations and
+     150 authenticated framed requests pass in `caller-stream-current/ACCEPTANCE.json`.
+     Real source-oplock Stop interrupts IO with error995 before lease release,
+     with zero completed members and with an earlier completed directory; that
+     prefix remains actionable through streamed history, Undo and cleanup. Nine
+     transport/lifecycle cases cover disconnect, invalid control, late Stop,
+     pre-send cancellation, panic teardown, partial frames and no pending read.
+     Linux's 66 scoped tests and nine actual helper probes, strict Windows/Linux
+     lint, exact source/executable/export bindings and independent VM/disks/private
+     desktop/profile teardown pass. Frontend, actual launched UAC helper/process
+     and package acceptance remain open. Stable packages are unchanged.
+     The first native run was stopped to correct a reader cancellation/unwind race;
+     registered teardown completed and no partial pass is claimed. The revised
+     lane includes nine stream cases, including panic and partial-frame timeout
+     recovery, with exact correction/interruption evidence retained.
+     Subsequent native checks exposed two test-fixture races: the oplock wait
+     expired while an earlier directory was still copying, and disconnect teardown
+     released blocked IO before cancellation could be observed. Both fixtures now
+     keep their blockers held until the measured outcome. Original failures and
+     source continuity are retained; neither counts as a passing runtime result.
+     The corrected nine-test native preflight now passes on the exact current
+     executable, including disconnect cancellation before the blocking peer is
+     released. SYSTEM-token scope and independent VM/volume teardown are bound in
+     `caller-stream-current/STREAM_PREFLIGHT_ACCEPTANCE.json`. This preflight does
+     is separate from the now-passing ordinary-caller/full recovery run.
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and the original-retention/restoration failure matrix,
      including readonly original roots.
