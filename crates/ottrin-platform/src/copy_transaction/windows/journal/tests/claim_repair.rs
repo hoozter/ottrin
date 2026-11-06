@@ -51,8 +51,14 @@ fn prepared(root: &Path, orphan: bool) -> Fixture {
         .join("destination")
         .join(header.claim.test_relative_path());
     let (binding, prefix) = if orphan {
-        let lease =
-            claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32)).unwrap();
+        let lease = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"d".repeat(32),
+        )
+        .unwrap();
         let binding = lease.binding().clone();
         drop(lease);
         (binding, std::fs::read(&ledger).unwrap())
@@ -111,7 +117,13 @@ fn perform(root: &Path, orphan: bool) -> Result<(), PlatformError> {
     if orphan {
         let parent = owner(&root.join("destination"));
         let central = owner(&central_path);
-        let lease = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32))?;
+        let lease = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"e".repeat(32),
+        )?;
         match lease.abort_unstarted(io("owned admission cancellation")) {
             PlatformError::Io(_) => Ok(()),
             error => Err(error),

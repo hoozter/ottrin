@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-11-06T03:53:12.665181+00:00",
+  "bytes": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23823106048,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25358307328,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30194524160,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48954650624
+  },
+  "purpose": "Same paired GNU platform/UI graph; explicit original-caller destination claims and preparation lifecycle"
+}

@@ -159,8 +159,14 @@ fn windows_native_copy_name_release_admission_rejects_stale_claim_and_registry_c
     let parent = owner(&root.path().join("destination"));
     let central = owner(&registry);
     let transaction = super::super::super::super::random_transaction_id().unwrap();
-    let later =
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &transaction).unwrap();
+    let later = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &transaction,
+    )
+    .unwrap();
     let later_state = namespace_contents(root.path());
     assert!(stale.finish(|_| Ok(())).is_err());
     assert_eq!(namespace_contents(root.path()), later_state);

@@ -71,8 +71,9 @@ Missing cached fields are refused; serialized ACL bytes are never applied.
 Fresh admission with different ancestor evidence cannot extend an earlier saved
 binding. This is source/runtime admission, not full transaction authority.
 
-Original caller authority still needs to reach destination claims, stage/journal,
-required metadata changes, final destination policy, receipts and restored
+The components below carry original caller authority through private staging,
+required metadata changes, final destination policy and destination claims. The
+full transaction still needs caller-aware paired journals, receipts and restored
 Undo/cleanup plans. Ordinary configured entry points retain their ordinary-process
 environment locator; helper dispatch must select the canonical caller factory.
 Administrator Copy remains disabled pending the complete bridge and native
@@ -164,8 +165,8 @@ All controls pass without changing production candidate creation. Exact source,
 executable, native results and teardown are recorded in
 `.hermes/evidence/caller-candidate-security-current/ACCEPTANCE.json`.
 The original-token finalization callback is a component control. Helper-side final
-plans are covered below; claims, durable journals, receipts and restored Undo/cleanup
-still need explicit caller authority. This does not enable administrator Copy or establish
+plans and destination claims are covered below; durable journals, receipts and
+restored Undo/cleanup still need explicit caller authority. This does not enable administrator Copy or establish
 alternate-administrator UAC, in-place TokenOwner mutation, caller links or package
 profile-context acceptance.
 
@@ -183,8 +184,8 @@ Saved plan bytes contain evidence, never a token selection or installable native
 descriptor. Re-admission freshly derives the graph with the admitted authority and
 compares the entire evidence and permission phase. Already-final pending entries
 are verified without repeating a native ACL update. Existing journal entry points
-explicitly select process authority; caller-aware durable claims/journals and
-recovery still need integration.
+explicitly select process authority; caller claims must still be connected to
+paired journals and durable recovery.
 
 Native testing reproduced `SetSecurityInfo` returning success with an empty DACL
 for a caller-owned parent with creator-owner inheritance when helper file
@@ -210,6 +211,51 @@ Exact source/binary/native binding and teardown:
 This is final-permission component acceptance, not a durable caller operation,
 alternate-administrator UAC, packaged Copy or completed Undo/cleanup bridge.
 Administrator Copy remains disabled.
+
+## Original-caller destination claims
+
+Claim admission, reopening and terminal observation require explicit authority.
+The anchored destination root and native-name key bucket retain that authority,
+including the frozen caller's owner/group/private DACL and case policy. Claim
+creation uses the same caller-derived private entry primitive as other staging.
+Stored claim evidence never selects an impersonation token or supplies native
+permissions to install. All ordinary journal and test callers now select process
+authority explicitly; the caller dispatcher still needs integration.
+
+Read-only identity observation remains distinct from private writer admission.
+An old terminal observation can ignore a different native object without parsing
+or adopting its bytes. A matching object must pass complete record, native
+identity, private security, stream and phase checks. Writable reacquisition still
+requires exclusive native sharing; a read-only handle cannot mutate its ledger.
+Original-caller namespace probes and private reopen use the matching native
+no-follow opener. Identity-based old-registry resolution retains scoped helper
+file privileges rather than following a recreated pathname.
+
+Native testing reproduced an access-denied claim publication after private
+creation had succeeded. The same no-replace rename now runs inside the shared
+explicit-authority file-operation wrapper, retaining scoped helper backup/restore
+privileges for that call. The wrapper also serves final DACL application; it
+restores the exact prior thread token and preserves native errors. No retry with
+a different principal or permissive descriptor is introduced.
+
+Fresh ordinary-client/SYSTEM controls cover both case-policy contexts and short
+and Unicode long names: original-token reads, read-only write refusal, active
+writer exclusion, wrong-helper/forged-creator refusal, dead-owner replacement,
+old-terminal replacement observation, read-only-to-writer release, complete
+preparation reclamation with partial bytes preserved, and changed-DACL refusal
+without altering permissions or ledger bytes. The complete 100-test/23-invocation
+matrix includes ordinary claim publication, process exclusion, orphan recovery,
+release/repair/retirement, paired-journal initialization, name release and abort
+regressions, plus prior caller/permission/staging/security controls. Strict paired
+Windows platform/UI lint passes. Exact binding and teardown:
+`.hermes/evidence/caller-claims-current/ACCEPTANCE.json`.
+
+This accepts caller pre-journal reservations and complete orphan preparations.
+Caller Begin-only paired-journal admission, journal construction/recovery,
+receipts, dispatcher and restored Undo/cleanup remain incomplete. Ordinary
+paired-journal tests do not establish caller-aware journal acceptance.
+Administrator Copy stays disabled; packaged/alternate-administrator UAC and full
+profile-context proof remain separate gates.
 
 ## Canonical native security evidence
 

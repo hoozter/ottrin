@@ -21,11 +21,7 @@ pub(super) fn collect(
         {
             continue;
         }
-        let file = match open_file(
-            root.root(),
-            &name,
-            FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
-        ) {
+        let file = match open_file(root, &name, FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE) {
             Ok(file) => file,
             // Active writers, directories, inaccessible and disappearing entries
             // are not cleanup capabilities. Leave them to their owner.
@@ -60,11 +56,12 @@ pub(super) fn collect(
             || claim.root != stable_identity_from_handle(root.root()).map_err(io)?
             || claim.anchor != root.anchor_identity()
             || claim.file != stable_identity_from_handle(&file).map_err(io)?
-            || claim.creator != windows_fs::current_owner()?
+            || claim.creator != root.authority().owner()?
         {
             continue;
         }
         let Some(bucket) = AnchoredRoot::claim_bucket(
+            root.authority(),
             root.root(),
             ledger_key(&OsString::from_wide(&claim.target)).0,
             false,
@@ -75,13 +72,13 @@ pub(super) fn collect(
         if claim.bucket != stable_identity_from_handle(bucket.root()).map_err(io)?
             || claim.bucket_anchor != bucket.anchor_identity()
             || bucket.parent_identity() != claim.root
-            || !records_absent(parent, central, claim)?
+            || !records_absent(root.authority(), parent, central, claim)?
         {
             continue;
         }
         root.validate()?;
         bucket.validate()?;
-        namespace::validate_binding(root.root(), &name, claim.file)?;
+        root.authority().binding(root.root(), &name, claim.file)?;
         // Complete matching records still do not authorize losing added streams,
         // hard links or altered security. Surface that conflict before deletion.
         cleanup_finalize::metadata(
@@ -137,8 +134,10 @@ mod tests {
             }
         }
         fn prepare(&self) -> File {
-            let root = AnchoredRoot::claims(&self.parent, true).unwrap().unwrap();
-            let bucket = AnchoredRoot::claim_bucket(root.root(), true, true)
+            let root = AnchoredRoot::claims(&Authority::Process, &self.parent, true)
+                .unwrap()
+                .unwrap();
+            let bucket = AnchoredRoot::claim_bucket(&Authority::Process, root.root(), true, true)
                 .unwrap()
                 .unwrap();
             let name = self.preparation.file_name().unwrap();
@@ -168,6 +167,7 @@ mod tests {
         }
         fn admit(&self, id: char) -> Result<Lease, PlatformError> {
             Lease::acquire(
+                &Authority::Process,
                 &self.parent,
                 &self.central,
                 OsStr::new("copy"),

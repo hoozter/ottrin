@@ -1,0 +1,30 @@
+{
+  "status": "complete owned native teardown and consumed-output cleanup",
+  "observed_at": "2026-11-06T04:20:29.328076+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23823106048,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25358307328,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30194671616,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48956461056
+  },
+  "obsolete_incremental_sessions_removed": 22,
+  "measured_cumulative_incremental_free_deltas": 3018354688,
+  "final_incremental_candidates": 0,
+  "native_trials": 2,
+  "consumed_targets_removed": 11,
+  "independent_checks": "Both owned guest trials removed their domain/two volumes/fixture and private console/observer/profile; protected domains/disks and stock-client base remain. Final manager inventory recorded in VERIFICATION.json.",
+  "available_bytes": 26396946432,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-claims-current",
+      "bytes_at_accounting": 696320,
+      "purpose": "Compact exact source/build/native/diagnosis/cleanup receipts and generic bound actors/producer; no compiled staging, bootstrap controller, readiness screenshots, archive or raw compiler metadata stream"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Useful shared compiler caches and current paired GNU platform/UI tests for remaining caller paired-journal/dispatcher/recovery work; no extra target tree"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

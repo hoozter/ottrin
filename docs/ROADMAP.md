@@ -59,7 +59,7 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current native component acceptance: 59 top-level passes across 13 invocations,
+   Current native component acceptance: 100 top-level passes across 23 invocations,
    using ordinary-user and SYSTEM roles. Registry/private staging share explicit
    authority; real tree/payload staging and required naming policy pass. Final
    permission plans now retain caller authority, derive the whole graph from one
@@ -72,12 +72,23 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    native permission update; exact descriptor checks remain mandatory.
    Existing 15 audit/label inheritance comparisons, two per-object scenarios and
    metadata/sparse/tree/link/profile/registry/security/codec/torn-checkpoint
-   regressions pass, as does strict paired Windows platform/UI lint. Receipt:
-   `caller-permission-plan-current/ACCEPTANCE.json`. These are component controls,
-   not durable caller Copy, complete journal recovery or package/UAC acceptance.
+   regressions pass, as does strict paired Windows platform/UI lint. Caller-owned
+   destination claims now retain explicit authority through anchored roots, key
+   buckets, creation, read-only/writable reopen, validation, release and complete
+   orphan-preparation reclamation. Case-sensitive/insensitive and short/Unicode
+   contexts, original-token reads, dead-owner replacement, unrelated/partial data
+   preservation and changed-policy refusal pass. Native claim publication retains
+   scoped helper privileges during its no-replace rename. Ordinary paired-journal
+   claim publication/process/exclusion/recovery/release/retirement and initialization
+   regressions pass. Current receipt: `caller-claims-current/ACCEPTANCE.json`;
+   final-permission receipt: `caller-permission-plan-current/ACCEPTANCE.json`.
+   These are component controls, not durable caller Copy, complete journal recovery
+   or package/UAC acceptance. Existing journal entry points explicitly select
+   Process authority until caller-aware integration is connected.
    Remaining: actual caller dispatcher retaining pinned source and canonical
-   registry admission; caller authority in destination claims, stage/local/central
-   journals, durable final-permission recovery, receipts and restored Undo/cleanup.
+   registry admission; connect caller claims to stage/local/central paired journals,
+   Begin-only admission, durable final-permission recovery, receipts and restored
+   Undo/cleanup.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
    package/profile contexts. Creation-inheritance and original-token finalization
    controls do not substitute for that complete transaction/recovery proof.

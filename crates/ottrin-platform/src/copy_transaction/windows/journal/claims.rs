@@ -2,9 +2,7 @@
 //! paired terminal journals outlive the discharged reservation.
 use super::super::registry::AnchoredRoot;
 use super::*;
-use windows_sys::Win32::Storage::FileSystem::{
-    DELETE, FILE_GENERIC_WRITE, FILE_READ_ATTRIBUTES, SYNCHRONIZE,
-};
+use windows_sys::Win32::Storage::FileSystem::{DELETE, FILE_GENERIC_WRITE};
 
 mod preparations;
 
@@ -46,7 +44,7 @@ impl Claim {
         target: &OsStr,
         transaction: &str,
     ) -> Result<Self, PlatformError> {
-        let creator = windows_fs::current_owner()?;
+        let creator = root.authority().owner()?;
         Ok(Self {
             parent: stable_identity_from_handle(parent).map_err(io)?,
             root: stable_identity_from_handle(root.root()).map_err(io)?,
@@ -538,20 +536,9 @@ pub(super) struct Lease {
     pending_release: bool,
     writer: bool,
 }
-fn open_file(root: &File, name: &OsStr, access: u32) -> std::io::Result<File> {
-    unsafe {
-        windows_fs::open_relative(
-            root,
-            name,
-            RelativeOptions {
-                directory: Some(false),
-                create_new: false,
-                access,
-                sharing: FILE_SHARE_READ,
-                security: ptr::null(),
-            },
-        )
-    }
+fn open_file(root: &AnchoredRoot, name: &OsStr, access: u32) -> std::io::Result<File> {
+    root.authority()
+        .child(root.root(), name, false, access, FILE_SHARE_READ)
 }
 // A lookup of at least 13 UTF-16 units cannot resolve an NTFS 8.3 alias.
 // Separate buckets prevent an encoded short key from colliding with a literal
@@ -564,20 +551,8 @@ fn ledger_key(target: &OsStr) -> (bool, OsString) {
     }
     (short, name)
 }
-fn observed_file(root: &File, name: &OsStr) -> std::io::Result<File> {
-    unsafe {
-        windows_fs::open_relative(
-            root,
-            name,
-            RelativeOptions {
-                directory: Some(false),
-                create_new: false,
-                access: FILE_GENERIC_READ,
-                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                security: ptr::null(),
-            },
-        )
-    }
+fn observed_file(root: &AnchoredRoot, name: &OsStr) -> std::io::Result<File> {
+    root.authority().observe_file(root.root(), name)
 }
 fn validate_control(
     root: &AnchoredRoot,
@@ -600,11 +575,11 @@ fn validate_control(
         || first.bucket != stable_identity_from_handle(bucket.root()).map_err(io)?
         || first.bucket_anchor != bucket.anchor_identity()
         || bucket.parent_identity() != first.root
-        || first.creator != windows_fs::current_owner()?
+        || first.creator != root.authority().owner()?
     {
         return Err(io("Copy name-claim control belongs to another namespace"));
     }
-    namespace::validate_binding(
+    bucket.authority().binding(
         bucket.root(),
         &ledger_key(&OsString::from_wide(&first.target)).1,
         first.file,
@@ -629,20 +604,7 @@ fn busy_claim(
         return io(cause);
     }
     let observed = (|| {
-        let file = unsafe {
-            windows_fs::open_relative(
-                bucket.root(),
-                &ledger_key(target).1,
-                RelativeOptions {
-                    directory: Some(false),
-                    create_new: false,
-                    access: FILE_GENERIC_READ,
-                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    security: ptr::null(),
-                },
-            )
-        }
-        .map_err(io)?;
+        let file = observed_file(bucket, &ledger_key(target).1).map_err(io)?;
         let bytes = read(&file)?;
         let log = Log::decode(&bytes)?;
         validate_control(root, bucket, &file, &bytes, &log)?;
@@ -659,36 +621,32 @@ fn busy_claim(
 }
 // Only an exclusive writer with neither canonical recovery record may cancel
 // an abandoned active claim. Released claims need no historical record scan.
-fn records_absent(parent: &File, central: &File, claim: &Claim) -> Result<bool, PlatformError> {
-    fn vacant(parent: &File, name: &OsStr) -> Result<bool, PlatformError> {
-        match unsafe {
-            windows_fs::open_relative(
-                parent,
-                name,
-                RelativeOptions {
-                    directory: None,
-                    create_new: false,
-                    access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    security: ptr::null(),
-                },
-            )
-        } {
+fn records_absent(
+    authority: &Authority,
+    parent: &File,
+    central: &File,
+    claim: &Claim,
+) -> Result<bool, PlatformError> {
+    let vacant = |parent: &File, name: &OsStr| -> Result<bool, PlatformError> {
+        match authority.probe(parent, name) {
             Ok(_) => Ok(false),
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(true),
             Err(error) => Err(io(error)),
         }
-    }
+    };
     if !vacant(
         parent,
         OsStr::new(&format!(".ottrin-copy-{}", claim.transaction)),
     )? {
         return Ok(false);
     }
-    let Ok(registry) =
-        windows_fs::Volumes::new(central)?
-            .resolve(claim.central, FILE_GENERIC_READ, &mut |_| Ok(()))
-    else {
+    let Ok(registry) = authority.file_operation(|| {
+        windows_fs::Volumes::new(central)?.resolve(
+            claim.central,
+            FILE_GENERIC_READ,
+            &mut |_| Ok(()),
+        )
+    }) else {
         return Ok(false);
     };
     vacant(
@@ -698,6 +656,7 @@ fn records_absent(parent: &File, central: &File, claim: &Claim) -> Result<bool, 
 }
 impl Lease {
     pub(super) fn acquire(
+        authority: &Authority,
         parent: &File,
         central: &File,
         target: &OsStr,
@@ -714,24 +673,24 @@ impl Lease {
         {
             return Err(io("Invalid Copy name-claim context"));
         }
-        let root =
-            AnchoredRoot::claims(parent, true)?.ok_or_else(|| io("Copy claim root is missing"))?;
-        if identity_at(
+        let root = AnchoredRoot::claims(authority, parent, true)?
+            .ok_or_else(|| io("Copy claim root is missing"))?;
+        if authority.identity_at(
             parent,
             target,
             stable_identity_from_handle(root.root()).map_err(io)?,
-        )? || identity_at(parent, target, root.anchor_identity())?
+        )? || authority.identity_at(parent, target, root.anchor_identity())?
         {
             return Err(io(
                 "Copy destination is an Ottrin claim control, not a user entry",
             ));
         }
         let (short, key) = ledger_key(target);
-        let bucket = AnchoredRoot::claim_bucket(root.root(), short, true)?
+        let bucket = AnchoredRoot::claim_bucket(root.authority(), root.root(), short, true)?
             .ok_or_else(|| io("Copy claim bucket is missing"))?;
         preparations::collect(parent, &root, central)?;
         let mut file = match open_file(
-            bucket.root(),
+            &bucket,
             &key,
             FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
         ) {
@@ -748,7 +707,7 @@ impl Lease {
             let last = log.owner.as_ref().unwrap();
             if !last.released {
                 let binding = last.binding.clone();
-                let absent = records_absent(parent, central, &binding.claim)?;
+                let absent = records_absent(root.authority(), parent, central, &binding.claim)?;
                 let setup = if absent {
                     None
                 } else {
@@ -807,8 +766,10 @@ impl Lease {
         // Root-level preparations cannot collide with keys in either key bucket.
         // The canonical name is never occupied by an empty or partial first frame.
         let name = OsString::from(format!(".preparing-{transaction}"));
-        let mut file =
-            windows_fs::create_private(root.root(), &name, false, FILE_SHARE_READ).map_err(io)?;
+        let mut file = root
+            .authority()
+            .create(root.root(), &name, false, FILE_SHARE_READ)
+            .map_err(io)?;
         let claim = Claim::capture(parent, central, &root, &bucket, &file, target, transaction)?;
         let key = ledger_key(target).1;
         let mut published = false;
@@ -827,7 +788,7 @@ impl Lease {
             }
             root.validate()?;
             bucket.validate()?;
-            namespace::validate_binding(root.root(), &name, claim.file)?;
+            root.authority().binding(root.root(), &name, claim.file)?;
             cleanup_finalize::metadata(
                 &file,
                 claim.file,
@@ -838,18 +799,21 @@ impl Lease {
             )?;
             root.writable_root()?.sync_all().map_err(io)?;
             preparation_boundary(PreparationPoint::Prepared, &mut file)?;
-            crate::move_transaction::rename_windows_handle_no_replace(
-                &file,
-                &bucket.writable_root()?,
-                &key,
-            )
-            .map_err(|error| match error {
-                PlatformError::DestinationExists(_) => PlatformError::DestinationExists(format!(
-                    "{} is reserved by an active Copy",
-                    target.to_string_lossy()
-                )),
-                error => error,
-            })?;
+            let destination = bucket.writable_root()?;
+            root.authority()
+                .file_operation(|| {
+                    crate::move_transaction::rename_windows_handle_no_replace(
+                        &file,
+                        &destination,
+                        &key,
+                    )
+                })
+                .map_err(|error| match error {
+                    PlatformError::DestinationExists(_) => PlatformError::DestinationExists(
+                        format!("{} is reserved by an active Copy", target.to_string_lossy()),
+                    ),
+                    error => error,
+                })?;
             published = true;
             preparation_boundary(PreparationPoint::Published, &mut file)?;
             root.writable_root()?.sync_all().map_err(io)?;
@@ -888,10 +852,11 @@ impl Lease {
     /// Call only while independently verified paired terminal journals remain
     /// held. A new owner is neither parsed nor mutated on the old one's behalf.
     pub(super) fn observe_terminal(
+        authority: &Authority,
         parent: &File,
         binding: &Binding,
     ) -> Result<Option<Self>, PlatformError> {
-        let Some(root) = AnchoredRoot::claims(parent, false)? else {
+        let Some(root) = AnchoredRoot::claims(authority, parent, false)? else {
             return Ok(None);
         };
         if stable_identity_from_handle(root.root()).map_err(io)? != binding.claim.root
@@ -900,7 +865,8 @@ impl Lease {
             return Ok(None);
         }
         let (short, name) = ledger_key(&OsString::from_wide(&binding.claim.target));
-        let Some(bucket) = AnchoredRoot::claim_bucket(root.root(), short, false)? else {
+        let Some(bucket) = AnchoredRoot::claim_bucket(root.authority(), root.root(), short, false)?
+        else {
             return Ok(None);
         };
         if stable_identity_from_handle(bucket.root()).map_err(io)? != binding.claim.bucket
@@ -908,7 +874,7 @@ impl Lease {
         {
             return Ok(None);
         }
-        let file = match observed_file(bucket.root(), &name) {
+        let file = match observed_file(&bucket, &name) {
             Ok(file) => file,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
             Err(error) => return Err(io(error)),
@@ -924,12 +890,13 @@ impl Lease {
         Self::from_file(root, bucket, binding.clone(), file, false, true).map(Some)
     }
     pub(super) fn open(
+        authority: &Authority,
         parent: &File,
         binding: &Binding,
         terminal: bool,
         strong: bool,
     ) -> Result<Self, PlatformError> {
-        let root = AnchoredRoot::claims(parent, false)?
+        let root = AnchoredRoot::claims(authority, parent, false)?
             .ok_or_else(|| io("Copy claim root disappeared"))?;
         let lease = Self::load(root, binding.clone(), strong, terminal)?;
         if lease.released && !terminal {
@@ -944,17 +911,17 @@ impl Lease {
         terminal: bool,
     ) -> Result<Self, PlatformError> {
         let (short, name) = ledger_key(&OsString::from_wide(&binding.claim.target));
-        let bucket = AnchoredRoot::claim_bucket(root.root(), short, false)?
+        let bucket = AnchoredRoot::claim_bucket(root.authority(), root.root(), short, false)?
             .ok_or_else(|| io("Copy claim bucket disappeared"))?;
         let file = if writer {
             open_file(
-                bucket.root(),
+                &bucket,
                 &name,
                 FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
             )
             .map_err(io)?
         } else {
-            observed_file(bucket.root(), &name).map_err(io)?
+            observed_file(&bucket, &name).map_err(io)?
         };
         Self::from_file(root, bucket, binding, file, writer, terminal)
     }
@@ -1005,7 +972,7 @@ impl Lease {
             .claim
             .security
             .validate(&self.file, &self.binding.claim.creator)?;
-        namespace::validate_binding(
+        self.bucket.authority().binding(
             self.bucket.root(),
             &ledger_key(&OsString::from_wide(&self.binding.claim.target)).1,
             self.binding.claim.file,
@@ -1052,7 +1019,7 @@ impl Lease {
         } else {
             drop(file);
             open_file(
-                bucket.root(),
+                &bucket,
                 &name,
                 FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE,
             )
@@ -1079,6 +1046,180 @@ impl Lease {
 }
 
 #[cfg(test)]
+pub(in super::super) fn exercise_caller_claims(
+    caller: &std::sync::Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    protected_parent: &File,
+    mut as_caller: impl FnMut(&mut dyn FnMut()),
+) {
+    let authority = Authority::Caller(std::sync::Arc::clone(caller));
+    let sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    struct ResetPreparation;
+    impl Drop for ResetPreparation {
+        fn drop(&mut self) {
+            PREPARATION_FAULT.with(|fault| fault.set(None));
+        }
+    }
+    for sensitive in [false, true] {
+        let parent = windows_fs::create_private(
+            protected_parent,
+            OsStr::new(&format!("caller-claims-{sensitive}")),
+            true,
+            sharing,
+        )
+        .unwrap();
+        windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
+        let central = authority
+            .create(&parent, OsStr::new("registry"), true, sharing)
+            .unwrap();
+        assert!(
+            AnchoredRoot::claims(&authority, &parent, false)
+                .unwrap()
+                .is_none()
+        );
+        for (case, target) in ["copy", "Long original caller destination Ω.txt"]
+            .into_iter()
+            .enumerate()
+        {
+            let transaction = format!("{:032x}", case * 16 + 1);
+            let first = Lease::acquire(
+                &authority,
+                &parent,
+                &central,
+                OsStr::new(target),
+                &transaction,
+            )
+            .unwrap();
+            let binding: Binding =
+                serde_json::from_slice(&serde_json::to_vec(first.binding()).unwrap()).unwrap();
+            assert_eq!(
+                binding.claim.creator,
+                caller.default_file_owner_sid().unwrap()
+            );
+            for file in [first.root.root(), first.bucket.root(), &first.file] {
+                security::PrivateSecurity::capture_for_caller(
+                    file,
+                    caller.default_file_owner_sid().unwrap(),
+                    caller.default_file_group_sid().unwrap(),
+                )
+                .unwrap();
+            }
+            let before = read(&first.file).unwrap();
+            as_caller(&mut || {
+                let file = Authority::Process
+                    .observe_file(first.bucket.root(), &ledger_key(OsStr::new(target)).1)
+                    .unwrap();
+                assert_eq!(read(&file).unwrap(), before);
+            });
+            let reader = Lease::open(&authority, &parent, &binding, false, false).unwrap();
+            reader.validate(false).unwrap();
+            let mut readonly = reader.file.try_clone().unwrap();
+            assert_eq!(
+                readonly.write_all(b"must not write").unwrap_err().kind(),
+                std::io::ErrorKind::PermissionDenied
+            );
+            drop(readonly);
+            let next_id = format!("{:032x}", case * 16 + 2);
+            assert!(matches!(
+                Lease::acquire(&authority, &parent, &central, OsStr::new(target), &next_id),
+                Err(PlatformError::DestinationExists(_))
+            ));
+            assert!(Lease::open(&Authority::Process, &parent, &binding, false, false).is_err());
+            let mut forged = binding.clone();
+            forged.claim.creator = windows_fs::current_owner().unwrap();
+            assert!(Lease::open(&authority, &parent, &forged, false, false).is_err());
+            assert_eq!(read(&first.file).unwrap(), before);
+            drop((reader, first));
+            // A dead owner with no local or central journal may release only
+            // the reservation, then replace its complete control atomically.
+            let next = Lease::acquire(&authority, &parent, &central, OsStr::new(target), &next_id)
+                .unwrap();
+            assert_ne!(next.binding.claim.file, binding.claim.file);
+            assert!(
+                Lease::observe_terminal(&authority, &parent, &binding)
+                    .unwrap()
+                    .is_none()
+            );
+            let current = next.binding.clone();
+            drop(next);
+            let readonly = Lease::open(&authority, &parent, &current, false, false).unwrap();
+            readonly.release_after_terminal().unwrap();
+            let terminal = Lease::observe_terminal(&authority, &parent, &current)
+                .unwrap()
+                .unwrap();
+            assert!(!terminal.needs_release());
+            terminal.validate(true).unwrap();
+            drop(terminal);
+        }
+        // Reclaim a complete owned preparation, retaining an unrelated partial
+        // one. Neither name alone authorizes reclamation.
+        let reset = ResetPreparation;
+        let transaction = "a".repeat(32);
+        PREPARATION_FAULT.with(|fault| fault.set(Some((PreparationPoint::Prepared, 0))));
+        assert!(matches!(
+            Lease::acquire(
+                &authority,
+                &parent,
+                &central,
+                OsStr::new("prepared"),
+                &transaction
+            ),
+            Err(PlatformError::CleanupPending { .. })
+        ));
+        drop(reset);
+        let root = AnchoredRoot::claims(&authority, &parent, false)
+            .unwrap()
+            .unwrap();
+        let prepared = OsString::from(format!(".preparing-{transaction}"));
+        let mut unknown = authority
+            .create(
+                root.root(),
+                OsStr::new(&format!(".preparing-{}", "b".repeat(32))),
+                false,
+                sharing,
+            )
+            .unwrap();
+        unknown.write_all(b"retain incomplete record").unwrap();
+        unknown.sync_all().unwrap();
+        assert!(authority.probe(root.root(), &prepared).is_ok());
+        let recovered = Lease::acquire(
+            &authority,
+            &parent,
+            &central,
+            OsStr::new("prepared"),
+            &"c".repeat(32),
+        )
+        .unwrap();
+        assert_eq!(
+            authority.probe(root.root(), &prepared).unwrap_err().kind(),
+            std::io::ErrorKind::NotFound
+        );
+        assert_eq!(read(&unknown).unwrap(), b"retain incomplete record");
+        recovered.release_after_terminal().unwrap();
+        // A real private-policy change refuses reopening and mutation while
+        // preserving the journal bytes and the changed native permissions.
+        let changed = Lease::acquire(
+            &authority,
+            &parent,
+            &central,
+            OsStr::new("changed"),
+            &"d".repeat(32),
+        )
+        .unwrap();
+        let before = read(&changed.file).unwrap();
+        security::tests::dacl(&changed.file, "D:P(A;;FA;;;OW)(A;;FR;;;WD)");
+        let changed_security = security::owner_group_dacl_digest(&changed.file).unwrap();
+        assert!(changed.validate(false).is_err());
+        assert!(Lease::open(&authority, &parent, changed.binding(), false, false).is_err());
+        assert_eq!(
+            security::owner_group_dacl_digest(&changed.file).unwrap(),
+            changed_security
+        );
+        assert_eq!(read(&changed.file).unwrap(), before);
+        assert_eq!(read(&unknown).unwrap(), b"retain incomplete record");
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -1094,14 +1235,27 @@ mod tests {
         std::fs::create_dir(&registry_path).unwrap();
         let registry = windows_fs::open_directory(&registry_path, FILE_GENERIC_READ).unwrap();
         let first_id = "1".repeat(32);
-        let first = Lease::acquire(&parent, &registry, OsStr::new("copy"), &first_id).unwrap();
+        let first = Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &registry,
+            OsStr::new("copy"),
+            &first_id,
+        )
+        .unwrap();
         let binding = first.binding.clone();
         first.release_after_terminal().unwrap();
         let ledger = root.path().join(binding.test_relative_path());
         let mirror = registry_path.join(format!("{first_id}.copy-journal"));
         std::fs::write(&mirror, b"preserve retained registry record").unwrap();
-        let second =
-            Lease::acquire(&parent, &registry, OsStr::new("copy"), &"2".repeat(32)).unwrap();
+        let second = Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &registry,
+            OsStr::new("copy"),
+            &"2".repeat(32),
+        )
+        .unwrap();
         assert_ne!(second.binding.claim.file, binding.claim.file);
         assert_eq!(second.binding.sequence, 0);
         second.release_after_terminal().unwrap();
@@ -1113,8 +1267,14 @@ mod tests {
         let stage = root.path().join(format!(".ottrin-copy-{first_id}"));
         std::fs::create_dir(&stage).unwrap();
         std::fs::write(stage.join("unknown"), b"keep stage content").unwrap();
-        let third =
-            Lease::acquire(&parent, &registry, OsStr::new("copy"), &"3".repeat(32)).unwrap();
+        let third = Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &registry,
+            OsStr::new("copy"),
+            &"3".repeat(32),
+        )
+        .unwrap();
         assert_ne!(third.binding.claim.file, binding.claim.file);
         third.release_after_terminal().unwrap();
         assert_eq!(
@@ -1128,7 +1288,16 @@ mod tests {
             ledger.file_name().unwrap().to_string_lossy()
         ));
         std::fs::write(&stream, b"keep unknown stream").unwrap();
-        assert!(Lease::acquire(&parent, &registry, OsStr::new("copy"), &"4".repeat(32)).is_err());
+        assert!(
+            Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &registry,
+                OsStr::new("copy"),
+                &"4".repeat(32)
+            )
+            .is_err()
+        );
         assert_eq!(std::fs::read(&ledger).unwrap(), before);
         assert_eq!(std::fs::read(&stream).unwrap(), b"keep unknown stream");
         std::fs::remove_file(&stream).unwrap();
@@ -1137,8 +1306,14 @@ mod tests {
         std::fs::rename(&registry_path, root.path().join("moved-registry")).unwrap();
         std::fs::create_dir(&registry_path).unwrap();
         let registry = windows_fs::open_directory(&registry_path, FILE_GENERIC_READ).unwrap();
-        let fresh =
-            Lease::acquire(&parent, &registry, OsStr::new("copy"), &"5".repeat(32)).unwrap();
+        let fresh = Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &registry,
+            OsStr::new("copy"),
+            &"5".repeat(32),
+        )
+        .unwrap();
         assert_ne!(fresh.binding.claim.file, binding.claim.file);
         assert_eq!(fresh.binding.sequence, 0);
         fresh.release_after_terminal().unwrap();
@@ -1155,7 +1330,14 @@ mod tests {
         let central_path = root.path().join("registry");
         std::fs::create_dir(&central_path).unwrap();
         let central = windows_fs::open_directory(&central_path, FILE_GENERIC_READ).unwrap();
-        let first = Lease::acquire(&parent, &central, OsStr::new("copy"), &"1".repeat(32)).unwrap();
+        let first = Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"1".repeat(32),
+        )
+        .unwrap();
         let binding = first.binding.clone();
         let before = read(&first.file).unwrap();
         let entry = Entry::Claim {
@@ -1182,7 +1364,7 @@ mod tests {
         CLAIM_BUDGET.with(|limit| limit.set(exact as u64));
         drop(file);
         first.release_after_terminal().unwrap();
-        let observed = Lease::open(&parent, &binding, true, false).unwrap();
+        let observed = Lease::open(&Authority::Process, &parent, &binding, true, false).unwrap();
         assert_eq!(read(&observed.file).unwrap().len(), exact);
         drop(reset);
     }

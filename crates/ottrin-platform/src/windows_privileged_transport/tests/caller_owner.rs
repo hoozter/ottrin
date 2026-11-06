@@ -747,6 +747,15 @@ fn system_helper() {
         helper_user
     );
     assert_eq!(system_parent_policy(&parent), parent_owner);
+    crate::WindowsCopyRegistry::exercise_caller_claims(&context, &parent, |operation| {
+        context
+            .with_caller_token(|| {
+                operation();
+                Ok(())
+            })
+            .unwrap();
+    });
+    assert_eq!(token_state(), original_helper_state);
     crate::WindowsCopyRegistry::exercise_caller_permission_plan(
         &context,
         &control_parent,
@@ -825,6 +834,7 @@ fn system_helper() {
             "atomic_private_creation_owner_matches_caller":true,
             "existing_private_entry_refused_unchanged":true,
             "ordinary_helper_reopen_refused":true,
+            "caller_destination_claim_creation_reopen_release_and_preparation_recovery":true,
             "caller_permission_plan_projection_helper_apply_and_phase_restore":true,
             "caller_candidate_audit_label_and_per_object_original_token_controls":true,
             "caller_private_stage_tree_payload_and_required_case_policy":true,

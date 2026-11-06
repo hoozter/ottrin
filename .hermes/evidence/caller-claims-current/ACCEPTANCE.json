@@ -1,0 +1,33 @@
+{
+  "status": "pass original-caller destination claim components",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 100,
+  "native_invocations": 23,
+  "coverage": [
+    "Explicit authority retained in claim root and key bucket; no serialized token selection",
+    "Actual caller owner/group/private DACL verified for root, bucket and ledger; original-token readonly reopening",
+    "Case-sensitive and insensitive parents; short and Unicode long names",
+    "Readonly handle cannot write; active writer exclusion; wrong ambient helper authority and forged creator refused without byte changes",
+    "Dead-owner reservation without paired records released before fresh complete publication; old terminal observation does not adopt replacement",
+    "Readonly lease acquires exclusive writer for terminal release and verifies discharged ledger",
+    "Complete own preparation reclaimed while unrelated partial bytes remain unchanged",
+    "Actual changed private DACL refuses validation/reopen, preserving changed permissions and ledger bytes",
+    "Ordinary claim/preparation/process/publication/orphan/release/repair/retirement/initialization/name-release/abort controls pass",
+    "Previous caller profile/staging/metadata/final-permission/audit-label/per-object/codec/torn-checkpoint regressions pass"
+  ],
+  "runtime_fix": "Native no-replace publication of a caller-owned claim runs in the shared scoped helper file-operation privilege wrapper; native identity, security, collision and flush checks retained",
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "e2b8c6e755431945acc8b9408845d37171452c55122aa90b8403b6a3d05ca112"
+  },
+  "limits": [
+    "Claim journal entry points remain explicitly Process until caller-aware paired journals are integrated",
+    "Caller Begin-only paired-journal admission/recovery, dispatcher, receipts and restored Undo/cleanup remain incomplete",
+    "No actual alternate-admin UAC, in-place TokenOwner mutation, packaged profile proof or full roadmap acceptance",
+    "Administrator Copy stays disabled; stable packages unchanged"
+  ]
+}

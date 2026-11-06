@@ -30,6 +30,32 @@ impl Authority {
             Self::Caller(caller) => caller.snapshot_token().map_err(io),
         }
     }
+    /// Scoped helper file access keeps the original caller's policy separate
+    /// from the effective privileges needed by native filesystem operations.
+    pub(super) fn file_operation<T>(
+        &self,
+        operation: impl FnOnce() -> Result<T, PlatformError>,
+    ) -> Result<T, PlatformError> {
+        self.validate()?;
+        let result = match self {
+            Self::Process => operation(),
+            Self::Caller(_) => windows_fs::with_file_privileges(|| Ok(operation())).map_err(io)?,
+        };
+        self.validate()?;
+        result
+    }
+    pub(super) fn identity_at(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        expected: WindowsStableIdentity,
+    ) -> Result<bool, PlatformError> {
+        match self.probe(parent, name) {
+            Ok(file) => Ok(stable_identity_from_handle(&file).map_err(io)? == expected),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+            Err(error) => Err(io(error)),
+        }
+    }
     pub(super) fn create(
         &self,
         parent: &File,
@@ -50,6 +76,36 @@ impl Authority {
         access: u32,
         sharing: u32,
     ) -> std::io::Result<File> {
+        let file = self.open_child(parent, name, directory, access, sharing)?;
+        if let Self::Caller(caller) = self {
+            security::PrivateSecurity::capture_for_caller(
+                &file,
+                caller.default_file_owner_sid()?,
+                caller.default_file_group_sid()?,
+            )?;
+            caller.validate()?;
+        }
+        Ok(file)
+    }
+    /// Readonly identity observation may encounter a replacement control. Its
+    /// bytes/security cannot be adopted until the expected native ID matches.
+    pub(super) fn observe_file(&self, parent: &File, name: &OsStr) -> std::io::Result<File> {
+        self.open_child(
+            parent,
+            name,
+            false,
+            FILE_GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+    }
+    fn open_child(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        directory: bool,
+        access: u32,
+        sharing: u32,
+    ) -> std::io::Result<File> {
         match self {
             Self::Process => ordinary_child(parent, name, directory, access, sharing),
             Self::Caller(caller) => {
@@ -63,11 +119,6 @@ impl Authority {
                         sharing,
                     )
                 })?;
-                security::PrivateSecurity::capture_for_caller(
-                    &file,
-                    caller.default_file_owner_sid()?,
-                    caller.default_file_group_sid()?,
-                )?;
                 caller.validate()?;
                 Ok(file)
             }

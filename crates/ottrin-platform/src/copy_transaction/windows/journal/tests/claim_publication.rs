@@ -21,13 +21,19 @@ fn initialized(root: &Path, sensitive: bool) {
     fixture(root);
     let parent = owner(&root.join("destination"));
     windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
-    let namespace = super::super::super::registry::AnchoredRoot::claims(&parent, true)
-        .unwrap()
-        .unwrap();
-    drop(
-        super::super::super::registry::AnchoredRoot::claim_bucket(namespace.root(), true, true)
+    let namespace =
+        super::super::super::registry::AnchoredRoot::claims(&Authority::Process, &parent, true)
             .unwrap()
-            .unwrap(),
+            .unwrap();
+    drop(
+        super::super::super::registry::AnchoredRoot::claim_bucket(
+            &Authority::Process,
+            namespace.root(),
+            true,
+            true,
+        )
+        .unwrap()
+        .unwrap(),
     );
     std::fs::write(root.join("destination/user-data"), b"keep public file").unwrap();
     std::fs::write(
@@ -89,7 +95,13 @@ fn windows_native_copy_prepared_claim_errors_preserve_unpublished_or_complete_co
         let central = owner(&root.path().join("central"));
         let reset = ClearFault;
         claims::PREPARATION_FAULT.with(|fault| fault.set(Some((point, 0))));
-        let result = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32));
+        let result = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"d".repeat(32),
+        );
         drop(reset);
         assert!(result.is_err(), "{point:?}");
         assert!(
@@ -108,8 +120,14 @@ fn windows_native_copy_prepared_claim_errors_preserve_unpublished_or_complete_co
                 claims::PreparationPoint::Published | claims::PreparationPoint::Flushed
             )
         );
-        let next =
-            claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).unwrap();
+        let next = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"e".repeat(32),
+        )
+        .unwrap();
         next.validate(false).unwrap();
         assert!(matches!(
             next.abort_unstarted(io("owned cancellation")),
@@ -132,7 +150,13 @@ fn windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_com
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
         claims::PREPARATION_FAULT.with(|fault| fault.set(Some((point, mode))));
-        let result = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32));
+        let result = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"d".repeat(32),
+        );
         panic!("Preparation exit was not reached: {:?}", result.err());
     }
     for index in 0..=POINTS.len() {
@@ -156,8 +180,14 @@ fn windows_native_copy_prepared_claim_process_exits_leave_final_keys_free_or_com
         );
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        let next =
-            claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).unwrap();
+        let next = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"e".repeat(32),
+        )
+        .unwrap();
         next.validate(false).unwrap();
         assert!(matches!(
             next.abort_unstarted(io("owned cancellation")),
@@ -187,12 +217,17 @@ fn windows_native_copy_prepared_claim_publishers_race_without_overwrite() {
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
         let target = if id == "1" { "copy" } else { "COPY" };
-        let lease =
-            match claims::Lease::acquire(&parent, &central, OsStr::new(target), &id.repeat(32)) {
-                Ok(lease) => Some(lease),
-                Err(PlatformError::DestinationExists(_)) => None,
-                Err(error) => panic!("Unexpected publication race error: {error}"),
-            };
+        let lease = match claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new(target),
+            &id.repeat(32),
+        ) {
+            Ok(lease) => Some(lease),
+            Err(PlatformError::DestinationExists(_)) => None,
+            Err(error) => panic!("Unexpected publication race error: {error}"),
+        };
         std::fs::write(
             root.join(format!("result-{id}.tmp")),
             if lease.is_some() {
@@ -294,7 +329,13 @@ fn windows_native_copy_unpublished_claim_hard_kill_preserves_preparation() {
         });
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        let result = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32));
+        let result = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"d".repeat(32),
+        );
         panic!("Preparation gate returned: {:?}", result.err());
     }
     for with_stream in [false, true] {
@@ -324,7 +365,13 @@ fn windows_native_copy_unpublished_claim_hard_kill_preserves_preparation() {
         assert!(preparation(root.path()).exists());
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        let next = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32));
+        let next = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"e".repeat(32),
+        );
         if with_stream {
             assert!(next.is_err());
             assert_eq!(std::fs::read(stream).unwrap(), b"keep after hard kill");
@@ -349,7 +396,14 @@ fn windows_native_copy_temporary_claim_collision_preserves_foreign_preparation()
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
     assert!(
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"f".repeat(32)).is_err()
+        claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"f".repeat(32)
+        )
+        .is_err()
     );
     assert!(!canonical(root.path()).exists());
     preserved(root.path());
@@ -371,7 +425,13 @@ fn windows_native_copy_unpublished_claim_error_preserves_added_stream() {
     let reset = ClearFault;
     claims::PREPARATION_FAULT.with(|f| f.set(Some((claims::PreparationPoint::Prepared, 0))));
     assert!(matches!(
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32)),
+        claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"d".repeat(32)
+        ),
         Err(PlatformError::CleanupPending { .. })
     ));
     drop(reset);
@@ -379,7 +439,14 @@ fn windows_native_copy_unpublished_claim_error_preserves_added_stream() {
     assert!(!canonical(root.path()).exists());
     // Existing complete-preparation admission must retain this conflict too.
     assert!(
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).is_err()
+        claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"e".repeat(32)
+        )
+        .is_err()
     );
     assert_eq!(std::fs::read(stream).unwrap(), b"unrelated stream bytes");
     preserved(root.path());

@@ -86,7 +86,16 @@ fn windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name
     {
         let parent = owner(&parent_path);
         let central = owner(&registry);
-        assert!(claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &next).is_err());
+        assert!(
+            claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new("copy"),
+                &next
+            )
+            .is_err()
+        );
     }
     let before = namespace_contents(root.path());
     let mut plan =
@@ -147,7 +156,14 @@ fn windows_native_copy_end_staging_preserves_all_data_and_releases_only_its_name
     let parent = owner(&parent_path);
     let central = owner(&registry);
     assert!(
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"b".repeat(32)).is_err()
+        claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"b".repeat(32)
+        )
+        .is_err()
     );
 }
 
@@ -232,7 +248,16 @@ fn windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_r
         let parent = owner(&parent_path);
         let central = owner(&registry);
         let id = super::super::super::super::random_transaction_id().unwrap();
-        assert!(claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &id).is_err());
+        assert!(
+            claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new("copy"),
+                &id
+            )
+            .is_err()
+        );
         drop((parent, central));
         let fresh =
             crate::restore_retained_copy_name_release_plan_at(&registry, &header.transaction);
@@ -245,7 +270,14 @@ fn windows_native_copy_end_staging_paired_prefix_recovers_and_divergence_stays_r
             release.finish(|_| Ok(())).unwrap();
             let parent = owner(&parent_path);
             let central = owner(&registry);
-            let later = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &id).unwrap();
+            let later = claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new("copy"),
+                &id,
+            )
+            .unwrap();
             assert!(matches!(
                 later.abort_unstarted(io("owned retry cancelled")),
                 PlatformError::Io(_)

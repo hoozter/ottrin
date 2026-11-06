@@ -16,8 +16,14 @@ fn windows_native_copy_orphan_claim_recovers_after_kernel_owner_exit() {
         let root = Path::new(&root);
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        let lease =
-            claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32)).unwrap();
+        let lease = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"d".repeat(32),
+        )
+        .unwrap();
         std::fs::write(
             root.join("ready"),
             serde_json::to_vec(lease.binding()).unwrap(),
@@ -70,7 +76,13 @@ fn windows_native_copy_orphan_claim_recovers_after_kernel_owner_exit() {
     };
     let before = namespace_contents(root.path());
     assert!(matches!(
-        claims::Lease::acquire(&parent, &central, OsStr::new("COPY"), &"e".repeat(32)),
+        claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("COPY"),
+            &"e".repeat(32)
+        ),
         Err(PlatformError::DestinationExists(_))
     ));
     assert_eq!(namespace_contents(root.path()), before);
@@ -79,8 +91,14 @@ fn windows_native_copy_orphan_claim_recovers_after_kernel_owner_exit() {
     child.0.kill().unwrap();
     assert!(!child.0.wait().unwrap().success());
     assert_eq!(namespace_contents(root.path()), before);
-    let next =
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).unwrap();
+    let next = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &"e".repeat(32),
+    )
+    .unwrap();
     next.validate(false).unwrap();
     assert_ne!(next.binding().identities()[4], binding.identities()[4]);
     assert!(matches!(
@@ -117,8 +135,14 @@ fn windows_native_copy_orphan_claim_release_keeps_older_recovery_history() {
     let local = root.path().join("destination").join(&name).join(LOCAL);
     let mirror = root.path().join("central").join(header.central_name());
     let journal = std::fs::read(&local).unwrap();
-    let orphan =
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32)).unwrap();
+    let orphan = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &"d".repeat(32),
+    )
+    .unwrap();
     assert_ne!(
         orphan.binding().identities()[4],
         header.claim.identities()[4]
@@ -130,8 +154,14 @@ fn windows_native_copy_orphan_claim_release_keeps_older_recovery_history() {
         .join("destination")
         .join(header.claim.test_relative_path());
     let before = std::fs::read(&ledger).unwrap();
-    let next =
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"e".repeat(32)).unwrap();
+    let next = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &"e".repeat(32),
+    )
+    .unwrap();
     assert_ne!(next.binding().identities()[4], orphan_identity);
     assert_ne!(std::fs::read(&ledger).unwrap(), before);
     assert!(matches!(
@@ -166,8 +196,14 @@ fn windows_native_copy_orphan_claim_preserves_ambiguous_or_partial_construction(
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
         let transaction = "d".repeat(32);
-        let lease =
-            claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &transaction).unwrap();
+        let lease = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &transaction,
+        )
+        .unwrap();
         let binding = lease.binding().clone();
         drop(lease);
         let ledger = root
@@ -211,8 +247,14 @@ fn windows_native_copy_orphan_claim_preserves_ambiguous_or_partial_construction(
         };
         let before = namespace_contents(root.path());
         assert!(
-            claims::Lease::acquire(&parent, &registry, OsStr::new("copy"), &"e".repeat(32))
-                .is_err(),
+            claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &registry,
+                OsStr::new("copy"),
+                &"e".repeat(32)
+            )
+            .is_err(),
             "{case}"
         );
         assert_eq!(namespace_contents(root.path()), before, "{case}");

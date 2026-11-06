@@ -108,13 +108,19 @@ fn windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit() {
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
         windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
-        let namespace = super::super::super::registry::AnchoredRoot::claims(&parent, true)
-            .unwrap()
-            .unwrap();
-        drop(
-            super::super::super::registry::AnchoredRoot::claim_bucket(namespace.root(), true, true)
+        let namespace =
+            super::super::super::registry::AnchoredRoot::claims(&Authority::Process, &parent, true)
                 .unwrap()
-                .unwrap(),
+                .unwrap();
+        drop(
+            super::super::super::registry::AnchoredRoot::claim_bucket(
+                &Authority::Process,
+                namespace.root(),
+                true,
+                true,
+            )
+            .unwrap()
+            .unwrap(),
         );
         drop(namespace);
         let source_identity =
@@ -182,7 +188,13 @@ fn windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit() {
             );
             let transaction = super::super::super::super::random_transaction_id().unwrap();
             assert!(matches!(
-                claims::Lease::acquire(&parent, &central, OsStr::new(target), &transaction),
+                claims::Lease::acquire(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    OsStr::new(target),
+                    &transaction
+                ),
                 Err(PlatformError::DestinationExists(_))
             ));
         }
@@ -212,8 +224,14 @@ fn windows_native_staged_copy_claims_exclude_processes_and_survive_hard_exit() {
                     .unwrap()
             );
             let transaction = super::super::super::super::random_transaction_id().unwrap();
-            let reuse = claims::Lease::acquire(&parent, &central, OsStr::new(target), &transaction)
-                .unwrap();
+            let reuse = claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new(target),
+                &transaction,
+            )
+            .unwrap();
             let error = reuse.abort_unstarted(io("owned unstarted reuse cancellation"));
             assert!(matches!(error, PlatformError::Io(_)));
         }

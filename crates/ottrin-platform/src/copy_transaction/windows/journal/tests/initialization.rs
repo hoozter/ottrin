@@ -324,7 +324,14 @@ fn windows_native_copy_unpublished_marker_before_stage_allows_orphan_reclaim() {
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
     let id = super::super::super::super::random_transaction_id().unwrap();
-    let claim = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &id).unwrap();
+    let claim = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &id,
+    )
+    .unwrap();
     let prepared = setup::prepare(&central, &id).unwrap();
     prepared.sync_all().unwrap();
     central.sync_all().unwrap();
@@ -440,7 +447,14 @@ fn windows_native_copy_unpublished_setup_hard_kill_stays_visible_without_actions
 
 fn begin_only(parent: &File, central: &File, unpublished: bool) -> Journal {
     let id = super::super::super::super::random_transaction_id().unwrap();
-    let claim = claims::Lease::acquire(parent, central, OsStr::new("copy"), &id).unwrap();
+    let claim = claims::Lease::acquire(
+        &Authority::Process,
+        parent,
+        central,
+        OsStr::new("copy"),
+        &id,
+    )
+    .unwrap();
     let prepared = setup::prepare(central, &id).unwrap();
     let stage = namespace::PrivateStage::for_transaction(parent, &id).unwrap();
     let journal = Journal::create(
@@ -501,7 +515,14 @@ fn windows_native_copy_begin_only_recovery_releases_name_without_changing_retain
             .join(header.candidate_name());
         std::fs::write(&candidate, b"keep foreign sibling").unwrap();
         let next_id = super::super::super::super::random_transaction_id().unwrap();
-        let next = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &next_id).unwrap();
+        let next = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &next_id,
+        )
+        .unwrap();
         assert_ne!(next.binding(), &header.claim);
         assert_eq!(std::fs::read(&local).unwrap(), local_before);
         assert_eq!(std::fs::read(&mirror).unwrap(), central_before);
@@ -686,7 +707,16 @@ fn windows_native_copy_begin_recovery_retries_release_faults_with_both_journals_
                 }))
             });
             let id = super::super::super::super::random_transaction_id().unwrap();
-            assert!(claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &id).is_err());
+            assert!(
+                claims::Lease::acquire(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    OsStr::new("copy"),
+                    &id
+                )
+                .is_err()
+            );
             drop(reset);
             if matches!(
                 point,
@@ -697,7 +727,16 @@ fn windows_native_copy_begin_recovery_retries_release_faults_with_both_journals_
                 assert_eq!(*observations.borrow(), vec![Some(32); 4]);
             }
             let id = super::super::super::super::random_transaction_id().unwrap();
-            drop(claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &id).unwrap());
+            drop(
+                claims::Lease::acquire(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    OsStr::new("copy"),
+                    &id,
+                )
+                .unwrap(),
+            );
             assert_eq!(std::fs::read(local).unwrap(), before[0]);
             assert_eq!(std::fs::read(mirror).unwrap(), before[1]);
             assert!(!root.path().join("destination/copy").exists());

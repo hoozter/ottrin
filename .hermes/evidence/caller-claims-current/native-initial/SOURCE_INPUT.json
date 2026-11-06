@@ -1,0 +1,23 @@
+{
+  "reference_commit": "c238e68b26b082b507cf1884d9f9a23466c41f52",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "11bd8c76aa5d1f3aa15f929d2910b5489c2a929938cd7d740d12e9d2346b22a9",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "e994e2d9434af0509874671d3a013439c4d50ac62416ee6b7e93c88a2afcfeff",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims.rs": "c2f36f90bde525b45e7808ef16eac66c7b4e11a7590f7ee8574f3d010bccd4d7",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/claims/preparations.rs": "fed0a0a1d51740271d1dcf7463db624c8ca086e2e0e1ccd08873cf57ed2fd3a9",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/abort.rs": "036217f8d6483dcccdf5f5f5f621b23b7ada66fe37b36e7174a30009f83bc487",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_orphans.rs": "75acb4181b2e8c6f9ecb8143991982c7b4c14dffaf8f6f9f003fe4a441460d27",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_processes.rs": "ef4340a35d0df82c8442d251aa9fba95f87adf69a4a9a806a0e0f25bf355a41b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_publication.rs": "d82ddeb96871ec86d2ea0aa5216447033b363c9eb66c089084b734d3e93b4ac4",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_releases.rs": "4f4129b261bf00368eb7ce342a27b0bf44339e8bdefee2782b60b0f9942f27e7",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_repair.rs": "233c2d5d30151494db16a6aa0bcdab7476fb18f6a1f32c42fd0af3abf1236254",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/claim_retirement.rs": "1a10b7b85b2dfcdddddeae1addf1ce4754ed7f90e8ee0de0e00150f9fa626dbc",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/cleanup.rs": "0fb353a7fe34b339a5c3f7638a3e765e2e8bcbb828ae05634ce96c1adf3b3a08",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/initialization.rs": "8eef45c024568442d9cffa3a6c30a9505053029e401743638e009057f93af7e1",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal/tests/name_release_action.rs": "ad466b82f945af9ee8253300f871358f00f7050696a7fc16c3c6e325443cdc7e",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "ffadc198c39ab21067f7f4841bba4bab9a58b0ef2d4791cc74be32ac9b3d399b",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "8408699ff5cd7d5da20c002cf7f2845db28a1429dcaa4963f454ec9b6263bffe",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "8c4a5e3ef0cd88042d06cdf4cfbf804ee278bb5d60b02e505c6489cc63147d69"
+  },
+  "scope": "Explicit original-caller destination claim creation/reopen/release and complete preparation orphan reclamation; existing journal entry points explicitly Process until caller-aware integration; no full caller Copy or packaged/UAC acceptance"
+}

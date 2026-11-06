@@ -4992,11 +4992,15 @@ fn assert_public_copy_and_claim_namespace(parent_path: &Path) {
         .map(OsString::from)
         .collect()
     );
-    super::super::super::registry::AnchoredRoot::claims(&owner(parent_path), false)
-        .unwrap()
-        .unwrap()
-        .validate()
-        .unwrap();
+    super::super::super::registry::AnchoredRoot::claims(
+        &Authority::Process,
+        &owner(parent_path),
+        false,
+    )
+    .unwrap()
+    .unwrap()
+    .validate()
+    .unwrap();
 }
 
 fn assert_mixed_cleanup_complete(root: &Path, group: &super::super::cleanup_group::Observation) {

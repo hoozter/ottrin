@@ -281,7 +281,11 @@ impl AnchoredRoot {
     /// A destination-local namespace lets the filesystem arbitrate target names
     /// using this volume's own name rules, independently of recovery registries.
     /// Missing roots are not created by read-only observation.
-    pub(super) fn claims(parent: &File, initialize: bool) -> Result<Option<Self>, PlatformError> {
+    pub(super) fn claims(
+        authority: &Authority,
+        parent: &File,
+        initialize: bool,
+    ) -> Result<Option<Self>, PlatformError> {
         let expected = windows_fs::directory_case_sensitive(parent).map_err(io)?;
         Self::open_under(
             parent.try_clone().map_err(io)?,
@@ -289,7 +293,7 @@ impl AnchoredRoot {
             OsStr::new(CLAIMS_ANCHOR),
             Some(expected),
             initialize,
-            Authority::Process,
+            authority.clone(),
         )
     }
 
@@ -327,6 +331,7 @@ impl AnchoredRoot {
     }
 
     pub(super) fn claim_bucket(
+        authority: &Authority,
         parent: &File,
         short: bool,
         initialize: bool,
@@ -344,7 +349,7 @@ impl AnchoredRoot {
             OsStr::new(&marker),
             Some(expected),
             initialize,
-            Authority::Process,
+            authority.clone(),
         )
     }
 
@@ -537,6 +542,9 @@ impl AnchoredRoot {
     }
     pub(super) fn anchor_identity(&self) -> WindowsStableIdentity {
         self.record.marker
+    }
+    pub(super) fn authority(&self) -> &Authority {
+        &self.authority
     }
     pub fn root(&self) -> &File {
         &self.root
@@ -1128,6 +1136,13 @@ impl AnchoredRoot {
 
 #[cfg(test)]
 impl AnchoredRoot {
+    pub(crate) fn exercise_caller_claims(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_claims(caller, parent, as_caller);
+    }
     pub(crate) fn exercise_caller_permission_plan(
         context: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         control: &File,
@@ -1222,9 +1237,15 @@ mod tests {
                 windows_fs::open_directory(temp.path(), FILE_GENERIC_READ | FILE_GENERIC_WRITE)
                     .unwrap();
             windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
-            assert!(AnchoredRoot::claims(&parent, false).unwrap().is_none());
+            assert!(
+                AnchoredRoot::claims(&Authority::Process, &parent, false)
+                    .unwrap()
+                    .is_none()
+            );
             assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), 0);
-            let claims = AnchoredRoot::claims(&parent, true).unwrap().unwrap();
+            let claims = AnchoredRoot::claims(&Authority::Process, &parent, true)
+                .unwrap()
+                .unwrap();
             assert_eq!(
                 windows_fs::directory_case_sensitive(claims.root()).unwrap(),
                 sensitive
@@ -1270,7 +1291,9 @@ mod tests {
                 claims.validate().unwrap();
             }
             drop(claims);
-            let reopened = AnchoredRoot::claims(&parent, false).unwrap().unwrap();
+            let reopened = AnchoredRoot::claims(&Authority::Process, &parent, false)
+                .unwrap()
+                .unwrap();
             assert_eq!(stable_identity_from_handle(reopened.root()).unwrap(), id);
             assert_eq!(
                 windows_fs::directory_case_sensitive(reopened.root()).unwrap(),
@@ -1299,14 +1322,16 @@ mod tests {
                 )
                 .unwrap();
             } else {
-                let claims = AnchoredRoot::claims(&parent, true).unwrap().unwrap();
+                let claims = AnchoredRoot::claims(&Authority::Process, &parent, true)
+                    .unwrap()
+                    .unwrap();
                 windows_fs::set_empty_directory_case_policy(claims.root(), true).unwrap();
                 assert!(claims.validate().is_err());
             }
             let anchor = std::fs::read(temp.path().join(CLAIMS_ANCHOR)).ok();
             let count = std::fs::read_dir(temp.path()).unwrap().count();
             for initialize in [false, true] {
-                assert!(AnchoredRoot::claims(&parent, initialize).is_err());
+                assert!(AnchoredRoot::claims(&Authority::Process, &parent, initialize).is_err());
             }
             assert_eq!(std::fs::read(temp.path().join(CLAIMS_ANCHOR)).ok(), anchor);
             assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), count);
@@ -1339,7 +1364,9 @@ mod tests {
             let target = std::env::var_os("OTTRIN_TEST_CLAIM_TARGET").unwrap();
             let parent =
                 windows_fs::open_directory(&path, FILE_GENERIC_READ | FILE_GENERIC_WRITE).unwrap();
-            let claims = AnchoredRoot::claims(&parent, false).unwrap().unwrap();
+            let claims = AnchoredRoot::claims(&Authority::Process, &parent, false)
+                .unwrap()
+                .unwrap();
             std::fs::write(path.join(format!("{id}.ready")), b"ready").unwrap();
             let deadline = Instant::now() + Duration::from_secs(30);
             while !path.join("go").try_exists().unwrap() {
@@ -1383,7 +1410,9 @@ mod tests {
                 windows_fs::open_directory(temp.path(), FILE_GENERIC_READ | FILE_GENERIC_WRITE)
                     .unwrap();
             windows_fs::set_empty_directory_case_policy(&parent, sensitive).unwrap();
-            let claims = AnchoredRoot::claims(&parent, true).unwrap().unwrap();
+            let claims = AnchoredRoot::claims(&Authority::Process, &parent, true)
+                .unwrap()
+                .unwrap();
             let mut children: Vec<_> = [("one", "Report.txt"), ("two", second)]
                 .into_iter()
                 .map(|(id, target)| {

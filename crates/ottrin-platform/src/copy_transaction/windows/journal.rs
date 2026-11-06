@@ -1,4 +1,5 @@
 //! Paired Copy staging/publication/permission records. Inspection never grants mutation.
+use super::authority::Authority;
 use super::{
     EntryVersion, PlatformError, WindowsStableIdentity, io, links, metadata, namespace, security,
     stable_identity_from_handle, tree,
@@ -21,6 +22,8 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 
 mod claims;
+#[cfg(test)]
+pub(super) use claims::exercise_caller_claims;
 mod cleanup;
 mod cleanup_action;
 mod initialization;
@@ -1337,30 +1340,6 @@ impl OriginalMove {
         }
     }
 }
-fn identity_at(
-    parent: &File,
-    name: &OsStr,
-    expected: WindowsStableIdentity,
-) -> Result<bool, PlatformError> {
-    match unsafe {
-        windows_fs::open_relative(
-            parent,
-            name,
-            RelativeOptions {
-                directory: None,
-                create_new: false,
-                access: windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES
-                    | windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE,
-                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                security: ptr::null(),
-            },
-        )
-    } {
-        Ok(file) => Ok(stable_identity_from_handle(&file).map_err(io)? == expected),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
-        Err(error) => Err(io(error)),
-    }
-}
 struct Journal {
     claim: Option<claims::Lease>,
     local: File,
@@ -1515,9 +1494,15 @@ impl Journal {
         let header = snapshot.state.header.as_ref().unwrap().clone();
         drop(snapshot.claim);
         let claim = if snapshot.state.claim_terminal() {
-            claims::Lease::observe_terminal(parent, &header.claim)?
+            claims::Lease::observe_terminal(&Authority::Process, parent, &header.claim)?
         } else {
-            Some(claims::Lease::open(parent, &header.claim, false, true)?)
+            Some(claims::Lease::open(
+                &Authority::Process,
+                parent,
+                &header.claim,
+                false,
+                true,
+            )?)
         };
         let mut result = Self {
             claim,
@@ -1950,8 +1935,8 @@ impl Journal {
         };
         let resolve = |intent: bool, completed: bool| -> Result<OsString, PlatformError> {
             match (
-                identity_at(&self.parent_dir, &from, base.identity)?,
-                identity_at(&self.parent_dir, &to, base.identity)?,
+                Authority::Process.identity_at(&self.parent_dir, &from, base.identity)?,
+                Authority::Process.identity_at(&self.parent_dir, &to, base.identity)?,
             ) {
                 (true, false) if !completed => Ok(from.clone()),
                 (false, true) if intent => Ok(to.clone()),
@@ -2052,8 +2037,8 @@ impl Journal {
         drop((tree, read));
         original_handoff(self.sequence)?;
         let name = match (
-            identity_at(&self.parent_dir, &from, base.identity)?,
-            identity_at(&self.parent_dir, &to, base.identity)?,
+            Authority::Process.identity_at(&self.parent_dir, &from, base.identity)?,
+            Authority::Process.identity_at(&self.parent_dir, &to, base.identity)?,
         ) {
             (true, false) => from.clone(),
             (false, true) => to.clone(),
@@ -2457,7 +2442,13 @@ impl<'a> DurableStage<'a> {
         source.reject_destination_parent(central)?;
         destination.validate(parent)?;
         let transaction = super::super::random_transaction_id()?;
-        let claim = claims::Lease::acquire(parent, central, &destination.target, &transaction)?;
+        let claim = claims::Lease::acquire(
+            &Authority::Process,
+            parent,
+            central,
+            &destination.target,
+            &transaction,
+        )?;
         if let Err(error) = destination.validate(parent) {
             return Err(claim.abort_unstarted(error));
         }
@@ -3202,9 +3193,15 @@ impl Snapshot {
         let mut result = Self::read_pair(parent, central, name, access, control, None)?;
         let header = result.state.header.as_ref().unwrap();
         result.claim = if result.state.claim_terminal() {
-            claims::Lease::observe_terminal(parent, &header.claim)?
+            claims::Lease::observe_terminal(&Authority::Process, parent, &header.claim)?
         } else {
-            Some(claims::Lease::open(parent, &header.claim, false, false)?)
+            Some(claims::Lease::open(
+                &Authority::Process,
+                parent,
+                &header.claim,
+                false,
+                false,
+            )?)
         };
         result.revalidate(parent, central)?;
         Ok(result)
@@ -3444,8 +3441,8 @@ impl HeldOriginal {
             )
         };
         let name = match (
-            identity_at(parent, &from, base.identity)?,
-            identity_at(parent, &to, base.identity)?,
+            Authority::Process.identity_at(parent, &from, base.identity)?,
+            Authority::Process.identity_at(parent, &to, base.identity)?,
         ) {
             (true, false) if completed.is_none() => from,
             (false, true) if intent => to.clone(),
@@ -5097,12 +5094,13 @@ mod tests {
         let journal = original_journal(root, name);
         let old_slot = if journal.state.original_restored.is_some()
             || (journal.state.original_restore_intent
-                && identity_at(
-                    &journal.parent_dir,
-                    OsStr::new("copy"),
-                    journal.state.original_retained.as_ref().unwrap().identity,
-                )
-                .unwrap())
+                && Authority::Process
+                    .identity_at(
+                        &journal.parent_dir,
+                        OsStr::new("copy"),
+                        journal.state.original_retained.as_ref().unwrap().identity,
+                    )
+                    .unwrap())
         {
             root.join("destination/copy")
         } else {
@@ -5236,7 +5234,10 @@ mod tests {
                 .version
                 .identity;
             let parent = owner(&root.join("destination"));
-            let old = if identity_at(&parent, OsStr::new("copy"), old_id).unwrap() {
+            let old = if Authority::Process
+                .identity_at(&parent, OsStr::new("copy"), old_id)
+                .unwrap()
+            {
                 root.join("destination/copy")
             } else {
                 root.join("destination").join(header.original_name())
@@ -8772,8 +8773,14 @@ mod tests {
         let mut claims = Vec::new();
         for name in &names {
             let transaction = super::super::super::random_transaction_id().unwrap();
-            let claim =
-                claims::Lease::acquire(&parent, &central, OsStr::new(name), &transaction).unwrap();
+            let claim = claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new(name),
+                &transaction,
+            )
+            .unwrap();
             claim.validate(false).unwrap();
             claims.push(claim);
         }
@@ -8781,6 +8788,7 @@ mod tests {
             let transaction = super::super::super::random_transaction_id().unwrap();
             assert!(matches!(
                 claims::Lease::acquire(
+                    &Authority::Process,
                     &parent,
                     &central,
                     OsStr::new(&name.to_uppercase()),
@@ -8795,8 +8803,14 @@ mod tests {
         }
         for name in names {
             let transaction = super::super::super::random_transaction_id().unwrap();
-            let claim =
-                claims::Lease::acquire(&parent, &central, OsStr::new(&name), &transaction).unwrap();
+            let claim = claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new(&name),
+                &transaction,
+            )
+            .unwrap();
             claim.validate(false).unwrap();
             let error = claim.abort_unstarted(PlatformError::Io("cancelled before staging".into()));
             assert!(matches!(error, PlatformError::Io(_)));
@@ -8810,8 +8824,14 @@ mod tests {
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
         let transaction = super::super::super::random_transaction_id().unwrap();
-        let claim =
-            claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &transaction).unwrap();
+        let claim = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &transaction,
+        )
+        .unwrap();
         let prepared = super::initialization::prepare(&central, &transaction).unwrap();
         let stage = namespace::PrivateStage::for_transaction(&parent, &transaction).unwrap();
         let mut journal = Journal::create(

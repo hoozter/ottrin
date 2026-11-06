@@ -27,8 +27,14 @@ fn windows_native_copy_claim_retirement_keeps_terminal_cleanup_independent_of_ne
     let mirror = root.path().join("central").join(header.central_name());
     let journal = std::fs::read(&local).unwrap();
     let old_identity = header.claim.identities()[4];
-    let next =
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"b".repeat(32)).unwrap();
+    let next = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &"b".repeat(32),
+    )
+    .unwrap();
     assert_ne!(next.binding().identities()[4], old_identity);
     assert_eq!(std::fs::read(&local).unwrap(), journal);
     assert_eq!(std::fs::read(&mirror).unwrap(), journal);
@@ -51,8 +57,14 @@ fn windows_native_copy_claim_retirement_keeps_terminal_cleanup_independent_of_ne
         next.abort_unstarted(io("owned test cancellation")),
         PlatformError::Io(_)
     ));
-    let fresh =
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"c".repeat(32)).unwrap();
+    let fresh = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &"c".repeat(32),
+    )
+    .unwrap();
     assert_ne!(fresh.binding().identities()[4], old_identity);
     assert_ne!(std::fs::read(&claim_path).unwrap(), retained_log);
     assert!(matches!(
@@ -184,7 +196,13 @@ fn windows_native_copy_claim_retirement_errors_and_exits_preserve_recovery() {
         claims::RETIREMENT_FAULT.with(|fault| fault.set(Some((point, true))));
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        let result = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"b".repeat(32));
+        let result = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"b".repeat(32),
+        );
         panic!("Retirement exit boundary not reached: {:?}", result.err());
     }
     for (index, point) in RETIRE_POINTS.into_iter().enumerate() {
@@ -221,8 +239,13 @@ fn windows_native_copy_claim_retirement_errors_and_exits_preserve_recovery() {
             } else {
                 let reset = RetirementReset;
                 claims::RETIREMENT_FAULT.with(|fault| fault.set(Some((point, false))));
-                let result =
-                    claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"b".repeat(32));
+                let result = claims::Lease::acquire(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    OsStr::new("copy"),
+                    &"b".repeat(32),
+                );
                 assert!(
                     matches!(result, Err(PlatformError::Io(message)) if message.contains("injected Copy claim retirement failure"))
                 );
@@ -242,9 +265,14 @@ fn windows_native_copy_claim_retirement_errors_and_exits_preserve_recovery() {
             let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
             assert!(snapshot.state.undo_complete());
             drop(snapshot);
-            let next =
-                claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"c".repeat(32))
-                    .unwrap();
+            let next = claims::Lease::acquire(
+                &Authority::Process,
+                &parent,
+                &central,
+                OsStr::new("copy"),
+                &"c".repeat(32),
+            )
+            .unwrap();
             assert_ne!(next.binding().identities()[4], header.claim.identities()[4]);
             next.validate(false).unwrap();
             assert!(
@@ -265,20 +293,24 @@ fn windows_native_copy_claim_retirement_yields_to_a_new_process_owner() {
         let root = Path::new(&root);
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        let lease =
-            match claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"c".repeat(32)) {
-                Ok(lease) => Some(lease),
-                Err(PlatformError::Io(message))
-                    if message.ends_with("(os error 32)")
-                        || message.ends_with("(os error 303)")
-                        || (std::env::var("OTTRIN_TEST_RETIRE_HANDOFF").as_deref()
-                            == Ok("Marked")
-                            && message.ends_with("(os error 5)")) =>
-                {
-                    None
-                }
-                Err(error) => panic!("Unexpected publisher failure: {error:?}"),
-            };
+        let lease = match claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"c".repeat(32),
+        ) {
+            Ok(lease) => Some(lease),
+            Err(PlatformError::Io(message))
+                if message.ends_with("(os error 32)")
+                    || message.ends_with("(os error 303)")
+                    || (std::env::var("OTTRIN_TEST_RETIRE_HANDOFF").as_deref() == Ok("Marked")
+                        && message.ends_with("(os error 5)")) =>
+            {
+                None
+            }
+            Err(error) => panic!("Unexpected publisher failure: {error:?}"),
+        };
         let temporary = root.join("publisher-ready.tmp");
         std::fs::write(
             &temporary,
@@ -328,7 +360,13 @@ fn windows_native_copy_claim_retirement_yields_to_a_new_process_owner() {
         });
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        let result = claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"b".repeat(32));
+        let result = claims::Lease::acquire(
+            &Authority::Process,
+            &parent,
+            &central,
+            OsStr::new("copy"),
+            &"b".repeat(32),
+        );
         drop(reset);
         let binding: Option<claims::Binding> =
             serde_json::from_slice(&std::fs::read(root.path().join("publisher-ready")).unwrap())
@@ -349,11 +387,18 @@ fn windows_native_copy_claim_retirement_yields_to_a_new_process_owner() {
                 .join("destination")
                 .join(binding.test_relative_path());
             let bytes = std::fs::read(&ledger).unwrap();
-            let observed = claims::Lease::open(&parent, &binding, false, false).unwrap();
+            let observed =
+                claims::Lease::open(&Authority::Process, &parent, &binding, false, false).unwrap();
             observed.validate(false).unwrap();
             drop(observed);
             assert!(matches!(
-                claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &"d".repeat(32)),
+                claims::Lease::acquire(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    OsStr::new("copy"),
+                    &"d".repeat(32)
+                ),
                 Err(PlatformError::DestinationExists(_))
             ));
             assert_eq!(std::fs::read(&ledger).unwrap(), bytes);

@@ -416,7 +416,7 @@ impl DestinationSecurity {
                 )
             };
             if error != 0 {
-                return Err(std::io::Error::from_raw_os_error(error as i32));
+                return Err(io(std::io::Error::from_raw_os_error(error as i32)));
             }
             Ok(())
         };
@@ -424,11 +424,7 @@ impl DestinationSecurity {
         // helper must retain its scoped file privileges during that operation,
         // including when the caller-owned parent does not grant helper access.
         // The descriptor itself still derives from the original caller token.
-        match &self.authority {
-            super::authority::Authority::Process => apply(),
-            super::authority::Authority::Caller(_) => windows_fs::with_file_privileges(apply),
-        }
-        .map_err(io)?;
+        self.authority.file_operation(apply)?;
         self.validate_candidate(candidate)?;
         self.binding(parent, name, candidate)?;
         Ok(())
@@ -506,7 +502,7 @@ pub(super) mod tests {
             .open(path)
             .unwrap()
     }
-    pub(super) fn dacl(file: &File, sddl: &str) {
+    pub(in super::super) fn dacl(file: &File, sddl: &str) {
         let descriptor = LocalSecurity::from_sddl(sddl).unwrap();
         let (mut present, mut defaulted, mut acl) = (0, 0, ptr::null_mut());
         assert_ne!(

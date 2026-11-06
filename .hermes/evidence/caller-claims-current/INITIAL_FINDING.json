@@ -1,0 +1,7 @@
+{
+  "status": "native caller claim publication refused and preparation retained",
+  "trial": "native-initial",
+  "error": "Native no-replace claim rename returns access denied under ambient SYSTEM after the create/open file privilege scope has ended",
+  "evidence": "Failure is CleanupPending at first caller claim, with unpublished .preparing-... path; native rename returns unprefixed PlatformError::Io while claim open/capture/flush checks use the Copy staging error prefix. All ordinary claim/preparation/lifecycle regression invocations pass.",
+  "next": "Keep scoped helper privileges active for the existing native claim rename. Preserve no-replace, complete first-frame, native anchor/identity/security and flush requirements."
+}

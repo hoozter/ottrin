@@ -1,0 +1,125 @@
+{
+  "status": "pass original-caller claims and ordinary reservation lifecycle regressions",
+  "archive_sha256": "b6798fab34e6ea7053c074461b4c2cbe1e654289be9bde283b5d70e4bbec7c34",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 23,
+  "top_level_passes": 100,
+  "caller_case_contexts": [
+    false,
+    true
+  ],
+  "caller_names": [
+    "copy",
+    "Long original caller destination \u03a9.txt"
+  ],
+  "binding": "BUILD_BINDING.json",
+  "compiler_jsonl_sha256": "adddec19e1c2e7a45686da2bb8218b25cb7666dfef7de3e6a87e3b4d74a86ce6",
+  "ordinary_and_system_runs": [
+    {
+      "case": "ordinary cross-principal client",
+      "exit": 0
+    },
+    {
+      "case": "native Copy security regressions",
+      "exit": 0
+    },
+    {
+      "case": "native registry and namespace regressions",
+      "exit": 0
+    },
+    {
+      "case": "large canonical security-plan codec regression",
+      "exit": 0
+    },
+    {
+      "case": "ordinary metadata and directory payload regressions",
+      "exit": 0
+    },
+    {
+      "case": "ordinary sparse payload regressions",
+      "exit": 0
+    },
+    {
+      "case": "claim ledger and preparation native controls",
+      "exit": 0
+    },
+    {
+      "case": "claim orphan recovery",
+      "exit": 0
+    },
+    {
+      "case": "claim process exclusion",
+      "exit": 0
+    },
+    {
+      "case": "claim preparation publication",
+      "exit": 0
+    },
+    {
+      "case": "claim terminal release",
+      "exit": 0
+    },
+    {
+      "case": "claim release repair",
+      "exit": 0
+    },
+    {
+      "case": "claim retirement and foreign controls",
+      "exit": 0
+    },
+    {
+      "case": "journal initialization preservation",
+      "exit": 0
+    },
+    {
+      "case": "name release admission",
+      "exit": 0
+    },
+    {
+      "case": "unstarted abort reservation",
+      "exit": 0
+    },
+    {
+      "case": "saved ancestry binding and torn cohort checkpoint regression",
+      "exit": 0
+    },
+    {
+      "case": "caller private helper",
+      "exit": 0
+    },
+    {
+      "case": "SYSTEM native symbolic-link security",
+      "exit": 0
+    },
+    {
+      "case": "native tree regressions with symbolic-link capability",
+      "exit": 0
+    },
+    {
+      "case": "native whole-tree security-plan regressions",
+      "exit": 0
+    },
+    {
+      "case": "SYSTEM destination default-DACL regression",
+      "exit": 0
+    },
+    {
+      "case": "SYSTEM native audit-SACL security",
+      "exit": 0
+    }
+  ],
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "private_console_observer_profile_absent": true
+  },
+  "limits": "Pre-journal original-caller reservation and complete preparation lifecycle, plus ordinary paired journal regressions. Actual caller paired journals, restart/Undo/cleanup, dispatcher, UAC and package integration remain open."
+}

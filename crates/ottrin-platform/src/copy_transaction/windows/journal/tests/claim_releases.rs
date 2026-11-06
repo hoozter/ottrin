@@ -137,8 +137,14 @@ fn windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_t
     assert_eq!(std::fs::read(&mirror).unwrap(), terminal);
     // Old terminal journals cannot repair a later generation's partial release.
     let transaction = super::super::super::super::random_transaction_id().unwrap();
-    let later =
-        claims::Lease::acquire(&parent, &central, OsStr::new("copy"), &transaction).unwrap();
+    let later = claims::Lease::acquire(
+        &Authority::Process,
+        &parent,
+        &central,
+        OsStr::new("copy"),
+        &transaction,
+    )
+    .unwrap();
     assert!(matches!(
         later.abort_unstarted(io("owned future generation cancellation")),
         PlatformError::Io(_)
