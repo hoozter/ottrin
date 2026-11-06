@@ -16,5 +16,17 @@
     "change": "CRLF to LF only",
     "before_sha256": "8d21641f2376dabd45336948794bb0ade95d2598194ca09e5357c3b86d31f210",
     "after_sha256": "9c87829a95380d5f5748df9a9a86ee8aab8104a86aae0a5c2eeba0ba712d57bc"
+  },
+  {
+    "path": "native/EARLY_SYSTEM_RESULT.json",
+    "change": "Normalize diagnostic JSON indentation and line endings; parsed value unchanged and equal to final SYSTEM_RESULT.json",
+    "before_sha256": "fa11241427ce726a82eaa5282d70cb8c8dcc965583ef40c40f1de4a46e6dbcaf",
+    "after_sha256": "d7fdead69b40d60aa0b3b5a62e3ef8aad9e88699ebacaf8040770a5d817daada"
+  },
+  {
+    "path": "native-fixed/EARLY_SYSTEM_RESULT.json",
+    "change": "Normalize diagnostic JSON indentation and line endings; parsed value unchanged and equal to final SYSTEM_RESULT.json",
+    "before_sha256": "8267c5a408b71b1bb3c4b7e3f6184d12f3a94fd5adab11eb196083786c17abbf",
+    "after_sha256": "f0972aa70f28e17d79bf1000e48040f5ca766e0ca7453f9e59f2b8e5eeccf105"
   }
 ]
