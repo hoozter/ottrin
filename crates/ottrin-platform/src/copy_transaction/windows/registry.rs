@@ -199,7 +199,12 @@ impl AnchoredRoot {
                 ));
             }
             let source = super::dispatch::Source::open(source)?;
-            source.reject_overlap(&path, true, &mut |_| caller.validate().map_err(io))?;
+            // Directory-source overlap checks must inspect existing private
+            // caller ancestry before initialization. Retain helper file access
+            // for that bounded native traversal; it never provisions state.
+            Authority::Caller(Arc::clone(&caller)).file_operation(|| {
+                source.reject_overlap(&path, true, &mut |_| caller.validate().map_err(io))
+            })?;
             admitted.push(source);
         }
         let Some(parent) = caller.registry_parent(initialize).map_err(io)? else {
@@ -628,7 +633,7 @@ impl AnchoredRoot {
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         source: &Path,
         mut as_original_owner: impl FnMut(&mut dyn FnMut()),
-    ) {
+    ) -> (File, File) {
         use std::io::{Seek, Write};
         use std::os::windows::io::AsRawHandle;
         use windows_sys::Win32::Security::{
@@ -856,6 +861,7 @@ impl AnchoredRoot {
         assert_eq!(bytes(&preferences), old_preferences);
         assert_eq!(bytes(&index), old_index);
         caller.validate().unwrap();
+        (preferences, index)
     }
 
     pub(crate) fn exercise_caller_authority(
@@ -1136,6 +1142,23 @@ impl AnchoredRoot {
 
 #[cfg(test)]
 impl AnchoredRoot {
+    pub(crate) fn exercise_caller_journals(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &File,
+        preferences: &File,
+        index: &File,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_journals(
+            caller,
+            parent,
+            source,
+            preferences,
+            index,
+            as_caller,
+        );
+    }
     pub(crate) fn exercise_caller_claims(
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         parent: &File,

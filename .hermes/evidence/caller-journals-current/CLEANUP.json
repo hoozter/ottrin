@@ -1,0 +1,30 @@
+{
+  "status": "complete owned native teardown and consumed-output cleanup",
+  "observed_at": "2026-11-06T05:31:30.494615+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23823106048,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25358307328,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30195634176,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48969490432
+  },
+  "obsolete_incremental_sessions_removed": 35,
+  "measured_cumulative_incremental_free_deltas": 6157131776,
+  "final_incremental_candidates": 0,
+  "native_trials": 4,
+  "consumed_targets_removed": 21,
+  "independent_checks": "All four owned trial domains/two-volume sets/fixtures/private consoles/observers/profiles removed; protected off domains/disks and stock-client base retained; final inventory in VERIFICATION.json. Transient process inspection refusal reviewed and exact remaining targets reprepared without guard bypass.",
+  "available_bytes": 26248876032,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-journals-current",
+      "bytes_at_accounting": 1355776,
+      "purpose": "Compact exact source/build/native/failure/cleanup receipts and bound generic actors/producer; no compiled staging, raw compiler stream, bootstrap controller, readiness images or archive"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Useful shared compiler caches and current paired GNU platform/UI tests for remaining caller publication/receipt/retained recovery/dispatcher work; no extra target tree"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

@@ -1,0 +1,56 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-journals-current/native/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed final owned native journal trial output",
+      "evidence": "Final100/23 passed; exact source/binary binding reverified; archive normalized and hashed; teardown independently checked. Readiness frames are not application acceptance; generated bootstrap controller is disposable."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-journals-current/native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed final owned native journal trial output",
+      "evidence": "Final100/23 passed; exact source/binary binding reverified; archive normalized and hashed; teardown independently checked. Readiness frames are not application acceptance; generated bootstrap controller is disposable."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-journals-current/native/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed final owned native journal trial output",
+      "evidence": "Final100/23 passed; exact source/binary binding reverified; archive normalized and hashed; teardown independently checked. Readiness frames are not application acceptance; generated bootstrap controller is disposable."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-journals-current/native/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed final owned native journal trial output",
+      "evidence": "Final100/23 passed; exact source/binary binding reverified; archive normalized and hashed; teardown independently checked. Readiness frames are not application acceptance; generated bootstrap controller is disposable."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-journals-current/native/controller.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed final owned native journal trial output",
+      "evidence": "Final100/23 passed; exact source/binary binding reverified; archive normalized and hashed; teardown independently checked. Readiness frames are not application acceptance; generated bootstrap controller is disposable."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-journals-current/test-build.jsonl",
+      "kind": "test-fixture",
+      "reason": "Consumed compiler metadata stream",
+      "evidence": "Paired binary hashes/compiler profiles and exact source binding extracted and verified against staged native input and current binaries; full stream hash in VERIFICATION.json and final build log retained."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process, independently identified; preserve. No owned QA guest/compiler live. Exact standalone test artifacts superseded by verified same-configuration replacements; no relevant project/service callers."
+    }
+  ]
+}

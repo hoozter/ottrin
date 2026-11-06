@@ -35,9 +35,17 @@ pub(super) fn partial_stage_at(root: &Path, registry: &Path, destination: &Path,
         let parent = owner(destination);
         let central = owner(registry);
         let admission = if overwrite {
-            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap()
+            DestinationAdmission::overwrite(
+                &Authority::Process,
+                &parent,
+                OsStr::new("copy"),
+                100,
+                |_| Ok(()),
+            )
+            .unwrap()
         } else {
-            DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+            DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                .unwrap()
         };
         let error = DurableStage::create(
             &input,
@@ -174,6 +182,7 @@ fn windows_native_copy_end_staging_refuses_live_changed_and_verified_controls() 
     let parent = owner(&root.path().join("destination"));
     let central = owner(&registry);
     let snapshot = Snapshot::load(
+        &Authority::Process,
         &parent,
         &central,
         &header.stage_name(),

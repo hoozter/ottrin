@@ -57,9 +57,16 @@ fn prepared(root: &Path, overwrite: bool, readonly: bool) -> (OsString, Readonly
     let parent = owner(&root.join("destination"));
     let central = owner(&root.join("central"));
     let admission = if overwrite {
-        DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap()
+        DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new("copy"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap()
     } else {
-        DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+        DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy")).unwrap()
     };
     let input = source(&input);
     let mut staged = DurableStage::create(

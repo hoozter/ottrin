@@ -10,7 +10,8 @@ fn windows_native_copy_verification_cancellation_keeps_unpublished_durable_stage
     let src = source(&root.path().join("source"));
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
-    let destination = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+    let destination =
+        DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy")).unwrap();
     let mut complete_callbacks = 0;
     let error = match DurableStage::create(
         &src,

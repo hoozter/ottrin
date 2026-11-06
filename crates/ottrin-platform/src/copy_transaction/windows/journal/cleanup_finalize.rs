@@ -291,6 +291,7 @@ impl Completion {
         cancel: &mut impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(Snapshot, Dependencies, [EntryVersion; 3]), PlatformError> {
         let snapshot = Snapshot::load(
+            &Authority::Process,
             parent,
             central,
             &self.header.stage_name(),
@@ -361,7 +362,13 @@ impl Completion {
             snapshot.claim,
         ));
         cleanup_handoff(sequence)?;
-        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            parent,
+            central,
+            &name,
+            SnapshotAccess::Write,
+        )?;
         if snapshot.bytes != bytes
             || snapshot_metadata(&snapshot, &mut cancel)? != versions
             || windows_fs::location(parent).map_err(io)? != self.parent_location

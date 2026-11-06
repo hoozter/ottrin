@@ -11,7 +11,16 @@ fn replace_bytes(path: &Path, bytes: &[u8]) {
     file.sync_all().unwrap();
 }
 fn refused(parent: &File, central: &File, name: &OsStr, claim: &Path, before: &[u8]) {
-    assert!(Snapshot::load(parent, central, name, SnapshotAccess::Read).is_err());
+    assert!(
+        Snapshot::load(
+            &Authority::Process,
+            parent,
+            central,
+            name,
+            SnapshotAccess::Read
+        )
+        .is_err()
+    );
     assert_eq!(std::fs::read(claim).unwrap(), before);
     assert!(undo_completed_copy(parent, central, name, |_| Ok(())).is_err());
     assert_eq!(std::fs::read(claim).unwrap(), before);
@@ -23,11 +32,17 @@ fn windows_native_copy_claim_release_recovers_every_exact_prefix_without_rewriti
     let (name, _, _cleanup) = completed_undo_fixture(root.path(), true, false);
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     remove_undo_fixture_source(root.path());
     let local = root.path().join("destination").join(&name).join(LOCAL);
@@ -43,7 +58,14 @@ fn windows_native_copy_claim_release_recovers_every_exact_prefix_without_rewriti
     assert!(full.len() > prefix + FRAME_HEADER);
     for cut in prefix..=full.len() {
         replace_bytes(&claim, &full[..cut]);
-        let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Read,
+        )
+        .unwrap();
         assert!(snapshot.state.undo_complete());
         assert_eq!(
             std::fs::read(&claim).unwrap(),
@@ -75,11 +97,17 @@ fn windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_t
     let (name, _, _cleanup) = completed_undo_fixture(root.path(), false, false);
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     let local = root.path().join("destination").join(&name).join(LOCAL);
     let mirror = root.path().join("central").join(header.central_name());
     let nonterminal = std::fs::read(&local).unwrap();
@@ -153,7 +181,14 @@ fn windows_native_copy_claim_release_preserves_unknown_tails_and_requires_both_t
     assert!(!newer.starts_with(&full));
     let release = FRAME_HEADER + u32::from_le_bytes(newer[8..12].try_into().unwrap()) as usize;
     replace_bytes(&claim, &newer[..release + 12]);
-    let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap();
     assert!(snapshot.claim.is_none());
     drop(snapshot);
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
@@ -177,11 +212,17 @@ fn windows_native_copy_claim_release_keeps_terminal_journals_leased_during_undo_
     let (name, _, _cleanup) = completed_undo_fixture(root.path(), false, false);
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     remove_undo_fixture_source(root.path());
     let stage = root.path().join("destination").join(&name);

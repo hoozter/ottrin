@@ -126,11 +126,17 @@ fn windows_native_copy_orphan_claim_release_keeps_older_recovery_history() {
     let (name, _, _cleanup) = completed_undo_fixture(root.path(), true, false);
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     let local = root.path().join("destination").join(&name).join(LOCAL);
     let mirror = root.path().join("central").join(header.central_name());
@@ -171,10 +177,16 @@ fn windows_native_copy_orphan_claim_release_keeps_older_recovery_history() {
     assert_eq!(std::fs::read(&local).unwrap(), journal);
     assert_eq!(std::fs::read(&mirror).unwrap(), journal);
     assert!(
-        Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-            .unwrap()
-            .state
-            .undo_complete()
+        Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Read
+        )
+        .unwrap()
+        .state
+        .undo_complete()
     );
     assert_eq!(
         std::fs::read(

@@ -1,0 +1,7 @@
+{
+  "status": "caller canonical registry source admission denied for populated directory context",
+  "trial": "native-directory-overlap",
+  "error": "caller.rs18 copy_registry: Access is denied; readonly observer acquisition no longer fails",
+  "source_finding": "dispatch::Source::reject_overlap opens every existing registry-path ancestor for directory sources. Private caller-owned ancestors require scoped helper backup access; file sources return before this traversal.",
+  "correction": "Canonical caller factory retains explicit helper file privileges for the unchanged source-overlap traversal, before any directory initialization; keep all native overlap and caller liveness checks."
+}

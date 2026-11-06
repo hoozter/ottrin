@@ -1,4 +1,5 @@
 //! Path/conflict admission for the native Copy transaction engine.
+use super::authority::Authority;
 use super::{io, journal, namespace, security, stable_identity_from_handle, version};
 use crate::{ConflictAction, PathMoveUndoReceipt, PlatformError, windows_fs};
 use std::{
@@ -220,12 +221,15 @@ fn copy_admitted_source(
                 continue;
             }
             (Some(_), ConflictAction::Overwrite) => journal::DestinationAdmission::overwrite(
+                &Authority::Process,
                 &parent,
                 &target,
                 max_entries,
                 &mut guarded_progress,
             )?,
-            (None, _) => journal::DestinationAdmission::creation(&parent, &target)?,
+            (None, _) => {
+                journal::DestinationAdmission::creation(&Authority::Process, &parent, &target)?
+            }
         };
         let _dependencies =
             admission.guard_overwrite_dependencies(&parent, central, &mut guarded_progress)?;

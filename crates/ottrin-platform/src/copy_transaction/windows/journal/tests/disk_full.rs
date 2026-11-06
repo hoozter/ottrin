@@ -379,7 +379,9 @@ fn windows_native_copy_payload_disk_full_preserves_source_and_unpublished_stage(
             parent_id.volume_serial_number(),
             central_id.volume_serial_number()
         );
-        let admission = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+        let admission =
+            DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                .unwrap();
         DurableStage::create(
             &src,
             &parent,

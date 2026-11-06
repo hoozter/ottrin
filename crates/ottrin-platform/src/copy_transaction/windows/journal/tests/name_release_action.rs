@@ -22,11 +22,17 @@ fn prepared(root: &Path, undone: bool) -> (PathBuf, Header, PathBuf, Vec<u8>, Re
     );
     let parent = owner(&root.join("destination"));
     let central = owner(&registry);
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     if undone {
         undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     } else {

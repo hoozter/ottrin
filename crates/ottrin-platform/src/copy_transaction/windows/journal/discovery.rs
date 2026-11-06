@@ -439,8 +439,13 @@ impl RegisteredJournal {
         central: &File,
     ) -> Result<Vec<File>, PlatformError> {
         let header = self.state.header.as_ref().unwrap();
-        let snapshot =
-            Snapshot::read_with_control(&parent, central, &header.stage_name(), &self.file)?;
+        let snapshot = Snapshot::read_with_control(
+            &Authority::Process,
+            &parent,
+            central,
+            &header.stage_name(),
+            &self.file,
+        )?;
         if snapshot.bytes != self.bytes {
             return Err(io("Copy dependency journals disagree; mutation refused"));
         }
@@ -576,6 +581,7 @@ pub fn discover_at_with_progress(
                     .is_some_and(|cleanup| cleanup.metadata_removal_intent)
             {
                 let snapshot = Snapshot::load(
+                    &Authority::Process,
                     &parent,
                     &central,
                     &header.stage_name(),
@@ -619,6 +625,7 @@ pub fn discover_at_with_progress(
                 return Ok(WindowsCopyRecoveryEvidence::VerifiedCleanup);
             }
             let snapshot = Snapshot::load(
+                &Authority::Process,
                 &parent,
                 &central,
                 &header.stage_name(),

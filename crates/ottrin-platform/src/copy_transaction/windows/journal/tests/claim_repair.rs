@@ -41,11 +41,17 @@ fn prepared(root: &Path, orphan: bool) -> Fixture {
     );
     let parent = owner(&root.join("destination"));
     let central = owner(&central_path);
-    let header = Snapshot::load(&parent, &central, &stage, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &stage,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     undo_completed_copy(&parent, &central, &stage, |_| Ok(())).unwrap();
     let ledger = root
         .join("destination")
@@ -174,10 +180,16 @@ fn windows_native_copy_orphan_release_recovers_every_exact_prefix_without_rewrit
         let parent = owner(&root.path().join("destination"));
         let central = owner(&registry(root.path()));
         assert!(
-            Snapshot::load(&parent, &central, &fixture.stage, SnapshotAccess::Read)
-                .unwrap()
-                .state
-                .undo_complete()
+            Snapshot::load(
+                &Authority::Process,
+                &parent,
+                &central,
+                &fixture.stage,
+                SnapshotAccess::Read
+            )
+            .unwrap()
+            .state
+            .undo_complete()
         );
     }
     // A complete release needs no repair and is atomically replaced on reuse.

@@ -1199,8 +1199,13 @@ impl Observation {
                     &selection,
                     &mut cancel,
                 )?;
-                let snapshot =
-                    Snapshot::load(&parent, central, &header.stage_name(), SnapshotAccess::Read)?;
+                let snapshot = Snapshot::load(
+                    &Authority::Process,
+                    &parent,
+                    central,
+                    &header.stage_name(),
+                    SnapshotAccess::Read,
+                )?;
                 let manifest;
                 let (manifest, completed) = if let Some(progress) = &snapshot.state.cleanup {
                     (&progress.manifest, progress.completed)

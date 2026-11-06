@@ -1,0 +1,6 @@
+{
+  "status": "fixture observation permission error; no journal execution yet",
+  "trial": "native-observer-initial",
+  "error": "caller.rs19 reading caller-private preferences.ini as SYSTEM after canonical ancestor-policy test",
+  "correction": "Observe owned fixture preferences/index under the actual original user. Compare full bytes, native identities and owner/group/DACL before and after journal operations. No production access or validation broadened."
+}

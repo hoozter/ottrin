@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "source_files": 29,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 410890240,
+    "sha256": "e893432ccd44f951634debc2c206eaaa4caa747b66db0c8df1d988e18f20f8fc"
+  },
+  "native_result": "pending pinned readonly observer and real caller paired journal scenarios"
+}

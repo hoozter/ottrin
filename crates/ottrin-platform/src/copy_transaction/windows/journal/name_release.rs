@@ -34,6 +34,7 @@ impl RetainedCopyNameReleasePlan {
             &mut progress,
         )?;
         let snapshot = Snapshot::load(
+            &Authority::Process,
             &parent,
             registry.root(),
             &header.stage_name(),
@@ -99,6 +100,7 @@ impl RetainedCopyNameReleasePlan {
             &mut progress,
         )?;
         let snapshot = Snapshot::load(
+            &Authority::Process,
             &parent,
             registry.root(),
             &self.header.stage_name(),

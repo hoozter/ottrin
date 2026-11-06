@@ -55,8 +55,14 @@ impl Fixture {
     }
     fn guard(&self, name: &str) -> Result<Vec<File>, PlatformError> {
         let parent = owner(&self.parent);
-        DestinationAdmission::overwrite(&parent, OsStr::new(name), 100, |_| Ok(()))?
-            .guard_overwrite_dependencies(&parent, &owner(&self.registry), |_| Ok(()))
+        DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new(name),
+            100,
+            |_| Ok(()),
+        )?
+        .guard_overwrite_dependencies(&parent, &owner(&self.registry), |_| Ok(()))
     }
     fn observe_cleanup(&self) -> Result<RetainedCopyCleanupPlan, PlatformError> {
         RetainedCopyCleanupPlan::observe_at(
@@ -167,8 +173,14 @@ fn windows_native_copy_ended_attempt_still_protects_recorded_created_aliases() {
     let id = {
         let parent = owner(&fixture.parent);
         let central = owner(&fixture.registry);
-        let admission =
-            DestinationAdmission::overwrite(&parent, OsStr::new("alias"), 100, |_| Ok(())).unwrap();
+        let admission = DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new("alias"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
         let receipt = DurableStage::execute_with_receipt(
             &source(&input),
             &parent,
@@ -211,6 +223,7 @@ fn windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair
         } else {
             Some(
                 Snapshot::load(
+                    &Authority::Process,
                     &owner(&peer_parent),
                     &owner(&fixture.registry),
                     &fixture.peer.stage_name(),
@@ -250,8 +263,14 @@ fn windows_native_copy_ended_dependency_requires_immutable_matching_journal_pair
                 let parent = owner(&fixture.parent);
                 let central = owner(&fixture.registry);
                 let own_name = OsString::from(format!(".ottrin-copy-{}", fixture.own_id));
-                let snapshot =
-                    Snapshot::load(&parent, &central, &own_name, SnapshotAccess::Read).unwrap();
+                let snapshot = Snapshot::load(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    &own_name,
+                    SnapshotAccess::Read,
+                )
+                .unwrap();
                 let manifest = snapshot.state.cleanup_manifest().unwrap();
                 let dependencies = super::super::cleanup_dependencies::Dependencies::open_selected(
                     &central,

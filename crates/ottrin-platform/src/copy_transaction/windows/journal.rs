@@ -21,7 +21,11 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 
+#[cfg(test)]
+mod caller;
 mod claims;
+#[cfg(test)]
+pub(super) use caller::exercise_caller_journals;
 #[cfg(test)]
 pub(super) use claims::exercise_caller_claims;
 mod cleanup;
@@ -75,9 +79,10 @@ struct OriginalAdmission {
     count: usize,
     digest: [u8; 32],
 }
-/// The exact destination decision made before staging. No handles survive
-/// admission; the complete original digest becomes part of both journal headers.
+/// The exact destination decision and runtime authority admitted before staging.
+/// No destination handles survive; the original digest is journaled, never authority.
 pub(super) struct DestinationAdmission {
+    authority: Authority,
     parent: WindowsStableIdentity,
     case_sensitive: bool,
     location: std::path::PathBuf,
@@ -86,13 +91,19 @@ pub(super) struct DestinationAdmission {
     original_objects: BTreeSet<(u64, [u8; 16])>,
 }
 impl DestinationAdmission {
-    fn at_parent(parent: &File, target: &OsStr) -> Result<Self, PlatformError> {
+    fn at_parent(
+        authority: &Authority,
+        parent: &File,
+        target: &OsStr,
+    ) -> Result<Self, PlatformError> {
         windows_fs::valid_component(target).map_err(io)?;
         let parent_id = stable_identity_from_handle(parent).map_err(io)?;
         if !parent_id.is_directory_without_reparse() {
             return Err(io("Copy destination parent is not a real directory"));
         }
+        authority.validate()?;
         Ok(Self {
+            authority: authority.clone(),
             parent: parent_id,
             case_sensitive: windows_fs::directory_case_sensitive(parent).map_err(io)?,
             location: windows_fs::location(parent).map_err(io)?,
@@ -101,18 +112,23 @@ impl DestinationAdmission {
             original_objects: BTreeSet::new(),
         })
     }
-    pub(super) fn creation(parent: &File, target: &OsStr) -> Result<Self, PlatformError> {
-        let result = Self::at_parent(parent, target)?;
+    pub(super) fn creation(
+        authority: &Authority,
+        parent: &File,
+        target: &OsStr,
+    ) -> Result<Self, PlatformError> {
+        let result = Self::at_parent(authority, parent, target)?;
         result.validate(parent)?;
         Ok(result)
     }
     pub(super) fn overwrite(
+        authority: &Authority,
         parent: &File,
         target: &OsStr,
         max_entries: usize,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        let mut result = Self::at_parent(parent, target)?;
+        let mut result = Self::at_parent(authority, parent, target)?;
         let root = namespace::open_source(parent, target, None)?;
         let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
         let evidence = tree.freeze_existing(&mut progress)?;
@@ -208,6 +224,7 @@ impl DestinationAdmission {
         Ok(leases)
     }
     fn validate_parent(&self, parent: &File) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         if stable_identity_from_handle(parent).map_err(io)? != self.parent
             || windows_fs::location(parent).map_err(io)? != self.location
         {
@@ -227,20 +244,7 @@ impl DestinationAdmission {
             }
             namespace::validate_binding(parent, &self.target, expected.identity)
         } else {
-            match unsafe {
-                windows_fs::open_relative(
-                    parent,
-                    &self.target,
-                    RelativeOptions {
-                        directory: None,
-                        create_new: false,
-                        access: windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES
-                            | windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE,
-                        sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        security: ptr::null(),
-                    },
-                )
-            } {
+            match self.authority.probe(parent, &self.target) {
                 Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
                 Err(error) => Err(io(error)),
                 Ok(_) => Err(io("Creation destination is occupied; admission changed")),
@@ -1288,27 +1292,6 @@ fn decode_until(bytes: &[u8], limit: Option<u64>) -> Result<(Decoded, usize), Pl
         at,
     ))
 }
-fn open(
-    parent: &File,
-    name: &OsStr,
-    directory: Option<bool>,
-    access: u32,
-) -> Result<File, PlatformError> {
-    unsafe {
-        windows_fs::open_relative(
-            parent,
-            name,
-            RelativeOptions {
-                directory,
-                create_new: false,
-                access,
-                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                security: ptr::null(),
-            },
-        )
-    }
-    .map_err(io)
-}
 fn bound(
     parent: &File,
     name: &OsStr,
@@ -1341,6 +1324,7 @@ impl OriginalMove {
     }
 }
 struct Journal {
+    authority: Authority,
     claim: Option<claims::Lease>,
     local: File,
     central: File,
@@ -1386,6 +1370,7 @@ impl Journal {
         claim: &mut Option<claims::Lease>,
     ) -> Result<Self, PlatformError> {
         stage.validate()?;
+        let authority = stage.authority.clone();
         destination.validate(stage.parent())?;
         let (parent_id, stage_id) = stage.identities();
         let central_id = stable_identity_from_handle(central).map_err(io)?;
@@ -1400,12 +1385,12 @@ impl Journal {
             .to_owned();
         let central_name = OsString::from(format!("{name}.copy-journal"));
         let preparation_name = initialization::preparation_name(&name);
-        let local =
-            windows_fs::create_private(&stage.directory, OsStr::new(LOCAL), false, FILE_SHARE_READ)
-                .map_err(io)?;
+        let local = authority
+            .create(&stage.directory, OsStr::new(LOCAL), false, FILE_SHARE_READ)
+            .map_err(io)?;
         initialization::boundary(initialization::Point::LocalCreated, stage, central)?;
         initialization::boundary(initialization::Point::ControlsCreated, stage, central)?;
-        let creator = windows_fs::current_owner()?;
+        let creator = authority.owner()?;
         let header = Header {
             stage_security: security::PrivateSecurity::capture(&stage.directory, &creator)?,
             local_security: security::PrivateSecurity::capture(&local, &creator)?,
@@ -1443,6 +1428,7 @@ impl Journal {
         // Keep all setup persistent. Only a complete paired Begin is published in
         // the registry; no setup failure or owner exit may discard added data.
         let mut result = Self {
+            authority,
             claim: claim.take(),
             local,
             central: central_file,
@@ -1465,11 +1451,13 @@ impl Journal {
                 &preparation_name,
             )?;
             initialization::boundary(initialization::Point::HeadersFlushed, stage, central)?;
-            crate::move_transaction::rename_windows_handle_no_replace(
-                &result.central,
-                &result.central_dir,
-                &central_name,
-            )?;
+            result.authority.file_operation(|| {
+                crate::move_transaction::rename_windows_handle_no_replace(
+                    &result.central,
+                    &result.central_dir,
+                    &central_name,
+                )
+            })?;
             initialization::boundary(initialization::Point::Published, stage, central)?;
             result.central_dir.sync_all().map_err(io)?;
             result.bindings()?;
@@ -1490,14 +1478,15 @@ impl Journal {
         snapshot: Snapshot,
     ) -> Result<Self, PlatformError> {
         snapshot.revalidate(parent, central)?;
+        let authority = snapshot.authority.clone();
         let length = snapshot.bytes.len() as u64;
         let header = snapshot.state.header.as_ref().unwrap().clone();
         drop(snapshot.claim);
         let claim = if snapshot.state.claim_terminal() {
-            claims::Lease::observe_terminal(&Authority::Process, parent, &header.claim)?
+            claims::Lease::observe_terminal(&authority, parent, &header.claim)?
         } else {
             Some(claims::Lease::open(
-                &Authority::Process,
+                &authority,
                 parent,
                 &header.claim,
                 false,
@@ -1505,6 +1494,7 @@ impl Journal {
             )?)
         };
         let mut result = Self {
+            authority,
             claim,
             local: snapshot.local,
             central: snapshot.mirror,
@@ -1769,7 +1759,8 @@ impl Journal {
         let target = OsString::from_wide(&self.header.target);
         let root = namespace::open_source(&self.parent_dir, &target, None)?;
         let tree = tree::PinnedTree::open(&root, max_entries, &mut progress)?;
-        namespace::validate_binding(&self.parent_dir, &target, tree.root().identity)?;
+        self.authority
+            .binding(&self.parent_dir, &target, tree.root().identity)?;
         let evidence = tree.freeze_existing(&mut progress)?;
         let mut names = BTreeSet::new();
         for (index, entry) in evidence.entries.iter().enumerate() {
@@ -1850,7 +1841,8 @@ impl Journal {
             // cannot turn an external change into an owned original version.
             if matches!(record, Record::OriginalPlanComplete { .. }) {
                 tree.validate_existing(&evidence, &mut progress)?;
-                namespace::validate_binding(&self.parent_dir, &target, tree.root().identity)?;
+                self.authority
+                    .binding(&self.parent_dir, &target, tree.root().identity)?;
             }
             self.persist(record)?;
         }
@@ -1935,8 +1927,10 @@ impl Journal {
         };
         let resolve = |intent: bool, completed: bool| -> Result<OsString, PlatformError> {
             match (
-                Authority::Process.identity_at(&self.parent_dir, &from, base.identity)?,
-                Authority::Process.identity_at(&self.parent_dir, &to, base.identity)?,
+                self.authority
+                    .identity_at(&self.parent_dir, &from, base.identity)?,
+                self.authority
+                    .identity_at(&self.parent_dir, &to, base.identity)?,
             ) {
                 (true, false) if !completed => Ok(from.clone()),
                 (false, true) if intent => Ok(to.clone()),
@@ -1959,7 +1953,8 @@ impl Journal {
             }
             expected.entries[0].version = version;
             tree.validate_existing(&expected, progress)?;
-            namespace::validate_binding(&self.parent_dir, name, base.identity)?;
+            self.authority
+                .binding(&self.parent_dir, name, base.identity)?;
             Ok(tree.root().clone())
         };
         let name = resolve(intent, completed.is_some())?;
@@ -2037,8 +2032,10 @@ impl Journal {
         drop((tree, read));
         original_handoff(self.sequence)?;
         let name = match (
-            Authority::Process.identity_at(&self.parent_dir, &from, base.identity)?,
-            Authority::Process.identity_at(&self.parent_dir, &to, base.identity)?,
+            self.authority
+                .identity_at(&self.parent_dir, &from, base.identity)?,
+            self.authority
+                .identity_at(&self.parent_dir, &to, base.identity)?,
         ) {
             (true, false) => from.clone(),
             (false, true) => to.clone(),
@@ -2065,7 +2062,8 @@ impl Journal {
         }
         expected.entries[0].version = version;
         tree.validate_existing(&expected, &mut progress)?;
-        namespace::validate_binding(&self.parent_dir, &name, base.identity)?;
+        self.authority
+            .binding(&self.parent_dir, &name, base.identity)?;
         drop(tree);
         progress(0)?;
         root.sync_all().map_err(io)?;
@@ -2088,7 +2086,8 @@ impl Journal {
         version.changed = tree.root().changed;
         expected.entries[0].version = version;
         tree.validate_existing(&expected, &mut progress)?;
-        namespace::validate_binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
+        self.authority
+            .binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
         drop(tree);
         self.finish_creation(kind, &root)?;
         let tree = tree::PinnedTree::open(&root, evidence.entries.len(), &mut progress)?;
@@ -2135,7 +2134,8 @@ impl Journal {
             .unwrap()
             .validate_entry_security(index, &file, self.state.permissions)?;
         namespace::validate_single_link(&file)?;
-        bound(owner, name, evidence.candidate_identity)?;
+        self.authority
+            .binding(owner, name, evidence.candidate_identity)?;
         if self.state.undo_intent {
             self.reserve_undo_tail()?;
         } else {
@@ -2151,7 +2151,8 @@ impl Journal {
         boundary(self.sequence, Step::ReadonlyWritable)?;
         drop(file);
         let file = windows_fs::PerObjectFile::open(owner, name).map_err(io)?;
-        bound(owner, name, evidence.candidate_identity)?;
+        self.authority
+            .binding(owner, name, evidence.candidate_identity)?;
         namespace::validate_single_link(&file)?;
         self.state
             .planned
@@ -2169,7 +2170,8 @@ impl Journal {
         file.sync_all().map_err(io)?;
         boundary(self.sequence, Step::ReadonlyFlushed)?;
         evidence.validate_retained_metadata(&file)?;
-        bound(owner, name, evidence.candidate_identity)?;
+        self.authority
+            .binding(owner, name, evidence.candidate_identity)?;
         self.bindings()?;
         self.failed = false;
         self.persist(Record::ReadonlyReopened {
@@ -2202,7 +2204,7 @@ impl Journal {
             let node = &self.state.nodes[index];
             let name = OsString::from_wide(&node.name);
             let file = windows_fs::PerObjectFile::open(&owner, &name).map_err(io)?;
-            bound(
+            self.authority.binding(
                 &owner,
                 &name,
                 node.staged.as_ref().unwrap().candidate_identity,
@@ -2256,7 +2258,7 @@ impl Journal {
             None => return Err(io("Copy writer lost its destination claim")),
         }
         self.header.validate_parent_policy(&self.parent_dir)?;
-        if windows_fs::current_owner()? != self.header.creator {
+        if self.authority.owner()? != self.header.creator {
             return Err(io("Copy journal writer creator context changed"));
         }
         namespace::validate_single_link(&self.local)?;
@@ -2275,13 +2277,15 @@ impl Journal {
         {
             return Err(io("Copy journal directory identity changed"));
         }
-        bound(
+        self.authority.binding(
             &self.parent_dir,
             &self.header.stage_name(),
             self.header.stage,
         )?;
-        bound(&self.stage_dir, OsStr::new(LOCAL), self.header.local_file)?;
-        bound(&self.central_dir, central_name, self.header.central_file)?;
+        self.authority
+            .binding(&self.stage_dir, OsStr::new(LOCAL), self.header.local_file)?;
+        self.authority
+            .binding(&self.central_dir, central_name, self.header.central_file)?;
         if self.local.metadata().map_err(io)?.len() != self.length
             || self.central.metadata().map_err(io)?.len() != self.length
         {
@@ -2435,6 +2439,7 @@ impl<'a> DurableStage<'a> {
         max_entries: usize,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
+        let authority = &destination.authority;
         destination.validate(parent)?;
         windows_fs::valid_component(source_label).map_err(io)?;
         let source = tree::PinnedTree::open(source, max_entries, &mut progress)?;
@@ -2443,7 +2448,7 @@ impl<'a> DurableStage<'a> {
         destination.validate(parent)?;
         let transaction = super::super::random_transaction_id()?;
         let claim = claims::Lease::acquire(
-            &Authority::Process,
+            authority,
             parent,
             central,
             &destination.target,
@@ -2454,14 +2459,18 @@ impl<'a> DurableStage<'a> {
         }
         // A central review marker exists before any local stage can be left by
         // an interrupted setup. It grants no recovery authority until publication.
-        let prepared = match initialization::prepare(central, &transaction) {
+        let prepared = match initialization::prepare(authority, central, &transaction) {
             Ok(file) => file,
             Err(error) => return Err(claim.abort_unstarted(error)),
         };
         if let Err(error) = prepared.sync_all().and_then(|()| central.sync_all()) {
             return Err(initialization::retained_error(claim, &prepared, io(error)));
         }
-        let stage = match namespace::PrivateStage::for_transaction(parent, &transaction) {
+        let stage = match namespace::PrivateStage::for_transaction_with_authority(
+            parent,
+            &transaction,
+            authority.clone(),
+        ) {
             Ok(stage) => stage,
             Err(error) => return Err(initialization::retained_error(claim, &prepared, error)),
         };
@@ -2532,7 +2541,13 @@ impl<'a> DurableStage<'a> {
             // Native directory rename needs descendant capabilities released.
             drop(staged);
             if destination.original.is_some() {
-                let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+                let snapshot = Snapshot::load(
+                    &Authority::Process,
+                    parent,
+                    central,
+                    &name,
+                    SnapshotAccess::Write,
+                )?;
                 let mut journal = Journal::from_snapshot(parent, central, snapshot)?;
                 journal.prepare_original(max_entries, &mut progress)?;
                 journal.move_original(None, OriginalMove::Retain, &mut progress)?;
@@ -2695,6 +2710,7 @@ fn resume_bound_copy(
         let expected = retained.snapshot.bytes.clone();
         drop(retained);
         let snapshot = Snapshot::load(
+            &Authority::Process,
             parent,
             central,
             &binding.header.stage_name(),
@@ -2768,7 +2784,13 @@ impl PermissionStage {
         let expected = retained.snapshot.bytes.clone();
         let root_name = retained.tree.root_name.clone();
         drop(retained);
-        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            parent,
+            central,
+            &name,
+            SnapshotAccess::Write,
+        )?;
         if snapshot.bytes != expected {
             return Err(io(
                 "Copy journal changed between validation and writer acquisition",
@@ -3100,6 +3122,7 @@ fn read(file: &File) -> Result<Vec<u8>, PlatformError> {
 /// Held journal evidence. Read-only recovery refuses an active writer; explicit
 /// application opens fresh exclusive write handles after read-only validation.
 struct Snapshot {
+    authority: Authority,
     claim: Option<claims::Lease>,
     stage: File,
     local: File,
@@ -3132,26 +3155,7 @@ impl Snapshot {
             .as_ref()
             .unwrap()
             .candidate_identity;
-        let probe = |name: &OsStr| -> Result<bool, PlatformError> {
-            match unsafe {
-                windows_fs::open_relative(
-                    parent,
-                    name,
-                    RelativeOptions {
-                        directory: None,
-                        create_new: false,
-                        access: windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES
-                            | windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE,
-                        sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        security: ptr::null(),
-                    },
-                )
-            } {
-                Ok(file) => Ok(stable_identity_from_handle(&file).map_err(io)? == expected),
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
-                Err(error) => Err(io(error)),
-            }
-        };
+        let probe = |name: &OsStr| self.authority.identity_at(parent, name, expected);
         match (probe(&candidate)?, probe(&target)?) {
             (true, false) => Ok(candidate),
             (false, true)
@@ -3166,37 +3170,47 @@ impl Snapshot {
         }
     }
     fn load(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
         access: SnapshotAccess,
     ) -> Result<Self, PlatformError> {
-        Self::load_control(parent, central, name, access, None)
+        Self::load_control(authority, parent, central, name, access, None)
     }
 
     fn read_with_control(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
         control: &File,
     ) -> Result<Self, PlatformError> {
-        Self::load_control(parent, central, name, SnapshotAccess::Read, Some(control))
+        Self::load_control(
+            authority,
+            parent,
+            central,
+            name,
+            SnapshotAccess::Read,
+            Some(control),
+        )
     }
 
     fn load_control(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
         access: SnapshotAccess,
         control: Option<&File>,
     ) -> Result<Self, PlatformError> {
-        let mut result = Self::read_pair(parent, central, name, access, control, None)?;
+        let mut result = Self::read_pair(authority, parent, central, name, access, control, None)?;
         let header = result.state.header.as_ref().unwrap();
         result.claim = if result.state.claim_terminal() {
-            claims::Lease::observe_terminal(&Authority::Process, parent, &header.claim)?
+            claims::Lease::observe_terminal(authority, parent, &header.claim)?
         } else {
             Some(claims::Lease::open(
-                &Authority::Process,
+                authority,
                 parent,
                 &header.claim,
                 false,
@@ -3210,6 +3224,7 @@ impl Snapshot {
     /// Read and validate the paired controls without issuing a claim capability.
     /// Callers must independently hold/admit the matching claim before mutation.
     fn read_pair(
+        authority: &Authority,
         parent: &File,
         central: &File,
         name: &OsStr,
@@ -3220,41 +3235,35 @@ impl Snapshot {
         if control.is_some() && access != SnapshotAccess::Read {
             return Err(io("A held peer control is only a read capability"));
         }
-        let entry = |parent: &File, name: &OsStr, directory| {
-            if access == SnapshotAccess::Inspect {
-                open(parent, name, Some(directory), FILE_GENERIC_READ)
-            } else if access == SnapshotAccess::Read || directory {
-                namespace::open_source(parent, name, Some(directory))
-            } else {
-                if !stable_identity_from_handle(parent)
-                    .map_err(io)?
-                    .is_directory_without_reparse()
-                {
-                    return Err(io("Copy journal parent is not an ordinary directory"));
-                }
-                let file = unsafe {
-                    windows_fs::open_relative(
-                        parent,
-                        name,
-                        RelativeOptions {
-                            directory: Some(false),
-                            create_new: false,
-                            access: FILE_GENERIC_READ
-                                | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE,
-                            sharing: FILE_SHARE_READ,
-                            security: ptr::null(),
-                        },
-                    )
-                }
-                .map_err(io)?;
-                if !stable_identity_from_handle(&file)
-                    .map_err(io)?
-                    .is_regular_file_without_reparse()
-                {
-                    return Err(io("Copy journal is not an ordinary file"));
-                }
-                Ok(file)
+        authority.validate()?;
+        let entry = |parent: &File, name: &OsStr, directory: bool| {
+            let before = stable_identity_from_handle(parent).map_err(io)?;
+            if !before.is_directory_without_reparse() {
+                return Err(io("Copy journal parent is not an ordinary directory"));
             }
+            let rights = if access == SnapshotAccess::Write && !directory {
+                FILE_GENERIC_READ | windows_sys::Win32::Storage::FileSystem::FILE_GENERIC_WRITE
+            } else {
+                FILE_GENERIC_READ
+            };
+            let sharing = if access == SnapshotAccess::Inspect {
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+            } else {
+                FILE_SHARE_READ
+            };
+            let file = authority
+                .open_child(parent, name, directory, rights, sharing)
+                .map_err(io)?;
+            let observed = stable_identity_from_handle(&file).map_err(io)?;
+            let valid = if directory {
+                observed.is_directory_without_reparse()
+            } else {
+                observed.is_regular_file_without_reparse()
+            };
+            if !valid || stable_identity_from_handle(parent).map_err(io)? != before {
+                return Err(io("Copy journal entry type or parent changed"));
+            }
+            Ok(file)
         };
         let stage = entry(parent, name, true)?;
         let local = entry(&stage, OsStr::new(LOCAL), false)?;
@@ -3277,6 +3286,7 @@ impl Snapshot {
             entry(central, &central_name, false)?
         };
         let result = Self {
+            authority: authority.clone(),
             claim: None,
             stage,
             local,
@@ -3308,11 +3318,12 @@ impl Snapshot {
         central: &File,
         central_name: &OsStr,
     ) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         let header = self.state.header.as_ref().unwrap();
         header.validate_parent_policy(parent)?;
         namespace::validate_single_link(&self.local)?;
         namespace::validate_single_link(&self.mirror)?;
-        if self.requires_creator && windows_fs::current_owner()? != header.creator {
+        if self.requires_creator && self.authority.owner()? != header.creator {
             return Err(io(
                 "retained Copy creator does not match the effective token owner",
             ));
@@ -3340,9 +3351,12 @@ impl Snapshot {
         if read(&self.local)? != self.bytes || read(&self.mirror)? != self.bytes {
             return Err(io("Copy journal mirrors differ or changed; data retained"));
         }
-        bound(parent, &header.stage_name(), header.stage)?;
-        bound(&self.stage, OsStr::new(LOCAL), header.local_file)?;
-        bound(central, central_name, header.central_file)?;
+        self.authority
+            .binding(parent, &header.stage_name(), header.stage)?;
+        self.authority
+            .binding(&self.stage, OsStr::new(LOCAL), header.local_file)?;
+        self.authority
+            .binding(central, central_name, header.central_file)?;
         Ok(())
     }
 }
@@ -3352,7 +3366,13 @@ pub(super) fn inspect(
     central: &File,
     name: &OsStr,
 ) -> Result<Inspection, PlatformError> {
-    let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Inspect)?;
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        parent,
+        central,
+        name,
+        SnapshotAccess::Inspect,
+    )?;
     Ok(Inspection {
         #[cfg(test)]
         entries: snapshot.state.nodes.len(),
@@ -3503,7 +3523,13 @@ impl<'a> RetainedStage<'a> {
         name: &OsStr,
         progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
-        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            parent,
+            central,
+            name,
+            SnapshotAccess::Read,
+        )?;
         Self::from_snapshot(parent, central, snapshot, progress)
     }
     fn from_snapshot(
@@ -3801,7 +3827,13 @@ fn read_undo_snapshot(
     name: &OsStr,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<Snapshot, PlatformError> {
-    let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        parent,
+        central,
+        name,
+        SnapshotAccess::Read,
+    )?;
     if !snapshot.state.completion_verified || snapshot.state.cleanup.is_some() {
         return Err(io("Copy has no completed receipt; Undo refused"));
     }
@@ -3871,7 +3903,13 @@ fn undo_bound_copy(
     }
     let expected = snapshot.bytes.clone();
     drop(snapshot);
-    let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Write)?;
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        parent,
+        central,
+        name,
+        SnapshotAccess::Write,
+    )?;
     if snapshot.bytes != expected {
         return Err(io("Copy journal changed before Undo writer acquisition"));
     }
@@ -4171,7 +4209,7 @@ mod tests {
             src,
             parent,
             central,
-            &DestinationAdmission::creation(parent, OsStr::new("copy"))?,
+            &DestinationAdmission::creation(&Authority::Process, parent, OsStr::new("copy"))?,
             OsStr::new("source"),
             100,
             |_| Ok(()),
@@ -4214,8 +4252,14 @@ mod tests {
         let src = source(&root.join("source"));
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        let destination =
-            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
+        let destination = DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new("copy"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
         let mut staged = DurableStage::create(
             &src,
             &parent,
@@ -4238,8 +4282,14 @@ mod tests {
         std::fs::write(target.join("old"), b"approved original").unwrap();
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        let admission =
-            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
+        let admission = DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new("copy"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
         let root_before = super::super::version(&source(&target)).unwrap();
         let mut changed = false;
         let mut staged = DurableStage::create(
@@ -4315,11 +4365,18 @@ mod tests {
             let parent = owner(&root.path().join("destination"));
             let central = owner(&root.path().join("central"));
             let admission = if case == "creation-occupied" {
-                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+                DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                    .unwrap()
             } else {
                 std::fs::write(&target, b"approved").unwrap();
-                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
-                    .unwrap()
+                DestinationAdmission::overwrite(
+                    &Authority::Process,
+                    &parent,
+                    OsStr::new("copy"),
+                    100,
+                    |_| Ok(()),
+                )
+                .unwrap()
             };
             if case != "wrong-parent" {
                 std::fs::write(&target, b"unrelated current occupant").unwrap();
@@ -4381,12 +4438,18 @@ mod tests {
         );
         let parent = owner(&directory);
         assert!(
-            DestinationAdmission::creation(&parent, OsStr::new("mIXED.TXT")).is_err(),
+            DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("mIXED.TXT"))
+                .is_err(),
             "Creation must not admit an occupied native case alias"
         );
-        let overwrite =
-            DestinationAdmission::overwrite(&parent, OsStr::new("mIXED.TXT"), 100, |_| Ok(()))
-                .unwrap();
+        let overwrite = DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new("mIXED.TXT"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
         overwrite.validate(&parent).unwrap();
         assert_eq!(std::fs::read(&target).unwrap(), b"original must survive");
         assert_eq!(std::fs::read_dir(&directory).unwrap().count(), 1);
@@ -4449,7 +4512,12 @@ mod tests {
         let parent = owner(&directory);
         for initial in [false, true] {
             set_case_policy(&parent, initial);
-            let empty = DestinationAdmission::creation(&parent, OsStr::new("unused.txt")).unwrap();
+            let empty = DestinationAdmission::creation(
+                &Authority::Process,
+                &parent,
+                OsStr::new("unused.txt"),
+            )
+            .unwrap();
             set_case_policy(&parent, !initial);
             assert!(
                 empty
@@ -4463,26 +4531,48 @@ mod tests {
         }
         set_case_policy(&parent, true);
         std::fs::write(directory.join("Report.txt"), b"upper original").unwrap();
-        let unchanged =
-            DestinationAdmission::overwrite(&parent, OsStr::new("Report.txt"), 100, |_| Ok(()))
-                .unwrap();
+        let unchanged = DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new("Report.txt"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
         // The differently cased name really is absent, not an alias. Admission
         // must preserve that native distinction without creating a placeholder.
         assert!(!directory.join("report.txt").try_exists().unwrap());
-        let creation = DestinationAdmission::creation(&parent, OsStr::new("report.txt")).unwrap();
+        let creation =
+            DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("report.txt"))
+                .unwrap();
         creation.validate(&parent).unwrap();
         assert!(
-            DestinationAdmission::overwrite(&parent, OsStr::new("report.txt"), 100, |_| Ok(()))
-                .is_err()
+            DestinationAdmission::overwrite(
+                &Authority::Process,
+                &parent,
+                OsStr::new("report.txt"),
+                100,
+                |_| Ok(())
+            )
+            .is_err()
         );
         std::fs::write(directory.join("report.txt"), b"lower original").unwrap();
         assert!(creation.validate(&parent).is_err());
         for name in ["Report.txt", "report.txt"] {
-            assert!(DestinationAdmission::creation(&parent, OsStr::new(name)).is_err());
-            DestinationAdmission::overwrite(&parent, OsStr::new(name), 100, |_| Ok(()))
-                .unwrap()
-                .validate(&parent)
-                .unwrap();
+            assert!(
+                DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new(name))
+                    .is_err()
+            );
+            DestinationAdmission::overwrite(
+                &Authority::Process,
+                &parent,
+                OsStr::new(name),
+                100,
+                |_| Ok(()),
+            )
+            .unwrap()
+            .validate(&parent)
+            .unwrap();
         }
         assert_eq!(
             std::fs::read(directory.join("Report.txt")).unwrap(),
@@ -4493,7 +4583,9 @@ mod tests {
             b"lower original"
         );
         std::fs::remove_file(directory.join("report.txt")).unwrap();
-        let creation = DestinationAdmission::creation(&parent, OsStr::new("report.txt")).unwrap();
+        let creation =
+            DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("report.txt"))
+                .unwrap();
         // Changing the live policy makes the previously absent spelling resolve
         // to the existing upper-case file; old creation authority must fail.
         set_case_policy(&parent, false);
@@ -4721,10 +4813,17 @@ mod tests {
             let target = root.path().join("destination/copy");
             let admission = if overwrite {
                 std::fs::write(&target, b"approved original").unwrap();
-                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
-                    .unwrap()
+                DestinationAdmission::overwrite(
+                    &Authority::Process,
+                    &parent,
+                    OsStr::new("copy"),
+                    100,
+                    |_| Ok(()),
+                )
+                .unwrap()
             } else {
-                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+                DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                    .unwrap()
             };
             let mut staged = DurableStage::create(
                 &source(&root.path().join("source")),
@@ -4807,10 +4906,17 @@ mod tests {
             let parent = owner(&root.path().join("destination"));
             let central = owner(&root.path().join("central"));
             let admission = if original.is_some() {
-                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
-                    .unwrap()
+                DestinationAdmission::overwrite(
+                    &Authority::Process,
+                    &parent,
+                    OsStr::new("copy"),
+                    100,
+                    |_| Ok(()),
+                )
+                .unwrap()
             } else {
-                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+                DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                    .unwrap()
             };
             let src = source(&root.path().join("source"));
             let receipt = DurableStage::execute_with_receipt(
@@ -4882,10 +4988,17 @@ mod tests {
             let parent = owner(&old_parent);
             let central = owner(&root.path().join("central"));
             let admission = if original.is_some() {
-                DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(()))
-                    .unwrap()
+                DestinationAdmission::overwrite(
+                    &Authority::Process,
+                    &parent,
+                    OsStr::new("copy"),
+                    100,
+                    |_| Ok(()),
+                )
+                .unwrap()
             } else {
-                DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+                DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                    .unwrap()
             };
             let receipt = DurableStage::execute_with_receipt(
                 &source(&root.path().join("source")),
@@ -4956,7 +5069,9 @@ mod tests {
         fixture(root.path());
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        let admission = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+        let admission =
+            DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                .unwrap();
         let receipt = DurableStage::execute_with_receipt(
             &source(&root.path().join("source")),
             &parent,
@@ -5001,7 +5116,9 @@ mod tests {
         fixture(root.path());
         let parent = owner(&root.path().join("destination"));
         let central = owner(&root.path().join("central"));
-        let admission = DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap();
+        let admission =
+            DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                .unwrap();
         let mut changed = false;
         let result = DurableStage::execute_with_receipt(
             &source(&root.path().join("source")),
@@ -5054,7 +5171,14 @@ mod tests {
     fn original_journal(root: &Path, name: &OsStr) -> Journal {
         let parent = owner(&root.join("destination"));
         let central = owner(&root.join("central"));
-        let snapshot = Snapshot::load(&parent, &central, name, SnapshotAccess::Write).unwrap();
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            name,
+            SnapshotAccess::Write,
+        )
+        .unwrap();
         Journal::from_snapshot(&parent, &central, snapshot).unwrap()
     }
 
@@ -5169,9 +5293,15 @@ mod tests {
     }
     fn phase_for_test(parent: &File, central: &File, name: &OsStr) -> WindowsCopyPhase {
         discovery::phase(
-            &Snapshot::load(parent, central, name, SnapshotAccess::Read)
-                .unwrap()
-                .state,
+            &Snapshot::load(
+                &Authority::Process,
+                parent,
+                central,
+                name,
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .state,
         )
     }
     fn overwrite_faults(undo: bool) -> Vec<(u64, Step)> {
@@ -5852,6 +5982,7 @@ mod tests {
                         assert_ne!(bytes, mirror);
                         assert!(
                             Snapshot::load(
+                                &Authority::Process,
                                 &owner(&root.path().join("destination")),
                                 &owner(&root.path().join("central")),
                                 &name,
@@ -6040,6 +6171,7 @@ mod tests {
                         assert_ne!(before, mirror);
                         assert!(
                             Snapshot::load(
+                                &Authority::Process,
                                 &owner(&root.path().join("destination")),
                                 &owner(&root.path().join("central")),
                                 &name,
@@ -6242,7 +6374,14 @@ mod tests {
                 let parent = owner(&root.path().join("destination"));
                 let central_dir = owner(&root.path().join("central"));
                 assert!(
-                    Snapshot::load(&parent, &central_dir, &name, SnapshotAccess::Write).is_err()
+                    Snapshot::load(
+                        &Authority::Process,
+                        &parent,
+                        &central_dir,
+                        &name,
+                        SnapshotAccess::Write
+                    )
+                    .is_err()
                 );
                 assert_eq!(std::fs::read(&local).unwrap(), before);
                 assert_eq!(std::fs::read(&central).unwrap(), mirror);
@@ -8412,7 +8551,8 @@ mod tests {
                 &src,
                 &parent,
                 &central,
-                &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
+                &DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                    .unwrap(),
                 OsStr::new("source"),
                 1,
                 |_| Ok(())
@@ -8832,13 +8972,20 @@ mod tests {
             &transaction,
         )
         .unwrap();
-        let prepared = super::initialization::prepare(&central, &transaction).unwrap();
-        let stage = namespace::PrivateStage::for_transaction(&parent, &transaction).unwrap();
+        let prepared =
+            super::initialization::prepare(&Authority::Process, &central, &transaction).unwrap();
+        let stage = namespace::PrivateStage::for_transaction_with_authority(
+            &parent,
+            &transaction,
+            Authority::Process,
+        )
+        .unwrap();
         let mut journal = Journal::create(
             &stage,
             &central,
             prepared,
-            &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
+            &DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                .unwrap(),
             OsStr::new("source"),
             &mut Some(claim),
         )
@@ -9315,7 +9462,8 @@ mod tests {
             &src,
             &parent,
             &central,
-            &DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap(),
+            &DestinationAdmission::creation(&Authority::Process, &parent, OsStr::new("copy"))
+                .unwrap(),
             OsStr::new("file"),
             100,
             |bytes| {

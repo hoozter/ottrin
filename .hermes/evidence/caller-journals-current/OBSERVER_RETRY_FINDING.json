@@ -1,0 +1,7 @@
+{
+  "status": "fixture ordering: fresh owner read also denied after intentional ancestor permission mutation",
+  "trial": "native-observer-retry",
+  "error": "caller.rs21 fresh File::open denied even under original-token observer",
+  "cause": "Earlier canonical-profile fixture deliberately removes inherited ancestor permissions. It already retains readonly preference/index handles across that mutation.",
+  "correction": "Return those existing readonly observer handles and retain them through the new journal controls; compare bytes, native IDs and owner/group/DACL before/after operations. Do not repair DACLs, add helper access, remove the ancestor fault or drop preservation assertions."
+}

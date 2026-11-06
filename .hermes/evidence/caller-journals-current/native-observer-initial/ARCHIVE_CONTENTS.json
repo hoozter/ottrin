@@ -1,0 +1,11 @@
+{
+  "sha256": "57752bed84a4424ce84abfa7b1a72f0df37e52729c24fd4f42b6bc42983b2a1b",
+  "members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "status": "partial cleanup safely stopped on transient inspection gap; reprepare exact remaining targets",
+  "pid": 3633168,
+  "independent_observation": "ps returned no entry and /proc/3633168 is absent",
+  "remaining_targets": 2,
+  "reason": "PID exited; no process exception or guard bypass introduced"
+}

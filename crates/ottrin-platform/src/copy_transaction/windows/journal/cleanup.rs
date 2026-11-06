@@ -106,7 +106,13 @@ impl Admission {
         let result = (|| {
             cancel(0)?;
             let parent_security = security::owner_group_dacl_digest(parent)?;
-            let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
+            let snapshot = Snapshot::load(
+                &Authority::Process,
+                parent,
+                central,
+                name,
+                SnapshotAccess::Read,
+            )?;
             started = snapshot.state.cleanup.is_some();
             let (snapshot, observed, pending_absent, catalog, peer_absent) = if let Some(progress) =
                 &snapshot.state.cleanup
@@ -179,6 +185,7 @@ impl Admission {
         mut cancel: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<(), PlatformError> {
         let snapshot = Snapshot::load(
+            &Authority::Process,
             parent,
             central,
             &self.header.stage_name(),
@@ -449,7 +456,13 @@ impl Admission {
         let name = self.header.stage_name();
         cancel(0)?;
         cleanup_handoff(self.sequence)?;
-        let snapshot = Snapshot::load(parent, central, &name, SnapshotAccess::Write)?;
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            parent,
+            central,
+            &name,
+            SnapshotAccess::Write,
+        )?;
         if snapshot.state.header.as_ref() != Some(&self.header)
             || <[u8; 32]>::from(Sha256::digest(&snapshot.bytes)) != self.journal
             || windows_fs::location(parent).map_err(io)? != self.location
@@ -795,6 +808,7 @@ impl Admission {
     ) -> Result<Next, PlatformError> {
         self.validate_metadata(parent, central, &mut *cancel)?;
         let snapshot = Snapshot::load(
+            &Authority::Process,
             parent,
             central,
             &self.header.stage_name(),
@@ -1007,7 +1021,13 @@ impl<'a> HeldCleanup<'a> {
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<Self, PlatformError> {
         progress(0)?;
-        let snapshot = Snapshot::load(parent, central, name, SnapshotAccess::Read)?;
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            parent,
+            central,
+            name,
+            SnapshotAccess::Read,
+        )?;
         validate_stage_entries(&snapshot.stage)?;
         let state = &snapshot.state;
         if !state.completion_verified

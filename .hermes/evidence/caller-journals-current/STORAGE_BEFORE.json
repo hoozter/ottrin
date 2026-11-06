@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-11-06T04:27:37.075313+00:00",
+  "bytes": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23823106048,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25358307328,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30194671616,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48956461056
+  },
+  "purpose": "Shared paired GNU platform/UI graph; explicit caller paired journal construction, staging, read/write reopening and Begin-only reservation recovery"
+}

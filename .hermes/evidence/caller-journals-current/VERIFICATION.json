@@ -1,0 +1,38 @@
+{
+  "status": "pass caller paired journal/staging/Begin reservation controls and ordinary regressions",
+  "archive_sha256": "163f51075a9903110751837c2589d80bd75f9a81af98fa1d91d292fd61257cdd",
+  "archive_members": [
+    "CALLER_READY.json",
+    "DESKTOP_READY.json",
+    "OWNER.json",
+    "OWNER_OBSERVATION.json",
+    "RESULT.json",
+    "SYSTEM_PROCESS.json",
+    "SYSTEM_RESULT.json"
+  ],
+  "native_invocations": 23,
+  "top_level_passes": 100,
+  "source_contexts": {
+    "regular_file_entries": 1,
+    "populated_directory_entries": 4,
+    "begin_cases_each": [
+      "published Begin-only",
+      "unpublished complete Begin-only preparation",
+      "payload intent remains reserved"
+    ]
+  },
+  "binding": "BUILD_BINDING.json",
+  "compiler_jsonl_sha256": "3fce165d706a0ea32c86b1283ab79f9478d6a72b707671e20ad5acc3c900b91e",
+  "independent_teardown": {
+    "domains": " Id   Name                     State\n-----------------------------------------\n -    ottrin-copy-cleanup-qa   shut off\n -    ottrin-index-qa          shut off\n -    ottrin-qa-20261011       shut off\n -    win11ltsc                shut off\n\n",
+    "volumes": " Name                           Path\n--------------------------------------------------------------------------------------\n ottrin-copy-cleanup-qa.qcow2   /var/lib/libvirt/images/ottrin-copy-cleanup-qa.qcow2\n ottrin-index-qa.qcow2          /var/lib/libvirt/images/ottrin-index-qa.qcow2\n ottrin-qa-20261011.qcow2       /var/lib/libvirt/images/ottrin-qa-20261011.qcow2\n ottrin-stock-client.qcow2      /var/lib/libvirt/images/ottrin-stock-client.qcow2\n win11ltsc.qcow2                /var/lib/libvirt/images/win11ltsc.qcow2\n\n",
+    "private_console_observer_profile_absent": true
+  },
+  "limits": [
+    "Caller paired controls and actual private staging/plan append only; no caller destination publication/final-permission application/receipt/Undo completion",
+    "Dispatcher must retain original source pins and canonical registry admission through the entire operation",
+    "Caller-aware retained discovery/resume/Undo/cleanup and overwrite/original-retention integration remain incomplete",
+    "Actual alternate-admin UAC, in-place TokenOwner mutation, caller links and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; current packages unchanged"
+  ]
+}

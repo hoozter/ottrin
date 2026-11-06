@@ -97,7 +97,14 @@ fn windows_native_copy_cleanup_observation_preserves_changed_payloads_and_unexpe
             let (name, _cleanup) = terminal_fixture(root.path(), overwrite, !overwrite);
             let parent = owner(&root.path().join("destination"));
             let central = owner(&root.path().join("central"));
-            let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+            let snapshot = Snapshot::load(
+                &Authority::Process,
+                &parent,
+                &central,
+                &name,
+                SnapshotAccess::Read,
+            )
+            .unwrap();
             let header = snapshot.state.header.as_ref().unwrap().clone();
             drop(snapshot);
             let payload = root.path().join("destination").join(if overwrite {
@@ -356,8 +363,14 @@ fn hardlink_fixture(root: &Path, readonly: bool) -> (OsString, ReadonlyCleanup) 
     let input = source(&root.join("source"));
     let parent = owner(&root.join("destination"));
     let central = owner(&root.join("central"));
-    let admission =
-        DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
+    let admission = DestinationAdmission::overwrite(
+        &Authority::Process,
+        &parent,
+        OsStr::new("copy"),
+        100,
+        |_| Ok(()),
+    )
+    .unwrap();
     let mut staged = DurableStage::create(
         &input,
         &parent,
@@ -1357,8 +1370,14 @@ fn cleanup_peer_fixture_layout(
     let mut names = Vec::new();
     for destination in &destinations {
         let parent = owner(destination);
-        let admission =
-            DestinationAdmission::overwrite(&parent, OsStr::new("copy"), 100, |_| Ok(())).unwrap();
+        let admission = DestinationAdmission::overwrite(
+            &Authority::Process,
+            &parent,
+            OsStr::new("copy"),
+            100,
+            |_| Ok(()),
+        )
+        .unwrap();
         let mut staged = DurableStage::create(
             &input,
             &parent,
@@ -1372,7 +1391,14 @@ fn cleanup_peer_fixture_layout(
         drop(staged.prepare_destination_security(|| Ok(())).unwrap());
         let name = staged.stage.name.clone();
         drop(staged);
-        let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Write,
+        )
+        .unwrap();
         let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
         journal.prepare_original(100, |_| Ok(())).unwrap();
         if root_file {
@@ -1400,7 +1426,14 @@ fn cleanup_peer_fixture_layout(
     if root_file {
         for (destination, name) in destinations.iter().zip(&names) {
             let parent = owner(destination);
-            let snapshot = Snapshot::load(&parent, &central, name, SnapshotAccess::Write).unwrap();
+            let snapshot = Snapshot::load(
+                &Authority::Process,
+                &parent,
+                &central,
+                name,
+                SnapshotAccess::Write,
+            )
+            .unwrap();
             let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
             journal
                 .move_original(None, OriginalMove::Retain, |_| Ok(()))
@@ -1441,8 +1474,14 @@ fn windows_native_copy_cleanup_registry_dependencies_preserve_peers_and_shared_o
             // A peer starting cleanup gives up publication claims, not its
             // actual remaining retained hard-link names.
             let other_parent = owner(&second);
-            let snapshot =
-                Snapshot::load(&other_parent, &central, &names[1], SnapshotAccess::Write).unwrap();
+            let snapshot = Snapshot::load(
+                &Authority::Process,
+                &other_parent,
+                &central,
+                &names[1],
+                SnapshotAccess::Write,
+            )
+            .unwrap();
             let mut writer = Journal::from_snapshot(&other_parent, &central, snapshot).unwrap();
             let manifest = writer.state.cleanup_manifest().unwrap();
             writer.reserve_cleanup_tail().unwrap();
@@ -1586,6 +1625,7 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                         }));
                         let admission = if overwrite {
                             DestinationAdmission::overwrite(
+                                &Authority::Process,
                                 &parent,
                                 OsStr::new("copy"),
                                 100,
@@ -1593,7 +1633,12 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                             )
                             .unwrap()
                         } else {
-                            DestinationAdmission::creation(&parent, OsStr::new("copy")).unwrap()
+                            DestinationAdmission::creation(
+                                &Authority::Process,
+                                &parent,
+                                OsStr::new("copy"),
+                            )
+                            .unwrap()
                         };
                         let mut staged = DurableStage::create(
                             &input,
@@ -1609,9 +1654,14 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                         let name = staged.stage.name.clone();
                         drop((staged, input));
                         if overwrite {
-                            let snapshot =
-                                Snapshot::load(&parent, &central, &name, SnapshotAccess::Write)
-                                    .unwrap();
+                            let snapshot = Snapshot::load(
+                                &Authority::Process,
+                                &parent,
+                                &central,
+                                &name,
+                                SnapshotAccess::Write,
+                            )
+                            .unwrap();
                             let mut journal =
                                 Journal::from_snapshot(&parent, &central, snapshot).unwrap();
                             journal.prepare_original(100, |_| Ok(())).unwrap();
@@ -1627,8 +1677,14 @@ fn windows_native_copy_cleanup_configured_registry_writer_supports_registry_dest
                             undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
                         }
                         remove_undo_fixture_source(root.path());
-                        let snapshot =
-                            Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+                        let snapshot = Snapshot::load(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            &name,
+                            SnapshotAccess::Read,
+                        )
+                        .unwrap();
                         let header = snapshot.state.header.as_ref().unwrap().clone();
                         let metadata_sequence = snapshot.sequence
                             + 2 * snapshot.state.cleanup_manifest().unwrap().entries.len() as u64
@@ -2155,9 +2211,10 @@ fn cleanup_chain_at(
         };
         let overwrite = initial_overwrite || index == 1;
         let admission = if overwrite {
-            DestinationAdmission::overwrite(&parent, target, 100, |_| Ok(())).unwrap()
+            DestinationAdmission::overwrite(&Authority::Process, &parent, target, 100, |_| Ok(()))
+                .unwrap()
         } else {
-            DestinationAdmission::creation(&parent, target).unwrap()
+            DestinationAdmission::creation(&Authority::Process, &parent, target).unwrap()
         };
         let mut staged = DurableStage::create(
             &input,
@@ -2173,7 +2230,14 @@ fn cleanup_chain_at(
         let name = staged.stage.name.clone();
         drop((staged, input));
         if overwrite {
-            let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
+            let snapshot = Snapshot::load(
+                &Authority::Process,
+                &parent,
+                &central,
+                &name,
+                SnapshotAccess::Write,
+            )
+            .unwrap();
             let mut journal = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
             journal.prepare_original(100, |_| Ok(())).unwrap();
             journal
@@ -2225,11 +2289,17 @@ fn windows_native_copy_cleanup_stop_after_control_write_keeps_same_plan_retryabl
         let headers = names
             .iter()
             .map(|name| {
-                Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
-                    .unwrap()
-                    .state
-                    .header
-                    .unwrap()
+                Snapshot::load(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    name,
+                    SnapshotAccess::Read,
+                )
+                .unwrap()
+                .state
+                .header
+                .unwrap()
             })
             .collect::<Vec<_>>();
         let ids = headers
@@ -2291,7 +2361,14 @@ fn windows_native_copy_cleanup_start_is_bound_idempotent_and_never_reclaims_payl
         let started = admission.start(&parent, &central, |_| Ok(())).unwrap();
         let after = namespace_contents(root.path());
         assert_only_journals_changed(&before, &after, std::slice::from_ref(&header));
-        let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+        let snapshot = Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Read,
+        )
+        .unwrap();
         let progress = snapshot.state.cleanup.as_ref().unwrap();
         assert_eq!(progress.completed, 0);
         assert!(
@@ -2344,8 +2421,14 @@ fn windows_native_copy_cleanup_start_barrier_releases_only_relinquished_publicat
             let barrier = namespace_contents(root.path());
             assert_only_journals_changed(&before, &barrier, &headers);
             for name in &names {
-                let snapshot =
-                    Snapshot::load(&parent, &central, name, SnapshotAccess::Read).unwrap();
+                let snapshot = Snapshot::load(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    name,
+                    SnapshotAccess::Read,
+                )
+                .unwrap();
                 let progress = snapshot.state.cleanup.as_ref().unwrap();
                 assert_eq!(progress.completed, 0);
                 assert!(!progress.pending && !progress.payload_removed);
@@ -2492,6 +2575,7 @@ fn windows_native_copy_cleanup_group_observation_admits_chains_and_retained_alia
                 .clone(),
             {
                 let snapshot = Snapshot::load(
+                    &Authority::Process,
                     &owner(&root.path().join("second-destination")),
                     &owner(&root.path().join("central")),
                     &names[1],
@@ -2590,11 +2674,17 @@ fn windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_fr
         let headers = names
             .iter()
             .map(|name| {
-                Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
-                    .unwrap()
-                    .state
-                    .header
-                    .unwrap()
+                Snapshot::load(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    name,
+                    SnapshotAccess::Read,
+                )
+                .unwrap()
+                .state
+                .header
+                .unwrap()
             })
             .collect::<Vec<_>>();
         let ids = headers
@@ -2604,9 +2694,15 @@ fn windows_native_copy_cleanup_group_observation_handles_partial_metadata_and_fr
         let plan =
             super::super::cleanup_finalize::prepare(&parent, &central, &names[0], |_| Ok(()))
                 .unwrap();
-        let sequence = Snapshot::load(&parent, &central, &names[0], SnapshotAccess::Read)
-            .unwrap()
-            .sequence;
+        let sequence = Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &names[0],
+            SnapshotAccess::Read,
+        )
+        .unwrap()
+        .sequence;
         FAULT.with(|slot| {
             slot.set(Some((
                 sequence,
@@ -2699,6 +2795,7 @@ fn windows_native_copy_cleanup_group_start_hands_off_only_its_own_control_change
         let mut headers = Vec::new();
         for (directory, name) in ["destination", "second-destination"].iter().zip(&names) {
             let snapshot = Snapshot::load(
+                &Authority::Process,
                 &owner(&root.path().join(directory)),
                 &owner(&root.path().join("central")),
                 name,
@@ -2866,6 +2963,7 @@ fn windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_pro
                 .zip(&names)
                 .map(|(directory, name)| {
                     Snapshot::load(
+                        &Authority::Process,
                         &owner(&root.path().join(directory)),
                         &central,
                         name,
@@ -2884,9 +2982,15 @@ fn windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_pro
             let plan =
                 super::super::cleanup_finalize::prepare(&parent, &central, &names[0], |_| Ok(()))
                     .unwrap();
-            let sequence = Snapshot::load(&parent, &central, &names[0], SnapshotAccess::Read)
-                .unwrap()
-                .sequence;
+            let sequence = Snapshot::load(
+                &Authority::Process,
+                &parent,
+                &central,
+                &names[0],
+                SnapshotAccess::Read,
+            )
+            .unwrap()
+            .sequence;
             FAULT.with(|slot| {
                 slot.set(Some((
                     sequence,
@@ -2919,6 +3023,7 @@ fn windows_native_copy_cleanup_group_start_checks_confirmed_partial_metadata_pro
                 assert!(result.is_err());
                 assert_eq!(namespace_contents(root.path()), before);
                 let snapshot = Snapshot::load(
+                    &Authority::Process,
                     &owner(&root.path().join("second-destination")),
                     &central,
                     &names[1],
@@ -2954,11 +3059,17 @@ fn windows_native_copy_cleanup_group_payload_handoff_preserves_remaining_members
                 let headers = names
                     .iter()
                     .map(|name| {
-                        Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
-                            .unwrap()
-                            .state
-                            .header
-                            .unwrap()
+                        Snapshot::load(
+                            &Authority::Process,
+                            &parent,
+                            &central,
+                            name,
+                            SnapshotAccess::Read,
+                        )
+                        .unwrap()
+                        .state
+                        .header
+                        .unwrap()
                     })
                     .collect::<Vec<_>>();
                 let ids = headers
@@ -3042,6 +3153,7 @@ fn windows_native_copy_cleanup_group_payload_preserves_shared_and_foreign_change
             .zip(&names)
             .map(|(directory, name)| {
                 Snapshot::load(
+                    &Authority::Process,
                     &owner(&root.path().join(directory)),
                     &owner(&root.path().join("central")),
                     name,
@@ -3159,11 +3271,17 @@ fn observed_chain_group(
         names
             .iter()
             .map(|name| {
-                Snapshot::load(&parent, &central, name, SnapshotAccess::Read)
-                    .unwrap()
-                    .state
-                    .header
-                    .unwrap()
+                Snapshot::load(
+                    &Authority::Process,
+                    &parent,
+                    &central,
+                    name,
+                    SnapshotAccess::Read,
+                )
+                .unwrap()
+                .state
+                .header
+                .unwrap()
             })
             .collect::<Vec<_>>()
     };
@@ -3259,6 +3377,7 @@ fn windows_native_copy_cleanup_group_metadata_executor_prepares_peers_before_fir
             "destination"
         });
         let sequence = Snapshot::load(
+            &Authority::Process,
             &owner(&destination),
             &owner(&root.path().join("central")),
             &headers[0].stage_name(),
@@ -3417,6 +3536,7 @@ fn windows_native_copy_cleanup_group_metadata_retains_authority_through_uncertai
                         "destination"
                     });
                     let sequence = Snapshot::load(
+                        &Authority::Process,
                         &owner(&destination),
                         &owner(&root.path().join("central")),
                         &headers[0].stage_name(),
@@ -3490,6 +3610,7 @@ fn windows_native_copy_cleanup_group_metadata_preserves_foreign_changes_while_pe
             group.reclaim_payload(index, |_| Ok(())).unwrap();
         }
         let sequence = Snapshot::load(
+            &Authority::Process,
             &owner(&root.path().join("central")),
             &owner(&root.path().join("central")),
             &headers[0].stage_name(),
@@ -3558,6 +3679,7 @@ fn peer_unlink_codec_fixture(
         .zip(&names)
         .map(|(directory, name)| {
             Snapshot::load(
+                &Authority::Process,
                 &owner(&root.join(directory)),
                 &owner(&root.join("central")),
                 name,
@@ -3593,7 +3715,14 @@ fn peer_unlink_codec_fixture(
     drop(peer);
     let parent_b = owner(&root.join("second-destination"));
     let central = owner(&root.join("central"));
-    let snapshot = Snapshot::load(&parent_b, &central, &names[1], SnapshotAccess::Write).unwrap();
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        &parent_b,
+        &central,
+        &names[1],
+        SnapshotAccess::Write,
+    )
+    .unwrap();
     let journal = Journal::from_snapshot(&parent_b, &central, snapshot).unwrap();
     let index = journal
         .state
@@ -3713,7 +3842,14 @@ fn windows_native_copy_cleanup_peer_unlink_codec_replays_one_external_alias_ackn
     let central = owner(&root.path().join("central"));
     let name = journal.header.stage_name();
     drop(journal);
-    let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap();
     assert_eq!(snapshot.bytes, bytes);
     assert_eq!(
         snapshot
@@ -3938,6 +4074,7 @@ fn windows_native_copy_cleanup_peer_binding_rejects_unmatched_control_prefix_and
         match change {
             0 => {
                 let snapshot = Snapshot::load(
+                    &Authority::Process,
                     &owner(&root.path().join("destination")),
                     &owner(&root.path().join("central")),
                     &OsString::from(format!(".ottrin-copy-{}", proof.transaction)),
@@ -4072,7 +4209,14 @@ fn windows_native_copy_cleanup_peer_acknowledgement_validates_replays_and_counts
     let central = owner(&root.path().join("central"));
     let name = journal.header.stage_name();
     drop(journal);
-    let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Write).unwrap();
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Write,
+    )
+    .unwrap();
     let mut replayed = Journal::from_snapshot(&parent, &central, snapshot).unwrap();
     super::super::cleanup_tree::Remaining::open(
         &parent,
@@ -4205,6 +4349,7 @@ fn windows_native_copy_cleanup_peer_acknowledgement_uncertain_mirrors_preserve_d
         assert_eq!(namespace_contents(root.path()), after);
         drop(journal);
         let snapshot = Snapshot::load(
+            &Authority::Process,
             &parent,
             &central,
             &header.stage_name(),
@@ -4248,6 +4393,7 @@ fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ac
     let before = namespace_contents(root.path());
     {
         let peer = Snapshot::load(
+            &Authority::Process,
             &owner(&root.path().join("destination")),
             &central,
             &peer_name,
@@ -4268,14 +4414,21 @@ fn windows_native_copy_cleanup_peer_acknowledgement_keeps_owner_control_until_ac
         );
     }
     assert_eq!(namespace_contents(root.path()), before);
-    let snapshot =
-        Snapshot::load(&local_parent, &central, &local_name, SnapshotAccess::Write).unwrap();
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        &local_parent,
+        &central,
+        &local_name,
+        SnapshotAccess::Write,
+    )
+    .unwrap();
     let mut local = Journal::from_snapshot(&local_parent, &central, snapshot).unwrap();
     local.acknowledge_peer_unlink(|_| Ok(())).unwrap();
     drop(local);
     let before = namespace_contents(root.path());
     {
         let peer = Snapshot::load(
+            &Authority::Process,
             &owner(&root.path().join("destination")),
             &central,
             &peer_name,
@@ -4319,6 +4472,7 @@ fn shared_unlink_group_fixture(
         .zip(names.iter())
         .map(|(directory, name)| {
             Snapshot::load(
+                &Authority::Process,
                 &owner(&root.join(directory)),
                 &central,
                 name,
@@ -4356,6 +4510,7 @@ fn windows_native_copy_cleanup_group_shared_prepare_is_bound_idempotent_and_neve
     let central = owner(&root.path().join("central"));
     for (index, directory) in ["destination", "second-destination"].iter().enumerate() {
         let snapshot = Snapshot::load(
+            &Authority::Process,
             &owner(&root.path().join(directory)),
             &central,
             &headers[index].stage_name(),
@@ -4449,6 +4604,7 @@ fn windows_native_copy_cleanup_group_shared_prepare_uncertain_owner_and_peer_req
                 "second-destination"
             }));
             let snapshot = Snapshot::load(
+                &Authority::Process,
                 &parent,
                 &central,
                 &headers[target].stage_name(),
@@ -4537,6 +4693,7 @@ fn windows_native_copy_cleanup_group_shared_unlink_reclaims_one_alias_then_finis
         let central = owner(&root.path().join("central"));
         for (index, directory) in ["destination", "second-destination"].iter().enumerate() {
             let snapshot = Snapshot::load(
+                &Authority::Process,
                 &owner(&root.path().join(directory)),
                 &central,
                 &headers[index].stage_name(),
@@ -4770,6 +4927,7 @@ fn windows_native_copy_cleanup_group_shared_unlink_coordinates_three_owners_and_
         .zip(&names)
         .map(|(directory, name)| {
             Snapshot::load(
+                &Authority::Process,
                 &owner(&root.path().join(directory)),
                 &owner(&root.path().join("central")),
                 name,
@@ -4857,6 +5015,7 @@ fn windows_native_copy_cleanup_group_shared_unlink_acknowledges_registry_root_fi
         .zip(&names)
         .map(|(directory, name)| {
             Snapshot::load(
+                &Authority::Process,
                 &owner(&root.path().join(directory)),
                 &owner(&root.path().join("central")),
                 name,
@@ -4954,6 +5113,7 @@ fn mixed_cleanup_fixture(root: &Path) -> (super::super::cleanup_group::Observati
         .zip(&names)
         .map(|(directory, name)| {
             Snapshot::load(
+                &Authority::Process,
                 &owner(&root.join(directory)),
                 &owner(&root.join("central")),
                 name,

@@ -91,13 +91,11 @@ pub(super) fn link_count(file: &File) -> Result<u32, PlatformError> {
 impl<'a> PrivateStage<'a> {
     #[cfg(test)]
     pub(super) fn create(parent: &'a File) -> Result<Self, PlatformError> {
-        Self::for_transaction(parent, &super::super::random_transaction_id()?)
-    }
-    pub(super) fn for_transaction(
-        parent: &'a File,
-        transaction: &str,
-    ) -> Result<Self, PlatformError> {
-        Self::for_transaction_with_authority(parent, transaction, Authority::Process)
+        Self::for_transaction_with_authority(
+            parent,
+            &super::super::random_transaction_id()?,
+            Authority::Process,
+        )
     }
     pub(super) fn for_transaction_with_authority(
         parent: &'a File,

@@ -193,8 +193,13 @@ impl Observation {
             FILE_GENERIC_READ,
             &mut cancel,
         )?;
-        let snapshot =
-            Snapshot::read_with_control(&parent, central, &header.stage_name(), &record.file)?;
+        let snapshot = Snapshot::read_with_control(
+            &Authority::Process,
+            &parent,
+            central,
+            &header.stage_name(),
+            &record.file,
+        )?;
         if snapshot.bytes != record.bytes || snapshot.state.header.as_ref() != Some(header) {
             return Err(io("Copy peer unlink mirrors disagree"));
         }

@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "source_files": 29,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 410886144,
+    "sha256": "5abe2f6ed2eea819280afacc3e8e15384a7780dbd9235367104d2724ff67d5f8"
+  },
+  "native_result": "pending original-caller paired journal/real staging/Begin recovery matrix"
+}

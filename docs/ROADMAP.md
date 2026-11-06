@@ -80,15 +80,23 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    preservation and changed-policy refusal pass. Native claim publication retains
    scoped helper privileges during its no-replace rename. Ordinary paired-journal
    claim publication/process/exclusion/recovery/release/retirement and initialization
-   regressions pass. Current receipt: `caller-claims-current/ACCEPTANCE.json`;
-   final-permission receipt: `caller-permission-plan-current/ACCEPTANCE.json`.
-   These are component controls, not durable caller Copy, complete journal recovery
-   or package/UAC acceptance. Existing journal entry points explicitly select
-   Process authority until caller-aware integration is connected.
+   regressions pass. Caller-aware paired journals now create and reopen local and
+   central controls with frozen caller ownership and explicit runtime authority.
+   Real one-file and four-entry directory staging, original-token reads, readonly
+   write denial, fresh writer reopening and durable native permission-plan appends
+   pass. Published/unpublished complete Begin-only recovery releases only the
+   reservation and preserves both journals; payload intent stays reserved. Pinned
+   preferences/index bytes, identities and permissions and full source evidence
+   remain unchanged. Directory-source overlap admission now retains scoped helper
+   access while inspecting private registry ancestry, before any initialization.
+   Current receipt: `caller-journals-current/ACCEPTANCE.json`; prior claim and final
+   permission receipts retain their original scopes. These are component controls,
+   not completed caller Copy, whole retained recovery or package/UAC acceptance.
    Remaining: actual caller dispatcher retaining pinned source and canonical
-   registry admission; connect caller claims to stage/local/central paired journals,
-   Begin-only admission, durable final-permission recovery, receipts and restored
-   Undo/cleanup.
+   registry admission through the entire operation; caller-aware destination
+   publication/final-permission application, original retention/overwrite, receipts
+   and restored discovery/resume/Undo/cleanup. Those entry points still select
+   Process authority until their caller-aware integration is connected.
    Prove caller links, actual alternate-admin, in-place TokenOwner mutation and
    package/profile contexts. Creation-inheritance and original-token finalization
    controls do not substitute for that complete transaction/recovery proof.

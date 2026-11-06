@@ -7,14 +7,19 @@ pub(super) fn preparation_name(transaction: &str) -> OsString {
     OsString::from(format!("{PREPARATION_PREFIX}{transaction}"))
 }
 
-pub(super) fn prepare(central: &File, transaction: &str) -> Result<File, PlatformError> {
-    windows_fs::create_private(
-        central,
-        &preparation_name(transaction),
-        false,
-        FILE_SHARE_READ,
-    )
-    .map_err(io)
+pub(super) fn prepare(
+    authority: &Authority,
+    central: &File,
+    transaction: &str,
+) -> Result<File, PlatformError> {
+    authority
+        .create(
+            central,
+            &preparation_name(transaction),
+            false,
+            FILE_SHARE_READ,
+        )
+        .map_err(io)
 }
 
 /// A presentation candidate only: preserve native names without adopting an ID.
@@ -106,31 +111,20 @@ impl UnstartedSetup {
 /// Prefer the canonical record; a collision/corruption must never fall back to a
 /// more convenient unpublished copy. Partial or unknown setups remain reserved.
 pub(super) fn unstarted_setup(
+    authority: &Authority,
     parent: &File,
     central: &File,
     transaction: &str,
     binding: &claims::Binding,
 ) -> Result<Option<UnstartedSetup>, PlatformError> {
     let canonical = OsString::from(format!("{transaction}.copy-journal"));
-    let central_name = match unsafe {
-        windows_fs::open_relative(
-            central,
-            &canonical,
-            RelativeOptions {
-                directory: None,
-                create_new: false,
-                access: windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES
-                    | windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE,
-                sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                security: ptr::null(),
-            },
-        )
-    } {
+    let central_name = match authority.probe(central, &canonical) {
         Ok(_) => canonical,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => preparation_name(transaction),
         Err(error) => return Err(io(error)),
     };
     let snapshot = Snapshot::read_pair(
+        authority,
         parent,
         central,
         OsStr::new(&format!(".ottrin-copy-{transaction}")),

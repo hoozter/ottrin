@@ -21,7 +21,7 @@ fn create<'a>(
         &source(&root.join("source")),
         parent,
         central,
-        &DestinationAdmission::creation(parent, OsStr::new("copy")).unwrap(),
+        &DestinationAdmission::creation(&Authority::Process, parent, OsStr::new("copy")).unwrap(),
         OsStr::new("source"),
         100,
         |_| Ok(()),
@@ -332,7 +332,7 @@ fn windows_native_copy_unpublished_marker_before_stage_allows_orphan_reclaim() {
         &id,
     )
     .unwrap();
-    let prepared = setup::prepare(&central, &id).unwrap();
+    let prepared = setup::prepare(&Authority::Process, &central, &id).unwrap();
     prepared.sync_all().unwrap();
     central.sync_all().unwrap();
     drop(prepared);
@@ -455,13 +455,15 @@ fn begin_only(parent: &File, central: &File, unpublished: bool) -> Journal {
         &id,
     )
     .unwrap();
-    let prepared = setup::prepare(central, &id).unwrap();
-    let stage = namespace::PrivateStage::for_transaction(parent, &id).unwrap();
+    let prepared = setup::prepare(&Authority::Process, central, &id).unwrap();
+    let stage =
+        namespace::PrivateStage::for_transaction_with_authority(parent, &id, Authority::Process)
+            .unwrap();
     let journal = Journal::create(
         &stage,
         central,
         prepared,
-        &DestinationAdmission::creation(parent, OsStr::new("copy")).unwrap(),
+        &DestinationAdmission::creation(&Authority::Process, parent, OsStr::new("copy")).unwrap(),
         OsStr::new("source"),
         &mut Some(claim),
     )

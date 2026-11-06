@@ -73,8 +73,8 @@ binding. This is source/runtime admission, not full transaction authority.
 
 The components below carry original caller authority through private staging,
 required metadata changes, final destination policy and destination claims. The
-full transaction still needs caller-aware paired journals, receipts and restored
-Undo/cleanup plans. Ordinary configured entry points retain their ordinary-process
+full transaction still needs caller-aware publication, receipts and restored
+Undo/cleanup plans; paired journal construction/reopening is covered below. Ordinary configured entry points retain their ordinary-process
 environment locator; helper dispatch must select the canonical caller factory.
 Administrator Copy remains disabled pending the complete bridge and native
 alternate-administrator/package acceptance. Exact native acceptance is recorded
@@ -165,8 +165,8 @@ All controls pass without changing production candidate creation. Exact source,
 executable, native results and teardown are recorded in
 `.hermes/evidence/caller-candidate-security-current/ACCEPTANCE.json`.
 The original-token finalization callback is a component control. Helper-side final
-plans and destination claims are covered below; durable journals, receipts and
-restored Undo/cleanup still need explicit caller authority. This does not enable administrator Copy or establish
+plans, destination claims and paired journals are covered below; publication,
+receipts and restored Undo/cleanup still need explicit caller authority. This does not enable administrator Copy or establish
 alternate-administrator UAC, in-place TokenOwner mutation, caller links or package
 profile-context acceptance.
 
@@ -184,8 +184,8 @@ Saved plan bytes contain evidence, never a token selection or installable native
 descriptor. Re-admission freshly derives the graph with the admitted authority and
 compares the entire evidence and permission phase. Already-final pending entries
 are verified without repeating a native ACL update. Existing journal entry points
-explicitly select process authority; caller claims must still be connected to
-paired journals and durable recovery.
+retain their independently admitted authority; caller-aware paired construction
+and reopening are covered below, while complete durable recovery remains open.
 
 Native testing reproduced `SetSecurityInfo` returning success with an empty DACL
 for a caller-owned parent with creator-owner inheritance when helper file
@@ -250,12 +250,64 @@ regressions, plus prior caller/permission/staging/security controls. Strict pair
 Windows platform/UI lint passes. Exact binding and teardown:
 `.hermes/evidence/caller-claims-current/ACCEPTANCE.json`.
 
-This accepts caller pre-journal reservations and complete orphan preparations.
-Caller Begin-only paired-journal admission, journal construction/recovery,
-receipts, dispatcher and restored Undo/cleanup remain incomplete. Ordinary
-paired-journal tests do not establish caller-aware journal acceptance.
+This checkpoint accepts caller pre-journal reservations and complete orphan
+preparations. The subsequent paired-journal checkpoint below extends that scope;
+ordinary paired-journal tests alone do not establish caller-aware acceptance.
 Administrator Copy stays disabled; packaged/alternate-administrator UAC and full
 profile-context proof remain separate gates.
+
+## Original-caller paired journal construction and reopening
+
+The admitted destination decision now retains explicit in-memory authority.
+`DurableStage` inherits it rather than accepting a separate caller selection.
+Private stage creation, local journal and central preparation creation use that
+same authority; journal headers freeze the caller creator and actual native
+private security. Canonical source-overlap checks run before any initialization.
+Directory-source traversal retains scoped helper file privileges while observing
+private registry ancestors, preserving all existing overlap and liveness checks.
+The superseded ordinary-only stage constructor and journal opener are removed.
+
+`Journal` and `Snapshot` retain authority through creation and fresh reopening.
+Native entry opening has one implementation, with separate inspection/read/write
+masks and sharing rules. Read-only recovery excludes an active writer; inspection
+retains readonly handles. Wrong ambient helper authority cannot adopt caller
+controls. Fresh writer admission inherits the already admitted snapshot context;
+creator validation compares with the frozen runtime caller, never a saved SID as
+a token selector. Control binding checks use the matching no-follow opener.
+Central no-replace publication retains scoped helper file privileges.
+
+Begin-only admission uses the exclusive validated name claim and reads the paired
+controls with its retained authority. A complete published or unpublished Begin
+can release only its reservation, preserving all setup data. A payload intent
+keeps the reservation. Names, partial bytes and mismatched headers still provide
+no permission to delete or repair records.
+
+Native ordinary-user/SYSTEM controls run both a regular-file source and a real
+four-entry populated directory through the shared durable staging engine. They
+verify caller owner/group/private DACLs, original-token reads, readonly write
+denial, active-writer exclusion, readonly and exclusive writer reopening, and
+native original-token permission-plan evidence appended to both mirrors. Each
+source context covers published Begin-only, unpublished complete Begin-only and
+intent-retention cases. Both records remain byte-identical during reservation
+recovery; intent refusal preserves the claim digest. The actual canonical registry
+admission and original source pins remain held, with preferences/index bytes,
+identities and permission digests and full source evidence unchanged.
+
+The earlier canonical-ancestor fault deliberately changes access. Its already
+acquired readonly preference/index observation handles remain held through the
+new controls; no permissions are repaired and those handles grant no journal or
+payload mutation authority. Two initial fixture fresh-open failures and the
+subsequent directory-overlap failure are retained with exact source/binary/native
+bindings. The final 100 tests across 23 native invocations and strict paired
+Windows platform/UI lint pass. Evidence:
+`.hermes/evidence/caller-journals-current/ACCEPTANCE.json`.
+
+This does not complete caller destination publication/final-permission application,
+original retention/overwrite, receipts or retained discovery/resume/Undo/cleanup.
+The actual dispatcher must retain original source pins and canonical registry
+admission for the entire operation. Actual alternate-administrator UAC, caller
+links, in-place TokenOwner mutation and package/profile contexts remain separate.
+Administrator Copy stays disabled and stable packages remain unchanged.
 
 ## Canonical native security evidence
 

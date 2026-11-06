@@ -712,6 +712,7 @@ impl Lease {
                     None
                 } else {
                     initialization::unstarted_setup(
+                        root.authority(),
                         parent,
                         central,
                         &binding.claim.transaction,

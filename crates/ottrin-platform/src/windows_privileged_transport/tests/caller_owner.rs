@@ -809,7 +809,7 @@ fn system_helper() {
     assert_eq!(token_state(), original_helper_state);
     exercise_caller_metadata(&context, &parent);
     crate::WindowsCopyRegistry::exercise_caller_authority(&context, &parent);
-    crate::WindowsCopyRegistry::exercise_canonical_profile(
+    let (preferences, index) = crate::WindowsCopyRegistry::exercise_canonical_profile(
         &context,
         &root.join("probe-data/caller-source.txt"),
         |operation| {
@@ -821,6 +821,26 @@ fn system_helper() {
             operation();
         },
     );
+    assert_eq!(token_state(), original_helper_state);
+    let source_directory =
+        crate::windows_fs::open_directory(&source_tree, FILE_GENERIC_READ).unwrap();
+    for source in [&source_file, &source_directory] {
+        crate::WindowsCopyRegistry::exercise_caller_journals(
+            &context,
+            &parent,
+            source,
+            &preferences,
+            &index,
+            |operation| {
+                context
+                    .with_caller_token(|| {
+                        operation();
+                        Ok(())
+                    })
+                    .unwrap();
+            },
+        );
+    }
     assert_eq!(token_state(), original_helper_state);
     context.validate().unwrap();
     channel.write_response(&PrivilegedResponse {
@@ -834,6 +854,7 @@ fn system_helper() {
             "atomic_private_creation_owner_matches_caller":true,
             "existing_private_entry_refused_unchanged":true,
             "ordinary_helper_reopen_refused":true,
+            "caller_paired_journal_staging_reopen_planning_and_begin_recovery":true,
             "caller_destination_claim_creation_reopen_release_and_preparation_recovery":true,
             "caller_permission_plan_projection_helper_apply_and_phase_restore":true,
             "caller_candidate_audit_label_and_per_object_original_token_controls":true,

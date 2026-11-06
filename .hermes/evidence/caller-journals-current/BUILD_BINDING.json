@@ -1,0 +1,13 @@
+{
+  "status": "pass exact source/build/staged executable binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native": "native/APPLICATION_INPUT.json",
+  "source_files": 29,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 410894336,
+    "sha256": "0c5fc7bf5bb7e554f62a6e4a789fad22ab854f6544443c9acf660c311fbdb36f"
+  },
+  "native_result": "pass100 tests across23 native invocations, including real file and populated-directory caller paired-journal controls"
+}

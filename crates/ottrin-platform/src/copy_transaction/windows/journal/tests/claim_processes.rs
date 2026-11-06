@@ -56,7 +56,7 @@ fn actor(root: &Path) -> ! {
     let parent = owner(&root.join("destination"));
     let central = owner(&root.join("central"));
     let input = source(&root.join("source"));
-    let admission = DestinationAdmission::creation(&parent, &target).unwrap();
+    let admission = DestinationAdmission::creation(&Authority::Process, &parent, &target).unwrap();
     let staged = match DurableStage::create(
         &input,
         &parent,

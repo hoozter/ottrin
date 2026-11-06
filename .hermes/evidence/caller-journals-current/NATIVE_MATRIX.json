@@ -1,0 +1,59 @@
+{
+  "prior_top_level": 59,
+  "prior_invocations": 13,
+  "additional_cases": [
+    [
+      "claim ledger and preparation native controls",
+      "copy_transaction::windows::journal::claims::",
+      6
+    ],
+    [
+      "claim orphan recovery",
+      "copy_transaction::windows::journal::tests::claim_orphans::",
+      3
+    ],
+    [
+      "claim process exclusion",
+      "copy_transaction::windows::journal::tests::claim_processes::",
+      1
+    ],
+    [
+      "claim preparation publication",
+      "copy_transaction::windows::journal::tests::claim_publication::",
+      6
+    ],
+    [
+      "claim terminal release",
+      "copy_transaction::windows::journal::tests::claim_releases::",
+      3
+    ],
+    [
+      "claim release repair",
+      "copy_transaction::windows::journal::tests::claim_repair::",
+      3
+    ],
+    [
+      "claim retirement and foreign controls",
+      "copy_transaction::windows::journal::tests::claim_retirement::",
+      4
+    ],
+    [
+      "journal initialization preservation",
+      "copy_transaction::windows::journal::tests::initialization::",
+      10
+    ],
+    [
+      "name release admission",
+      "copy_transaction::windows::journal::tests::name_release_action::",
+      2
+    ],
+    [
+      "unstarted abort reservation",
+      "copy_transaction::windows::journal::tests::abort::",
+      3
+    ]
+  ],
+  "expected_top_level": 100,
+  "expected_invocations": 23,
+  "limits": "Counts do not replace native assertions or complete full caller claims/journal/recovery acceptance"
+}

@@ -1,0 +1,33 @@
+{
+  "status": "pass caller paired journals and real private staging components",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "top_level_passes": 100,
+  "native_invocations": 23,
+  "coverage": [
+    "Destination admission retains explicit runtime authority; private stage and journal inherit it without selecting a separate caller",
+    "Actual canonical registry admission retained across controls, with original source tree pins/evidence held",
+    "Real one-file and four-entry populated-directory staging writes caller-owned paired journals and verifies every entry",
+    "Local/central/stage owner/group/private DACL match admitted caller; helper default owner differs",
+    "Actual original-token read and native readonly write denial; active writer excludes readonly recovery; wrong ambient helper authority refused",
+    "Fresh readonly and exclusive writable reopening preserve control bytes and native authority; re-admitted writer appends native original-token permission evidence to both mirrors",
+    "Published and unpublished complete Begin-only records release only the old reservation; both journals remain byte-identical; payload intent preserves the old reservation/log digest",
+    "Preferences/index bytes, native IDs and permission digests preserved through pinned readonly observation handles; source content/metadata/security evidence preserved",
+    "Directory-source canonical overlap traversal retains scoped helper privileges for caller-private ancestors before initialization; all overlap checks remain",
+    "Prior claim/security/profile/staging/token/metadata/sparse/codec/torn-checkpoint and ordinary initialization/release/recovery/abort regressions pass"
+  ],
+  "lint": {
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "exit": 0,
+    "sha256": "245cf0e602125882e0c36585cc35b6d71102c867901c393c253156d8c2827b97"
+  },
+  "limits": [
+    "Caller paired controls and actual private staging/plan append only; no caller destination publication/final-permission application/receipt/Undo completion",
+    "Dispatcher must retain original source pins and canonical registry admission through the entire operation",
+    "Caller-aware retained discovery/resume/Undo/cleanup and overwrite/original-retention integration remain incomplete",
+    "Actual alternate-admin UAC, in-place TokenOwner mutation, caller links and package/profile contexts remain separate gates",
+    "Administrator Copy stays disabled; current packages unchanged"
+  ]
+}

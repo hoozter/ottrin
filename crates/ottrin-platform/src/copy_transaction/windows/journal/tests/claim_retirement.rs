@@ -13,11 +13,17 @@ fn windows_native_copy_claim_retirement_keeps_terminal_cleanup_independent_of_ne
     let (name, _, _cleanup) = completed_undo_fixture(root.path(), true, false);
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     let claim_path = root
         .path()
@@ -39,7 +45,14 @@ fn windows_native_copy_claim_retirement_keeps_terminal_cleanup_independent_of_ne
     assert_eq!(std::fs::read(&local).unwrap(), journal);
     assert_eq!(std::fs::read(&mirror).unwrap(), journal);
     let retained_log = std::fs::read(&claim_path).unwrap();
-    let terminal = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+    let terminal = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap();
     assert!(terminal.claim.is_none());
     drop(terminal);
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
@@ -81,11 +94,17 @@ fn windows_native_copy_terminal_claim_discharge_requires_paired_state_and_never_
     let (name, _, _cleanup) = completed_undo_fixture(root.path(), false, false);
     let parent = owner(&root.path().join("destination"));
     let central = owner(&root.path().join("central"));
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     let claim = root
         .path()
         .join("destination")
@@ -95,9 +114,27 @@ fn windows_native_copy_terminal_claim_discharge_requires_paired_state_and_never_
     let mirror = root.path().join("central").join(header.central_name());
     let active = std::fs::read(&local).unwrap();
     std::fs::rename(&claim, &displaced).unwrap();
-    assert!(Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).is_err());
+    assert!(
+        Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Read
+        )
+        .is_err()
+    );
     std::fs::write(&claim, b"foreign control bytes").unwrap();
-    assert!(Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).is_err());
+    assert!(
+        Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Read
+        )
+        .is_err()
+    );
     assert_eq!(std::fs::read(&claim).unwrap(), b"foreign control bytes");
     std::fs::remove_file(&claim).unwrap();
     std::fs::rename(&displaced, &claim).unwrap();
@@ -106,15 +143,28 @@ fn windows_native_copy_terminal_claim_discharge_requires_paired_state_and_never_
     let terminal = std::fs::read(&local).unwrap();
     std::fs::remove_file(&claim).unwrap();
     assert!(
-        Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-            .unwrap()
-            .claim
-            .is_none()
+        Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Read
+        )
+        .unwrap()
+        .claim
+        .is_none()
     );
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     assert!(!claim.exists());
     std::fs::write(&claim, b"different owner; deliberately not a claim log").unwrap();
-    let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+    let snapshot = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap();
     assert!(snapshot.claim.is_none());
     drop(snapshot);
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
@@ -124,7 +174,16 @@ fn windows_native_copy_terminal_claim_discharge_requires_paired_state_and_never_
     );
     // An absent old claim never turns a lone terminal journal into authority.
     std::fs::write(&mirror, &active).unwrap();
-    assert!(Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).is_err());
+    assert!(
+        Snapshot::load(
+            &Authority::Process,
+            &parent,
+            &central,
+            &name,
+            SnapshotAccess::Read
+        )
+        .is_err()
+    );
     assert!(undo_completed_copy(&parent, &central, &name, |_| Ok(())).is_err());
     assert_eq!(std::fs::read(&local).unwrap(), terminal);
     assert_eq!(std::fs::read(&mirror).unwrap(), active);
@@ -155,11 +214,17 @@ fn retirement_fixture(root: &Path) -> (OsString, Header) {
     let (name, _, _cleanup) = completed_undo_fixture(root, true, false);
     let parent = owner(&root.join("destination"));
     let central = owner(&root.join("central"));
-    let header = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-        .unwrap()
-        .state
-        .header
-        .unwrap();
+    let header = Snapshot::load(
+        &Authority::Process,
+        &parent,
+        &central,
+        &name,
+        SnapshotAccess::Read,
+    )
+    .unwrap()
+    .state
+    .header
+    .unwrap();
     undo_completed_copy(&parent, &central, &name, |_| Ok(())).unwrap();
     remove_undo_fixture_source(root);
     std::fs::write(
@@ -262,7 +327,14 @@ fn windows_native_copy_claim_retirement_errors_and_exits_preserve_recovery() {
                 retirement_bytes(root.path(), &header) == before,
                 "Retained namespace changed at {point:?}"
             );
-            let snapshot = Snapshot::load(&parent, &central, &name, SnapshotAccess::Read).unwrap();
+            let snapshot = Snapshot::load(
+                &Authority::Process,
+                &parent,
+                &central,
+                &name,
+                SnapshotAccess::Read,
+            )
+            .unwrap();
             assert!(snapshot.state.undo_complete());
             drop(snapshot);
             let next = claims::Lease::acquire(
@@ -411,10 +483,16 @@ fn windows_native_copy_claim_retirement_yields_to_a_new_process_owner() {
             ));
         }
         assert!(
-            Snapshot::load(&parent, &central, &name, SnapshotAccess::Read)
-                .unwrap()
-                .claim
-                .is_none()
+            Snapshot::load(
+                &Authority::Process,
+                &parent,
+                &central,
+                &name,
+                SnapshotAccess::Read
+            )
+            .unwrap()
+            .claim
+            .is_none()
         );
         assert!(
             retirement_bytes(root.path(), &header) == before,

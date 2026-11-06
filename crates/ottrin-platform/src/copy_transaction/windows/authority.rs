@@ -98,7 +98,9 @@ impl Authority {
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         )
     }
-    fn open_child(
+    // A native handle is access, not ownership. Its consumer must validate
+    // the expected native binding/security before adopting state or mutating.
+    pub(super) fn open_child(
         &self,
         parent: &File,
         name: &OsStr,
