@@ -1,0 +1,19 @@
+{
+  "reference_commit": "dfbf8f700f0f527433aed09e352379b588da1f4e",
+  "files": {
+    "crates/ottrin-platform/src/copy_transaction/windows.rs": "9181cd942b929ee2aaa50ae87b4e062327f237d814178f90f8f3b84d37d7b862",
+    "crates/ottrin-platform/src/copy_transaction/windows/authority.rs": "9b4af720494d55bdaae497e7140318ebd36ce96c40189fc7e166fe61ce66706b",
+    "crates/ottrin-platform/src/copy_transaction/windows/journal.rs": "0b5ea4f25e50c1798aa4b6f368d7096fc423f3d0d845f5c54dc3b17476d0252f",
+    "crates/ottrin-platform/src/copy_transaction/windows/metadata.rs": "62dceea2ebdac58eada714c5d3f66f7906da24220d2e0609fc0705bc3c29f30d",
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs": "d7f955482d0139fa9a6a4f068a763dc563f18fdfb737c81e290884c9d88e08fb",
+    "crates/ottrin-platform/src/copy_transaction/windows/registry.rs": "cc429298c866e5a4efbd6e6a2636d892ad49a9e8d2c836eeb611f2e927939177",
+    "crates/ottrin-platform/src/copy_transaction/windows/security.rs": "2e258ab9159bd8c3568d9cd4bb2503b7a523b6ce2e88132f6aac6c1e53dbc160",
+    "crates/ottrin-platform/src/copy_transaction/windows/security/caller_private.rs": "1ba3f9fd6b46f4f1706d5e73b8c796b6f46339482b8507e349bc4d6b644d9f13",
+    "crates/ottrin-platform/src/copy_transaction/windows/sparse.rs": "4286a0bf7539d96f90c0cbab25d15c73074255f88d42854bd0eff85d18b8a7fa",
+    "crates/ottrin-platform/src/copy_transaction/windows/tree.rs": "d9593b07fd848758464bffee70c4288ffeb308dda7636116b005219ff832e1d7",
+    "crates/ottrin-platform/src/windows_fs.rs": "0297d0114a2d36bbe4cb27e45dec4a8517e518ac6189117b6eb255aa6b74e779",
+    "crates/ottrin-platform/src/windows_privileged_transport.rs": "460cf79bebaf13be114efd5256fba8a8810224c2ec827c709393a5e7dc38ca2c",
+    "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "ccfe14021944b9a16b855a9771407c6d3a5dadbc1e30d9d15228e24f5187e8d2"
+  },
+  "scope": "Shared explicit registry/staging authority; caller-owned typed native candidates, nested payload tree and required naming-policy mutations. No full durable caller Copy, final policy or package acceptance"
+}

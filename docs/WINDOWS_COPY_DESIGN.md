@@ -92,18 +92,52 @@ token and checks its user/default owner/primary group against admitted values.
 The native naming-policy setter runs under that original caller, without adding
 helper backup/restore privileges. Native access checks, emptiness and exact policy
 postcondition remain mandatory; no failed change is ignored. The private
-owner/group/DACL record and native identity must remain unchanged afterwards. Caller/profile liveness is
-validated around the operation.
+owner/group/DACL record and native identity must remain unchanged afterwards.
+Caller/profile liveness is validated around the operation.
 
 One shared thread-token guard serves this operation and existing scoped helper
 file privileges. It captures the exact prior thread token, installs the selected
 token only for the synchronous operation, and restores the prior token on return,
 error or unwind. A restoration failure aborts rather than continuing with an
 unknown effective identity. Neither original process token nor prior impersonation
-token is modified. This primitive still needs to be carried through actual Copy
-candidate creation/recovery; it does not enable administrator Copy or prove
+token is modified. This operation is carried by explicit private staging authority;
+full caller transaction/recovery integration is still required. It does not enable
+administrator Copy or prove
 alternate-administrator UAC/package behavior. Native mechanism acceptance:
 `.hermes/evidence/caller-metadata-current/ACCEPTANCE.json`.
+
+## Explicit private staging authority
+
+One in-memory `Authority` implementation now serves registry and private staging:
+ordinary process or authenticated original caller. It is never chosen by serialized
+permissions or an ambient global override. The existing ordinary opener remains
+shared; caller opens use native no-follow handles and explicit helper file privileges.
+
+A private stage retains its authority through creation and namespace validation.
+Its top-level and nested candidates are created through the same explicit authority.
+Caller candidates derive their protected private descriptor from the admitted
+original token, with exact owner/group/DACL verification after creation. A genuine
+`PerObjectFile` is constructed by the native create request using `MAXIMUM_ALLOWED`
+and the explicit required read/write/delete/DACL mask; an arbitrary `File` cannot
+be promoted to this capability.
+
+The real pinned-tree/payload path takes authority explicitly. It creates private
+children, applies required naming changes under the original token, validates
+candidate bindings with the matching no-follow opener, and retains authority in
+the staged tree for subsequent namespace checks. Progress boundaries validate
+caller liveness. No alternate payload copier or separate staging implementation
+is introduced.
+
+Ordinary `DurableStage` construction still selects ordinary authority. The caller
+fixture invokes this same private staging/payload engine with an observational
+journal adapter; it does not persist caller claims or durable journals, publish a
+file, derive/apply caller final destination policy, or admit receipt/Undo/cleanup.
+The dispatcher must retain the canonical registry and pinned source admission and
+carry authority through those remaining transitions. Caller-mode audit/mandatory
+label inheritance, per-object ACL propagation, links and package/UAC contexts need
+their own acceptance; ordinary/SYSTEM regressions cannot substitute for it.
+Administrator Copy remains disabled. Exact scoped evidence is maintained at
+`.hermes/evidence/caller-staging-current/ACCEPTANCE.json`.
 
 ## Canonical native security evidence
 

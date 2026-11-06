@@ -1,0 +1,16 @@
+{
+  "status": "formatting only; native assertions/results unchanged",
+  "readiness_logs": {
+    ".hermes/evidence/caller-staging-current/native-initial/readiness.log": {
+      "before_sha256": "b250dd7f708fc793b14c22dcabfefc559633e0167afa35a91ed5191b1a07124b",
+      "after_sha256": "03de9863385555b4c7f32c8b75e0ed122f02dc68f6d334c732f29800bc936055",
+      "change": "CRLF to LF only; text unchanged"
+    },
+    ".hermes/evidence/caller-staging-current/native/readiness.log": {
+      "before_sha256": "71a6c61b63fc3ae164e2a84d1afeb440d2991469b102b4207e5d517dbcca8df6",
+      "after_sha256": "a45adaa1f04e9d1e60ff04ffac4614467380f71e93d2f8c7149a0720f6f5d1d5",
+      "change": "CRLF to LF only; text unchanged"
+    }
+  },
+  "native_JSON": "Flat archive members decoded as UTF-8 with BOM handling and formatted as JSON. Both parsed RESULT copies equal separately collected GUEST_RESULT; raw archive hashes retained before removal."
+}

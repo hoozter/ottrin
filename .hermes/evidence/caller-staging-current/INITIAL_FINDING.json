@@ -1,0 +1,12 @@
+{
+  "status": "native fixture corrections required; not feature acceptance",
+  "native": "native-initial/GUEST_RESULT.json",
+  "source": "native-initial/SOURCE_INPUT.json",
+  "build": "native-initial/BUILD_INPUT.json",
+  "engine_observation": "Caller-mode private stage, four-entry nested tree payload, required root case-policy mutation, completion verification and candidate validation passed before the fixture-only read at namespace.rs:364. No full acceptance inferred.",
+  "failures": [
+    "SYSTEM fixture readonly reopening used FILE_SHARE_READ while staged writable handles were still retained, producing error32; use share read/write/delete without adding access rights.",
+    "Sparse tests are split into sparse::tests and sparse::native; old tests-only selector ran two tests successfully while expecting four. Select sparse:: to execute both modules, preserving the expected four."
+  ],
+  "production_change_for_retry": "None; fixture inspection sharing and selector only. Native cleanup confirmed; failed evidence preserved separately."
+}

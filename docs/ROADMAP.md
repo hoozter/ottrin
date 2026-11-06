@@ -59,34 +59,24 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
    The ordinary durable coordinator and Activity restart/mutation fence have their
    scoped native acceptance. Authenticated caller context, private creation/reopen,
    and now held caller registry/coordinator authority are implemented components.
-   Current source acceptance: 27 top-level passes across nine ordinary-user/SYSTEM
-   invocations. The canonical profile/Ottrin/State ancestry is now held and bound
-   to full native identity, location, security and naming policy. Source overlap
-   is refused before provisioning. Real original-user writes into helper-created
-   State/registry pass; existing preference/index fixture bytes, identities and
-   permissions remain unchanged. Actual ancestor-DACL mutation and application
-   entry redirection refuse without repair. Native registry/security regressions,
-   large streamed journal decoding and torn-checkpoint recovery pass. Strict
-   paired Windows platform/UI lint passes. Three owned guest/disk/desktop/profile
-   scopes and consumed transports are removed; 33 obsolete incremental sessions
-   were removed, with at least 2.91 GiB measured reclaimed. Receipt:
-   `caller-profile-registry-current/ACCEPTANCE.json`.
-   The required naming-policy primitive now runs under a snapshot of the
-   authenticated original token, with exact prior thread-token restoration.
-   Native SYSTEM/caller assertions verify actual changes in both directions,
-   unchanged owner/group/DACL, wrong-ID/nonempty refusal, and restoration after
-   success, failure, unwind and nesting. This remains a component, not enabled
-   administrator Copy. Current metadata receipt:
-   `caller-metadata-current/ACCEPTANCE.json`.
-   Remaining: connect this factory to the actual caller dispatcher and retain
-   admitted source/operation authority; propagate authority through claims,
-   staging, complete journals, final destination security, receipts and restored
-   Undo/cleanup plans; carry the verified original-token naming-policy operation
-   into candidate staging/recovery; actual alternate-admin, in-place
-   TokenOwner-mutation and package-context proof. Already-inherited registry
-   naming is verified without an unnecessary setter; it is not full metadata
-   support. The new actual Ottrin-ancestor DACL fixture is distinct from the
-   earlier parent-group and private-root DACL cases.
+   Current native component acceptance: 55 top-level passes across 12 invocations,
+   using ordinary-user and SYSTEM roles. Registry and private staging now share
+   one explicit authority. The caller-mode real tree/payload engine stages a
+   four-entry nested directory tree into a protected destination, retains caller
+   ownership, applies required naming policy and verifies payload/metadata and
+   token restoration. Ordinary metadata/sparse, SYSTEM tree/link and the existing
+   profile/registry/security/codec/torn-checkpoint regressions pass. Strict paired
+   Windows platform/UI lint passes. This is component acceptance, with an
+   observational journal adapter; it is not durable caller Copy or package/UAC
+   acceptance. Receipt: `caller-staging-current/ACCEPTANCE.json`.
+   Remaining: connect the canonical factory to the actual caller dispatcher,
+   retaining pinned source and registry admission throughout operations; caller
+   authority in destination claims, stage/local/central journals, final security,
+   receipts and restored Undo/cleanup. Prove caller-mode audit/mandatory-label
+   inheritance, per-object ACL propagation, links, actual alternate-admin,
+   in-place TokenOwner mutation and package/profile contexts. Existing inherited
+   naming acceptance is distinct from the newly verified required case change;
+   broader metadata/security behavior still needs its complete transaction proof.
    Missing member IDs never license deletion or a completed original-batch claim.
    These are independently executable implementation/QA gates, not owner waits.
    See the historical caller checkpoints below for earlier exact-source scopes.

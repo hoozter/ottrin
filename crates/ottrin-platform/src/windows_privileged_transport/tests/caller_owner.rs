@@ -743,6 +743,31 @@ fn system_helper() {
         helper_user
     );
     assert_eq!(system_parent_policy(&parent), parent_owner);
+    let source_tree = root.join("probe-data/caller-stage-source");
+    context
+        .with_caller_token(|| {
+            std::fs::create_dir(&source_tree)?;
+            let source = crate::windows_fs::open_directory(
+                &source_tree,
+                FILE_GENERIC_READ | FILE_GENERIC_WRITE,
+            )?;
+            crate::windows_fs::set_empty_directory_case_policy(&source, true)?;
+            std::fs::create_dir(source_tree.join("Nested"))?;
+            std::fs::write(
+                source_tree.join("Nested/payload.txt"),
+                b"nested original-caller payload",
+            )?;
+            std::fs::write(source_tree.join("Root.txt"), b"root caller payload")?;
+            Ok(())
+        })
+        .unwrap();
+    let source_before = std::fs::read(source_tree.join("Nested/payload.txt")).unwrap();
+    crate::WindowsCopyRegistry::exercise_caller_staging(&context, &parent, &source_tree);
+    assert_eq!(
+        std::fs::read(source_tree.join("Nested/payload.txt")).unwrap(),
+        source_before
+    );
+    assert_eq!(token_state(), original_helper_state);
     exercise_caller_metadata(&context, &parent);
     crate::WindowsCopyRegistry::exercise_caller_authority(&context, &parent);
     crate::WindowsCopyRegistry::exercise_canonical_profile(
@@ -770,6 +795,7 @@ fn system_helper() {
             "atomic_private_creation_owner_matches_caller":true,
             "existing_private_entry_refused_unchanged":true,
             "ordinary_helper_reopen_refused":true,
+            "caller_private_stage_tree_payload_and_required_case_policy":true,
             "required_private_directory_case_changes_with_original_token":true,
             "private_metadata_refuses_wrong_identity_or_nonempty_directory":true,
             "caller_token_success_error_unwind_and_nested_restoration":true,

@@ -1,0 +1,8 @@
+{
+  "changed_source_files": [
+    "crates/ottrin-platform/src/copy_transaction/windows/namespace.rs"
+  ],
+  "only_code_change": "Two inspection-only read handles now share existing writer/delete access while retaining FILE_GENERIC_READ access. Production stage/tree/metadata/authority code is byte-identical to the first native run.",
+  "old_source_reconstruction": "native-initial/FIXTURE_CORRECTION.patch reverses to exact initial namespace hash; checked before rebuilding.",
+  "actor_change": "Select sparse:: across fingerprint and native modules, preserving expected four passing tests."
+}

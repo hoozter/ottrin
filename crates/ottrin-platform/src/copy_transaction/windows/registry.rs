@@ -1,14 +1,16 @@
 //! Private Copy directories provisioned through an external native-identity anchor.
+use super::authority::{Authority, ordinary_child as child};
 use super::{WindowsStableIdentity, io, namespace, security, stable_identity_from_handle};
 use crate::{PlatformError, windows_fs};
 use serde::{Deserialize, Serialize};
+#[cfg(test)]
+use std::ptr;
 use std::{
     ffi::{OsStr, OsString},
     fs::File,
     io::Read,
     os::windows::ffi::OsStrExt,
     path::{Path, PathBuf},
-    ptr,
     sync::Arc,
 };
 use windows_sys::Win32::Storage::FileSystem::*;
@@ -64,122 +66,6 @@ pub struct AnchoredRoot {
     parent_security: [u8; 32],
 }
 
-#[derive(Clone)]
-enum Authority {
-    Process,
-    Caller(Arc<crate::windows_privileged_transport::CallerCopyContext>),
-}
-impl Authority {
-    fn validate(&self) -> Result<(), PlatformError> {
-        match self {
-            Self::Process => Ok(()),
-            Self::Caller(caller) => caller.validate().map_err(io),
-        }
-    }
-    fn owner(&self) -> Result<Vec<u8>, PlatformError> {
-        match self {
-            Self::Process => windows_fs::current_owner(),
-            Self::Caller(caller) => caller.default_file_owner_sid().map(Vec::from).map_err(io),
-        }
-    }
-    fn create(
-        &self,
-        parent: &File,
-        name: &OsStr,
-        directory: bool,
-        sharing: u32,
-    ) -> std::io::Result<File> {
-        match self {
-            Self::Process => windows_fs::create_private(parent, name, directory, sharing),
-            Self::Caller(caller) => caller.create_private_entry(parent, name, directory, sharing),
-        }
-    }
-    fn child(
-        &self,
-        parent: &File,
-        name: &OsStr,
-        directory: bool,
-        access: u32,
-        sharing: u32,
-    ) -> std::io::Result<File> {
-        match self {
-            Self::Process => child(parent, name, directory, access, sharing),
-            Self::Caller(caller) => {
-                caller.validate()?;
-                let file = windows_fs::with_file_privileges(|| {
-                    windows_fs::open_existing_for_caller(
-                        parent,
-                        name,
-                        Some(directory),
-                        access,
-                        sharing,
-                    )
-                })?;
-                security::PrivateSecurity::capture_for_caller(
-                    &file,
-                    caller.default_file_owner_sid()?,
-                    caller.default_file_group_sid()?,
-                )?;
-                caller.validate()?;
-                Ok(file)
-            }
-        }
-    }
-    fn probe(&self, parent: &File, name: &OsStr) -> std::io::Result<File> {
-        let open = || unsafe {
-            windows_fs::open_relative(
-                parent,
-                name,
-                windows_fs::RelativeOptions {
-                    directory: None,
-                    create_new: false,
-                    access: FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-                    sharing: FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    security: ptr::null(),
-                },
-            )
-        };
-        match self {
-            Self::Process => open(),
-            Self::Caller(caller) => {
-                caller.validate()?;
-                let file = windows_fs::with_file_privileges(|| {
-                    windows_fs::open_existing_for_caller(
-                        parent,
-                        name,
-                        None,
-                        FILE_READ_ATTRIBUTES | SYNCHRONIZE,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    )
-                })?;
-                caller.validate()?;
-                Ok(file)
-            }
-        }
-    }
-    fn binding(
-        &self,
-        parent: &File,
-        name: &OsStr,
-        expected: WindowsStableIdentity,
-    ) -> Result<(), PlatformError> {
-        self.validate()?;
-        namespace::validate_binding_with(parent, expected, || self.probe(parent, name))?;
-        self.validate()
-    }
-    fn writable_parent(&self, path: &Path) -> Result<File, PlatformError> {
-        self.validate()?;
-        let open = || windows_fs::open_directory(path, FILE_GENERIC_READ | FILE_GENERIC_WRITE);
-        let file = match self {
-            Self::Process => open(),
-            Self::Caller(_) => windows_fs::with_file_privileges(open),
-        }
-        .map_err(io)?;
-        self.validate()?;
-        Ok(file)
-    }
-}
-
 pub(super) fn configured_path() -> Result<PathBuf, PlatformError> {
     let local =
         std::env::var_os("LOCALAPPDATA").ok_or_else(|| io("LOCALAPPDATA is unavailable"))?;
@@ -188,28 +74,6 @@ pub(super) fn configured_path() -> Result<PathBuf, PlatformError> {
         return Err(io("LOCALAPPDATA must be absolute"));
     }
     Ok(local.join("Ottrin").join("State").join("copies"))
-}
-
-fn child(
-    parent: &File,
-    name: &OsStr,
-    directory: bool,
-    access: u32,
-    sharing: u32,
-) -> std::io::Result<File> {
-    unsafe {
-        windows_fs::open_relative(
-            parent,
-            name,
-            windows_fs::RelativeOptions {
-                directory: Some(directory),
-                create_new: false,
-                access,
-                sharing,
-                security: ptr::null(),
-            },
-        )
-    }
 }
 
 /// Other Copy writers must not invalidate an interrupted cohort's frozen
@@ -1259,6 +1123,17 @@ impl AnchoredRoot {
             assert_eq!(bytes(&foreign_root.marker), foreign_marker);
         }
         caller.validate().unwrap();
+    }
+}
+
+#[cfg(test)]
+impl AnchoredRoot {
+    pub(crate) fn exercise_caller_staging(
+        context: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &Path,
+    ) {
+        namespace::exercise_caller_staging(context, parent, source);
     }
 }
 

@@ -1,0 +1,18 @@
+{
+  "status": "pass exact source/build/staged input binding",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "native_input": "native/APPLICATION_INPUT.json",
+  "source_files": 13,
+  "unchanged_executable_text": {
+    "entry_rva": 5136,
+    "bytes": 409456128,
+    "sha256": "e38ab4d59f328075290a9d9eac7500cbb40be0632fa4b904a7cd9e515d77948e"
+  },
+  "native_result": "pending",
+  "lint": {
+    "exit": 0,
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "sha256": "298e25a0f08f80f95c3cacc434464ed259b2f166281a42a907545f3a96edb0e5"
+  }
+}

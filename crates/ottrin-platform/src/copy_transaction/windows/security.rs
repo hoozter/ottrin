@@ -1032,7 +1032,13 @@ mod tests {
             }
             let source = namespace::open_source(&parent, OsStr::new("source-link"), None).unwrap();
             let candidate = private(&parent, "candidate", directory);
-            super::super::metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+            super::super::metadata::stage_entry_payload(
+                &source,
+                &candidate,
+                &super::super::authority::Authority::Process,
+                |_| Ok(()),
+            )
+            .unwrap();
             let link = super::super::links::capture(&candidate).unwrap().unwrap();
             let policy = DestinationSecurity::capture(&parent, directory).unwrap();
             policy

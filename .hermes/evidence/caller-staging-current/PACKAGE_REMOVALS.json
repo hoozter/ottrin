@@ -1,0 +1,38 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/Ottrin-0.1.0-windows-x64-portable.zip",
+      "kind": "build-cache",
+      "reason": "Superseded generated Windows portable package and sidecars",
+      "evidence": "Exact old provenance/hash captured in SUPERSEDED_PACKAGE.json; verified newer stable Windows candidate with accepted hash at dist/windows-candidate, newer ancestor source. No current/pending consumer of obsolete ZIP; no hard links. Preserve current candidate, all user data and pending legacy MSI/installer controls."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/Ottrin-0.1.0-windows-x64-portable.zip.sha256",
+      "kind": "build-cache",
+      "reason": "Superseded generated Windows portable package and sidecars",
+      "evidence": "Exact old provenance/hash captured in SUPERSEDED_PACKAGE.json; verified newer stable Windows candidate with accepted hash at dist/windows-candidate, newer ancestor source. No current/pending consumer of obsolete ZIP; no hard links. Preserve current candidate, all user data and pending legacy MSI/installer controls."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/dist/Ottrin-0.1.0-windows-x64-portable.zip.provenance.json",
+      "kind": "build-cache",
+      "reason": "Superseded generated Windows portable package and sidecars",
+      "evidence": "Exact old provenance/hash captured in SUPERSEDED_PACKAGE.json; verified newer stable Windows candidate with accepted hash at dist/windows-candidate, newer ancestor source. No current/pending consumer of obsolete ZIP; no hard links. Preserve current candidate, all user data and pending legacy MSI/installer controls."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process independently identified in preceding scope and retained; exact identity must match. No owned native guest or compiler remains live. Targets are an obsolete generated ZIP and its sidecars, not authentication/session data; current verified candidate and MSI/installer controls remain preserved."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process independently identified in preceding scope and retained; exact identity must match. No owned native guest or compiler remains live. Targets are an obsolete generated ZIP and its sidecars, not authentication/session data; current verified candidate and MSI/installer controls remain preserved."
+    }
+  ]
+}

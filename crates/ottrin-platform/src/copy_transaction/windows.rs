@@ -7,6 +7,7 @@
 //! through native handles; security and other unsupported
 //! backup records are refused rather than silently omitted.
 
+mod authority;
 mod dispatch;
 pub(crate) use dispatch::copy_configured;
 /// Bound pinned source descriptors before any destination mutation.
@@ -971,7 +972,13 @@ mod tests {
         let read =
             namespace::open_source(&parent_handle, std::ffi::OsStr::new("source"), Some(false))
                 .unwrap();
-        metadata::stage_entry_payload(&read, &candidate(&dst), |_| Ok(())).unwrap();
+        metadata::stage_entry_payload(
+            &read,
+            &candidate(&dst),
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         assert_eq!(std::fs::read(&src).unwrap(), b"readable source");
         assert_eq!(std::fs::read(&dst).unwrap(), b"readable source");
         drop(guard);
@@ -1015,7 +1022,13 @@ mod tests {
         let parent = parent(root.path());
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(true).unwrap();
-        metadata::stage_entry_payload(&read, &candidate, |_| Ok(())).unwrap();
+        metadata::stage_entry_payload(
+            &read,
+            &candidate,
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         stage.validate_candidate(&candidate, true).unwrap();
         assert_owner_only(&candidate);
         assert_eq!(
@@ -1524,7 +1537,13 @@ mod tests {
         std::fs::write(&src, &original).unwrap();
         let source = source(&src);
         let target = candidate(&dst);
-        let evidence = metadata::stage_entry_payload(&source, &target, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(
+            &source,
+            &target,
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         for verify_source in [true, false] {
             let mut calls = 0;
             let mut cancellation = || {
@@ -1788,7 +1807,13 @@ mod metadata_tests {
             .open(&src)
             .unwrap();
         let candidate = rw(&dst);
-        let staged = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+        let staged = metadata::stage_entry_payload(
+            &source,
+            &candidate,
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         assert!(staged.streams.iter().all(|stream| stream.kind != DATA));
         assert!(
             staged
@@ -1865,7 +1890,13 @@ mod metadata_tests {
             let no = COMPRESSION_FORMAT_NONE;
             compress(&source, if compressed_source { yes } else { no });
             compress(&candidate, if compressed_source { no } else { yes });
-            let staged = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+            let staged = metadata::stage_entry_payload(
+                &source,
+                &candidate,
+                &super::authority::Authority::Process,
+                |_| Ok(()),
+            )
+            .unwrap();
             assert!(
                 staged.streams.is_empty(),
                 "directories have no synthetic unnamed stream"
@@ -1887,10 +1918,42 @@ mod metadata_tests {
         std::fs::write(format!("{}:keep:$DATA", dst.display()), b"unrelated").unwrap();
         let source = rw(&src);
         let candidate = rw(&dst);
-        assert!(metadata::stage_entry_payload(&source, &source, |_| Ok(())).is_err());
-        assert!(metadata::stage_entry_payload(&source, &rw(&regular), |_| Ok(())).is_err());
-        assert!(metadata::stage_entry_payload(&rw(&regular), &candidate, |_| Ok(())).is_err());
-        assert!(metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).is_err());
+        assert!(
+            metadata::stage_entry_payload(
+                &source,
+                &source,
+                &super::authority::Authority::Process,
+                |_| Ok(())
+            )
+            .is_err()
+        );
+        assert!(
+            metadata::stage_entry_payload(
+                &source,
+                &rw(&regular),
+                &super::authority::Authority::Process,
+                |_| Ok(())
+            )
+            .is_err()
+        );
+        assert!(
+            metadata::stage_entry_payload(
+                &rw(&regular),
+                &candidate,
+                &super::authority::Authority::Process,
+                |_| Ok(())
+            )
+            .is_err()
+        );
+        assert!(
+            metadata::stage_entry_payload(
+                &source,
+                &candidate,
+                &super::authority::Authority::Process,
+                |_| Ok(())
+            )
+            .is_err()
+        );
         assert_eq!(
             std::fs::read(format!("{}:keep:$DATA", dst.display())).unwrap(),
             b"unrelated"
@@ -1915,7 +1978,13 @@ mod metadata_tests {
             std::fs::write(format!("{}:note:$DATA", src.display()), b"original").unwrap();
             let source = rw(&src);
             let candidate = rw(&dst);
-            let staged = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+            let staged = metadata::stage_entry_payload(
+                &source,
+                &candidate,
+                &super::authority::Authority::Process,
+                |_| Ok(()),
+            )
+            .unwrap();
             let changed = if mutate_source { &src } else { &dst };
             std::fs::write(format!("{}:note:$DATA", changed.display()), b"modified").unwrap();
             if mutate_source {
@@ -1955,13 +2024,18 @@ mod metadata_tests {
         let source = rw(&src);
         let candidate = rw(&dst);
         assert!(
-            metadata::stage_entry_payload(&source, &candidate, |copied| {
-                if copied > 0 {
-                    Err(io("injected directory cancellation"))
-                } else {
-                    Ok(())
+            metadata::stage_entry_payload(
+                &source,
+                &candidate,
+                &super::authority::Authority::Process,
+                |copied| {
+                    if copied > 0 {
+                        Err(io("injected directory cancellation"))
+                    } else {
+                        Ok(())
+                    }
                 }
-            })
+            )
             .unwrap_err()
             .to_string()
             .contains("injected directory cancellation")
@@ -2004,7 +2078,13 @@ mod metadata_tests {
         set_basic(&rw(&src), &info);
         let source = File::open(&src).unwrap();
         let candidate = rw(&dst);
-        let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(
+            &source,
+            &candidate,
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         assert_eq!(evidence.streams.len(), 2);
         evidence.validate_source(&source, || Ok(())).unwrap();
         evidence.validate_candidate_metadata(&candidate).unwrap();
@@ -2036,7 +2116,13 @@ mod metadata_tests {
                 },
                 COMPRESSION_FORMAT_LZNT1,
             );
-            let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+            let evidence = metadata::stage_entry_payload(
+                &source,
+                &candidate,
+                &super::authority::Authority::Process,
+                |_| Ok(()),
+            )
+            .unwrap();
             evidence.validate_candidate_metadata(&candidate).unwrap();
             assert_eq!(
                 metadata::basic(&candidate).unwrap().FileAttributes & FILE_ATTRIBUTE_COMPRESSED
@@ -2056,7 +2142,13 @@ mod metadata_tests {
         let stage = namespace::PrivateStage::create(&parent).unwrap();
         let candidate = stage.create_candidate(false).unwrap();
         let source = File::open(src).unwrap();
-        metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+        metadata::stage_entry_payload(
+            &source,
+            &candidate,
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         assert_owner_only(&candidate);
         assert_owner_only(&stage.directory);
     }
@@ -2066,7 +2158,13 @@ mod metadata_tests {
         let (src, dst) = paths(root.path());
         let source = rw(&src);
         let candidate = rw(&dst);
-        let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(
+            &source,
+            &candidate,
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         let mut info = metadata::basic(&candidate).unwrap();
         info.LastWriteTime -= 10_000_000;
         set_basic(&candidate, &info);
@@ -2083,7 +2181,13 @@ mod metadata_tests {
         let (src, dst) = paths(root.path());
         let source = rw(&src);
         let mut candidate = rw(&dst);
-        let evidence = metadata::stage_entry_payload(&source, &candidate, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(
+            &source,
+            &candidate,
+            &super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         assert!(evidence.validate_candidate_metadata(&source).is_err());
         let before = metadata::basic(&candidate).unwrap();
         candidate.seek(SeekFrom::Start(0)).unwrap();
@@ -2108,7 +2212,13 @@ mod metadata_tests {
         set_basic(&source, &info);
         let before = metadata::basic(&candidate).unwrap().CreationTime;
         assert!(
-            metadata::stage_entry_payload(&source, &candidate, |_| Err(io("cancelled"))).is_err()
+            metadata::stage_entry_payload(
+                &source,
+                &candidate,
+                &super::authority::Authority::Process,
+                |_| Err(io("cancelled"))
+            )
+            .is_err()
         );
         assert_eq!(metadata::basic(&candidate).unwrap().CreationTime, before);
         assert_eq!(std::fs::read(src).unwrap(), b"source primary data");

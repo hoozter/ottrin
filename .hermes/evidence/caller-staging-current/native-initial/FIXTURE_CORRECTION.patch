@@ -1,0 +1,20 @@
+--- crates/ottrin-platform/src/copy_transaction/windows/namespace.rs
++++ crates/ottrin-platform/src/copy_transaction/windows/namespace.rs
+@@ -359,7 +359,7 @@
+             OsStr::new("Nested"),
+             true,
+             FILE_GENERIC_READ,
+-            FILE_SHARE_READ,
++            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+         )
+         .unwrap();
+     super::security::PrivateSecurity::capture(&nested, &owner).unwrap();
+@@ -370,7 +370,7 @@
+             OsStr::new("payload.txt"),
+             false,
+             FILE_GENERIC_READ,
+-            FILE_SHARE_READ,
++            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+         )
+         .unwrap();
+     super::security::PrivateSecurity::capture(&bytes, &owner).unwrap();

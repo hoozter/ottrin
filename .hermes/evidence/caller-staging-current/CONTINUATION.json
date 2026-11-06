@@ -1,0 +1,12 @@
+{
+  "next": "Complete explicit authority through caller dispatcher, destination claims, all durable stage/local/central journals, final destination security and retained recovery/receipts. Administrator Copy remains disabled.",
+  "operation_admission": "Retain Source handles and canonical registry/ancestry for operation lifetime; validate overlap before provisioning and identity/security/liveness throughout. Factory-local source checks alone are not retained authority.",
+  "shared_implementation": "authority.rs is authoritative for registry/private staging/tree creation, binding and required case policy; extend it rather than a separate copier, global impersonation or duplicate creator.",
+  "final_security": "TreeSecurityPlan and retained plans still contain current_owner/current_token/ordinary-open assumptions. Derive from pinned original token and retain explicit authority for validation/application/reopen. Serialized policy never chooses tokens or grants deletion.",
+  "candidate_security_proof": "Prove caller-mode audit/mandatory-label inheritance and per-object/no-propagate DACL behavior against real original-token creation controls. Current four-entry fixture proves owner/group/private DACL, payload and required naming only.",
+  "other_gates": "Actual alternate-admin UAC, in-place TokenOwner mutation, package/profile contexts and complete caller journal/claim/recovery crash/refusal matrix. Independently executable, not owner waits.",
+  "publication": "Preceding hosted run42144115878 on9cf3b307 is terminal successful for all four jobs. Publish queued dfbf8f70 and this verified staging checkpoint once after final checks, then inspect fresh exact-source run without cancellation.",
+  "other_ready_work": "U05-U08 interface/property audit; themed picker/folder integration gaps; ordinary-user MSI rollback with held diagnostic input.",
+  "owner_waits": "Personal helper authentication; signing identity/key choices; release-ready free Store submission; unavailable hardware/proprietary corpora/environments; final acceptance.",
+  "cleanup": "Two guests and consumed staging removed;22 obsolete incremental sessions and280 orphan objects removed; root ZIP superseded by verified candidate. Current packages, unmatched compiler configurations and MSI/installer controls preserved."
+}

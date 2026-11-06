@@ -1,0 +1,13 @@
+{
+  "status": "guarded cleanup stopped on transient process gap; no success receipt copied",
+  "gap_pid": 3505625,
+  "gap_still_exists": false,
+  "removed": 7,
+  "remaining_paths": [
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_search-3e9a2i98scben/s-hnw82ujc2i-13ac983-993l4bhfuyvopz6cbq3b3wppr",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-0jtapt06a26oi/s-hnw84ictx1-1qf54sf-aia50merixtsx8e96ue1vtbjz",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3jepsrbp170x5/s-hnw84icqrc-1c3qs52-7md7ztxt2i9chnswxmkyiz9l1",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental/ottrin_ui-3ljecrdd3b4ww/s-hnw82v6br8-0v96gzj-auz8rj5wo8f02cwkxbpz9vub7"
+  ],
+  "next": "Do not touch caches while native QA runs. When producer is terminal, retry exact locked cleanup for remaining candidates after confirming transient PID absent; do not report a full 22-session cleanup prematurely."
+}

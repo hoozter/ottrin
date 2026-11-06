@@ -333,6 +333,7 @@ impl StagedEntry {
 pub(super) fn stage_entry_payload(
     source: &File,
     candidate: &File,
+    authority: &super::authority::Authority,
     mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
 ) -> Result<StagedEntry, PlatformError> {
     let before = version(source)?;
@@ -360,7 +361,7 @@ pub(super) fn stage_entry_payload(
     if let Some(expected) = before.case_sensitive
         && target.case_sensitive != Some(expected)
     {
-        windows_fs::set_empty_directory_case_policy(candidate, expected).map_err(io)?;
+        authority.case_policy(candidate, expected)?;
     }
     let mut copied_bytes = 0;
     let streams = stage_entry_streams(source, candidate, |bytes| {

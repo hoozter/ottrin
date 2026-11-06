@@ -1,0 +1,32 @@
+{
+  "status": "pass explicit original-caller private stage/tree/payload integration and native regressions",
+  "source": "SOURCE_INPUT.json",
+  "build": "NATIVE_TEST_INPUT.json",
+  "binding": "BUILD_BINDING.json",
+  "native": "VERIFICATION.json",
+  "native_invocations": 12,
+  "top_level_passes": 55,
+  "new_caller_scope": [
+    "Same private stage and pinned-tree/payload engine stages a four-entry directory tree under a protected SYSTEM-owned destination",
+    "Top-level/nested candidates are genuine native per-object handles created with caller-derived private owner/group/DACL rather than promoted from ordinary File",
+    "Required root naming policy uses original token; retained tree validates candidate bindings through matching native no-follow openers",
+    "Nested payload/case policy verified, source unchanged, exact helper token/privilege state restored"
+  ],
+  "regressions": [
+    "Ordinary metadata/directory payload11 and sparse fingerprint/native payload4",
+    "SYSTEM tree13 including links, raw names, metadata, cancellation and tampering",
+    "Prior caller profile/source-overlap/private creation/reopen/registry/coordinator, native security, large codec and torn checkpoint"
+  ],
+  "lint": {
+    "exit": 0,
+    "command": "cargo clippy -p ottrin-platform -p ottrin-ui --target x86_64-pc-windows-gnu --all-targets -- -D warnings",
+    "sha256": "ee4a0ef2cdfcf23e77c4e7de76e13ebf9eef40df55a0b41e98f885002e8a42cf"
+  },
+  "first_trial": "INITIAL_FINDING.json records inspection sharing and incomplete sparse selector; corrected without production stage/tree/metadata/authority changes",
+  "limits": [
+    "Observational journal adapter only: no caller claims, durable local/central journals, publication, final security, receipt, Undo or cleanup acceptance",
+    "Caller-mode audit/mandatory labels, per-object ACL propagation and links need dedicated proof; ordinary/SYSTEM regressions do not substitute",
+    "No actual alternate-admin UAC, in-place TokenOwner mutation or packaged profile context proof",
+    "Administrator Copy stays disabled; no new package or whole-roadmap acceptance"
+  ]
+}

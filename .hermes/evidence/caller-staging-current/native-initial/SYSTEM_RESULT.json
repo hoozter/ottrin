@@ -1,0 +1,14 @@
+{
+  "scope": "Owned SYSTEM caller-creation role and native Copy security regressions including privilege-dependent link/audit cases; no UAC or enabled Copy acceptance",
+  "status": "failed",
+  "error": "SYSTEM native assertions failed: caller private helper",
+  "runs": [
+    {
+      "stdout": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::system_helper\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 578 filtered out; finished in 0.68s\n\n",
+      "case": "caller private helper",
+      "stderr": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (9208) panicked at crates/ottrin-platform/src/copy_transaction/windows/namespace.rs:364:10:\ncalled `Result::unwrap()` on an `Err` value: Os { code: 32, kind: Uncategorized, message: \"The process cannot access the file because it is being used by another process.\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "exit": 101
+    }
+  ],
+  "stack": "at Require, <No file>: line 4\r\nat <ScriptBlock>, <No file>: line 30\r\nat <ScriptBlock>, <No file>: line 1"
+}

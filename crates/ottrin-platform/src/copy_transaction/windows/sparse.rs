@@ -258,10 +258,15 @@ mod native {
             }
             let before = version(&source).unwrap();
             let mut physical = 0;
-            let evidence = metadata::stage_entry_payload(&source, &target, |bytes| {
-                physical = physical.max(bytes);
-                Ok(())
-            })
+            let evidence = metadata::stage_entry_payload(
+                &source,
+                &target,
+                &super::super::authority::Authority::Process,
+                |bytes| {
+                    physical = physical.max(bytes);
+                    Ok(())
+                },
+            )
             .unwrap();
             evidence.validate_source(&source, || Ok(())).unwrap();
             evidence.validate_candidate_metadata(&target).unwrap();
@@ -315,11 +320,16 @@ mod native {
         let target = rw(&dst);
         let before = version(&source).unwrap();
         assert!(
-            metadata::stage_entry_payload(&source, &target, |bytes| if bytes > 0 {
-                Err(io("cancel sparse copy"))
-            } else {
-                Ok(())
-            })
+            metadata::stage_entry_payload(
+                &source,
+                &target,
+                &super::super::authority::Authority::Process,
+                |bytes| if bytes > 0 {
+                    Err(io("cancel sparse copy"))
+                } else {
+                    Ok(())
+                }
+            )
             .is_err()
         );
         assert_eq!(version(&source).unwrap(), before);
@@ -327,7 +337,13 @@ mod native {
         std::fs::remove_file(&dst).unwrap();
         std::fs::write(&dst, b"").unwrap();
         let target = rw(&dst);
-        let evidence = metadata::stage_entry_payload(&source, &target, |_| Ok(())).unwrap();
+        let evidence = metadata::stage_entry_payload(
+            &source,
+            &target,
+            &super::super::authority::Authority::Process,
+            |_| Ok(()),
+        )
+        .unwrap();
         let mut writer = &target;
         writer.seek(SeekFrom::Start(8 * 1024 * 1024)).unwrap();
         writer.write_all(b"foreign bytes").unwrap();

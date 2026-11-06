@@ -1,0 +1,37 @@
+{
+  "groups": [
+    {
+      "obsolete_object_group": "d1588445e089e3c2",
+      "objects": 257,
+      "logical_bytes": 659643598,
+      "allocated_bytes": 660332544,
+      "hardlink_counts": {
+        "1": 176,
+        "2": 81
+      },
+      "fingerprint_contents": [],
+      "other_outputs": []
+    },
+    {
+      "obsolete_object_group": "899e03b7e4facbca",
+      "objects": 23,
+      "logical_bytes": 281529816,
+      "allocated_bytes": 281595904,
+      "hardlink_counts": {
+        "1": 23
+      },
+      "fingerprint_contents": [],
+      "other_outputs": []
+    }
+  ],
+  "current_lint": "windows-lint.log",
+  "scope": "Remove incomplete linker scratch outputs only; preserve final binaries/libraries and all finalized compiler cache sessions",
+  "native_allocation_refusal": "First native attempt refused before allocation at 25539719168 bytes available; producer guard unchanged",
+  "preserved_current_tests": "NATIVE_TEST_INPUT.json",
+  "all_280_object_names_verified_absent": true,
+  "partial_cleanup_receipts": [
+    "ORPHAN_PARTIAL.json",
+    "ORPHAN_PARTIAL2.json"
+  ],
+  "measured_final_76_target_batch": "orphan-object-retry2-cleanup.log; earlier partial batches lack a whole-filesystem delta and are not included in a measured aggregate"
+}

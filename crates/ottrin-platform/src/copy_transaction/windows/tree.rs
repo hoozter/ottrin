@@ -25,6 +25,7 @@ struct Entry {
 }
 
 pub(super) struct StagedTree {
+    authority: super::authority::Authority,
     entries: Vec<Entry>,
 }
 
@@ -34,6 +35,7 @@ fn children(handle: &File, limit: usize) -> Result<Vec<OsString>, PlatformError>
 
 impl StagedTree {
     fn bindings(&self) -> Result<(), PlatformError> {
+        self.authority.validate()?;
         for entry in &self.entries {
             if version(&entry.source.handle)? != entry.source.before
                 || stable_identity_from_handle(&entry.candidate).map_err(io)?
@@ -48,7 +50,7 @@ impl StagedTree {
                     &entry.source.name,
                     entry.source.before.identity,
                 )?;
-                namespace::validate_binding(
+                self.authority.binding(
                     &parent.candidate,
                     &entry.source.name,
                     entry.candidate_identity,
@@ -377,8 +379,13 @@ impl PinnedTree {
         candidate: &windows_fs::PerObjectFile,
         root_parent: &File,
         journal: &mut impl StagingJournal,
+        authority: &super::authority::Authority,
         mut progress: impl FnMut(u64) -> Result<(), PlatformError>,
     ) -> Result<StagedTree, PlatformError> {
+        let mut progress = |bytes| {
+            authority.validate()?;
+            progress(bytes)
+        };
         let target = version(candidate)?;
         if self.root().directory != target.directory
             || target.length != 0
@@ -404,13 +411,14 @@ impl PinnedTree {
             }
             let candidate = if let Some(parent) = source.parent {
                 journal.intent(index, Some(parent), &source.name, &source.before)?;
-                let candidate = windows_fs::PerObjectFile::create_private(
-                    &entries[parent].candidate,
-                    &source.name,
-                    source.before.directory,
-                    FILE_SHARE_READ,
-                )
-                .map_err(io)?;
+                let candidate = authority
+                    .create_candidate(
+                        &entries[parent].candidate,
+                        &source.name,
+                        source.before.directory,
+                        FILE_SHARE_READ,
+                    )
+                    .map_err(io)?;
                 journal.created(index, &entries[parent].candidate, &candidate)?;
                 candidate
             } else {
@@ -418,13 +426,14 @@ impl PinnedTree {
                 journal.created(0, root_parent, &candidate)?;
                 candidate
             };
-            let payload = metadata::stage_entry_payload(&source.handle, &candidate, |copied| {
-                progress(
-                    total
-                        .checked_add(copied)
-                        .ok_or_else(|| io("tree progress overflow"))?,
-                )
-            })?;
+            let payload =
+                metadata::stage_entry_payload(&source.handle, &candidate, authority, |copied| {
+                    progress(
+                        total
+                            .checked_add(copied)
+                            .ok_or_else(|| io("tree progress overflow"))?,
+                    )
+                })?;
             total = payload.streams.iter().try_fold(total, |sum, stream| {
                 sum.checked_add(stream.bytes)
                     .ok_or_else(|| io("tree stream length overflow"))
@@ -438,7 +447,10 @@ impl PinnedTree {
                 payload,
             });
         }
-        let result = StagedTree { entries };
+        let result = StagedTree {
+            entries,
+            authority: authority.clone(),
+        };
         result.finish(&mut |_| progress(total))?;
         journal.verified(result.entry_count())?;
         Ok(result)
@@ -475,7 +487,13 @@ pub(super) fn stage_tree_unjournaled(
     }
     // The no-journal adapter exists only for the earlier codec/component cases.
     let tree = PinnedTree::open(source, max_entries, &mut progress)?;
-    tree.stage(candidate, candidate, &mut ComponentOnly, progress)
+    tree.stage(
+        candidate,
+        candidate,
+        &mut ComponentOnly,
+        &super::authority::Authority::Process,
+        progress,
+    )
 }
 
 #[cfg(test)]

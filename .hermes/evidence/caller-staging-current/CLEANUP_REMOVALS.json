@@ -1,0 +1,80 @@
+{
+  "entries": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native-initial/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native-initial/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native-initial/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native-initial/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native-initial/controller.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native/RESULTS.zip",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native/desktop-ready.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native/privacy-accepted-0.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native/privacy-accepted-1.png",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current/native/controller.ps1",
+      "kind": "test-fixture",
+      "reason": "Consumed owned native QA transport, setup capture or generated bootstrap",
+      "evidence": "Exact source/build/parsed result and archive hashes verified, including failed fixture scope and corrected55/12 pass. Both guests/volumes/viewers/observers/profiles removed. Reproducible producer and assertions retained; no pending consumer. Current packages and user data excluded."
+    }
+  ],
+  "process_reviews": [
+    {
+      "pid": 1224,
+      "comm": "(sd-pam)",
+      "start_ticks": "588",
+      "command_sha256": "971490059d839d27af3ded30a476216b92689d837b0236a700723fb13640e370",
+      "reason": "Unchanged protected session/authentication process independently identified and preserved; exact identity must match. Both native producers/guests/viewers/observers/profiles are stopped/removed. Targets are consumed owned native transports/setup screenshots/bootstrap scripts, not session authentication data or current packages."
+    },
+    {
+      "pid": 3022,
+      "comm": "polkit-kde-auth",
+      "start_ticks": "2792",
+      "command_sha256": "759c50cd41d67074aacdec9e8b474a41d459ec279cef246d563a707ba5a055cb",
+      "reason": "Unchanged protected session/authentication process independently identified and preserved; exact identity must match. Both native producers/guests/viewers/observers/profiles are stopped/removed. Targets are consumed owned native transports/setup screenshots/bootstrap scripts, not session authentication data or current packages."
+    }
+  ]
+}

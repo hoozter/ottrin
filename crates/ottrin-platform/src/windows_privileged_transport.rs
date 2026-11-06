@@ -383,6 +383,27 @@ impl CallerCopyContext {
         directory: bool,
         sharing: u32,
     ) -> io::Result<std::fs::File> {
+        let policy = self.private_creation_policy(directory)?;
+        let file = policy.create(parent, name, sharing)?;
+        self.validate()?;
+        Ok(file)
+    }
+    pub(crate) fn create_private_candidate(
+        &self,
+        parent: &std::fs::File,
+        name: &OsStr,
+        directory: bool,
+        sharing: u32,
+    ) -> io::Result<crate::windows_fs::PerObjectFile> {
+        let policy = self.private_creation_policy(directory)?;
+        let file = policy.create_candidate(parent, name, sharing)?;
+        self.validate()?;
+        Ok(file)
+    }
+    fn private_creation_policy(
+        &self,
+        directory: bool,
+    ) -> io::Result<crate::copy_transaction::CallerCreationSecurity> {
         self.validate()?;
         let token = process_token(
             &self.caller.process,
@@ -402,9 +423,7 @@ impl CallerCopyContext {
         )
         .map_err(io::Error::other)?;
         self.validate()?;
-        let file = policy.create(parent, name, sharing)?;
-        self.validate()?;
-        Ok(file)
+        Ok(policy)
     }
     /// Apply a required naming policy to the engine's newly created, empty
     /// private directory. The engine must establish create-new ownership and

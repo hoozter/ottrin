@@ -436,6 +436,30 @@ impl PerObjectFile {
         )
         .map(Self)
     }
+    /// # Safety
+    /// Descriptor must be derived from the authenticated caller token. Uses
+    /// MAXIMUM_ALLOWED in the actual native create request; no File promotion.
+    pub(crate) unsafe fn create_private_for_caller(
+        parent: &File,
+        name: &OsStr,
+        directory: bool,
+        sharing: u32,
+        security: *const SECURITY_DESCRIPTOR,
+    ) -> io::Result<Self> {
+        create_private_caller_native(
+            parent,
+            name,
+            directory,
+            sharing,
+            security,
+            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED
+                | FILE_GENERIC_READ
+                | FILE_GENERIC_WRITE
+                | DELETE
+                | WRITE_DAC,
+        )
+        .map(Self)
+    }
     pub(crate) fn try_clone(&self) -> io::Result<Self> {
         self.0.try_clone().map(Self)
     }
@@ -522,13 +546,31 @@ pub(crate) unsafe fn create_private_for_caller(
     sharing: u32,
     security: *const SECURITY_DESCRIPTOR,
 ) -> io::Result<File> {
+    create_private_caller_native(
+        parent,
+        name,
+        directory,
+        sharing,
+        security,
+        FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
+    )
+}
+
+fn create_private_caller_native(
+    parent: &File,
+    name: &OsStr,
+    directory: bool,
+    sharing: u32,
+    security: *const SECURITY_DESCRIPTOR,
+    access: u32,
+) -> io::Result<File> {
     create_private_native(
         parent,
         name,
         RelativeOptions {
             directory: Some(directory),
             create_new: true,
-            access: FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE | WRITE_DAC,
+            access,
             sharing,
             security,
         },

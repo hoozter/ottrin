@@ -2503,7 +2503,7 @@ impl<'a> DurableStage<'a> {
             .map_err(retained)?;
         tree::StagingJournal::created(&mut journal, 0, parent, &candidate).map_err(retained)?;
         let tree = source
-            .stage(&candidate, parent, &mut journal, progress)
+            .stage(&candidate, parent, &mut journal, &stage.authority, progress)
             .map_err(retained)?;
         stage
             .validate_candidate(&candidate, journal.state.nodes[0].source.directory)

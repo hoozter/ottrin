@@ -86,8 +86,30 @@ impl CallerCreationSecurity {
                 self.descriptor.0.cast(),
             )
         })?;
+        self.validate_created(&file)?;
+        Ok(file)
+    }
+    pub(crate) fn create_candidate(
+        &self,
+        parent: &File,
+        name: &OsStr,
+        sharing: u32,
+    ) -> std::io::Result<windows_fs::PerObjectFile> {
+        let file = windows_fs::with_file_privileges(|| unsafe {
+            windows_fs::PerObjectFile::create_private_for_caller(
+                parent,
+                name,
+                self.directory,
+                sharing,
+                self.descriptor.0.cast(),
+            )
+        })?;
+        self.validate_created(&file)?;
+        Ok(file)
+    }
+    fn validate_created(&self, file: &File) -> std::io::Result<()> {
         let observed =
-            PrivateSecurity::capture(&file, &self.expected.owner).map_err(std::io::Error::other)?;
+            PrivateSecurity::capture(file, &self.expected.owner).map_err(std::io::Error::other)?;
         if observed.0 != self.expected {
             return Err(std::io::Error::other(format!(
                 "Created caller-owned entry has unexpected native security: owner matches={}, group matches={}, DACL matches={}, control expected={:#x} actual={:#x}; data retained",
@@ -98,7 +120,7 @@ impl CallerCreationSecurity {
                 observed.0.control,
             )));
         }
-        Ok(file)
+        Ok(())
     }
 }
 

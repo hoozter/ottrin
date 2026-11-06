@@ -1,0 +1,36 @@
+{
+  "status": "complete both owned native teardowns, cache and consumed-output cleanup",
+  "observed_at": "2026-11-06T02:29:30.447764+00:00",
+  "baseline": "STORAGE_BEFORE.json",
+  "bytes_after": {
+    "/home/campbell/Projects/Ottrin/target/debug/deps": 23815171724,
+    "/home/campbell/Projects/Ottrin/target/debug/incremental": 25263960526,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps": 30173644525,
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/incremental": 48842104985
+  },
+  "obsolete_incremental_sessions_removed": 22,
+  "successful_measured_incremental_reclaim_lower_bound_bytes": 1611128832,
+  "partial_incremental_accounting": "Second batch removed7 before transient PID3505625 disappeared; remaining4 retried after native teardown. No stale success receipt copied. Partial7 delta omitted from lower bound. All22 original paths absent; final build retained sessions verified.",
+  "orphan_linker_objects_removed": 280,
+  "orphan_groups": "ORPHAN_OBJECTS.json; incomplete groups lack fingerprint, dep-info, final executable/library. All paths absent; current executables/libraries/finalized caches preserved.",
+  "partial_object_accounting": "179 then25 targets removed before vanished-process gaps; final76 guarded retry passed. Partial whole-filesystem deltas unavailable; no estimated aggregate reclaim claim.",
+  "superseded_package": "October15 portable ZIP and two sidecars removed; accepted November5 candidate/hash preserved. Legacy MSI/installer controls untouched.",
+  "consumed_targets_removed": 10,
+  "native_scopes": [
+    "native-initial/OWNER.json",
+    "native/OWNER.json"
+  ],
+  "independent_checks": "Both guest/disk/viewer/observer/profile/fixture sets absent. libvirt inventory only four protected off domains, their protected disks and standalone stock-client base. No owned QA processes remain.",
+  "available_bytes": 26592788480,
+  "retained": [
+    {
+      "path": "/home/campbell/Projects/Ottrin/.hermes/evidence/caller-staging-current",
+      "purpose": "Compact source/build/native/failure/cleanup receipts, reproducible producer/actors, compiler JSONL and isolated viewer text diagnostics"
+    },
+    {
+      "path": "/home/campbell/Projects/Ottrin/target",
+      "purpose": "Useful shared compiler caches and current paired GNU platform/UI test artifacts for remaining caller transaction/recovery work; no extra target tree"
+    }
+  ],
+  "owned_disposable_storage_remaining": []
+}

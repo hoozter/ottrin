@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-11-06T02:04:57.423224+00:00",
+  "status": "partial guarded cleanup stopped on transient process inspection gap",
+  "gap_pid": 3494616,
+  "gap_still_exists": false,
+  "removed": 179,
+  "remaining": 101,
+  "original_manifest": "ORPHAN_OBJECT_REMOVALS.json",
+  "action": "Reprepare remaining exact targets only after the gap process is confirmed absent. No bypass and no stale result receipt."
+}

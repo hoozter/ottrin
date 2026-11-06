@@ -1,0 +1,36 @@
+{
+  "status": "pass corrected native caller staging and existing regressions",
+  "native_invocations": 12,
+  "top_level_passes": 55,
+  "trial_scopes": {
+    "native-initial": {
+      "archive_sha256": "c7c778db68486daae3ea9d24dbb84e336cac81e8c6754711aedc172dd9cb4565",
+      "members": [
+        "CALLER_READY.json",
+        "DESKTOP_READY.json",
+        "OWNER.json",
+        "RESULT.json",
+        "SYSTEM_PROCESS.json",
+        "SYSTEM_RESULT.json"
+      ],
+      "status": "failed",
+      "cleanup": "independently verified guest, fixture, private viewer/observer/profile absent"
+    },
+    "native": {
+      "archive_sha256": "28f4e3ca8f8791dbf2369a3f355a40528c86c30085136e250ffcc97352c6774f",
+      "members": [
+        "CALLER_READY.json",
+        "DESKTOP_READY.json",
+        "OWNER.json",
+        "OWNER_OBSERVATION.json",
+        "RESULT.json",
+        "SYSTEM_PROCESS.json",
+        "SYSTEM_RESULT.json"
+      ],
+      "status": "pass canonical caller profile registry and native security/registry/codec regressions",
+      "cleanup": "independently verified guest, fixture, private viewer/observer/profile absent"
+    }
+  },
+  "binding": "BUILD_BINDING.json",
+  "metadata": "Real caller-mode private four-entry directory tree, payload, required case policy and token restoration accepted; observational adapter, no durable caller transaction/publication/recovery acceptance"
+}

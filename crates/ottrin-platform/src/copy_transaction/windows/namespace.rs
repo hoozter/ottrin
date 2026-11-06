@@ -1,4 +1,5 @@
 //! Private destination-local Copy entries; no publication or destructive cleanup.
+use super::authority::Authority;
 use super::{PlatformError, WindowsStableIdentity, io, stable_identity_from_handle};
 use crate::windows_fs::{self, RelativeOptions};
 use std::ffi::{OsStr, OsString};
@@ -11,6 +12,7 @@ use windows_sys::Win32::Storage::FileSystem::{
 
 pub(super) struct PrivateStage<'a> {
     parent: &'a File,
+    pub(super) authority: Authority,
     parent_identity: WindowsStableIdentity,
     pub(super) directory: File,
     pub(super) name: OsString,
@@ -95,6 +97,14 @@ impl<'a> PrivateStage<'a> {
         parent: &'a File,
         transaction: &str,
     ) -> Result<Self, PlatformError> {
+        Self::for_transaction_with_authority(parent, transaction, Authority::Process)
+    }
+    pub(super) fn for_transaction_with_authority(
+        parent: &'a File,
+        transaction: &str,
+        authority: Authority,
+    ) -> Result<Self, PlatformError> {
+        authority.validate()?;
         if transaction.len() != 32
             || !transaction
                 .bytes()
@@ -104,14 +114,16 @@ impl<'a> PrivateStage<'a> {
         }
         let parent_identity = directory_identity(parent)?;
         let name = OsString::from(format!(".ottrin-copy-{transaction}"));
-        let directory =
-            windows_fs::create_private(parent, &name, true, FILE_SHARE_READ).map_err(io)?;
+        let directory = authority
+            .create(parent, &name, true, FILE_SHARE_READ)
+            .map_err(io)?;
         let identity =
             directory_identity(&directory).map_err(|error| retained(&directory, &name, error))?;
         let mut candidate_name = name.clone();
         candidate_name.push(".candidate");
         let stage = Self {
             parent,
+            authority,
             parent_identity,
             directory,
             name,
@@ -138,7 +150,9 @@ impl<'a> PrivateStage<'a> {
             return Err(self.retained("Copy directory identity changed"));
         }
         // Observe the binding through the pinned parent, not its remembered path.
-        validate_binding(self.parent, &self.name, self.identity).map_err(|e| self.retained(e))?;
+        self.authority
+            .binding(self.parent, &self.name, self.identity)
+            .map_err(|e| self.retained(e))?;
         Ok(())
     }
 
@@ -163,13 +177,15 @@ impl<'a> PrivateStage<'a> {
         directory: bool,
     ) -> Result<windows_fs::PerObjectFile, PlatformError> {
         self.validate()?;
-        let file = windows_fs::PerObjectFile::create_private(
-            self.parent,
-            &self.candidate_name,
-            directory,
-            FILE_SHARE_READ,
-        )
-        .map_err(|error| self.retained(error))?;
+        let file = self
+            .authority
+            .create_candidate(
+                self.parent,
+                &self.candidate_name,
+                directory,
+                FILE_SHARE_READ,
+            )
+            .map_err(|error| self.retained(error))?;
         self.validate_candidate(&file, directory)?;
         Ok(file)
     }
@@ -202,7 +218,8 @@ impl<'a> PrivateStage<'a> {
         if !supported {
             return Err(self.retained("candidate type does not match creation policy"));
         }
-        validate_binding(self.parent, &self.candidate_name, identity)
+        self.authority
+            .binding(self.parent, &self.candidate_name, identity)
             .map_err(|e| self.retained(e))?;
         self.validate()
     }
@@ -252,4 +269,126 @@ pub(super) fn open_source(
         return Err(io("Copy source type is unsupported or its parent changed"));
     }
     Ok(file)
+}
+
+#[cfg(test)]
+pub(super) fn exercise_caller_staging(
+    context: &std::sync::Arc<crate::windows_privileged_transport::CallerCopyContext>,
+    parent: &File,
+    source: &std::path::Path,
+) {
+    use super::{EntryVersion, tree};
+    use tree::StagingJournal;
+    let authority = Authority::Caller(std::sync::Arc::clone(context));
+    let source = open_source_path(source).unwrap();
+    let transaction = super::super::random_transaction_id().unwrap();
+    let stage =
+        PrivateStage::for_transaction_with_authority(parent, &transaction, authority.clone())
+            .unwrap();
+    let owner = authority.owner().unwrap();
+    super::security::PrivateSecurity::capture(&stage.directory, &owner).unwrap();
+    let root = stage.create_candidate(true).unwrap();
+    super::security::PrivateSecurity::capture(&root, &owner).unwrap();
+    assert!(!windows_fs::directory_case_sensitive(&root).unwrap());
+    struct Events {
+        next: usize,
+        pending: bool,
+        created: bool,
+        complete: bool,
+    }
+    impl tree::StagingJournal for Events {
+        fn intent(
+            &mut self,
+            index: usize,
+            _: Option<usize>,
+            _: &OsStr,
+            _: &EntryVersion,
+        ) -> Result<(), PlatformError> {
+            assert_eq!(index, self.next);
+            assert!(!self.pending);
+            self.pending = true;
+            Ok(())
+        }
+        fn created(&mut self, index: usize, _: &File, _: &File) -> Result<(), PlatformError> {
+            assert_eq!(index, self.next);
+            assert!(self.pending);
+            assert!(!self.created);
+            self.created = true;
+            Ok(())
+        }
+        fn staged(
+            &mut self,
+            index: usize,
+            _: &super::metadata::StagedEntry,
+        ) -> Result<(), PlatformError> {
+            assert_eq!(index, self.next);
+            assert!(self.pending && self.created);
+            self.next += 1;
+            self.pending = false;
+            self.created = false;
+            Ok(())
+        }
+        fn verified(&mut self, count: usize) -> Result<(), PlatformError> {
+            assert_eq!(count, self.next);
+            assert!(!self.pending);
+            self.complete = true;
+            Ok(())
+        }
+    }
+    let mut events = Events {
+        next: 0,
+        pending: false,
+        created: false,
+        complete: false,
+    };
+    let pinned = tree::PinnedTree::open(&source, 16, &mut |_| Ok(())).unwrap();
+    events
+        .intent(0, None, &stage.candidate_name, pinned.root())
+        .unwrap();
+    let staged = pinned
+        .stage(&root, parent, &mut events, &authority, |_| Ok(()))
+        .unwrap();
+    assert!(events.complete);
+    assert_eq!(staged.entry_count(), 4);
+    staged.verify_and_finalize(|_| Ok(())).unwrap();
+    stage.validate_candidate(&root, true).unwrap();
+    assert!(windows_fs::directory_case_sensitive(&root).unwrap());
+    let nested = authority
+        .child(
+            &root,
+            OsStr::new("Nested"),
+            true,
+            FILE_GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+    super::security::PrivateSecurity::capture(&nested, &owner).unwrap();
+    assert!(windows_fs::directory_case_sensitive(&nested).unwrap());
+    let mut bytes = authority
+        .child(
+            &nested,
+            OsStr::new("payload.txt"),
+            false,
+            FILE_GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        )
+        .unwrap();
+    super::security::PrivateSecurity::capture(&bytes, &owner).unwrap();
+    let mut content = Vec::new();
+    std::io::Read::read_to_end(&mut bytes, &mut content).unwrap();
+    assert_eq!(content, b"nested original-caller payload");
+    assert!(
+        windows_fs::PerObjectFile::create_private(
+            parent,
+            &stage.candidate_name,
+            true,
+            FILE_SHARE_READ
+        )
+        .is_err()
+    );
+    context.validate().unwrap();
+}
+#[cfg(test)]
+fn open_source_path(path: &std::path::Path) -> Result<File, PlatformError> {
+    windows_fs::open_directory(path, FILE_GENERIC_READ).map_err(io)
 }
