@@ -5273,7 +5273,8 @@ are verified. A package inspection confirms the DEB conffiles and RPM
 `%config(noreplace)` flag. The isolated dpkg fixture preserves a disabled
 source across upgrade and removal, then removes it on purge. The embedded
 APT key stays scoped to that source throughout. Native lifecycle with the
-full packages is recorded below. R2 publication remains open.
+full packages and disposable public R2 transport is recorded below. Production
+publication remains open.
 
 The release workflow can stage signed repository snapshots after a stable
 release is published, with an explicit retry for the current release. A
@@ -5282,8 +5283,9 @@ superseded and tampered inputs. Staging is opt-in and keeps the snapshots
 in Actions artifacts. An independently gated R2 publisher verifies immutable
 objects over anonymous HTTPS before switching stable metadata. A disposable
 failure fixture verifies interrupted publication, retry, downgrade refusal,
-immutable collisions and zero writes when replaying a completed release. The public hostname, real R2 publication and production-key recovery remain
-to be verified. A disposable certification key and signing subkey passed
+immutable collisions and zero writes when replaying a completed release. Live
+R2 transport has separate disposable evidence below. Production-key recovery
+remains open. A disposable certification key and signing subkey passed
 unattended detached release, APT and native RPM signing from the subkey-only
 export, refusal of the full private key in CI, and encrypted backup
 restoration with fresh signature verification under the original fingerprint.
