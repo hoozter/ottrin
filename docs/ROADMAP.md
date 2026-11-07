@@ -5194,7 +5194,7 @@ are verified. A package inspection confirms the DEB conffiles and RPM
 `%config(noreplace)` flag. The isolated dpkg fixture preserves a disabled
 source across upgrade and removal, then removes it on purge. The embedded
 APT key stays scoped to that source throughout. Native lifecycle with the
-full packages and R2 publication remain open.
+full RPM packages and R2 publication remain open.
 
 The release workflow can stage signed repository snapshots after a stable
 release is published, with an explicit retry for the current release. A
@@ -5207,16 +5207,17 @@ and immutable collisions. The public hostname, real R2 publication, native
 end-to-end updates, and signing-key recovery remain to be verified. See
 [Linux repository setup and recovery](LINUX_REPOSITORIES.md).
 
-The full Ubuntu 24.04.5 update trial built both DEBs using the release
-payload and verified the signed repository. The disposable user-namespace
-root could not configure Ubuntu's system dependencies, including D-Bus and
-fontconfig, so it did not reach the Ottrin installation and upgrade
-assertions. A subsequent fresh Ubuntu 24.04.5 QEMU guest installed the
-full 0.1.0 DEB, loaded the package-owned signed HTTPS source and detected
-0.1.1 as the APT candidate. The trial stopped when the fixture added
-`Enabled: no` as a new deb822 stanza. Repeat with the field in the existing
-stanza to verify disable, upgrade, configuration preservation and removal.
-Use the retained Fedora base for a disposable DNF guest.
+A fresh Ubuntu 24.04.5 QEMU guest passed the full DEB lifecycle with
+packaging revision `f3caf98e`, the cached release payload, and a disposable
+signed HTTPS repository. The 0.1.0 DEB registered its scoped source, APT
+detected 0.1.1, disabling the source hid the update, and a modified
+InRelease failed with BADSIG. Restoring the valid metadata allowed APT to
+upgrade to 0.1.1 while preserving a local edit. Removal retained a usable
+source and purge removed both source and pin. The fixture DEB hashes are
+`bd6f187604d2343e09a0a4529a587f2b6d73f62299f3286470e9d8261de5783b`
+and `e4f4c6924424c699b6a726b110dddc9afa234c9387cbfce0f894ee38b8c0d6ed`.
+The temporary guest, repository, packages and keys were retired. Fedora
+DNF acceptance and public hosting remain open.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
