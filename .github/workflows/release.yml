@@ -478,3 +478,17 @@ jobs:
           name: signed-linux-repositories
           path: ${{ runner.temp }}/ottrin-linux-repositories
           if-no-files-found: error
+
+      - name: Publish and verify stable APT and RPM repositories
+        if: vars.LINUX_REPOSITORY_PUBLISH_ENABLED == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_BUCKET: ottrin
+          LINUX_REPOSITORY_PUBLIC_ORIGIN: ${{ vars.LINUX_REPOSITORY_PUBLIC_ORIGIN }}
+        run: python3 packaging/linux/publish-release-repositories.py "$RUNNER_TEMP/ottrin-linux-repositories"

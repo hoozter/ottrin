@@ -5200,12 +5200,12 @@ The release workflow can stage signed repository snapshots after a stable
 release is published, with an explicit retry for the current release. A
 disposable test accepts exact signed assets and rejects draft, prerelease,
 superseded and tampered inputs. Staging is opt-in and keeps the snapshots
-in Actions artifacts. R2 publication remains open. Publish immutable
-package and index objects before
-switching metadata, verify anonymous HTTPS reads, and test cache consistency
-and downgrade refusal. Keep the primary signing key out of Actions and test
-backup restoration and rotation. Production requires verified domain access,
-bucket-scoped credentials, signing authority, and a published stable release.
+in Actions artifacts. An independently gated R2 publisher verifies immutable
+objects over anonymous HTTPS before switching stable metadata. A disposable
+failure fixture verifies interrupted publication, retry, downgrade refusal,
+and immutable collisions. The public hostname, real R2 publication, native
+end-to-end updates, and signing-key recovery remain to be verified. See
+[Linux repository setup and recovery](LINUX_REPOSITORIES.md).
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
