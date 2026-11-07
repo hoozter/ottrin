@@ -249,7 +249,15 @@ Current source, test, package and owner/external scopes stay separate.
      identity and empty contents, verifies unchanged source and destination,
      then retires the empty directory as the original caller. Windows-target
      strict test lint passes. Run this case natively before claiming acceptance.
-     State-directory and anchor creation/write/flush faults remain open.
+     Source `515c0d18` adds one selectable case per fresh owned profile for
+     before/after State-directory, anchor-file and recovery-root creation.
+     Set `OTTRIN_TEST_COPY_PROFILE_FAULT` only on the ignored SYSTEM companion
+     to `before-state`, `after-state`, `before-anchor`, `after-anchor`,
+     `before-root` or `after-root`. The fixture checks native identities,
+     exact retained entries, unchanged empty anchor bytes and read-only
+     refusal of an incomplete anchor before retiring owned state. Strict
+     Windows-target test lint passes. Native execution of those cases and
+     anchor record write/flush faults remain open.
    - Extend coverage through the remaining claim and native I/O boundaries.
      Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including
