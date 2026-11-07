@@ -231,8 +231,15 @@ Current source, test, package and owner/external scopes stay separate.
    Administrator Copy remains disabled. Initialization, other native I/O,
    actual UAC and packaged GUI acceptance remain open.
 
-   - Extend creation coverage through initialization/claim/native-IO boundary
-     domains beyond the reached journal events. Finish readonly/symbolic-link
+   - Exercise initialization through the public Copy dispatcher with a fresh
+     authenticated profile. The completed prefix fixture opens an existing
+     registry before arming its trace. Give each initialization fault its own
+     profile so an incomplete anchor cannot contaminate the next case. Cover
+     the profile directory chain, external anchor creation, root creation and
+     anchor write/flush. Check that discovery creates nothing and preserves
+     any incomplete anchor or directory for review.
+   - Extend coverage through the remaining claim and native I/O boundaries.
+     Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including
      readonly original roots. Preserve edited/unknown payloads and refuse divergent
      journals; callback-only or seeded interruption checks do not close these gates.
