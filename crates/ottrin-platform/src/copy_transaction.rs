@@ -13,8 +13,6 @@ use std::path::{Path, PathBuf};
 // Windows uses the native handle-bound stream, publication and recovery engine.
 #[cfg(target_os = "windows")]
 mod windows;
-#[cfg(all(test, target_os = "windows"))]
-pub(crate) use windows::owner_group_dacl_digest;
 #[cfg(target_os = "windows")]
 pub(crate) use windows::{
     CallerCreationSecurity, CallerProfile, CallerRegistryParent, copy_for_caller,
@@ -28,6 +26,8 @@ pub use windows::{
     RetainedCopyResumePlan, RetainedCopyUndoPlan, WindowsCopyPhase, WindowsCopyRecoveryEvidence,
     WindowsCopyRegistry, WindowsRetainedCopyStatus,
 };
+#[cfg(all(test, target_os = "windows"))]
+pub(crate) use windows::{caller_private_create_boundary, owner_group_dacl_digest};
 #[cfg(target_os = "windows")]
 pub(super) use windows::{
     discover_windows_copy_transactions, discover_windows_copy_transactions_at,

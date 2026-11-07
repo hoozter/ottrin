@@ -901,6 +901,7 @@ impl AnchoredRoot {
             .write_all(b"never follow profile reparse target")
             .unwrap();
         target_data.sync_all().unwrap();
+        super::journal::refuse_first_profile_creation(caller, source, &target);
         std::os::windows::fs::symlink_dir(&target, &app).unwrap();
         for initialize in [false, true] {
             let selection = if initialize {

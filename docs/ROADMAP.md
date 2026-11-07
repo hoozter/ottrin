@@ -238,6 +238,10 @@ Current source, test, package and owner/external scopes stay separate.
      the profile directory chain, external anchor creation, root creation and
      anchor write/flush. Check that discovery creates nothing and preserves
      any incomplete anchor or directory for review.
+     The native helper fixture now injects refusal at the first profile
+     directory creation and checks source, destination and discovery state.
+     Windows-target strict Clippy passes. Native execution and the
+     post-creation and anchor cases remain open.
    - Extend coverage through the remaining claim and native I/O boundaries.
      Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including

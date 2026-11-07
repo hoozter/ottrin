@@ -1,7 +1,7 @@
 //! Journal and native private-creation faults reached by the public caller dispatcher.
 use super::*;
 use crate::{ConflictAction, PlatformOps, windows_privileged_transport::CallerCopyContext};
-use std::{os::windows::io::AsRawHandle, sync::Arc};
+use std::{os::windows::io::AsRawHandle, path::Path, sync::Arc};
 use windows_sys::Win32::Storage::FileSystem::{
     FILE_BASIC_INFO, FileBasicInfo, SetFileInformationByHandle,
 };
@@ -23,6 +23,31 @@ impl Drop for Trace {
         FAULT.with(|slot| slot.set(None));
     }
 }
+pub(in super::super) fn refuse_first_profile_creation(
+    caller: &Arc<CallerCopyContext>,
+    source: &Path,
+    destination: &Path,
+) {
+    let app = caller.local_app_data().unwrap().join("Ottrin");
+    assert!(!app.exists());
+    let original = std::fs::read(source).unwrap();
+    let output = destination.join(source.file_name().unwrap());
+
+    let trace = Trace::start();
+    FAULT.with(|slot| slot.set(Some((1, Step::PrivateCreateBefore, false))));
+    let result =
+        caller.copy_entry_with_progress(source, destination, ConflictAction::Overwrite, 16, |_| {
+            Ok(())
+        });
+    assert!(result.is_err());
+    assert_eq!(trace.finish(), vec![(1, Step::PrivateCreateBefore, true)]);
+
+    assert!(caller.copy_registry(&[], false).unwrap().is_none());
+    assert!(!app.exists());
+    assert!(!output.exists());
+    assert_eq!(std::fs::read(source).unwrap(), original);
+}
+
 fn evidence(authority: &Authority, file: &File) -> tree::ExistingTreeEvidence {
     tree::PinnedTree::open(authority, file, 8192, &mut |_| Ok(()))
         .unwrap()

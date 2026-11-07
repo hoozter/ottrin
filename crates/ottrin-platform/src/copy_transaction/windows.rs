@@ -13,6 +13,8 @@ pub(crate) use dispatch::{copy_configured, copy_for_caller};
 /// Bound pinned source descriptors before any destination mutation.
 pub(crate) const MAX_COPY_ENTRIES: usize = 100_000;
 mod journal;
+#[cfg(test)]
+pub(crate) use journal::caller_private_create_boundary;
 mod registry;
 pub use journal::{
     RetainedCopyAbortPlan, RetainedCopyCleanupPlan, RetainedCopyNameReleasePlan,

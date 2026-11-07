@@ -406,8 +406,12 @@ impl CallerCopyContext {
         sharing: u32,
     ) -> io::Result<std::fs::File> {
         let policy = self.private_creation_policy(directory)?;
+        #[cfg(test)]
+        crate::copy_transaction::caller_private_create_boundary(false)?;
         let file = policy.create(parent, name, sharing)?;
         self.validate()?;
+        #[cfg(test)]
+        crate::copy_transaction::caller_private_create_boundary(true)?;
         Ok(file)
     }
     pub(crate) fn create_temporary_control(

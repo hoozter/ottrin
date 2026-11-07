@@ -28,7 +28,9 @@ mod caller;
 #[cfg(test)]
 mod caller_prefixes;
 #[cfg(test)]
-pub(super) use caller_prefixes::exercise_caller_dispatch_prefixes;
+pub(super) use caller_prefixes::{
+    exercise_caller_dispatch_prefixes, refuse_first_profile_creation,
+};
 #[cfg(test)]
 mod caller_terminal;
 #[cfg(test)]
@@ -4298,7 +4300,7 @@ fn boundary(_: u64, _: Step) -> Result<(), PlatformError> {
 #[cfg(test)]
 thread_local! {static CALLER_CREATE_ORDINAL: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };}
 #[cfg(test)]
-pub(super) fn caller_private_create_boundary(after: bool) -> std::io::Result<()> {
+pub(crate) fn caller_private_create_boundary(after: bool) -> std::io::Result<()> {
     if !BOUNDARY_TRACE.with(|trace| trace.borrow().is_some()) {
         return Ok(());
     }
