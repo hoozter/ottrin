@@ -116,8 +116,8 @@ Info inline. The rendered regression opens and closes Info in all three views
 and checks that the preview never substitutes the Trash heading.
 The combined `5f434acf` candidate passed all four hosted jobs in
 [run 42376208602](https://github.com/hoozter/ottrin/actions/runs/42376208602)
-and mounted Dark/Light checks. Promotion is pending while the desktop session
-uses the stable AppImage. A follow-up routes non-pointer Smart Panel activation
+and mounted Dark/Light checks. The newer verified Locations stage superseded
+those packages. A follow-up routes non-pointer Smart Panel activation
 to the same styling selection as a mouse click. The rendered regression covers
 Info activation and collapse without a pointer and preserves border hit testing.
 The Locations rail sample uses the live collapsed buttons, expanded cards and
@@ -128,9 +128,10 @@ The exact `2bb6da96` Linux candidate passed content checks in all four formats.
 Mounted Dark/Light checks verified rail expansion, sample selection, separate
 card and button corners, named Info activation selecting Smart Panel properties,
 and Cancel preserving the original configuration. The mounted QA evidence is in
-`.hermes/evidence/locations-rail-delivery-current/`. Promotion awaits
-[run 42381144527](https://github.com/hoozter/ottrin/actions/runs/42381144527)
-and release of the active foreground AppImage.
+`.hermes/evidence/locations-rail-delivery-current/`. All four hosted jobs passed
+in [run 42381144527](https://github.com/hoozter/ottrin/actions/runs/42381144527).
+The Locations packages are the sole staged candidate. Promotion awaits release
+of the active foreground AppImage.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.

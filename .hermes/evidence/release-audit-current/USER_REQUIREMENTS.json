@@ -59,40 +59,46 @@
     {
       "id": "U05",
       "requirement": "Appearance settings have logical framed groups, meaningful headings, compact controls and consistent text/icon alignment.",
-      "current_scope": "Framed property groups, shared control sizes and production presenters have bounded source/native receipts. Latest source grouping/reset ownership and component-selection scroll fixes pass533 active UI tests plus strict Linux/Windows cross-target lint. Actual Dark/Light software X11 scale1 with theme typography1.35 checks show complete new component descriptions through tabs/title/dropdown and unchanged field position during real edits. Full interface/menu inventory and broader platform/scale acceptance remain open; the new combined Linux package is undergoing verification.",
+      "current_scope": "Framed property groups, compact controls, scoped menu alignment, and component scroll/reset ownership are delivered in the stable Linux cohort. The Smart Panel and Locations candidates add field-specific accessibility names and real rail cards. The staged changes have rendered and mounted Dark/Light checks. The full interface alignment and hierarchy review, additional scales, and native Windows parity remain open.",
       "evidence": [
         ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
-        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
+        ".hermes/evidence/smart-panel-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
       ]
     },
     {
       "id": "U06",
       "requirement": "Theme editor selects the exact production element and only its intended themeable roles, including the tab bar.",
-      "current_scope": "Production navigation/tabs/Smart-panel/window-control/Miller presenters retain exact historical scopes. Real shared List/Grid preview layouts are delivered in Linux43. Inspector source now reuses production action row, titlebar, read-only renderer and text sizing; actual source21 package checks pass but the superseding combined batch is still under verification. Shared roles and unsupported specialized preview states still require full inventory; no full-property closure inferred.",
+      "current_scope": "Stable Linux includes the shared navigation/tab, window-control, Smart Panel strip, file-layout, status bar, and Inspector presenters within their recorded scopes. The Locations candidate verifies named Info activation selecting Smart Panel properties and rail activation selecting Locations properties in the mounted AppImage. The independent preview-to-live role inventory across the whole interface remains open.",
       "evidence": [
         ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
-        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
+        ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
       ]
     },
     {
       "id": "U07",
       "requirement": "Expose every supported theme property and explain shared defaults; radius/border/color changes must reach every intended window/control.",
-      "current_scope": "Latest source explicitly separates Inspector component panel reset from shared window geometry/colors, exposes actual border/radius roles and restores individual geometry independently. Source regressions and actual Dark/Light source windows verify ownership, controls and shared frame/button/foreground/divider roles; source21 mounted package retains its earlier exact scope. Full property/preset/window/platform coverage remains open; current combined packages are not yet published.",
+      "current_scope": "Stable Linux includes separate button, surface and window geometry, scoped component reset, and shared menu frame styling. Mounted Dark/Light checks cover Inspector menu border color, width, corners and Cancel. Staged Locations verification covers separate rail button and card radii. A property-by-property inventory and full window, preset, scale and platform coverage remain open.",
       "evidence": [
         ".hermes/evidence/inspector-theme-roles-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-editor-current/ACCEPTANCE.json",
         ".hermes/evidence/preview-divider-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
-        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
+        ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
       ]
     },
     {
       "id": "U08",
       "requirement": "Preview selection outlines match actual geometry; production Smart-panel controls and shared themed chrome replace invented preview controls.",
-      "current_scope": "Linux43 delivers real shared Column/List/Grid previews with square row selection and appropriately rounded Grid controls, and typography-aware Grid width. Production Smart-panel, navigation/tabs/window-control and Miller presenters retain their scoped checks. Inspector source21 mounted checks prove real controls/chrome/read-only rendering and shared roles; later source grouping/scroll fixes have native source evidence. Specialized Inspector image/Office/PDF representations and whole-property/platform acceptance remain open. Production status-bar presenter is now shared with the File manager preview;534 active UI tests, Linux/Windows cross-target lint and12 directly reviewed source-built Dark/Light native originals pass. Footer color/typography changes match editor/main and Cancel restores state. This follow-up is not in delivered sourcec3; full audit remains open. Named text/document/worksheet samples now share actual read-only body and sizing presenters; DOCX fallback, worksheet tabs/Overview and shared styles are verified by537 active UI tests and24 real-file native originals in both themes. These source changes remain outside deliveredc3; image/PDF/provider-specific and complete acceptance remain open.",
+      "current_scope": "Stable Linux delivers production Column/List/Grid samples and Inspector text, DOCX, spreadsheet, image and PDF presenters, with scoped mounted layout, outline, paging, zoom and menu checks. Smart Panel section headings and the Locations rail now have separate mounted candidate evidence. Installed Office provider samples, the remaining preview surfaces and full outline/platform coverage remain open.",
       "evidence": [
         ".hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json",
         ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_CAPTURE_REVIEW.json",
@@ -106,7 +112,11 @@
         ".hermes/evidence/statusbar-presenter-current/CLEANUP.json",
         ".hermes/evidence/inspector-samples-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-samples-current/CLEANUP.json",
-        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
+        ".hermes/evidence/inspector-visual-delivery-current/PROMOTION.json",
+        ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/smart-panel-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
       ]
     },
     {
@@ -150,7 +160,7 @@
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable LinuxDAC and unchanged Windows458/MSIX17 authority manifests bind delivered artifacts. All four exact-source DAC jobs41911407933 pass; guarded promotion preserves personal state and retires superseded packages/staging. Subsequent Grid refinement is locally committed/source-tested and awaiting native/package acceptance and checkpoint push. No public release, notification-policy change or failure/cancellation churn.",
+      "current_scope": "The stable Linux and Windows receipts identify the currently delivered packages. Linux Inspector CI passed and promotion preserved personal state. The Locations candidate passed all four exact-source CI jobs and its mounted checks. It supersedes the staged Smart Panel cohort and awaits the foreground AppImage closing. Source is on GitHub main. Historical failing runs were attributed to two Windows Copy tests, a Linux chooser test and MSIX template validation. Batching verified changes limits overlapping runs. Final release and sustained notification outcomes remain open.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -159,20 +169,27 @@
         ".hermes/evidence/release-audit-current/cohort/BUILD_SOURCE.json",
         ".hermes/evidence/release-audit-current/cohort/CI_CURRENT.json",
         ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json",
-        ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json"
+        ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json",
+        ".hermes/evidence/inspector-visual-delivery-current/PROMOTION.json",
+        ".hermes/evidence/smart-panel-delivery-current/CI_CURRENT.json",
+        ".hermes/evidence/locations-rail-delivery-current/CI_CURRENT.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Existing cohort cleanup receipts retain their original scopes. Current DAC helper/login/replacement guests, credentials and consumed transports are removed; its111MiB candidate stage and superseded packages were consumed/retired by guarded publication. Grid visual fixtures, including two failed preconditions, all removed their owned guests/volumes/credentials/inputs; compact controls/captures and latest native-tested release GUI remain, with useful compiler caches retained.",
+      "current_scope": "The current Linux promotion removed its consumed stage and replaced superseded packages. Smart Panel and Locations build and mounted QA producers removed extraction directories, test displays, processes and profiles. The superseded Smart Panel stage was removed after the Locations candidate passed all gates except foreground quiescence. The Locations stage is retained for pending delivery. The held Windows recovery test and retained VM bases still have roadmap consumers. Historical receipts retain their original cleanup scopes.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/CLEANUP_FINAL.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
         ".hermes/evidence/grid-label-layout-current/CLEANUP.json",
-        ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json"
+        ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json",
+        ".hermes/evidence/inspector-visual-delivery-current/PROMOTION.json",
+        ".hermes/evidence/smart-panel-delivery-current/CURRENT_STATE.json",
+        ".hermes/evidence/locations-rail-delivery-current/CURRENT_STATE.json",
+        ".hermes/evidence/locations-rail-delivery-current/SUPERSEDED_STAGE_CLEANUP.json"
       ]
     }
   ],
@@ -182,11 +199,14 @@
     "No macOS build; owner signing/Store/final human acceptance remain explicit waits."
   ],
   "latest_scope_reconciliation": {
-    "date": "2026-11-04",
-    "runtime_candidate": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
-    "grid_source": "7fefe191c65a3313d38025126a8530f59d37a174",
-    "note": "Original requirements preserved; updated evidence scopes do not mean all requirements are complete."
+    "date": "2026-11-07",
+    "stable_linux": "07f0095e4a73f5fbdecff10002509b6b0f72bf8d",
+    "stable_windows": "8e805d318557d3248ebf090aa8088dd86194b593",
+    "staged_linux": [
+      "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d"
+    ],
+    "note": "U05 through U08, U14 and U15 were reconciled against exact package and mounted evidence. Other entries retain their prior scopes."
   },
-  "reviewed_source_revision": "c3fb224e318473c847881dacf8390f1669b81cf5",
+  "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
   "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958"
 }
