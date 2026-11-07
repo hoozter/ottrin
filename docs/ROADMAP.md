@@ -5203,7 +5203,7 @@ superseded and tampered inputs. Staging is opt-in and keeps the snapshots
 in Actions artifacts. An independently gated R2 publisher verifies immutable
 objects over anonymous HTTPS before switching stable metadata. A disposable
 failure fixture verifies interrupted publication, retry, downgrade refusal,
-and immutable collisions. The public hostname, real R2 publication and production-key recovery remain
+immutable collisions and zero writes when replaying a completed release. The public hostname, real R2 publication and production-key recovery remain
 to be verified. A disposable certification key and signing subkey passed
 unattended detached release, APT and native RPM signing from the subkey-only
 export, refusal of the full private key in CI, and encrypted backup

@@ -65,8 +65,9 @@ class Repository:
                 raise ValueError(f"Public repository verification failed for {key}")
 
     def upload(self, key, path, cache_control, *condition):
-        self.s3("put-object", key, "--body", str(path), "--cache-control", cache_control, *condition)
+        result = self.s3("put-object", key, "--body", str(path), "--cache-control", cache_control, *condition)
         self.verify(key, path, cache_control)
+        return result
 
     def immutable(self, key, path, cache_control):
         if self.s3("head-object", key, missing_ok=True) is None:
@@ -101,16 +102,31 @@ def publish(snapshot, repository, github_repository, work):
 
     previous_path = work / "previous.json"
     previous_object = repository.s3("get-object", RECEIPT, str(previous_path), missing_ok=True)
+    already_published = False
     if previous_object is None:
         condition = ("--if-none-match", "*")
     else:
         previous = json.loads(previous_path.read_text())
         published = version(previous)
-        if candidate < published or (candidate == published and release["id"] != previous["id"]):
+        if previous["state"] not in {"publishing", "published"}:
+            raise ValueError("Invalid publication receipt state")
+        same_release = all(release[field] == previous[field] for field in ("id", "tag_name", "published_at"))
+        if candidate < published or (candidate == published and not same_release):
             raise ValueError("Refusing to replace a newer or different stable release")
+        already_published = same_release and previous["state"] == "published"
         condition = ("--if-match", previous_object["ETag"])
 
     verify_latest(release, github_repository)
+    if already_published:
+        # A rebuilt snapshot can have different metadata timestamps. Verify
+        # the versioned package bytes without uploading another set of indexes.
+        for key in sorted(key for key in payloads if key.startswith(("apt/pool/", "rpm/Packages/"))):
+            repository.verify(key, files[key], IMMUTABLE)
+        for key in KEYS:
+            repository.verify(key, files[key], NO_CACHE)
+        print(f"{release['tag_name']} is already published. Stable metadata was left in place.")
+        return
+
     for key in sorted(payloads):
         repository.immutable(key, files[key], IMMUTABLE)
     for key in KEYS:
@@ -122,12 +138,11 @@ def publish(snapshot, repository, github_repository, work):
     # any metadata so even an interrupted run cannot allow a downgrade.
     receipt = work / RECEIPT
     receipt.write_text(json.dumps({**release, "state": "publishing"}) + "\n")
-    repository.upload(RECEIPT, receipt, NO_CACHE, *condition)
+    reservation = repository.upload(RECEIPT, receipt, NO_CACHE, *condition)
     for key in POINTERS:
         repository.upload(key, files[key], NO_CACHE)
-    reserved = repository.s3("head-object", RECEIPT)
     receipt.write_text(json.dumps({**release, "state": "published"}) + "\n")
-    repository.upload(RECEIPT, receipt, NO_CACHE, "--if-match", reserved["ETag"])
+    repository.upload(RECEIPT, receipt, NO_CACHE, "--if-match", reservation["ETag"])
 
 
 if __name__ == "__main__":
