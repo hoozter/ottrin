@@ -70,8 +70,10 @@ has started and `published` after the public checks pass. If the job fails,
 inspect the failed step and manually run the release workflow on the default
 branch with the current published stable tag. Retries verify existing package
 bytes, refuse collisions, and prevent older tags from taking over. If that
-exact release already finished publishing, the retry checks the package and
-key bytes and leaves the live metadata in place. APT's inline signature is switched last. RPM uses two separate objects for its
+exact release already finished publishing, the retry checks package and key
+bytes and verifies the public metadata against the hashes recorded in the
+receipt. It performs no uploads. APT's inline signature is switched last.
+RPM uses two separate objects for its
 index and signature. An interruption between those writes can cause a
 temporary signature rejection until a retry completes.
 

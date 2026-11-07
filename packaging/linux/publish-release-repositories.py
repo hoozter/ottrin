@@ -23,6 +23,7 @@ POINTERS = (
 )
 KEYS = ("apt/ottrin-archive-keyring.gpg", "rpm/ottrin-rpm-key.asc")
 RECEIPT = "linux-release.json"
+INDEX_PREFIXES = ("apt/dists/stable/main/binary-amd64/by-hash/", "rpm/repodata/")
 
 
 def version(release):
@@ -34,6 +35,11 @@ def version(release):
 
 def digest(stream):
     return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def file_digest(path):
+    with path.open("rb") as stream:
+        return digest(stream)
 
 
 class Repository:
@@ -56,24 +62,24 @@ class Repository:
             raise ValueError(f"R2 {operation} failed for {key}: {result.stderr.strip()}")
         return json.loads(result.stdout or "{}")
 
-    def verify(self, key, path, cache_control):
+    def verify(self, key, sha256, cache_control):
         request = Request(f"{self.public_url}/{quote(key)}", headers={"Accept-Encoding": "identity"})
-        with path.open("rb") as source, urlopen(request, timeout=60) as response:
+        with urlopen(request, timeout=60) as response:
             if (response.geturl() != request.full_url
                     or response.headers.get("Cache-Control") != cache_control
-                    or digest(response) != digest(source)):
+                    or digest(response) != sha256):
                 raise ValueError(f"Public repository verification failed for {key}")
 
     def upload(self, key, path, cache_control, *condition):
         result = self.s3("put-object", key, "--body", str(path), "--cache-control", cache_control, *condition)
-        self.verify(key, path, cache_control)
+        self.verify(key, file_digest(path), cache_control)
         return result
 
     def immutable(self, key, path, cache_control):
         if self.s3("head-object", key, missing_ok=True) is None:
             self.upload(key, path, cache_control, "--if-none-match", "*")
         else:
-            self.verify(key, path, cache_control)
+            self.verify(key, file_digest(path), cache_control)
 
 
 def verify_latest(release, github_repository):
@@ -92,8 +98,7 @@ def publish(snapshot, repository, github_repository, work):
              for path in snapshot.rglob("*") if path.is_file()}
     files.pop("release.json")
     payloads = set(files).difference(POINTERS, KEYS)
-    prefixes = ("apt/pool/main/o/ottrin/", "apt/dists/stable/main/binary-amd64/by-hash/",
-                "rpm/Packages/", "rpm/repodata/")
+    prefixes = ("apt/pool/main/o/ottrin/", "rpm/Packages/", *INDEX_PREFIXES)
     if (not all(key in files for key in (*POINTERS, *KEYS))
             or not all(any(key.startswith(prefix) for key in payloads) for prefix in prefixes)
             or any(not key.startswith(prefixes) for key in payloads)
@@ -119,11 +124,21 @@ def publish(snapshot, repository, github_repository, work):
     verify_latest(release, github_repository)
     if already_published:
         # A rebuilt snapshot can have different metadata timestamps. Verify
-        # the versioned package bytes without uploading another set of indexes.
+        # the indexes recorded by the actual publication, not the rebuild.
+        metadata = previous["metadata_sha256"]
+        if (not isinstance(metadata, dict) or not set(POINTERS) <= metadata.keys()
+                or not all(any(key.startswith(prefix) and key not in POINTERS for key in metadata)
+                           for prefix in INDEX_PREFIXES)
+                or any((key not in POINTERS and not key.startswith(INDEX_PREFIXES))
+                       or not isinstance(sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", sha256)
+                       for key, sha256 in metadata.items())):
+            raise ValueError("Invalid published metadata receipt")
+        for key, sha256 in sorted(metadata.items()):
+            repository.verify(key, sha256, NO_CACHE if key in POINTERS else IMMUTABLE)
         for key in sorted(key for key in payloads if key.startswith(("apt/pool/", "rpm/Packages/"))):
-            repository.verify(key, files[key], IMMUTABLE)
+            repository.verify(key, file_digest(files[key]), IMMUTABLE)
         for key in KEYS:
-            repository.verify(key, files[key], NO_CACHE)
+            repository.verify(key, file_digest(files[key]), NO_CACHE)
         print(f"{release['tag_name']} is already published. Stable metadata was left in place.")
         return
 
@@ -141,7 +156,9 @@ def publish(snapshot, repository, github_repository, work):
     reservation = repository.upload(RECEIPT, receipt, NO_CACHE, *condition)
     for key in POINTERS:
         repository.upload(key, files[key], NO_CACHE)
-    receipt.write_text(json.dumps({**release, "state": "published"}) + "\n")
+    metadata = {key: file_digest(files[key]) for key in sorted(files)
+                if key in POINTERS or key.startswith(INDEX_PREFIXES)}
+    receipt.write_text(json.dumps({**release, "state": "published", "metadata_sha256": metadata}) + "\n")
     repository.upload(RECEIPT, receipt, NO_CACHE, "--if-match", reservation["ETag"])
 
 

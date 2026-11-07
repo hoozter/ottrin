@@ -45,8 +45,9 @@ class TestBucket(publisher.Repository):
         self.writes.append(key)
         return {"ETag": hashlib.sha256(payload).hexdigest()}
 
-    def verify(self, key, path, cache_control):
-        if self.objects.get(key) != (path.read_bytes(), cache_control):
+    def verify(self, key, sha256, cache_control):
+        payload, actual_cache = self.objects[key]
+        if hashlib.sha256(payload).hexdigest() != sha256 or actual_cache != cache_control:
             raise ValueError(f"Public bytes or cache control differ for {key}")
 
 
@@ -107,6 +108,18 @@ with TemporaryDirectory(prefix="ottrin-repository-publication-") as temporary:
     index.rename(index.with_name("rebuilt-primary.xml.gz"))
     attempt(work / "new", bucket, work, new)
     assert bucket.writes == writes
+
+    for key in (publisher.POINTERS[-1], index.relative_to(work / "new").as_posix()):
+        original = bucket.objects[key]
+        bucket.objects[key] = b"tampered metadata", original[1]
+        try:
+            attempt(work / "new", bucket, work, new)
+        except ValueError as error:
+            assert str(error).endswith(key)
+        else:
+            raise AssertionError(f"Replay accepted changed public metadata for {key}")
+        assert bucket.writes == writes
+        bucket.objects[key] = original
 
     package.write_text("changed package")
     try:
