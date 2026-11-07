@@ -798,9 +798,22 @@ struct ThemeCardAction {
 
 fn theme_miniature(ui: &egui::Ui, thumb: Rect, preview: Colors) {
     let p = ui.painter();
-    p.rect_filled(thumb, preview.app_radius, preview.bg);
+    // Match the miniature's 7-point action to the actual 28-point button.
+    // Window geometry uses the same scale instead of full-size theme values.
+    let scale = 7.0 / 28.0;
+    let window_radius = (f32::from(preview.app_radius) * scale).round() as u8;
+    p.rect_filled(thumb, window_radius, preview.bg);
     let title = Rect::from_min_size(thumb.min, Vec2::new(thumb.width(), 10.0));
-    p.rect_filled(title, preview.app_radius, preview.titlebar_bg);
+    p.rect_filled(
+        title,
+        egui::CornerRadius {
+            nw: window_radius,
+            ne: window_radius,
+            sw: 0,
+            se: 0,
+        },
+        preview.titlebar_bg,
+    );
     let nav = Rect::from_min_size(
         egui::pos2(thumb.left(), title.bottom()),
         Vec2::new(thumb.width(), 9.0),
@@ -843,7 +856,7 @@ fn theme_miniature(ui: &egui::Ui, thumb: Rect, preview: Colors) {
             Vec2::new(body.width(), 8.0),
         );
         if row == 1 {
-            p.rect_filled(row_rect, preview.border_radius, preview.selected_bg);
+            p.rect_filled(row_rect, 0.0, preview.selected_bg);
         }
         p.rect_filled(
             Rect::from_min_size(row_rect.min + Vec2::new(3.0, 2.0), Vec2::new(5.0, 4.0)),
@@ -860,13 +873,18 @@ fn theme_miniature(ui: &egui::Ui, thumb: Rect, preview: Colors) {
     }
     p.rect_filled(
         Rect::from_min_max(egui::pos2(thumb.left(), content.bottom()), thumb.max),
-        0.0,
+        egui::CornerRadius {
+            nw: 0,
+            ne: 0,
+            sw: window_radius,
+            se: window_radius,
+        },
         preview.statusbar_bg,
     );
     p.rect_stroke(
         thumb,
-        preview.app_radius,
-        Stroke::new(preview.window_border_width, preview.window_border),
+        window_radius,
+        Stroke::new(preview.window_border_width * scale, preview.window_border),
         egui::StrokeKind::Inside,
     );
 }

@@ -53,27 +53,16 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `923b179b` has
-[run42310288820](https://github.com/hoozter/ottrin/actions/runs/42310288820): Linux
-verification and both performance jobs pass; Windows verification is running.
-Its preceding `4043ca5d` passes all four jobs in
-[run42302933196](https://github.com/hoozter/ottrin/actions/runs/42302933196), as does
-`0405eb4a` in [run42296867973](https://github.com/hoozter/ottrin/actions/runs/42296867973).
-Its preceding `705cf309` passes all four jobs in
-[run42285010531](https://github.com/hoozter/ottrin/actions/runs/42285010531).
-Its preceding `1153775f` passes all four jobs in
-[run42275563764](https://github.com/hoozter/ottrin/actions/runs/42275563764).
-Wait for any active run to finish before another push, so `cancel-in-progress`
-does not interrupt it. Exact observed CI status is retained with delivery receipts.
-Its preceding `9b6ca438` passes all four hosted jobs in
-[run42257541740](https://github.com/hoozter/ottrin/actions/runs/42257541740).
-Its preceding `4861b17a` also passes all four jobs in
-[run42247139035](https://github.com/hoozter/ottrin/actions/runs/42247139035).
-Stable application packages retain the separately accepted source scopes above.
-The earlier Linux portal `Text file busy` fixture failure is corrected through an
-immutable checked-in chooser fixture. Its source, stress checks and all-green
-hosted result remain in `caller-public-cleanup-current/`; production portal
-behaviour was unchanged. Historical component receipts keep their exact scopes.
+Published source `2af31068` includes the queued Copy worker and shared cleanup
+refresh fixes. In [run42317077429](https://github.com/hoozter/ottrin/actions/runs/42317077429),
+all four hosted jobs pass.
+Its preceding `923b179b` passes all four jobs in
+[run42310288820](https://github.com/hoozter/ottrin/actions/runs/42310288820).
+Wait for an active run to finish before another push so `cancel-in-progress` does
+not interrupt it. Delivery receipts retain exact observed source/CI scopes, and
+stable application packages retain their separately accepted source scopes above.
+Historical component receipts keep their original scope; earlier green hosted
+baselines and corrected fixture failures remain in their receipts and Git history.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
    Implemented source includes original-caller profile/registry admission, private
@@ -120,6 +109,17 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
 
    Remaining dependency-ready work, in order:
 
+   The current `caller-dispatch-prefix-current/` fixture adds actual public-Copy
+   journal-boundary fault coverage for files and directories. Its file flow passes
+   38 injected boundaries. The first full run exposed an invalid directory-only
+   test assumption; after correction, the extended run reached its 15-minute
+   fixture limit during the directory matrix. Both failed runs retain their
+   original evidence and completed owned teardown. A fresh full run is in progress
+   with explicit bounded helper/client/host limits of 30/31/40 minutes. Build,
+   strict Windows lint and formatting pass; full native acceptance and this
+   source checkpoint remain pending. Do not treat the file subset as completion
+   of the creation matrix or the broader recovery gate.
+
    - Complete caller creation mutation-prefix and readonly/symbolic-link publication
      recovery matrices, and original-retention/restoration failure cases including
      readonly original roots. Preserve edited/unknown payloads and refuse divergent
@@ -144,11 +144,14 @@ behaviour was unchanged. Historical component receipts keep their exact scopes.
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
-   have bounded acceptance; List/Grid representation, miniature window edge clipping
-   and radius/border scaling, inspector role ownership and whole-interface alignment/
-   grouping remain open. `appearance_editor.rs::theme_miniature` also still rounds
-   selected rows using the shared radius, while the real `file_row` presenter paints
-   square rows. These are verified source gaps, not completed theme acceptance.
+   have bounded acceptance; List/Grid representation, inspector role ownership and
+   whole-interface alignment/grouping remain open. The theme-library miniature now
+   paints square selected-row fills, rounds only outer title/status corners and
+   scales window radius/border values with its miniature button scale. Existing
+   30 appearance tests, strict Linux lint and actual Dark/Light Appearance-page
+   review pass with owned desktop/profile teardown in `theme-miniature-current/`.
+   This is scale1 preset-thumbnail evidence, not enlarged-scale/custom-extreme,
+   Windows GUI, packaged or complete theme-property acceptance.
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
