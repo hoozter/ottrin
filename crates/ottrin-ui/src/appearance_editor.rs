@@ -327,7 +327,12 @@ impl OttrinApp {
                     ui.label(RichText::new(Self::theme_preview_region_hint(region)).small().color(c.text_dim));
                     ui.add_space(4.0);
                     let fields = Self::theme_preview_region_fields(region);
-                    changed |= property_group(ui, "Component colors", c, |ui| {
+                    let color_group = match region {
+                        ThemePreviewRegion::Defaults => "Shared palette",
+                        ThemePreviewRegion::Inspector => "Shared panel background",
+                        _ => "Component colors",
+                    };
+                    changed |= property_group(ui, color_group, c, |ui| {
                         let mut changed = false;
                         for &field in fields { changed |= self.appearance_color_row(ui, field, &seed); }
                         changed
@@ -373,8 +378,17 @@ impl OttrinApp {
                         });
                     }
                     ui.add_space(10.0);
-                    if ui.add(egui::Button::new(if region == ThemePreviewRegion::Defaults { "Reset theme defaults" } else { "Reset component" }).themed(&c))
-                        .on_hover_text(if region == ThemePreviewRegion::Defaults { "Restore the shared defaults shown above. Components using them update together; component-specific colors and the other variant are unchanged." } else { "Restore the component-specific values above. Shared styling below and the other variant are unchanged." }).clicked() {
+                    let reset_label = match region {
+                        ThemePreviewRegion::Defaults => "Reset theme defaults",
+                        ThemePreviewRegion::Inspector => "Reset shared panel background",
+                        _ => "Reset component",
+                    };
+                    if ui.add(egui::Button::new(reset_label).themed(&c))
+                        .on_hover_text(match region {
+                            ThemePreviewRegion::Defaults => "Restore the shared palette, text size and corners shown above for this variant.",
+                            ThemePreviewRegion::Inspector => "Restore the background shared by Quick Inspector, Settings and other panels for this variant.",
+                            _ => "Restore the component values shown above for this variant.",
+                        }).clicked() {
                         for &field in fields { *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field) = Self::theme_color_field_value(&seed, field); }
                         match region {
                             ThemePreviewRegion::Defaults => { self.theme_editor.custom.font_scale=seed.font_scale; self.theme_editor.custom.app_radius=seed.app_radius; self.theme_editor.custom.border_radius=seed.border_radius; }
@@ -1415,10 +1429,10 @@ mod tests {
                     .unwrap_or_else(|| panic!("Missing actual section/action: {label}"))
             };
             assert!(
-                y("Reset component") < y("Window corners"),
+                y("Reset shared panel background") < y("Window corners"),
                 "Shared geometry must follow the component reset, consistently with other shared settings"
             );
-            activate(&mut app, &ctx, "Reset component");
+            activate(&mut app, &ctx, "Reset shared panel background");
             assert_eq!(app.theme_editor.custom.panel, seed.panel);
             assert_eq!(app.theme_editor.custom.app_radius, 21.0);
             assert_eq!(app.theme_editor.custom.window_border_width, 3.5);

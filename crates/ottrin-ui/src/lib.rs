@@ -5229,7 +5229,7 @@ impl OttrinApp {
                 "Shared panels, inputs, text, focus and hover colors. Window corners affect application windows; surface corners affect tabs, inputs, cards and grid tiles. Button corners are separate."
             }
             ThemePreviewRegion::Inspector => {
-                "Quick Inspector window background. Its title bar, text, buttons, border and corners use the same shared controls as the application windows."
+                "The background is shared by Quick Inspector, Settings and other panels. Title bar, text, buttons, borders and corners use shared theme controls."
             }
             ThemePreviewRegion::Titlebar => {
                 "Title-bar background and window controls. File-manager tabs use Navigation & tabs; their colors blend with this background."
@@ -5458,7 +5458,9 @@ impl OttrinApp {
             ThemeColorField::Statusbar => "Bottom status and utility bar",
             ThemeColorField::Toolbar => "Tabs and navigation row",
             ThemeColorField::Bookmarks => "Background of the left locations rail",
-            ThemeColorField::SmartPanel => "Info/search/target sidebar",
+            ThemeColorField::SmartPanel => {
+                "Smart Panel background behind Info, Drop Folder, Search, Activity and Trash"
+            }
             ThemeColorField::Titlebar => "Top window chrome",
             ThemeColorField::Border => "Thin separators and strokes",
             ThemeColorField::WindowBorder => "Border around application windows",
