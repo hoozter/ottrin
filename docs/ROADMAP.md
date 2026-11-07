@@ -472,8 +472,18 @@ Current source, test, package and owner/external scopes stay separate.
    selected width within its supported range. The source-rendered editor
    and real Quick Inspector both submit an exact 1.25 px stroke. The full
    Linux UI suite passed 544 tests with one ignored, and strict Windows
-   cross-target UI test lint passed. Rebuild and verify the corrected
-   candidate before promotion.
+   cross-target UI test lint passed. Corrected `d76c351a` passes all four
+   Linux format content checks and mounted Dark/Light Inspector pixels:
+   1.00, 1.25 and 1.50 px produce distinct edges. The stable control draws
+   1.25 and 1.50 px identically across the same sampled region. The mounted
+   candidate also passes folder restoration, picker Save replacement, portal
+   blocker handling and private atomic replacement. Owned profiles and
+   package extraction are removed. Evidence:
+   `fractional-border-delivery-current/MOUNTED_ACCEPTANCE.json`.
+   The single 111 MiB stage passes guarded promotion preflight and waits
+   for [run 42426557500](https://github.com/hoozter/ottrin/actions/runs/42426557500).
+   The selected Inspector sample's outline can obscure the themed border.
+   Separate selection ink from the actual frame in the remaining audit.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
