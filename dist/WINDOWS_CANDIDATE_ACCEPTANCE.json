@@ -1,42 +1,48 @@
 {
-  "status": "pass scoped current Windows Services and packaged Explorer integration; full roadmap incomplete",
-  "source_commit": "8e805d318557d3248ebf090aa8088dd86194b593",
+  "status": "pass scoped Windows picker, installer recovery and Explorer integration",
+  "source_commit": "7aabcc567af540d6f815249b85aaadddea561dfb",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "aab76d67165f5773eac8bb78a4285d72859a1f204e4a28b766ddf75e007d2ffb",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "20928027b9d797c8a1253c872786c5ae45f4a89de78aeaf6386cddb2fee6d24d",
-    "Ottrin-0.1.0-windows-x64-development.msix": "0269d52d9867b18404a7a7413ecfca377179875ea416ea4b1d5f50b7233214a0"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "2ae1db510623aa305973736b60e2144ffcb0b15c1196ffe171599e9bf1fbd396",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "69a03214ee81bae6e0d0f496e187c0d08bfacd5e4ae020c9dacc7a5a153d6f36",
+    "Ottrin-0.1.0-windows-x64-development.msix": "af2a6a93bd98f2c690c4a29bc1b01597d8c294d60ccfd8bbce92c7704d69c983"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/packaged-shell-current",
+  "evidence_directory": ".hermes/evidence/windows-picker-confirmation-delivery-current",
   "hosted_source": {
-    "run": 42054602533,
-    "tested_source_revision": "8e805d318557d3248ebf090aa8088dd86194b593",
-    "exact_source_all_four_jobs_success": true
+    "run": 42409736660,
+    "tested_source_revision": "7f38dbe3ad909a40534634a92875ba3f17afd30b",
+    "non_runtime_diff": [
+      "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+      "docs/ROADMAP.md"
+    ],
+    "all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/packaged-shell-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/packaged-shell-current/WINDOWS_DAEMON_RUNTIME.json",
+  "current_native_fields": ".hermes/evidence/windows-picker-confirmation-delivery-current/NATIVE_PICKER_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/windows-picker-confirmation-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/packaged-shell-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_runtime_login_removal": ".hermes/evidence/packaged-shell-current/MSIX_CONTEXTS_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/packaged-shell-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
-    "scope": "Exact current59-file ZIP/NSIS equality, current ordinary-user NSIS Services, current fresh25 and enabled24-to25 native contexts/login/removal; all four exact-source hosted jobs pass. No historical package result substituted for current acceptance."
+    "current_assembly": ".hermes/evidence/windows-picker-confirmation-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/windows-picker-confirmation-delivery-current/MSIX_CONTEXTS_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-picker-confirmation-delivery-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
+    "scope": "Exact 59-file ZIP/NSIS/MSIX equality, current installed picker and NSIS upgrade and recovery, fresh26 and enabled25-to26 native contexts/login/removal."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/packaged-shell-current/WINDOWS_SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/windows-picker-confirmation-delivery-current/WINDOWS_SOURCE_SCOPE.json",
   "public_release_published": false,
   "limits": [
+    "Prior Services results retain their original source scope.",
     "Software guest/default DPI only; no physical GPU, signing, Store or human acceptance",
     "Targeted Services and Explorer originals only; full theme/interface property audit remains open",
     "MSIX default folder opening transaction error remains separate software work",
     "MSIX drive-menu schema requires Windows11 build22621; lower advertised package builds are not accepted by this Windows11 case",
     "Native light-menu icon contrast and supplementary glyph fallback remain open",
     "Administrator Copy coordinator/caller registry and ordinary MSI rollback remain gated"
-  ]
+  ],
+  "native_upgrade": ".hermes/evidence/windows-picker-confirmation-delivery-current/NATIVE_UPGRADE_ACCEPTANCE.json"
 }

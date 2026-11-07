@@ -9,7 +9,7 @@ not complete a broader native, platform or user-acceptance requirement.
 The stable local Linux packages use source `7aabcc56`. All four hosted jobs
 passed on `7f38dbe3` in [run 42409736660](https://github.com/hoozter/ottrin/actions/runs/42409736660).
 The package source differs only in the roadmap and prior Linux receipt.
-Windows retains its separately accepted source `8e805d31`.
+The current Windows candidate also uses `7aabcc56`. Its native evidence is separate.
 
 The preceding Linux cohort `37961173` passed contents, runtime closure, provenance and namespace
 ownership checks. The mounted AppImage was reviewed in Dark and Light for real
@@ -31,28 +31,26 @@ and superseded package paths were removed. Current authority:
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
-Windows: the59-file portable ZIP, NSIS and unsigned development MSIX25 are
-published at `dist/windows-candidate/`. All four exact-source hosted jobs pass
-in [run42054602533](https://github.com/hoozter/ottrin/actions/runs/42054602533).
-Installed Dark/Light Services checks pass actual daemon suspension→timeout→same
-process recovery, qualified neutral action history, full current timeout text,
-unchanged recovery controls, disclosure, On startup and uninstall preservation.
-Six targeted originals were reviewed. The owned Settings window fits its work
-area; complete page contents still scroll. Arbitrary long native diagnostics
-and the whole theme/property audit remain separate.
-Fresh25 and enabled24-to25 upgrade checks pass all three actual Explorer contexts,
-ordinary package/user identity, automatic foreground, clean exit, unchanged daemon,
-exact preferences/index identity, real reboot/login and original-user COM refusal
-after removal. Seven originals per case were reviewed. Actual MakeAppx assembly,
-59-file equality and the current daemon's private1000-file watcher/restart/two
-shutdowns pass; its30-second no-client idle sample is0.36% of one core. This does
-not establish sustained personal resource acceptance. Native icon contrast,
-supplementary glyph fallback, lower-build MSIX drive integration and default
-folder opening remain open. The latter still reaches the unresolved KTM path.
-The superseded Windows cohort, consumed stage/old24 input and all completed QA
-VMs/disks/desktops/profiles/transports are removed. Current authority:
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`; evidence:
-`.hermes/evidence/packaged-shell-current/WINDOWS_DELIVERY.json`.
+The 59-file Windows portable ZIP, NSIS installer and unsigned development
+MSIX 26 are available at `dist/windows-candidate/`. Native ordinary-user
+checks passed themed Save replacement, exact Unicode paths, NSIS upgrade
+with an active index, three reinstall intent cases, and locked-cache
+uninstall refusal and retry.
+
+Native MakeAppx assembled MSIX 26 from the same payload. Fresh deployment
+and enabled 25-to-26 upgrade passed actual Explorer folder background,
+multiple selection and drive commands, login startup and removal. The
+first fresh run failed an Explorer process assertion without retaining the
+unexpected arguments. A rerun with richer diagnostics passed. The cause of
+that first result remains unverified. The previous `8e805d31` Services
+captures retain their exact source scope. Default folder opening, lower
+Windows build coverage, the full theme audit, administrator Copy and MSI
+rollback remain open.
+
+The superseded Windows cohort, consumed stage, source archive and owned
+guest resources were removed. Current authority:
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Delivery evidence:
+`.hermes/evidence/windows-picker-confirmation-delivery-current/WINDOWS_DELIVERY.json`.
 
 ### Current ordered work
 
@@ -470,8 +468,8 @@ Current source, test, package and owner/external scopes stay separate.
    ten ordinary-user cases without starting indexing. The disposable guest,
    media and portable extraction were removed. Evidence:
    `windows-picker-confirmation-delivery-current/NATIVE_UPGRADE_ACCEPTANCE.json`.
-   Development MSIX and broader recovery acceptance remain separate before
-   candidate replacement.
+   Fresh and upgraded development MSIX acceptance passed and the Windows
+   candidate was promoted. Broader recovery and MSI remain open.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
