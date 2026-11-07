@@ -568,12 +568,7 @@ mod tests {
                                         bounds = ui.max_rect();
                                         ui.horizontal_wrapped(|ui| {
                                             crate::render_visual_sizing_controls(
-                                                ui,
-                                                crate::PreviewKind::Pdf,
-                                                &mut true,
-                                                &mut false,
-                                                &mut 1.0,
-                                                app.colors,
+                                                ui, &mut true, &mut false, &mut 1.0, app.colors,
                                             );
                                             ui.add(
                                                 Button::new("Expand preview")

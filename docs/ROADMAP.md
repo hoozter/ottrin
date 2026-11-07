@@ -64,9 +64,21 @@ shape at three text scales, and component reset preserves shared values. All
 packages were retired. The follow-up uses compact themed buttons and checks
 painted bounds with production theme styles in the live and sample footers.
 All 537 active UI tests and Linux/Windows-target UI Clippy passed again.
-The corrected revision needs renewed package review and exact-source CI
-before it replaces `ac935037`. Next appearance audit items include Image/PDF
-preview fidelity and applicable property ownership.
+The corrected `0298384d` cohort passed content checks for all four formats
+and mounted Dark/Light footer, Services and private daemon verification.
+Native captures show unclipped square and rounded hover fills, shared geometry
+preserved by component reset, and Cancel restoration. It is staged pending
+exact-source CI and guarded promotion. A separate read-only three-minute sample
+of the installed `ac935037` index stayed Ready with 248,585 indexed items and
+an unchanged snapshot. CPU averaged 0.18% of one core and peaked at 0.30% per
+ten-second interval. The sample covers settled Ready behavior on this machine.
+
+The next source checkpoint adds an Image sample using the production Inspector
+action row, fit and zoom controls, image sizing and scrolling. Image sample
+controls select button styling and use bundled bytes without writing a file.
+A rendered test compares named production controls and exercises visible raster
+sizing and property selection. PDF and installed-provider samples, native
+package review and the full appearance audit remain open.
 Wait for an active hosted run to finish before another source push so
 `cancel-in-progress` cannot discard its result. Current source/test/package and
 owner/external waits stay separate throughout this queue.

@@ -2791,75 +2791,79 @@ impl VisualPreviewRenderSpec {
 /// derives a size from the current available bounds.
 fn render_visual_sizing_controls(
     ui: &mut egui::Ui,
-    _kind: PreviewKind,
     visual_fit: &mut bool,
     visual_fit_width: &mut bool,
     visual_zoom: &mut f32,
     c: Colors,
-) {
+) -> [egui::Response; 5] {
     let fit_label = if *visual_fit_width {
         "Fit width"
     } else {
         "Fit page"
     };
     ui.vertical(|ui| {
-        ui.horizontal_wrapped(|ui| {
-            if ui
-                .add(egui::Button::new("Fit page").small().themed(&c))
-                .on_hover_text("Show the complete page or image in the viewport.")
-                .clicked()
-            {
-                *visual_fit = true;
-                *visual_fit_width = false;
-            }
-            if ui
-                .add(egui::Button::new("Fit width").small().themed(&c))
-                .on_hover_text("Match the preview width and scroll vertically.")
-                .clicked()
-            {
-                *visual_fit = true;
-                *visual_fit_width = true;
-            }
-            if ui
-                .add(egui::Button::new("100%").small().themed(&c))
-                .on_hover_text("Show the page or image at its natural size and scroll.")
-                .clicked()
-            {
-                *visual_fit = false;
-                *visual_zoom = 1.0;
-            }
-        });
-        ui.horizontal_wrapped(|ui| {
-            if ui
-                .add(egui::Button::new("−").small().themed(&c))
-                .on_hover_text("Zoom out")
-                .clicked()
-            {
-                *visual_fit = false;
-                *visual_zoom = (*visual_zoom / 1.2).clamp(0.1, 8.0);
-            }
-            ui.add(
-                egui::Label::new(
-                    RichText::new(if *visual_fit {
-                        format!("{fit_label} · {}%", (*visual_zoom * 100.0).round() as u32)
-                    } else {
-                        format!("{}%", (*visual_zoom * 100.0).round() as u32)
-                    })
-                    .color(c.text_dim)
-                    .size(10.5 * c.font_scale),
-                )
-                .wrap_mode(egui::TextWrapMode::Extend),
-            );
-            if ui
-                .add(egui::Button::new("+").small().themed(&c))
-                .on_hover_text("Zoom in")
-                .clicked()
-            {
-                *visual_fit = false;
-                *visual_zoom = (*visual_zoom * 1.2).clamp(0.1, 8.0);
-            }
-        });
-    });
+        let [page, width, natural] = ui
+            .horizontal_wrapped(|ui| {
+                let page = ui
+                    .add(egui::Button::new("Fit page").small().themed(&c))
+                    .on_hover_text("Show the complete page or image in the viewport.");
+                if page.clicked() {
+                    *visual_fit = true;
+                    *visual_fit_width = false;
+                }
+                let width = ui
+                    .add(egui::Button::new("Fit width").small().themed(&c))
+                    .on_hover_text("Match the preview width and scroll vertically.");
+                if width.clicked() {
+                    *visual_fit = true;
+                    *visual_fit_width = true;
+                }
+                let natural = ui
+                    .add(egui::Button::new("100%").small().themed(&c))
+                    .on_hover_text("Show the page or image at its natural size and scroll.");
+                if natural.clicked() {
+                    *visual_fit = false;
+                    *visual_zoom = 1.0;
+                }
+                [page, width, natural]
+            })
+            .inner;
+        let [smaller, larger] = ui
+            .horizontal_wrapped(|ui| {
+                let smaller = ui
+                    .add(egui::Button::new("−").small().themed(&c))
+                    .on_hover_text("Zoom out");
+                name_control(&smaller, "Zoom out");
+                if smaller.clicked() {
+                    *visual_fit = false;
+                    *visual_zoom = (*visual_zoom / 1.2).clamp(0.1, 8.0);
+                }
+                ui.add(
+                    egui::Label::new(
+                        RichText::new(if *visual_fit {
+                            format!("{fit_label} · {}%", (*visual_zoom * 100.0).round() as u32)
+                        } else {
+                            format!("{}%", (*visual_zoom * 100.0).round() as u32)
+                        })
+                        .color(c.text_dim)
+                        .size(10.5 * c.font_scale),
+                    )
+                    .wrap_mode(egui::TextWrapMode::Extend),
+                );
+                let larger = ui
+                    .add(egui::Button::new("+").small().themed(&c))
+                    .on_hover_text("Zoom in");
+                name_control(&larger, "Zoom in");
+                if larger.clicked() {
+                    *visual_fit = false;
+                    *visual_zoom = (*visual_zoom * 1.2).clamp(0.1, 8.0);
+                }
+                [smaller, larger]
+            })
+            .inner;
+        [page, width, natural, smaller, larger]
+    })
+    .inner
 }
 
 fn submit_sized_preview(
@@ -2919,6 +2923,28 @@ fn preview_image_with_fit_bounds(
     } else {
         image.max_width(bounds.x).max_height(bounds.y)
     }
+}
+
+fn preview_image_with_zoom(
+    uri: String,
+    bytes: Vec<u8>,
+    zoom: f32,
+    corner_radius: u8,
+) -> Option<egui::Image<'static>> {
+    let decoded = image::load_from_memory(&bytes).ok()?;
+    let size = Vec2::new(decoded.width() as f32, decoded.height() as f32) * zoom;
+    Some(
+        egui::Image::from_bytes(uri, bytes)
+            .fit_to_exact_size(size)
+            .corner_radius(corner_radius),
+    )
+}
+
+fn inspector_visual_bounds(ui: &egui::Ui) -> Vec2 {
+    Vec2::new(
+        ui.available_width().max(1.0),
+        (ui.available_height() - 34.0).max(1.0),
+    )
 }
 
 #[derive(Debug, Default)]
@@ -5033,15 +5059,11 @@ impl OttrinApp {
             return None;
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
-        let decoded = image::load_from_memory(&bytes).ok()?;
-        let size = Vec2::new(
-            decoded.width() as f32 * zoom,
-            decoded.height() as f32 * zoom,
-        );
-        Some(
-            egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
-                .fit_to_exact_size(size)
-                .corner_radius(corner_radius),
+        preview_image_with_zoom(
+            format!("bytes://preview/{cache_key}"),
+            bytes,
+            zoom,
+            corner_radius,
         )
     }
 
@@ -18119,7 +18141,6 @@ impl OttrinApp {
                         if use_visual_renderer {
                             render_visual_sizing_controls(
                                 ui,
-                                preview.kind,
                                 &mut visual_fit,
                                 &mut visual_fit_width,
                                 &mut visual_zoom,
@@ -19421,7 +19442,7 @@ impl OttrinApp {
                             if is_zoomable_document || matches!(preview.kind, PreviewKind::Text | PreviewKind::OfficeMetadata) {
                                 ui.horizontal_wrapped(|ui| {
                                 if is_zoomable_document {
-                                    render_visual_sizing_controls(ui, preview.kind, &mut self.preview.visual_fit, &mut self.preview.visual_fit_width, &mut self.preview.visual_zoom, c);
+                                    render_visual_sizing_controls(ui, &mut self.preview.visual_fit, &mut self.preview.visual_fit_width, &mut self.preview.visual_zoom, c);
                                 }
                                 inspector_controls::flow_controls(ui, c, &preview, &mut self.preview.flow_text_scale, &mut self.preview.spreadsheet_overview);
                                 });
@@ -19637,8 +19658,7 @@ impl OttrinApp {
                             && preview_uses_visual_preview(&path, visual_kind) =>
                         {
                             ui.scope(|ui| {
-                                let max_w = ui.available_width().max(1.0);
-                                let max_h = (ui.available_height() - 34.0).max(1.0);
+                                let Vec2 { x: max_w, y: max_h } = inspector_visual_bounds(ui);
                                 ui.vertical_centered(|ui| {
                                     let pdf_page_index = if preview.kind == PreviewKind::Pdf {
                                         self.preview.pdf_page_index
@@ -34954,7 +34974,6 @@ mod tests {
                             ui.horizontal(|ui| {
                                 render_visual_sizing_controls(
                                     ui,
-                                    PreviewKind::Image,
                                     &mut fit,
                                     &mut width,
                                     &mut zoom,

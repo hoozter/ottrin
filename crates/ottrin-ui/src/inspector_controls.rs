@@ -167,6 +167,7 @@ pub(crate) enum SampleKind {
     Text,
     Document,
     Spreadsheet,
+    Image,
 }
 impl SampleKind {
     fn label(self) -> &'static str {
@@ -174,6 +175,7 @@ impl SampleKind {
             Self::Text => "Text file",
             Self::Document => "Document",
             Self::Spreadsheet => "Spreadsheet",
+            Self::Image => "Image",
         }
     }
 }
@@ -183,7 +185,27 @@ pub(crate) struct ThemePreviewState {
     kind: SampleKind,
     sizing: PreviewBodySizing,
     selected_sheet: Option<String>,
+    visual: VisualSampleSizing,
 }
+
+#[derive(Debug, Clone)]
+struct VisualSampleSizing {
+    fit: bool,
+    fit_width: bool,
+    zoom: f32,
+}
+
+impl Default for VisualSampleSizing {
+    fn default() -> Self {
+        Self {
+            fit: true,
+            fit_width: false,
+            zoom: 1.0,
+        }
+    }
+}
+
+const IMAGE_SAMPLE: &[u8] = include_bytes!("../../../assets/icon.png");
 
 /// The sample controls and the real Inspector/sidebar share the same text and
 /// worksheet controls. Callers retain their own per-file presentation state.
@@ -224,6 +246,11 @@ fn theme_sample(kind: SampleKind) -> PreviewData {
     };
     match kind {
         SampleKind::Text => {}
+        SampleKind::Image => {
+            sample.title = "ottrin-icon.png".into();
+            sample.kind = PreviewKind::Image;
+            sample.body.clear();
+        }
         SampleKind::Document => {
             sample.title = "document.docx".into();
             sample.kind = PreviewKind::OfficeMetadata;
@@ -304,6 +331,7 @@ pub(crate) fn theme_preview(
                     SampleKind::Text,
                     SampleKind::Document,
                     SampleKind::Spreadsheet,
+                    SampleKind::Image,
                 ] {
                     ui.selectable_value(&mut state.kind, kind, kind.label());
                 }
@@ -312,6 +340,7 @@ pub(crate) fn theme_preview(
         if previous != state.kind {
             state.sizing = PreviewBodySizing::default();
             state.selected_sheet = None;
+            state.visual = VisualSampleSizing::default();
         }
     });
     ui.add_space(4.0);
@@ -351,6 +380,7 @@ pub(crate) fn theme_preview(
             c,
             Availability {
                 can_edit: sample.kind == PreviewKind::Text,
+                image: sample.kind == PreviewKind::Image,
                 ..Default::default()
             },
             |ui| more_target(ui, c),
@@ -358,6 +388,19 @@ pub(crate) fn theme_preview(
         buttons_clicked |= actions.action.is_some() || actions.more.clicked();
         targets.extend(actions.targets);
         ui.horizontal_wrapped(|ui| {
+            if state.kind == SampleKind::Image {
+                for control in render_visual_sizing_controls(
+                    ui,
+                    &mut state.visual.fit,
+                    &mut state.visual.fit_width,
+                    &mut state.visual.zoom,
+                    c,
+                ) {
+                    buttons_clicked |= control.clicked();
+                    targets.push(control.rect);
+                }
+                return;
+            }
             let overview_before = state.sizing.spreadsheet_overview;
             let controls = flow_controls(
                 ui,
@@ -371,24 +414,54 @@ pub(crate) fn theme_preview(
             targets.extend(controls.targets);
         });
         ui.separator();
-        preview_render::preview_content_frame(
-            ui,
-            ui.available_size(),
-            preview_render::PreviewScroll::Body,
-            |ui| {
-                let sheet_before = state.selected_sheet.clone();
-                let _ = preview_render::render_shared_preview_body(
-                    ui,
-                    c,
-                    Path::new(&sample.title),
-                    &sample.title,
-                    &sample,
-                    &mut state.selected_sheet,
-                    state.sizing,
-                );
-                inspector_clicked |= sheet_before.is_some() && sheet_before != state.selected_sheet;
-            },
-        );
+        let scrolling = if state.kind != SampleKind::Image {
+            preview_render::PreviewScroll::Body
+        } else if state.visual.fit && state.visual.fit_width {
+            preview_render::PreviewScroll::WidthFittedPage
+        } else {
+            preview_render::PreviewScroll::Frame
+        };
+        preview_render::preview_content_frame(ui, ui.available_size(), scrolling, |ui| {
+            if state.kind == SampleKind::Image {
+                let spec = VisualPreviewRenderSpec {
+                    max_size: inspector_visual_bounds(ui),
+                    corner_radius: 8,
+                    page_index: 0,
+                    fit: state.visual.fit,
+                    fit_width: state.visual.fit_width,
+                    zoom: state.visual.zoom,
+                };
+                let uri = "bytes://theme-sample/ottrin-icon.png".into();
+                let bytes = IMAGE_SAMPLE.to_vec();
+                let image = if spec.fit {
+                    Some(preview_image_with_fit_bounds(
+                        uri,
+                        bytes,
+                        spec.fit_bounds(),
+                        spec.corner_radius,
+                    ))
+                } else {
+                    preview_image_with_zoom(uri, bytes, spec.zoom, spec.corner_radius)
+                };
+                if let Some(image) = image {
+                    ui.vertical_centered(|ui| {
+                        submit_sized_preview(ui, image, spec.fit, &mut state.visual.zoom);
+                    });
+                }
+                return;
+            }
+            let sheet_before = state.selected_sheet.clone();
+            let _ = preview_render::render_shared_preview_body(
+                ui,
+                c,
+                Path::new(&sample.title),
+                &sample.title,
+                &sample,
+                &mut state.selected_sheet,
+                state.sizing,
+            );
+            inspector_clicked |= sheet_before.is_some() && sheet_before != state.selected_sheet;
+        });
     });
     window_chrome::paint_embedded_viewport_frame(&painter, frame, c, c.panel_raised);
     let regions = [
@@ -809,6 +882,96 @@ mod tests {
     }
 
     #[test]
+    fn image_sample_uses_live_inspector_controls_and_sizes_the_visible_raster() {
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        egui_extras::install_image_loaders(&ctx);
+        ctx.enable_accesskit();
+        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        theme_colors::apply_to_context(&ctx, &colors);
+        let mut state = ThemePreviewState {
+            kind: SampleKind::Image,
+            ..Default::default()
+        };
+        let picked = std::cell::Cell::new(None);
+        let render = |state: &mut ThemePreviewState, events| {
+            ctx.run(input(Vec2::new(748.0, 660.0), events), |ctx| {
+                egui::CentralPanel::default()
+                    .frame(Frame::NONE)
+                    .show(ctx, |ui| {
+                        picked.set(theme_preview(
+                            ui,
+                            colors,
+                            ThemePreviewRegion::Inspector,
+                            state,
+                        ));
+                    });
+            })
+        };
+
+        let mut app = OttrinApp::default();
+        app.colors = colors;
+        app.preview.visible = true;
+        app.preview.path = Some(PathBuf::from("ottrin-icon.png"));
+        app.preview.data = Some(theme_sample(SampleKind::Image));
+        app.preview.visual_fit = true;
+        app.preview.visual_zoom = 1.0;
+        let live_ctx = Context::default();
+        install_application_fonts(&live_ctx);
+        live_ctx.enable_accesskit();
+        app.apply_theme_to_ctx(&live_ctx);
+        let live = live_ctx.run(input(Vec2::new(720.0, 560.0), vec![]), |ctx| {
+            app.render_preview_overlay(ctx)
+        });
+        let output = render(&mut state, vec![]);
+        for name in [
+            "Rotate Right",
+            "Rotate Left",
+            "Fit page",
+            "Fit width",
+            "100%",
+            "Zoom out",
+            "Zoom in",
+        ] {
+            button(&live, name);
+            button(&output, name);
+        }
+        render(&mut state, activate(button(&output, "Fit width").0));
+        assert!(state.visual.fit && state.visual.fit_width);
+        assert_eq!(picked.get(), Some(ThemePreviewRegion::Accent));
+
+        let output = render(&mut state, vec![]);
+        render(&mut state, activate(button(&output, "100%").0));
+        assert!(!state.visual.fit);
+        assert_eq!(state.visual.zoom, 1.0);
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            let output = render(&mut state, vec![]);
+            if let Some((shape, rect)) = output.shapes.iter().find_map(|shape| match &shape.shape {
+                egui::Shape::Rect(rect) if rect.brush.is_some() => Some((shape, rect)),
+                _ => None,
+            }) {
+                assert_eq!(rect.rect.size(), Vec2::splat(256.0));
+                assert!(shape.clip_rect.contains_rect(rect.rect));
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "The sample must paint the bundled image"
+            );
+            std::thread::yield_now();
+        }
+
+        let output = render(&mut state, vec![]);
+        render(&mut state, activate(button(&output, "Zoom in").0));
+        assert_eq!(state.visual.zoom, 1.2);
+        let output = render(&mut state, vec![]);
+        render(&mut state, activate(button(&output, "Rotate Right").0));
+        assert_eq!(picked.get(), Some(ThemePreviewRegion::Accent));
+        assert_eq!(state.visual.zoom, 1.2);
+    }
+
+    #[test]
     fn sample_file_selector_is_named_and_resets_only_sample_state() {
         let ctx = Context::default();
         ctx.enable_accesskit();
@@ -820,6 +983,7 @@ mod tests {
                 spreadsheet_overview: true,
             },
             selected_sheet: Some("summary".into()),
+            ..Default::default()
         };
         let render = |state: &mut ThemePreviewState, events| {
             ctx.run(input(Vec2::new(748.0, 660.0), events), |ctx| {
