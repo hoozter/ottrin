@@ -775,16 +775,25 @@ impl PickerDialog {
             self.error = Some(error);
         }
     }
-    /// Render only the chooser body; native/embedded hosts use the same titlebar and frame.
-    fn handle_file_keys(&mut self, ctx: &Context, _config: &AppConfig) {
+    fn handle_file_keys(&mut self, ctx: &Context) {
         let visible = self.visible_entries();
         if ctx.input(|input| crate::command_key_pressed(input, egui::Key::A))
             && self.request.multiple
         {
             self.cancel_validation();
-            self.selected = visible.iter().map(|entry| entry.path.clone()).collect();
+            let folder_mode = self.request.mode == PickerMode::Folder;
+            self.selected = visible
+                .iter()
+                .filter(|entry| is_directory(entry) == folder_mode)
+                .map(|entry| entry.path.clone())
+                .collect();
             self.focus = self.selected.last().cloned();
+            self.anchor = self
+                .focus
+                .as_ref()
+                .and_then(|path| visible.iter().position(|entry| &entry.path == path));
             self.filename.clear();
+            self.error = None;
         }
         let steps = ctx.input(|input| {
             input
@@ -816,10 +825,11 @@ impl PickerDialog {
             self.select(visible.get(index), index, &visible, modifiers);
         }
         if ctx.input(|input| input.key_pressed(egui::Key::Enter)) {
-            if let Some(entry) = self
-                .focus
-                .as_ref()
-                .and_then(|path| visible.iter().find(|entry| &entry.path == path))
+            if !(self.request.mode == PickerMode::Folder && self.selected.len() > 1)
+                && let Some(entry) = self
+                    .focus
+                    .as_ref()
+                    .and_then(|path| visible.iter().find(|entry| &entry.path == path))
                 && is_directory(entry)
             {
                 self.navigate(entry.path.clone());
@@ -828,6 +838,7 @@ impl PickerDialog {
             }
         }
     }
+    /// Render only the chooser body; native and embedded hosts own the window chrome.
     pub(crate) fn show(&mut self, ui: &mut egui::Ui, colors: Colors, config: &AppConfig) {
         self.poll();
         let ctx = ui.ctx().clone();
@@ -852,7 +863,7 @@ impl PickerDialog {
         }
         let blocked = self.overwrite.is_some();
         if !blocked && !popup_open && !self.editing_location && !ctx.wants_keyboard_input() {
-            self.handle_file_keys(&ctx, config);
+            self.handle_file_keys(&ctx);
         }
         ui.add_enabled_ui(!blocked, |ui| {
             egui::Frame::new()
@@ -2259,6 +2270,68 @@ mod tests {
             vec![root.path().join("beta.txt")]
         );
     }
+    #[test]
+    fn select_all_returns_only_entries_allowed_by_the_picker_mode() {
+        let root = tempfile::tempdir().unwrap();
+        let files = ["alpha.txt", "beta.txt"].map(|name| root.path().join(name));
+        let folders = ["folder-one", "folder-two"].map(|name| root.path().join(name));
+        for path in &files {
+            std::fs::write(path, "owned picker fixture").unwrap();
+        }
+        for path in &folders {
+            std::fs::create_dir(path).unwrap();
+        }
+        for (mode, expected) in [(PickerMode::Open, &files), (PickerMode::Folder, &folders)] {
+            let ctx = Context::default();
+            let size = Vec2::new(940.0, 640.0);
+            let mut app = host(
+                &ctx,
+                PickerRequest {
+                    mode,
+                    multiple: true,
+                    initial_directory: Some(root.path().to_path_buf()),
+                    ..Default::default()
+                },
+                true,
+                1.0,
+            );
+            frame(&mut app, &ctx, size, 0.0, vec![]);
+            for (time, key, modifiers) in [
+                (0.1, egui::Key::A, egui::Modifiers::COMMAND),
+                (0.2, egui::Key::Enter, egui::Modifiers::NONE),
+            ] {
+                frame(
+                    &mut app,
+                    &ctx,
+                    size,
+                    time,
+                    vec![egui::Event::Key {
+                        key,
+                        physical_key: Some(key),
+                        pressed: true,
+                        repeat: false,
+                        modifiers,
+                    }],
+                );
+            }
+            let until = Instant::now() + Duration::from_secs(3);
+            while app.dialog.validating {
+                frame(&mut app, &ctx, size, 0.3, vec![]);
+                assert!(Instant::now() < until);
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            assert_eq!(
+                app.outcome
+                    .lock()
+                    .unwrap()
+                    .as_ref()
+                    .expect("Enter must accept")
+                    .paths,
+                expected.as_slice(),
+            );
+        }
+    }
+
     #[test]
     fn text_preview_uses_the_readable_shared_body_instead_of_a_thumbnail() {
         let root = tempfile::tempdir().unwrap();

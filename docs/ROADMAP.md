@@ -401,6 +401,11 @@ Current source, test, package and owner/external scopes stay separate.
    browser/Flatpak, native-package and cooperating Windows caller receipts keep
    exact scopes. Do not infer universal Windows dialog replacement or repeat
    fulfilled matrices without changed inputs or a reproduced defect.
+
+   Picker Select All now selects only files for an Open request and only folders
+   for a folder request. Enter submits a multi-folder selection. Rendered
+   keyboard tests exercise both requests with files and folders in the same
+   directory. Exact package and external caller verification remain open.
 4. Resolve ordinary-user MSI registration rollback, including the failed independent
    file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
    changes and manual registry compensation are not a working installer. This
