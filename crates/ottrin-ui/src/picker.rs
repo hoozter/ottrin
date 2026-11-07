@@ -1477,14 +1477,21 @@ impl PickerDialog {
             });
         });
         if let Some(path) = self.overwrite.clone() {
-            egui::Modal::new(egui::Id::new("picker-overwrite")).show(&ctx,|ui| {
-                ui.heading("Replace this file?");ui.label(path_label(&path));
-                ui.label("The application will replace this file when it saves. Ottrin has not changed it.");
-                ui.horizontal(|ui| {
-                    if ui.add(egui::Button::new("Cancel").themed(&colors)).clicked() { self.overwrite=None; }
-                    if ui.add(egui::Button::new("Replace").themed(&colors)).clicked() { self.accept(true); }
+            egui::Modal::new(egui::Id::new("picker-overwrite"))
+                .frame(egui::Frame::window(ui.style()))
+                .show(&ctx, |ui| {
+                    ui.heading("Replace this file?");
+                    ui.label(path_label(&path));
+                    ui.label("The application will replace this file when it saves. Ottrin has not changed it.");
+                    ui.horizontal(|ui| {
+                        if ui.add(egui::Button::new("Cancel").themed(&colors)).clicked() {
+                            self.overwrite = None;
+                        }
+                        if ui.add(egui::Button::new("Replace").themed(&colors)).clicked() {
+                            self.accept(true);
+                        }
+                    });
                 });
-            });
         }
     }
 }
@@ -1965,6 +1972,52 @@ mod tests {
         assert_eq!(std::fs::read(other).unwrap(), b"another original");
         assert_eq!(std::fs::read(path).unwrap(), b"original");
     }
+    #[test]
+    fn replace_confirmation_uses_window_corners_and_border() {
+        for dark in [false, true] {
+            let ctx = Context::default();
+            let root = tempfile::tempdir().unwrap();
+            let request = PickerRequest {
+                mode: PickerMode::Save,
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            };
+            let mut dialog =
+                PickerDialog::new(request, &ctx, PickerPreferences::default()).unwrap();
+            wait_listing(&mut dialog);
+            dialog.overwrite = Some(root.path().join("existing.txt"));
+
+            let mut colors = Colors::preset(ThemePreset::Ottrin, dark);
+            colors.app_radius = 23;
+            colors.border_radius = 2;
+            colors.window_border_width = 3.0;
+            colors.window_border = egui::Color32::from_rgb(234, 57, 118);
+            crate::theme_colors::apply_to_context(&ctx, &colors);
+            let config = AppConfig::default();
+            let input = |time| egui::RawInput {
+                time: Some(time),
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(900.0, 650.0),
+                )),
+                ..Default::default()
+            };
+            let mut show = |ctx: &Context| {
+                egui::CentralPanel::default().show(ctx, |ui| dialog.show(ui, colors, &config));
+            };
+            let _ = ctx.run(input(0.0), &mut show);
+            let _ = ctx.run(input(0.2), &mut show);
+            let output = ctx.run(input(0.5), &mut show);
+            assert!(text_center(&output, "Replace this file?").is_some());
+            assert!(output.shapes.iter().any(|shape| {
+                matches!(&shape.shape, egui::Shape::Rect(rect)
+                    if rect.fill == colors.panel
+                        && rect.corner_radius == egui::CornerRadius::same(colors.app_radius)
+                        && rect.stroke == egui::Stroke::new(colors.window_border_width, colors.window_border))
+            }));
+        }
+    }
+
     #[test]
     fn typed_hidden_folders_remain_navigable_with_an_active_file_filter() {
         let root = tempfile::tempdir().unwrap();
