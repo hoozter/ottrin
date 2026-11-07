@@ -5179,6 +5179,12 @@ disabled sources, upgrades, removal, signature rejection, and interrupted
 publishing on Debian/Ubuntu and Fedora. AppImage and portable builds keep their
 existing behavior.
 
+The APT snapshot builder now validates Ottrin package identities, retains
+multiple versions, generates content-addressed indexes and signs InRelease.
+A disposable APT test verifies scoped trust, detection and download of a newer
+version, and rejection of changed metadata. Package-owned source registration,
+RPM signing, native installation lifecycle and R2 publication remain open.
+
 Extend the draft release flow with a stable-release publication gate and an
 explicit retry path. Publish immutable package and index objects before
 switching metadata, verify anonymous HTTPS reads, and test cache consistency
