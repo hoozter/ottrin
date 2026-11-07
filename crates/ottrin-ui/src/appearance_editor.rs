@@ -402,7 +402,7 @@ impl OttrinApp {
                     if region == ThemePreviewRegion::Inspector {
                         ui.add_space(10.0);
                         changed |= property_group(ui, "Shared window geometry", c, |ui| {
-                            ui.label(RichText::new("Shared by Ottrin windows. Reset component leaves these values unchanged.").small().color(c.text_dim));
+                            ui.label(RichText::new("Shared by Ottrin windows. Reset shared panel background only restores the panel color.").small().color(c.text_dim));
                             let mut changed = number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
                             changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.25, c);
                             changed
@@ -420,7 +420,12 @@ impl OttrinApp {
                     if region != ThemePreviewRegion::Defaults {
                         ui.add_space(14.0);
                         changed |= property_group(ui, "Shared colors", c, |ui| {
-                            ui.label(RichText::new("These values also affect other components. Reset component leaves them unchanged.").small().color(c.text_dim));
+                            let hint = if region == ThemePreviewRegion::Inspector {
+                                "These colors are shared. Reset shared panel background only restores the panel color."
+                            } else {
+                                "These values also affect other components. Reset component leaves them unchanged."
+                            };
+                            ui.label(RichText::new(hint).small().color(c.text_dim));
                             let mut changed = false;
                             for &field in Self::theme_preview_region_shared_fields(region) {
                                 changed |= self.appearance_color_row(ui, field, &seed);
