@@ -58,6 +58,9 @@ refresh fixes. In [run42317077429](https://github.com/hoozter/ottrin/actions/run
 all four hosted jobs pass.
 Its preceding `923b179b` passes all four jobs in
 [run42310288820](https://github.com/hoozter/ottrin/actions/runs/42310288820).
+The published thumbnail correction `db51abab` is in
+[run42323646024](https://github.com/hoozter/ottrin/actions/runs/42323646024):
+Linux verification and both performance jobs pass; Windows verification is running.
 Wait for an active run to finish before another push so `cancel-in-progress` does
 not interrupt it. Delivery receipts retain exact observed source/CI scopes, and
 stable application packages retain their separately accepted source scopes above.
@@ -152,6 +155,14 @@ baselines and corrected fixture failures remain in their receipts and Git histor
    review pass with owned desktop/profile teardown in `theme-miniature-current/`.
    This is scale1 preset-thumbnail evidence, not enlarged-scale/custom-extreme,
    Windows GUI, packaged or complete theme-property acceptance.
+   The large editor's outer-window border now paints after content, and the status
+   bar preserves the bottom window corners. `theme-preview-frame-current/` binds
+   30 existing appearance tests, strict Linux lint and actual Dark-variant GUI
+   checks: border4/colorFF4040 on main/Settings/editor/preview, radius24 versus0,
+   exact framebuffer corner extents and Cancel restoration. Owned GUI profiles,
+   processes and portal mount are removed. Light/enlarged-scale/Windows/package
+   coverage is not inferred. Painted border-edge hit testing can still resolve to
+   an underlying content region; correct that mapping in the remaining audit.
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

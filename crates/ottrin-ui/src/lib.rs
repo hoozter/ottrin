@@ -25569,7 +25569,9 @@ fn theme_editor_large_preview(
     let frame = rect.shrink(14.0);
     let title_h = (CUSTOM_TITLEBAR_HEIGHT * preview.font_scale).ceil();
     let nav_h = (CUSTOM_TITLEBAR_HEIGHT * preview.font_scale).ceil();
-    let status_h = (frame.height() * 0.08).clamp(22.0, 28.0);
+    let status_h = (frame.height() * 0.08)
+        .clamp(22.0, 28.0)
+        .max(f32::from(preview.app_radius));
     let titlebar = Rect::from_min_size(frame.min, Vec2::new(frame.width(), title_h));
     let nav = Rect::from_min_size(
         egui::pos2(frame.left(), titlebar.bottom()),
@@ -25633,12 +25635,6 @@ fn theme_editor_large_preview(
 
     p.rect_filled(outer, preview.app_radius as f32 + 4.0, preview.panel_raised);
     p.rect_filled(frame, preview.app_radius as f32, preview.panel);
-    p.rect_stroke(
-        frame,
-        preview.app_radius as f32,
-        Stroke::new(preview.window_border_width, preview.window_border),
-        egui::StrokeKind::Inside,
-    );
 
     p.rect_filled(
         titlebar,
@@ -25889,7 +25885,16 @@ fn theme_editor_large_preview(
             .data_mut(|data| data.insert_temp(preview_state_id, section));
     }
 
-    p.rect_filled(status, 0.0, preview.statusbar_bg);
+    p.rect_filled(
+        status,
+        egui::CornerRadius {
+            nw: 0,
+            ne: 0,
+            sw: preview.app_radius,
+            se: preview.app_radius,
+        },
+        preview.statusbar_bg,
+    );
     p.text(
         egui::pos2(status.left() + 12.0, status.center().y),
         Align2::LEFT_CENTER,
@@ -25915,6 +25920,14 @@ fn theme_editor_large_preview(
         "Button",
         FontId::proportional(9.6 * preview.font_scale),
         preview.button_text,
+    );
+
+    // Like the actual viewport frame, the border must cover all content fills.
+    p.rect_stroke(
+        frame,
+        preview.app_radius,
+        Stroke::new(preview.window_border_width, preview.window_border),
+        egui::StrokeKind::Inside,
     );
 
     let regions = vec![
