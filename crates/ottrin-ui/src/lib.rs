@@ -5333,6 +5333,7 @@ impl OttrinApp {
             ThemePreviewRegion::StatusBar => &[
                 ThemeColorField::TextMuted,
                 ThemeColorField::TextDim,
+                ThemeColorField::ButtonBg,
                 ThemeColorField::Error,
                 ThemeColorField::Accent,
                 ThemeColorField::Hover,
@@ -26273,6 +26274,8 @@ mod tests {
                 let (_root, mut app, _) = clipboard_keyboard_fixture();
                 app.colors = colors;
                 app.colors.font_scale = scale;
+                app.colors.button_radius = 9;
+                app.colors.button_bg = Color32::from_rgb(95, 36, 101);
                 let colors = app.colors;
                 let input = |events| egui::RawInput {
                     screen_rect: Some(Rect::from_min_size(
@@ -26352,6 +26355,26 @@ mod tests {
                         "{name} selects footer styling"
                     );
                 }
+                let hover = |bounds: egui::accesskit::Rect| {
+                    egui::Event::PointerMoved(egui::pos2(
+                        ((bounds.x0 + bounds.x1) / 2.0) as f32,
+                        ((bounds.y0 + bounds.y1) / 2.0) as f32,
+                    ))
+                };
+                let live_hover = live_ctx
+                    .run(input(vec![hover(actual["Show command bar"].1)]), |ctx| {
+                        app.render_status_bar(ctx)
+                    });
+                let sample_hover = render(vec![hover(samples["Show command bar"].1)]);
+                let painted_hover = |output: &egui::FullOutput| {
+                    output.shapes.iter().any(|shape| {
+                        matches!(&shape.shape, egui::Shape::Rect(rect)
+                            if rect.corner_radius == egui::CornerRadius::same(9)
+                                && rect.fill == colors.button_bg.blend(colors.hover))
+                    })
+                };
+                assert!(!painted_hover(&live) && !painted_hover(&preview));
+                assert!(painted_hover(&live_hover) && painted_hover(&sample_hover));
                 let text = preview
                     .shapes
                     .iter()

@@ -40,7 +40,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                     .size(helper.size * c.font_scale)
                     .color(helper.color),
             )
-            .frame(false)
+            .frame_when_inactive(false)
             .min_size(Vec2::splat(22.0))
             .themed(&c)
             .accessible_name("Manage administrator helper"),
@@ -58,7 +58,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                     .size(13.0 * c.font_scale)
                     .color(state.index_color),
             )
-            .frame(false)
+            .frame_when_inactive(false)
             .min_size(Vec2::splat(22.0))
             .themed(&c)
             .accessible_name("Manage index service"),
@@ -85,7 +85,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                     .size(16.0 * c.font_scale)
                     .color(hidden_color),
             )
-            .frame(false)
+            .frame_when_inactive(false)
             .min_size(Vec2::splat(24.0))
             .themed(&c)
             .accessible_name(if state.show_hidden_files {
@@ -116,7 +116,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                         .size(16.0 * c.font_scale)
                         .color(cf_color),
                 )
-                .frame(false)
+                .frame_when_inactive(false)
                 .min_size(Vec2::splat(24.0))
                 .themed(&c)
                 .accessible_name(if state.command_visible {

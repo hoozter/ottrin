@@ -410,7 +410,7 @@ impl OttrinApp {
                         group_changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
                             group_changed
                         });
-                        if matches!(region, ThemePreviewRegion::Inspector | ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::Sidebar)
+                        if matches!(region, ThemePreviewRegion::Inspector | ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::Sidebar | ThemePreviewRegion::StatusBar)
                             || (region == ThemePreviewRegion::SelectedRow && self.theme_editor.preview_view == ViewMode::Grid) {
                             ui.add_space(6.0);
                             changed |= property_group(ui, "Shared geometry", c, |ui| {
@@ -421,6 +421,11 @@ impl OttrinApp {
                                     group_changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
                                 }
                                 ThemePreviewRegion::Sidebar => {
+                                    group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
+                                }
+                                ThemePreviewRegion::StatusBar => {
+                                    ui.label(RichText::new("Window corners shape the lower window edge. Button corners shape hover and focus backgrounds. Reset component leaves both shared settings unchanged.").small().color(c.text_dim));
+                                    group_changed |= number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
                                     group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
                                 }
                                 ThemePreviewRegion::SelectedRow => {
@@ -1330,7 +1335,7 @@ mod tests {
     }
 
     #[test]
-    fn inspector_shared_geometry_follows_component_reset_and_keeps_its_ownership() {
+    fn shared_geometry_follows_component_reset_and_keeps_its_ownership() {
         use egui::accesskit::{Action, ActionRequest, Role};
         fn render(
             app: &mut OttrinApp,
@@ -1413,6 +1418,21 @@ mod tests {
                 seed.window_border_width
             );
             assert_eq!(app.theme_editor.custom.titlebar, [33, 101, 67, 255]);
+
+            app.theme_editor.selected_region = ThemePreviewRegion::StatusBar;
+            app.theme_editor.preview_inspector = false;
+            app.theme_editor.custom.statusbar = [23, 61, 97, 255];
+            app.theme_editor.custom.app_radius = 21.0;
+            app.theme_editor.custom.button_radius = 13.0;
+            app.apply_theme_editor_live_preview(&ctx);
+            activate(&mut app, &ctx, "Reset component");
+            assert_eq!(app.theme_editor.custom.statusbar, seed.statusbar);
+            assert_eq!(app.theme_editor.custom.app_radius, 21.0);
+            assert_eq!(app.theme_editor.custom.button_radius, 13.0);
+            activate(&mut app, &ctx, "Restore Window corners");
+            assert_eq!(app.theme_editor.custom.app_radius, seed.app_radius);
+            activate(&mut app, &ctx, "Restore Button corners");
+            assert_eq!(app.theme_editor.custom.button_radius, seed.button_radius);
         }
     }
 

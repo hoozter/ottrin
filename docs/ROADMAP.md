@@ -54,9 +54,14 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Linux source `ac935037` is delivered at the stable local paths. The next
-appearance audit item is exposing shared status bar geometry in its component
-properties and verifying that it matches the production footer.
+Linux source `ac935037` is delivered at the stable local paths. The newer
+status bar geometry checkpoint exposes shared window and button corners from
+the status bar selection. Footer utility buttons paint their themed backgrounds
+on hover and focus. Rendered Dark/Light tests verify the live and sample hover
+shape at three text scales, and component reset preserves shared values. All
+537 active UI tests and Linux/Windows-target UI Clippy passed. Native package
+review and delivery for this checkpoint remain open. Next appearance audit
+items include Image/PDF preview fidelity and applicable property ownership.
 Wait for an active hosted run to finish before another source push so
 `cancel-in-progress` cannot discard its result. Current source/test/package and
 owner/external waits stay separate throughout this queue.
