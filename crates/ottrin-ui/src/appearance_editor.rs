@@ -1,7 +1,8 @@
 use super::*;
 
-const REGIONS: [ThemePreviewRegion; 11] = [
+const REGIONS: [ThemePreviewRegion; 12] = [
     ThemePreviewRegion::Defaults,
+    ThemePreviewRegion::Inspector,
     ThemePreviewRegion::Titlebar,
     ThemePreviewRegion::Navigation,
     ThemePreviewRegion::Bookmarks,
@@ -274,11 +275,26 @@ impl OttrinApp {
             let inspector_rect = Rect::from_min_max(egui::pos2(split + 10.0, content.top()), content.max);
             ui.scope_builder(UiBuilder::new().max_rect(preview_rect), |ui| {
                 ui.set_min_size(preview_rect.size());
+                ui.horizontal(|ui| {
+                    if ui.selectable_label(!self.theme_editor.preview_inspector, "File manager").clicked() {
+                        self.theme_editor.preview_inspector = false;
+                        self.theme_editor.selected_region = ThemePreviewRegion::Defaults;
+                    }
+                    if ui.selectable_label(self.theme_editor.preview_inspector, "Quick Inspector").clicked() {
+                        self.theme_editor.preview_inspector = true;
+                        self.theme_editor.selected_region = ThemePreviewRegion::Inspector;
+                    }
+                });
+                ui.add_space(6.0);
                 let preview = self.theme_editor_preview_colors();
-                if let Some(region) = theme_editor_large_preview(ui, preview,
-                    self.theme_editor.selected_region, &mut self.theme_editor.preview_view).1 {
-                    self.theme_editor.selected_region = region;
-                }
+                let picked = if self.theme_editor.preview_inspector {
+                    inspector_controls::theme_preview(ui, preview, self.theme_editor.selected_region,
+                        &mut self.theme_editor.preview_inspector_text_scale)
+                } else {
+                    theme_editor_large_preview(ui, preview, self.theme_editor.selected_region,
+                        &mut self.theme_editor.preview_view).1
+                };
+                if let Some(region) = picked { self.theme_editor.selected_region = region; }
             });
             ui.scope_builder(UiBuilder::new().max_rect(inspector_rect), |ui| {
                 ui.set_width(inspector_rect.width());
@@ -291,6 +307,15 @@ impl OttrinApp {
                             ui.selectable_value(&mut region, component, Self::theme_preview_region_label(component));
                         }
                     }).response.on_hover_text(Self::theme_preview_region_hint(region));
+                if region != self.theme_editor.selected_region {
+                    match region {
+                        ThemePreviewRegion::Inspector => self.theme_editor.preview_inspector = true,
+                        ThemePreviewRegion::Navigation | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::ColumnBackground |
+                        ThemePreviewRegion::SelectedRow | ThemePreviewRegion::ColumnText | ThemePreviewRegion::Sidebar |
+                        ThemePreviewRegion::StatusBar => self.theme_editor.preview_inspector = false,
+                        _ => {},
+                    }
+                }
                 self.theme_editor.selected_region = region;
                 ui.add_space(8.0);
                 ScrollArea::vertical().id_salt("appearance_properties").max_height((inspector_rect.height()-44.0).max(100.0)).show(ui, |ui| {
@@ -313,6 +338,14 @@ impl OttrinApp {
                         changed |= property_group(ui, "Geometry", c, |ui| {
                             let mut changed = number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
                             changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                            changed
+                        });
+                    }
+                    if region == ThemePreviewRegion::Inspector {
+                        ui.add_space(10.0);
+                        changed |= property_group(ui, "Shared window geometry", c, |ui| {
+                            let mut changed = number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
+                            changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.25, c);
                             changed
                         });
                     }

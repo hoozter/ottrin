@@ -358,13 +358,24 @@ pub(crate) fn themed_menu_button<'a, R>(
     colors: Colors,
     contents: impl FnOnce(&mut Ui) -> R,
 ) -> egui::InnerResponse<Option<R>> {
+    themed_menu_from_button(ui, Button::new(label), colors, contents)
+}
+
+pub(crate) fn themed_menu_from_button<R>(
+    ui: &mut Ui,
+    button: Button<'_>,
+    colors: Colors,
+    contents: impl FnOnce(&mut Ui) -> R,
+) -> egui::InnerResponse<Option<R>> {
     let content_style = ui.style().clone();
     ui.scope(|ui| {
         apply_button_style(ui, colors);
-        ui.menu_button(label, |ui| {
-            ui.set_style(content_style);
-            contents(ui)
-        })
+        let (response, inner) =
+            egui::containers::menu::MenuButton::from_button(button).ui(ui, |ui| {
+                ui.set_style(content_style);
+                contents(ui)
+            });
+        egui::InnerResponse::new(inner.map(|inner| inner.inner), response)
     })
     .inner
 }

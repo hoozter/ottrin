@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux shared recovery, Services and theme-preview geometry delivery; full roadmap and UI audit incomplete",
-  "source_revision": "33e148b01d61dafa94dae6fb96dd92cb02dc1419",
+  "status": "pass scoped Linux real List/Grid theme preview and Grid typography delivery; full roadmap and UI audit incomplete",
+  "source_revision": "43ceddd871d45f578891efbc54d9e7bcecc21c1b",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "8bc12d26abc794b1828469be3796619247f21ea4bd67302fea31932974ab2684",
-    "Ottrin-0.1.0-x86_64.AppImage": "c96c440ee6e6ba1482d77e0b74c802ce5f96fa9a4643589c3d2495c968a8b713",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "4393acef2e14676e1879031e8ad99dd8a6190661701ce708e1319ce9cdc9d845",
-    "ottrin_0.1.0_amd64.deb": "1c1b3c87a7540f53c0f7f90c527de15447c0e1ebffbcf1a963e7498fd5ae7091"
+    "ottrin-0.1.0-1.x86_64.rpm": "7a61736a5fd581cd776b0febb415b8e5f95283c364584e4d8983a530a3239551",
+    "Ottrin-0.1.0-x86_64.AppImage": "c07cae00b299c022e0f40cbbe36284479082933bfffec594cca5db91e847a800",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "9c106201db192314d272907c45241cdbc49a0bc187de7e523c3d096bce57883d",
+    "ottrin_0.1.0_amd64.deb": "0c936b5c1fe33a3c3a36d27a036a5c21e35c5bb0a1a6f6cb1521f411f9a54b3e"
   },
-  "evidence": ".hermes/evidence/linux-ui-delivery-current",
+  "evidence": ".hermes/evidence/theme-layout-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,23 +17,23 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "5b55b954c91f4515e7b7898c09c8408ffaf3cef70c69e77b03906f2e40662664",
+    "application": "b41cb18bc7d992ab646828ac6b24c2fe81ce530773f633e0a4576cd39e353f1c",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
     "privileged_helper": "b64113ef2c10cc40b049802a571bddb02713539f5acf35c8588f1dd1bd467da2",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42328760444,
-    "tested_source_revision": "33e148b01d61dafa94dae6fb96dd92cb02dc1419",
+    "run": 42333684833,
+    "tested_source_revision": "43ceddd871d45f578891efbc54d9e7bcecc21c1b",
     "all_four_jobs_success": true
   },
-  "native_current_ui": ".hermes/evidence/linux-ui-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_current_ui": ".hermes/evidence/theme-layout-delivery-current/NATIVE_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/linux-ui-delivery-current/SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/theme-layout-delivery-current/SOURCE_SCOPE.json",
   "daemon_identity": null,
-  "daemon_runtime": ".hermes/evidence/linux-ui-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/theme-layout-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
   "daemon_runtime_scope": {
     "freshly_rerun": false,
     "original_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
@@ -42,7 +42,7 @@
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
   "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
   "current_helper_read_only": [
-    ".hermes/evidence/linux-ui-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/theme-layout-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "historical_daemon_evidence": {
@@ -56,11 +56,11 @@
   "limits": [
     "Actual mounted AppImage on owned software X11. Six targeted Dark/Light Ready/error/full-scroll originals directly reviewed; automated Ready/Stopped/error/Ready, stable control geometry and full diagnostic visibility pass. No whole-interface or physical graphics acceptance.",
     "Current daemon has fresh mounted-image private1000-file watcher,30-second no-client idle and stop/recovery/lifetime checks. Current bundled protocol5 helper has10 real read-only CLI/wire checks. Neither proves personal workload, protected-file elevation or installed-helper authentication.",
-    "Actual mounted Dark/Light theme library, border selection versus real Drop Folder button, red border4 and radius24/0 rendered top/bottom corners, and Cancel restoration directly reviewed. Scale1 software X11 only; whole appearance audit remains incomplete.",
+    "Actual mounted Dark/Light real List/Grid, selected Grid corners14/0, typography1.35, independent main-view preservation and Cancel restoration directly reviewed. Scale1 software X11 only; whole appearance audit remains incomplete.",
     "Native distribution installation, startup toggle, caption/footer and theme-name acceptance retain original receipt source/artifact scopes.",
     "Completed actions are explicitly qualified neutral history in this cohort; authoritative current health remains separate. Actual mounted-image action/error/recovery checks pass. Long shared status wrapping has its rendered320/760-point and1.0/1.7-scale source regression; native Windows long-label acceptance remains separate.",
     "No public release, signing, Store or MSI acceptance.",
-    "Packaged manuals are build-time snapshots at 33e148b0; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at 43ceddd8; repository metadata records later delivery."
   ],
-  "native_current_theme": ".hermes/evidence/linux-ui-delivery-current/THEME_UI_ACCEPTANCE.json"
+  "native_current_theme": ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json"
 }

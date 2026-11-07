@@ -371,6 +371,46 @@ pub(crate) fn handle_viewport_resize(ctx: &Context, corner_radius: u8) {
     }
 }
 
+/// Paint the visible corners of an embedded application-window preview. Native
+/// viewports use their alpha-mask backend; an embedded window reveals its card.
+pub(crate) fn paint_embedded_viewport_frame(
+    painter: &egui::Painter,
+    rect: Rect,
+    colors: Colors,
+    background: Color32,
+) {
+    let radius = f32::from(colors.app_radius)
+        .min(rect.width() / 2.0)
+        .min(rect.height() / 2.0);
+    if radius > 0.0 {
+        let mut mesh = egui::Mesh::default();
+        for (origin, sign) in [
+            (rect.left_top(), Vec2::new(1.0, 1.0)),
+            (rect.right_top(), Vec2::new(-1.0, 1.0)),
+            (rect.left_bottom(), Vec2::new(1.0, -1.0)),
+            (rect.right_bottom(), Vec2::new(-1.0, -1.0)),
+        ] {
+            let base = mesh.vertices.len() as u32;
+            mesh.colored_vertex(origin, background);
+            for i in 0..=24 {
+                let angle = std::f32::consts::FRAC_PI_2 * i as f32 / 24.0;
+                let offset = Vec2::new(radius * (1.0 - angle.cos()), radius * (1.0 - angle.sin()));
+                mesh.colored_vertex(origin + offset * sign, background);
+            }
+            for i in 1..=24 {
+                mesh.add_triangle(base, base + i, base + i + 1);
+            }
+        }
+        painter.add(egui::Shape::mesh(mesh));
+    }
+    painter.rect_stroke(
+        rect,
+        colors.app_radius,
+        Stroke::new(colors.window_border_width, colors.window_border),
+        egui::StrokeKind::Inside,
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

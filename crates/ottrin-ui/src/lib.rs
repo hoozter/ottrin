@@ -96,6 +96,7 @@ mod file_details;
 mod file_grid;
 mod file_list;
 mod file_row;
+mod inspector_controls;
 mod picker;
 mod picker_parent;
 pub use picker::PickerApp;
@@ -3672,6 +3673,7 @@ type SettingsNavGroup = (&'static str, &'static [SettingsNavItem]);
 enum ThemePreviewRegion {
     #[default]
     Defaults,
+    Inspector,
     Titlebar,
     Navigation,
     Bookmarks,
@@ -3736,6 +3738,8 @@ struct ThemeEditorState {
     pending_exit: bool,
     selected_region: ThemePreviewRegion,
     preview_view: ViewMode,
+    preview_inspector: bool,
+    preview_inspector_text_scale: f32,
     preset: ThemePreset,
     mode: ThemeMode,
     source: ThemeEditorSource,
@@ -3757,6 +3761,8 @@ impl Default for ThemeEditorState {
             pending_exit: false,
             selected_region: ThemePreviewRegion::default(),
             preview_view: ViewMode::Miller,
+            preview_inspector: false,
+            preview_inspector_text_scale: 1.0,
             preset: ThemePreset::default(),
             mode: ThemeMode::default(),
             source: ThemeEditorSource::Preset,
@@ -5184,6 +5190,7 @@ impl OttrinApp {
     fn theme_preview_region_label(region: ThemePreviewRegion) -> &'static str {
         match region {
             ThemePreviewRegion::Defaults => "Theme defaults",
+            ThemePreviewRegion::Inspector => "Quick Inspector",
             ThemePreviewRegion::Titlebar => "Title bar",
             ThemePreviewRegion::Navigation => "Navigation & tabs",
             ThemePreviewRegion::Bookmarks => "Locations rail",
@@ -5202,8 +5209,11 @@ impl OttrinApp {
             ThemePreviewRegion::Defaults => {
                 "Shared panels, inputs, text, focus and hover colors. Window corners affect application windows; surface corners affect tabs, inputs, cards and grid tiles. Button corners are separate."
             }
+            ThemePreviewRegion::Inspector => {
+                "Quick Inspector window background. Its title bar, text, buttons, border and corners use the same shared controls as the application windows."
+            }
             ThemePreviewRegion::Titlebar => {
-                "Title-bar background and window controls. Select a tab to edit Navigation & tabs; its colors blend with this background."
+                "Title-bar background and window controls. File-manager tabs use Navigation & tabs; their colors blend with this background."
             }
             ThemePreviewRegion::Navigation => {
                 "Navigation and tabs share the toolbar color. Active tabs blend it with the title-bar background and use muted text, accent and surface corners."
@@ -5244,6 +5254,7 @@ impl OttrinApp {
                 ThemeColorField::Hover,
                 ThemeColorField::Error,
             ],
+            ThemePreviewRegion::Inspector => &[ThemeColorField::Panel],
             ThemePreviewRegion::Titlebar => &[ThemeColorField::Titlebar],
             ThemePreviewRegion::Navigation => &[ThemeColorField::Toolbar],
             ThemePreviewRegion::Bookmarks => &[ThemeColorField::Bookmarks],
@@ -5269,6 +5280,15 @@ impl OttrinApp {
     ) -> &'static [ThemeColorField] {
         match region {
             ThemePreviewRegion::Defaults => &[],
+            ThemePreviewRegion::Inspector => &[
+                ThemeColorField::Titlebar,
+                ThemeColorField::Text,
+                ThemeColorField::TextDim,
+                ThemeColorField::TextMuted,
+                ThemeColorField::TextHeading,
+                ThemeColorField::WindowBorder,
+                ThemeColorField::Border,
+            ],
             ThemePreviewRegion::ColumnText => &[
                 ThemeColorField::TextDim,
                 ThemeColorField::TextMuted,
@@ -5276,6 +5296,7 @@ impl OttrinApp {
                 ThemeColorField::Hover,
             ],
             ThemePreviewRegion::Titlebar => &[
+                ThemeColorField::Text,
                 ThemeColorField::TextHeading,
                 ThemeColorField::TextMuted,
                 ThemeColorField::TextDim,
@@ -18208,9 +18229,7 @@ impl OttrinApp {
                             render_visual_sizing_controls(ui, preview.kind, &mut visual_fit, &mut visual_fit_width, &mut visual_zoom, c);
                         }
                         if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
-                            if ui.add(egui::Button::new("− text").small().themed(&c)).clicked() { flow_text_scale = (flow_text_scale / 1.15).clamp(0.7, 2.0); }
-                            ui.label(RichText::new(format!("Text {}%", (flow_text_scale * 100.0).round() as u32)).color(c.text_dim).size(10.5 * c.font_scale));
-                            if ui.add(egui::Button::new("+ text").small().themed(&c)).clicked() { flow_text_scale = (flow_text_scale * 1.15).clamp(0.7, 2.0); }
+                            inspector_controls::text_size(ui, c, &mut flow_text_scale);
                         }
                         if preview.spreadsheet.is_some() {
                             ui.checkbox(&mut spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view keeps readable text and scrolls horizontally when needed.");
@@ -19330,11 +19349,14 @@ impl OttrinApp {
 
                 Frame::new().inner_margin(12).show(ui, |ui| {
                 ui.with_layout(Layout::top_down(Align::Min), |ui| {
-                    ui.horizontal(|ui| {
-                        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                            let more_actions = themed_menu_button(ui,
-                                RichText::new(MI_MORE_VERT).color(c.text).size(18.0 * c.font_scale), c,
-                                |ui| {
+                    let availability = inspector_controls::Availability {
+                        editing: self.preview.text_editor.is_some(),
+                        can_save: self.preview.text_editor.as_ref().is_some_and(|editor| editor.is_dirty() && !editor.save_requires_reload()),
+                        can_edit: text_editing_supported() && is_complete_text_preview(&preview),
+                        image: preview.kind == PreviewKind::Image,
+                    };
+                    let actions = inspector_controls::action_row(ui, c, availability, |ui| {
+                        inspector_controls::more_menu(ui, c, |ui| {
                                     if self.quick_inspector_only
                                         && menu_item(ui, MI_FOLDER_OPEN, "Show in Ottrin", &c)
                                             .clicked()
@@ -19411,82 +19433,17 @@ impl OttrinApp {
                                         );
                                         ui.close();
                                     }
-                                },
-                            );
-                            ui.ctx().accesskit_node_builder(more_actions.response.id, |node| {
-                                node.set_label("More actions");
-                            });
-                            more_actions.response.on_hover_text("More actions");
-                            if self.preview.text_editor.is_some() {
-                                if inspector_icon_button(
-                                    ui,
-                                    MI_EDIT,
-                                    "Cancel edits",
-                                    "Discard the unsaved text edits without changing the file.",
-                                    c,
-                                )
-                                .clicked()
-                                {
-                                    self.preview.text_edit_discard_confirmation =
-                                        Some(TextEditDiscardAction::Reload);
-                                }
-                                let save_enabled = self
-                                    .preview
-                                    .text_editor
-                                    .as_ref()
-                                    .is_some_and(|editor| editor.is_dirty() && !editor.save_requires_reload());
-                                let administrator = administrator_session();
-                                let save_label =
-                                    administrator_surface_label("Save", administrator);
-                                if ui
-                                    .add_enabled(save_enabled, egui::Button::new(save_label).themed(&c))
-                                    .on_hover_text(administrator_surface_label(
-                                        "Atomically save the edited text (Ctrl+S).",
-                                        administrator,
-                                    ))
-                                    .clicked()
-                                {
-                                    self.save_preview_text_edit();
-                                }
-                            } else if text_editing_supported()
-                                && is_complete_text_preview(&preview)
-                                && inspector_icon_button(
-                                    ui,
-                                    MI_EDIT,
-                                    "Edit text",
-                                    "Edit this complete UTF-8 text file.",
-                                    c,
-                                )
-                                .clicked()
-                            {
-                                self.begin_preview_text_edit(&path);
-                            }
-                            if matches!(preview.kind, PreviewKind::Image) {
-                                if inspector_icon_button(
-                                    ui,
-                                    MI_ROTATE_RIGHT,
-                                    "Rotate Right",
-                                    "Rotate image right and save the file.",
-                                    c,
-                                )
-                                .clicked()
-                                {
-                                    self.rotate_inspector_image(&path, true);
-                                }
-                                if inspector_icon_button(
-                                    ui,
-                                    MI_ROTATE_LEFT,
-                                    "Rotate Left",
-                                    "Rotate image left and save the file.",
-                                    c,
-                                )
-                                .clicked()
-                                {
-                                    self.rotate_inspector_image(&path, false);
-                                }
-                            }
-                        });
+
+                        })
                     });
+                    match actions.action {
+                        Some(inspector_controls::Action::Cancel) => self.preview.text_edit_discard_confirmation = Some(TextEditDiscardAction::Reload),
+                        Some(inspector_controls::Action::Save) => self.save_preview_text_edit(),
+                        Some(inspector_controls::Action::Edit) => self.begin_preview_text_edit(&path),
+                        Some(inspector_controls::Action::RotateRight) => self.rotate_inspector_image(&path, true),
+                        Some(inspector_controls::Action::RotateLeft) => self.rotate_inspector_image(&path, false),
+                        None => {},
+                    }
                     if let Some(page_count) = preview_page_count(&preview, office_render.as_ref())
                         && let Some(page) = render_page_navigation(ui, self.preview.pdf_page_index, page_count, c)
                     {
@@ -19500,9 +19457,7 @@ impl OttrinApp {
                                     render_visual_sizing_controls(ui, preview.kind, &mut self.preview.visual_fit, &mut self.preview.visual_fit_width, &mut self.preview.visual_zoom, c);
                                 }
                                 if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
-                                    if ui.add(egui::Button::new("− text").small().themed(&c)).clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) / 1.15).clamp(0.7, 2.0); }
-                                    ui.label(RichText::new(format!("Text {}%", (self.preview.flow_text_scale.clamp(0.7, 2.0) * 100.0).round() as u32)).color(c.text_dim).size(10.5 * c.font_scale));
-                                    if ui.add(egui::Button::new("+ text").small().themed(&c)).clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) * 1.15).clamp(0.7, 2.0); }
+                                    inspector_controls::text_size(ui, c, &mut self.preview.flow_text_scale);
                                 }
                                 if preview.spreadsheet.is_some() {
                                     ui.checkbox(&mut self.preview.spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view retains readable text and horizontal scrolling.");

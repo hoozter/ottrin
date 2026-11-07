@@ -6,29 +6,29 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `33e148b0`; Windows retains
+The stable local Linux packages use verified source `43ceddd8`; Windows retains
 its separately accepted source `8e805d31`. All four exact-source hosted jobs
 for Linux passed in
-[run42328760444](https://github.com/hoozter/ottrin/actions/runs/42328760444).
-The Linux cohort delivers shared recovery refresh, Services health and theme
-preview border/targeting fixes. Neither cohort completes administrator Copy,
-the full theme audit or this roadmap.
+[run42333684833](https://github.com/hoozter/ottrin/actions/runs/42333684833).
+The Linux cohort includes real shared Column/List/Grid theme previews and
+Grid typography sizing, alongside prior Services health and recovery fixes.
+Neither cohort completes administrator Copy, the full theme audit or this roadmap.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
 ownership checks. Actual mounted AppImage Dark/Light Ready→Stopped→real endpoint
 error→Ready checks pass, including full diagnostics and stable recovery controls.
-Six Services and twelve theme originals were reviewed. Current mounted daemon
-watcher counts2→1002→2 and a30-second no-client/no-GUI idle sample pass; measured
-CPU is0.033333% of one core. Current bundled protocol5 helper passes ten real
-read-only checks. These do not establish sustained personal workload or actual
-protected-file authorization acceptance. Mounted theme-library/border selection,
-red border4, window radius24/0 and Cancel restoration pass at software X11 scale1.
+Six Services and eighteen real List/Grid theme originals were reviewed. Current
+mounted daemon watcher counts2→1002→2 and a30-second no-client/no-GUI idle sample
+pass. Current bundled protocol5 helper passes ten real read-only checks. These
+do not establish sustained personal workload or protected-file authorization.
+Mounted List/Grid radius14/0, text1.35 and Cancel restoring the theme while
+preserving an independent main-view change pass at software X11 scale1.
 Personal managed service is Ready after guarded package replacement, preserving
 startup choice, exact preferences hash and database identity. The consumed stage
 and superseded package cohort are removed. Personal installed helper setup still
 requires owner OS authentication. Current authority:
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; evidence:
-`.hermes/evidence/linux-ui-delivery-current/PROMOTION.json`.
+`.hermes/evidence/theme-layout-delivery-current/PROMOTION.json`.
 
 Windows: the59-file portable ZIP, NSIS and unsigned development MSIX25 are
 published at `dist/windows-candidate/`. All four exact-source hosted jobs pass
@@ -81,13 +81,13 @@ read-only checks, fresh Services/error/recovery and daemon watcher/idle checks.
 Eighteen actual mounted AppImage List/Grid originals plus six Services originals
 were directly reviewed. All owned profiles/displays/buses/processes/mounts and
 content extraction are removed; consumed transition captures are removed.
-Linux verification and both performance jobs pass in
-[run42333684833](https://github.com/hoozter/ottrin/actions/runs/42333684833);
-Windows verification remains running. Guarded publication preflight passes;
-source43 stays staged at `.hermes/packaging-tmp/.linux-native-desktop-stage`
-(115,977,962 bytes) until all four exact-source hosted jobs pass. Stable packages
-remain33. Current package evidence and cleanup:
-`.hermes/evidence/theme-layout-delivery-current/`. Source evidence:
+All four exact-source jobs now pass in
+[run42333684833](https://github.com/hoozter/ottrin/actions/runs/42333684833).
+Guarded publication replaced the stable four-format Linux cohort with source43,
+restarted its managed daemon to Ready, and preserved Windows artifacts and
+personal preferences/startup/database identity. The consumed staging and retired
+cohort were removed. Current package evidence:
+`.hermes/evidence/theme-layout-delivery-current/PROMOTION.json`. Source evidence:
 `.hermes/evidence/theme-view-layout-current/ACCEPTANCE.json` and `CLEANUP.json`.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
@@ -183,7 +183,7 @@ remain33. Current package evidence and cleanup:
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
-   above, with publication awaiting CI. Inspector role ownership, broader scale/
+   above, now delivered in stable Linux source43. Broader scale/
    platform coverage and whole-interface alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
    scales window radius/border values with its miniature button scale. Existing
@@ -209,15 +209,29 @@ remain33. Current package evidence and cleanup:
    headless rendering and three actual mounted source43 custom-palette windows.
    Pixel checks confirm panel/title colors and border4, raised-color independence,
    radius24/0 and Space closing read-only content without changing original bytes.
-   The production Inspector/chrome consumers are unchanged from that exact package.
-   Source descriptions now correctly assign Inspector background to Panels and
+   These earlier packaged pixel checks retain their original source43 scope.
+   Source descriptions correctly assign Inspector background to Panels and
    dialogs; Inputs / raised surfaces describes inputs, cards and List headers.
-   All527 active UI tests, strict Linux/Windows cross-target lint and formatting
-   pass. Five superseded incremental sessions and all owned QA runtimes are
-   removed. These description/test changes await the next batched push/package;
-   source43's staged packages and running CI retain their exact earlier scope.
-   An Inspector target/representation within the theme editor itself, all-property
-   coverage and broader platform/scale acceptance remain open.
+   The next source checkpoint now adds an independently selectable Quick Inspector
+   editor preview using the production action row, More button, text-size controls,
+   titlebar and read-only text renderer. Shared window corners/borders are exposed
+   with their actual scope; sample controls select the corresponding theme role
+   without operating real files. More now follows Button text instead of Primary
+   text. Its actual-render regression failed before the correction and passes now.
+   All530 active UI tests (one pre-existing ignored), strict Linux/Windows
+   cross-target UI lint and formatting pass. Actual source-built Dark/Light
+   software-X11 scale1 verifies panel/title/primary text/window border4, corners24/0,
+   button color/corners14, UI text1.35, preview switching, Cancel restoring the theme
+   and Space closing readonly Inspector without changing the source fixture.
+   Twenty original native-window frames were directly reviewed; final pixels and
+   source/binary bindings are sealed in `inspector-editor-current/ACCEPTANCE.json`.
+   Both owned desktops/profiles are removed; eight superseded incremental sessions
+   reclaimed0.51GiB, and consumed test snippets/superseded captures were removed.
+   These source changes await packaging; stable Linux43 and Windows8e keep their
+   separate accepted scopes. Image/office/PDF-specific Inspector representations,
+   all-property coverage and broader platform/scale acceptance remain open.
+   Next audit findings: several preview content outlines still use fixed white
+   alpha rather than the shared divider role; test and correct the real consumers.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
