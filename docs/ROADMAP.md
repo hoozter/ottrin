@@ -6,31 +6,28 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `c3fb224e`; Windows retains
-its separately accepted source `8e805d31`. All four exact-source hosted jobs pass
-in [run42342453872](https://github.com/hoozter/ottrin/actions/runs/42342453872).
-The Linux cohort adds the production Inspector preview, shared divider roles,
-explicit geometry/reset ownership and property-selection scrolling to the prior
-Services and file-view improvements. Neither cohort completes administrator Copy,
-the full interface/property audit or this roadmap.
+The stable local Linux packages use verified source `ac935037`. All four hosted
+jobs passed in [run 42346402977](https://github.com/hoozter/ottrin/actions/runs/42346402977).
+Windows retains its separately accepted source `8e805d31`.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
-ownership checks. Actual mounted AppImage Dark/Light Inspector/editor controls,
-window geometry, reset ownership, divider colors, property selection and Cancel/
-readonly Space pass;38 Inspector/editor and six Services originals were reviewed.
-Ready→Stopped→real endpoint error→Ready, full diagnostic visibility and stable
-recovery controls pass. The fresh daemon watcher counts2→1002→2 and30-second
-no-client/no-GUI idle sample pass at0.067% one core; the current bundled protocol5
-helper passes ten real read-only checks. This is software X11 scale1 evidence,
-not full-interface, sustained personal resource or protected-file authorization.
-The managed personal daemon is Ready after guarded replacement; startup choice,
-exact preferences hash and database identity are preserved. Windows packages are
-unchanged. The consumed stage and superseded cohort are removed. Current authority:
-`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; evidence:
-`.hermes/evidence/appearance-delivery-current/PROMOTION.json`.
-List/Grid and native distro-lifecycle receipts retain their original scopes.
-The later footer and document/worksheet preview work below remains source verified
-and requires its own package delivery.
+ownership checks. The mounted AppImage was reviewed in Dark and Light for real
+DOCX/XLSX versus theme samples, document fallback and zoom, worksheet selection
+and Overview, live status bar styling, and Cancel restoration. Six Services
+captures cover Ready, failure and scrolled diagnostics. Seven owned runtime
+workflows passed with teardown. The private daemon watcher went from 2 to 1,002
+and back to 2 files. The 30-second no-client idle sample used 0.067% of one core.
+The bundled helper passed ten read-only checks. This is scoped software X11
+evidence. The full appearance audit, personal idle workload and protected-file
+authorization remain separate.
+
+Guarded promotion replaced all four stable packages and restarted the managed
+daemon to Ready. Its startup setting, preferences hash and database identity
+were preserved. The consumed stage, superseded packages and 20 transition
+captures were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+Promotion evidence: `.hermes/evidence/inspector-samples-delivery-current/PROMOTION.json`.
+Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
+original scopes.
 
 Windows: the59-file portable ZIP, NSIS and unsigned development MSIX25 are
 published at `dist/windows-candidate/`. All four exact-source hosted jobs pass
@@ -57,10 +54,9 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-The current stable Linux source is `c3fb224e`, delivered after all four hosted
-jobs passed. Its exact receipts are listed above. The separately verified footer
-checkpoint `47570c54` and the following document/worksheet sample changes form the
-next source batch; they do not silently replace the stable package's scope.
+Linux source `ac935037` is delivered at the stable local paths. The next
+appearance audit item is exposing shared status bar geometry in its component
+properties and verifying that it matches the production footer.
 Wait for an active hosted run to finish before another source push so
 `cancel-in-progress` cannot discard its result. Current source/test/package and
 owner/external waits stay separate throughout this queue.
@@ -297,20 +293,13 @@ owner/external waits stay separate throughout this queue.
    desktops/profiles/processes/mounts and fixture files are removed; eight obsolete
    incremental sessions reclaimed0.58GiB and superseded discovery captures are
    retired. Evidence: `inspector-samples-current/ACCEPTANCE.json` and `CLEANUP.json`.
-   This is source verified and is not in delivered sourcec3. Image/PDF, installed-
-   provider Office, full-property and broader platform/scale acceptance remain open.
-   The clean combined source `ac935037` is pushed and all four Linux formats are
-   assembled. `inspector-samples-delivery-current/` binds content/closure/provenance,
-   ten actual helper read-only checks, namespace refusal and automated mounted
-   Dark/Light document/worksheet/footer workflows. Fresh daemon watcher2→1002→2,
-   stop/error/recovery/lifetime and30-second no-client/no-GUI idle pass at0.067%
-   one core. All seven owned runtime/profile/display/bus/mount teardowns and
-   content extraction removal pass. This cohort still requires42 direct original
-   reviews and sealing;62 captures are retained until the20 consumed transitions
-   can be retired. Its116,001,618-byte canonical stage is retained for those gates
-   and [run42346402977](https://github.com/hoozter/ottrin/actions/runs/42346402977).
-   Linux verification and both performance jobs pass; Windows verification remains
-   active. Stable Linux sourcec3 is preserved until guarded publication.
+   The combined source `ac935037` is now delivered. All four exact-source
+   hosted jobs and seven mounted-package workflows passed. The visual review
+   covered 36 document/worksheet/status bar frames and six Services frames.
+   The 20 consumed transitions and the package stage were retired.
+   Evidence: `inspector-samples-delivery-current/PROMOTION.json` and its UI
+   receipts. Image/PDF, installed-provider Office, full-property and broader
+   platform and scale acceptance remain open.
    Two read-only60-second samples of the personal installed daemon identify
    `ottrin-indexd`, approximately30–31MiB RSS and mean0.67/0.98% of one core.
    The latter remains Ready while its snapshot advances47 revisions and35 indexed
