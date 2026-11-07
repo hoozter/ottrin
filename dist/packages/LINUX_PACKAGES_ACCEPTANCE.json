@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux status bar geometry and hover styling; full roadmap and UI audit incomplete",
-  "source_revision": "0298384dc43702e8a00d09eacf077e0687838a0f",
+  "status": "pass scoped Linux Inspector visual samples and menu styling; full roadmap and UI audit incomplete",
+  "source_revision": "07f0095e4a73f5fbdecff10002509b6b0f72bf8d",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "45705c01f26a771ed6f6ce17ff317b21ac2e1cc9a23cf64faf2608c9d371b70c",
-    "Ottrin-0.1.0-x86_64.AppImage": "d4dab0f30e2dd9ed1a69059b6f5f51b4e4a9f5f37459a3eb5c732b982331729e",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "88ca809e8651e7e14cd7f7e4872f96b8596d02f7b5861b096e7a9fdb384bfabc",
-    "ottrin_0.1.0_amd64.deb": "0946ba9cd0fe0e32655d4860e366e38c696a6e1ba116946052c36be064660860"
+    "ottrin-0.1.0-1.x86_64.rpm": "08d5e8e404ad876addbfe903142897e94ad421d1c4b36eb596c044bd2689fcf2",
+    "Ottrin-0.1.0-x86_64.AppImage": "df6362dc2729943f34a9b7673c8e0ce7dc181771419e6b9bd966d9b13a991277",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "37241a4f6fa80f98186635d6d2a01a09a806c4f2a0e7ca39fe4d452f21febfd0",
+    "ottrin_0.1.0_amd64.deb": "83cecebc3e14c5d89a6d790e57d46a904bde4a61cf2daba7154275ab67afde56"
   },
-  "evidence": ".hermes/evidence/statusbar-geometry-delivery-current",
+  "evidence": ".hermes/evidence/inspector-visual-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,23 +17,23 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "eed44c38912f11e4dde217ce61e09c7dce1cd8d036d5a10e2fc233d7333dd95e",
+    "application": "a4db4375ad3d082e167a5dd9f797d545c9931058a9d89483daeef19b4fd974bc",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
     "privileged_helper": "b64113ef2c10cc40b049802a571bddb02713539f5acf35c8588f1dd1bd467da2",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42367417279,
-    "tested_source_revision": "0298384dc43702e8a00d09eacf077e0687838a0f",
+    "run": 42371268898,
+    "tested_source_revision": "07f0095e4a73f5fbdecff10002509b6b0f72bf8d",
     "all_four_jobs_success": true
   },
-  "native_current_ui": ".hermes/evidence/statusbar-geometry-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_current_ui": ".hermes/evidence/inspector-visual-delivery-current/NATIVE_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/statusbar-geometry-delivery-current/SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/inspector-visual-delivery-current/SOURCE_SCOPE.json",
   "daemon_identity": null,
-  "daemon_runtime": ".hermes/evidence/statusbar-geometry-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/inspector-visual-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
   "daemon_runtime_scope": {
     "freshly_rerun": false,
     "original_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
@@ -42,7 +42,7 @@
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
   "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
   "current_helper_read_only": [
-    ".hermes/evidence/statusbar-geometry-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/inspector-visual-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "historical_daemon_evidence": {
@@ -56,11 +56,11 @@
   "limits": [
     "Actual mounted AppImage on owned software X11. Six targeted Dark/Light Ready/error/full-scroll originals directly reviewed; automated Ready/Stopped/error/Ready, stable control geometry and full diagnostic visibility pass. No whole-interface or physical graphics acceptance.",
     "Current daemon has fresh mounted-image private1000-file watcher,30-second no-client idle and stop/recovery/lifetime checks. Current bundled protocol5 helper has10 real read-only CLI/wire checks. Neither proves personal workload, protected-file elevation or installed-helper authentication.",
-    "Mounted Dark/Light status bar checked for shared corner controls, matching hover geometry in live and sample renderers, reset ownership and Cancel restoration. Previous document and worksheet evidence retains its original scope. Scale1 software X11 only. Whole appearance audit remains incomplete.",
+    "Mounted Dark/Light Image/PDF and More actions sample review, page navigation, visual sizing, shared metadata captions, frame colors and geometry, safe sample actions and Cancel restoration. Scale1 software X11 only. Whole appearance audit remains incomplete.",
     "Native distribution installation, startup toggle, caption/footer and theme-name acceptance retain original receipt source/artifact scopes.",
     "Completed actions are explicitly qualified neutral history in this cohort; authoritative current health remains separate. Actual mounted-image action/error/recovery checks pass. Long shared status wrapping has its rendered320/760-point and1.0/1.7-scale source regression; native Windows long-label acceptance remains separate.",
     "No public release, signing, Store or MSI acceptance.",
-    "Packaged manuals are build-time snapshots at 0298384d; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at 07f0095e; repository metadata records later delivery."
   ],
-  "native_current_theme": ".hermes/evidence/statusbar-geometry-delivery-current/THEME_UI_ACCEPTANCE.json"
+  "native_current_theme": ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json"
 }

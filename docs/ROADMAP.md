@@ -6,8 +6,8 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `0298384d`. All four hosted
-jobs passed in [run 42367417279](https://github.com/hoozter/ottrin/actions/runs/42367417279).
+The stable local Linux packages use verified source `07f0095e`. All four hosted
+jobs passed in [run 42371268898](https://github.com/hoozter/ottrin/actions/runs/42371268898).
 Windows retains its separately accepted source `8e805d31`.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
@@ -25,7 +25,7 @@ Guarded promotion replaced all four stable packages and restarted the managed
 daemon to Ready. Its startup setting, preferences hash and database identity
 were preserved. The consumed stage, superseded packages and 20 transition
 captures were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-Promotion evidence: `.hermes/evidence/statusbar-geometry-delivery-current/PROMOTION.json`.
+Promotion evidence: `.hermes/evidence/inspector-visual-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -54,8 +54,7 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Linux source `0298384d` is delivered at the stable local paths. The
-status bar geometry update exposes shared window and button corners from
+The status bar geometry update, delivered with `0298384d`, exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
 on hover and focus. Rendered Dark/Light tests verify the live and sample hover
 shape at three text scales, and component reset preserves shared values. All
@@ -103,9 +102,10 @@ passed content and runtime checks for all four formats. Seven mounted AppImage
 workflows covered live and sample Image/PDF controls, More menu frame styling,
 sample action isolation, Cancel restoration, and Services recovery. Forty
 Dark/Light captures and runtime teardown are recorded in
-`.hermes/evidence/inspector-visual-delivery-current/`. The candidate awaits
-its own hosted verification and promotion. No additional Linux rebuild is
-required while its evidence and staged bytes match.
+`.hermes/evidence/inspector-visual-delivery-current/`. All four hosted checks
+passed and guarded promotion moved these packages to the stable local paths.
+The managed index returned to Ready with preferences, startup configuration,
+and database identity preserved. The consumed stage was removed.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.
