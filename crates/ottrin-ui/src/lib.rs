@@ -141,11 +141,10 @@ use listing::{
 #[cfg(not(target_os = "linux"))]
 use preview_render::render_document_body_preview;
 use preview_render::{
-    GenericPreviewAction, PreviewBodySizing, inspector_icon_button, preview_payload_for_copy,
-    render_docx_page_preview, render_folder_body_preview, render_generic_body_preview,
-    render_image_hover_nav, render_metadata_card_preview, render_preview_card_action,
-    render_shared_preview_body, shared_preview_body_kind, specialized_preview_body_action,
-    split_preview_extracted_text,
+    GenericPreviewAction, PreviewBodySizing, inspector_icon_button, render_docx_page_preview,
+    render_folder_body_preview, render_generic_body_preview, render_image_hover_nav,
+    render_metadata_card_preview, render_preview_card_action, render_shared_preview_body,
+    shared_preview_body_kind, specialized_preview_body_action, split_preview_extracted_text,
 };
 use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_palette, style_for_entry,
@@ -19351,87 +19350,49 @@ impl OttrinApp {
                         can_edit: text_editing_supported() && is_complete_text_preview(&preview),
                         image: preview.kind == PreviewKind::Image,
                     };
+                    let mut more_action = None;
                     let actions = inspector_controls::action_row(ui, c, availability, |ui| {
-                        inspector_controls::more_menu(ui, c, |ui| {
-                                    if self.quick_inspector_only
-                                        && menu_item(ui, MI_FOLDER_OPEN, "Show in Ottrin", &c)
-                                            .clicked()
-                                    {
-                                        if self.show_quick_inspector_in_main() {
-                                            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
-                                        }
-                                        ui.close();
-                                    }
-                                    if menu_item(ui, MI_CONTENT_COPY, "Copy Path", &c).clicked() {
-                                        ui.ctx().copy_text(path.display().to_string());
-                                        self.set_status_message("Copied file path", true, 3);
-                                        ui.close();
-                                    }
-                                    if let Some((icon, label, payload)) =
-                                        preview_payload_for_copy(&preview)
-                                        && menu_item(ui, icon, label, &c).clicked()
-                                    {
-                                        ui.ctx().copy_text(payload.to_string());
-                                        self.set_status_message(format!("{label} copied"), true, 3);
-                                        ui.close();
-                                    }
-                                    if menu_item(ui, MI_CONTENT_COPY, "Copy", &c)
-                                        .on_hover_text("Copy this file for pasting in Ottrin.")
-                                        .clicked()
-                                    {
-                                        self.copy_preview_path(ui.ctx(), false);
-                                        ui.close();
-                                    }
-                                    if menu_item(ui, MI_CONTENT_CUT, "Cut", &c)
-                                        .on_hover_text("Cut this file for moving in Ottrin.")
-                                        .clicked()
-                                    {
-                                        self.copy_preview_path(ui.ctx(), true);
-                                        ui.close();
-                                    }
-                                    if menu_item(ui, MI_EDIT, "Rename", &c).clicked() {
-                                        self.begin_rename();
-                                        ui.close();
-                                    }
-                                    if preview.open_external
-                                        && menu_item(ui, MI_OPEN_IN_NEW, "Open externally", &c)
-                                            .clicked()
-                                    {
-                                        match self.platform.reveal_in_system(&path) {
-                                            Ok(()) => self.set_status_message("Opened file", true, 3),
-                                            Err(err) => self.set_status_message(
-                                                format!("Open failed: {err}"),
-                                                false,
-                                                5,
-                                            ),
-                                        }
-                                        ui.close();
-                                    }
-                                    if menu_item(ui, MI_OPEN_IN_NEW, "Reveal", &c).clicked() {
-                                        match self.platform.reveal_in_system(&path) {
-                                            Ok(()) => {
-                                                self.set_status_message("Revealed file", true, 3)
-                                            }
-                                            Err(err) => self.set_status_message(
-                                                format!("Reveal failed: {err}"),
-                                                false,
-                                                5,
-                                            ),
-                                        }
-                                        ui.close();
-                                    }
-                                    if menu_item(ui, MI_DELETE, "Move to Trash", &c).clicked() {
-                                        let tab_id = self.state.active_tab().id;
-                                        self.request_delete_paths(
-                                            tab_id,
-                                            vec![path.clone()],
-                                            DeleteMode::Trash,
-                                        );
-                                        ui.close();
-                                    }
-
-                        })
+                        let menu = inspector_controls::more_menu(ui, c, self.quick_inspector_only, &preview);
+                        more_action = menu.inner;
+                        menu.response
                     });
+                    if let Some(action) = more_action {
+                        use inspector_controls::MoreAction;
+                        match action {
+                            MoreAction::ShowInOttrin => {
+                                if self.show_quick_inspector_in_main() {
+                                    ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+                                }
+                            }
+                            MoreAction::CopyPath => {
+                                ui.ctx().copy_text(path.display().to_string());
+                                self.set_status_message("Copied file path", true, 3);
+                            }
+                            MoreAction::CopyPayload { label, text } => {
+                                ui.ctx().copy_text(text.to_string());
+                                self.set_status_message(format!("{label} copied"), true, 3);
+                            }
+                            MoreAction::Copy => self.copy_preview_path(ui.ctx(), false),
+                            MoreAction::Cut => self.copy_preview_path(ui.ctx(), true),
+                            MoreAction::Rename => self.begin_rename(),
+                            MoreAction::OpenExternal => {
+                                match self.platform.reveal_in_system(&path) {
+                                    Ok(()) => self.set_status_message("Opened file", true, 3),
+                                    Err(err) => self.set_status_message(format!("Open failed: {err}"), false, 5),
+                                }
+                            }
+                            MoreAction::Reveal => {
+                                match self.platform.reveal_in_system(&path) {
+                                    Ok(()) => self.set_status_message("Revealed file", true, 3),
+                                    Err(err) => self.set_status_message(format!("Reveal failed: {err}"), false, 5),
+                                }
+                            }
+                            MoreAction::Trash => {
+                                let tab_id = self.state.active_tab().id;
+                                self.request_delete_paths(tab_id, vec![path.clone()], DeleteMode::Trash);
+                            }
+                        }
+                    }
                     match actions.action {
                         Some(inspector_controls::Action::Cancel) => self.preview.text_edit_discard_confirmation = Some(TextEditDiscardAction::Reload),
                         Some(inspector_controls::Action::Save) => self.save_preview_text_edit(),

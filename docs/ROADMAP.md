@@ -86,6 +86,11 @@ and a colored image fixture corrected those issues. Four final private desktop
 runs verified page navigation, image zoom, sample control selection, button
 corners and Cancel. All eight private sessions were closed. Installed-provider
 samples, mounted package review and the full appearance audit remain open.
+The sample now opens the production More actions menu. Its rows select button
+styling without file or clipboard operations. A rendered regression compares
+the live and sample rows, then verifies the live Copy Path dispatch and its
+absence in the sample. All 540 active UI tests and Linux/Windows-target Clippy
+passed. This checkpoint joins Image/PDF for the next mounted package review.
 Protect active CI runs for viable delivery candidates from superseding pushes.
 A rejected package revision can be superseded by the corrected candidate.
 `0298384d` was pushed on that basis after mounted review rejected `23635f30`.

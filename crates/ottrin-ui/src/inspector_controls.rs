@@ -35,15 +35,80 @@ fn name_more(response: egui::Response) -> egui::Response {
     widget_style::name_control(&response, "More actions");
     response.on_hover_text("More actions")
 }
-pub(crate) fn more_menu(
+pub(crate) enum MoreAction<'a> {
+    ShowInOttrin,
+    CopyPath,
+    CopyPayload { label: &'static str, text: &'a str },
+    Copy,
+    Cut,
+    Rename,
+    OpenExternal,
+    Reveal,
+    Trash,
+}
+
+pub(crate) fn more_menu<'a>(
     ui: &mut egui::Ui,
     c: Colors,
-    contents: impl FnOnce(&mut egui::Ui),
-) -> egui::Response {
-    name_more(widget_style::themed_menu_from_button(ui, more_button(c), c, contents).response)
-}
-pub(crate) fn more_target(ui: &mut egui::Ui, c: Colors) -> egui::Response {
-    name_more(ui.add(more_button(c).themed(&c)))
+    standalone: bool,
+    preview: &'a PreviewData,
+) -> egui::InnerResponse<Option<MoreAction<'a>>> {
+    let menu = widget_style::themed_menu_from_button(ui, more_button(c), c, |ui| {
+        let mut action = None;
+        let mut item = |ui: &mut egui::Ui, icon, label, hint: &str, selected| {
+            let response = menu_item(ui, icon, label, &c);
+            let response = if hint.is_empty() {
+                response
+            } else {
+                response.on_hover_text(hint)
+            };
+            if response.clicked() {
+                action = Some(selected);
+                ui.close();
+            }
+        };
+        if standalone {
+            item(
+                ui,
+                MI_FOLDER_OPEN,
+                "Show in Ottrin",
+                "",
+                MoreAction::ShowInOttrin,
+            );
+        }
+        item(ui, MI_CONTENT_COPY, "Copy Path", "", MoreAction::CopyPath);
+        if let Some((icon, label, text)) = preview_render::preview_payload_for_copy(preview) {
+            item(ui, icon, label, "", MoreAction::CopyPayload { label, text });
+        }
+        item(
+            ui,
+            MI_CONTENT_COPY,
+            "Copy",
+            "Copy this file for pasting in Ottrin.",
+            MoreAction::Copy,
+        );
+        item(
+            ui,
+            MI_CONTENT_CUT,
+            "Cut",
+            "Cut this file for moving in Ottrin.",
+            MoreAction::Cut,
+        );
+        item(ui, MI_EDIT, "Rename", "", MoreAction::Rename);
+        if preview.open_external {
+            item(
+                ui,
+                MI_OPEN_IN_NEW,
+                "Open externally",
+                "",
+                MoreAction::OpenExternal,
+            );
+        }
+        item(ui, MI_OPEN_IN_NEW, "Reveal", "", MoreAction::Reveal);
+        item(ui, MI_DELETE, "Move to Trash", "", MoreAction::Trash);
+        action
+    });
+    egui::InnerResponse::new(menu.inner.flatten(), name_more(menu.response))
 }
 
 pub(crate) fn action_row(
@@ -294,6 +359,7 @@ fn theme_sample(kind: SampleKind) -> PreviewData {
         SampleKind::Image => {
             sample.title = "inspector-sample.png".into();
             sample.kind = PreviewKind::Image;
+            sample.open_external = true;
             sample.body = format!(
                 "Filetype: PNG image\nResolution: 256x256\nSize: {}",
                 format_size(IMAGE_SAMPLE.len() as u64)
@@ -302,6 +368,7 @@ fn theme_sample(kind: SampleKind) -> PreviewData {
         SampleKind::Pdf => {
             sample.title = "inspector-sample.pdf".into();
             sample.kind = PreviewKind::Pdf;
+            sample.open_external = true;
             sample.body = format!(
                 "Filetype: PDF document\nPages: {PDF_SAMPLE_PAGES}\nTitle: Ottrin Inspector sample"
             );
@@ -444,7 +511,12 @@ pub(crate) fn theme_preview(
                 image: sample.kind == PreviewKind::Image,
                 ..Default::default()
             },
-            |ui| more_target(ui, c),
+            |ui| {
+                let menu = more_menu(ui, c, false, &sample);
+                // The sample selects the styling of a menu row. It has no file-action dispatcher.
+                buttons_clicked |= menu.inner.is_some();
+                menu.response
+            },
         );
         buttons_clicked |= actions.action.is_some() || actions.more.clicked();
         targets.extend(actions.targets);
@@ -886,7 +958,6 @@ mod tests {
             (out, picked)
         };
         for (name, expected) in [
-            ("More actions", ThemePreviewRegion::Accent),
             ("Edit text", ThemePreviewRegion::Accent),
             ("Close window", ThemePreviewRegion::Titlebar),
             ("+ text", ThemePreviewRegion::Accent),
@@ -903,6 +974,72 @@ mod tests {
             sample_state.sizing.flow_text_scale > 1.0,
             "Sizing the sample uses the real text controls"
         );
+    }
+
+    #[test]
+    fn inspector_sample_opens_the_live_more_menu_without_dispatching_actions() {
+        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        ctx.enable_accesskit();
+        theme_colors::apply_to_context(&ctx, &colors);
+        let mut sample_state = ThemePreviewState::default();
+        let mut render_sample = |events| {
+            let mut picked = None;
+            let output = ctx.run(input(Vec2::new(748.0, 588.0), events), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    picked =
+                        theme_preview(ui, colors, ThemePreviewRegion::Inspector, &mut sample_state);
+                });
+            });
+            (output, picked)
+        };
+        let mut app = OttrinApp::default();
+        app.colors = colors;
+        app.preview.visible = true;
+        app.preview.path = Some(PathBuf::from("notes.txt"));
+        app.preview.data = Some(theme_sample(SampleKind::Text));
+        let live_ctx = Context::default();
+        install_application_fonts(&live_ctx);
+        live_ctx.enable_accesskit();
+        app.apply_theme_to_ctx(&live_ctx);
+        let mut render_live = |events| {
+            live_ctx.run(input(Vec2::new(720.0, 560.0), events), |ctx| {
+                app.render_preview_overlay(ctx);
+            })
+        };
+
+        let more = button(&render_sample(vec![]).0, "More actions").0;
+        let (sample, picked) = render_sample(activate(more));
+        assert_eq!(picked, Some(ThemePreviewRegion::Accent));
+        assert!(egui::Popup::is_any_open(&ctx));
+        let more = button(&render_live(vec![]), "More actions").0;
+        let live = render_live(activate(more));
+        for name in [
+            "Copy Path",
+            "Copy Text",
+            "Copy",
+            "Cut",
+            "Rename",
+            "Reveal",
+            "Move to Trash",
+        ] {
+            button(&sample, name);
+            button(&live, name);
+        }
+        let (sample, picked) = render_sample(activate(button(&sample, "Copy Path").0));
+        assert_eq!(picked, Some(ThemePreviewRegion::Accent));
+        assert!(
+            !sample
+                .platform_output
+                .commands
+                .iter()
+                .any(|command| matches!(command, egui::OutputCommand::CopyText(_)))
+        );
+        let live = render_live(activate(button(&live, "Copy Path").0));
+        assert!(live.platform_output.commands.iter().any(
+            |command| matches!(command, egui::OutputCommand::CopyText(path) if path == "notes.txt")
+        ));
     }
 
     #[test]
@@ -1245,7 +1382,11 @@ mod tests {
                 let mut action = None;
                 let out = ctx.run(input(Vec2::new(720.0, 200.0), events), |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
-                        action = action_row(ui, c, available, |ui| more_target(ui, c)).action;
+                        let preview = theme_sample(SampleKind::Text);
+                        action = action_row(ui, c, available, |ui| {
+                            more_menu(ui, c, false, &preview).response
+                        })
+                        .action;
                     });
                 });
                 (out, action)
