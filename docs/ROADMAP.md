@@ -2778,7 +2778,7 @@ Do not move a fixable implementation or test failure onto this list.
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
 | Windows Installer ordinary-user MSI rollback | A supported correction for the native per-user registration undo boundary, or an explicitly approved change to the MSI installation contract. Exact held MSI fails on both26300/.9444 and26100/.9711; independent native controls also fail. Role-only elevation restores state but is diagnostic only. No supported application-source correction is established. Evidence: `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json` and `windows-msi-security-context-current/COMPARISON.json`. Keep MSI release held; revisit a new supported solution rather than waive the gate. | Current ZIP/NSIS/development-MSIX payload, runtime, update/removal and other software gates continue independently. No production elevation, registry/ACL compensation or silent format withdrawal. |
-| Linux public release signing identity | Owner approves the project identity/public fingerprint and authorizes provisioning its protected signing key. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work; do not invent or publish an identity. |
+| Linux public release signing | The owner-created Ottrin Release Signing identity is present in the local GnuPG keyring. Provision a dedicated signing subkey with owner authentication, verify encrypted backup recovery, and verify CI using only the subkey. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work. |
 | Microsoft Store account/submission | Owner-controlled Store identity, listing and certification after Windows is ready. | Implement/test MSIX packaging and deployment when dependency-ready; unsigned direct ZIP/EXE/MSI remain supported. No paid Windows certificate gate. |
 | Physical-only device/adapter/audio acceptance | A suitable available test device or the owner's later observation for claims virtual fixtures cannot establish. | Native VM/private desktop tests and all reproducible software/resource fixes; record each untested physical claim separately. |
 
@@ -5274,12 +5274,11 @@ RPM. DNF rejected an altered `repomd.xml` with Bad PGP signature after a
 cache clear. Restoring the matching index restored package discovery.
 Both guests, their keys, repositories and packages were retired.
 
-The public rollout awaits the signing identity and secure backup, the
-R2 custom domain and a first approved stable GitHub Release. As of this
-checkpoint the repository has R2 API credentials configured, no signing
-secret, and no published release. The planned update hostname did not
-resolve. Keep production publication and package source registration
-disabled while verifying the endpoint.
+The owner-created signing identity is present locally. The public rollout
+still requires the dedicated CI signing subkey, verified secure backup,
+the R2 custom domain and a first approved stable GitHub Release. Keep
+production publication and package source registration disabled while
+verifying the endpoint.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
