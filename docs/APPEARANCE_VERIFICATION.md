@@ -116,6 +116,33 @@ Both disposable desktops and profiles were removed. Exact source/build hashes,
 checks and eighteen reviewed originals are bound in
 `.hermes/evidence/theme-view-layout-current/ACCEPTANCE.json`.
 
-This is a scoped source-built checkpoint, awaiting package delivery. It does not
-renew historical whole-theme acceptance, prove Windows runtime rendering or
-close the remaining Inspector role and full interface/property audit.
+This List/Grid checkpoint is now delivered in stable Linux source `43ceddd8`;
+the mounted package evidence is in
+`.hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json`.
+It does not renew historical whole-theme acceptance or Windows runtime rendering.
+
+### Inspector preview and shared divider checkpoint (2026-11-07)
+
+The editor now offers a Quick Inspector preview alongside File manager, using
+production Inspector titlebar, action buttons, text-size controls and read-only
+text renderer. Panels and dialogs owns the Inspector background; raised surfaces
+owns inputs/cards/List headers. The historical table above records the original
+artifact and is not the current Inspector ownership map. Shared colors, window
+corners/border thickness, button corners and interface typography affect the same
+real consumers. The More icon follows Button text. Text/archive/extracted-document
+body outlines now follow Borders and dividers.
+
+Source `21c26a29` passes531 active UI tests (one existing ignored), strict Linux
+and Windows cross-target UI lint and formatting. The four-format Linux candidate
+passes content/closure/provenance and helper/daemon ownership checks. Its actual
+mounted AppImage verifies Dark/Light panel/title/text colors, window border4,
+window corners24/0, button corners14/foreground, interface text1.35, two divider
+colors, preview switching, Cancel restoration and readonly Space close without
+changing guarded fixture bytes. Twenty-eight theme plus six Services originals
+were directly reviewed. All owned QA resources and extraction are removed.
+Evidence: `.hermes/evidence/inspector-delivery-current/`.
+
+The candidate remains staged pending exact-source hosted CI and guarded delivery.
+Image/Office/PDF-specific editor preview states and the complete theme/property/
+platform audit remain open; these focused checks do not renew the historical
+38-control or whole-preset acceptance.

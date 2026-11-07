@@ -243,9 +243,21 @@ cohort were removed. Current package evidence:
    and actual document grid styling retain their content-specific roles.
    Inspector source checkpoint `c6541df8` is pushed; its hosted run is
    [42338662841](https://github.com/hoozter/ottrin/actions/runs/42338662841).
-   Keep the following divider checkpoint local until that run finishes. A new
-   combined four-format package build is the next delivery step; stable Linux43
-   continues to be the accepted fallback until exact new package acceptance.
+   The combined four-format source `21c26a29` candidate now passes package
+   contents/closure/provenance, ten helper read-only checks, fresh daemon watcher/
+   idle and Services stop/error/recovery, and actual mounted Dark/Light Inspector
+   theme controls. Twenty-eight Inspector/editor plus six Services originals were
+   directly reviewed. New code and exact pixels are bound in
+   `inspector-delivery-current/THEME_UI_ACCEPTANCE.json`; source continuity,
+   runtime and cleanup are sealed in the same evidence root. All owned desktops,
+   buses, processes, profiles, mounts and content extraction are removed. Guarded
+   publication preflight passes. The115,961,332-byte candidate is retained at
+   `.hermes/packaging-tmp/.linux-native-desktop-stage` for exact-source hosted CI
+   and publication; stable Linux43 remains usable. Preserve the live preceding
+   main run. Push source21 when it completes, resolve that source's CI run, then
+   invoke the prepared guarded promoter with its `--ci-run` and `--publish`.
+   The package includes build-time manuals at source21; later metadata records
+   the package result without implying renewed whole-theme/platform acceptance.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
