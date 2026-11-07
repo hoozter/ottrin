@@ -430,6 +430,13 @@ Current source, test, package and owner/external scopes stay separate.
    exact scopes. Do not infer universal Windows dialog replacement or repeat
    fulfilled matrices without changed inputs or a reproduced defect.
 
+   MSIX status now separates default-folder support from the Explorer menu
+   toggle. Settings explains the limitation and the CLI refuses the
+   unavailable action before opening a registry transaction. Unpackaged
+   default-folder actions retain their transaction and restoration path.
+   This is a source change. The MSIX implementation and exact-package
+   verification remain open.
+
    Picker Select All now selects only files for an Open request and only folders
    for a folder request. Enter submits a multi-folder selection. Range and
    toggle selection use the same eligibility rule. Folders remain available

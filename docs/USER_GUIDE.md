@@ -262,10 +262,9 @@ Applications explicitly launching Explorer or choosing another verb keep their
 behavior, and virtual folders stay with Windows. The terminal equivalents are
 `ottrin folders default-enable` and `ottrin folders default-disable`.
 
-MSIX folder integration remains under development. Its package-owned Explorer
-menu command and default folder opening have separate acceptance gates; do not
-assume the portable/NSIS default-opening behavior is supported by an MSIX preview.
-See the current roadmap for the exact tested package scope.
+In the MSIX preview, **Open in Ottrin** is available through supported Explorer
+folder menus. Changing the default folder app is currently unavailable in that
+package. See the current roadmap for the exact tested package scope.
 
 ## Cleanup And Upgrades
 

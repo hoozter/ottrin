@@ -20910,6 +20910,10 @@ impl OttrinApp {
                 {
                     ui.add_space(12.0);
                     ui.label(RichText::new("Default folder opening").strong().color(c.heading));
+                    if !status.default_supported {
+                        ui.label("Changing the default folder app is unavailable in this installation. You can still use Open in Ottrin from folder menus.");
+                        return;
+                    }
                     let label=if status.default_ready {"Ottrin is selected for normal filesystem-folder and drive links"}else if status.default_enabled && !status.ready {"Folder setup needs repair before default opening is ready"}else if status.default_enabled {"Another default was selected; that choice has been preserved"}else{"Windows keeps its current folder-opening default"};
                     Self::render_service_status(ui,label,if status.default_ready {Color32::from_rgb(80,185,110)}else{c.text_muted});
                     ui.label("Applies when an application asks Windows for the default folder action. Programs that explicitly launch Explorer or use another verb keep that behavior. Virtual folders stay with Windows.");
@@ -27700,6 +27704,8 @@ mod tests {
                     ready: true,
                     detail: "Ready".into(),
                     #[cfg(target_os = "windows")]
+                    default_supported: true,
+                    #[cfg(target_os = "windows")]
                     default_enabled: false,
                     #[cfg(target_os = "windows")]
                     default_ready: false,
@@ -27713,6 +27719,8 @@ mod tests {
                 ready: false,
                 detail: "Needs repair".into(),
                 #[cfg(target_os = "windows")]
+                default_supported: true,
+                #[cfg(target_os = "windows")]
                 default_enabled: false,
                 #[cfg(target_os = "windows")]
                 default_ready: false,
@@ -27724,12 +27732,18 @@ mod tests {
     #[test]
     fn default_folder_controls_show_the_current_choice_and_available_restore_action() {
         use ottrin_platform::folder_integration::FolderStatus;
-        for (enabled, default_ready) in [(false, false), (true, true), (true, false)] {
+        for (supported, enabled, default_ready) in [
+            (true, false, false),
+            (true, true, true),
+            (true, true, false),
+            (false, false, false),
+        ] {
             let mut app = OttrinApp::default();
             app.folder_status = Some(FolderStatus {
                 enabled: true,
                 ready: true,
                 detail: "Menus ready".into(),
+                default_supported: supported,
                 default_enabled: enabled,
                 default_ready,
             });
@@ -27760,11 +27774,11 @@ mod tests {
             assert!(labels.contains(&"Default folder opening"));
             assert_eq!(
                 labels.contains(&"Use Ottrin to open folders"),
-                !default_ready
+                supported && !default_ready
             );
             assert_eq!(
                 labels.contains(&"Restore previous folder defaults"),
-                enabled
+                supported && enabled
             );
         }
     }

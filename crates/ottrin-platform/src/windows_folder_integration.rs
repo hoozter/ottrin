@@ -24,6 +24,7 @@ pub struct FolderStatus {
     pub enabled: bool,
     pub ready: bool,
     pub detail: String,
+    pub default_supported: bool,
     pub default_enabled: bool,
     pub default_ready: bool,
 }
@@ -342,10 +343,16 @@ pub fn disable() -> Result<String, String> {
     Context::current().disable()
 }
 pub fn enable_default() -> Result<String, String> {
-    Context::current().set_default(&super::application_launch_path()?, true)
+    set_default(true)
 }
 pub fn disable_default() -> Result<String, String> {
-    Context::current().set_default(&super::application_launch_path()?, false)
+    set_default(false)
+}
+fn set_default(enabled: bool) -> Result<String, String> {
+    if super::windows_startup::is_packaged()? {
+        return Err("Default folder opening is unavailable in the MSIX package.".into());
+    }
+    Context::current().set_default(&super::application_launch_path()?, enabled)
 }
 pub fn status() -> FolderStatus {
     match super::windows_startup::is_packaged() {
@@ -356,6 +363,7 @@ pub fn status() -> FolderStatus {
                 enabled: true,
                 ready: false,
                 detail,
+                default_supported: false,
                 default_enabled: false,
                 default_ready: false,
             };
@@ -412,6 +420,7 @@ pub fn status() -> FolderStatus {
             enabled,
             ready,
             detail,
+            default_supported: true,
             default_enabled,
             default_ready,
         },
@@ -419,6 +428,7 @@ pub fn status() -> FolderStatus {
             enabled: true,
             ready: false,
             detail: error,
+            default_supported: true,
             default_enabled: false,
             default_ready: false,
         },
@@ -446,6 +456,7 @@ fn packaged_status() -> FolderStatus {
             }
             .into(),
             // Package-owned context commands do not change host folder defaults.
+            default_supported: false,
             default_enabled: false,
             default_ready: false,
         },
@@ -453,6 +464,7 @@ fn packaged_status() -> FolderStatus {
             enabled: true,
             ready: false,
             detail,
+            default_supported: false,
             default_enabled: false,
             default_ready: false,
         },
