@@ -10,7 +10,7 @@ pub(crate) struct Indicator<'a> {
 
 pub(crate) struct State<'a> {
     pub helper: Indicator<'a>,
-    pub index_color: Color32,
+    pub setup_pending: bool,
     pub index_tooltip: &'a str,
     pub show_hidden_files: bool,
     pub command_visible: bool,
@@ -53,23 +53,29 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
             action = Some(Action::Services);
         }
         ui.add_space(2.0);
+        let services_label = if state.setup_pending {
+            "Finish setup"
+        } else {
+            "Services"
+        };
         let s_resp = ui.add(
             egui::Button::new(
-                RichText::new(MI_SEARCH)
-                    .size(13.0 * c.font_scale)
-                    .color(state.index_color),
+                RichText::new(services_label)
+                    .size(11.5 * c.font_scale)
+                    .color(if state.setup_pending {
+                        c.error
+                    } else {
+                        bottom_text
+                    }),
             )
             .small()
             .frame_when_inactive(false)
             .min_size(Vec2::splat(22.0))
             .themed(&c)
-            .accessible_name("Manage index service"),
+            .accessible_name(services_label),
         );
         if s_resp
-            .on_hover_text(format!(
-                "{}\nClick to manage the index service",
-                state.index_tooltip
-            ))
+            .on_hover_text(format!("Open Services · {}", state.index_tooltip))
             .clicked()
         {
             action = Some(Action::Services);

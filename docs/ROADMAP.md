@@ -55,6 +55,13 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
+The Services source update replaces the footer magnifier with a labeled
+shortcut, separates required setup from optional maintenance, and uses the
+shared Settings typography. Open and Save dialogs show a pending or repair
+state and the next action. The Linux safety check identifies the app holding
+a desktop request or background session when its bus owner can be resolved.
+The check still prevents a restart while those objects are active.
+
 The status bar geometry update, delivered with `0298384d`, exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
 on hover and focus. Rendered Dark/Light tests verify the live and sample hover

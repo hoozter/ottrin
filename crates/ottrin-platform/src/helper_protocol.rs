@@ -39,7 +39,7 @@ pub(super) fn decode_linux_response(
 
 fn guidance() -> &'static str {
     if cfg!(target_os = "linux") {
-        "Administrator helper needs an update. Open Services and choose Update / reinstall helper."
+        "Administrator helper needs an update. Open Services and choose Update administrator helper."
     } else {
         "Administrator helper does not match Ottrin. Reinstall Ottrin or restore the complete portable package."
     }

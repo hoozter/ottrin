@@ -17,6 +17,8 @@ pub struct PortalStatus {
     pub enabled: bool,
     pub ready: bool,
     pub pending: bool,
+    pub repair_needed: bool,
+    pub blocker: Option<String>,
     pub detail: String,
 }
 #[derive(Serialize, Deserialize)]
@@ -123,7 +125,8 @@ pub fn status() -> PortalStatus {
                 false,
                 false,
                 false,
-                "Off — applications use your desktop's file picker".into(),
+                false,
+                "Off — apps use their usual Open and Save dialogs".into(),
             ));
         };
         let valid = fs::read("/usr/share/xdg-desktop-portal/portals/ottrin.portal")
@@ -147,33 +150,41 @@ pub fn status() -> PortalStatus {
             } else {
                 backend_idle()?
             };
+        let ready = record.enabled && record.applied && valid && selected && reachable;
+        let repair_needed = record.enabled && (!valid || !selected || !reachable);
+        let pending = !record.applied && !repair_needed;
         Ok::<_, String>((
             record.enabled,
-            record.enabled && record.applied && valid && selected && reachable,
-            !record.applied || !reachable,
-            if !record.enabled {
-                "Off — apply the change to restore the desktop picker in running applications"
-                    .into()
-            } else if valid && selected && record.applied && reachable {
-                "Enabled — Ottrin handles supported portal file dialogs".into()
-            } else if valid && selected {
-                "Configured — apply the change when no portal dialogs or sessions are active".into()
+            ready,
+            pending,
+            repair_needed,
+            if ready {
+                "On — supported apps use Ottrin’s Open and Save dialogs"
+            } else if repair_needed {
+                "Needs repair"
+            } else if record.enabled {
+                "Waiting to turn on"
             } else {
-                "Setup needs repair; existing configuration has been retained".into()
-            },
+                "Waiting to restore the usual dialogs"
+            }
+            .into(),
         ))
     })();
     match result {
-        Ok((enabled, ready, pending, detail)) => PortalStatus {
+        Ok((enabled, ready, pending, repair_needed, detail)) => PortalStatus {
             enabled,
             ready,
             pending,
+            repair_needed,
+            blocker: pending.then(|| ensure_idle().err()).flatten(),
             detail,
         },
         Err(detail) => PortalStatus {
             enabled: false,
             ready: false,
             pending: false,
+            repair_needed: true,
+            blocker: None,
             detail,
         },
     }
@@ -327,7 +338,7 @@ fn enable_at(
     }
     control(&["daemon-reload"])?;
     write(&record.config, record.installed.as_bytes())?;
-    Ok("Ottrin file picker configured. Apply the change to reload the desktop portal.".into())
+    Ok("Ready to turn on Ottrin’s Open and Save dialogs. Choose Apply change.".into())
 }
 
 /// Uninstall also applies the restored preference, removing the pending receipt.
@@ -518,7 +529,7 @@ fn disable_at(
         &paths.state,
         &serde_json::to_vec(&record).map_err(|e| e.to_string())?,
     )?;
-    Ok("Previous file picker restored. Apply the change to reload the desktop portal.".into())
+    Ok("Ready to restore the usual Open and Save dialogs. Choose Apply change.".into())
 }
 
 /// Reload only after confirming that the frontend has no live requests/sessions.
@@ -550,14 +561,12 @@ fn ensure_idle_on(bus: &gio::DBusConnection) -> Result<(), String> {
     {
         return Ok(());
     }
-    for path in [
-        "/org/freedesktop/portal/desktop/request",
-        "/org/freedesktop/portal/desktop/session",
-    ] {
+    for kind in ["request", "session"] {
+        let path = format!("/org/freedesktop/portal/desktop/{kind}");
         let response = bus
             .call_sync(
                 Some("org.freedesktop.portal.Desktop"),
-                path,
+                &path,
                 "org.freedesktop.DBus.Introspectable",
                 "Introspect",
                 None,
@@ -566,16 +575,67 @@ fn ensure_idle_on(bus: &gio::DBusConnection) -> Result<(), String> {
                 2000,
                 gio::Cancellable::NONE,
             )
-            .map_err(|e| format!("Cannot confirm the desktop portal is idle: {e}"))?;
+            .map_err(|e| {
+                format!("Could not check whether another app is using desktop dialogs: {e}")
+            })?;
         let xml = response
             .get::<(String,)>()
             .ok_or("Invalid portal introspection reply")?
             .0;
-        if xml.contains("<node name=") {
-            return Err("A desktop portal dialog or session is active. Close it before applying this change.".into());
+        if let Some((_, children)) = xml.split_once("<node name=") {
+            let app = children
+                .strip_prefix('"')
+                .and_then(|child| child.split('"').next())
+                .and_then(|child| portal_owner_app(bus, child));
+            return Err(match (kind, app) {
+                ("request", Some(app)) => format!(
+                    "{app} has a desktop request open. Close its Open or Save window or finish the request, then check again."
+                ),
+                (_, Some(app)) => format!(
+                    "{app} is using a desktop feature in the background. Quit {app} completely, then check again. There may be no dialog to close."
+                ),
+                ("request", None) => "An app has a desktop request open. Close any Open or Save windows or finish the request, then check again.".into(),
+                (_, None) => "An app is using a desktop feature in the background. Stop any screen sharing or quit the app using it, then check again. There may be no dialog to close.".into(),
+            });
         }
     }
     Ok(())
+}
+// Portal paths group active objects by the caller's unique bus name, with
+// the dot replaced by an underscore. Use only the process name for display.
+fn portal_owner_app(bus: &gio::DBusConnection, child: &str) -> Option<String> {
+    use gio::glib::variant::ToVariant;
+    let (major, minor) = child.split_once('_')?;
+    let name = format!(
+        ":{}.{}",
+        major.parse::<u32>().ok()?,
+        minor.parse::<u32>().ok()?
+    );
+    let reply = bus
+        .call_sync(
+            Some("org.freedesktop.DBus"),
+            "/org/freedesktop/DBus",
+            "org.freedesktop.DBus",
+            "GetConnectionUnixProcessID",
+            Some(&(name.as_str(),).to_variant()),
+            None,
+            gio::DBusCallFlags::NO_AUTO_START,
+            500,
+            gio::Cancellable::NONE,
+        )
+        .ok()?;
+    let (pid,) = reply.get::<(u32,)>()?;
+    let name = fs::read_to_string(format!("/proc/{pid}/comm")).ok()?;
+    let name = name.trim();
+    match name {
+        "firefox" | "firefox-bin" => Some("Firefox".into()),
+        "vivaldi-bin" => Some("Vivaldi".into()),
+        "chrome" => Some("Chrome".into()),
+        "chromium" => Some("Chromium".into()),
+        "xdg-desktop-por" | "xdg-desktop-portal" => None,
+        _ if !name.is_empty() && !name.chars().any(char::is_control) => Some(name.into()),
+        _ => None,
+    }
 }
 fn backend_idle() -> Result<bool, String> {
     let state = Command::new("systemctl")
@@ -671,7 +731,7 @@ pub fn apply() -> Result<String, String> {
     } else {
         fs::remove_file(&paths.state).map_err(|e| e.to_string())?;
     }
-    Ok("Desktop file picker preference applied".into())
+    Ok("Open and Save dialog preference applied".into())
 }
 
 #[cfg(test)]

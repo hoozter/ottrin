@@ -1617,7 +1617,10 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                     if json {
                         serde_json::to_string(&status).map_err(|e| e.to_string())?
                     } else {
-                        status.detail
+                        match status.blocker {
+                            Some(blocker) => format!("{}\n{blocker}", status.detail),
+                            None => status.detail,
+                        }
                     }
                 }
                 (DesktopIntegration::Folders, IntegrationAction::Enable) => {

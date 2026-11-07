@@ -14101,12 +14101,14 @@ impl OttrinApp {
                     }
                 };
                 let observation = self.search_service.observation();
-                let (_, index_color) = index_service_status(&observation, &c);
-                let index_tooltip = search_diagnostics_tooltip(
-                    &observation.diagnostics,
-                    self.search_ui.scope,
-                    &self.state.active_tab().current_dir,
-                );
+                let (index_tooltip, _) = index_service_status(&observation, &c);
+                #[cfg(target_os = "linux")]
+                let setup_pending = self
+                    .portal_status
+                    .as_ref()
+                    .is_some_and(|status| status.pending || status.repair_needed);
+                #[cfg(not(target_os = "linux"))]
+                let setup_pending = false;
                 let status = self.file_status_text(self.state.active_tab().id);
                 let action = status_bar::render(
                     ui,
@@ -14118,8 +14120,8 @@ impl OttrinApp {
                             size,
                             tooltip: tip,
                         },
-                        index_color,
-                        index_tooltip: &index_tooltip,
+                        setup_pending,
+                        index_tooltip,
                         show_hidden_files: self.state.config.show_hidden_files,
                         command_visible: self.command_frame.visible,
                         status: &status,
@@ -20677,6 +20679,8 @@ impl OttrinApp {
         self.show_settings = true;
         self.search_ui.sqlite_schedule_status = None;
         self.privileged_availability = self.platform.privileged_availability();
+        #[cfg(target_os = "linux")]
+        self.portal_status.take();
     }
 
     /// Observe optional background startup without delaying construction or browsing.
@@ -20816,7 +20820,7 @@ impl OttrinApp {
             self.portal_status = Some(status);
             self.portal_status_rx = None;
         }
-        if self.portal_status.is_none() {
+        if self.portal_status.is_none() && self.service_action_rx.is_none() {
             Self::request_service_status(
                 ui.ctx(),
                 &mut self.portal_status_rx,
@@ -20825,20 +20829,49 @@ impl OttrinApp {
         }
         appearance_editor::settings_surface(c).inner_margin(12).show(ui, |ui| {
             ui.set_min_width(ui.available_width());
-            ui.label(RichText::new("Application file dialogs").strong().color(c.text));
-            ui.label("Use Ottrin's themed picker in applications that support the Linux desktop portal. Other desktop integrations keep their existing providers.");
-            ui.label("One-time desktop registration may request administrator permission. Ottrin opens a window only when a file dialog is requested.");
-            if let Some(status)=self.portal_status.clone() {
-                Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
+            settings_section_title(ui, c, "Open and Save dialogs");
+            settings_description(ui, c, "Use Ottrin’s file browser when supported apps ask you to open or save a file. This is optional.");
+            if let Some(status) = self.portal_status.clone() {
+                let color = if status.ready { c.success_text() }
+                    else if status.pending || status.repair_needed { c.error }
+                    else { c.text_muted };
+                Self::render_service_status(ui, &status.detail, color);
+                if let Some(blocker) = &status.blocker {
+                    settings_description(ui, c, blocker);
+                } else if status.pending {
+                    settings_description(ui, c, "Choose Apply change to finish.");
+                } else if !status.enabled && !status.repair_needed {
+                    settings_description(ui, c, "Your system may ask for your administrator password the first time.");
+                }
                 ui.horizontal_wrapped(|ui| {
-                    if ui.add_enabled(status.enabled || !status.pending,egui::Button::new(if status.enabled {"Disable Ottrin picker"} else {"Enable Ottrin picker"}).themed(&c)).clicked() {
-                        self.begin_service_action(ui.ctx(), if status.enabled {ottrin_platform::portal_integration::disable} else {ottrin_platform::portal_integration::enable});
+                    type DialogAction = fn() -> Result<String, String>;
+                    let action: Option<(&str, DialogAction)> = if status.blocker.is_some() {
+                        None
+                    } else if status.pending {
+                        Some(("Apply change", ottrin_platform::portal_integration::apply))
+                    } else if status.repair_needed {
+                        Some(("Repair setup", ottrin_platform::portal_integration::enable))
+                    } else if status.ready {
+                        Some(("Use usual dialogs", ottrin_platform::portal_integration::disable))
+                    } else {
+                        Some(("Use Ottrin dialogs", ottrin_platform::portal_integration::enable))
+                    };
+                    if let Some((label, action)) = action
+                        && ui.add(egui::Button::new(label).themed(&c)).clicked()
+                    {
+                        self.begin_service_action(ui.ctx(), move || action()
+                            .map(|text| format!("Open and Save dialogs — {text}"))
+                            .map_err(|text| format!("Open and Save dialogs — {text}")));
                     }
-                    if status.enabled && ui.add(egui::Button::new("Update / repair setup").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::portal_integration::enable);}
-                    if ui.add_enabled(status.pending,egui::Button::new("Apply pending change").themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::portal_integration::apply);}
-                    if ui.add_enabled(self.portal_status_rx.is_none(),egui::Button::new("Refresh status").themed(&c)).clicked() {Self::request_service_status(ui.ctx(),&mut self.portal_status_rx,ottrin_platform::portal_integration::status);}
+                    if (status.pending || status.repair_needed)
+                        && ui.add_enabled(self.portal_status_rx.is_none(), egui::Button::new("Check again").themed(&c)).clicked()
+                    {
+                        Self::request_service_status(ui.ctx(), &mut self.portal_status_rx, ottrin_platform::portal_integration::status);
+                    }
                 });
-            } else {ui.label(RichText::new("Checking setup…").color(c.text_muted));}
+            } else {
+                settings_description(ui, c, "Checking setup…");
+            }
         });
         ui.add_space(14.0);
     }
@@ -20862,7 +20895,7 @@ impl OttrinApp {
         }
         appearance_editor::settings_surface(c).inner_margin(12).show(ui,|ui| {
             ui.set_min_width(ui.available_width());
-            ui.label(RichText::new(if cfg!(target_os="windows"){"Folder integration"}else{"Folder opening"}).strong().color(c.text));
+            settings_section_title(ui, c, if cfg!(target_os="windows"){"Folder integration"}else{"Folder opening"});
             ui.label(if cfg!(target_os="windows"){ "Add Open in Ottrin to folder, drive and folder-background menus. Default folder opening is a separate choice below." }else{ "Choose Ottrin for directory links, Show in folder and Properties requests. Ottrin opens a window only when requested. An already-running desktop file manager keeps its reveal service until it exits." });
             if let Some(status)=self.folder_status.clone() {
                 Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
@@ -20890,13 +20923,12 @@ impl OttrinApp {
 
     fn render_services_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
         let ready_color = c.success_text();
-        ui.label(
-            RichText::new("Services")
-                .size(15.0 * c.font_scale)
-                .strong()
-                .color(c.text),
+        settings_page_heading(
+            ui,
+            c,
+            "Services",
+            "Manage background search and optional desktop features.",
         );
-        ui.label("Set up and manage Ottrin's optional system integration.");
         ui.add_space(12.0);
         if let Some(result) = &self.service_action_result {
             let (heading, text, color) = match result {
@@ -20915,7 +20947,9 @@ impl OttrinApp {
             ui.label(RichText::new("Working…").color(c.text_muted));
         }
         ui.add_enabled_ui(!busy, |ui| {
-            ui.label(RichText::new(if cfg!(target_os="windows"){"Administrator operations"}else{"Administrator helper"}).strong().color(c.text));
+            #[cfg(target_os = "linux")]
+            self.render_portal_settings(ui, c);
+            settings_section_title(ui, c, if cfg!(target_os="windows"){"Administrator operations"}else{"Administrator helper"});
             match &self.privileged_availability {
                 PrivilegedAvailability::Ready => Self::render_service_status(ui, if cfg!(target_os="windows"){"Ready — Windows prompts when needed"}else{"Installed and ready"}, ready_color),
                 PrivilegedAvailability::UpdateRequired(message) => {
@@ -20925,11 +20959,13 @@ impl OttrinApp {
                 PrivilegedAvailability::Misconfigured(message) => Self::render_service_status(ui, if cfg!(target_os="windows"){message}else{"Setup needed"}, c.error),
                 PrivilegedAvailability::Unsupported(message) => Self::render_service_status(ui, message, c.text_muted),
             }
-            ui.label(if cfg!(target_os="windows"){"The bundled helper uses Windows’ administrator prompt when a protected file operation needs elevation."}else{"Lets Ottrin request administrator permission when a file operation needs it. Setup requires your administrator password."});
+            settings_description(ui, c, if cfg!(target_os="windows"){"The bundled helper uses Windows’ administrator prompt when a protected file operation needs elevation."}else{"Lets Ottrin ask for administrator permission to work with protected files."});
             #[cfg(target_os = "linux")]
-            ui.label("Setup also installs the HTML preview sandbox from this package.");
-            #[cfg(target_os = "linux")]
-            if ui.add(egui::Button::new(if matches!(self.privileged_availability, PrivilegedAvailability::Ready | PrivilegedAvailability::UpdateRequired(_)) { "Update / reinstall helper" } else { "Set up administrator helper" }).themed(&c)).clicked() {
+            if ui.add(egui::Button::new(match self.privileged_availability {
+                PrivilegedAvailability::Ready => "Reinstall helper (optional)",
+                PrivilegedAvailability::UpdateRequired(_) => "Update administrator helper",
+                _ => "Set up administrator helper",
+            }).themed(&c)).clicked() {
                 self.begin_service_action(ui.ctx(), ottrin_platform::install_privileged_helper);
             }
             ui.add_space(14.0);
@@ -20946,17 +20982,17 @@ impl OttrinApp {
                         ui.data_mut(|data|data.insert_temp(id,(std::time::Instant::now(),status)));
                         status
                     });
-                ui.label(RichText::new("HTML preview sandbox").strong().color(c.text));
+                settings_section_title(ui, c, "Safe HTML previews");
                 Self::render_service_status(ui, status.message(), if status==HtmlPreviewRuntimeStatus::Ready { ready_color } else { c.text_muted });
-                ui.label("Uses your system browser to render offline HTML with isolated files, no network and a time/memory limit. System setup requires administrator permission once.");
-                let can_setup=matches!(status,HtmlPreviewRuntimeStatus::Ready|HtmlPreviewRuntimeStatus::NeedsSetup);
-                if ui.add_enabled(can_setup,egui::Button::new(if status==HtmlPreviewRuntimeStatus::Ready { "Update / reinstall HTML sandbox" } else { "Set up HTML sandbox" }).themed(&c)).clicked() {
+                settings_description(ui, c, "Lets you preview saved web pages without giving them access to your files or the internet.");
+                if status == HtmlPreviewRuntimeStatus::NeedsSetup
+                    && ui.add(egui::Button::new("Set up safe HTML previews").themed(&c)).clicked() {
                     self.begin_service_action(ui.ctx(),ottrin_platform::install_privileged_helper);
                     ui.data_mut(|data|data.remove::<(std::time::Instant,HtmlPreviewRuntimeStatus)>(id));
                 }
                 ui.add_space(14.0);ui.separator();ui.add_space(10.0);
             }
-            ui.label(RichText::new("Background index service").strong().color(c.text));
+            settings_section_title(ui, c, "Background index service");
             if is_administrator_session() {
                 ui.label("Manage the Administrator index from Search settings.");
                 if ui.add(egui::Button::new("Open Search settings").themed(&c)).clicked() { self.settings_tab = SettingsTab::Search; }
@@ -20976,27 +21012,28 @@ impl OttrinApp {
                 None => "Unavailable",
             };
             ui.label(format!("Automatic startup at sign-in: {startup}"));
-            ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Indexing starts when you open Ottrin and continues after closing its windows. Enable automatic startup to also start indexing when you sign in." });
-            ui.label(if package_managed { "Windows manages this package's login startup and removes it with Ottrin. Stopping indexing or disabling automatic startup keeps your saved index and preferences." } else { "Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index." });
+            settings_description(ui, c, if installed { "Keeps your selected folders searchable after you close Ottrin." } else { "Indexing starts when you open Ottrin and continues after closing its windows. Enable automatic startup to also start indexing when you sign in." });
+            settings_description(ui, c, if package_managed { "Windows manages this package's login startup and removes it with Ottrin. Stopping indexing or disabling automatic startup keeps your saved index and preferences." } else { "Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index." });
             ui.add_space(6.0);
             if installed && let Some(mut enabled) = status.enabled {
                 if ui.checkbox(&mut enabled, "Start index automatically at sign-in").changed() {
                     self.begin_index_service_action(ui.ctx(), move || SearchService::set_sqlite_schedule_enabled(enabled));
                 }
-                ui.label(RichText::new("Controls the next sign-in. Use Start / restart or Stop indexing to change what is running now.").color(c.text_muted));
+                ui.label(RichText::new("Controls the next sign-in. The buttons below control indexing now.").color(c.text_muted));
                 ui.add_space(6.0);
             }
             ui.horizontal_wrapped(|ui| {
-                let setup_label = if installed { "Update / reinstall service" } else { "Enable automatic startup" };
+                let setup_label = if installed { "Reinstall service (optional)" } else { "Enable automatic startup" };
                 if !package_managed && ui.add(egui::Button::new(setup_label).themed(&c)).clicked() {
                     let config = self.state.config.search.clone();
                     self.begin_index_service_action(ui.ctx(), move || SearchService::install_sqlite_schedule(&config));
                 }
-                if ui.add(egui::Button::new("Start / restart").themed(&c)).clicked() {
+                let running = diag.status != SearchIndexStatus::Unavailable;
+                if ui.add(egui::Button::new(if running {"Restart indexing"} else {"Start indexing"}).themed(&c)).clicked() {
                     self.begin_index_service_action(ui.ctx(), SearchService::start_sqlite_schedule);
                 }
                 #[cfg(any(target_os = "linux", target_os = "windows"))]
-                if ui.add(egui::Button::new("Stop indexing").themed(&c)).clicked() {
+                if ui.add_enabled(!stopped, egui::Button::new("Stop indexing").themed(&c)).clicked() {
                     self.begin_index_service_action(ui.ctx(), SearchService::stop_sqlite_schedule);
                 }
                 if installed && !package_managed && ui.add(egui::Button::new("Uninstall service").themed(&c)).clicked() {
@@ -21028,8 +21065,6 @@ impl OttrinApp {
                 ui.add_space(16.0);
                 ui.label(RichText::new("Desktop integration").strong().color(c.heading));
                 ui.add_space(8.0);
-                #[cfg(target_os="linux")]
-                self.render_portal_settings(ui,c);
                 self.render_folder_integration_settings(ui,c);
             }
         });
@@ -21203,9 +21238,7 @@ impl OttrinApp {
                             ui.set_max_width(content_w);
                             match self.settings_tab {
                                 SettingsTab::General => {
-                                    ui.label(RichText::new("General").color(c.heading).size(settings_title).strong());
-                                    ui.label(RichText::new("Default behavior and application preferences.")
-                                        .color(c.text_muted).size(settings_subtitle));
+                                    settings_page_heading(ui, c, "General", "Default behavior and application preferences.");
                                     ui.add_space(12.0);
                                     ui.label(RichText::new("Default view").color(c.text_dim).size(12.0 * c.font_scale));
                                     ui.add_space(6.0);
@@ -25896,7 +25929,7 @@ fn theme_editor_large_preview(
                 size: 13.0,
                 tooltip: "Integrated privilege management ready",
             },
-            index_color: preview.success_text(),
+            setup_pending: false,
             index_tooltip: "Index ready",
             show_hidden_files: false,
             command_visible: false,
@@ -26024,6 +26057,33 @@ fn theme_editor_large_preview(
     (hovered_region, clicked_region)
 }
 
+fn settings_page_heading(ui: &mut egui::Ui, c: Colors, title: &str, subtitle: &str) {
+    ui.label(
+        RichText::new(title)
+            .color(c.heading)
+            .size(15.0 * c.font_scale)
+            .strong(),
+    );
+    settings_description(ui, c, subtitle);
+}
+
+fn settings_description(ui: &mut egui::Ui, c: Colors, text: &str) {
+    ui.label(
+        RichText::new(text)
+            .color(c.text_muted)
+            .size(11.5 * c.font_scale),
+    );
+}
+
+fn settings_section_title(ui: &mut egui::Ui, c: Colors, title: &str) {
+    ui.label(
+        RichText::new(title)
+            .color(c.heading)
+            .size(13.0 * c.font_scale)
+            .strong(),
+    );
+}
+
 fn settings_section_icon(
     ui: &mut egui::Ui,
     c: Colors,
@@ -26046,12 +26106,7 @@ fn settings_section_icon(
                         .size(14.0 * c.font_scale),
                 );
                 ui.add_space(4.0);
-                ui.label(
-                    RichText::new(title)
-                        .color(c.heading)
-                        .size(13.0 * c.font_scale)
-                        .strong(),
-                );
+                settings_section_title(ui, c, title);
             });
             if !subtitle.is_empty() {
                 ui.add_space(2.0);
@@ -26392,7 +26447,7 @@ mod tests {
                 let samples = buttons(&preview);
                 for name in [
                     "Manage administrator helper",
-                    "Manage index service",
+                    "Services",
                     "Show hidden files",
                     "Show command bar",
                 ] {
@@ -26550,7 +26605,7 @@ mod tests {
                     clip.expand(0.5).contains_rect(message_rect),
                     "status is clipped at width {width}, scale {scale}: {message_rect:?} inside {clip:?}"
                 );
-                for icon in [MI_TERMINAL, MI_LOCK, MI_SEARCH, MI_VISIBILITY_OFF] {
+                for icon in [MI_TERMINAL, MI_LOCK, "Services", MI_VISIBILITY_OFF] {
                     let (text, clip) = text
                         .iter()
                         .find(|(text, _)| text.galley.job.text == icon)
@@ -27714,27 +27769,43 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn portal_refresh_keeps_actions_in_place_until_new_status_arrives() {
+    fn pending_file_dialog_setup_names_the_blocker_and_offers_one_next_action() {
         use ottrin_platform::portal_integration::PortalStatus;
-        check_service_refresh_layout(
-            |app, pending| {
-                app.portal_status = Some(PortalStatus {
-                    enabled: true,
-                    ready: true,
-                    pending: false,
-                    detail: "Ready".into(),
-                });
-                app.portal_status_rx = Some(pending);
-            },
-            OttrinApp::render_portal_settings,
-            "Update / repair setup",
-            PortalStatus {
+        let mut app = OttrinApp::default();
+        let ctx = Context::default();
+        for blocked in [true, false] {
+            app.portal_status = Some(PortalStatus {
                 enabled: true,
                 ready: false,
-                pending: false,
-                detail: "Needs repair".into(),
-            },
-        );
+                pending: true,
+                repair_needed: false,
+                blocker: blocked
+                    .then(|| "ChatGPT is using a desktop feature in the background.".into()),
+                detail: "Waiting to turn on".into(),
+            });
+            let output = ctx.run(egui::RawInput::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    app.render_portal_settings(ui, app.colors);
+                });
+            });
+            let labels: Vec<_> = output
+                .shapes
+                .iter()
+                .filter_map(|shape| match &shape.shape {
+                    egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                    _ => None,
+                })
+                .collect();
+            assert!(labels.contains(&"Open and Save dialogs"));
+            assert!(labels.contains(&"Waiting to turn on"));
+            assert!(labels.contains(&"Check again"));
+            assert_eq!(labels.contains(&"Apply change"), !blocked);
+            assert_eq!(
+                labels.iter().any(|label| label.contains("ChatGPT")),
+                blocked
+            );
+            assert!(!labels.contains(&"Repair setup"));
+        }
     }
 
     #[cfg(target_os = "linux")]
@@ -27785,7 +27856,7 @@ mod tests {
                 .unwrap()
         };
         let helper_top = heading_y("Administrator helper");
-        let helper_bottom = heading_y("HTML preview sandbox");
+        let helper_bottom = heading_y("Safe HTML previews");
         assert!(helper_top < helper_bottom);
         let helper_has = |name: &str| {
             output.shapes.iter().any(|shape| {
@@ -27795,7 +27866,7 @@ mod tests {
             })
         };
         assert!(helper_has("Update needed"));
-        assert!(helper_has("Update / reinstall helper"));
+        assert!(helper_has("Update administrator helper"));
         assert!(helper_has("Update the administrator helper in Services."));
         assert!(!helper_has("Installed and ready"));
         assert!(!helper_has("Set up administrator helper"));
@@ -27812,13 +27883,13 @@ mod tests {
             ("none", "Enable automatic startup", false, false),
             (
                 "systemd user service",
-                "Update / reinstall service",
+                "Reinstall service (optional)",
                 true,
                 true,
             ),
             (
                 "Windows Task Scheduler",
-                "Update / reinstall service",
+                "Reinstall service (optional)",
                 true,
                 true,
             ),
@@ -27854,7 +27925,7 @@ mod tests {
                 "{source}"
             );
             assert_eq!(visible("Uninstall service"), uninstall, "{source}");
-            for label in ["Start / restart", "Stop indexing"] {
+            for label in ["Restart indexing", "Stop indexing"] {
                 assert!(
                     visible(label),
                     "Missing independent runtime control: {source}: {label}"
@@ -27912,7 +27983,7 @@ mod tests {
         let short = render("Startup status could not be read.");
         let long =
             render(&"Startup status could not be read at /very/long/service/path. ".repeat(80));
-        for name in ["Start / restart", "Stop indexing", "Refresh status"] {
+        for name in ["Restart indexing", "Stop indexing", "Refresh status"] {
             let geometry = |frame: &egui::FullOutput| {
                 frame
                     .shapes
