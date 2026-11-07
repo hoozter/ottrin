@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux theme editor, picker Save and folder repair",
-  "source_revision": "e365563bed9fa3b3bb2fa168c5e7dbbda316851b",
+  "status": "pass scoped Linux picker confirmation geometry",
+  "source_revision": "7aabcc567af540d6f815249b85aaadddea561dfb",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "cd13befb5a03a7de8878182756b3605f014a1459e566f3708db299f084c939fe",
-    "Ottrin-0.1.0-x86_64.AppImage": "0115990881e623c7a880453b861690ae9662bf7b6687d9e94a746c9c71bd4ac7",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "14688255656d5facfbaab31339e2e2422e8760e278e72ed9c49b11b446d8fde9",
-    "ottrin_0.1.0_amd64.deb": "8351e42758df9e1d32e850546c69353c4b523d65b1f90a411c8bb58a3b24092b"
+    "ottrin-0.1.0-1.x86_64.rpm": "2d746493efe6036063a6f60a0dc021b7011d4827140c427af484661ffd739111",
+    "Ottrin-0.1.0-x86_64.AppImage": "9fb6fd91ab7a0f875700a1d5814f9d9ea615b839ab29b98f0a9b6c2fee7bf9c9",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "9db4ad7cb413f6fd999005bc6451deeef4b57a315fd6a8fb59ca6d0918810f84",
+    "ottrin_0.1.0_amd64.deb": "0c1b20342e2bfd0da3c83629dfee927a36667882520de370817c7e18ae4d103f"
   },
-  "evidence": ".hermes/evidence/picker-folders-delivery-current",
+  "evidence": ".hermes/evidence/picker-confirmation-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,21 +17,25 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "e1ac98d947b4972771f36d88535c2d7ae31005e8c9e8aceb97de9f4cc0c4be81",
+    "application": "cdbabdcfd4f881603a257a8838226c1a74a219b3ed9b17dabad7296752d2d964",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
     "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42405483643,
-    "tested_source_revision": "e365563bed9fa3b3bb2fa168c5e7dbbda316851b",
+    "run": 42409736660,
+    "tested_source_revision": "7f38dbe3ad909a40534634a92875ba3f17afd30b",
+    "non_runtime_diff": [
+      "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+      "docs/ROADMAP.md"
+    ],
     "all_four_jobs_success": true
   },
   "native_current_ui": ".hermes/evidence/services-clarity-delivery-current/SERVICES_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/picker-folders-delivery-current/SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/picker-confirmation-delivery-current/BUILD_SOURCE.json",
   "daemon_identity": null,
   "daemon_runtime": ".hermes/evidence/inspector-visual-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
   "daemon_runtime_scope": {
@@ -42,7 +46,7 @@
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
   "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
   "current_helper_read_only": [
-    ".hermes/evidence/picker-folders-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/picker-confirmation-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "historical_daemon_evidence": {
@@ -54,13 +58,13 @@
     "applies_to_current_daemon_identity": false
   },
   "limits": [
-    "Mounted Dark and Light checks cover Inspector reset and Cancel. Picker Save returned the exact native filename with unchanged bytes. Folder CLI recovered from a write failure and restored the private GIO default.",
-    "Inspector, footer, Services, daemon performance and native distribution receipts retain their original scopes. Daemon, helper and HTML renderer bytes match the previous accepted cohort.",
-    "No full appearance, native Windows, public release, Store, signing or MSI acceptance.",
-    "Packaged manuals are build-time snapshots at e365563b; repository metadata records later delivery."
+    "Mounted Dark and Light checks cover the picker Replace confirmation frame and exact native Save without writes.",
+    "Inspector, folder repair, Services, performance and native distribution receipts retain their original source scopes.",
+    "Daemon, helper and HTML renderer bytes match the previous accepted cohort.",
+    "Packaged manuals are build-time snapshots at 7aabcc56; repository metadata records later delivery."
   ],
   "native_current_theme": ".hermes/evidence/picker-folders-delivery-current/THEME_UI_ACCEPTANCE.json",
   "previous_theme_ui": ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
-  "native_current_picker": ".hermes/evidence/picker-folders-delivery-current/picker-save/RESULT.json",
+  "native_current_picker": ".hermes/evidence/picker-confirmation-delivery-current/PICKER_CONFIRMATION_ACCEPTANCE.json",
   "native_folder_repair": ".hermes/evidence/picker-folders-delivery-current/FOLDER_REPAIR_ACCEPTANCE.json"
 }

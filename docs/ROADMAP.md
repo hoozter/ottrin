@@ -6,8 +6,9 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `e365563b`. All four hosted
-jobs passed in [run 42405483643](https://github.com/hoozter/ottrin/actions/runs/42405483643).
+The stable local Linux packages use source `7aabcc56`. All four hosted jobs
+passed on `7f38dbe3` in [run 42409736660](https://github.com/hoozter/ottrin/actions/runs/42409736660).
+The package source differs only in the roadmap and prior Linux receipt.
 Windows retains its separately accepted source `8e805d31`.
 
 The preceding Linux cohort `37961173` passed contents, runtime closure, provenance and namespace
@@ -21,12 +22,12 @@ The bundled helper passed ten read-only checks. This is scoped software X11
 evidence. The full appearance audit, personal idle workload and protected-file
 authorization remain separate.
 
-Guarded promotion of `e365563b` replaced the four stable package paths.
+Guarded promotion of `7aabcc56` replaced the four stable package paths.
 The byte-identical managed index stayed Ready on the same process. Startup
 settings, preferences and database identity were preserved. The consumed stage
 and superseded package paths were removed. Current authority:
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Promotion evidence:
-`.hermes/evidence/picker-folders-delivery-current/PROMOTION.json`.
+`.hermes/evidence/picker-confirmation-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -454,11 +455,9 @@ Current source, test, package and owner/external scopes stay separate.
    Windows coverage remains open.
    Source `e91dcf50` also gives the Replace confirmation the shared window
    geometry. Dark and Light rendering, 544 isolated UI tests and Linux and
-   Windows-target Clippy passed. The staged `7aabcc56` Linux cohort passes
+   Windows-target Clippy passed. The delivered `7aabcc56` Linux cohort passes
    four-format content checks, mounted Dark and Light Save replacement with
    exact native paths and unchanged files, and atomic AppImage replacement.
-   Promotion awaits [run 42409736660](https://github.com/hoozter/ottrin/actions/runs/42409736660),
-   whose source differs only in this roadmap and the prior Linux receipt.
    The Windows `7aabcc56` portable and NSIS payloads match across all 59 files.
    The exact NSIS passes ordinary-user fresh install and uninstall, with
    native Dark and Light confirmation frames, exact Unicode Save paths and
