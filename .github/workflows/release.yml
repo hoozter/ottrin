@@ -489,6 +489,9 @@ jobs:
           path: ${{ runner.temp }}/ottrin-linux-repositories
           if-no-files-found: error
 
+      - name: Verify repository publication recovery
+        run: python3 packaging/tests/verify-repository-publication.py
+
       - name: Publish and verify stable APT and RPM repositories
         if: vars.LINUX_REPOSITORY_PUBLISH_ENABLED == 'true'
         env:
