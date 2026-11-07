@@ -6,11 +6,11 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `37961173`. All four hosted
-jobs passed in [run 42391178128](https://github.com/hoozter/ottrin/actions/runs/42391178128).
+The stable local Linux packages use verified source `e365563b`. All four hosted
+jobs passed in [run 42405483643](https://github.com/hoozter/ottrin/actions/runs/42405483643).
 Windows retains its separately accepted source `8e805d31`.
 
-Linux: all four formats pass contents, runtime closure, provenance and namespace
+The preceding Linux cohort `37961173` passed contents, runtime closure, provenance and namespace
 ownership checks. The mounted AppImage was reviewed in Dark and Light for real
 DOCX/XLSX versus theme samples, document fallback and zoom, worksheet selection
 and Overview, live status bar styling, and Cancel restoration. Six Services
@@ -21,12 +21,12 @@ The bundled helper passed ten read-only checks. This is scoped software X11
 evidence. The full appearance audit, personal idle workload and protected-file
 authorization remain separate.
 
-Guarded promotion atomically replaced each of the four stable package paths.
-The foreground window kept its mounted version, and the byte-identical managed
-index stayed Ready on the same process. Startup settings, preferences and
-database identity were preserved. The consumed stage and superseded package
-paths were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-Promotion evidence: `.hermes/evidence/services-clarity-delivery-current/PROMOTION.json`.
+Guarded promotion of `e365563b` replaced the four stable package paths.
+The byte-identical managed index stayed Ready on the same process. Startup
+settings, preferences and database identity were preserved. The consumed stage
+and superseded package paths were removed. Current authority:
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Promotion evidence:
+`.hermes/evidence/picker-folders-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -71,7 +71,7 @@ mounted Dark and Light Inspector checks, exact non-UTF-8 Save overwrite
 selection with original bytes preserved, and folder integration recovery
 after a real write denial. A mounted AppImage replacement also kept the old
 window usable while a fresh launch used the candidate. Guarded promotion
-waits for all four exact-source jobs in
+completed after all four exact-source jobs passed in
 [run 42405483643](https://github.com/hoozter/ottrin/actions/runs/42405483643).
 Candidate evidence is in `.hermes/evidence/picker-folders-delivery-current/`.
 
@@ -240,8 +240,12 @@ Current source, test, package and owner/external scopes stay separate.
      any incomplete anchor or directory for review.
      The native helper fixture now injects refusal at the first profile
      directory creation and checks source, destination and discovery state.
-     Windows-target strict Clippy passes. Native execution and the
-     post-creation and anchor cases remain open.
+     Windows-target strict Clippy and the exact `c4b759e3` native run pass.
+     The ordinary caller and SYSTEM companion completed 26 invocations and
+     150 framed requests, with the previous 54 file and 96 directory prefix
+     cases preserved. Guest and media teardown passed. Evidence:
+     `caller-profile-init-current/ACCEPTANCE.json`. Post-creation and anchor
+     failures remain open.
    - Extend coverage through the remaining claim and native I/O boundaries.
      Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including
@@ -448,6 +452,9 @@ Current source, test, package and owner/external scopes stay separate.
    removed. Evidence: `picker-overwrite-confirmation-current/linux/RESULT.json`.
    The combined Linux candidate passed mounted package coverage. Native
    Windows coverage remains open.
+   Source `e91dcf50` also gives the Replace confirmation the shared window
+   geometry. Dark and Light rendering, 544 isolated UI tests and Linux and
+   Windows-target Clippy passed. It awaits its own package build.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
