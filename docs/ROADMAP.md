@@ -299,6 +299,18 @@ owner/external waits stay separate throughout this queue.
    retired. Evidence: `inspector-samples-current/ACCEPTANCE.json` and `CLEANUP.json`.
    This is source verified and is not in delivered sourcec3. Image/PDF, installed-
    provider Office, full-property and broader platform/scale acceptance remain open.
+   The clean combined source `ac935037` is pushed and all four Linux formats are
+   assembled. `inspector-samples-delivery-current/` binds content/closure/provenance,
+   ten actual helper read-only checks, namespace refusal and automated mounted
+   Dark/Light document/worksheet/footer workflows. Fresh daemon watcher2→1002→2,
+   stop/error/recovery/lifetime and30-second no-client/no-GUI idle pass at0.067%
+   one core. All seven owned runtime/profile/display/bus/mount teardowns and
+   content extraction removal pass. This cohort still requires42 direct original
+   reviews and sealing;62 captures are retained until the20 consumed transitions
+   can be retired. Its116,001,618-byte canonical stage is retained for those gates
+   and [run42346402977](https://github.com/hoozter/ottrin/actions/runs/42346402977).
+   Linux verification and both performance jobs pass; Windows verification remains
+   active. Stable Linux sourcec3 is preserved until guarded publication.
    Two read-only60-second samples of the personal installed daemon identify
    `ottrin-indexd`, approximately30–31MiB RSS and mean0.67/0.98% of one core.
    The latter remains Ready while its snapshot advances47 revisions and35 indexed
