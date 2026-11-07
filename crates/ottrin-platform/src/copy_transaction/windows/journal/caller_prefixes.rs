@@ -23,29 +23,67 @@ impl Drop for Trace {
         FAULT.with(|slot| slot.set(None));
     }
 }
-pub(in super::super) fn refuse_first_profile_creation(
+pub(in super::super) fn exercise_first_profile_creation_faults(
     caller: &Arc<CallerCopyContext>,
     source: &Path,
     destination: &Path,
+    mut as_original_owner: impl FnMut(&mut dyn FnMut()),
 ) {
     let app = caller.local_app_data().unwrap().join("Ottrin");
     assert!(!app.exists());
     let original = std::fs::read(source).unwrap();
     let output = destination.join(source.file_name().unwrap());
 
-    let trace = Trace::start();
-    FAULT.with(|slot| slot.set(Some((1, Step::PrivateCreateBefore, false))));
-    let result =
-        caller.copy_entry_with_progress(source, destination, ConflictAction::Overwrite, 16, |_| {
-            Ok(())
-        });
-    assert!(result.is_err());
-    assert_eq!(trace.finish(), vec![(1, Step::PrivateCreateBefore, true)]);
+    for (step, expected) in [
+        (
+            Step::PrivateCreateBefore,
+            vec![(1, Step::PrivateCreateBefore, true)],
+        ),
+        (
+            Step::PrivateCreateAfter,
+            vec![
+                (1, Step::PrivateCreateBefore, false),
+                (1, Step::PrivateCreateAfter, true),
+            ],
+        ),
+    ] {
+        let trace = Trace::start();
+        FAULT.with(|slot| slot.set(Some((1, step, false))));
+        let result = caller.copy_entry_with_progress(
+            source,
+            destination,
+            ConflictAction::Overwrite,
+            16,
+            |_| Ok(()),
+        );
+        assert!(result.is_err());
+        assert_eq!(trace.finish(), expected);
 
-    assert!(caller.copy_registry(&[], false).unwrap().is_none());
-    assert!(!app.exists());
-    assert!(!output.exists());
-    assert_eq!(std::fs::read(source).unwrap(), original);
+        let observe_app = || match std::fs::symlink_metadata(&app) {
+            Ok(metadata) => {
+                assert!(metadata.is_dir() && !metadata.file_type().is_symlink());
+                assert!(std::fs::read_dir(&app).unwrap().next().is_none());
+                let directory = windows_fs::open_directory(&app, FILE_GENERIC_READ).unwrap();
+                Some(stable_identity_from_handle(&directory).unwrap())
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+            Err(error) => panic!("Cannot observe the caller profile directory: {error}"),
+        };
+        let mut before = None;
+        as_original_owner(&mut || before = observe_app());
+        assert_eq!(before.is_some(), step == Step::PrivateCreateAfter);
+        assert!(caller.copy_registry(&[], false).unwrap().is_none());
+        as_original_owner(&mut || {
+            assert_eq!(observe_app(), before);
+            if before.is_some() {
+                // Retire only the verified empty directory in this owned profile.
+                std::fs::remove_dir(&app).unwrap();
+            }
+        });
+        assert!(!app.exists());
+        assert!(!output.exists());
+        assert_eq!(std::fs::read(source).unwrap(), original);
+    }
 }
 
 fn evidence(authority: &Authority, file: &File) -> tree::ExistingTreeEvidence {
