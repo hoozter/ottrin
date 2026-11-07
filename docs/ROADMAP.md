@@ -445,7 +445,15 @@ Current source, test, package and owner/external scopes stay separate.
    dividers, Quick Inspector, and Buttons and menus. The actual property
    renderer verifies a saved 1.25 px value is displayed without rounding
    and exposes the same increment in both themes at scale 1 and 1.5.
-   This is source-renderer evidence. Native packaged review remains open.
+   The four-format Linux candidate from `f5915755` passes content, source
+   provenance, ten helper read-only cases and AppImage/RPM daemon ownership
+   checks. The mounted AppImage passes Dark/Light border entry and Cancel,
+   Dark/Light GIO folder dispatch and restoration, and private atomic
+   replacement while an old window remains usable. All six owned desktops
+   and the package content extraction were removed. Promotion preflight
+   confirms the managed index is Ready and its binary is byte-identical.
+   Evidence: `folder-border-delivery-current/MOUNTED_ACCEPTANCE.json`.
+   The single 111 MiB stage remains pending hosted checks and local promotion.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
