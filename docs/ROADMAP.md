@@ -5319,8 +5319,12 @@ probe object was removed. Cloudflare rejected the generic Python user agent,
 so the publisher now identifies itself. The production subkey and backup
 restoration need owner authentication. Staging, publication and package
 source registration stay disabled pending those steps and the first
-approved stable GitHub Release. Full APT and DNF updates over the public
-endpoint remain unverified.
+approved stable GitHub Release. APT verified a disposable signed repository
+over the public hostname, detected version 1.1 against an isolated 1.0
+status database, downloaded the exact fixture bytes, and hid the update
+when the source was disabled. All 11 temporary objects and the local
+keyring were removed. Production-signed upgrades and a live DNF transport
+test remain open.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
