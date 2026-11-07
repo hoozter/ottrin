@@ -776,6 +776,12 @@ impl PickerDialog {
             }
             return;
         }
+        // The confirmation authorizes only the path shown in the prompt.
+        let confirmed = confirmed
+            && self
+                .overwrite
+                .take()
+                .is_some_and(|path| paths.as_slice() == [path]);
         self.validating = true;
         self.error = None;
         if let Err(error) = self.worker.send(Work::Validate {
@@ -1476,7 +1482,7 @@ impl PickerDialog {
                 ui.label("The application will replace this file when it saves. Ottrin has not changed it.");
                 ui.horizontal(|ui| {
                     if ui.add(egui::Button::new("Cancel").themed(&colors)).clicked() { self.overwrite=None; }
-                    if ui.add(egui::Button::new("Replace").themed(&colors)).clicked() { self.overwrite=None;self.accept(true); }
+                    if ui.add(egui::Button::new("Replace").themed(&colors)).clicked() { self.accept(true); }
                 });
             });
         }
@@ -1935,7 +1941,9 @@ mod tests {
         assert_eq!(dialog.overwrite.as_ref(), Some(&path));
         assert!(dialog.take_result().is_none());
         assert_eq!(std::fs::read(&path).unwrap(), b"original");
-        dialog.overwrite = None;
+        let other = root.path().join("another.txt");
+        std::fs::write(&other, b"another original").unwrap();
+        dialog.filename = "another.txt".into();
         dialog.accept(true);
         let until = Instant::now() + Duration::from_secs(3);
         while dialog.validating {
@@ -1943,7 +1951,18 @@ mod tests {
             assert!(Instant::now() < until);
             std::thread::sleep(Duration::from_millis(1));
         }
-        assert_eq!(dialog.take_result().unwrap().paths, vec![path.clone()]);
+        assert_eq!(dialog.overwrite.as_ref(), Some(&other));
+        assert!(dialog.take_result().is_none());
+        assert_eq!(std::fs::read(&other).unwrap(), b"another original");
+        dialog.accept(true);
+        let until = Instant::now() + Duration::from_secs(3);
+        while dialog.validating {
+            dialog.poll();
+            assert!(Instant::now() < until);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(dialog.take_result().unwrap().paths, vec![other.clone()]);
+        assert_eq!(std::fs::read(other).unwrap(), b"another original");
         assert_eq!(std::fs::read(path).unwrap(), b"original");
     }
     #[test]
