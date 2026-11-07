@@ -112,23 +112,24 @@ baselines and corrected fixture failures remain in their receipts and Git histor
 
    Remaining dependency-ready work, in order:
 
-   The current `caller-dispatch-prefix-current/` fixture adds actual public-Copy
-   journal-boundary fault coverage for files and directories. Its file flow passes
-   38 injected boundaries. The first full run exposed an invalid directory-only
-   test assumption; after correction, the extended run reached its 15-minute
-   fixture limit during the directory matrix. Both failed runs retain their
-   original evidence and completed owned teardown. A fresh full run is in progress
-   with explicit bounded helper/client/host limits of 30/31/40 minutes. Build,
-   strict Windows lint and formatting pass; full native acceptance and this
-   source checkpoint remain pending. Do not treat the file subset as completion
-   of the creation matrix or the broader recovery gate.
+   `caller-dispatch-prefix-current/ACCEPTANCE.json` now passes all 118 observed
+   actual-public-Copy journal boundary faults: 38 file and 80 directory cases,
+   inside the full 26-invocation/150-framed-request ordinary-caller/SYSTEM lane.
+   Read-only discovery preserves both journal peers and payloads; admitted Resume,
+   Undo and end-attempt cases pass, while review states refuse all actions without
+   mutation. Exact source/build bindings, UTF8 wrapper/native equality with actual
+   non-ASCII output, unchanged package hashes and independent teardown pass.
+   The original invalid directory assertion and measured 15-minute timeout remain
+   retained; the complete helper role finishes in 1187.21 seconds with the explicit
+   bounded 30/31/40-minute helper/client/host fixture limits. This Windows test-only
+   checkpoint uses its original `2af31068` reference plus recorded source hashes;
+   independent later UI fixes retain their own scopes. Copy stays disabled.
 
-   - Complete caller creation mutation-prefix and readonly/symbolic-link publication
-     recovery matrices, and original-retention/restoration failure cases including
+   - Extend creation coverage through initialization/claim/native-IO boundary
+     domains beyond the reached journal events. Finish readonly/symbolic-link
+     publication and original-retention/restoration failure matrices, including
      readonly original roots. Preserve edited/unknown payloads and refuse divergent
      journals; callback-only or seeded interruption checks do not close these gates.
-     Re-run the recovery wrapper's UTF8 reporting correction with the extended
-     current caller matrix; its prior converted receipt retains historical scope.
    - Prove actual app/helper restart with newly authenticated connections.
      Recapturing the same live client is insufficient. Verify the actual launched
      helper's lifetime on disconnect, lost terminal reply and Stop through UAC.

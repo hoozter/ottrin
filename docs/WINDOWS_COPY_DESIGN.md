@@ -90,6 +90,33 @@ run below independently verifies exact UTF8 wrapper/native equality. No assertio
 or result fields are omitted. This setup is
 not public-dispatcher mutation-prefix or new-process/reconnection acceptance.
 
+## Actual caller creation journal prefixes
+
+`caller-dispatch-prefix-current/ACCEPTANCE.json` binds 118 injected faults at
+journal boundaries reached by actual public caller Copy: 38 for a file and 80 for
+a directory tree. Each fault must fire and return an error. A fresh canonical
+registry's read-only discovery leaves the registry, journal peers and payloads
+unchanged. Recovery then either safely refuses every action, ends an unverified
+attempt without adopting its data, or completes Resume and Undo with exact copied
+streams/metadata and distinct native identities. Source pins, original helper
+token, caller registry binding and preference/index bytes/security/identity remain
+intact. An unregistered partial prefix cannot publish a target.
+
+The full ordinary-client/SYSTEM lane also passes its prior regressions: 26 native
+top-level invocations and 150 authenticated framed requests. These counts overlap
+earlier receipts and are not additive whole-product acceptance. The 118 matrix
+cases execute through the caller context within that role, rather than adding
+118 wire requests. Executable/source bindings, actual non-ASCII UTF8 export
+equality and independent VM/media/private-desktop/profile teardown pass. First-run
+assertion and timeout evidence remain retained; the completed helper role takes
+1187.21 seconds under explicit bounded fixture timeouts.
+
+This covers the observed journal events in these selected creation flows. Other
+initialization/claim/native-IO boundaries, readonly/symbolic-link publication,
+existing-original retention/restoration, new-process/new-authentication recovery,
+alternate-administrator UAC and packaged/rendered GUI acceptance remain open.
+Production Windows Copy capability remains disabled.
+
 ## Operation progress and Stop
 
 Protocol5 adds typed progress and terminal frames for Windows Copy operations,

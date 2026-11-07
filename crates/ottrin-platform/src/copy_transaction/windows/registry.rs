@@ -1433,6 +1433,23 @@ impl AnchoredRoot {
             as_caller,
         );
     }
+    pub(crate) fn exercise_caller_dispatch_prefixes(
+        caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
+        parent: &File,
+        source: &File,
+        preferences: &File,
+        index: &File,
+        as_caller: impl FnMut(&mut dyn FnMut()),
+    ) {
+        super::journal::exercise_caller_dispatch_prefixes(
+            caller,
+            parent,
+            source,
+            preferences,
+            index,
+            as_caller,
+        );
+    }
     pub(crate) fn exercise_caller_dispatch(
         caller: &Arc<crate::windows_privileged_transport::CallerCopyContext>,
         parent: &File,

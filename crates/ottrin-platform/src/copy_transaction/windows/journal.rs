@@ -26,6 +26,10 @@ use windows_sys::Win32::Storage::FileSystem::{
 #[cfg(test)]
 mod caller;
 #[cfg(test)]
+mod caller_prefixes;
+#[cfg(test)]
+pub(super) use caller_prefixes::exercise_caller_dispatch_prefixes;
+#[cfg(test)]
 mod caller_terminal;
 #[cfg(test)]
 pub(super) use caller_terminal::{
@@ -4292,7 +4296,17 @@ thread_local! {static APPEND_HANDOFF: std::cell::RefCell<Option<AppendHook>> = c
 #[cfg(test)]
 thread_local! {static FAULT:std::cell::Cell<Option<(u64,Step,bool)>>=const {std::cell::Cell::new(None)};}
 #[cfg(test)]
+thread_local! {static BOUNDARY_TRACE: std::cell::RefCell<Option<Vec<(u64, Step, bool)>>> = const {std::cell::RefCell::new(None)};}
+#[cfg(test)]
 fn boundary(sequence: u64, step: Step) -> Result<(), PlatformError> {
+    BOUNDARY_TRACE.with(|trace| {
+        if let Some(events) = &mut *trace.borrow_mut() {
+            let faulted = FAULT
+                .with(|fault| fault.get())
+                .is_some_and(|(expected, point, _)| expected == sequence && point == step);
+            events.push((sequence, step, faulted));
+        }
+    });
     if FAULT.with(|fault| fault.get()) == Some((sequence, step, true)) {
         std::process::exit(86);
     }

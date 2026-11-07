@@ -378,6 +378,7 @@ fn client() {
         std::fs::read(root.join("probe-data/caller-control Ω/handle-proof.txt")).unwrap(),
         b"elevated IO through caller-owned handle"
     );
+    assert_eq!(observation["caller_public_dispatch_journal_prefixes"], true);
     save(&results.join("OWNER_OBSERVATION.json"), &observation);
     println!("Native mechanism observation recorded; this does not enable privileged Copy");
 }
@@ -937,6 +938,23 @@ fn system_helper() {
             },
         );
     }
+    for source in [&source_file, &source_directory] {
+        crate::WindowsCopyRegistry::exercise_caller_dispatch_prefixes(
+            &context,
+            &parent,
+            source,
+            &preferences,
+            &index,
+            |operation| {
+                context
+                    .with_caller_token(|| {
+                        operation();
+                        Ok(())
+                    })
+                    .unwrap()
+            },
+        );
+    }
     assert_eq!(token_state(), original_helper_state);
     context.validate().unwrap();
     channel.write_response(&PrivilegedResponse {
@@ -951,6 +969,7 @@ fn system_helper() {
             "existing_private_entry_refused_unchanged":true,
             "ordinary_helper_reopen_refused":true,
             "caller_paired_journal_staging_reopen_planning_and_begin_recovery":true,
+            "caller_public_dispatch_journal_prefixes":true,
             "caller_destination_claim_creation_reopen_release_and_preparation_recovery":true,
             "caller_permission_plan_projection_helper_apply_and_phase_restore":true,
             "caller_candidate_audit_label_and_per_object_original_token_controls":true,
