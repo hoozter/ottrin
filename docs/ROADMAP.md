@@ -98,7 +98,16 @@ for the next mounted package review. Buttons & menus now exposes the existing
 shared popup fill, border color, border thickness and surface corners alongside
 the button-only controls. Rendered checks compare both actual popup frames and
 verify component reset preserves shared frame settings. All 540 active UI tests
-and Linux/Windows-target Clippy passed. Exact package review is pending.
+and Linux/Windows-target Clippy passed. The exact `07f0095e` Linux candidate
+passed content and runtime checks for all four formats. Seven mounted AppImage
+workflows covered live and sample Image/PDF controls, More menu frame styling,
+sample action isolation, Cancel restoration, and Services recovery. Forty
+Dark/Light captures and runtime teardown are recorded in
+`.hermes/evidence/inspector-visual-delivery-current/`. The candidate awaits
+its own hosted verification and promotion. Keep the preceding footer run
+[42367417279](https://github.com/hoozter/ottrin/actions/runs/42367417279)
+intact while its Windows verification runs. No additional Linux rebuild is
+required for either staged revision while its evidence and bytes match.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.
