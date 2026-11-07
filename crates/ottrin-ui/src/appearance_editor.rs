@@ -341,14 +341,6 @@ impl OttrinApp {
                             changed
                         });
                     }
-                    if region == ThemePreviewRegion::Inspector {
-                        ui.add_space(10.0);
-                        changed |= property_group(ui, "Shared window geometry", c, |ui| {
-                            let mut changed = number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
-                            changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.25, c);
-                            changed
-                        });
-                    }
                     if region == ThemePreviewRegion::Accent {
                         ui.add_space(10.0);
                         changed |= property_group(ui, "Geometry", c, |ui| {
@@ -389,6 +381,15 @@ impl OttrinApp {
                             _ => {}
                         }
                         self.sync_theme_editor_hex_inputs(); changed=true;
+                    }
+                    if region == ThemePreviewRegion::Inspector {
+                        ui.add_space(10.0);
+                        changed |= property_group(ui, "Shared window geometry", c, |ui| {
+                            ui.label(RichText::new("Shared by Ottrin windows. Reset component leaves these values unchanged.").small().color(c.text_dim));
+                            let mut changed = number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
+                            changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.25, c);
+                            changed
+                        });
                     }
                     if region != ThemePreviewRegion::Defaults {
                         ui.add_space(14.0);
@@ -1135,6 +1136,93 @@ fn property_group(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn inspector_shared_geometry_follows_component_reset_and_keeps_its_ownership() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+        fn render(
+            app: &mut OttrinApp,
+            ctx: &Context,
+            events: Vec<egui::Event>,
+        ) -> egui::FullOutput {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1180.0, 1800.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_theme_editor_embedded(ctx);
+                },
+            )
+        }
+        fn activate(app: &mut OttrinApp, ctx: &Context, label: &str) {
+            let output = render(app, ctx, vec![]);
+            let nodes = output.platform_output.accesskit_update.unwrap().nodes;
+            let targets: Vec<_> = nodes
+                .iter()
+                .filter(|(_, n)| n.role() == Role::Button && n.label() == Some(label))
+                .collect();
+            assert_eq!(targets.len(), 1, "One actual named action: {label}");
+            let _ = render(
+                app,
+                ctx,
+                vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                    action: Action::Click,
+                    target: targets[0].0,
+                    data: None,
+                })],
+            );
+        }
+        for mode in [ThemeMode::Dark, ThemeMode::Light] {
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            let mut app = OttrinApp::default();
+            app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+            app.switch_theme_editor_variant(mode, &ctx);
+            app.theme_editor.selected_region = ThemePreviewRegion::Inspector;
+            app.theme_editor.preview_inspector = true;
+            let seed = app.theme_editor.initial_custom.clone();
+            app.theme_editor.custom.panel = [23, 61, 97, 255];
+            app.theme_editor.custom.app_radius = 21.0;
+            app.theme_editor.custom.window_border_width = 3.5;
+            app.theme_editor.custom.titlebar = [33, 101, 67, 255];
+            app.apply_theme_editor_live_preview(&ctx);
+            let output = render(&mut app, &ctx, vec![]);
+            let y = |label: &str| {
+                output
+                    .shapes
+                    .iter()
+                    .filter_map(|s| match &s.shape {
+                        egui::epaint::Shape::Text(t) if t.galley.job.text == label => Some(t.pos.y),
+                        _ => None,
+                    })
+                    .next()
+                    .unwrap_or_else(|| panic!("Missing actual section/action: {label}"))
+            };
+            assert!(
+                y("Reset component") < y("Window corners"),
+                "Shared geometry must follow the component reset, consistently with other shared settings"
+            );
+            activate(&mut app, &ctx, "Reset component");
+            assert_eq!(app.theme_editor.custom.panel, seed.panel);
+            assert_eq!(app.theme_editor.custom.app_radius, 21.0);
+            assert_eq!(app.theme_editor.custom.window_border_width, 3.5);
+            assert_eq!(app.theme_editor.custom.titlebar, [33, 101, 67, 255]);
+            activate(&mut app, &ctx, "Restore Window corners");
+            assert_eq!(app.theme_editor.custom.app_radius, seed.app_radius);
+            assert_eq!(app.theme_editor.custom.window_border_width, 3.5);
+            activate(&mut app, &ctx, "Restore Window border thickness");
+            assert_eq!(
+                app.theme_editor.custom.window_border_width,
+                seed.window_border_width
+            );
+            assert_eq!(app.theme_editor.custom.titlebar, [33, 101, 67, 255]);
+        }
+    }
 
     #[test]
     fn appearance_numeric_metadata_matches_each_typed_commit() {

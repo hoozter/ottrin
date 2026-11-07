@@ -156,7 +156,13 @@ cohort were removed. Current package evidence:
    `caller-native-create-current/IMPLEMENTATION.patch`; original source bytes
    were restored to allow independent UI work. Retain its verified executable
    for native execution, recheck exact baseline hashes before applying the patch,
-   and preserve the guard. Creation/profile-init and other failure matrices
+   and preserve the guard. The result validator is now prepared: it checks all26
+   invocations/150 frames, new native-creation matrix summaries, source continuity
+   against the original build, exact export/driver/actor bindings and independent
+   teardown. Six synthetic parser rejection controls and missing-native-input
+   refusal pass; no native execution or acceptance is inferred. Current records:
+   `caller-native-create-current/VALIDATOR_PREPARATION.json` and
+   `VALIDATOR_CHECKS.json`. Creation/profile-init and other failure matrices
    remain open; this is not native or administrator Copy acceptance.
 
    - Extend creation coverage through initialization/claim/native-IO boundary
@@ -256,6 +262,16 @@ cohort were removed. Current package evidence:
    and publication; stable Linux43 remains usable. Preserve the live preceding
    main run. Push source21 when it completes, resolve that source's CI run, then
    invoke the prepared guarded promoter with its `--ci-run` and `--publish`.
+   The next source-only follow-up moves Inspector Shared window geometry below
+   Reset component and explicitly states its shared scope. The actual Dark/Light
+   reset regression verifies component reset restores only the panel and preserves
+   window radius/border/title roles; individual restores remain independent.
+   All532 active UI tests, strict Linux/Windows cross-target UI lint and formatting
+   pass. Eight actual source-built Dark/Light originals were reviewed, including
+   custom21px/3.5px geometry, component reset, row restores and Cancel. Owned
+   desktops/profiles/mounts are removed; seven obsolete incremental sessions
+   reclaimed0.58GiB. Evidence: `inspector-shared-geometry-current/ACCEPTANCE.json`
+   and `CLEANUP.json`. This is not yet in the source21 package candidate.
    The package includes build-time manuals at source21; later metadata records
    the package result without implying renewed whole-theme/platform acceptance.
 
