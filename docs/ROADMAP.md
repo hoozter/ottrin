@@ -424,8 +424,16 @@ Current source, test, package and owner/external scopes stay separate.
    where default changes are unavailable. Linux copy explains the handoff
    from a file manager already handling Show in folder. The source checkpoint
    passes 544 UI tests (one ignored), formatting and strict Linux and Windows
-   cross-target UI lint. Native rendered and package verification remain open.
-   Five superseded compiler sessions were retired, recovering 0.29 GiB.
+   cross-target UI lint. Follow-up `9b99449c` updates the Windows-only capability
+   assertions for the new copy and passes Windows cross-target test compilation.
+   The source-built Linux X11 app passed Dark/Light Services visual review:
+   folder status dots match the other ready dots exactly, and the folder setup
+   description wraps within its card. Both private GIO fixtures dispatched a
+   non-UTF-8 folder, restored the previous handler and preserved an unrelated
+   MIME association edit. Both profiles and owned processes were retired.
+   Evidence: `folder-services-style-current/ACCEPTANCE.json`. Windows rendering
+   and package verification remain open. Eight superseded compiler sessions
+   were retired across these checkpoints, recovering 0.61 GiB.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
