@@ -434,8 +434,14 @@ Current source, test, package and owner/external scopes stay separate.
    toggle. Settings explains the limitation and the CLI refuses the
    unavailable action before opening a registry transaction. Unpackaged
    default-folder actions retain their transaction and restoration path.
-   This is a source change. The MSIX implementation and exact-package
-   verification remain open.
+   Exact `67d3cbe1` NSIS enables and restores the unpackaged default while
+   preserving the original registry values. Development MSIX 27 fresh and
+   26-to-27 upgrade checks confirm both packaged CLI refusals, unchanged host
+   values, working Explorer commands, login startup and removal. The complete
+   Settings notice fits after scrolling in the upgraded guest. The candidate
+   passed local promotion preflight and awaits
+   [exact-source CI](https://github.com/hoozter/ottrin/actions/runs/42416812531).
+   Implementing default-folder opening inside MSIX remains open.
 
    Picker Select All now selects only files for an Open request and only folders
    for a folder request. Enter submits a multi-folder selection. Range and
