@@ -243,8 +243,13 @@ Current source, test, package and owner/external scopes stay separate.
      The ordinary caller and SYSTEM companion completed 26 invocations and
      150 framed requests, with the previous 54 file and 96 directory prefix
      cases preserved. Guest and media teardown passed. Evidence:
-     `caller-profile-init-current/ACCEPTANCE.json`. Post-creation and anchor
-     failures remain open.
+     `caller-profile-init-current/ACCEPTANCE.json`. Source checkpoint
+     `a4cd0c16` adds the failure immediately after creating the first profile
+     directory. The fixture checks that read-only discovery preserves its
+     identity and empty contents, verifies unchanged source and destination,
+     then retires the empty directory as the original caller. Windows-target
+     strict test lint passes. Run this case natively before claiming acceptance.
+     State-directory and anchor creation/write/flush faults remain open.
    - Extend coverage through the remaining claim and native I/O boundaries.
      Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including
