@@ -5211,9 +5211,12 @@ The full Ubuntu 24.04.5 update trial built both DEBs using the release
 payload and verified the signed repository. The disposable user-namespace
 root could not configure Ubuntu's system dependencies, including D-Bus and
 fontconfig, so it did not reach the Ottrin installation and upgrade
-assertions. Use a booted Ubuntu guest with normal UID/GID and service
-semantics for the next full APT run. Use the retained Fedora base for a
-disposable DNF guest.
+assertions. A subsequent fresh Ubuntu 24.04.5 QEMU guest installed the
+full 0.1.0 DEB, loaded the package-owned signed HTTPS source and detected
+0.1.1 as the APT candidate. The trial stopped when the fixture added
+`Enabled: no` as a new deb822 stanza. Repeat with the field in the existing
+stanza to verify disable, upgrade, configuration preservation and removal.
+Use the retained Fedora base for a disposable DNF guest.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
