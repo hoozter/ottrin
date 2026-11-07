@@ -200,6 +200,13 @@ jobs:
         env:
           OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT: ${{ vars.LINUX_SIGNING_KEY_FINGERPRINT }}
         run: |
+          ./packaging/linux/sign-rpm-packages.sh dist/ottrin-*.x86_64.rpm
+          (
+            cd dist
+            for package in ottrin-*.x86_64.rpm; do
+              sha256sum "$package" > "$package.sha256"
+            done
+          )
           ./packaging/linux/sign-release-artifacts.sh \
             dist/Ottrin-*-linux-x86_64-portable.tar.gz \
             dist/Ottrin-*-x86_64.AppImage \
@@ -388,6 +395,11 @@ jobs:
             dist/Ottrin-*-x86_64.AppImage \
             dist/ottrin_*_amd64.deb \
             dist/ottrin-*.x86_64.rpm
+
+      - name: Verify exact downloaded RPM package signatures
+        env:
+          OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT: ${{ vars.LINUX_SIGNING_KEY_FINGERPRINT }}
+        run: ./packaging/linux/verify-rpm-signatures.sh dist/Ottrin-linux-release-key.asc dist/ottrin-*.x86_64.rpm
 
       - name: Refuse changes to a published release
         shell: bash
