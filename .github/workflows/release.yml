@@ -180,13 +180,6 @@ jobs:
       - name: Package Linux AppImage
         run: ./packaging/linux/package-appimage.sh
 
-      - name: Package native Linux formats
-        env:
-          OTTRIN_SKIP_BUILD: 1
-        run: |
-          ./packaging/linux/package-deb.sh
-          ./packaging/linux/package-rpm.sh
-
       - name: Import Linux release signing key
         env:
           LINUX_SIGNING_PRIVATE_KEY: ${{ secrets.LINUX_SIGNING_PRIVATE_KEY }}
@@ -195,6 +188,19 @@ jobs:
           export GNUPGHOME="$RUNNER_TEMP/ottrin-gnupg"
           printf 'GNUPGHOME=%s\n' "$RUNNER_TEMP/ottrin-gnupg" >> "$GITHUB_ENV"
           printf '%s' "$LINUX_SIGNING_PRIVATE_KEY" | gpg --batch --import
+
+      - name: Package native Linux formats
+        env:
+          OTTRIN_SKIP_BUILD: 1
+          OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT: ${{ vars.LINUX_SIGNING_KEY_FINGERPRINT }}
+          OTTRIN_LINUX_REPOSITORY_URL: ${{ vars.LINUX_REPOSITORY_URL }}
+        run: |
+          if [[ -n "$OTTRIN_LINUX_REPOSITORY_URL" ]]; then
+            export OTTRIN_LINUX_REPOSITORY_KEY="$RUNNER_TEMP/ottrin-repository-key.asc"
+            gpg --batch --armor --export "$OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT" > "$OTTRIN_LINUX_REPOSITORY_KEY"
+          fi
+          ./packaging/linux/package-deb.sh
+          ./packaging/linux/package-rpm.sh
 
       - name: Sign Linux release artifacts
         env:

@@ -15,6 +15,11 @@ PACKAGE_ROOT="$TMP/package"
 "$ROOT/packaging/linux/stage-native-package.sh" "$PACKAGE_ROOT"
 GLIBC_MIN="$(ottrin_native_glibc_requirement "$PACKAGE_ROOT")"
 mkdir -p "$PACKAGE_ROOT/DEBIAN" "$DIST_DIR"
+"$ROOT/packaging/linux/stage-update-source.sh" deb "$PACKAGE_ROOT"
+if [[ -f "$PACKAGE_ROOT/etc/apt/sources.list.d/ottrin.sources" ]]; then
+  printf '%s\n' /etc/apt/sources.list.d/ottrin.sources /etc/apt/preferences.d/ottrin.pref \
+    > "$PACKAGE_ROOT/DEBIAN/conffiles"
+fi
 cat > "$PACKAGE_ROOT/DEBIAN/control" <<EOF
 Package: ottrin
 Version: $VERSION

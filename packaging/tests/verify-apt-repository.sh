@@ -38,14 +38,11 @@ mkdir -p "$fixture/lists/partial" "$fixture/empty"
 export APT_CONFIG="$fixture/apt.conf"
 printf 'Dir::Etc::parts "%s";\nDir::Etc::main "/dev/null";\n' "$fixture/empty" > "$APT_CONFIG"
 printf 'Package: ottrin\nStatus: install ok installed\nArchitecture: amd64\nVersion: 1.0\nDescription: installed fixture\n' > "$fixture/status"
-cat > "$fixture/ottrin.sources" <<SOURCES
-Types: deb
-URIs: file:$archive
-Suites: stable
-Components: main
-Architectures: amd64
-Signed-By: $archive/ottrin-archive-keyring.gpg
-SOURCES
+OTTRIN_LINUX_REPOSITORY_URL=https://updates.example.invalid \
+OTTRIN_LINUX_REPOSITORY_KEY="$archive/ottrin-archive-keyring.gpg" \
+  "$root/packaging/linux/stage-update-source.sh" deb "$fixture/config"
+sed "s|^URIs: .*|URIs: file:$archive|" \
+  "$fixture/config/etc/apt/sources.list.d/ottrin.sources" > "$fixture/ottrin.sources"
 apt_options=(
   -o "Dir::Etc::sourcelist=$fixture/ottrin.sources"
   -o "Dir::Etc::sourceparts=$fixture/empty"
@@ -70,3 +67,26 @@ if apt-get "${apt_options[@]}" update > "$fixture/tampered.log" 2>&1; then
 fi
 grep -Eq 'BADSIG|invalid signature|signatures were invalid' "$fixture/tampered.log"
 printf 'APT accepted the signed archive, detected and downloaded the newer package, and refused altered metadata.\n'
+
+# Exercise the real dpkg conffile behavior without the application's service hooks.
+install_root="$fixture/install-root"
+mkdir -p "$install_root/var/lib/dpkg" "$fixture/config/DEBIAN"
+touch "$install_root/var/lib/dpkg/status"
+printf '%s\n' /etc/apt/sources.list.d/ottrin.sources /etc/apt/preferences.d/ottrin.pref \
+  > "$fixture/config/DEBIAN/conffiles"
+for version in 1.0 1.1; do
+  dpkg-deb -f "$fixture/ottrin_$version.deb" > "$fixture/config/DEBIAN/control"
+  dpkg-deb --root-owner-group --build "$fixture/config" "$fixture/config-$version.deb"
+done
+dpkg_fixture=(dpkg --root="$install_root" --log="$fixture/dpkg.log" --force-not-root)
+source_file="$install_root/etc/apt/sources.list.d/ottrin.sources"
+"${dpkg_fixture[@]}" --install "$fixture/config-1.0.deb"
+printf 'Enabled: no\n' >> "$source_file"
+"${dpkg_fixture[@]}" --install "$fixture/config-1.1.deb"
+grep -Fx 'Enabled: no' "$source_file"
+"${dpkg_fixture[@]}" --remove ottrin
+grep -Fx 'Enabled: no' "$source_file"
+"${dpkg_fixture[@]}" --purge ottrin
+test ! -e "$source_file"
+test ! -e "$install_root/etc/apt/preferences.d/ottrin.pref"
+printf 'dpkg preserved the disabled source across upgrade and removal, then removed it on purge.\n'

@@ -19,6 +19,11 @@ TOP="$TMP/rpmbuild"
 STAGE="$TOP/SOURCES/stage"
 mkdir -p "$TOP/BUILD" "$TOP/BUILDROOT" "$TOP/RPMS" "$TOP/SOURCES" "$TOP/SPECS" "$TOP/SRPMS" "$DIST_DIR"
 "$ROOT/packaging/linux/stage-native-package.sh" "$STAGE"
+"$ROOT/packaging/linux/stage-update-source.sh" rpm "$STAGE"
+update_source_files=""
+if [[ -f "$STAGE/etc/yum.repos.d/ottrin.repo" ]]; then
+  update_source_files=$'%config(noreplace) /etc/yum.repos.d/ottrin.repo\n/usr/share/ottrin/ottrin-rpm-key.asc'
+fi
 
 GLIBC_MIN="$(ottrin_native_glibc_requirement "$STAGE")"
 
@@ -87,6 +92,7 @@ fi
 /usr/share/ottrin/ottrin-index.service.in
 /usr/share/ottrin/ottrin-html-render.apparmor
 /usr/share/doc/ottrin
+$update_source_files
 EOF
 
 rpmbuild --define "_topdir $TOP" -bb "$TOP/SPECS/ottrin.spec"

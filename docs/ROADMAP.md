@@ -5186,8 +5186,15 @@ version, and rejection of changed metadata. The RPM builder accepts only
 Ottrin packages signed by the approved key and signs the resulting repository
 index. A disposable test verifies both signature layers and referenced
 checksums. Draft release assembly signs RPMs before generating checksums and
-verifies the downloaded RPM signature. Package-owned registration, native
-installation and update lifecycle, and R2 publication remain open.
+verifies the downloaded RPM signature. The native packagers can include the
+update source, package-scoped trust and package allowlists when the release
+workflow receives an approved key and HTTPS URL. Keep the repository URL
+unset for public builds until the signed endpoints and native update lifecycle
+are verified. A package inspection confirms the DEB conffiles and RPM
+`%config(noreplace)` flag. The isolated dpkg fixture preserves a disabled
+source across upgrade and removal, then removes it on purge. The embedded
+APT key stays scoped to that source throughout. Native lifecycle with the
+full packages and R2 publication remain open.
 
 Extend the draft release flow with a stable-release publication gate and an
 explicit retry path. Publish immutable package and index objects before
