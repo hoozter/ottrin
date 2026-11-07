@@ -63,7 +63,10 @@ class Repository:
         return json.loads(result.stdout or "{}")
 
     def verify(self, key, sha256, cache_control):
-        request = Request(f"{self.public_url}/{quote(key)}", headers={"Accept-Encoding": "identity"})
+        request = Request(f"{self.public_url}/{quote(key)}", headers={
+            "Accept-Encoding": "identity",
+            "User-Agent": "Ottrin-Repository-Verification/1.0",
+        })
         with urlopen(request, timeout=60) as response:
             if (response.geturl() != request.full_url
                     or response.headers.get("Cache-Control") != cache_control

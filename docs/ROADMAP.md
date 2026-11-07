@@ -5312,11 +5312,15 @@ The owner-created Ed25519 signing identity is present locally. A disposable
 Ed25519 primary with an RSA3072 signing subkey passed the CI subkey-only
 import, RPM signing and detached signature checks. The approved public
 fingerprint and `https://update.ottrin.com` origin are configured in GitHub.
-The domain uses Cloudflare DNS and the update hostname does not yet resolve.
-The production subkey and backup restoration need owner authentication.
-Attaching the R2 custom domain requires Cloudflare account access. Staging,
-publication and package source registration stay disabled while those steps
-and the first approved stable GitHub Release are pending.
+The custom hostname is attached to the empty R2 bucket with active TLS.
+An anonymous HTTPS probe returned the exact bytes and cache-control header
+with the named publisher and representative APT and DNF user agents. The
+probe object was removed. Cloudflare rejected the generic Python user agent,
+so the publisher now identifies itself. The production subkey and backup
+restoration need owner authentication. Staging, publication and package
+source registration stay disabled pending those steps and the first
+approved stable GitHub Release. Full APT and DNF updates over the public
+endpoint remain unverified.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
