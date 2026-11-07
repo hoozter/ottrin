@@ -1,12 +1,12 @@
 # Current Windows preview
 
-Source `7aabcc56` includes the portable ZIP, NSIS and unsigned development MSIX 26.
-The installed Save confirmation follows the theme in Dark and Light. Native
-Save returns the requested Unicode path without changing the original file.
-The NSIS upgrade preserves the index database and preferences. Reinstall
-preserves startup intent, and uninstall recovers after a held cache lock.
+Source `67d3cbe1` includes the portable ZIP, NSIS and unsigned development MSIX 27.
 
-MSIX 26 fresh deployment and upgrade from 25 passed Explorer folder background,
-multi-selection and drive commands, ordinary runtime, reboot and login startup,
-and removal. The separate default-folder registry transaction remains open.
-See ../WINDOWS_CANDIDATE_ACCEPTANCE.json for exact evidence.
+Portable and NSIS support the default folder action and restoration. MSIX
+explains that changing the default folder app is unavailable and keeps
+Open in Ottrin available from supported Explorer menus.
+
+Fresh deployment and upgrade from MSIX 26 passed Explorer folder background,
+multi-selection and drive commands, ordinary runtime, reboot and login
+startup, and removal. Earlier NSIS upgrade and installer recovery receipts
+retain their own source scope. See ../WINDOWS_CANDIDATE_ACCEPTANCE.json.

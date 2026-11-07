@@ -9,7 +9,8 @@ not complete a broader native, platform or user-acceptance requirement.
 The stable local Linux packages use source `7aabcc56`. All four hosted jobs
 passed on `7f38dbe3` in [run 42409736660](https://github.com/hoozter/ottrin/actions/runs/42409736660).
 The package source differs only in the roadmap and prior Linux receipt.
-The current Windows candidate also uses `7aabcc56`. Its native evidence is separate.
+The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
+passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 
 The preceding Linux cohort `37961173` passed contents, runtime closure, provenance and namespace
 ownership checks. The mounted AppImage was reviewed in Dark and Light for real
@@ -32,25 +33,24 @@ Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
 The 59-file Windows portable ZIP, NSIS installer and unsigned development
-MSIX 26 are available at `dist/windows-candidate/`. Native ordinary-user
-checks passed themed Save replacement, exact Unicode paths, NSIS upgrade
-with an active index, three reinstall intent cases, and locked-cache
-uninstall refusal and retry.
+MSIX 27 are available at `dist/windows-candidate/`. The installed NSIS build
+passed default-folder enable and restoration and Dark and Light Save
+replacement. The installed MSIX explains the default-folder limitation.
+Both CLI requests refuse before changing the checked host registry values.
+The full notice was reviewed after scrolling.
 
-Native MakeAppx assembled MSIX 26 from the same payload. Fresh deployment
-and enabled 25-to-26 upgrade passed actual Explorer folder background,
-multiple selection and drive commands, login startup and removal. The
-first fresh run failed an Explorer process assertion without retaining the
-unexpected arguments. A rerun with richer diagnostics passed. The cause of
-that first result remains unverified. The previous `8e805d31` Services
-captures retain their exact source scope. Default folder opening, lower
-Windows build coverage, the full theme audit, administrator Copy and MSI
-rollback remain open.
+Native MakeAppx assembled MSIX 27 from the same payload. Fresh deployment
+and the enabled 26-to-27 upgrade passed actual Explorer folder background,
+multiple selection and drive commands, login startup and removal.
+The `7aabcc56` NSIS upgrade and locked-cache uninstall recovery, and the
+`8e805d31` Services checks, retain their original source scope. MSIX default
+folder opening, lower Windows build coverage, the full theme audit,
+administrator Copy and MSI rollback remain open.
 
 The superseded Windows cohort, consumed stage, source archive and owned
 guest resources were removed. Current authority:
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Delivery evidence:
-`.hermes/evidence/windows-picker-confirmation-delivery-current/WINDOWS_DELIVERY.json`.
+`.hermes/evidence/windows-msix-default-status-delivery-current/WINDOWS_DELIVERY.json`.
 
 ### Current ordered work
 
@@ -439,8 +439,7 @@ Current source, test, package and owner/external scopes stay separate.
    26-to-27 upgrade checks confirm both packaged CLI refusals, unchanged host
    values, working Explorer commands, login startup and removal. The complete
    Settings notice fits after scrolling in the upgraded guest. The candidate
-   passed local promotion preflight and awaits
-   [exact-source CI](https://github.com/hoozter/ottrin/actions/runs/42416812531).
+   passed local promotion preflight and exact-source CI, and was promoted.
    Implementing default-folder opening inside MSIX remains open.
 
    Picker Select All now selects only files for an Open request and only folders

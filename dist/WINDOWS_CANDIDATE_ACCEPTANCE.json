@@ -1,41 +1,38 @@
 {
-  "status": "pass scoped Windows picker, installer recovery and Explorer integration",
-  "source_commit": "7aabcc567af540d6f815249b85aaadddea561dfb",
+  "status": "pass scoped Windows folder capability and Explorer integration",
+  "source_commit": "67d3cbe14c03f1b8021284454e46ed046795131e",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "2ae1db510623aa305973736b60e2144ffcb0b15c1196ffe171599e9bf1fbd396",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "69a03214ee81bae6e0d0f496e187c0d08bfacd5e4ae020c9dacc7a5a153d6f36",
-    "Ottrin-0.1.0-windows-x64-development.msix": "af2a6a93bd98f2c690c4a29bc1b01597d8c294d60ccfd8bbce92c7704d69c983"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "3b3d8d30ec64cb6909182c9307b144da46786a45f2be788f3e06b66583462ff6",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "be0cfcc02b2d858870885ac1d44d8d51675b17504fbb0051833b9184a6856b2d",
+    "Ottrin-0.1.0-windows-x64-development.msix": "8512f2bdb69a2c783295f63de9ebf971f3c7d599bf21e819a918cc3f69f82bff"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/windows-picker-confirmation-delivery-current",
+  "evidence_directory": ".hermes/evidence/windows-msix-default-status-delivery-current",
   "hosted_source": {
-    "run": 42409736660,
-    "tested_source_revision": "7f38dbe3ad909a40534634a92875ba3f17afd30b",
-    "non_runtime_diff": [
-      "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
-      "docs/ROADMAP.md"
-    ],
+    "run": 42416812531,
+    "tested_source_revision": "67d3cbe14c03f1b8021284454e46ed046795131e",
     "all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/windows-picker-confirmation-delivery-current/NATIVE_PICKER_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/windows-picker-confirmation-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "current_native_fields": ".hermes/evidence/windows-msix-default-status-delivery-current/NATIVE_NSIS_DEFAULT_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/windows-msix-default-status-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-picker-confirmation-delivery-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_runtime_login_removal": ".hermes/evidence/windows-picker-confirmation-delivery-current/MSIX_CONTEXTS_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-picker-confirmation-delivery-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
-    "scope": "Exact 59-file ZIP/NSIS/MSIX equality, current installed picker and NSIS upgrade and recovery, fresh26 and enabled25-to26 native contexts/login/removal."
+    "current_assembly": ".hermes/evidence/windows-msix-default-status-delivery-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_CONTEXTS_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
+    "scope": "Exact 59-file ZIP/NSIS/MSIX equality, native unpackaged default and restoration, packaged refusal and visible explanation, fresh27 and enabled26-to27 Explorer contexts/login/removal."
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/windows-picker-confirmation-delivery-current/WINDOWS_SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/windows-msix-default-status-delivery-current/WINDOWS_SOURCE_SCOPE.json",
   "public_release_published": false,
   "limits": [
+    "Prior NSIS upgrade and Services results retain their original source scopes.",
     "Prior Services results retain their original source scope.",
     "Software guest/default DPI only; no physical GPU, signing, Store or human acceptance",
     "Targeted Services and Explorer originals only; full theme/interface property audit remains open",
@@ -44,5 +41,6 @@
     "Native light-menu icon contrast and supplementary glyph fallback remain open",
     "Administrator Copy coordinator/caller registry and ordinary MSI rollback remain gated"
   ],
-  "native_upgrade": ".hermes/evidence/windows-picker-confirmation-delivery-current/NATIVE_UPGRADE_ACCEPTANCE.json"
+  "previous_native_upgrade": ".hermes/evidence/windows-picker-confirmation-delivery-current/NATIVE_UPGRADE_ACCEPTANCE.json",
+  "native_default_capability": ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_UPDATED_DEFAULT_ACCEPTANCE.json"
 }
