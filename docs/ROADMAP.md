@@ -5322,9 +5322,14 @@ source registration stay disabled pending those steps and the first
 approved stable GitHub Release. APT verified a disposable signed repository
 over the public hostname, detected version 1.1 against an isolated 1.0
 status database, downloaded the exact fixture bytes, and hid the update
-when the source was disabled. All 11 temporary objects and the local
-keyring were removed. Production-signed upgrades and a live DNF transport
-test remain open.
+when the source was disabled. A disposable Fedora 44 guest installed a
+signed RPM with the package-owned repository source, verified the signed
+metadata over the public hostname, detected and installed 1.1 over 1.0,
+preserved a disabled source through upgrade, and saved the edit on removal.
+Both trials removed their 11 temporary objects each. The Fedora guest,
+volumes, signing material and SSH seed were removed. Evidence:
+`r2-dnf-transport-current/RUN.json`. Production-signed upgrades and the
+first approved stable release remain open.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
