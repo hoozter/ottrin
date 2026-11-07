@@ -1,4 +1,4 @@
-//! Faults reached by the actual caller dispatcher; no synthetic journal seeds.
+//! Journal and native private-creation faults reached by the public caller dispatcher.
 use super::*;
 use crate::{ConflictAction, PlatformOps, windows_privileged_transport::CallerCopyContext};
 use std::{os::windows::io::AsRawHandle, sync::Arc};
@@ -10,6 +10,7 @@ struct Trace;
 impl Trace {
     fn start() -> Self {
         BOUNDARY_TRACE.with(|slot| assert!(slot.replace(Some(Vec::new())).is_none()));
+        CALLER_CREATE_ORDINAL.with(|slot| slot.set(0));
         Self
     }
     fn finish(self) -> Vec<(u64, Step, bool)> {
@@ -154,6 +155,8 @@ pub(in super::super) fn exercise_caller_dispatch_prefixes(
     }
     assert!(points.len() >= 10);
     for step in [
+        Step::PrivateCreateBefore,
+        Step::PrivateCreateAfter,
         Step::LocalFlushed,
         Step::CentralFlushed,
         Step::PublicationRenamed,
@@ -348,7 +351,7 @@ pub(in super::super) fn exercise_caller_dispatch_prefixes(
     assert_eq!(after_user, before_user);
     caller.validate().unwrap();
     println!(
-        "caller public dispatcher journal-prefix matrix directory={directory}: boundaries={} refused={refused} ended={ended} resumed={resumed} undone={undone} unregistered={unregistered}; actual public creation, readonly discovery, source and user data preserved; no process-restart/UAC acceptance",
+        "caller public dispatcher journal/native-creation prefix matrix directory={directory}: boundaries={} refused={refused} ended={ended} resumed={resumed} undone={undone} unregistered={unregistered}; actual public creation, readonly discovery, source and user data preserved; no process-restart/UAC acceptance",
         points.len()
     );
 }

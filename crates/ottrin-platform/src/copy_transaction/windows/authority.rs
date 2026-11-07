@@ -85,7 +85,14 @@ impl Authority {
     ) -> std::io::Result<File> {
         match self {
             Self::Process => windows_fs::create_private(parent, name, directory, sharing),
-            Self::Caller(caller) => caller.create_private_entry(parent, name, directory, sharing),
+            Self::Caller(caller) => {
+                #[cfg(test)]
+                super::journal::caller_private_create_boundary(false)?;
+                let file = caller.create_private_entry(parent, name, directory, sharing)?;
+                #[cfg(test)]
+                super::journal::caller_private_create_boundary(true)?;
+                Ok(file)
+            }
         }
     }
     pub(super) fn create_temporary(&self, parent: &File, name: &OsStr) -> std::io::Result<File> {

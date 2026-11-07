@@ -4226,6 +4226,10 @@ enum CleanupMetadataPoint {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Step {
+    #[cfg(test)]
+    PrivateCreateBefore,
+    #[cfg(test)]
+    PrivateCreateAfter,
     OriginalReadersReleased,
     OriginalRenamed,
     OriginalFlushed,
@@ -4289,6 +4293,32 @@ fn cleanup_handoff(sequence: u64) -> Result<(), PlatformError> {
 fn boundary(_: u64, _: Step) -> Result<(), PlatformError> {
     Ok(())
 }
+// Count only native creations reached while the public-dispatcher trace is
+// active. Error injection never substitutes synthetic journal or payload state.
+#[cfg(test)]
+thread_local! {static CALLER_CREATE_ORDINAL: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };}
+#[cfg(test)]
+pub(super) fn caller_private_create_boundary(after: bool) -> std::io::Result<()> {
+    if !BOUNDARY_TRACE.with(|trace| trace.borrow().is_some()) {
+        return Ok(());
+    }
+    let ordinal = CALLER_CREATE_ORDINAL.with(|slot| {
+        if !after {
+            slot.set(slot.get() + 1);
+        }
+        slot.get()
+    });
+    boundary(
+        ordinal,
+        if after {
+            Step::PrivateCreateAfter
+        } else {
+            Step::PrivateCreateBefore
+        },
+    )
+    .map_err(std::io::Error::other)
+}
+
 #[cfg(test)]
 type AppendHook = Box<dyn FnOnce(&File, &File)>;
 #[cfg(test)]
@@ -8403,6 +8433,9 @@ mod tests {
                 Step::CleanupHandleClosed => "cleanup-closed",
                 Step::CleanupFlushed => "cleanup-flushed",
                 Step::CleanupMetadata { .. } => "cleanup-metadata",
+                Step::PrivateCreateBefore | Step::PrivateCreateAfter => {
+                    panic!("Caller-only creation faults require the authenticated dispatcher trace")
+                }
             };
             let status=std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact","copy_transaction::windows::journal::tests::windows_native_copy_journal_exit_child","--ignored","--nocapture"])

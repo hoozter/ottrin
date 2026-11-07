@@ -211,22 +211,16 @@ Current source, test, package and owner/external scopes stay separate.
    checkpoint uses its original `2af31068` reference plus recorded source hashes;
    independent later UI fixes retain their own scopes. Copy stays disabled.
 
-   The next private-create boundary fixture has before/after native creation
-   hooks around the existing authenticated public Copy trace. Its cross-built
-   executable, strict Windows lint and formatting pass. Native execution has
-   not occurred: the teardown-owning guest producer refused allocation below
-   its24GiB free-space guard. The owned three-file test patch is held in
-   `caller-native-create-current/IMPLEMENTATION.patch`; original source bytes
-   were restored to allow independent UI work. Retain its verified executable
-   for native execution, recheck exact baseline hashes before applying the patch,
-   and preserve the guard. The result validator is now prepared: it checks all26
-   invocations/150 frames, new native-creation matrix summaries, source continuity
-   against the original build, exact export/driver/actor bindings and independent
-   teardown. Six synthetic parser rejection controls and missing-native-input
-   refusal pass; no native execution or acceptance is inferred. Current records:
-   `caller-native-create-current/VALIDATOR_PREPARATION.json` and
-   `VALIDATOR_CHECKS.json`. Creation/profile-init and other failure matrices
-   remain open; this is not native or administrator Copy acceptance.
+   The native private-create and journal fault fixture passed 26 actual
+   invocations and 150 framed requests on the owned Windows guest. It reached
+   54 file and 96 directory fault cases. The verifier checked read-only discovery,
+   retained data, review refusal and admitted Resume, Undo and end-attempt.
+   The run used the exact cross-built executable and the three-file test patch
+   on original reference `33e148b0`. The ordinary interactive account and
+   SYSTEM companion ran separately. The fixture, guest, volumes and isolated
+   worktree were removed. Evidence: `caller-native-create-current/ACCEPTANCE.json`.
+   Administrator Copy remains disabled. Initialization, other native I/O,
+   actual UAC and packaged GUI acceptance remain open.
 
    - Extend creation coverage through initialization/claim/native-IO boundary
      domains beyond the reached journal events. Finish readonly/symbolic-link
