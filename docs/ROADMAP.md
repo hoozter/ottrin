@@ -433,6 +433,15 @@ Current source, test, package and owner/external scopes stay separate.
    preserved the file bytes. The owned display, profile and processes were
    removed. Evidence: `picker-overwrite-confirmation-current/linux/RESULT.json`.
    Mounted package and native Windows coverage remain open.
+
+   Linux folder setup `b9543fe9` keeps interrupted launcher replacements
+   repairable while refusing edits outside the recorded versions. Eight
+   folder tests and strict platform Clippy pass. A private unprivileged CLI
+   trial forced an actual write denial after replacing the launcher. Status
+   requested repair, retry updated the D-Bus service, and disable restored
+   the original GIO default while preserving a separate PDF association edit.
+   The private session was retired. See
+   `folder-interrupted-repair-current/ACCEPTANCE.json`. Packaged testing is open.
 4. Resolve ordinary-user MSI registration rollback, including the failed independent
    file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
    changes and manual registry compensation are not a working installer. This
