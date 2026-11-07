@@ -94,7 +94,11 @@ passed. Source-built Dark and Light review confirms the live and sample menu
 rows, shared Button text styling, sample Trash action isolation and Cancel
 restoration. Ten reviewed frames and teardown evidence are in
 `inspector-menu-current/NATIVE_REVIEW.json`. This checkpoint joins Image/PDF
-for the next mounted package review.
+for the next mounted package review. Buttons & menus now exposes the existing
+shared popup fill, border color, border thickness and surface corners alongside
+the button-only controls. Rendered checks compare both actual popup frames and
+verify component reset preserves shared frame settings. All 540 active UI tests
+and Linux/Windows-target Clippy passed. Exact package review is pending.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.

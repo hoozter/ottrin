@@ -5218,7 +5218,7 @@ impl OttrinApp {
             ThemePreviewRegion::ColumnText => "File labels & icons",
             ThemePreviewRegion::Sidebar => "Smart Panel",
             ThemePreviewRegion::StatusBar => "Status bar",
-            ThemePreviewRegion::Accent => "Buttons",
+            ThemePreviewRegion::Accent => "Buttons & menus",
             ThemePreviewRegion::Borders => "Borders",
         }
     }
@@ -5256,7 +5256,7 @@ impl OttrinApp {
                 "Bottom status bar, file counts and utility controls. Shared text and accent colors also affect other components. Preview controls select styling without operating services or files."
             }
             ThemePreviewRegion::Accent => {
-                "Shared action-button labels; backgrounds apply to filled buttons."
+                "Button colors and corners also style menu rows. Menus use the shared panel fill, window border and surface corners for their frame."
             }
             ThemePreviewRegion::Borders => "Dividers, outlines, and window-edge definition.",
         }
@@ -5356,7 +5356,12 @@ impl OttrinApp {
                 ThemeColorField::Accent,
                 ThemeColorField::Hover,
             ],
-            ThemePreviewRegion::Accent => &[ThemeColorField::Hover, ThemeColorField::Accent],
+            ThemePreviewRegion::Accent => &[
+                ThemeColorField::Hover,
+                ThemeColorField::Accent,
+                ThemeColorField::Panel,
+                ThemeColorField::WindowBorder,
+            ],
             ThemePreviewRegion::Borders => &[],
         }
     }

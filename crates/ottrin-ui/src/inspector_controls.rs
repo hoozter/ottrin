@@ -978,7 +978,11 @@ mod tests {
 
     #[test]
     fn inspector_sample_opens_the_live_more_menu_without_dispatching_actions() {
-        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        let mut colors = Colors::preset(ThemePreset::Ottrin, true);
+        colors.panel = Color32::from_rgb(23, 61, 97);
+        colors.window_border = Color32::from_rgb(117, 42, 76);
+        colors.window_border_width = 3.5;
+        colors.border_radius = 13;
         let ctx = Context::default();
         install_application_fonts(&ctx);
         ctx.enable_accesskit();
@@ -1010,11 +1014,26 @@ mod tests {
         };
 
         let more = button(&render_sample(vec![]).0, "More actions").0;
-        let (sample, picked) = render_sample(activate(more));
+        let (_, picked) = render_sample(activate(more));
         assert_eq!(picked, Some(ThemePreviewRegion::Accent));
         assert!(egui::Popup::is_any_open(&ctx));
         let more = button(&render_live(vec![]), "More actions").0;
-        let live = render_live(activate(more));
+        render_live(activate(more));
+        // Let the popup entrance animation settle before comparing exact colors.
+        for _ in 0..12 {
+            render_sample(vec![]);
+            render_live(vec![]);
+        }
+        let sample = render_sample(vec![]).0;
+        let live = render_live(vec![]);
+        for output in [&sample, &live] {
+            assert!(output.shapes.iter().any(|shape| {
+                matches!(&shape.shape, egui::Shape::Rect(rect)
+                    if rect.fill == colors.panel
+                        && rect.stroke == Stroke::new(colors.window_border_width, colors.window_border)
+                        && rect.corner_radius == egui::CornerRadius::same(colors.border_radius))
+            }), "The live and sample popups must paint the same shared menu frame");
+        }
         for name in [
             "Copy Path",
             "Copy Text",

@@ -394,6 +394,15 @@ impl OttrinApp {
                             changed
                         });
                     }
+                    if region == ThemePreviewRegion::Accent {
+                        ui.add_space(10.0);
+                        changed |= property_group(ui, "Shared menu geometry", c, |ui| {
+                            ui.label(RichText::new("Surface corners round the menu frame. Border thickness is shared with windows. Reset component leaves both values unchanged.").small().color(c.text_dim));
+                            let mut changed = number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                            changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.25, c);
+                            changed
+                        });
+                    }
                     if region != ThemePreviewRegion::Defaults {
                         ui.add_space(14.0);
                         changed |= property_group(ui, "Shared colors", c, |ui| {
@@ -1433,6 +1442,22 @@ mod tests {
             assert_eq!(app.theme_editor.custom.app_radius, seed.app_radius);
             activate(&mut app, &ctx, "Restore Button corners");
             assert_eq!(app.theme_editor.custom.button_radius, seed.button_radius);
+
+            app.theme_editor.selected_region = ThemePreviewRegion::Accent;
+            app.theme_editor.custom.button_radius = 12.0;
+            app.theme_editor.custom.border_radius = 13.0;
+            app.theme_editor.custom.window_border_width = 3.5;
+            app.theme_editor.custom.panel = [23, 61, 97, 255];
+            app.theme_editor.custom.window_border = [117, 42, 76, 255];
+            app.apply_theme_editor_live_preview(&ctx);
+            activate(&mut app, &ctx, "Reset component");
+            assert_eq!(app.theme_editor.custom.button_radius, seed.button_radius);
+            assert_eq!(app.theme_editor.custom.border_radius, 13.0);
+            assert_eq!(app.theme_editor.custom.window_border_width, 3.5);
+            assert_eq!(app.theme_editor.custom.panel, [23, 61, 97, 255]);
+            assert_eq!(app.theme_editor.custom.window_border, [117, 42, 76, 255]);
+            activate(&mut app, &ctx, "Restore Surface corners");
+            assert_eq!(app.theme_editor.custom.border_radius, seed.border_radius);
         }
     }
 
