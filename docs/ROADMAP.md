@@ -76,8 +76,18 @@ ignored), strict Linux/Windows cross-target UI lint and formatting pass. Actual
 source-built Linux Dark/Light scale1 verifies radius14/0, text1.35, real main
 List/Grid and Cancel restoring theme while preserving an independent main-view
 change. Both owned desktops/profiles are removed; twelve superseded incremental
-sessions and superseded initial captures are removed. This checkpoint still
-needs packaged delivery; it is not in the stable33 packages above. Evidence:
+sessions and superseded initial captures are removed. The four-format source43 candidate now passes contents/provenance, ten helper
+read-only checks, fresh Services/error/recovery and daemon watcher/idle checks.
+Eighteen actual mounted AppImage List/Grid originals plus six Services originals
+were directly reviewed. All owned profiles/displays/buses/processes/mounts and
+content extraction are removed; consumed transition captures are removed.
+Linux verification and both performance jobs pass in
+[run42333684833](https://github.com/hoozter/ottrin/actions/runs/42333684833);
+Windows verification remains running. Guarded publication preflight passes;
+source43 stays staged at `.hermes/packaging-tmp/.linux-native-desktop-stage`
+(115,977,962 bytes) until all four exact-source hosted jobs pass. Stable packages
+remain33. Current package evidence and cleanup:
+`.hermes/evidence/theme-layout-delivery-current/`. Source evidence:
 `.hermes/evidence/theme-view-layout-current/ACCEPTANCE.json` and `CLEANUP.json`.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
@@ -172,8 +182,9 @@ needs packaged delivery; it is not in the stable33 packages above. Evidence:
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
-   have bounded acceptance; List/Grid representation, inspector role ownership and
-   whole-interface alignment/grouping remain open. The theme-library miniature now
+   have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
+   above, with publication awaiting CI. Inspector role ownership, broader scale/
+   platform coverage and whole-interface alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
    scales window radius/border values with its miniature button scale. Existing
    30 appearance tests, strict Linux lint and actual Dark/Light Appearance-page
@@ -222,9 +233,9 @@ macOS and paid Windows signing remain outside the requested scope.
 
 ### Usable local preview
 
-Linux formats are in `dist/packages/`, from source `bee15669e83353b043350a099b9041ccdd14e5c8`.
+Linux formats are in `dist/packages/`, from source `33e148b01d61dafa94dae6fb96dd92cb02dc1419`.
 The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`015e3b04d9427422a545269c4424fe92ce2bbebb576e2193b69d4ada75fc357f`.
+`c96c440ee6e6ba1482d77e0b74c802ce5f96fa9a4643589c3d2495c968a8b713`.
 Windows ZIP/NSIS and unsigned development MSIX0.1.0.25 are in
 `dist/windows-candidate/`, from source `8e805d318557d3248ebf090aa8088dd86194b593`.
 Their acceptance manifests bind exact artifact hashes and scoped receipts;
