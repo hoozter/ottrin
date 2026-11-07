@@ -427,8 +427,12 @@ Current source, test, package and owner/external scopes stay separate.
    destination. The regression changes the destination before confirming
    and requires a new prompt without changing either file. The full Linux
    UI suite passed 543 tests with one existing ignore, and strict Clippy
-   passed on Linux and the Windows GNU target. Mounted package and native
-   Windows coverage for this change remain open.
+   passed on Linux and the Windows GNU target. A source-built Linux X11
+   chooser showed the Replace prompt for a caller-supplied non-UTF-8
+   filename, returned the exact native path after confirmation, and
+   preserved the file bytes. The owned display, profile and processes were
+   removed. Evidence: `picker-overwrite-confirmation-current/linux/RESULT.json`.
+   Mounted package and native Windows coverage remain open.
 4. Resolve ordinary-user MSI registration rollback, including the failed independent
    file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
    changes and manual registry compensation are not a working installer. This
