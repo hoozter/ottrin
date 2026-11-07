@@ -142,7 +142,38 @@ changing guarded fixture bytes. Twenty-eight theme plus six Services originals
 were directly reviewed. All owned QA resources and extraction are removed.
 Evidence: `.hermes/evidence/inspector-delivery-current/`.
 
-The candidate remains staged pending exact-source hosted CI and guarded delivery.
+That source21 candidate was superseded and retired after combined sourcec3
+package acceptance. The combined candidate includes shared geometry/reset ownership
+and property scrolling;38 Inspector/editor plus six Services originals were reviewed.
+Its current exact-source hosted CI/publication state is recorded in
+`.hermes/evidence/appearance-delivery-current/` and the active roadmap queue.
 Image/Office/PDF-specific editor preview states and the complete theme/property/
 platform audit remain open; these focused checks do not renew the historical
 38-control or whole-preset acceptance.
+
+
+### Production status-bar preview checkpoint (2026-11-07)
+
+The enlarged File manager preview now uses the production footer presenter for
+administrator-helper/index-service controls, hidden files, command bar, file count
+and centered wordmark. The generic Button and invented error/footer text are
+removed. Live service observations and action dispatch remain in the main-window
+caller; preview controls select Status bar styling. The component exposes its
+shared muted/secondary text, error, accent and hover roles explicitly.
+
+All534 active UI tests pass (one existing ignored), including an actual render/
+accessibility comparison of all four controls in both themes at1/1.35/2 typography
+and preview input routing. Existing narrow/large-text footer and complete-tooltip
+regressions pass. Strict Linux/Windows cross-target UI lint, formatting and the
+Linux debug GUI build pass. Twelve actual source-built Dark/Light native originals
+were directly reviewed, including default and selected controls, footer color
+4C3865 at typography1.35 in editor/main and Cancel restoration. The first QA
+wrapper rejected a blank output line; its owned teardown completed, the parser
+was fixed and both complete workflows passed on rerun.
+
+Evidence: `.hermes/evidence/statusbar-presenter-current/ACCEPTANCE.json` and
+`CLEANUP.json`. Both final and initial-attempt desktops/profiles/processes/mounts
+are removed; eight obsolete incremental sessions reclaimed0.65GiB. This change
+is source verified; current stable packages and the staged sourcec3 package keep
+their separate scope. Native Windows and complete theme-property acceptance
+remain open.

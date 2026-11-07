@@ -87,7 +87,7 @@
     {
       "id": "U08",
       "requirement": "Preview selection outlines match actual geometry; production Smart-panel controls and shared themed chrome replace invented preview controls.",
-      "current_scope": "Linux43 delivers real shared Column/List/Grid previews with square row selection and appropriately rounded Grid controls, and typography-aware Grid width. Production Smart-panel, navigation/tabs/window-control and Miller presenters retain their scoped checks. Inspector source21 mounted checks prove real controls/chrome/read-only rendering and shared roles; later source grouping/scroll fixes have native source evidence. Specialized Inspector image/Office/PDF representations and whole-property/platform acceptance remain open. Main status-bar presenter sharing also remains open: the enlarged file-manager preview still paints sample footer text and a generic Button instead of the actual service/view controls.",
+      "current_scope": "Linux43 delivers real shared Column/List/Grid previews with square row selection and appropriately rounded Grid controls, and typography-aware Grid width. Production Smart-panel, navigation/tabs/window-control and Miller presenters retain their scoped checks. Inspector source21 mounted checks prove real controls/chrome/read-only rendering and shared roles; later source grouping/scroll fixes have native source evidence. Specialized Inspector image/Office/PDF representations and whole-property/platform acceptance remain open. Production status-bar presenter is now shared with the File manager preview;534 active UI tests, Linux/Windows cross-target lint and12 directly reviewed source-built Dark/Light native originals pass. Footer color/typography changes match editor/main and Cancel restores state. This follow-up is not in staged sourcec3; full audit remains open.",
       "evidence": [
         ".hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json",
         ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_CAPTURE_REVIEW.json",
@@ -96,7 +96,9 @@
         ".hermes/evidence/grid-label-layout-current/WRAP_SOURCE_CHECKS.json",
         ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json"
+        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
+        ".hermes/evidence/statusbar-presenter-current/ACCEPTANCE.json",
+        ".hermes/evidence/statusbar-presenter-current/CLEANUP.json"
       ]
     },
     {

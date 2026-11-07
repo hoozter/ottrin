@@ -292,6 +292,19 @@ cohort were removed. Current package evidence:
    owned desktops/profiles/mounts and consumed transition captures are removed.
    Seven superseded incremental sessions reclaimed0.53GiB. Evidence:
    `appearance-scroll-current/ACCEPTANCE.json` and `CLEANUP.json`.
+   The File manager preview now shares the production status-bar presenter for
+   administrator/index controls, hidden files, command bar, file count and wordmark.
+   Generic Button/error placeholders are removed; preview controls select Status
+   bar styling without dispatching live service/file actions. Shared text/error/
+   accent/hover roles are explicit. All534 active UI tests, strict Linux/Windows
+   cross-target UI lint, formatting and debug GUI build pass. Twelve source-built
+   Dark/Light originals were directly reviewed, including defaults, control
+   selection, custom footer4C3865/text1.35 in editor/main and Cancel restoration.
+   Owned final/initial-attempt QA desktops/profiles/processes/mounts are removed;
+   eight obsolete incremental sessions reclaimed0.65GiB. Evidence:
+   `statusbar-presenter-current/ACCEPTANCE.json` and `CLEANUP.json`. This follow-up
+   is not in the staged sourcec3 package. Hold its source push until that exact
+   Windows CI job completes to avoid cancelling the verified candidate.
    Two read-only60-second samples of the personal installed daemon identify
    `ottrin-indexd`, approximately30–31MiB RSS and mean0.67/0.98% of one core.
    The latter remains Ready while its snapshot advances47 revisions and35 indexed

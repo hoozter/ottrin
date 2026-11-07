@@ -99,6 +99,7 @@ mod file_row;
 mod inspector_controls;
 mod picker;
 mod picker_parent;
+mod status_bar;
 pub use picker::PickerApp;
 mod properties;
 pub use properties::PropertiesApp;
@@ -5233,7 +5234,9 @@ impl OttrinApp {
             ThemePreviewRegion::Sidebar => {
                 "Info, Drop Folder, Search, Activity and Trash controls, panel background and shared contrast."
             }
-            ThemePreviewRegion::StatusBar => "Background of the bottom status and utility bar.",
+            ThemePreviewRegion::StatusBar => {
+                "Bottom status bar, file counts and utility controls. Shared text and accent colors also affect other components. Preview controls select styling without operating services or files."
+            }
             ThemePreviewRegion::Accent => {
                 "Shared action-button labels; backgrounds apply to filled buttons."
             }
@@ -5324,7 +5327,13 @@ impl OttrinApp {
                 ThemeColorField::Border,
                 ThemeColorField::Hover,
             ],
-            ThemePreviewRegion::StatusBar => &[ThemeColorField::TextMuted, ThemeColorField::Error],
+            ThemePreviewRegion::StatusBar => &[
+                ThemeColorField::TextMuted,
+                ThemeColorField::TextDim,
+                ThemeColorField::Error,
+                ThemeColorField::Accent,
+                ThemeColorField::Hover,
+            ],
             ThemePreviewRegion::Accent => &[ThemeColorField::Hover, ThemeColorField::Accent],
             ThemePreviewRegion::Borders => &[],
         }
@@ -14119,8 +14128,6 @@ impl OttrinApp {
     fn render_status_bar(&mut self, ctx: &Context) {
         let c = self.colors;
         let bottom_bar_bg = c.statusbar_bg;
-        let bottom_text = c.text_muted;
-        let bottom_dim = c.text_dim;
         if let Some(st) = &self.privileged_status {
             let ttl = match st.kind {
                 PrivilegedUiKind::InProgress => Duration::from_secs(30),
@@ -14145,212 +14152,71 @@ impl OttrinApp {
             )
             .show(ctx, |ui| {
                 ui.set_height((STATUS_BAR_HEIGHT * c.font_scale).ceil());
-                let mut text_rect = Rect::NOTHING;
-                let mut controls_left = ui.max_rect().right();
-                // Reserve persistent controls before allocating flexible footer text.
-                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    ui.add_space(4.0);
-                    // Privileged capability + latest operation status
-                    match &self.privileged_status {
-                        Some(st) => {
-                            let (icon, col) = match st.kind {
-                                PrivilegedUiKind::InProgress => (MI_LOCK, bottom_dim),
-                                PrivilegedUiKind::Success => (MI_CHECK, c.accent),
-                                PrivilegedUiKind::Error => (MI_LOCK, c.error),
-                            };
-                            let resp = ui.add(
-                                egui::Button::new(
-                                    RichText::new(icon).size(14.0 * c.font_scale).color(col),
-                                )
-                                .frame(false)
-                                .min_size(Vec2::splat(22.0))
-                                .themed(&c)
-                                .accessible_name("Manage administrator helper"),
-                            );
-                            if resp
-                                .on_hover_text(format!("{} — click to manage services", st.text))
-                                .clicked()
-                            {
-                                self.open_services_settings();
-                            }
-                        }
-                        None => {
-                            let (icon, col, tip) = match &self.privileged_availability {
-                                PrivilegedAvailability::Ready => (
-                                    MI_LOCK,
-                                    bottom_text,
-                                    "Integrated privilege management ready",
-                                ),
-                                PrivilegedAvailability::UpdateRequired(msg) => {
-                                    (MI_LOCK, c.accent, msg.as_str())
-                                }
-                                PrivilegedAvailability::Misconfigured(msg) => {
-                                    (MI_LOCK, c.error, msg.as_str())
-                                }
-                                PrivilegedAvailability::Unsupported(msg) => {
-                                    (MI_LOCK, bottom_text, msg.as_str())
-                                }
-                            };
-                            let resp = ui.add(
-                                egui::Button::new(
-                                    RichText::new(icon).size(13.0 * c.font_scale).color(col),
-                                )
-                                .frame(false)
-                                .min_size(Vec2::splat(22.0))
-                                .themed(&c)
-                                .accessible_name("Manage administrator helper"),
-                            );
-                            if resp
-                                .on_hover_text(format!("{tip} — click to manage services"))
-                                .clicked()
-                            {
-                                self.open_services_settings();
-                            }
-                        }
+                let (icon, color, size, tip) = match &self.privileged_status {
+                    Some(st) => {
+                        let (icon, color) = match st.kind {
+                            PrivilegedUiKind::InProgress => (MI_LOCK, c.text_dim),
+                            PrivilegedUiKind::Success => (MI_CHECK, c.accent),
+                            PrivilegedUiKind::Error => (MI_LOCK, c.error),
+                        };
+                        (icon, color, 14.0, st.text.as_str())
                     }
-                    ui.add_space(2.0);
-                    let search_observation = self.search_service.observation();
-                    let (_, s_col) = index_service_status(&search_observation, &c);
-                    let s_resp = ui.add(
-                        egui::Button::new(
-                            RichText::new(MI_SEARCH)
-                                .size(13.0 * c.font_scale)
-                                .color(s_col),
-                        )
-                        .frame(false)
-                        .min_size(Vec2::splat(22.0))
-                        .themed(&c)
-                        .accessible_name("Manage index service"),
-                    );
-                    if s_resp
-                        .on_hover_text(format!(
-                            "{}\nClick to manage the index service",
-                            search_diagnostics_tooltip(
-                                &search_observation.diagnostics,
-                                self.search_ui.scope,
-                                &self.state.active_tab().current_dir,
-                            )
-                        ))
-                        .clicked()
-                    {
-                        self.open_services_settings();
+                    None => {
+                        let (color, tip) = match &self.privileged_availability {
+                            PrivilegedAvailability::Ready => {
+                                (c.text_muted, "Integrated privilege management ready")
+                            }
+                            PrivilegedAvailability::UpdateRequired(msg) => (c.accent, msg.as_str()),
+                            PrivilegedAvailability::Misconfigured(msg) => (c.error, msg.as_str()),
+                            PrivilegedAvailability::Unsupported(msg) => {
+                                (c.text_muted, msg.as_str())
+                            }
+                        };
+                        (MI_LOCK, color, 13.0, tip)
                     }
-                    ui.add_space(2.0);
-                    // Hidden files toggle — right side
-                    let (hidden_icon, hidden_color) = if self.state.config.show_hidden_files {
-                        (MI_VISIBILITY, c.accent)
-                    } else {
-                        (MI_VISIBILITY_OFF, bottom_text)
-                    };
-                    let hid_resp = ui.add(
-                        egui::Button::new(
-                            RichText::new(hidden_icon)
-                                .size(16.0 * c.font_scale)
-                                .color(hidden_color),
-                        )
-                        .frame(false)
-                        .min_size(Vec2::splat(24.0))
-                        .themed(&c)
-                        .accessible_name(
-                            if self.state.config.show_hidden_files {
-                                "Hide hidden files"
-                            } else {
-                                "Show hidden files"
-                            },
-                        ),
-                    );
-                    if hid_resp.clicked() {
+                };
+                let observation = self.search_service.observation();
+                let (_, index_color) = index_service_status(&observation, &c);
+                let index_tooltip = search_diagnostics_tooltip(
+                    &observation.diagnostics,
+                    self.search_ui.scope,
+                    &self.state.active_tab().current_dir,
+                );
+                let status = self.file_status_text(self.state.active_tab().id);
+                let action = status_bar::render(
+                    ui,
+                    c,
+                    status_bar::State {
+                        helper: status_bar::Indicator {
+                            icon,
+                            color,
+                            size,
+                            tooltip: tip,
+                        },
+                        index_color,
+                        index_tooltip: &index_tooltip,
+                        show_hidden_files: self.state.config.show_hidden_files,
+                        command_visible: self.command_frame.visible,
+                        status: &status,
+                        feedback: self
+                            .status_message
+                            .as_ref()
+                            .map(|msg| (msg.text.as_str(), msg.ok)),
+                    },
+                );
+                match action {
+                    Some(status_bar::Action::Services) => self.open_services_settings(),
+                    Some(status_bar::Action::ToggleHidden) => {
                         self.state.config.show_hidden_files = !self.state.config.show_hidden_files;
                         self.refresh_active_tab();
                     }
-                    controls_left = hid_resp.rect.left();
-                    hid_resp.on_hover_text(if self.state.config.show_hidden_files {
-                        "Hide hidden files"
-                    } else {
-                        "Show hidden files"
-                    });
-                    ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                        // Command frame toggle — LEFT side (bar opens at the bottom-left)
-                        let cf_color = if self.command_frame.visible {
-                            c.accent_dim
-                        } else {
-                            bottom_text
-                        };
-                        let cf_resp = ui.add(
-                            egui::Button::new(
-                                RichText::new(MI_TERMINAL)
-                                    .size(16.0 * c.font_scale)
-                                    .color(cf_color),
-                            )
-                            .frame(false)
-                            .min_size(Vec2::splat(24.0))
-                            .themed(&c)
-                            .accessible_name(
-                                if self.command_frame.visible {
-                                    "Hide command bar"
-                                } else {
-                                    "Show command bar"
-                                },
-                            ),
-                        );
-                        if cf_resp.clicked() {
-                            self.command_frame.visible = !self.command_frame.visible;
-                            if self.command_frame.visible {
-                                self.command_frame.request_focus = true;
-                            }
+                    Some(status_bar::Action::ToggleCommand) => {
+                        self.command_frame.visible = !self.command_frame.visible;
+                        if self.command_frame.visible {
+                            self.command_frame.request_focus = true;
                         }
-                        cf_resp.on_hover_text("Toggle command bar  (or type any key)");
-                        ui.add_space(4.0);
-
-                        // Item count + selection name
-                        let tab_id = self.state.active_tab().id;
-                        let status = self.file_status_text(tab_id);
-                        let neutral = egui::TextFormat {
-                            font_id: FontId::proportional(11.5 * c.font_scale),
-                            color: bottom_text,
-                            ..Default::default()
-                        };
-                        let mut job = egui::text::LayoutJob::default();
-                        let tooltip = if let Some(msg) = &self.status_message {
-                            // Feedback has priority over a potentially long selection.
-                            job.append(
-                                &msg.text.replace(['\r', '\n'], " "),
-                                0.0,
-                                egui::TextFormat {
-                                    font_id: FontId::proportional(11.0 * c.font_scale),
-                                    color: if msg.ok { c.accent } else { c.error },
-                                    ..Default::default()
-                                },
-                            );
-                            job.append("  ·  ", 0.0, neutral.clone());
-                            format!("{}\n{}", msg.text, status)
-                        } else {
-                            status.clone()
-                        };
-                        job.append(&status.replace(['\r', '\n'], " "), 0.0, neutral);
-                        text_rect = ui
-                            .add(
-                                egui::Label::new(job)
-                                    .truncate()
-                                    .show_tooltip_when_elided(false),
-                            )
-                            .on_hover_text(tooltip)
-                            .rect;
-                    });
-                });
-
-                // Subtle centered wordmark in the status bar.
-                let logo_size = Vec2::new(82.0, 18.0);
-                let logo_rect = Rect::from_center_size(ui.max_rect().center(), logo_size);
-                if text_rect.right() + 8.0 <= logo_rect.left()
-                    && logo_rect.right() + 8.0 <= controls_left
-                {
-                    ui.put(
-                        logo_rect,
-                        egui::Image::new(egui::include_image!("../../../assets/logo.svg"))
-                            .fit_to_exact_size(logo_size)
-                            .tint(c.text_muted),
-                    );
+                    }
+                    None => {}
                 }
             });
     }
@@ -25391,9 +25257,7 @@ fn theme_editor_large_preview(
     let frame = rect.shrink(14.0);
     let title_h = (CUSTOM_TITLEBAR_HEIGHT * preview.font_scale).ceil();
     let nav_h = (CUSTOM_TITLEBAR_HEIGHT * preview.font_scale).ceil();
-    let status_h = (frame.height() * 0.08)
-        .clamp(22.0, 28.0)
-        .max(f32::from(preview.app_radius));
+    let status_h = (STATUS_BAR_HEIGHT * preview.font_scale).ceil();
     let titlebar = Rect::from_min_size(frame.min, Vec2::new(frame.width(), title_h));
     let nav = Rect::from_min_size(
         egui::pos2(frame.left(), titlebar.bottom()),
@@ -25450,10 +25314,6 @@ fn theme_editor_large_preview(
     let mut selected_row = Rect::NOTHING;
     let mut row_clicked = None;
     let mut text_band = Rect::NOTHING;
-    let accent_badge = Rect::from_min_size(
-        egui::pos2(status.right() - 124.0, status.center().y - 11.0),
-        Vec2::new(96.0, 22.0),
-    );
     let border_rect = frame;
 
     p.rect_filled(outer, preview.app_radius as f32 + 4.0, preview.panel_raised);
@@ -25870,32 +25730,31 @@ fn theme_editor_large_preview(
         },
         preview.statusbar_bg,
     );
-    p.text(
-        egui::pos2(status.left() + 12.0, status.center().y),
-        Align2::LEFT_CENTER,
-        "12 items  |  preview ready",
-        FontId::proportional(9.4 * preview.font_scale),
-        preview.text_muted,
+    let mut status_ui = ui.new_child(
+        UiBuilder::new()
+            .id_salt("theme_preview_status_bar")
+            .max_rect(status.shrink2(Vec2::new(12.0, 0.0))),
     );
-    p.text(
-        status.center(),
-        Align2::CENTER_CENTER,
-        "Example error",
-        FontId::proportional(9.4 * preview.font_scale),
-        preview.error,
-    );
-    p.rect_filled(
-        accent_badge,
-        preview.button_radius as f32,
-        preview.button_bg,
-    );
-    p.text(
-        accent_badge.center(),
-        Align2::CENTER_CENTER,
-        "Button",
-        FontId::proportional(9.6 * preview.font_scale),
-        preview.button_text,
-    );
+    status_ui.set_clip_rect(status.intersect(ui.clip_rect()));
+    let status_clicked = status_bar::render(
+        &mut status_ui,
+        preview,
+        status_bar::State {
+            helper: status_bar::Indicator {
+                icon: MI_LOCK,
+                color: preview.text_muted,
+                size: 13.0,
+                tooltip: "Integrated privilege management ready",
+            },
+            index_color: preview.success_text(),
+            index_tooltip: "Index ready",
+            show_hidden_files: false,
+            command_visible: false,
+            status: "12 items",
+            feedback: None,
+        },
+    )
+    .is_some();
 
     // Like the actual viewport frame, the border must cover all content fills.
     p.rect_stroke(
@@ -25907,10 +25766,6 @@ fn theme_editor_large_preview(
 
     let regions = vec![
         (ThemePreviewRegion::SelectedRow, selected_row),
-        (
-            ThemePreviewRegion::Accent,
-            accent_badge.expand2(Vec2::new(4.0, 4.0)),
-        ),
         (ThemePreviewRegion::ColumnText, text_band),
         (ThemePreviewRegion::Navigation, title_tab),
         (ThemePreviewRegion::Titlebar, titlebar),
@@ -25940,6 +25795,8 @@ fn theme_editor_large_preview(
         && ui.ctx().input(|i| i.pointer.primary_clicked())
     {
         Some(ThemePreviewRegion::Borders)
+    } else if status_clicked {
+        Some(ThemePreviewRegion::StatusBar)
     } else if row_clicked.is_some() {
         row_clicked
     } else if titlebar_clicked {
@@ -26308,6 +26165,117 @@ mod tests {
             .collect();
         assert!(texts.iter().any(|text| text == "Duration: 5s"));
         assert!(!texts.iter().any(|text| text.ends_with(" ago")));
+    }
+
+    #[test]
+    fn theme_preview_status_bar_matches_live_controls_and_selects_without_actions() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+        for colors in [
+            Colors::preset(ThemePreset::Ottrin, true),
+            Colors::preset(ThemePreset::Ottrin, false),
+        ] {
+            for scale in [1.0, 1.35, 2.0] {
+                let (_root, mut app, _) = clipboard_keyboard_fixture();
+                app.colors = colors;
+                app.colors.font_scale = scale;
+                let colors = app.colors;
+                let input = |events| egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1000.0, 740.0),
+                    )),
+                    events,
+                    ..Default::default()
+                };
+                let live_ctx = Context::default();
+                live_ctx.enable_accesskit();
+                let live = live_ctx.run(input(vec![]), |ctx| app.render_status_bar(ctx));
+                let ctx = Context::default();
+                ctx.enable_accesskit();
+                let selected = std::cell::Cell::new(None);
+                let render = |events| {
+                    ctx.run(input(events), |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            selected.set(
+                                theme_editor_large_preview(
+                                    ui,
+                                    colors,
+                                    ThemePreviewRegion::StatusBar,
+                                    &mut ViewMode::Miller,
+                                )
+                                .1,
+                            );
+                        });
+                    })
+                };
+                let preview = render(vec![]);
+                let buttons = |output: &egui::FullOutput| {
+                    output
+                        .platform_output
+                        .accesskit_update
+                        .as_ref()
+                        .unwrap()
+                        .nodes
+                        .iter()
+                        .filter(|(_, node)| node.role() == Role::Button)
+                        .map(|(id, node)| {
+                            (
+                                node.label().unwrap_or_default().to_owned(),
+                                (*id, node.bounds().unwrap()),
+                            )
+                        })
+                        .collect::<std::collections::HashMap<_, _>>()
+                };
+                let actual = buttons(&live);
+                let samples = buttons(&preview);
+                for name in [
+                    "Manage administrator helper",
+                    "Manage index service",
+                    "Show hidden files",
+                    "Show command bar",
+                ] {
+                    let real = actual[name].1;
+                    let sample = samples
+                        .get(name)
+                        .expect("preview must show every actual footer control");
+                    assert!(
+                        (real.width() - sample.1.width()).abs() < 0.1,
+                        "{name} width at {scale}"
+                    );
+                    assert!(
+                        (real.height() - sample.1.height()).abs() < 0.1,
+                        "{name} height at {scale}"
+                    );
+                    render(vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                        action: Action::Click,
+                        target: sample.0,
+                        data: None,
+                    })]);
+                    assert_eq!(
+                        selected.get(),
+                        Some(ThemePreviewRegion::StatusBar),
+                        "{name} selects footer styling"
+                    );
+                }
+                let text = preview
+                    .shapes
+                    .iter()
+                    .filter_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                for icon in [MI_TERMINAL, MI_VISIBILITY_OFF, MI_SEARCH, MI_LOCK] {
+                    assert!(text.contains(&icon), "actual footer icon missing: {icon}");
+                }
+                assert!(text.contains(&"12 items"));
+                assert!(!text.contains(&"Button") && !text.contains(&"Example error"));
+                // Preview events above never enter the live application's action dispatch.
+                assert!(!app.command_frame.visible);
+                assert!(!app.state.config.show_hidden_files);
+                assert!(!app.show_settings);
+            }
+        }
     }
 
     #[test]
