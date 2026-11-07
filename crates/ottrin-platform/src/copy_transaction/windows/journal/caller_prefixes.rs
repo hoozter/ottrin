@@ -61,19 +61,24 @@ pub(in super::super) fn exercise_profile_creation_faults(
         Ok("after-anchor") => &[(3, after)],
         Ok("before-root") => &[(4, before)],
         Ok("after-root") => &[(4, after)],
+        Ok("partial-anchor-write") => &[(0, Step::ProfileAnchorPartialWrite)],
+        Ok("before-anchor-flush") => &[(0, Step::ProfileAnchorBeforeFlush)],
         other => panic!("Unknown owned profile creation fault: {other:?}"),
     };
 
     for &(ordinal, step) in cases {
+        let created = if ordinal == 0 {
+            paths.len()
+        } else {
+            usize::try_from(ordinal - u64::from(step == before)).unwrap()
+        };
         let mut expected = Vec::new();
-        for prior in 1..ordinal {
-            expected.extend([(prior, before, false), (prior, after, false)]);
+        for prior in 1..=u64::try_from(created).unwrap() {
+            expected.extend([(prior, before, false), (prior, after, ordinal == prior)]);
         }
-        if step == after {
-            expected.push((ordinal, before, false));
+        if step != after {
+            expected.push((ordinal, step, true));
         }
-        expected.push((ordinal, step, true));
-        let created = usize::try_from(ordinal - u64::from(step == before)).unwrap();
 
         let trace = Trace::start();
         FAULT.with(|slot| slot.set(Some((ordinal, step, false))));
@@ -99,10 +104,20 @@ pub(in super::super) fn exercise_profile_creation_faults(
                 }
                 let metadata = std::fs::symlink_metadata(path).unwrap();
                 assert_eq!(metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT, 0);
-                let file = if index == 2 {
+                let (file, anchor_bytes) = if index == 2 {
                     let file = File::open(path).unwrap();
-                    assert!(read(&file).unwrap().is_empty());
-                    file
+                    let bytes = read(&file).unwrap();
+                    match step {
+                        Step::ProfileAnchorPartialWrite => {
+                            assert!(!bytes.is_empty());
+                            assert!(serde_json::from_slice::<serde_json::Value>(&bytes).is_err());
+                        }
+                        Step::ProfileAnchorBeforeFlush => {
+                            assert!(serde_json::from_slice::<serde_json::Value>(&bytes).is_ok());
+                        }
+                        _ => assert!(bytes.is_empty()),
+                    }
+                    (file, Some(bytes))
                 } else {
                     let count = match index {
                         0 => usize::from(created >= 2),
@@ -114,7 +129,10 @@ pub(in super::super) fn exercise_profile_creation_faults(
                         .collect::<Result<Vec<_>, _>>()
                         .unwrap();
                     assert_eq!(entries.len(), count);
-                    windows_fs::open_directory(path, FILE_GENERIC_READ).unwrap()
+                    (
+                        windows_fs::open_directory(path, FILE_GENERIC_READ).unwrap(),
+                        None,
+                    )
                 };
                 let identity = stable_identity_from_handle(&file).unwrap();
                 if index == 2 {
@@ -122,14 +140,18 @@ pub(in super::super) fn exercise_profile_creation_faults(
                 } else {
                     assert!(identity.is_directory_without_reparse());
                 }
-                snapshot.push(identity);
+                snapshot.push((identity, anchor_bytes));
             }
             snapshot
         };
         let mut snapshot = Vec::new();
         as_original_owner(&mut || snapshot = observe());
         let discovery = caller.copy_registry(&[], false);
-        if created >= 3 {
+        if step == Step::ProfileAnchorBeforeFlush {
+            // A complete record can be read by the live filesystem before
+            // flush. This observation does not imply crash durability.
+            assert!(discovery.unwrap().is_some());
+        } else if created >= 3 {
             let error = discovery
                 .err()
                 .expect("Incomplete anchor must require review");

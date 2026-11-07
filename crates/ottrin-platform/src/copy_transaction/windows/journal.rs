@@ -4232,6 +4232,10 @@ enum Step {
     PrivateCreateBefore,
     #[cfg(test)]
     PrivateCreateAfter,
+    #[cfg(test)]
+    ProfileAnchorPartialWrite,
+    #[cfg(test)]
+    ProfileAnchorBeforeFlush,
     OriginalReadersReleased,
     OriginalRenamed,
     OriginalFlushed,
@@ -4319,6 +4323,30 @@ pub(crate) fn caller_private_create_boundary(after: bool) -> std::io::Result<()>
         },
     )
     .map_err(std::io::Error::other)
+}
+
+#[cfg(test)]
+pub(super) fn caller_profile_anchor_write_fault(
+    marker: &mut File,
+    record: &impl serde::Serialize,
+) -> Result<(), PlatformError> {
+    let point = Step::ProfileAnchorPartialWrite;
+    if FAULT.with(|slot| slot.get()) == Some((0, point, false)) {
+        let bytes = serde_json::to_vec(record).map_err(io)?;
+        // Leave a real prefix of the record in the original anchor file.
+        marker.write_all(&bytes[..bytes.len() / 2]).map_err(io)?;
+        boundary(0, point)?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+pub(super) fn caller_profile_anchor_flush_fault() -> Result<(), PlatformError> {
+    let point = Step::ProfileAnchorBeforeFlush;
+    if FAULT.with(|slot| slot.get()) == Some((0, point, false)) {
+        boundary(0, point)?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -8435,8 +8463,11 @@ mod tests {
                 Step::CleanupHandleClosed => "cleanup-closed",
                 Step::CleanupFlushed => "cleanup-flushed",
                 Step::CleanupMetadata { .. } => "cleanup-metadata",
-                Step::PrivateCreateBefore | Step::PrivateCreateAfter => {
-                    panic!("Caller-only creation faults require the authenticated dispatcher trace")
+                Step::PrivateCreateBefore
+                | Step::PrivateCreateAfter
+                | Step::ProfileAnchorPartialWrite
+                | Step::ProfileAnchorBeforeFlush => {
+                    panic!("Caller-only profile faults require the authenticated dispatcher trace")
                 }
             };
             let status=std::process::Command::new(std::env::current_exe().unwrap())

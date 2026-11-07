@@ -564,7 +564,15 @@ impl AnchoredRoot {
                         creator: creator.clone(),
                         security: security::PrivateSecurity::capture(&root, &creator)?,
                     };
+                    #[cfg(test)]
+                    if matches!(&authority, Authority::Caller(_)) {
+                        super::journal::caller_profile_anchor_write_fault(&mut marker, &record)?;
+                    }
                     serde_json::to_writer(&mut marker, &record).map_err(io)?;
+                    #[cfg(test)]
+                    if matches!(&authority, Authority::Caller(_)) {
+                        super::journal::caller_profile_anchor_flush_fault()?;
+                    }
                     marker.sync_all().map_err(io)?;
                     root.sync_all().map_err(io)?;
                     parent.sync_all().map_err(io)

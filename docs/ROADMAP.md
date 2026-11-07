@@ -255,9 +255,14 @@ Current source, test, package and owner/external scopes stay separate.
      to `before-state`, `after-state`, `before-anchor`, `after-anchor`,
      `before-root` or `after-root`. The fixture checks native identities,
      exact retained entries, unchanged empty anchor bytes and read-only
-     refusal of an incomplete anchor before retiring owned state. Strict
-     Windows-target test lint passes. Native execution of those cases and
-     anchor record write/flush faults remain open.
+     refusal of an incomplete anchor before retiring owned state. The
+     `partial-anchor-write` case writes a real truncated record and checks
+     refusal with the same bytes and native identities. The
+     `before-anchor-flush` case checks that a complete record remains
+     readable in the running system after the injected failure, with no
+     destination file created. It does not test crash durability. Strict
+     Windows-target test lint passes. Native execution of the expanded
+     matrix remains open.
    - Extend coverage through the remaining claim and native I/O boundaries.
      Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including
