@@ -13527,7 +13527,7 @@ impl OttrinApp {
 
                         // ── Info section ───────────────────────────────────────
                         SidebarSection::Info => {
-                            smart_panel_header(ui, &c, MI_DESCRIPTION, "Info");
+                            smart_panel_header(ui, &c, SidebarSection::Info);
 
                             let selected = self.active_selected_entry();
 
@@ -13853,7 +13853,7 @@ impl OttrinApp {
 
                         // ── Target section ─────────────────────────────────────
                         SidebarSection::Target => {
-                            smart_panel_header(ui, &c, MI_MOVE_TO_INBOX, "Drop Folder");
+                            smart_panel_header(ui, &c, SidebarSection::Target);
 
                             let card_fill = if target_set {
                                 Color32::from_rgba_unmultiplied(c.accent.r(), c.accent.g(), c.accent.b(), 16)
@@ -14346,7 +14346,7 @@ impl OttrinApp {
             self.start_trash_panel_refresh(false);
         }
         let c = self.colors;
-        smart_panel_header(ui, &c, MI_DELETE, "Trash");
+        smart_panel_header(ui, &c, SidebarSection::Trash);
         ui.horizontal(|ui| {
             ui.add_space(10.0);
             if ui
@@ -14644,7 +14644,7 @@ impl OttrinApp {
 
     fn render_activity_sidebar(&mut self, ui: &mut egui::Ui) {
         let c = self.colors;
-        smart_panel_header(ui, &c, MI_HISTORY, "Activity");
+        smart_panel_header(ui, &c, SidebarSection::Activity);
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         if ottrin_core::PRIVILEGED_COPY_RECOVERY_SUPPORTED {
             self.render_privileged_copy_history(ui);
@@ -15254,7 +15254,7 @@ impl OttrinApp {
     fn render_search_sidebar(&mut self, ui: &mut egui::Ui) {
         let c = self.colors;
 
-        smart_panel_header(ui, &c, MI_SEARCH, "Search");
+        smart_panel_header(ui, &c, SidebarSection::Search);
 
         // ── Search input — visually bordered, clearly an input ──────────
         let border_col = if self.search_ui.input_focused {
@@ -24144,7 +24144,15 @@ fn smart_panel_icon_button(
     resp
 }
 
-fn smart_panel_header(ui: &mut egui::Ui, c: &Colors, icon: &str, title: &str) {
+fn smart_panel_header(ui: &mut egui::Ui, c: &Colors, section: SidebarSection) {
+    let (icon, title) = match section {
+        SidebarSection::None => return,
+        SidebarSection::Info => (MI_DESCRIPTION, "Info"),
+        SidebarSection::Target => (MI_MOVE_TO_INBOX, "Drop Folder"),
+        SidebarSection::Search => (MI_SEARCH, "Search"),
+        SidebarSection::Activity => (MI_HISTORY, "Activity"),
+        SidebarSection::Trash => (MI_DELETE, "Trash"),
+    };
     ui.add_space(8.0);
     ui.horizontal(|ui| {
         ui.add_space(8.0);
@@ -25781,13 +25789,7 @@ fn theme_editor_large_preview(
         );
         let mut panel_ui = ui.new_child(UiBuilder::new().max_rect(panel));
         panel_ui.set_clip_rect(panel.intersect(ui.clip_rect()));
-        let (icon, title) = match selected {
-            SidebarSection::Target => (MI_MOVE_TO_INBOX, "Drop Folder"),
-            SidebarSection::Search => (MI_SEARCH, "Search"),
-            SidebarSection::Activity => (MI_HISTORY, "Activity"),
-            _ => (MI_DELETE, "Trash"),
-        };
-        smart_panel_header(&mut panel_ui, &preview, icon, title);
+        smart_panel_header(&mut panel_ui, &preview, selected);
     }
     let mut strip_ui = ui.new_child(UiBuilder::new().max_rect(strip));
     let strip_clicked = render_smart_panel_strip(

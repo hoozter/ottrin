@@ -1813,7 +1813,7 @@ mod tests {
     fn preview_uses_real_smart_panel_icons_and_toggle_behavior() {
         let ctx = Context::default();
         let c = Colors::preset(ThemePreset::Nord, true);
-        let render = |events| {
+        let render = |mut view, events| {
             let mut picked = None;
             let output = ctx.run(
                 egui::RawInput {
@@ -1830,7 +1830,7 @@ mod tests {
                             ui,
                             c,
                             ThemePreviewRegion::Sidebar,
-                            &mut ViewMode::Miller,
+                            &mut view,
                         )
                         .1;
                     });
@@ -1838,7 +1838,7 @@ mod tests {
             );
             (output, picked)
         };
-        let (output, _) = render(vec![]);
+        let (output, _) = render(ViewMode::Miller, vec![]);
         for icon in [
             MI_DESCRIPTION,
             MI_MOVE_TO_INBOX,
@@ -1849,17 +1849,18 @@ mod tests {
             assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == icon)), "Missing real Smart Panel icon {icon}");
         }
         assert!(!output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if ["Details", "Target", "Preview"].contains(&t.galley.job.text.as_str()))));
-        let pos = output
-            .shapes
-            .iter()
-            .find_map(|shape| match &shape.shape {
-                egui::epaint::Shape::Text(t) if t.galley.job.text == MI_SEARCH => {
-                    Some(t.pos + t.galley.size() / 2.0)
-                }
-                _ => None,
-            })
-            .unwrap();
-        let click = || {
+        let click = |icon| {
+            let pos = output
+                .shapes
+                .iter()
+                .filter_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Text(t) if t.galley.job.text == icon => {
+                        Some(t.pos + t.galley.size() / 2.0)
+                    }
+                    _ => None,
+                })
+                .max_by(|left, right| left.x.total_cmp(&right.x))
+                .unwrap();
             vec![
                 egui::Event::PointerMoved(pos),
                 egui::Event::PointerButton {
@@ -1876,13 +1877,36 @@ mod tests {
                 },
             ]
         };
-        assert_eq!(render(click()).1, Some(ThemePreviewRegion::Sidebar));
-        let (expanded, _) = render(vec![]);
+        assert_eq!(
+            render(ViewMode::Miller, click(MI_SEARCH)).1,
+            Some(ThemePreviewRegion::Sidebar)
+        );
+        let (expanded, _) = render(ViewMode::Miller, vec![]);
         assert!(expanded.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "Search")), "The real header appears when Search opens");
         assert!(expanded.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Rect(r) if r.fill == c.selected_bg && r.rect.width() == SMART_PANEL_STRIP_WIDTH && r.corner_radius.nw == c.button_radius)));
-        render(click());
-        let (collapsed, _) = render(vec![]);
+        render(ViewMode::Miller, click(MI_SEARCH));
+        let (collapsed, _) = render(ViewMode::Miller, vec![]);
         assert!(!collapsed.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "Search")), "Clicking the active icon collapses its panel");
+
+        for view in [ViewMode::List, ViewMode::Grid, ViewMode::Miller] {
+            render(view, vec![]);
+            assert_eq!(
+                render(view, click(MI_DESCRIPTION)).1,
+                Some(ThemePreviewRegion::Sidebar)
+            );
+            let (info, _) = render(view, vec![]);
+            let title_visible = |title| {
+                info.shapes.iter().any(|shape| {
+                matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == title)
+            })
+            };
+            assert_eq!(title_visible("Info"), view != ViewMode::Miller);
+            assert!(
+                !title_visible("Trash"),
+                "Info must never show the Trash header"
+            );
+            render(view, click(MI_DESCRIPTION));
+        }
     }
 
     #[test]

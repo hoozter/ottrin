@@ -111,6 +111,10 @@ field-specific accessibility names. The picker exposes named RGB and opacity
 controls. Rendered Dark/Light tests activate the swatch, edit the live toolbar
 color and opacity, and restore the opening value through accessibility actions.
 This checkpoint awaits the next combined package build.
+The File manager theme sample and live Smart Panel now share section headings.
+Clicking Info in List or Grid shows the Info title and icon. Column view keeps
+Info inline. The rendered regression opens and closes Info in all three views
+and checks that the preview never substitutes the Trash heading.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.
