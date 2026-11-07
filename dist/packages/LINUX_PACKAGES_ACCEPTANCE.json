@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux picker multiselect update; full roadmap and UI audit incomplete",
-  "source_revision": "e3813dab6f9f62d8ed711322704551f43fcf70bc",
+  "status": "pass scoped Linux Services readiness and desktop dialog blocker update; full roadmap and UI audit incomplete",
+  "source_revision": "379611733bda06e976239d41c6d4fdc9c152e541",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "e15dab9f595f85631a30df3fce9d7b0235e86f9e35fec21232deb6aade912577",
-    "Ottrin-0.1.0-x86_64.AppImage": "e4680b4c07d0577eeb27e598891e7da2fd5f9f00603e2adaf600eb600ab7cf9d",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "4c2747898328cb6c0b0e3c0acfb3fac1bbd8fc9ce7fd097b5dd146ee67fc3e16",
-    "ottrin_0.1.0_amd64.deb": "655106a229bf838af6af94f3947d11fcf37991fb824426fa441ca7406a7cf772"
+    "ottrin-0.1.0-1.x86_64.rpm": "3aa0b2ae0a28f3a5e7bb1f5fb21cb559e1c5099571f3e3767032bfdf0e13cb1e",
+    "Ottrin-0.1.0-x86_64.AppImage": "7c84456631b8558b177266eb7d278f22b402f97b5256269d79b4cf2f83c49470",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "500001814d6a5fa78fdddf6e24b781b59807493d5166ae19f8ddc0ffe6150be6",
+    "ottrin_0.1.0_amd64.deb": "c15d8a55d8462f6c35aff5ac88c81824905dc48c8528fd61dc67a661419109eb"
   },
-  "evidence": ".hermes/evidence/picker-multiselect-delivery-current",
+  "evidence": ".hermes/evidence/services-clarity-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,21 +17,21 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "3ab5dd9c88ce7703257577d5e21b924f6d6eb33af1347d1c79982dc97785a9a2",
+    "application": "7113d318df805db2b0a22194f9b6494280b74d687bbd45aac87bb529462682d6",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
-    "privileged_helper": "b64113ef2c10cc40b049802a571bddb02713539f5acf35c8588f1dd1bd467da2",
+    "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42386147336,
-    "tested_source_revision": "e3813dab6f9f62d8ed711322704551f43fcf70bc",
+    "run": 42391178128,
+    "tested_source_revision": "379611733bda06e976239d41c6d4fdc9c152e541",
     "all_four_jobs_success": true
   },
-  "native_current_ui": ".hermes/evidence/inspector-visual-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_current_ui": ".hermes/evidence/services-clarity-delivery-current/SERVICES_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/picker-multiselect-delivery-current/SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/services-clarity-delivery-current/SOURCE_SCOPE.json",
   "daemon_identity": null,
   "daemon_runtime": ".hermes/evidence/inspector-visual-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
   "daemon_runtime_scope": {
@@ -42,7 +42,7 @@
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
   "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
   "current_helper_read_only": [
-    ".hermes/evidence/picker-multiselect-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/services-clarity-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "historical_daemon_evidence": {
@@ -54,10 +54,10 @@
     "applies_to_current_daemon_identity": false
   },
   "limits": [
-    "Mounted Dark stdin/stdout and Light desktop portal FileChooser requests return exact file and folder multi-selections without starting an index or changing original files or configuration. Physical desktop and native Windows caller acceptance remain separate.",
-    "Inspector, footer, Services, daemon performance and native distribution receipts retain their original scopes. Daemon, privileged helper and HTML renderer bytes match the previous accepted cohort.",
+    "Mounted Dark and Light Services checks cover a real private FileChooser blocker and Check again revealing Apply change after it closes. The personal status check was read-only.",
+    "Inspector, footer, Services, daemon performance and native distribution receipts retain their original scopes. Daemon and HTML renderer bytes match the previous accepted cohort. The helper change is a message update with unchanged protocol and ten packaged read-only checks.",
     "No full appearance, native Windows, public release, Store, signing or MSI acceptance.",
-    "Packaged manuals are build-time snapshots at e3813dab; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at 37961173; repository metadata records later delivery."
   ],
   "native_current_theme": ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
   "previous_theme_ui": ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",

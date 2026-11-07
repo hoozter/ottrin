@@ -6,8 +6,8 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `e3813dab`. All four hosted
-jobs passed in [run 42386147336](https://github.com/hoozter/ottrin/actions/runs/42386147336).
+The stable local Linux packages use verified source `37961173`. All four hosted
+jobs passed in [run 42391178128](https://github.com/hoozter/ottrin/actions/runs/42391178128).
 Windows retains its separately accepted source `8e805d31`.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
@@ -26,7 +26,7 @@ The foreground window kept its mounted version, and the byte-identical managed
 index stayed Ready on the same process. Startup settings, preferences and
 database identity were preserved. The consumed stage and superseded package
 paths were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-Promotion evidence: `.hermes/evidence/picker-multiselect-delivery-current/PROMOTION.json`.
+Promotion evidence: `.hermes/evidence/services-clarity-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -63,8 +63,8 @@ a desktop request or background session when its bus owner can be resolved.
 The check still prevents a restart while those objects are active.
 All four local formats for `37961173` passed content verification. The mounted
 Dark and Light checks named the private caller while its request was open and
-offered Apply change after it closed. Exact hosted verification is running in
-[run 42391178128](https://github.com/hoozter/ottrin/actions/runs/42391178128).
+offered Apply change after it closed. All four exact hosted jobs passed and
+the stable packages were promoted without restarting the index.
 
 The status bar geometry update, delivered with `0298384d`, exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
@@ -5161,6 +5161,8 @@ Approved on 2026-10-11 as a must-have, not optional research. Start after the ea
 
 ## Triggered work, not background work
 
+These outcomes remain available, but they start only when their trigger is met. Workers must not choose them merely because another lane is waiting for physical QA.
+
 ### Linux package-manager updates
 
 The requested distribution milestone follows the current Services delivery.
@@ -5184,7 +5186,6 @@ and downgrade refusal. Keep the primary signing key out of Actions and test
 backup restoration and rotation. Production requires verified domain access,
 bucket-scoped credentials, signing authority, and a published stable release.
 
-These outcomes remain available, but they start only when their trigger is met. Workers must not choose them merely because another lane is waiting for physical QA.
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
 - **Portable LibreOffice fidelity pack:** start only after installed-provider acceptance shows a concrete need and provenance, update ownership, licence and removal responsibilities are acceptable.
