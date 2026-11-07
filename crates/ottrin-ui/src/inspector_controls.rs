@@ -208,7 +208,7 @@ impl Default for VisualSampleSizing {
     }
 }
 
-const IMAGE_SAMPLE: &[u8] = include_bytes!("../../../assets/icon.png");
+const IMAGE_SAMPLE: &[u8] = include_bytes!("../../../assets/inspector-sample.png");
 
 const PDF_SAMPLE: &[u8] = include_bytes!("../../../assets/inspector-sample.pdf");
 const PDF_SAMPLE_PAGES: usize = 2;
@@ -222,8 +222,12 @@ fn sample_visual_image(
         [const { OnceLock::new() }; PDF_SAMPLE_PAGES];
     let (uri, bytes) = if kind == SampleKind::Pdf {
         let page = PDF_PAGES[spec.page_index].get_or_init(|| {
-            ottrin_preview::render_pdf_bytes_page_png(PDF_SAMPLE, spec.page_index, 768)
-                .map_err(|error| error.to_string())
+            ottrin_preview::render_pdf_bytes_page_png(
+                PDF_SAMPLE,
+                spec.page_index,
+                PREVIEW_CACHE_BUCKET_XL,
+            )
+            .map_err(|error| error.to_string())
         });
         (
             format!("bytes://theme-sample/document-page-{}.png", spec.page_index),
@@ -231,7 +235,7 @@ fn sample_visual_image(
         )
     } else {
         (
-            "bytes://theme-sample/ottrin-icon.png".to_owned(),
+            "bytes://theme-sample/inspector-sample.png".to_owned(),
             IMAGE_SAMPLE,
         )
     };
@@ -288,14 +292,19 @@ fn theme_sample(kind: SampleKind) -> PreviewData {
     match kind {
         SampleKind::Text => {}
         SampleKind::Image => {
-            sample.title = "ottrin-icon.png".into();
+            sample.title = "inspector-sample.png".into();
             sample.kind = PreviewKind::Image;
-            sample.body.clear();
+            sample.body = format!(
+                "Filetype: PNG image\nResolution: 256x256\nSize: {}",
+                format_size(IMAGE_SAMPLE.len() as u64)
+            );
         }
         SampleKind::Pdf => {
             sample.title = "inspector-sample.pdf".into();
             sample.kind = PreviewKind::Pdf;
-            sample.body = format!("Filetype: PDF document\nPages: {PDF_SAMPLE_PAGES}");
+            sample.body = format!(
+                "Filetype: PDF document\nPages: {PDF_SAMPLE_PAGES}\nTitle: Ottrin Inspector sample"
+            );
         }
         SampleKind::Document => {
             sample.title = "document.docx".into();
@@ -509,6 +518,12 @@ pub(crate) fn theme_preview(
                                     |spec| sample_visual_image(state.kind, spec).ok(),
                                 );
                             }
+                            preview_render::render_preview_footer(
+                                ui,
+                                c,
+                                &sample.title,
+                                &sample.body,
+                            );
                         });
                     }
                     Err(error) => {
@@ -985,7 +1000,7 @@ mod tests {
         let mut app = OttrinApp::default();
         app.colors = colors;
         app.preview.visible = true;
-        app.preview.path = Some(PathBuf::from("ottrin-icon.png"));
+        app.preview.path = Some(PathBuf::from("inspector-sample.png"));
         app.preview.data = Some(theme_sample(SampleKind::Image));
         app.preview.visual_fit = true;
         app.preview.visual_zoom = 1.0;

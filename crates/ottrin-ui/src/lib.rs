@@ -141,11 +141,11 @@ use listing::{
 #[cfg(not(target_os = "linux"))]
 use preview_render::render_document_body_preview;
 use preview_render::{
-    GenericPreviewAction, PreviewBodySizing, compact_preview_metadata, inspector_icon_button,
-    preview_payload_for_copy, render_docx_page_preview, render_folder_body_preview,
-    render_generic_body_preview, render_image_hover_nav, render_metadata_card_preview,
-    render_preview_card_action, render_shared_preview_body, shared_preview_body_kind,
-    specialized_preview_body_action, split_preview_extracted_text,
+    GenericPreviewAction, PreviewBodySizing, inspector_icon_button, preview_payload_for_copy,
+    render_docx_page_preview, render_folder_body_preview, render_generic_body_preview,
+    render_image_hover_nav, render_metadata_card_preview, render_preview_card_action,
+    render_shared_preview_body, shared_preview_body_kind, specialized_preview_body_action,
+    split_preview_extracted_text,
 };
 use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_palette, style_for_entry,
@@ -19184,9 +19184,12 @@ impl OttrinApp {
             );
             ui.add_space(8.0);
             ui.label(
-                RichText::new(compact_preview_metadata(&preview.title, &preview.body))
-                    .color(self.colors.text_dim)
-                    .size(11.0 * self.colors.font_scale),
+                RichText::new(preview_render::compact_preview_metadata(
+                    &preview.title,
+                    &preview.body,
+                ))
+                .color(self.colors.text_dim)
+                .size(11.0 * self.colors.font_scale),
             );
         });
     }
@@ -19764,16 +19767,8 @@ impl OttrinApp {
                                             }
                                         }
                                     }
-                                    if image_available && !preview.body.is_empty() {
-                                        ui.add_space(6.0);
-                                        ui.label(
-                                            RichText::new(compact_preview_metadata(
-                                                &name,
-                                                &preview.body,
-                                            ))
-                                            .color(c.text_dim)
-                                            .size(11.0 * c.font_scale),
-                                        );
+                                    if image_available {
+                                        preview_render::render_preview_footer(ui, c, &name, &preview.body);
                                     }
                                 });
                             });

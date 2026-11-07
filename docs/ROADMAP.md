@@ -79,8 +79,13 @@ shares page navigation and continuous fit-width presentation with live previews.
 The samples select button styling and use bundled bytes without writing a file.
 Rendered tests exercise named production controls, raster sizing and page changes.
 All 539 active UI tests passed, including a separate focused run with the staged
-AppImage's PDFium library. Installed-provider samples, native package review
-and the full appearance audit remain open.
+AppImage's PDFium library. Source-built Dark and Light review compared real and
+sample Image/PDF views and caught a missing metadata caption and weak contrast
+in the initial image. A shared caption renderer, full-size production PDF raster
+and a colored image fixture corrected those issues. Four final private desktop
+runs verified page navigation, image zoom, sample control selection, button
+corners and Cancel. All eight private sessions were closed. Installed-provider
+samples, mounted package review and the full appearance audit remain open.
 Protect active CI runs for viable delivery candidates from superseding pushes.
 A rejected package revision can be superseded by the corrected candidate.
 `0298384d` was pushed on that basis after mounted review rejected `23635f30`.
