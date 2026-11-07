@@ -120,6 +120,10 @@ and mounted Dark/Light checks. Promotion is pending while the desktop session
 uses the stable AppImage. A follow-up routes non-pointer Smart Panel activation
 to the same styling selection as a mouse click. The rendered regression covers
 Info activation and collapse without a pointer and preserves border hit testing.
+The Locations rail sample uses the live collapsed buttons, expanded cards and
+expand/collapse toggle. Sample activation selects Locations styling and updates
+only the sample. The inspector exposes shared rail text, selection, accent,
+and background colors, with separate button and surface corners.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.

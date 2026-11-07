@@ -5332,9 +5332,15 @@ impl OttrinApp {
                 ThemeColorField::TextDim,
                 ThemeColorField::Accent,
             ],
-            ThemePreviewRegion::Bookmarks => {
-                &[ThemeColorField::Selection, ThemeColorField::TextDim]
-            }
+            ThemePreviewRegion::Bookmarks => &[
+                ThemeColorField::Selection,
+                ThemeColorField::Accent,
+                ThemeColorField::Text,
+                ThemeColorField::TextMuted,
+                ThemeColorField::TextDim,
+                ThemeColorField::Panel,
+                ThemeColorField::RaisedPanel,
+            ],
             ThemePreviewRegion::ColumnBackground => {
                 &[ThemeColorField::Border, ThemeColorField::Hover]
             }
@@ -12982,17 +12988,6 @@ impl OttrinApp {
         let displayed_path = self.displayed_path();
         let rail_w = self.locations_rail_width();
         let expanded = self.locations_rail_expanded;
-        let toggle_tooltip = if expanded {
-            "Collapse locations rail"
-        } else {
-            "Expand locations rail"
-        };
-        let toggle_icon = if expanded {
-            MI_LEFT_PANEL_CLOSE
-        } else {
-            MI_LEFT_PANEL_OPEN
-        };
-
         let rail = egui::SidePanel::left("locations_rail")
             .resizable(false)
             .exact_width(rail_w)
@@ -13009,42 +13004,7 @@ impl OttrinApp {
                 // Text-button padding otherwise makes icon-only tiles overflow the narrow rail.
                 ui.spacing_mut().button_padding = Vec2::new(2.0 * c.font_scale, 4.0 * c.font_scale);
 
-                let (toggle_rect, toggle_response) =
-                    ui.allocate_exact_size(Vec2::new(tile_w, 30.0), Sense::click());
-                let toggle_fill = if toggle_response.hovered() || toggle_response.has_focus() {
-                    mix_color(c.bookmarks_bg, c.panel_raised, 0.58)
-                } else {
-                    Color32::TRANSPARENT
-                };
-                ui.painter()
-                    .rect_filled(toggle_rect, c.border_radius as f32, toggle_fill);
-                if expanded {
-                    ui.painter().text(
-                        egui::pos2(toggle_rect.left() + 15.0, toggle_rect.center().y),
-                        Align2::CENTER_CENTER,
-                        toggle_icon,
-                        FontId::proportional(16.0 * c.font_scale),
-                        c.text_muted,
-                    );
-                    ui.painter().text(
-                        egui::pos2(toggle_rect.left() + 34.0, toggle_rect.center().y),
-                        Align2::LEFT_CENTER,
-                        "Locations",
-                        FontId::proportional(12.5 * c.font_scale),
-                        c.text_muted,
-                    );
-                } else {
-                    ui.painter().text(
-                        toggle_rect.center(),
-                        Align2::CENTER_CENTER,
-                        toggle_icon,
-                        FontId::proportional(16.0 * c.font_scale),
-                        c.text_muted,
-                    );
-                }
-                let toggle_response = toggle_response.on_hover_text(toggle_tooltip);
-                toggle_response
-                    .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, toggle_tooltip));
+                let toggle_response = locations_rail_toggle(ui, c, expanded);
                 input_rects.push(toggle_response.rect);
                 if toggle_response.clicked() {
                     self.locations_rail_expanded = !self.locations_rail_expanded;
@@ -13085,77 +13045,15 @@ impl OttrinApp {
                     let detail = locations_rail_tile_detail(name, &path, volume_index_status);
                     let accessibility_label =
                         locations_rail_accessibility_label(name, &path, volume_index_status);
-                    let resp = if expanded {
-                        let (rect, resp) =
-                            ui.allocate_exact_size(Vec2::new(tile_w, 52.0), Sense::click());
-                        let hovered = resp.hovered() || resp.has_focus();
-                        let fill = if is_here {
-                            c.selected_bg.gamma_multiply(0.62)
-                        } else if hovered {
-                            mix_color(c.bookmarks_bg, c.panel_raised, 0.52)
-                        } else {
-                            Color32::TRANSPARENT
-                        };
-                        let painter = ui.painter().with_clip_rect(rect);
-                        painter.rect_filled(rect, c.border_radius as f32, fill);
-                        if is_here {
-                            painter.rect_filled(
-                                Rect::from_min_size(
-                                    egui::pos2(rect.left(), rect.top() + 10.0),
-                                    Vec2::new(3.0, rect.height() - 20.0),
-                                ),
-                                1.5,
-                                c.accent,
-                            );
-                        }
-                        let icon_color = if is_here {
-                            c.accent
-                        } else if hovered {
-                            c.text
-                        } else {
-                            c.text_muted
-                        };
-                        painter.text(
-                            egui::pos2(rect.left() + 18.0, rect.center().y),
-                            Align2::CENTER_CENTER,
-                            icon,
-                            FontId::proportional(18.0 * c.font_scale),
-                            icon_color,
-                        );
-                        let text_left = rect.left() + 38.0;
-                        painter.text(
-                            egui::pos2(text_left, rect.top() + 17.0),
-                            Align2::LEFT_CENTER,
-                            name,
-                            FontId::proportional(13.5 * c.font_scale),
-                            c.text,
-                        );
-                        painter.text(
-                            egui::pos2(text_left, rect.top() + 35.0),
-                            Align2::LEFT_CENTER,
-                            path_label(&path),
-                            FontId::proportional(10.5 * c.font_scale),
-                            c.text_dim,
-                        );
-                        resp
-                    } else {
-                        let text_col = if is_here { c.text } else { c.text_muted };
-                        ui.add_sized(
-                            Vec2::new(tile_w, 36.0),
-                            egui::Button::new(
-                                RichText::new(icon)
-                                    .size(21.0 * c.font_scale)
-                                    .color(text_col),
-                            )
-                            .fill(if is_here {
-                                c.selected_bg.gamma_multiply(0.62)
-                            } else {
-                                mix_color(c.bookmarks_bg, c.panel, 0.22)
-                            })
-                            .stroke(Stroke::NONE)
-                            .themed(&c),
-                        )
-                    };
+                    let resp = locations_rail_tile(
+                        ui,
+                        c,
+                        expanded,
+                        is_here,
+                        icon,
+                        name,
+                        &path_label(&path),
+                    );
                     input_rects.push(resp.rect);
                     resp.widget_info(|| {
                         WidgetInfo::labeled(WidgetType::Button, true, accessibility_label.clone())
@@ -25333,6 +25231,138 @@ fn theme_tab_corners(c: Colors) -> egui::CornerRadius {
     }
 }
 
+fn locations_rail_toggle(ui: &mut egui::Ui, c: Colors, expanded: bool) -> egui::Response {
+    let toggle_tooltip = if expanded {
+        "Collapse locations rail"
+    } else {
+        "Expand locations rail"
+    };
+    let toggle_icon = if expanded {
+        MI_LEFT_PANEL_CLOSE
+    } else {
+        MI_LEFT_PANEL_OPEN
+    };
+
+    let (toggle_rect, toggle_response) =
+        ui.allocate_exact_size(Vec2::new(ui.available_width(), 30.0), Sense::click());
+    let toggle_fill = if toggle_response.hovered() || toggle_response.has_focus() {
+        mix_color(c.bookmarks_bg, c.panel_raised, 0.58)
+    } else {
+        Color32::TRANSPARENT
+    };
+    ui.painter()
+        .rect_filled(toggle_rect, c.border_radius as f32, toggle_fill);
+    if expanded {
+        ui.painter().text(
+            egui::pos2(toggle_rect.left() + 15.0, toggle_rect.center().y),
+            Align2::CENTER_CENTER,
+            toggle_icon,
+            FontId::proportional(16.0 * c.font_scale),
+            c.text_muted,
+        );
+        ui.painter().text(
+            egui::pos2(toggle_rect.left() + 34.0, toggle_rect.center().y),
+            Align2::LEFT_CENTER,
+            "Locations",
+            FontId::proportional(12.5 * c.font_scale),
+            c.text_muted,
+        );
+    } else {
+        ui.painter().text(
+            toggle_rect.center(),
+            Align2::CENTER_CENTER,
+            toggle_icon,
+            FontId::proportional(16.0 * c.font_scale),
+            c.text_muted,
+        );
+    }
+    let toggle_response = toggle_response.on_hover_text(toggle_tooltip);
+    toggle_response.widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, toggle_tooltip));
+    toggle_response
+}
+
+fn locations_rail_tile(
+    ui: &mut egui::Ui,
+    c: Colors,
+    expanded: bool,
+    is_here: bool,
+    icon: &str,
+    name: &str,
+    path: &str,
+) -> egui::Response {
+    let tile_w = ui.available_width();
+    if expanded {
+        let (rect, resp) = ui.allocate_exact_size(Vec2::new(tile_w, 52.0), Sense::click());
+        let hovered = resp.hovered() || resp.has_focus();
+        let fill = if is_here {
+            c.selected_bg.gamma_multiply(0.62)
+        } else if hovered {
+            mix_color(c.bookmarks_bg, c.panel_raised, 0.52)
+        } else {
+            Color32::TRANSPARENT
+        };
+        let painter = ui.painter().with_clip_rect(rect);
+        painter.rect_filled(rect, c.border_radius as f32, fill);
+        if is_here {
+            painter.rect_filled(
+                Rect::from_min_size(
+                    egui::pos2(rect.left(), rect.top() + 10.0),
+                    Vec2::new(3.0, rect.height() - 20.0),
+                ),
+                1.5,
+                c.accent,
+            );
+        }
+        let icon_color = if is_here {
+            c.accent
+        } else if hovered {
+            c.text
+        } else {
+            c.text_muted
+        };
+        painter.text(
+            egui::pos2(rect.left() + 18.0, rect.center().y),
+            Align2::CENTER_CENTER,
+            icon,
+            FontId::proportional(18.0 * c.font_scale),
+            icon_color,
+        );
+        let text_left = rect.left() + 38.0;
+        painter.text(
+            egui::pos2(text_left, rect.top() + 17.0),
+            Align2::LEFT_CENTER,
+            name,
+            FontId::proportional(13.5 * c.font_scale),
+            c.text,
+        );
+        painter.text(
+            egui::pos2(text_left, rect.top() + 35.0),
+            Align2::LEFT_CENTER,
+            path,
+            FontId::proportional(10.5 * c.font_scale),
+            c.text_dim,
+        );
+        resp
+    } else {
+        let text_col = if is_here { c.text } else { c.text_muted };
+        ui.add_sized(
+            Vec2::new(tile_w, 36.0),
+            egui::Button::new(
+                RichText::new(icon)
+                    .size(21.0 * c.font_scale)
+                    .color(text_col),
+            )
+            .fill(if is_here {
+                c.selected_bg.gamma_multiply(0.62)
+            } else {
+                mix_color(c.bookmarks_bg, c.panel, 0.22)
+            })
+            .stroke(Stroke::NONE)
+            .themed(&c),
+        )
+    }
+}
+
 fn theme_editor_large_preview(
     ui: &mut egui::Ui,
     preview: Colors,
@@ -25357,9 +25387,19 @@ fn theme_editor_large_preview(
         egui::pos2(frame.left(), frame.bottom() - status_h),
         Vec2::new(frame.width(), status_h),
     );
+    let rail_id = ui.id().with("preview_locations_rail");
+    let (rail_expanded, selected_location) = ui
+        .ctx()
+        .data(|data| data.get_temp::<(bool, usize)>(rail_id))
+        .unwrap_or_default();
+    let rail_width = if rail_expanded {
+        (frame.width() * 0.4).min(214.0)
+    } else {
+        44.0
+    };
     let bookmarks = Rect::from_min_max(
         egui::pos2(frame.left(), nav.bottom()),
-        egui::pos2(frame.left() + 36.0, status.top()),
+        egui::pos2(frame.left() + rail_width, status.top()),
     );
     let content = Rect::from_min_max(
         egui::pos2(bookmarks.right() + 4.0, nav.bottom()),
@@ -25496,27 +25536,53 @@ fn theme_editor_large_preview(
     });
 
     p.rect_filled(bookmarks, 0.0, preview.bookmarks_bg);
-    for (idx, icon) in [MI_HOME, MI_STORAGE, MI_DESCRIPTION, MI_DOWNLOAD]
-        .into_iter()
-        .enumerate()
+    let mut rail_ui = ui.new_child(
+        UiBuilder::new()
+            .id_salt("preview_locations")
+            .max_rect(bookmarks.shrink2(Vec2::new(if rail_expanded { 8.0 } else { 3.0 }, 6.0))),
+    );
+    rail_ui.set_clip_rect(bookmarks.intersect(ui.clip_rect()));
+    rail_ui.spacing_mut().interact_size.x = rail_ui.available_width();
+    rail_ui.spacing_mut().item_spacing.y = 4.0;
+    rail_ui.spacing_mut().button_padding =
+        Vec2::new(2.0 * preview.font_scale, 4.0 * preview.font_scale);
+    let mut next_rail_state = (rail_expanded, selected_location);
+    let toggle_clicked = locations_rail_toggle(&mut rail_ui, preview, rail_expanded).clicked();
+    if toggle_clicked {
+        next_rail_state.0 = !rail_expanded;
+    }
+    rail_ui.separator();
+    rail_ui.add_space(4.0);
+    let mut location_clicked = false;
+    for (index, (icon, label, path)) in [
+        (MI_HOME, "Home", "/home/user"),
+        (MI_STORAGE, "Drive", "/"),
+        (MI_DESCRIPTION, "Documents", "/home/user/Documents"),
+        (MI_DOWNLOAD, "Downloads", "/home/user/Downloads"),
+    ]
+    .into_iter()
+    .enumerate()
     {
-        let tile = Rect::from_min_size(
-            egui::pos2(
-                bookmarks.left() + 3.0,
-                bookmarks.top() + 8.0 + idx as f32 * 32.0,
-            ),
-            Vec2::new(30.0, 28.0),
-        );
-        if idx == 0 {
-            p.rect_filled(tile, preview.button_radius, preview.selected_bg);
-        }
-        p.text(
-            tile.center(),
-            Align2::CENTER_CENTER,
+        let response = locations_rail_tile(
+            &mut rail_ui,
+            preview,
+            rail_expanded,
+            index == selected_location,
             icon,
-            FontId::proportional(17.0 * preview.font_scale),
-            preview.text_dim,
+            label,
+            path,
         );
+        response.widget_info(|| {
+            WidgetInfo::labeled(
+                WidgetType::Button,
+                true,
+                locations_rail_accessibility_label(label, Path::new(path), None),
+            )
+        });
+        if response.clicked() {
+            next_rail_state.1 = index;
+            location_clicked = true;
+        }
     }
 
     p.rect_filled(columns_rect, 0.0, preview.bg);
@@ -25868,6 +25934,11 @@ fn theme_editor_large_preview(
         .and_then(|pos| theme_editor_region_at_pos(&regions, pos, preview));
     let border_clicked = hovered_region == Some(ThemePreviewRegion::Borders)
         && ui.ctx().input(|i| i.pointer.primary_clicked());
+    let rail_clicked = toggle_clicked || location_clicked;
+    if !border_clicked && rail_clicked {
+        ui.ctx()
+            .data_mut(|data| data.insert_temp(rail_id, next_rail_state));
+    }
     if !border_clicked && let Some(section) = strip_clicked {
         ui.ctx()
             .data_mut(|data| data.insert_temp(preview_state_id, section));
@@ -25877,6 +25948,8 @@ fn theme_editor_large_preview(
     }
     let clicked_region = if border_clicked {
         Some(ThemePreviewRegion::Borders)
+    } else if rail_clicked {
+        Some(ThemePreviewRegion::Bookmarks)
     } else if status_clicked {
         Some(ThemePreviewRegion::StatusBar)
     } else if row_clicked.is_some() {

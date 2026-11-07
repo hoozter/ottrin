@@ -1946,6 +1946,97 @@ mod tests {
     }
 
     #[test]
+    fn locations_preview_expands_and_uses_the_live_tile_styles() {
+        use egui::accesskit::{Action, ActionRequest};
+
+        let ctx = Context::default();
+        ctx.enable_accesskit();
+        let mut colors = Colors::preset(ThemePreset::Ottrin, true);
+        colors.button_radius = 13;
+        colors.border_radius = 4;
+        colors.selected_bg = Color32::from_rgb(171, 69, 121);
+        let render = |events| {
+            let mut picked = None;
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(800.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        picked = theme_editor_large_preview(
+                            ui,
+                            colors,
+                            ThemePreviewRegion::Bookmarks,
+                            &mut ViewMode::Miller,
+                        )
+                        .1;
+                    });
+                },
+            );
+            (output, picked)
+        };
+        let activate = |output: &egui::FullOutput, name: &str| {
+            let (id, _) = output
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .find(|(_, node)| node.label() == Some(name) && node.supports_action(Action::Click))
+                .unwrap_or_else(|| panic!("Missing {name}"));
+            vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: *id,
+                data: None,
+            })]
+        };
+        let selected_tile = |output: &egui::FullOutput, height: f32, corners| {
+            output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Rect(r)
+                        if r.fill == colors.selected_bg.gamma_multiply(0.62)
+                            && r.rect.height() == height
+                            && r.corner_radius.nw == corners =>
+                    {
+                        Some(r.rect)
+                    }
+                    _ => None,
+                })
+                .expect("Selected location tile uses the live fill, height and corners")
+        };
+
+        let (collapsed, _) = render(vec![]);
+        selected_tile(&collapsed, 36.0, colors.button_radius);
+        assert_eq!(
+            render(activate(&collapsed, "Expand locations rail")).1,
+            Some(ThemePreviewRegion::Bookmarks)
+        );
+        let (expanded, _) = render(vec![]);
+        let home = selected_tile(&expanded, 52.0, colors.border_radius);
+        assert!(expanded.shapes.iter().any(|shape| matches!(&shape.shape,
+            egui::epaint::Shape::Text(text) if text.galley.job.text == "/home/user/Documents")));
+        assert_eq!(
+            render(activate(&expanded, "Documents · /home/user/Documents")).1,
+            Some(ThemePreviewRegion::Bookmarks)
+        );
+        let (selected, _) = render(vec![]);
+        assert!(selected_tile(&selected, 52.0, colors.border_radius).top() > home.bottom());
+        assert_eq!(
+            render(activate(&selected, "Collapse locations rail")).1,
+            Some(ThemePreviewRegion::Bookmarks)
+        );
+        selected_tile(&render(vec![]).0, 36.0, colors.button_radius);
+    }
+
+    #[test]
     fn settings_navigation_exposes_named_choices_and_accepts_native_activation() {
         use egui::accesskit::{Action, ActionRequest, Role, Toggled};
 
