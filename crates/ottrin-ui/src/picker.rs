@@ -642,6 +642,10 @@ impl PickerDialog {
             self.validating = false;
         }
     }
+    fn eligible_for_multiple(mode: PickerMode, entry: &FileEntry) -> bool {
+        is_directory(entry) == (mode == PickerMode::Folder)
+    }
+
     fn select(
         &mut self,
         entry: &FileEntry,
@@ -661,9 +665,22 @@ impl PickerDialog {
                 .iter()
                 .skip(start)
                 .take(end - start + 1)
+                .filter(|entry| Self::eligible_for_multiple(self.request.mode, entry))
                 .map(|entry| entry.path.clone())
                 .collect();
         } else if self.request.multiple && (modifiers.ctrl || modifiers.command) {
+            if !Self::eligible_for_multiple(self.request.mode, entry) {
+                return;
+            }
+            // A folder can be selected by itself for browsing in an Open request.
+            // Extending that selection starts a file group.
+            if let [path] = self.selected.as_slice()
+                && visible.iter().any(|item| {
+                    &item.path == path && !Self::eligible_for_multiple(self.request.mode, item)
+                })
+            {
+                self.selected.clear();
+            }
             if let Some(index) = self.selected.iter().position(|path| path == &entry.path) {
                 self.selected.remove(index);
             } else {
@@ -781,10 +798,9 @@ impl PickerDialog {
             && self.request.multiple
         {
             self.cancel_validation();
-            let folder_mode = self.request.mode == PickerMode::Folder;
             self.selected = visible
                 .iter()
-                .filter(|entry| is_directory(entry) == folder_mode)
+                .filter(|entry| Self::eligible_for_multiple(self.request.mode, entry))
                 .map(|entry| entry.path.clone())
                 .collect();
             self.focus = self.selected.last().cloned();
@@ -819,9 +835,21 @@ impl PickerDialog {
                 .focus
                 .as_ref()
                 .and_then(|path| visible.iter().position(|entry| &entry.path == path));
-            let index = current.map_or(if step > 0 { 0 } else { visible.len() - 1 }, |index| {
+            let mut index = current.map_or(if step > 0 { 0 } else { visible.len() - 1 }, |index| {
                 (index as isize + step).clamp(0, visible.len() as isize - 1) as usize
             });
+            if self.request.multiple && modifiers.shift {
+                while !Self::eligible_for_multiple(self.request.mode, visible.get(index)) {
+                    let next = index as isize + step;
+                    if !(0..visible.len() as isize).contains(&next) {
+                        break;
+                    }
+                    index = next as usize;
+                }
+                if !Self::eligible_for_multiple(self.request.mode, visible.get(index)) {
+                    continue;
+                }
+            }
             self.select(visible.get(index), index, &visible, modifiers);
         }
         if ctx.input(|input| input.key_pressed(egui::Key::Enter)) {
@@ -1981,6 +2009,60 @@ mod tests {
         assert!(dialog.selected.is_empty());
         assert!(dialog.focus.is_none());
         assert!(dialog.filename.is_empty());
+    }
+
+    #[test]
+    fn file_multiselect_modifiers_keep_folders_available_for_browsing() {
+        let root = tempfile::tempdir().unwrap();
+        let folder = root.path().join("folder");
+        let alpha = root.path().join("alpha.txt");
+        let beta = root.path().join("beta.txt");
+        std::fs::create_dir(&folder).unwrap();
+        std::fs::write(&alpha, "alpha").unwrap();
+        std::fs::write(&beta, "beta").unwrap();
+        let ctx = Context::default();
+        let mut dialog = PickerDialog::new(
+            PickerRequest {
+                multiple: true,
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            &ctx,
+            PickerPreferences::default(),
+        )
+        .unwrap();
+        wait_listing(&mut dialog);
+        let visible = dialog.visible_entries();
+        let index = |path| visible.iter().position(|entry| entry.path == path).unwrap();
+        let folder_index = index(folder.clone());
+        let alpha_index = index(alpha.clone());
+        let beta_index = index(beta.clone());
+        let mut select =
+            |index, modifiers| dialog.select(visible.get(index), index, &visible, modifiers);
+        select(folder_index, egui::Modifiers::NONE);
+        select(beta_index, egui::Modifiers::SHIFT);
+        assert_eq!(dialog.selected, [alpha.clone(), beta.clone()]);
+        dialog.select(
+            visible.get(folder_index),
+            folder_index,
+            &visible,
+            egui::Modifiers::COMMAND,
+        );
+        assert_eq!(dialog.selected, [alpha.clone(), beta]);
+        dialog.select(
+            visible.get(folder_index),
+            folder_index,
+            &visible,
+            egui::Modifiers::NONE,
+        );
+        assert_eq!(dialog.selected, [folder]);
+        dialog.select(
+            visible.get(alpha_index),
+            alpha_index,
+            &visible,
+            egui::Modifiers::COMMAND,
+        );
+        assert_eq!(dialog.selected, [alpha]);
     }
 
     #[test]
