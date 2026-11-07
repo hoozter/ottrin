@@ -24,6 +24,13 @@ pub struct FolderStatus {
 struct OwnedFile {
     path: PathBuf,
     sha256: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    previous_sha256: Option<String>,
+}
+impl OwnedFile {
+    fn owns(&self, sha256: &str) -> bool {
+        self.sha256 == sha256 || self.previous_sha256.as_deref() == Some(sha256)
+    }
 }
 #[derive(Serialize, Deserialize)]
 struct Registration {
@@ -91,7 +98,7 @@ fn effective_default(d: &Directories) -> Result<Option<(PathBuf, String)>, Strin
 fn check_files(record: &Registration) -> Result<(), String> {
     for file in &record.files {
         if let Some(data) = storage::read_bytes(&file.path)?
-            && digest(&data) != file.sha256
+            && !file.owns(&digest(&data))
         {
             return Err(format!(
                 "Modified integration file retained: {}",
@@ -255,32 +262,39 @@ fn enable_at(d: &Directories, executable: &Path) -> Result<String, String> {
             .into_bytes(),
         ),
     ];
-    for (path, _) in &assets {
-        if !prior
+    let mut files = Vec::with_capacity(assets.len());
+    for (path, data) in &assets {
+        let sha256 = digest(data);
+        let prior_asset = prior
             .as_ref()
-            .is_some_and(|record| record.files.iter().any(|file| &file.path == path))
-            && fs::symlink_metadata(path).is_ok()
-        {
-            return Err(format!(
-                "Existing integration file retained: {}",
-                path.display()
-            ));
+            .and_then(|record| record.files.iter().find(|file| &file.path == path));
+        let mut previous_sha256 = None;
+        if let Some(current) = storage::read_bytes(path)? {
+            let current_hash = digest(&current);
+            if !prior_asset.is_some_and(|file| file.owns(&current_hash)) {
+                return Err(format!(
+                    "Existing integration file retained: {}",
+                    path.display()
+                ));
+            }
+            if current_hash != sha256 {
+                previous_sha256 = Some(current_hash);
+            }
         }
+        files.push(OwnedFile {
+            path: path.clone(),
+            sha256,
+            previous_sha256,
+        });
     }
     let installed = preferences::replace(&current, GROUP, MIME, Some(&format!("{ID};")))?;
-    let record = Registration {
+    let mut record = Registration {
         config,
         original,
         installed,
         previous,
         created,
-        files: assets
-            .iter()
-            .map(|(path, data)| OwnedFile {
-                path: path.clone(),
-                sha256: digest(data),
-            })
-            .collect(),
+        files,
     };
     storage::atomic_write(
         &receipt(d),
@@ -290,6 +304,19 @@ fn enable_at(d: &Directories, executable: &Path) -> Result<String, String> {
         storage::atomic_write(&path, &data)?;
     }
     storage::atomic_write(&record.config, record.installed.as_bytes())?;
+    if record
+        .files
+        .iter()
+        .any(|file| file.previous_sha256.is_some())
+    {
+        for file in &mut record.files {
+            file.previous_sha256 = None;
+        }
+        storage::atomic_write(
+            &receipt(d),
+            &serde_json::to_vec(&record).map_err(|e| e.to_string())?,
+        )?;
+    }
     Ok("Directory links now open in Ottrin. Standard show-in-folder and Properties requests use Ottrin on demand. An already-running desktop file manager keeps its current reveal service until it exits. Applications with their own file manager keep that behavior.".into())
 }
 pub fn disable() -> Result<String, String> {
@@ -324,12 +351,15 @@ fn native_package_at(
         "[D-BUS Service]\nName={FILE_MANAGER_BUS}\nExec={} file-manager\n",
         storage::dbus_executable(native)?
     );
-    if !record
-        .files
-        .iter()
-        .any(|file| file.path == activation && file.sha256 == digest(expected.as_bytes()))
-    {
+    let native_hash = digest(expected.as_bytes());
+    let Some(service) = record.files.iter().find(|file| file.path == activation) else {
         return Ok(());
+    };
+    if !service.owns(&native_hash) {
+        return Ok(());
+    }
+    if service.previous_sha256.is_some() {
+        return Err("Finish or disable the pending folder setup before removing Ottrin.".into());
     }
     check_files(&record)?;
     let current = storage::read_text(&record.config)?.unwrap_or_default();
@@ -524,6 +554,50 @@ mod tests {
         assert!(!receipt(&d).exists());
         assert!(record.files.iter().all(|file| !file.path.exists()));
     }
+    #[test]
+    fn interrupted_launcher_replacement_can_resume_without_losing_the_previous_handler() {
+        let root = tempfile::tempdir().unwrap();
+        let d = directories(root.path());
+        let first = fixture_executable(&d, "native");
+        let second = fixture_executable(&d, "portable");
+        let config = d.config.join("mimeapps.list");
+        let original = b"[Default Applications]\ninode/directory=files.desktop;\n";
+        storage::atomic_write(&config, original).unwrap();
+        enable_at(&d, &first).unwrap();
+        let service_path = d
+            .data
+            .join(format!("dbus-1/services/{FILE_MANAGER_BUS}.service"));
+        let old_service = fs::read(&service_path).unwrap();
+        enable_at(&d, &second).unwrap();
+
+        // Model interruption after the desktop launcher was replaced and
+        // before its D-Bus activation file was replaced.
+        let mut transition = registration(&d).unwrap().unwrap();
+        let service = transition
+            .files
+            .iter_mut()
+            .find(|file| file.path == service_path)
+            .unwrap();
+        service.previous_sha256 = Some(digest(&old_service));
+        storage::atomic_write(&service_path, &old_service).unwrap();
+        storage::atomic_write(&receipt(&d), &serde_json::to_vec(&transition).unwrap()).unwrap();
+
+        assert!(native_package_at(&d, &first, true, false).is_err());
+        enable_at(&d, &second).unwrap();
+        let completed = registration(&d).unwrap().unwrap();
+        assert!(
+            completed
+                .files
+                .iter()
+                .all(|file| file.previous_sha256.is_none())
+        );
+        assert_ne!(fs::read(&service_path).unwrap(), old_service);
+        native_package_at(&d, &first, false, false).unwrap();
+        assert!(receipt(&d).exists());
+        disable_at(&d).unwrap();
+        assert_eq!(fs::read(config).unwrap(), original);
+    }
+
     #[test]
     fn new_user_override_is_removed_and_foreign_assets_are_retained() {
         let root = tempfile::tempdir().unwrap();
