@@ -40,6 +40,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                     .size(helper.size * c.font_scale)
                     .color(helper.color),
             )
+            .small()
             .frame_when_inactive(false)
             .min_size(Vec2::splat(22.0))
             .themed(&c)
@@ -58,6 +59,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                     .size(13.0 * c.font_scale)
                     .color(state.index_color),
             )
+            .small()
             .frame_when_inactive(false)
             .min_size(Vec2::splat(22.0))
             .themed(&c)
@@ -85,6 +87,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                     .size(16.0 * c.font_scale)
                     .color(hidden_color),
             )
+            .small()
             .frame_when_inactive(false)
             .min_size(Vec2::splat(24.0))
             .themed(&c)
@@ -116,6 +119,7 @@ pub(crate) fn render(ui: &mut egui::Ui, c: Colors, state: State<'_>) -> Option<A
                         .size(16.0 * c.font_scale)
                         .color(cf_color),
                 )
+                .small()
                 .frame_when_inactive(false)
                 .min_size(Vec2::splat(24.0))
                 .themed(&c)

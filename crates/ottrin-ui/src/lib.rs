@@ -26287,9 +26287,13 @@ mod tests {
                 };
                 let live_ctx = Context::default();
                 live_ctx.enable_accesskit();
+                install_application_fonts(&live_ctx);
+                app.apply_theme_to_ctx(&live_ctx);
                 let live = live_ctx.run(input(vec![]), |ctx| app.render_status_bar(ctx));
                 let ctx = Context::default();
                 ctx.enable_accesskit();
+                install_application_fonts(&ctx);
+                app.apply_theme_to_ctx(&ctx);
                 let selected = std::cell::Cell::new(None);
                 let render = |events| {
                     ctx.run(input(events), |ctx| {
@@ -26374,7 +26378,44 @@ mod tests {
                     })
                 };
                 assert!(!painted_hover(&live) && !painted_hover(&preview));
-                assert!(painted_hover(&live_hover) && painted_hover(&sample_hover));
+                for output in [&live_hover, &sample_hover] {
+                    assert!(painted_hover(output));
+                    let hover = output
+                        .shapes
+                        .iter()
+                        .find(|shape| {
+                            matches!(&shape.shape, egui::Shape::Rect(rect)
+                            if rect.corner_radius == egui::CornerRadius::same(9)
+                                && rect.fill == colors.button_bg.blend(colors.hover))
+                        })
+                        .expect("painted footer hover");
+                    let hover_bounds = hover.shape.visual_bounding_rect();
+                    let background = output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            egui::Shape::Rect(rect)
+                                if rect.fill == colors.statusbar_bg
+                                    && rect.rect.intersects(hover_bounds)
+                                    && (rect.rect.height()
+                                        - (STATUS_BAR_HEIGHT * scale).ceil())
+                                    .abs()
+                                        < 0.5 =>
+                            {
+                                Some(rect)
+                            }
+                            _ => None,
+                        })
+                        .expect("painted status bar under hover");
+                    assert!(
+                        background
+                            .rect
+                            .intersect(hover.clip_rect)
+                            .expand(0.5)
+                            .contains_rect(hover.shape.visual_bounding_rect()),
+                        "footer hover shape clips at text scale {scale}: {hover:?}"
+                    );
+                }
                 let text = preview
                     .shapes
                     .iter()

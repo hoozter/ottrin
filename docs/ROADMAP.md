@@ -59,9 +59,14 @@ status bar geometry checkpoint exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
 on hover and focus. Rendered Dark/Light tests verify the live and sample hover
 shape at three text scales, and component reset preserves shared values. All
-537 active UI tests and Linux/Windows-target UI Clippy passed. Native package
-review and delivery for this checkpoint remain open. Next appearance audit
-items include Image/PDF preview fidelity and applicable property ownership.
+537 active UI tests and Linux/Windows-target UI Clippy passed. The mounted
+`23635f30` candidate exposed clipped hover fills at the footer edge. Its
+packages were retired. The follow-up uses compact themed buttons and checks
+painted bounds with production theme styles in the live and sample footers.
+All 537 active UI tests and Linux/Windows-target UI Clippy passed again.
+The corrected revision needs renewed package review and exact-source CI
+before it replaces `ac935037`. Next appearance audit items include Image/PDF
+preview fidelity and applicable property ownership.
 Wait for an active hosted run to finish before another source push so
 `cancel-in-progress` cannot discard its result. Current source/test/package and
 owner/external waits stay separate throughout this queue.
@@ -2662,15 +2667,14 @@ is the authority for the current package source, all four hashes, tested scope
 and limitations. Earlier receipts retain their original artifact scopes and do
 not automatically accept a newer build.
 
-The stable Linux cohort and delivered Windows ZIP/NSIS/development MSIX0.1.0.6
-use clean `4a1682bdee98b16b63a7723785091399e99b505f`. The sole `8ede1562` MSI
-is a held diagnostic input, not a current usable package.
-The delivery checkpoint at the top and authoritative receipts define exact package
-hashes, completed scopes and limitations. The rejected7a9a5319/31e77bdf cohorts are
-retired. Shared chooser, lossless native paths, nonblocking index availability, FileManager1
-and reversible Windows default folder integration are delivered within their
-recorded scopes; external production caller and native lifecycle gates remain.
-Physical, owner and release identity gates remain on the waiting list.
+The top delivery checkpoint and the Linux and Windows package receipts give the
+current revisions, hashes and verified scopes. The `8ede1562` MSI is a held
+diagnostic input. The earlier rejected `7a9a5319` and `31e77bdf` cohorts were
+retired. Shared chooser, lossless native paths, nonblocking index availability
+and FileManager1 retain their recorded acceptance scopes. Windows default
+folder opening remains open in the current MSIX candidate. The ordered work
+and waiting list above cover remaining production caller, native lifecycle,
+hardware, owner and release identity gates.
 
 The rename-selection correction is delivered: renaming keeps the new pathname
 selected for subsequent clipboard actions. Its actual Dark100 AppImage passes
