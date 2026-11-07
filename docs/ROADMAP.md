@@ -124,6 +124,13 @@ The Locations rail sample uses the live collapsed buttons, expanded cards and
 expand/collapse toggle. Sample activation selects Locations styling and updates
 only the sample. The inspector exposes shared rail text, selection, accent,
 and background colors, with separate button and surface corners.
+The exact `2bb6da96` Linux candidate passed content checks in all four formats.
+Mounted Dark/Light checks verified rail expansion, sample selection, separate
+card and button corners, named Info activation selecting Smart Panel properties,
+and Cancel preserving the original configuration. The mounted QA evidence is in
+`.hermes/evidence/locations-rail-delivery-current/`. Promotion awaits
+[run 42381144527](https://github.com/hoozter/ottrin/actions/runs/42381144527)
+and release of the active foreground AppImage.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.
