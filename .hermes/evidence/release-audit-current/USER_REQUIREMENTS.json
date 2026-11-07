@@ -59,32 +59,34 @@
     {
       "id": "U05",
       "requirement": "Appearance settings have logical framed groups, meaningful headings, compact controls and consistent text/icon alignment.",
-      "current_scope": "Framed property groups, compact controls, scoped menu alignment, and component scroll/reset ownership are delivered in the stable Linux cohort. The Smart Panel and Locations candidates add field-specific accessibility names and real rail cards. The staged changes have rendered and mounted Dark/Light checks. The full interface alignment and hierarchy review, additional scales, and native Windows parity remain open.",
+      "current_scope": "Framed property groups, compact controls, scoped menu alignment, and component scroll/reset ownership are delivered in the stable Linux cohort. The delivered Locations update adds field-specific accessibility names and real rail cards. The Locations changes have rendered and mounted Dark/Light checks. The full interface alignment and hierarchy review, additional scales, and native Windows parity remain open.",
       "evidence": [
         ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/smart-panel-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
       ]
     },
     {
       "id": "U06",
       "requirement": "Theme editor selects the exact production element and only its intended themeable roles, including the tab bar.",
-      "current_scope": "Stable Linux includes the shared navigation/tab, window-control, Smart Panel strip, file-layout, status bar, and Inspector presenters within their recorded scopes. The Locations candidate verifies named Info activation selecting Smart Panel properties and rail activation selecting Locations properties in the mounted AppImage. The independent preview-to-live role inventory across the whole interface remains open.",
+      "current_scope": "Stable Linux includes the shared navigation/tab, window-control, Smart Panel strip, file-layout, status bar, and Inspector presenters within their recorded scopes. The Locations update verifies named Info activation selecting Smart Panel properties and rail activation selecting Locations properties in the mounted AppImage. The independent preview-to-live role inventory across the whole interface remains open.",
       "evidence": [
         ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
       ]
     },
     {
       "id": "U07",
       "requirement": "Expose every supported theme property and explain shared defaults; radius/border/color changes must reach every intended window/control.",
-      "current_scope": "Stable Linux includes separate button, surface and window geometry, scoped component reset, and shared menu frame styling. Mounted Dark/Light checks cover Inspector menu border color, width, corners and Cancel. Staged Locations verification covers separate rail button and card radii. A property-by-property inventory and full window, preset, scale and platform coverage remain open.",
+      "current_scope": "Stable Linux includes separate button, surface and window geometry, scoped component reset, and shared menu frame styling. Mounted Dark/Light checks cover Inspector menu border color, width, corners and Cancel. Mounted Locations verification covers separate rail button and card radii. A property-by-property inventory and full window, preset, scale and platform coverage remain open.",
       "evidence": [
         ".hermes/evidence/inspector-theme-roles-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-editor-current/ACCEPTANCE.json",
@@ -92,7 +94,8 @@
         ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
       ]
     },
     {
@@ -116,7 +119,8 @@
         ".hermes/evidence/inspector-visual-delivery-current/PROMOTION.json",
         ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/smart-panel-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json"
+        ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
       ]
     },
     {
@@ -160,7 +164,7 @@
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "The stable Linux and Windows receipts identify the currently delivered packages. Linux Inspector CI passed and promotion preserved personal state. The Locations candidate passed all four exact-source CI jobs and its mounted checks. It supersedes the staged Smart Panel cohort and awaits the foreground AppImage closing. Source is on GitHub main. Historical failing runs were attributed to two Windows Copy tests, a Linux chooser test and MSIX template validation. Batching verified changes limits overlapping runs. Final release and sustained notification outcomes remain open.",
+      "current_scope": "The stable Linux and Windows receipts identify the currently delivered packages. Linux Inspector CI passed and promotion preserved personal state. The Locations candidate passed all four exact-source CI jobs and its mounted checks. It superseded the staged Smart Panel cohort and was promoted atomically while the foreground window and byte-identical index kept running. Source is on GitHub main. Historical failing runs were attributed to two Windows Copy tests, a Linux chooser test and MSIX template validation. Batching verified changes limits overlapping runs. Final release and sustained notification outcomes remain open.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -172,13 +176,14 @@
         ".hermes/evidence/recovery-transport-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/inspector-visual-delivery-current/PROMOTION.json",
         ".hermes/evidence/smart-panel-delivery-current/CI_CURRENT.json",
-        ".hermes/evidence/locations-rail-delivery-current/CI_CURRENT.json"
+        ".hermes/evidence/locations-rail-delivery-current/CI_CURRENT.json",
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "The current Linux promotion removed its consumed stage and replaced superseded packages. Smart Panel and Locations build and mounted QA producers removed extraction directories, test displays, processes and profiles. The superseded Smart Panel stage was removed after the Locations candidate passed all gates except foreground quiescence. The Locations stage is retained for pending delivery. The held Windows recovery test and retained VM bases still have roadmap consumers. Historical receipts retain their original cleanup scopes.",
+      "current_scope": "The current Linux promotion removed its consumed stage and replaced superseded packages. Smart Panel and Locations build and mounted QA producers removed extraction directories, test displays, processes and profiles. Both consumed or superseded stages were removed. Atomic replacement kept the existing app and index running. The held Windows recovery test and retained VM bases still have roadmap consumers. Historical receipts retain their original cleanup scopes.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -189,7 +194,8 @@
         ".hermes/evidence/inspector-visual-delivery-current/PROMOTION.json",
         ".hermes/evidence/smart-panel-delivery-current/CURRENT_STATE.json",
         ".hermes/evidence/locations-rail-delivery-current/CURRENT_STATE.json",
-        ".hermes/evidence/locations-rail-delivery-current/SUPERSEDED_STAGE_CLEANUP.json"
+        ".hermes/evidence/locations-rail-delivery-current/SUPERSEDED_STAGE_CLEANUP.json",
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
       ]
     }
   ],
@@ -200,11 +206,9 @@
   ],
   "latest_scope_reconciliation": {
     "date": "2026-11-07",
-    "stable_linux": "07f0095e4a73f5fbdecff10002509b6b0f72bf8d",
+    "stable_linux": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
     "stable_windows": "8e805d318557d3248ebf090aa8088dd86194b593",
-    "staged_linux": [
-      "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d"
-    ],
+    "staged_linux": [],
     "note": "U05 through U08, U14 and U15 were reconciled against exact package and mounted evidence. Other entries retain their prior scopes."
   },
   "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",

@@ -6,8 +6,8 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `07f0095e`. All four hosted
-jobs passed in [run 42371268898](https://github.com/hoozter/ottrin/actions/runs/42371268898).
+The stable local Linux packages use verified source `2bb6da96`. All four hosted
+jobs passed in [run 42381144527](https://github.com/hoozter/ottrin/actions/runs/42381144527).
 Windows retains its separately accepted source `8e805d31`.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
@@ -21,11 +21,12 @@ The bundled helper passed ten read-only checks. This is scoped software X11
 evidence. The full appearance audit, personal idle workload and protected-file
 authorization remain separate.
 
-Guarded promotion replaced all four stable packages and restarted the managed
-daemon to Ready. Its startup setting, preferences hash and database identity
-were preserved. The consumed stage, superseded packages and 20 transition
-captures were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-Promotion evidence: `.hermes/evidence/inspector-visual-delivery-current/PROMOTION.json`.
+Guarded promotion atomically replaced each of the four stable package paths.
+The foreground window kept its mounted version, and the byte-identical managed
+index stayed Ready on the same process. Startup settings, preferences and
+database identity were preserved. The consumed stage and superseded package
+paths were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+Promotion evidence: `.hermes/evidence/locations-rail-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -130,8 +131,9 @@ card and button corners, named Info activation selecting Smart Panel properties,
 and Cancel preserving the original configuration. The mounted QA evidence is in
 `.hermes/evidence/locations-rail-delivery-current/`. All four hosted jobs passed
 in [run 42381144527](https://github.com/hoozter/ottrin/actions/runs/42381144527).
-The Locations packages are the sole staged candidate. Promotion awaits release
-of the active foreground AppImage.
+The Locations packages were promoted to the stable paths after an isolated
+AppImage replacement test proved the old window remained usable and a fresh
+launch used the new build. The consumed stage was removed.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.
