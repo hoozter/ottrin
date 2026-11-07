@@ -230,8 +230,22 @@ cohort were removed. Current package evidence:
    These source changes await packaging; stable Linux43 and Windows8e keep their
    separate accepted scopes. Image/office/PDF-specific Inspector representations,
    all-property coverage and broader platform/scale acceptance remain open.
-   Next audit findings: several preview content outlines still use fixed white
-   alpha rather than the shared divider role; test and correct the real consumers.
+   The following divider correction replaces fixed white-alpha frames in the real
+   text/archive/extracted-document renderers with Borders and dividers. Its
+   actual-render regression first failed, then passes for both themes and two
+   distinct custom colors across all three presenters. All531 active UI tests,
+   strict Linux/Windows cross-target UI lint and formatting pass. Ten directly
+   reviewed source-built Dark/Light editor/real-Inspector originals prove live
+   divider changes and Cancel restoration, with guarded unchanged file bytes and
+   Space close. `preview-divider-current/ACCEPTANCE.json` and `CLEANUP.json` bind
+   the source, actual executable, pixels and complete desktop teardown. Seven
+   superseded incremental sessions reclaimed another0.51GiB. Document page ink
+   and actual document grid styling retain their content-specific roles.
+   Inspector source checkpoint `c6541df8` is pushed; its hosted run is
+   [42338662841](https://github.com/hoozter/ottrin/actions/runs/42338662841).
+   Keep the following divider checkpoint local until that run finishes. A new
+   combined four-format package build is the next delivery step; stable Linux43
+   continues to be the accepted fallback until exact new package acceptance.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.

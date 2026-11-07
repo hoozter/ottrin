@@ -584,13 +584,13 @@ pub(crate) fn docx_width_fit_scale(page_width: f32, available_width: f32) -> f32
 fn render_scrollable_preview_text(
     ui: &mut egui::Ui,
     text: &str,
-    color: Color32,
+    c: Colors,
     highlighted: Option<egui::text::LayoutJob>,
     footer_height: f32,
     id: impl std::hash::Hash,
     scale: f32,
 ) {
-    let frame = egui::Frame::new().stroke(Stroke::new(1.0, Color32::from_white_alpha(28)));
+    let frame = egui::Frame::new().stroke(Stroke::new(1.0, c.border));
     let height = scrollable_preview_height(ui.available_height(), footer_height, &frame);
     frame.show(ui, |ui| {
         ScrollArea::vertical()
@@ -613,7 +613,7 @@ fn render_scrollable_preview_text(
                                 .font(FontId::monospace(
                                     (FLOW_TEXT_SIZE * scale).clamp(10.0, 32.0),
                                 ))
-                                .color(color),
+                                .color(c.text),
                         )
                     },
                     egui::Label::new,
@@ -651,7 +651,7 @@ pub(crate) fn render_text_body_preview_scaled(
     render_scrollable_preview_text(
         ui,
         source,
-        c.text,
+        c,
         highlighted,
         preview_footer_height(ui, c, name, metadata),
         ("inspector_text", name),
@@ -671,7 +671,7 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
     }
 
     let tree = archive_tree_from_listing(listing);
-    let frame = egui::Frame::new().stroke(Stroke::new(1.0, Color32::from_white_alpha(28)));
+    let frame = egui::Frame::new().stroke(Stroke::new(1.0, c.border));
     let height = scrollable_preview_height(
         ui.available_height(),
         preview_footer_height(ui, c, name, metadata),
@@ -1056,7 +1056,7 @@ pub(crate) fn render_document_body_preview(
 ) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        let frame = egui::Frame::new().stroke(Stroke::new(1.0, Color32::from_white_alpha(28)));
+        let frame = egui::Frame::new().stroke(Stroke::new(1.0, c.border));
         let height = scrollable_preview_height(
             ui.available_height(),
             preview_footer_height(ui, c, name, metadata),
@@ -1805,6 +1805,66 @@ pub(crate) fn render_image_hover_nav(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn preview_body_outlines_follow_the_shared_divider_role() {
+        for dark in [true, false] {
+            for border in [
+                Color32::from_rgb(219, 47, 103),
+                Color32::from_rgb(31, 177, 95),
+            ] {
+                for kind in 0..3 {
+                    let context = egui::Context::default();
+                    context.set_visuals(if dark {
+                        egui::Visuals::dark()
+                    } else {
+                        egui::Visuals::light()
+                    });
+                    let mut colors = Colors::preset(ottrin_core::ThemePreset::Ottrin, dark);
+                    colors.border = border;
+                    let output = context.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(400.0, 500.0),
+                            )),
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| match kind {
+                                0 => render_text_body_preview_scaled(
+                                    ui,
+                                    colors,
+                                    "notes.txt",
+                                    "Filetype: Text\n\nExtracted text:\nRead only",
+                                    1.0,
+                                ),
+                                1 => render_archive_body_preview(
+                                    ui,
+                                    colors,
+                                    "sample.zip",
+                                    "Filetype: ZIP archive\nEntries: 1\nContents:\nfolder/note.txt",
+                                ),
+                                _ => render_document_body_preview(
+                                    ui,
+                                    colors,
+                                    MI_DESCRIPTION,
+                                    "sample.pdf",
+                                    "Filetype: PDF document\n\nExtracted text:\nRead only",
+                                ),
+                            });
+                        },
+                    );
+                    assert!(output.shapes.iter().any(|shape| matches!(&shape.shape,
+                        egui::epaint::Shape::Rect(rect) if rect.stroke.color == border && rect.stroke.width == 1.0 && rect.rect.width() > 200.0)),
+                        "Preview body outline must use shared divider color: dark={dark}, kind={kind}, border={border:?}");
+                    assert!(!output.shapes.iter().any(|shape| matches!(&shape.shape,
+                        egui::epaint::Shape::Rect(rect) if rect.stroke.color == Color32::from_white_alpha(28))),
+                        "Fixed white outlines must not override the selected theme");
+                }
+            }
+        }
+    }
 
     #[test]
     fn rust_source_preview_uses_distinct_syntax_colors() {
