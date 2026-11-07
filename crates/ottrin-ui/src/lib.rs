@@ -3740,7 +3740,7 @@ struct ThemeEditorState {
     selected_region: ThemePreviewRegion,
     preview_view: ViewMode,
     preview_inspector: bool,
-    preview_inspector_text_scale: f32,
+    preview_inspector_state: inspector_controls::ThemePreviewState,
     preset: ThemePreset,
     mode: ThemeMode,
     source: ThemeEditorSource,
@@ -3763,7 +3763,7 @@ impl Default for ThemeEditorState {
             selected_region: ThemePreviewRegion::default(),
             preview_view: ViewMode::Miller,
             preview_inspector: false,
-            preview_inspector_text_scale: 1.0,
+            preview_inspector_state: inspector_controls::ThemePreviewState::default(),
             preset: ThemePreset::default(),
             mode: ThemeMode::default(),
             source: ThemeEditorSource::Preset,
@@ -5291,6 +5291,9 @@ impl OttrinApp {
                 ThemeColorField::TextHeading,
                 ThemeColorField::WindowBorder,
                 ThemeColorField::Border,
+                ThemeColorField::Selection,
+                ThemeColorField::Accent,
+                ThemeColorField::Hover,
             ],
             ThemePreviewRegion::ColumnText => &[
                 ThemeColorField::TextDim,
@@ -18082,25 +18085,55 @@ impl OttrinApp {
                 let use_shared_body_renderer =
                     shared_preview_body_kind(preview.kind) && !use_visual_renderer;
                 let sizing_id = ui.id().with(("miller_preview_sizing", &entry.path));
-                let (mut visual_fit, mut visual_fit_width, mut visual_zoom, mut flow_text_scale, mut spreadsheet_overview) = ui.ctx().data_mut(|data| {
+                let (
+                    mut visual_fit,
+                    mut visual_fit_width,
+                    mut visual_zoom,
+                    mut flow_text_scale,
+                    mut spreadsheet_overview,
+                ) = ui.ctx().data_mut(|data| {
                     data.get_persisted::<(bool, bool, f32, f32, bool)>(sizing_id)
-                        .unwrap_or((true, matches!(preview_render::preview_sizing_for(ottrin_preview::preview_profile(&entry.path).kind()), preview_render::PreviewSizingMode::FitWidth), 1.0, 1.0, false))
+                        .unwrap_or((
+                            true,
+                            matches!(
+                                preview_render::preview_sizing_for(
+                                    ottrin_preview::preview_profile(&entry.path).kind()
+                                ),
+                                preview_render::PreviewSizingMode::FitWidth
+                            ),
+                            1.0,
+                            1.0,
+                            false,
+                        ))
                 });
-                let uses_sizing_controls = use_visual_renderer || matches!(preview.kind, PreviewKind::Text | PreviewKind::OfficeMetadata);
+                let uses_sizing_controls = use_visual_renderer
+                    || matches!(
+                        preview.kind,
+                        PreviewKind::Text | PreviewKind::OfficeMetadata
+                    );
                 let toolbar_top = ui.cursor().top();
                 self.render_office_provider_fallback_notice(ui, &entry.path);
                 if uses_sizing_controls {
                     ui.horizontal_wrapped(|ui| {
                         if use_visual_renderer {
-                            render_visual_sizing_controls(ui, preview.kind, &mut visual_fit, &mut visual_fit_width, &mut visual_zoom, c);
+                            render_visual_sizing_controls(
+                                ui,
+                                preview.kind,
+                                &mut visual_fit,
+                                &mut visual_fit_width,
+                                &mut visual_zoom,
+                                c,
+                            );
                         }
-                        if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
-                            inspector_controls::text_size(ui, c, &mut flow_text_scale);
-                        }
-                        if preview.spreadsheet.is_some() {
-                            ui.checkbox(&mut spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view keeps readable text and scrolls horizontally when needed.");
-                        }
-                        if ui.add(egui::Button::new("Expand preview").small().themed(&c))
+                        inspector_controls::flow_controls(
+                            ui,
+                            c,
+                            &preview,
+                            &mut flow_text_scale,
+                            &mut spreadsheet_overview,
+                        );
+                        if ui
+                            .add(egui::Button::new("Expand preview").small().themed(&c))
                             .on_hover_text("Open this preview in Quick Inspector.")
                             .clicked()
                         {
@@ -18109,13 +18142,21 @@ impl OttrinApp {
                     });
                     ui.add_space(4.0);
                     ui.ctx().data_mut(|data| {
-                        data.insert_persisted(sizing_id, (visual_fit, visual_fit_width, visual_zoom, flow_text_scale, spreadsheet_overview))
+                        data.insert_persisted(
+                            sizing_id,
+                            (
+                                visual_fit,
+                                visual_fit_width,
+                                visual_zoom,
+                                flow_text_scale,
+                                spreadsheet_overview,
+                            ),
+                        )
                     });
                 }
                 // ── Preview area (top, fills remaining space) ──────────
                 let preview_h =
-                    (height - info_total_h - (ui.cursor().top() - toolbar_top))
-                        .max(0.0);
+                    (height - info_total_h - (ui.cursor().top() - toolbar_top)).max(0.0);
                 let scrolling = if use_shared_body_renderer {
                     preview_render::PreviewScroll::Body
                 } else if use_visual_renderer && visual_fit && visual_fit_width {
@@ -18123,96 +18164,137 @@ impl OttrinApp {
                 } else {
                     preview_render::PreviewScroll::Frame
                 };
-                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), scrolling, |ui| {
-                if use_visual_renderer {
-                    if let Some(img) = self.cached_shared_visual_preview_widget(
-                        &entry.path,
-                        preview.kind,
-                        VisualPreviewRenderSpec {
-                            max_size: ui.available_size(),
-                            corner_radius: 8,
-                            page_index: 0,
-                            fit: visual_fit,
-                            fit_width: visual_fit_width,
-                            zoom: visual_zoom,
-                        },
-                    ) {
-                        preview_widget = Some(img);
-                    } else {
-                        let snippet = self
-                            .cached_visual_preview_unavailable_reason(
+                preview_render::preview_content_frame(
+                    ui,
+                    Vec2::new(width, preview_h),
+                    scrolling,
+                    |ui| {
+                        if use_visual_renderer {
+                            if let Some(img) = self.cached_shared_visual_preview_widget(
                                 &entry.path,
-                                max_preview_w,
-                                max_preview_h,
-                            )
-                            .unwrap_or_else(|| metadata_preview_snippet(&preview.body, 14, 900));
-                        metadata_icon = Some(match preview.kind {
-                            PreviewKind::Pdf => MI_PICTURE_PDF,
-                            PreviewKind::VideoMetadata => MI_MOVIE,
-                            _ => MI_IMAGE,
-                        });
-                        if !snippet.is_empty() {
-                            text_snippet = Some(snippet);
-                        }
-                    }
-                }
-                    if use_shared_body_renderer {
-                        ui.with_layout(Layout::top_down(Align::Min), |ui| {
-                            ui.set_width(ui.available_width());
-                            let sheet_id = ui.id().with(("miller_spreadsheet_sheet", &entry.path));
-                            let mut selected_sheet = ui
-                                .ctx()
-                                .data_mut(|data| data.get_persisted::<String>(sheet_id));
-                            let _ = render_shared_preview_body(
-                                ui,
-                                c,
-                                &entry.path,
-                                &entry.name,
-                                &preview,
-                                &mut selected_sheet,
-                                PreviewBodySizing { flow_text_scale, spreadsheet_overview },
-                            );
-                            if let Some(selected_sheet) = selected_sheet {
-                                ui.ctx().data_mut(|data| {
-                                    data.insert_persisted(sheet_id, selected_sheet)
+                                preview.kind,
+                                VisualPreviewRenderSpec {
+                                    max_size: ui.available_size(),
+                                    corner_radius: 8,
+                                    page_index: 0,
+                                    fit: visual_fit,
+                                    fit_width: visual_fit_width,
+                                    zoom: visual_zoom,
+                                },
+                            ) {
+                                preview_widget = Some(img);
+                            } else {
+                                let snippet = self
+                                    .cached_visual_preview_unavailable_reason(
+                                        &entry.path,
+                                        max_preview_w,
+                                        max_preview_h,
+                                    )
+                                    .unwrap_or_else(|| {
+                                        metadata_preview_snippet(&preview.body, 14, 900)
+                                    });
+                                metadata_icon = Some(match preview.kind {
+                                    PreviewKind::Pdf => MI_PICTURE_PDF,
+                                    PreviewKind::VideoMetadata => MI_MOVIE,
+                                    _ => MI_IMAGE,
                                 });
+                                if !snippet.is_empty() {
+                                    text_snippet = Some(snippet);
+                                }
                             }
-                        });
-                    } else if let Some(img) = preview_widget {
-                        ui.vertical_centered(|ui| {
-                            let response = submit_sized_preview(ui, img, visual_fit, &mut visual_zoom);
-                            if let Some(count) = preview_page_count(&preview, None) {
-                                self.render_following_pdf_pages(ui, &entry.path, count,
-                                    VisualPreviewRenderSpec { max_size: response.rect.size(), corner_radius: 8, page_index: 0, fit: visual_fit, fit_width: visual_fit_width, zoom: visual_zoom }, response.rect.size());
-                            }
-                        });
-                    } else if let Some(mut snippet) = text_snippet {
-                        if let Some(meta_icon) = metadata_icon {
-                            ui.label(RichText::new(meta_icon).size(46.0 * c.font_scale).color(icon_color));
-                            ui.add_space(8.0);
                         }
-                        let text_w = (width - pad * 2.0).max(120.0);
-                        let text_h = max_preview_h.min(preview_h * 0.7).max(60.0);
-                        let preview_text = ui.add_sized(
-                            Vec2::new(text_w, text_h),
-                            egui::TextEdit::multiline(&mut snippet)
-                                .font(FontId::monospace(11.0 * c.font_scale))
-                                .desired_rows(12)
-                                .interactive(false),
-                        );
-                        name_control(&preview_text, "Preview text");
-                    } else {
-                        ui.add_space((preview_h * 0.3).max(16.0));
-                        ui.label(RichText::new(icon).size(52.0 * c.font_scale).color(icon_color));
-                    }
-                    if specialized_preview_body_action(&preview).is_some() {
-                        ui.add_space(8.0);
-                        render_preview_card_action(ui, c, &entry.path, &preview);
-                    }
-                });
+                        if use_shared_body_renderer {
+                            ui.with_layout(Layout::top_down(Align::Min), |ui| {
+                                ui.set_width(ui.available_width());
+                                let sheet_id =
+                                    ui.id().with(("miller_spreadsheet_sheet", &entry.path));
+                                let mut selected_sheet = ui
+                                    .ctx()
+                                    .data_mut(|data| data.get_persisted::<String>(sheet_id));
+                                let _ = render_shared_preview_body(
+                                    ui,
+                                    c,
+                                    &entry.path,
+                                    &entry.name,
+                                    &preview,
+                                    &mut selected_sheet,
+                                    PreviewBodySizing {
+                                        flow_text_scale,
+                                        spreadsheet_overview,
+                                    },
+                                );
+                                if let Some(selected_sheet) = selected_sheet {
+                                    ui.ctx().data_mut(|data| {
+                                        data.insert_persisted(sheet_id, selected_sheet)
+                                    });
+                                }
+                            });
+                        } else if let Some(img) = preview_widget {
+                            ui.vertical_centered(|ui| {
+                                let response =
+                                    submit_sized_preview(ui, img, visual_fit, &mut visual_zoom);
+                                if let Some(count) = preview_page_count(&preview, None) {
+                                    self.render_following_pdf_pages(
+                                        ui,
+                                        &entry.path,
+                                        count,
+                                        VisualPreviewRenderSpec {
+                                            max_size: response.rect.size(),
+                                            corner_radius: 8,
+                                            page_index: 0,
+                                            fit: visual_fit,
+                                            fit_width: visual_fit_width,
+                                            zoom: visual_zoom,
+                                        },
+                                        response.rect.size(),
+                                    );
+                                }
+                            });
+                        } else if let Some(mut snippet) = text_snippet {
+                            if let Some(meta_icon) = metadata_icon {
+                                ui.label(
+                                    RichText::new(meta_icon)
+                                        .size(46.0 * c.font_scale)
+                                        .color(icon_color),
+                                );
+                                ui.add_space(8.0);
+                            }
+                            let text_w = (width - pad * 2.0).max(120.0);
+                            let text_h = max_preview_h.min(preview_h * 0.7).max(60.0);
+                            let preview_text = ui.add_sized(
+                                Vec2::new(text_w, text_h),
+                                egui::TextEdit::multiline(&mut snippet)
+                                    .font(FontId::monospace(11.0 * c.font_scale))
+                                    .desired_rows(12)
+                                    .interactive(false),
+                            );
+                            name_control(&preview_text, "Preview text");
+                        } else {
+                            ui.add_space((preview_h * 0.3).max(16.0));
+                            ui.label(
+                                RichText::new(icon)
+                                    .size(52.0 * c.font_scale)
+                                    .color(icon_color),
+                            );
+                        }
+                        if specialized_preview_body_action(&preview).is_some() {
+                            ui.add_space(8.0);
+                            render_preview_card_action(ui, c, &entry.path, &preview);
+                        }
+                    },
+                );
 
                 ui.ctx().data_mut(|data| {
-                    data.insert_persisted(sizing_id, (visual_fit, visual_fit_width, visual_zoom, flow_text_scale, spreadsheet_overview));
+                    data.insert_persisted(
+                        sizing_id,
+                        (
+                            visual_fit,
+                            visual_fit_width,
+                            visual_zoom,
+                            flow_text_scale,
+                            spreadsheet_overview,
+                        ),
+                    );
                 });
 
                 // ── Info panel (bottom, framed, collapsible) ──────────
@@ -18295,23 +18377,32 @@ impl OttrinApp {
                                         ui.set_max_width(info_w);
 
                                         // File type
-                                        ui.label(RichText::new(&type_desc).color(lc).size(10.0 * c.font_scale));
+                                        ui.label(
+                                            RichText::new(&type_desc)
+                                                .color(lc)
+                                                .size(10.0 * c.font_scale),
+                                        );
                                         ui.add_space(6.0);
 
                                         // Metadata rows helper — inline "Label: value"
-                                        let meta_row = |ui: &mut egui::Ui, label: &str, value: &str| {
-                                            ui.horizontal(|ui| {
-                                                ui.label(
-                                                    RichText::new(format!("{label}:")).color(lc).size(10.0 * c.font_scale),
-                                                );
-                                                ui.add(
-                                                    egui::Label::new(
-                                                        RichText::new(value).color(vc).size(10.0 * c.font_scale),
-                                                    )
-                                                    .truncate(),
-                                                );
-                                            });
-                                        };
+                                        let meta_row =
+                                            |ui: &mut egui::Ui, label: &str, value: &str| {
+                                                ui.horizontal(|ui| {
+                                                    ui.label(
+                                                        RichText::new(format!("{label}:"))
+                                                            .color(lc)
+                                                            .size(10.0 * c.font_scale),
+                                                    );
+                                                    ui.add(
+                                                        egui::Label::new(
+                                                            RichText::new(value)
+                                                                .color(vc)
+                                                                .size(10.0 * c.font_scale),
+                                                        )
+                                                        .truncate(),
+                                                    );
+                                                });
+                                            };
 
                                         // Size — clickable to cycle units
                                         if let Some(size) = entry.size_bytes {
@@ -18320,11 +18411,17 @@ impl OttrinApp {
                                                 let size_cycle_id =
                                                     ui.id().with(("size_cycle", &entry.path));
                                                 let idx: usize = ui.ctx().data_mut(|d| {
-                                                    *d.get_persisted_mut_or_default::<usize>(size_cycle_id)
+                                                    *d.get_persisted_mut_or_default::<usize>(
+                                                        size_cycle_id,
+                                                    )
                                                 });
                                                 let display = &units[idx % units.len()];
                                                 ui.horizontal(|ui| {
-                                                    ui.label(RichText::new("Size:").color(lc).size(10.0 * c.font_scale));
+                                                    ui.label(
+                                                        RichText::new("Size:")
+                                                            .color(lc)
+                                                            .size(10.0 * c.font_scale),
+                                                    );
                                                     let resp = ui.add(
                                                         egui::Label::new(
                                                             RichText::new(display)
@@ -18368,15 +18465,18 @@ impl OttrinApp {
                                         if ui
                                             .add(
                                                 egui::Label::new(
-                                                    RichText::new(dtoggle).color(c.accent).size(10.0 * c.font_scale),
+                                                    RichText::new(dtoggle)
+                                                        .color(c.accent)
+                                                        .size(10.0 * c.font_scale),
                                                 )
                                                 .sense(Sense::click()),
                                             )
                                             .clicked()
                                         {
                                             let new_val = !details_open;
-                                            ui.ctx()
-                                                .data_mut(|d| d.insert_persisted(details_id, new_val));
+                                            ui.ctx().data_mut(|d| {
+                                                d.insert_persisted(details_id, new_val)
+                                            });
                                             ui.ctx().request_repaint();
                                         }
 
@@ -19322,12 +19422,7 @@ impl OttrinApp {
                                 if is_zoomable_document {
                                     render_visual_sizing_controls(ui, preview.kind, &mut self.preview.visual_fit, &mut self.preview.visual_fit_width, &mut self.preview.visual_zoom, c);
                                 }
-                                if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
-                                    inspector_controls::text_size(ui, c, &mut self.preview.flow_text_scale);
-                                }
-                                if preview.spreadsheet.is_some() {
-                                    ui.checkbox(&mut self.preview.spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view retains readable text and horizontal scrolling.");
-                                }
+                                inspector_controls::flow_controls(ui, c, &preview, &mut self.preview.flow_text_scale, &mut self.preview.spreadsheet_overview);
                                 });
                             }
                     ui.separator();

@@ -177,3 +177,32 @@ are removed; eight obsolete incremental sessions reclaimed0.65GiB. This change
 is source verified; current stable packages and the staged sourcec3 package keep
 their separate scope. Native Windows and complete theme-property acceptance
 remain open.
+
+
+### Document and worksheet sample checkpoint (2026-11-07)
+
+Quick Inspector's Sample file selector now exposes Text file, Document and
+Spreadsheet. The samples use production read-only body renderers, action rows,
+metadata/footer, text controls, DOCX extracted-text disclosure and worksheet tabs/
+Overview. Inspector and sidebar share the same flow-controls presenter. Worksheet
+selection/accent/hover roles and shared surface corners are visible in Inspector
+properties, independently of shared window geometry. Document pages keep their
+own ink and page colors. Switching samples resets only local viewing state.
+
+All537 active UI tests pass (one existing ignored), including actual rendered
+body/control comparison, Summary/Overview input, an accessibly named selector and
+its real menu/state reset. Strict Linux/Windows cross-target UI lint, formatting
+and debug GUI build pass. Twenty-four source-built Dark/Light native originals
+were directly reviewed beside actual DOCX/XLSX fixtures: default controls, document
+fallback/text115%, Summary/Overview, panel28546A/interface text1.35/surface14 and
+Cancel/Space restoration with unchanged file bytes. Native review exposed and
+corrected missing selector naming and DOCX fallback before this acceptance.
+
+Evidence: `.hermes/evidence/inspector-samples-current/ACCEPTANCE.json` and
+`CLEANUP.json`. All twelve owned desktops/profiles/processes/mounts and fixtures
+are removed; eight superseded incremental sessions reclaimed0.58GiB and discovery
+captures are retired. This follow-up and the footer remain source verified;
+stable Linux sourcec3 now delivers the earlier Inspector/grouping/scroll changes,
+with44 reviewed originals and all four exact-source hosted jobs passing. Image/
+PDF and installed-provider Office representations, native Windows and complete
+appearance/property acceptance remain open.

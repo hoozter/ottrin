@@ -6,29 +6,31 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `43ceddd8`; Windows retains
-its separately accepted source `8e805d31`. All four exact-source hosted jobs
-for Linux passed in
-[run42333684833](https://github.com/hoozter/ottrin/actions/runs/42333684833).
-The Linux cohort includes real shared Column/List/Grid theme previews and
-Grid typography sizing, alongside prior Services health and recovery fixes.
-Neither cohort completes administrator Copy, the full theme audit or this roadmap.
+The stable local Linux packages use verified source `c3fb224e`; Windows retains
+its separately accepted source `8e805d31`. All four exact-source hosted jobs pass
+in [run42342453872](https://github.com/hoozter/ottrin/actions/runs/42342453872).
+The Linux cohort adds the production Inspector preview, shared divider roles,
+explicit geometry/reset ownership and property-selection scrolling to the prior
+Services and file-view improvements. Neither cohort completes administrator Copy,
+the full interface/property audit or this roadmap.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
-ownership checks. Actual mounted AppImage Dark/Light Ready→Stopped→real endpoint
-error→Ready checks pass, including full diagnostics and stable recovery controls.
-Six Services and eighteen real List/Grid theme originals were reviewed. Current
-mounted daemon watcher counts2→1002→2 and a30-second no-client/no-GUI idle sample
-pass. Current bundled protocol5 helper passes ten real read-only checks. These
-do not establish sustained personal workload or protected-file authorization.
-Mounted List/Grid radius14/0, text1.35 and Cancel restoring the theme while
-preserving an independent main-view change pass at software X11 scale1.
-Personal managed service is Ready after guarded package replacement, preserving
-startup choice, exact preferences hash and database identity. The consumed stage
-and superseded package cohort are removed. Personal installed helper setup still
-requires owner OS authentication. Current authority:
+ownership checks. Actual mounted AppImage Dark/Light Inspector/editor controls,
+window geometry, reset ownership, divider colors, property selection and Cancel/
+readonly Space pass;38 Inspector/editor and six Services originals were reviewed.
+Ready→Stopped→real endpoint error→Ready, full diagnostic visibility and stable
+recovery controls pass. The fresh daemon watcher counts2→1002→2 and30-second
+no-client/no-GUI idle sample pass at0.067% one core; the current bundled protocol5
+helper passes ten real read-only checks. This is software X11 scale1 evidence,
+not full-interface, sustained personal resource or protected-file authorization.
+The managed personal daemon is Ready after guarded replacement; startup choice,
+exact preferences hash and database identity are preserved. Windows packages are
+unchanged. The consumed stage and superseded cohort are removed. Current authority:
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; evidence:
-`.hermes/evidence/theme-layout-delivery-current/PROMOTION.json`.
+`.hermes/evidence/appearance-delivery-current/PROMOTION.json`.
+List/Grid and native distro-lifecycle receipts retain their original scopes.
+The later footer and document/worksheet preview work below remains source verified
+and requires its own package delivery.
 
 Windows: the59-file portable ZIP, NSIS and unsigned development MSIX25 are
 published at `dist/windows-candidate/`. All four exact-source hosted jobs pass
@@ -55,40 +57,13 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Published source `2af31068` includes the queued Copy worker and shared cleanup
-refresh fixes. In [run42317077429](https://github.com/hoozter/ottrin/actions/runs/42317077429),
-all four hosted jobs pass.
-Its preceding `923b179b` passes all four jobs in
-[run42310288820](https://github.com/hoozter/ottrin/actions/runs/42310288820).
-The published thumbnail correction `db51abab` passed all four jobs in
-[run42323646024](https://github.com/hoozter/ottrin/actions/runs/42323646024).
-The later source `33e148b0` also passed all four jobs and is now the stable local
-Linux package cohort. Wait for an active run to finish before another push so
-`cancel-in-progress` does not interrupt it. Delivery receipts retain exact
-observed source/CI scopes; historical component receipts retain their own scopes.
-
-The next UI checkpoint adds real independently selectable Column/List/Grid
-layouts to the theme editor. Production List rows/headers and Grid cells are
-shared with the main view. Selected Grid tiles expose shared Surface corners;
-List/Column rows remain square. Grid width follows theme text size so ordinary
-short labels remain readable. All526 active UI unit tests pass (one pre-existing
-ignored), strict Linux/Windows cross-target UI lint and formatting pass. Actual
-source-built Linux Dark/Light scale1 verifies radius14/0, text1.35, real main
-List/Grid and Cancel restoring theme while preserving an independent main-view
-change. Both owned desktops/profiles are removed; twelve superseded incremental
-sessions and superseded initial captures are removed. The four-format source43 candidate now passes contents/provenance, ten helper
-read-only checks, fresh Services/error/recovery and daemon watcher/idle checks.
-Eighteen actual mounted AppImage List/Grid originals plus six Services originals
-were directly reviewed. All owned profiles/displays/buses/processes/mounts and
-content extraction are removed; consumed transition captures are removed.
-All four exact-source jobs now pass in
-[run42333684833](https://github.com/hoozter/ottrin/actions/runs/42333684833).
-Guarded publication replaced the stable four-format Linux cohort with source43,
-restarted its managed daemon to Ready, and preserved Windows artifacts and
-personal preferences/startup/database identity. The consumed staging and retired
-cohort were removed. Current package evidence:
-`.hermes/evidence/theme-layout-delivery-current/PROMOTION.json`. Source evidence:
-`.hermes/evidence/theme-view-layout-current/ACCEPTANCE.json` and `CLEANUP.json`.
+The current stable Linux source is `c3fb224e`, delivered after all four hosted
+jobs passed. Its exact receipts are listed above. The separately verified footer
+checkpoint `47570c54` and the following document/worksheet sample changes form the
+next source batch; they do not silently replace the stable package's scope.
+Wait for an active hosted run to finish before another source push so
+`cancel-in-progress` cannot discard its result. Current source/test/package and
+owner/external waits stay separate throughout this queue.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
    Implemented source includes original-caller profile/registry admission, private
@@ -189,7 +164,7 @@ cohort were removed. Current package evidence:
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
-   above, now delivered in stable Linux source43. Broader scale/
+   above, with original package acceptance at Linux source43. Broader scale/
    platform coverage and whole-interface alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
    scales window radius/border values with its miniature button scale. Existing
@@ -233,8 +208,8 @@ cohort were removed. Current package evidence:
    source/binary bindings are sealed in `inspector-editor-current/ACCEPTANCE.json`.
    Both owned desktops/profiles are removed; eight superseded incremental sessions
    reclaimed0.51GiB, and consumed test snippets/superseded captures were removed.
-   These source changes await packaging; stable Linux43 and Windows8e keep their
-   separate accepted scopes. Image/office/PDF-specific Inspector representations,
+   These changes are now included in stable Linux sourcec3; Windows8e keeps its
+   separate accepted scope. Image/office/PDF-specific Inspector representations,
    all-property coverage and broader platform/scale acceptance remain open.
    The following divider correction replaces fixed white-alpha frames in the real
    text/archive/extracted-document renderers with Borders and dividers. Its
@@ -268,10 +243,12 @@ cohort were removed. Current package evidence:
    Evidence: `appearance-delivery-current/` source/content/native/theme acceptance.
    All owned profiles/desktops/processes/mounts/extractions are removed; the
    verified superseded115,961,332-byte source21 candidate is retired. The current
-   115,966,860-byte candidate remains at the canonical staging path for exact-source
-   [run42342453872](https://github.com/hoozter/ottrin/actions/runs/42342453872)
-   and guarded publication. Linux verification and both performance jobs pass;
-   Windows verification is still running. Stable Linux43 remains usable.
+   115,966,860-byte stage was consumed after all four jobs passed in
+   [run42342453872](https://github.com/hoozter/ottrin/actions/runs/42342453872).
+   Guarded publication replaced the stable four-format cohort, restarted the
+   personal daemon to Ready and preserved Windows/startup/preferences/database
+   identity. Consumed staging and the superseded source43 cohort are removed;
+   `appearance-delivery-current/PROMOTION.json` binds the actual delivery.
    The next source-only follow-up moves Inspector Shared window geometry below
    Reset component and explicitly states its shared scope. The actual Dark/Light
    reset regression verifies component reset restores only the panel and preserves
@@ -303,8 +280,25 @@ cohort were removed. Current package evidence:
    Owned final/initial-attempt QA desktops/profiles/processes/mounts are removed;
    eight obsolete incremental sessions reclaimed0.65GiB. Evidence:
    `statusbar-presenter-current/ACCEPTANCE.json` and `CLEANUP.json`. This follow-up
-   is not in the staged sourcec3 package. Hold its source push until that exact
-   Windows CI job completes to avoid cancelling the verified candidate.
+   is not in the delivered sourcec3 package. Its source batch includes the
+   document/worksheet follow-up below; package acceptance remains separate.
+   Quick Inspector now offers named Text file, Document and Spreadsheet samples.
+   DOCX structure, extracted-text disclosure, worksheets, text sizing and Overview
+   use the production presenters; Inspector/sidebar sizing controls have one
+   implementation. Worksheet selection/hover/accent and shared surface corners
+   are exposed with their actual scope, separately from window geometry. The
+   selector has an accessible name and resets only sample viewing state.
+   All537 active UI tests, strict Linux/Windows cross-target UI lint, formatting
+   and debug GUI build pass. Twenty-four actual source-built Dark/Light originals
+   were reviewed against real DOCX/XLSX files, including fallback, Summary/Overview,
+   panel28546A/text1.35/surface14, immutable page colors, Cancel/Space and unchanged
+   source bytes. Native review caught and corrected the unnamed selector and
+   missing document fallback before final acceptance. All twelve owned QA
+   desktops/profiles/processes/mounts and fixture files are removed; eight obsolete
+   incremental sessions reclaimed0.58GiB and superseded discovery captures are
+   retired. Evidence: `inspector-samples-current/ACCEPTANCE.json` and `CLEANUP.json`.
+   This is source verified and is not in delivered sourcec3. Image/PDF, installed-
+   provider Office, full-property and broader platform/scale acceptance remain open.
    Two read-only60-second samples of the personal installed daemon identify
    `ottrin-indexd`, approximately30–31MiB RSS and mean0.67/0.98% of one core.
    The latter remains Ready while its snapshot advances47 revisions and35 indexed

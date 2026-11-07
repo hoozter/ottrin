@@ -132,12 +132,12 @@ pub(crate) fn action_row(
     .inner
 }
 
-pub(crate) struct TextSize {
+pub(crate) struct SizingControls {
     pub changed: bool,
-    pub targets: [Rect; 2],
+    pub targets: Vec<Rect>,
 }
 
-pub(crate) fn text_size(ui: &mut egui::Ui, c: Colors, scale: &mut f32) -> TextSize {
+pub(crate) fn text_size(ui: &mut egui::Ui, c: Colors, scale: &mut f32) -> SizingControls {
     *scale = scale.clamp(0.7, 2.0);
     let mut changed = false;
     let smaller = ui.add(egui::Button::new("− text").small().themed(&c));
@@ -155,26 +155,167 @@ pub(crate) fn text_size(ui: &mut egui::Ui, c: Colors, scale: &mut f32) -> TextSi
         *scale = (*scale * 1.15).clamp(0.7, 2.0);
         changed = true;
     }
-    TextSize {
+    SizingControls {
         changed,
-        targets: [smaller.rect, larger.rect],
+        targets: vec![smaller.rect, larger.rect],
     }
 }
 
-fn theme_sample() -> PreviewData {
-    PreviewData {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub(crate) enum SampleKind {
+    #[default]
+    Text,
+    Document,
+    Spreadsheet,
+}
+impl SampleKind {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Text => "Text file",
+            Self::Document => "Document",
+            Self::Spreadsheet => "Spreadsheet",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct ThemePreviewState {
+    kind: SampleKind,
+    sizing: PreviewBodySizing,
+    selected_sheet: Option<String>,
+}
+
+/// The sample controls and the real Inspector/sidebar share the same text and
+/// worksheet controls. Callers retain their own per-file presentation state.
+pub(crate) fn flow_controls(
+    ui: &mut egui::Ui,
+    c: Colors,
+    preview: &PreviewData,
+    scale: &mut f32,
+    overview: &mut bool,
+) -> SizingControls {
+    let mut controls = SizingControls {
+        changed: false,
+        targets: Vec::new(),
+    };
+    if preview.kind == PreviewKind::Text
+        || preview.document.is_some()
+        || preview.spreadsheet.is_some()
+    {
+        controls = text_size(ui, c, scale);
+    }
+    if preview.spreadsheet.is_some() {
+        ui.checkbox(overview, "Overview")
+            .on_hover_text("Fit the entire worksheet width; ordinary view retains readable text and horizontal scrolling.");
+    }
+
+    controls
+}
+
+fn theme_sample(kind: SampleKind) -> PreviewData {
+    use ottrin_preview::{
+        DocxAlignment, DocxBlock, DocxParagraph, DocxParagraphContent, DocxPreview, DocxRun,
+        SpreadsheetCell, SpreadsheetPreview, SpreadsheetSheet,
+    };
+    let mut sample = PreviewData {
         title: "notes.txt".into(), kind: PreviewKind::Text,
         body: "Filetype: plain text file\nEncoding: UTF-8\nLines: 3\nPreview: Complete\n\nExtracted text:\nWelcome to Ottrin\nPreview files without changing them.\nYour theme applies to every window.".into(),
         document: None, spreadsheet: None, open_external: false,
+    };
+    match kind {
+        SampleKind::Text => {}
+        SampleKind::Document => {
+            sample.title = "document.docx".into();
+            sample.kind = PreviewKind::OfficeMetadata;
+            sample.body = "Filetype: DOCX document\nFormat: DOCX\nInternal parts: 5\n\nExtracted text:\nWelcome to Ottrin\nDocument content keeps its own page and ink. Your theme styles the surrounding controls.".into();
+            sample.document = Some(DocxPreview { blocks: [
+                ("Welcome to Ottrin", true),
+                ("Document content keeps its own page and ink. Your theme styles the surrounding controls.", false),
+            ].into_iter().map(|(text, bold)| DocxBlock::Paragraph(DocxParagraph {
+                style_name: None, alignment: DocxAlignment::Left, list: None, has_page_break: false,
+                content: vec![DocxParagraphContent::Text(DocxRun { text: text.into(), bold, italic: false, underline: false, color: None, font_size_half_points: None })],
+            })).collect() });
+        }
+        SampleKind::Spreadsheet => {
+            sample.title = "budget.xlsx".into();
+            sample.kind = PreviewKind::OfficeMetadata;
+            sample.body = "Filetype: XLSX document\nFormat: XLSX\nInternal parts: 5".into();
+            sample.spreadsheet = Some(SpreadsheetPreview {
+                omissions: vec![],
+                sheets: [
+                    (
+                        "budget",
+                        "Budget",
+                        [
+                            ["Item", "Planned", "Actual"],
+                            ["Travel", "250", "220"],
+                            ["Supplies", "80", "65"],
+                        ],
+                    ),
+                    (
+                        "summary",
+                        "Summary",
+                        [
+                            ["Period", "Income", "Expenses"],
+                            ["January", "1200", "285"],
+                            ["February", "1200", "310"],
+                        ],
+                    ),
+                ]
+                .into_iter()
+                .map(|(id, name, rows)| SpreadsheetSheet {
+                    id: id.into(),
+                    name: name.into(),
+                    omissions: vec![],
+                    cells: rows
+                        .into_iter()
+                        .enumerate()
+                        .flat_map(|(row, values)| {
+                            values.into_iter().enumerate().map(move |(column, text)| {
+                                SpreadsheetCell {
+                                    row,
+                                    column,
+                                    text: text.into(),
+                                }
+                            })
+                        })
+                        .collect(),
+                })
+                .collect(),
+            });
+        }
     }
+    sample
 }
 
 pub(crate) fn theme_preview(
     ui: &mut egui::Ui,
     c: Colors,
     selected: ThemePreviewRegion,
-    text_scale: &mut f32,
+    state: &mut ThemePreviewState,
 ) -> Option<ThemePreviewRegion> {
+    ui.horizontal(|ui| {
+        ui.label("Sample file");
+        let previous = state.kind;
+        let sample_type = egui::ComboBox::from_id_salt("theme_inspector_sample")
+            .selected_text(state.kind.label())
+            .show_ui(ui, |ui| {
+                for kind in [
+                    SampleKind::Text,
+                    SampleKind::Document,
+                    SampleKind::Spreadsheet,
+                ] {
+                    ui.selectable_value(&mut state.kind, kind, kind.label());
+                }
+            });
+        widget_style::name_control(&sample_type.response, "Sample file");
+        if previous != state.kind {
+            state.sizing = PreviewBodySizing::default();
+            state.selected_sheet = None;
+        }
+    });
+    ui.add_space(4.0);
+    let sample = theme_sample(state.kind);
     let (outer, _) =
         ui.allocate_exact_size(ui.available_size().max(Vec2::splat(320.0)), Sense::hover());
     let frame = outer.shrink(14.0);
@@ -196,19 +337,20 @@ pub(crate) fn theme_preview(
         &ctx,
         c,
         c.titlebar_bg,
-        "Quick Inspector — notes.txt",
+        &format!("Quick Inspector — {}", sample.title),
         false,
         &mut close,
     )
     .rect;
     let mut buttons_clicked = false;
+    let mut inspector_clicked = false;
     let mut targets = Vec::new();
     Frame::new().inner_margin(12).show(&mut child, |ui| {
         let actions = action_row(
             ui,
             c,
             Availability {
-                can_edit: true,
+                can_edit: sample.kind == PreviewKind::Text,
                 ..Default::default()
             },
             |ui| more_target(ui, c),
@@ -216,9 +358,17 @@ pub(crate) fn theme_preview(
         buttons_clicked |= actions.action.is_some() || actions.more.clicked();
         targets.extend(actions.targets);
         ui.horizontal_wrapped(|ui| {
-            let sizing = text_size(ui, c, text_scale);
-            buttons_clicked |= sizing.changed;
-            targets.extend(sizing.targets);
+            let overview_before = state.sizing.spreadsheet_overview;
+            let controls = flow_controls(
+                ui,
+                c,
+                &sample,
+                &mut state.sizing.flow_text_scale,
+                &mut state.sizing.spreadsheet_overview,
+            );
+            buttons_clicked |= controls.changed;
+            inspector_clicked |= overview_before != state.sizing.spreadsheet_overview;
+            targets.extend(controls.targets);
         });
         ui.separator();
         preview_render::preview_content_frame(
@@ -226,14 +376,17 @@ pub(crate) fn theme_preview(
             ui.available_size(),
             preview_render::PreviewScroll::Body,
             |ui| {
-                let sample = theme_sample();
-                preview_render::render_text_body_preview_scaled(
+                let sheet_before = state.selected_sheet.clone();
+                let _ = preview_render::render_shared_preview_body(
                     ui,
                     c,
+                    Path::new(&sample.title),
                     &sample.title,
-                    &sample.body,
-                    *text_scale,
+                    &sample,
+                    &mut state.selected_sheet,
+                    state.sizing,
                 );
+                inspector_clicked |= sheet_before.is_some() && sheet_before != state.selected_sheet;
             },
         );
     });
@@ -289,6 +442,8 @@ pub(crate) fn theme_preview(
         Some(ThemePreviewRegion::Titlebar)
     } else if buttons_clicked {
         Some(ThemePreviewRegion::Accent)
+    } else if inspector_clicked {
+        Some(ThemePreviewRegion::Inspector)
     } else if ui.input(|i| i.pointer.primary_clicked()) {
         hovered
     } else {
@@ -351,7 +506,7 @@ mod tests {
                     app.colors.window_border = Color32::from_rgb(235, 113, 135);
                     app.preview.visible = true;
                     app.preview.path = Some(PathBuf::from("notes.txt"));
-                    app.preview.data = Some(theme_sample());
+                    app.preview.data = Some(theme_sample(SampleKind::Text));
                     app.preview.flow_text_scale = 1.0;
                     let actual_ctx = Context::default();
                     install_application_fonts(&actual_ctx);
@@ -363,7 +518,7 @@ mod tests {
                     install_application_fonts(&preview_ctx);
                     preview_ctx.enable_accesskit();
                     app.apply_theme_to_ctx(&preview_ctx);
-                    let mut scale = 1.0;
+                    let mut sample_state = ThemePreviewState::default();
                     let preview = preview_ctx.run(input(Vec2::new(748.0, 588.0), vec![]), |ctx| {
                         egui::CentralPanel::default()
                             .frame(Frame::NONE)
@@ -372,7 +527,7 @@ mod tests {
                                     ui,
                                     app.colors,
                                     ThemePreviewRegion::Inspector,
-                                    &mut scale,
+                                    &mut sample_state,
                                 );
                             });
                     });
@@ -396,7 +551,24 @@ mod tests {
                         "− text",
                         "+ text",
                     ] {
-                        let expected = button(&actual, name).1.translate(Vec2::splat(14.0));
+                        let frame_origin = |output: &egui::FullOutput| {
+                            output
+                                .shapes
+                                .iter()
+                                .find_map(|shape| match &shape.shape {
+                                    egui::Shape::Rect(rect)
+                                        if rect.stroke
+                                            == Stroke::new(4.0, app.colors.window_border) =>
+                                    {
+                                        Some(rect.rect.min)
+                                    }
+                                    _ => None,
+                                })
+                                .expect("painted window frame")
+                        };
+                        let expected = button(&actual, name)
+                            .1
+                            .translate(frame_origin(&preview) - frame_origin(&actual));
                         let shown = button(&preview, name).1;
                         assert!(
                             (shown.min - expected.min).length() < 0.1
@@ -432,21 +604,122 @@ mod tests {
     }
 
     #[test]
+    fn inspector_document_samples_use_actual_body_and_control_presenters() {
+        for dark in [false, true] {
+            for font_scale in [1.0, 1.35] {
+                for kind in [SampleKind::Document, SampleKind::Spreadsheet] {
+                    let colors = Colors {
+                        font_scale,
+                        ..Colors::preset(ThemePreset::Ottrin, dark)
+                    };
+                    let sample = theme_sample(kind);
+                    let mut app = OttrinApp::default();
+                    app.colors = colors;
+                    app.state.config.installed_office_previews_enabled = false;
+                    app.preview.visible = true;
+                    app.preview.path = Some(PathBuf::from(&sample.title));
+                    app.preview.data = Some(sample);
+                    let actual_ctx = Context::default();
+                    install_application_fonts(&actual_ctx);
+                    actual_ctx.enable_accesskit();
+                    let actual = actual_ctx.run(input(Vec2::new(720.0, 560.0), vec![]), |ctx| {
+                        app.render_preview_overlay(ctx)
+                    });
+                    let ctx = Context::default();
+                    install_application_fonts(&ctx);
+                    ctx.enable_accesskit();
+                    theme_colors::apply_to_context(&ctx, &colors);
+                    let mut state = ThemePreviewState {
+                        kind,
+                        ..Default::default()
+                    };
+                    let preview = ctx.run(input(Vec2::new(748.0, 660.0), vec![]), |ctx| {
+                        egui::CentralPanel::default()
+                            .frame(Frame::NONE)
+                            .show(ctx, |ui| {
+                                theme_preview(
+                                    ui,
+                                    colors,
+                                    ThemePreviewRegion::Inspector,
+                                    &mut state,
+                                );
+                            });
+                    });
+                    for name in ["More actions", "− text", "+ text"] {
+                        let actual = button(&actual, name).1;
+                        let shown = button(&preview, name).1;
+                        assert!(
+                            (actual.size() - shown.size()).length() < 0.1,
+                            "{kind:?} {name} at {font_scale}"
+                        );
+                    }
+                    for output in [&actual, &preview] {
+                        let texts = output
+                            .shapes
+                            .iter()
+                            .filter_map(|shape| match &shape.shape {
+                                egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                                _ => None,
+                            })
+                            .collect::<Vec<_>>();
+                        let expected = match kind {
+                            SampleKind::Document => "Welcome to Ottrin",
+                            _ => "Planned",
+                        };
+                        assert!(
+                            texts.iter().any(|text| text.contains(expected)),
+                            "Actual {kind:?} body missing {expected}: {texts:?}"
+                        );
+                        if kind == SampleKind::Document {
+                            assert!(
+                                texts
+                                    .iter()
+                                    .any(|text| text.contains("Extracted text fallback")),
+                                "Document preview exposes the same fallback disclosure as real files"
+                            );
+                        }
+                        assert!(
+                            !texts.contains(&MI_EDIT),
+                            "Document samples must not imply text-file editing"
+                        );
+                        let checkboxes = output
+                            .platform_output
+                            .accesskit_update
+                            .as_ref()
+                            .unwrap()
+                            .nodes
+                            .iter()
+                            .filter(|(_, node)| {
+                                node.role() == Role::CheckBox && node.label() == Some("Overview")
+                            })
+                            .count();
+                        assert_eq!(checkboxes, usize::from(kind == SampleKind::Spreadsheet));
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn inspector_preview_selects_real_controls_without_editing_or_closing() {
         let ctx = Context::default();
         install_application_fonts(&ctx);
         ctx.enable_accesskit();
         let colors = Colors::preset(ThemePreset::Ottrin, true);
         theme_colors::apply_to_context(&ctx, &colors);
-        let mut scale = 1.0;
+        let mut sample_state = ThemePreviewState::default();
         let mut render = |events| {
             let mut picked = None;
             let out = ctx.run(input(Vec2::new(748.0, 588.0), events), |ctx| {
                 egui::CentralPanel::default()
                     .frame(Frame::NONE)
                     .show(ctx, |ui| {
-                        picked =
-                            theme_preview(ui, colors, ThemePreviewRegion::Inspector, &mut scale);
+                        picked = theme_preview(
+                            ui,
+                            colors,
+                            ThemePreviewRegion::Inspector,
+                            &mut sample_state,
+                        );
                     });
             });
             (out, picked)
@@ -465,7 +738,123 @@ mod tests {
                 "Preview chooses a theme role, never file actions"
             );
         }
-        assert!(scale > 1.0, "Sizing the sample uses the real text controls");
+        assert!(
+            sample_state.sizing.flow_text_scale > 1.0,
+            "Sizing the sample uses the real text controls"
+        );
+    }
+
+    #[test]
+    fn spreadsheet_sample_switches_sheet_and_overview_without_button_geometry() {
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        ctx.enable_accesskit();
+        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        theme_colors::apply_to_context(&ctx, &colors);
+        let mut state = ThemePreviewState {
+            kind: SampleKind::Spreadsheet,
+            ..Default::default()
+        };
+        let picked = std::cell::Cell::new(None);
+        let render = |state: &mut ThemePreviewState, events| {
+            ctx.run(input(Vec2::new(748.0, 660.0), events), |ctx| {
+                egui::CentralPanel::default()
+                    .frame(Frame::NONE)
+                    .show(ctx, |ui| {
+                        picked.set(theme_preview(
+                            ui,
+                            colors,
+                            ThemePreviewRegion::Inspector,
+                            state,
+                        ));
+                    });
+            })
+        };
+        let output = render(&mut state, vec![]);
+        let control = |output: &egui::FullOutput, name: &str| {
+            output
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .find(|(_, node)| node.label() == Some(name))
+                .map(|(id, _)| *id)
+                .unwrap_or_else(|| panic!("Missing {name}"))
+        };
+        render(&mut state, activate(control(&output, "Summary")));
+        assert_eq!(state.selected_sheet.as_deref(), Some("summary"));
+        assert_eq!(picked.get(), Some(ThemePreviewRegion::Inspector));
+        let output = render(&mut state, vec![]);
+        render(&mut state, activate(control(&output, "Overview")));
+        assert!(state.sizing.spreadsheet_overview);
+        assert_eq!(
+            picked.get(),
+            Some(ThemePreviewRegion::Inspector),
+            "Worksheet controls select their shared surface styling"
+        );
+        let output = render(&mut state, vec![]);
+        assert!(output.shapes.iter().any(
+            |shape| matches!(&shape.shape,egui::Shape::Text(text) if text.galley.job.text=="Income")
+        ));
+        let fields = OttrinApp::theme_preview_region_shared_fields(ThemePreviewRegion::Inspector);
+        for field in [
+            ThemeColorField::Selection,
+            ThemeColorField::Accent,
+            ThemeColorField::Hover,
+        ] {
+            assert!(fields.contains(&field));
+        }
+    }
+
+    #[test]
+    fn sample_file_selector_is_named_and_resets_only_sample_state() {
+        let ctx = Context::default();
+        ctx.enable_accesskit();
+        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        let mut state = ThemePreviewState {
+            kind: SampleKind::Spreadsheet,
+            sizing: PreviewBodySizing {
+                flow_text_scale: 1.75,
+                spreadsheet_overview: true,
+            },
+            selected_sheet: Some("summary".into()),
+        };
+        let render = |state: &mut ThemePreviewState, events| {
+            ctx.run(input(Vec2::new(748.0, 660.0), events), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    theme_preview(ui, colors, ThemePreviewRegion::Inspector, state);
+                });
+            })
+        };
+        let output = render(&mut state, vec![]);
+        let selector = output
+            .platform_output
+            .accesskit_update
+            .as_ref()
+            .unwrap()
+            .nodes
+            .iter()
+            .find(|(_, node)| node.role() == Role::ComboBox && node.label() == Some("Sample file"))
+            .map(|(id, _)| *id)
+            .expect("Sample selector has an accessible name");
+        let output = render(&mut state, activate(selector));
+        let document = output
+            .platform_output
+            .accesskit_update
+            .as_ref()
+            .unwrap()
+            .nodes
+            .iter()
+            .find(|(_, node)| node.label() == Some("Document"))
+            .map(|(id, _)| *id)
+            .expect("Actual sample menu exposes Document");
+        render(&mut state, activate(document));
+        assert_eq!(state.kind, SampleKind::Document);
+        assert_eq!(state.sizing.flow_text_scale, 1.0);
+        assert!(!state.sizing.spreadsheet_overview);
+        assert!(state.selected_sheet.is_none());
     }
 
     #[test]

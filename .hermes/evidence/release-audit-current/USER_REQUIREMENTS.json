@@ -29,7 +29,8 @@
         ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json",
         ".hermes/evidence/theme-layout-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SAMPLE.json",
-        ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SETTLED.json"
+        ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SETTLED.json",
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
       ]
     },
     {
@@ -51,7 +52,8 @@
         ".hermes/evidence/recovery-transport-delivery-current/login/CAPTURE_REVIEW.json",
         ".hermes/evidence/recovery-transport-delivery-current/SOURCE_CHECKS.json",
         ".hermes/evidence/theme-layout-delivery-current/NATIVE_UI_ACCEPTANCE.json",
-        ".hermes/evidence/packaged-shell-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json"
+        ".hermes/evidence/packaged-shell-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
       ]
     },
     {
@@ -60,7 +62,8 @@
       "current_scope": "Framed property groups, shared control sizes and production presenters have bounded source/native receipts. Latest source grouping/reset ownership and component-selection scroll fixes pass533 active UI tests plus strict Linux/Windows cross-target lint. Actual Dark/Light software X11 scale1 with theme typography1.35 checks show complete new component descriptions through tabs/title/dropdown and unchanged field position during real edits. Full interface/menu inventory and broader platform/scale acceptance remain open; the new combined Linux package is undergoing verification.",
       "evidence": [
         ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
-        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json"
+        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
       ]
     },
     {
@@ -70,7 +73,8 @@
       "evidence": [
         ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json"
+        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
       ]
     },
     {
@@ -81,13 +85,14 @@
         ".hermes/evidence/inspector-theme-roles-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-editor-current/ACCEPTANCE.json",
         ".hermes/evidence/preview-divider-current/ACCEPTANCE.json",
-        ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json"
+        ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
       ]
     },
     {
       "id": "U08",
       "requirement": "Preview selection outlines match actual geometry; production Smart-panel controls and shared themed chrome replace invented preview controls.",
-      "current_scope": "Linux43 delivers real shared Column/List/Grid previews with square row selection and appropriately rounded Grid controls, and typography-aware Grid width. Production Smart-panel, navigation/tabs/window-control and Miller presenters retain their scoped checks. Inspector source21 mounted checks prove real controls/chrome/read-only rendering and shared roles; later source grouping/scroll fixes have native source evidence. Specialized Inspector image/Office/PDF representations and whole-property/platform acceptance remain open. Production status-bar presenter is now shared with the File manager preview;534 active UI tests, Linux/Windows cross-target lint and12 directly reviewed source-built Dark/Light native originals pass. Footer color/typography changes match editor/main and Cancel restores state. This follow-up is not in staged sourcec3; full audit remains open.",
+      "current_scope": "Linux43 delivers real shared Column/List/Grid previews with square row selection and appropriately rounded Grid controls, and typography-aware Grid width. Production Smart-panel, navigation/tabs/window-control and Miller presenters retain their scoped checks. Inspector source21 mounted checks prove real controls/chrome/read-only rendering and shared roles; later source grouping/scroll fixes have native source evidence. Specialized Inspector image/Office/PDF representations and whole-property/platform acceptance remain open. Production status-bar presenter is now shared with the File manager preview;534 active UI tests, Linux/Windows cross-target lint and12 directly reviewed source-built Dark/Light native originals pass. Footer color/typography changes match editor/main and Cancel restores state. This follow-up is not in delivered sourcec3; full audit remains open. Named text/document/worksheet samples now share actual read-only body and sizing presenters; DOCX fallback, worksheet tabs/Overview and shared styles are verified by537 active UI tests and24 real-file native originals in both themes. These source changes remain outside deliveredc3; image/PDF/provider-specific and complete acceptance remain open.",
       "evidence": [
         ".hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json",
         ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_CAPTURE_REVIEW.json",
@@ -98,7 +103,10 @@
         ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
         ".hermes/evidence/statusbar-presenter-current/ACCEPTANCE.json",
-        ".hermes/evidence/statusbar-presenter-current/CLEANUP.json"
+        ".hermes/evidence/statusbar-presenter-current/CLEANUP.json",
+        ".hermes/evidence/inspector-samples-current/ACCEPTANCE.json",
+        ".hermes/evidence/inspector-samples-current/CLEANUP.json",
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
       ]
     },
     {

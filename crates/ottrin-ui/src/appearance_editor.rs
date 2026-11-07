@@ -290,7 +290,7 @@ impl OttrinApp {
                 let preview = self.theme_editor_preview_colors();
                 let picked = if self.theme_editor.preview_inspector {
                     inspector_controls::theme_preview(ui, preview, self.theme_editor.selected_region,
-                        &mut self.theme_editor.preview_inspector_text_scale)
+                        &mut self.theme_editor.preview_inspector_state)
                 } else {
                     theme_editor_large_preview(ui, preview, self.theme_editor.selected_region,
                         &mut self.theme_editor.preview_view).1
@@ -410,12 +410,16 @@ impl OttrinApp {
                         group_changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
                             group_changed
                         });
-                        if matches!(region, ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::Sidebar)
+                        if matches!(region, ThemePreviewRegion::Inspector | ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::Sidebar)
                             || (region == ThemePreviewRegion::SelectedRow && self.theme_editor.preview_view == ViewMode::Grid) {
                             ui.add_space(6.0);
                             changed |= property_group(ui, "Shared geometry", c, |ui| {
                             let mut group_changed = false;
                             match region {
+                                ThemePreviewRegion::Inspector => {
+                                    ui.label(RichText::new("Shared surface corners: worksheet controls, inputs, cards and Grid tiles. Document pages keep their own colors.").small().color(c.text_dim));
+                                    group_changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                                }
                                 ThemePreviewRegion::Sidebar => {
                                     group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
                                 }
