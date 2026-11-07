@@ -466,7 +466,14 @@ Current source, test, package and owner/external scopes stay separate.
    and the package content extraction were removed. Promotion preflight
    confirms the managed index is Ready and its binary is byte-identical.
    Evidence: `folder-border-delivery-current/MOUNTED_ACCEPTANCE.json`.
-   The single 111 MiB stage remains pending hosted checks and local promotion.
+   A follow-up regression found that the shared color projection rounded
+   1.25 px to 1.5 px even though the editor displayed 1.25 px. The 111 MiB
+   stage was retired without promotion. The projection now preserves the
+   selected width within its supported range. The source-rendered editor
+   and real Quick Inspector both submit an exact 1.25 px stroke. The full
+   Linux UI suite passed 544 tests with one ignored, and strict Windows
+   cross-target UI test lint passed. Rebuild and verify the corrected
+   candidate before promotion.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.

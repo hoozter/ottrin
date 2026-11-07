@@ -506,8 +506,7 @@ impl Colors {
         base.titlebar_bg = Self::from_rgba(custom.titlebar);
         base.border = Self::from_rgba(custom.border);
         base.window_border = Self::from_rgba(custom.window_border);
-        // Round to nearest 0.5px to avoid sub-pixel rendering artifacts.
-        base.window_border_width = (custom.window_border_width.clamp(0.0, 4.0) * 2.0).round() / 2.0;
+        base.window_border_width = custom.window_border_width.clamp(0.0, 4.0);
         base.accent = Self::from_rgba(custom.accent);
         base.selected_bg = Self::from_rgba(custom.selected_bg);
         base.hover = Self::from_rgba(custom.hover);

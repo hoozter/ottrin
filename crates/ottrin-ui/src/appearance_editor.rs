@@ -1598,9 +1598,14 @@ mod tests {
                 app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
                 app.switch_theme_editor_variant(mode, &ctx);
                 app.theme_editor.custom.window_border_width = 1.25;
+                let border_color = Color32::from_rgb(203, 58, 117);
+                app.theme_editor.custom.window_border = border_color.to_array();
+                app.apply_theme_editor_live_preview(&ctx);
+                assert_eq!(app.colors.window_border_width, 1.25);
                 let mut names = std::collections::BTreeSet::new();
                 for region in REGIONS {
                     app.theme_editor.selected_region = region;
+                    app.theme_editor.preview_inspector = region == ThemePreviewRegion::Inspector;
                     let output = ctx.run(
                         egui::RawInput {
                             screen_rect: Some(Rect::from_min_size(
@@ -1623,6 +1628,13 @@ mod tests {
                             &shape.shape, egui::Shape::Text(text) if text.galley.job.text == "1.25 px"
                         )), "Window border thickness must display the full quarter-pixel value in {region:?}");
                     }
+                    assert!(
+                        output.shapes.iter().any(|shape| matches!(
+                            &shape.shape, egui::Shape::Rect(rect)
+                                if rect.stroke == Stroke::new(1.25, border_color)
+                        )),
+                        "Preview must paint the exact selected border in {region:?}"
+                    );
                     for (_, node) in output.platform_output.accesskit_update.unwrap().nodes {
                         if node.role() == Role::SpinButton {
                             if node.label() == Some("Window border thickness") {
@@ -3060,7 +3072,9 @@ mod tests {
                 app.colors.titlebar_bg = Color32::from_rgb(23, 109, 63);
                 app.colors.heading = Color32::from_rgb(244, 210, 70);
                 app.colors.window_border = Color32::from_rgb(235, 113, 135);
-                app.colors.window_border_width = 4.0;
+                let mut customization = OttrinApp::custom_from_colors(app.colors);
+                customization.window_border_width = 1.25;
+                app.colors = Colors::from_custom(&customization);
                 app.colors.app_radius = radius;
                 app.preview.visible = true;
                 app.preview.path = Some(PathBuf::from("/__appearance_fixture__/sample.bin"));
@@ -3132,7 +3146,7 @@ mod tests {
                 assert!(
                     rects
                         .iter()
-                        .any(|r| r.stroke == Stroke::new(4.0, app.colors.window_border)
+                        .any(|r| r.stroke == Stroke::new(1.25, app.colors.window_border)
                             && r.corner_radius == egui::CornerRadius::same(radius)
                             && r.rect.size() == Vec2::new(720.0, 560.0)),
                     "Inspector must use shared window border width/color and radius"
