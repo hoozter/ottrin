@@ -422,6 +422,13 @@ Current source, test, package and owner/external scopes stay separate.
    and the desktop FileChooser portal. Both returned the exact requested paths
    without editing files or starting indexing. Native Windows and broader
    caller acceptance retain their separate scopes.
+
+   Source `1464c6c2` binds Save overwrite confirmation to the displayed
+   destination. The regression changes the destination before confirming
+   and requires a new prompt without changing either file. The full Linux
+   UI suite passed 543 tests with one existing ignore, and strict Clippy
+   passed on Linux and the Windows GNU target. Mounted package and native
+   Windows coverage for this change remain open.
 4. Resolve ordinary-user MSI registration rollback, including the failed independent
    file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
    changes and manual registry compensation are not a working installer. This
