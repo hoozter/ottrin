@@ -418,6 +418,15 @@ Current source, test, package and owner/external scopes stay separate.
    The source21 package keeps its original build-time manuals and acceptance scope;
    it does not establish the later grouping/scroll fixes or whole-theme acceptance.
 
+   Services now uses shared settings typography and theme success colors for
+   Folder integration on both platforms. Windows copy separates Explorer menu
+   actions from changing the default folder app, including the installation
+   where default changes are unavailable. Linux copy explains the handoff
+   from a file manager already handling Show in folder. The source checkpoint
+   passes 544 UI tests (one ignored), formatting and strict Linux and Windows
+   cross-target UI lint. Native rendered and package verification remain open.
+   Five superseded compiler sessions were retired, recovering 0.29 GiB.
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

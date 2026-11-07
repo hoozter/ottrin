@@ -20898,9 +20898,9 @@ impl OttrinApp {
         appearance_editor::settings_surface(c).inner_margin(12).show(ui,|ui| {
             ui.set_min_width(ui.available_width());
             settings_section_title(ui, c, if cfg!(target_os="windows"){"Folder integration"}else{"Folder opening"});
-            ui.label(if cfg!(target_os="windows"){ "Add Open in Ottrin to folder, drive and folder-background menus. Default folder opening is a separate choice below." }else{ "Choose Ottrin for directory links, Show in folder and Properties requests. Ottrin opens a window only when requested. An already-running desktop file manager keeps its reveal service until it exits." });
+            settings_description(ui, c, if cfg!(target_os="windows") { "Adds Open in Ottrin when you right-click a folder, a drive, or empty space inside a folder." } else { "Use Ottrin when apps open a folder, show a file in its folder, or request file properties. If your current file manager is already handling Show in folder, it keeps doing so until it exits." });
             if let Some(status)=self.folder_status.clone() {
-                Self::render_service_status(ui,&status.detail,if status.ready {Color32::from_rgb(80,185,110)} else {c.text_muted});
+                Self::render_service_status(ui, &status.detail, if status.ready { c.success_text() } else { c.text_muted });
                 ui.horizontal_wrapped(|ui| {
                     if ui.add(egui::Button::new(if status.enabled {"Update / repair folder setup"}else if cfg!(target_os="windows"){"Enable folder menu actions"}else{"Use Ottrin for folders"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable);}
                     if status.enabled && ui.add(egui::Button::new(if cfg!(target_os="windows"){"Remove folder menu actions"}else{"Restore previous handler"}).themed(&c)).clicked() {self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable);}
@@ -20909,20 +20909,20 @@ impl OttrinApp {
                 #[cfg(target_os="windows")]
                 {
                     ui.add_space(12.0);
-                    ui.label(RichText::new("Default folder opening").strong().color(c.heading));
+                    settings_section_title(ui, c, "Default folder app");
                     if !status.default_supported {
-                        ui.label("Changing the default folder app is unavailable in this installation. You can still use Open in Ottrin from folder menus.");
+                        settings_description(ui, c, "This installation supports Open in Ottrin in folder menus. Your current default folder app stays selected.");
                         return;
                     }
                     let label=if status.default_ready {"Ottrin is selected for normal filesystem-folder and drive links"}else if status.default_enabled && !status.ready {"Folder setup needs repair before default opening is ready"}else if status.default_enabled {"Another default was selected; that choice has been preserved"}else{"Windows keeps its current folder-opening default"};
-                    Self::render_service_status(ui,label,if status.default_ready {Color32::from_rgb(80,185,110)}else{c.text_muted});
-                    ui.label("Applies when an application asks Windows for the default folder action. Programs that explicitly launch Explorer or use another verb keep that behavior. Virtual folders stay with Windows.");
+                    Self::render_service_status(ui,label,if status.default_ready { c.success_text() } else { c.text_muted });
+                    settings_description(ui, c, "Applies when apps ask Windows to open a folder or drive. Apps that open File Explorer directly and virtual folders like This PC keep their usual behavior.");
                     ui.horizontal_wrapped(|ui|{
                         if !status.default_ready && ui.add(egui::Button::new("Use Ottrin to open folders").themed(&c)).clicked(){self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::enable_default);}
                         if status.default_enabled && ui.add(egui::Button::new("Restore previous folder defaults").themed(&c)).clicked(){self.begin_service_action(ui.ctx(),ottrin_platform::folder_integration::disable_default);}
                     });
                 }
-            }else{ui.label(RichText::new("Checking setup…").color(c.text_muted));}
+            } else { settings_description(ui, c, "Checking setup…"); }
         });
         ui.add_space(14.0);
     }
