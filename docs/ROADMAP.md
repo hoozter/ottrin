@@ -412,7 +412,8 @@ Current source, test, package and owner/external scopes stay separate.
    covered 36 document/worksheet/status bar frames and six Services frames.
    The 20 consumed transitions and the package stage were retired.
    Evidence: `inspector-samples-delivery-current/PROMOTION.json` and its UI
-   receipts. Image/PDF, installed-provider Office, full-property and broader
+   receipts. The later `07f0095e` mounted Image/PDF sample and menu acceptance
+   is recorded above. Installed-provider Office, full-property and broader
    platform and scale acceptance remain open.
    Two read-only60-second samples of the personal installed daemon identify
    `ottrin-indexd`, approximately30–31MiB RSS and mean0.67/0.98% of one core.
@@ -439,6 +440,12 @@ Current source, test, package and owner/external scopes stay separate.
    Evidence: `folder-services-style-current/ACCEPTANCE.json`. Windows rendering
    and package verification remain open. Eight superseded compiler sessions
    were retired across these checkpoints, recovering 0.61 GiB.
+
+   The border-width control now uses one quarter-pixel step in Borders and
+   dividers, Quick Inspector, and Buttons and menus. The actual property
+   renderer verifies a saved 1.25 px value is displayed without rounding
+   and exposes the same increment in both themes at scale 1 and 1.5.
+   This is source-renderer evidence. Native packaged review remains open.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.

@@ -361,7 +361,7 @@ impl OttrinApp {
                         ui.add_space(10.0);
                         changed |= property_group(ui, "Geometry", c, |ui| {
                             let mut group_changed = false;
-                        group_changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.5, c);
+                        group_changed |= window_border_width_row(ui, &mut self.theme_editor.custom.window_border_width, seed.window_border_width, c);
                             group_changed
                         });
                     }
@@ -404,7 +404,7 @@ impl OttrinApp {
                         changed |= property_group(ui, "Shared window geometry", c, |ui| {
                             ui.label(RichText::new("Shared by Ottrin windows. Reset shared panel background only restores the panel color.").small().color(c.text_dim));
                             let mut changed = number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
-                            changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.25, c);
+                            changed |= window_border_width_row(ui, &mut self.theme_editor.custom.window_border_width, seed.window_border_width, c);
                             changed
                         });
                     }
@@ -413,7 +413,7 @@ impl OttrinApp {
                         changed |= property_group(ui, "Shared menu geometry", c, |ui| {
                             ui.label(RichText::new("Surface corners round the menu frame. Border thickness is shared with windows. Reset component leaves both values unchanged.").small().color(c.text_dim));
                             let mut changed = number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
-                            changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.25, c);
+                            changed |= window_border_width_row(ui, &mut self.theme_editor.custom.window_border_width, seed.window_border_width, c);
                             changed
                         });
                     }
@@ -798,6 +798,18 @@ fn compact_color_picker(
     response
 }
 
+fn window_border_width_row(ui: &mut egui::Ui, value: &mut f32, default: f32, c: Colors) -> bool {
+    number_row(
+        ui,
+        "Window border thickness",
+        value,
+        0.0..=4.0,
+        default,
+        0.25,
+        c,
+    )
+}
+
 fn number_row(
     ui: &mut egui::Ui,
     title: &str,
@@ -828,13 +840,7 @@ fn number_row(
                     egui::DragValue::new(value)
                         .range(range)
                         .speed(step)
-                        .max_decimals(if step < 0.1 {
-                            2
-                        } else if step < 1.0 {
-                            1
-                        } else {
-                            0
-                        })
+                        .fixed_decimals(if step < 1.0 { 2 } else { 0 })
                         .suffix(match title {
                             "Text size" => "×",
                             "Neutral text blend" => "",
@@ -1591,6 +1597,7 @@ mod tests {
                 let mut app = OttrinApp::default();
                 app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
                 app.switch_theme_editor_variant(mode, &ctx);
+                app.theme_editor.custom.window_border_width = 1.25;
                 let mut names = std::collections::BTreeSet::new();
                 for region in REGIONS {
                     app.theme_editor.selected_region = region;
@@ -1606,8 +1613,21 @@ mod tests {
                             app.render_theme_editor_embedded(ctx);
                         },
                     );
+                    if matches!(
+                        region,
+                        ThemePreviewRegion::Borders
+                            | ThemePreviewRegion::Inspector
+                            | ThemePreviewRegion::Accent
+                    ) {
+                        assert!(output.shapes.iter().any(|shape| matches!(
+                            &shape.shape, egui::Shape::Text(text) if text.galley.job.text == "1.25 px"
+                        )), "Window border thickness must display the full quarter-pixel value in {region:?}");
+                    }
                     for (_, node) in output.platform_output.accesskit_update.unwrap().nodes {
                         if node.role() == Role::SpinButton {
+                            if node.label() == Some("Window border thickness") {
+                                assert_eq!(node.numeric_value_step(), Some(0.25), "{region:?}");
+                            }
                             names.insert(node.label().unwrap_or_default().to_owned());
                         }
                     }
