@@ -235,6 +235,7 @@ impl OttrinApp {
 
     pub(super) fn render_theme_editor_embedded(&mut self, ctx: &Context) -> bool {
         let c = self.colors;
+        let previous_region = self.theme_editor.selected_region;
         let mut close_requested = false;
         let mut changed = false;
         let seed = self.theme_editor.initial_custom.clone();
@@ -318,7 +319,9 @@ impl OttrinApp {
                 }
                 self.theme_editor.selected_region = region;
                 ui.add_space(8.0);
-                ScrollArea::vertical().id_salt("appearance_properties").max_height((inspector_rect.height()-44.0).max(100.0)).show(ui, |ui| {
+                let properties = ScrollArea::vertical().id_salt("appearance_properties").max_height((inspector_rect.height()-44.0).max(100.0));
+                let properties = if region != previous_region { properties.vertical_scroll_offset(0.0) } else { properties };
+                properties.show(ui, |ui| {
                     ui.set_width(ui.available_width());
                     ui.spacing_mut().item_spacing.y = 10.0;
                     ui.label(RichText::new(Self::theme_preview_region_hint(region)).small().color(c.text_dim));
@@ -1136,6 +1139,191 @@ fn property_group(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn selecting_a_component_reveals_its_properties_without_resetting_ordinary_edits() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+        fn render(
+            app: &mut OttrinApp,
+            ctx: &Context,
+            events: Vec<egui::Event>,
+            time: &mut f64,
+        ) -> egui::FullOutput {
+            *time += 1.0 / 60.0;
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1180.0, 780.0),
+                    )),
+                    time: Some(*time),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_theme_editor_embedded(ctx);
+                },
+            )
+        }
+        fn text_rect(output: &egui::FullOutput, label: &str) -> Option<(Rect, Rect)> {
+            output.shapes.iter().find_map(|s| match &s.shape {
+                egui::epaint::Shape::Text(t) if t.galley.job.text == label => {
+                    Some((t.galley.rect.translate(t.pos.to_vec2()), s.clip_rect))
+                }
+                _ => None,
+            })
+        }
+        fn action(
+            output: &egui::FullOutput,
+            label: &str,
+            role: Role,
+            action: Action,
+        ) -> egui::Event {
+            let nodes = &output
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes;
+            let targets: Vec<_> = nodes
+                .iter()
+                .filter(|(_, n)| n.role() == role && n.label() == Some(label))
+                .collect();
+            assert_eq!(targets.len(), 1, "One actual named control: {label}");
+            egui::Event::AccessKitActionRequest(ActionRequest {
+                action,
+                target: targets[0].0,
+                data: None,
+            })
+        }
+        fn scroll(app: &mut OttrinApp, ctx: &Context, time: &mut f64) -> egui::FullOutput {
+            let _ = render(
+                app,
+                ctx,
+                vec![
+                    egui::Event::PointerMoved(egui::pos2(1000.0, 500.0)),
+                    egui::Event::MouseWheel {
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: Vec2::new(0.0, -900.0),
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+                time,
+            );
+            let mut output = render(app, ctx, vec![], time);
+            for _ in 0..60 {
+                output = render(app, ctx, vec![], time);
+            }
+            output
+        }
+        for mode in [ThemeMode::Dark, ThemeMode::Light] {
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            let mut time = 0.0;
+            let mut app = OttrinApp::default();
+            app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+            app.switch_theme_editor_variant(mode, &ctx);
+            app.theme_editor.custom.font_scale = 1.35;
+            app.theme_editor.preview_inspector = true;
+            app.theme_editor.selected_region = ThemePreviewRegion::Inspector;
+            app.apply_theme_editor_live_preview(&ctx);
+            for _ in 0..3 {
+                let _ = render(&mut app, &ctx, vec![], &mut time);
+            }
+            let initial = render(&mut app, &ctx, vec![], &mut time);
+            let (hint, clip) = text_rect(
+                &initial,
+                OttrinApp::theme_preview_region_hint(ThemePreviewRegion::Inspector),
+            )
+            .expect("Initial description is visible");
+            assert!(clip.contains_rect(hint));
+            let output = scroll(&mut app, &ctx, &mut time);
+            assert!(
+                text_rect(
+                    &output,
+                    OttrinApp::theme_preview_region_hint(ThemePreviewRegion::Inspector)
+                )
+                .is_none_or(|(hint, clip)| hint.bottom() < clip.top()),
+                "Exercise an actually scrolled property pane"
+            );
+            let event = action(&output, "File manager", Role::Button, Action::Click);
+            let _ = render(&mut app, &ctx, vec![event], &mut time);
+            let output = render(&mut app, &ctx, vec![], &mut time);
+            assert_eq!(
+                app.theme_editor.selected_region,
+                ThemePreviewRegion::Defaults
+            );
+            let (hint, clip) = text_rect(
+                &output,
+                OttrinApp::theme_preview_region_hint(ThemePreviewRegion::Defaults),
+            )
+            .expect("Selecting a different component must paint its description in view");
+            assert!(
+                clip.contains_rect(hint),
+                "Selecting a different component must reveal its entire description"
+            );
+            let output = scroll(&mut app, &ctx, &mut time);
+            let (before, clip) =
+                text_rect(&output, "Window corners").expect("Scrolled numeric control is visible");
+            assert!(clip.contains_rect(before));
+            let radius = app.theme_editor.custom.app_radius;
+            let event = action(
+                &output,
+                "Window corners",
+                Role::SpinButton,
+                Action::Increment,
+            );
+            let _ = render(&mut app, &ctx, vec![event], &mut time);
+            let output = render(&mut app, &ctx, vec![], &mut time);
+            assert!(
+                app.theme_editor.custom.app_radius > radius,
+                "Exercise an actual property edit"
+            );
+            let (after, _) =
+                text_rect(&output, "Window corners").expect("Scrolled numeric control is visible");
+            assert!(
+                (before.top() - after.top()).abs() < 1.0,
+                "An ordinary edit must preserve the scrolled position"
+            );
+            let event = action(&output, "Quick Inspector", Role::Button, Action::Click);
+            let _ = render(&mut app, &ctx, vec![event], &mut time);
+            let output = scroll(&mut app, &ctx, &mut time);
+            let (title, _) = text_rect(&output, "Quick Inspector — notes.txt")
+                .expect("Actual preview title remains visible");
+            let pos = title.center();
+            let _ = render(
+                &mut app,
+                &ctx,
+                vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: false,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+                &mut time,
+            );
+            let output = render(&mut app, &ctx, vec![], &mut time);
+            assert_eq!(
+                app.theme_editor.selected_region,
+                ThemePreviewRegion::Titlebar
+            );
+            let (hint, clip) = text_rect(
+                &output,
+                OttrinApp::theme_preview_region_hint(ThemePreviewRegion::Titlebar),
+            )
+            .expect("Preview element selection reveals the new component description");
+            assert!(clip.contains_rect(hint));
+        }
+    }
 
     #[test]
     fn inspector_shared_geometry_follows_component_reset_and_keeps_its_ownership() {

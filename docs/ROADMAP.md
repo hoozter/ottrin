@@ -257,11 +257,13 @@ cohort were removed. Current package evidence:
    `inspector-delivery-current/THEME_UI_ACCEPTANCE.json`; source continuity,
    runtime and cleanup are sealed in the same evidence root. All owned desktops,
    buses, processes, profiles, mounts and content extraction are removed. Guarded
-   publication preflight passes. The115,961,332-byte candidate is retained at
-   `.hermes/packaging-tmp/.linux-native-desktop-stage` for exact-source hosted CI
-   and publication; stable Linux43 remains usable. Preserve the live preceding
-   main run. Push source21 when it completes, resolve that source's CI run, then
-   invoke the prepared guarded promoter with its `--ci-run` and `--publish`.
+   publication preflight passed for that exact candidate. It is now superseded
+   for publication by the combined grouping/scroll follow-ups below. Retain its
+   verified115,961,332 bytes during replacement assembly; retire it only after
+   the replacement's acceptance. Preserve the live preceding main run, then push
+   the complete new source batch once. Do not dispatch redundant source21 CI.
+   Current combined build/verification state belongs to
+   `appearance-delivery-current/`; stable Linux43 remains usable.
    The next source-only follow-up moves Inspector Shared window geometry below
    Reset component and explicitly states its shared scope. The actual Dark/Light
    reset regression verifies component reset restores only the panel and preserves
@@ -272,8 +274,24 @@ cohort were removed. Current package evidence:
    desktops/profiles/mounts are removed; seven obsolete incremental sessions
    reclaimed0.58GiB. Evidence: `inspector-shared-geometry-current/ACCEPTANCE.json`
    and `CLEANUP.json`. This is not yet in the source21 package candidate.
-   The package includes build-time manuals at source21; later metadata records
-   the package result without implying renewed whole-theme/platform acceptance.
+   Property selection now resets the inspector pane to its top for a different
+   component while ordinary edits preserve its scroll position. An actual wheel/
+   tab/preview-title regression first fails then passes in both themes; all533
+   active UI tests, strict Linux/Windows cross-target UI lint and formatting pass.
+   Actual Dark/Light1.35-typography checks cover tab, preview-title and dropdown
+   selections, complete new descriptions and unchanged native field bounds during
+   a real color edit. Sixteen original frames are retained after review; four
+   owned desktops/profiles/mounts and consumed transition captures are removed.
+   Seven superseded incremental sessions reclaimed0.53GiB. Evidence:
+   `appearance-scroll-current/ACCEPTANCE.json` and `CLEANUP.json`.
+   Two read-only60-second samples of the personal installed daemon identify
+   `ottrin-indexd`, approximately30–31MiB RSS and mean0.67/0.98% of one core.
+   The latter remains Ready while its snapshot advances47 revisions and35 indexed
+   records; this is active filesystem work, not a settled-idle acceptance claim.
+   Its exact installed bytes match the accepted source43 daemon and the source21
+   candidate. No user files or preferences were modified by the sampler.
+   The source21 package keeps its original build-time manuals and acceptance scope;
+   it does not establish the later grouping/scroll fixes or whole-theme acceptance.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
@@ -304,15 +322,15 @@ macOS and paid Windows signing remain outside the requested scope.
 
 ### Usable local preview
 
-Linux formats are in `dist/packages/`, from source `33e148b01d61dafa94dae6fb96dd92cb02dc1419`.
-The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA256
-`c96c440ee6e6ba1482d77e0b74c802ce5f96fa9a4643589c3d2495c968a8b713`.
-Windows ZIP/NSIS and unsigned development MSIX0.1.0.25 are in
-`dist/windows-candidate/`, from source `8e805d318557d3248ebf090aa8088dd86194b593`.
-Their acceptance manifests bind exact artifact hashes and scoped receipts;
-packaged manuals are build-time snapshots. The repository's delivery metadata
-records later verification/promotion. No public release or complete roadmap
-acceptance is implied.
+Linux packages are kept at `dist/packages/`, including the stable
+`dist/packages/Ottrin-0.1.0-x86_64.AppImage`. Windows candidates are kept at
+`dist/windows-candidate/`. Exact current source revisions, checksums and scoped
+acceptance belong to `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`; the delivery summary above identifies
+those accepted cohorts. Avoid copying checksums into multiple status sections.
+Packaged manuals are build-time snapshots; repository metadata records later
+verification and promotion. No public release or complete roadmap acceptance is
+implied.
 
 ### Earlier scoped investigations — historical notes
 
