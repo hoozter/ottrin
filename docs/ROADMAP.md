@@ -482,8 +482,14 @@ Current source, test, package and owner/external scopes stay separate.
    `fractional-border-delivery-current/MOUNTED_ACCEPTANCE.json`.
    The single 111 MiB stage passes guarded promotion preflight and waits
    for [run 42426557500](https://github.com/hoozter/ottrin/actions/runs/42426557500).
-   The selected Inspector sample's outline can obscure the themed border.
-   Separate selection ink from the actual frame in the remaining audit.
+   The next source change puts the whole-frame selection outline outside the
+   actual border in the Inspector and File manager samples. Source-rendered
+   checks cover Theme defaults, Quick Inspector and Borders at scales 1 and
+   1.5. Dark/Light software X11 captures confirm the themed stroke remains
+   visible with a clear gap from the selection outline. The 544-test Linux UI
+   suite and strict Windows cross-target UI lint passed. Both private profiles
+   were removed. Evidence: `preview-frame-outline-current/ACCEPTANCE.json`.
+   This follow-up has its own package and Windows native gates.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.

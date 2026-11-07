@@ -1635,6 +1635,36 @@ mod tests {
                         )),
                         "Preview must paint the exact selected border in {region:?}"
                     );
+                    if matches!(
+                        region,
+                        ThemePreviewRegion::Defaults
+                            | ThemePreviewRegion::Inspector
+                            | ThemePreviewRegion::Borders
+                    ) {
+                        let frame = output
+                            .shapes
+                            .iter()
+                            .find_map(|shape| match &shape.shape {
+                                egui::Shape::Rect(rect)
+                                    if rect.stroke == Stroke::new(1.25, border_color) =>
+                                {
+                                    Some(rect)
+                                }
+                                _ => None,
+                            })
+                            .unwrap();
+                        let selection_width = if region == ThemePreviewRegion::Defaults {
+                            1.0
+                        } else {
+                            2.0
+                        };
+                        assert!(output.shapes.iter().any(|shape| matches!(
+                            &shape.shape, egui::Shape::Rect(rect)
+                                if rect.stroke == Stroke::new(selection_width, app.colors.accent)
+                                    && rect.stroke_kind == egui::StrokeKind::Outside
+                                    && rect.rect.contains_rect(frame.rect.expand(2.0))
+                        )), "Frame selection must leave the actual border visible in {region:?}");
+                    }
                     for (_, node) in output.platform_output.accesskit_update.unwrap().nodes {
                         if node.role() == Role::SpinButton {
                             if node.label() == Some("Window border thickness") {

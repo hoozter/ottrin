@@ -634,30 +634,31 @@ pub(crate) fn theme_preview(
         .pointer_hover_pos()
         .filter(|p| outer.contains(*p) && ui.rect_contains_pointer(outer))
         .and_then(|p| theme_editor_region_at_pos(&regions, p, c));
-    let selected_rect = match selected {
-        ThemePreviewRegion::Titlebar => Some(title),
+    match selected {
+        ThemePreviewRegion::Titlebar => {
+            painter.rect_stroke(
+                title,
+                egui::CornerRadius {
+                    nw: c.app_radius,
+                    ne: c.app_radius,
+                    sw: 0,
+                    se: 0,
+                },
+                Stroke::new(2.0, c.accent),
+                egui::StrokeKind::Inside,
+            );
+        }
         ThemePreviewRegion::Inspector
         | ThemePreviewRegion::Defaults
-        | ThemePreviewRegion::Borders => Some(frame),
-        _ => None,
-    };
-    if let Some(rect) = selected_rect {
-        let corners = if selected == ThemePreviewRegion::Titlebar {
-            egui::CornerRadius {
-                nw: c.app_radius,
-                ne: c.app_radius,
-                sw: 0,
-                se: 0,
-            }
-        } else {
-            egui::CornerRadius::same(c.app_radius)
-        };
-        painter.rect_stroke(
-            rect,
-            corners,
-            Stroke::new(2.0, c.accent),
-            egui::StrokeKind::Inside,
-        );
+        | ThemePreviewRegion::Borders => {
+            paint_theme_preview_frame_outline(
+                &painter,
+                frame,
+                c.app_radius,
+                Stroke::new(2.0, c.accent),
+            );
+        }
+        _ => {}
     }
     if selected == ThemePreviewRegion::Accent {
         for target in targets {

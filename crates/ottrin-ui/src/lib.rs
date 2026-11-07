@@ -25112,6 +25112,23 @@ fn truncate_middle(name: &str, max_chars: usize) -> String {
     format!("{}…{}", head, tail)
 }
 
+fn paint_theme_preview_frame_outline(
+    painter: &egui::Painter,
+    frame: Rect,
+    radius: u8,
+    stroke: Stroke,
+) {
+    const GAP: u8 = 3;
+    let corners = if radius == 0 { 0 } else { radius + GAP };
+    // Keep selection ink separate from the actual window-border stroke.
+    painter.rect_stroke(
+        frame.expand(f32::from(GAP)),
+        corners,
+        stroke,
+        egui::StrokeKind::Outside,
+    );
+}
+
 fn theme_editor_region_at_pos(
     regions: &[(ThemePreviewRegion, Rect)],
     pos: egui::Pos2,
@@ -26021,11 +26038,11 @@ fn theme_editor_large_preview(
     };
 
     if selected_region == ThemePreviewRegion::Defaults {
-        p.rect_stroke(
+        paint_theme_preview_frame_outline(
+            &p,
             frame,
             preview.app_radius,
             Stroke::new(1.0, preview.accent),
-            egui::StrokeKind::Inside,
         );
     }
     for (region, region_rect) in &regions {
@@ -26039,10 +26056,12 @@ fn theme_editor_large_preview(
         } else {
             Stroke::new(1.0, mix_color(preview.accent, preview.bg, 0.18))
         };
+        if *region == ThemePreviewRegion::Borders {
+            paint_theme_preview_frame_outline(&p, *region_rect, preview.app_radius, stroke);
+            continue;
+        }
         let corners = if *region_rect == title_tab {
             theme_tab_corners(preview)
-        } else if *region == ThemePreviewRegion::Borders {
-            egui::CornerRadius::same(preview.app_radius)
         } else if *region == ThemePreviewRegion::Titlebar {
             egui::CornerRadius {
                 nw: preview.app_radius,
