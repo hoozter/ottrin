@@ -6,8 +6,8 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `2bb6da96`. All four hosted
-jobs passed in [run 42381144527](https://github.com/hoozter/ottrin/actions/runs/42381144527).
+The stable local Linux packages use verified source `e3813dab`. All four hosted
+jobs passed in [run 42386147336](https://github.com/hoozter/ottrin/actions/runs/42386147336).
 Windows retains its separately accepted source `8e805d31`.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
@@ -26,7 +26,7 @@ The foreground window kept its mounted version, and the byte-identical managed
 index stayed Ready on the same process. Startup settings, preferences and
 database identity were preserved. The consumed stage and superseded package
 paths were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-Promotion evidence: `.hermes/evidence/locations-rail-delivery-current/PROMOTION.json`.
+Promotion evidence: `.hermes/evidence/picker-multiselect-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -61,6 +61,10 @@ shared Settings typography. Open and Save dialogs show a pending or repair
 state and the next action. The Linux safety check identifies the app holding
 a desktop request or background session when its bus owner can be resolved.
 The check still prevents a restart while those objects are active.
+All four local formats for `37961173` passed content verification. The mounted
+Dark and Light checks named the private caller while its request was open and
+offered Apply change after it closed. Exact hosted verification is running in
+[run 42391178128](https://github.com/hoozter/ottrin/actions/runs/42391178128).
 
 The status bar geometry update, delivered with `0298384d`, exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
@@ -413,8 +417,11 @@ Current source, test, package and owner/external scopes stay separate.
    for a folder request. Enter submits a multi-folder selection. Range and
    toggle selection use the same eligibility rule. Folders remain available
    for ordinary browsing in Open mode. Tests exercise both request types and
-   modified selection in a directory with mixed entries. Exact package and
-   external caller verification remain open.
+   modified selection in a directory with mixed entries. The delivered Linux
+   AppImage passed mounted Open and Folder requests through the picker command
+   and the desktop FileChooser portal. Both returned the exact requested paths
+   without editing files or starting indexing. Native Windows and broader
+   caller acceptance retain their separate scopes.
 4. Resolve ordinary-user MSI registration rollback, including the failed independent
    file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
    changes and manual registry compensation are not a working installer. This
