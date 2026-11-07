@@ -14,8 +14,9 @@ A fast, keyboard-first file manager built in Rust with [egui](https://github.com
 ## Release Artifacts
 
 Public releases will be available from [GitHub Releases](https://github.com/hoozter/ottrin/releases).
-The current 0.1.0 is a locally tested development candidate; no public release is
-claimed. The latest usable local packages and exact source/hashes/tested scopes are
+The current 0.1.0 packages are local development previews. No public release
+or complete release acceptance is claimed. The latest usable local packages
+and their source revisions, hashes and tested scopes are
 recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
 `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. See the [roadmap](docs/ROADMAP.md)
 for current delivery and the [release checklist](docs/RELEASE_CHECKLIST.md) for gates.
@@ -36,14 +37,11 @@ candidate for exact identity checks; no versioned package folders accumulate.
 Generated `SOURCE_REVISION.txt` identifies package source. Packaged documentation
 is a build-time snapshot; repository manifests/documents record later acceptance.
 
-The current Linux packages use verified source `bee15669`. All four exact-source
-Linux/Windows verification and performance jobs passed in
-[run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462).
-Mounted AppImage checks in Dark and Light cover current index status, explicitly
-qualified completed-action history, recovery controls and complete diagnostic
-scrolling. Six targeted originals were reviewed. The managed personal index
-returned Ready after replacement, preserving startup choice, preferences and
-database identity. Evidence: `.hermes/evidence/service-ui-delivery-current/`.
+The current Linux scope and remaining checks are recorded in the
+[roadmap](docs/ROADMAP.md#current-delivery-and-next-work). Tag builds stage a
+draft with verified checksums, package contents and Linux signatures. The
+downloaded draft assets still require exact-candidate native acceptance before
+publication.
 
 The accepted Windows preview now uses source `8e805d31`: portable ZIP, NSIS and
 unsigned development MSIX25, with identical59-file payloads. Installed Dark/Light
@@ -165,7 +163,7 @@ macOS signing/launch checks do not block Linux/Windows work.
 
 ## Build from Source
 
-Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux, Windows, and macOS builds.
+Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux and Windows builds.
 
 ```sh
 git clone https://github.com/hoozter/ottrin.git

@@ -164,3 +164,16 @@ if grep -Eiq 'macos' "$WORKFLOW" "$ROOT/packaging/verify-release-artifacts.sh"; 
   printf 'Deferred macOS is still required by the active release pipeline\n' >&2
   exit 1
 fi
+
+# Tag builds provide exact artifacts for native acceptance before public release.
+if ! awk '
+  /^  release:/ { in_release = 1 }
+  in_release && /name: Refuse changes to a published release/ { guard = NR }
+  in_release && /gh api --paginate/ { api = NR }
+  in_release && /name: Create GitHub release draft/ { draft_step = NR }
+  in_release && /^          draft: true$/ { draft = NR }
+  END { exit !(guard && guard < api && api < draft_step && draft_step < draft) }
+' "$WORKFLOW"; then
+  printf 'Release workflow must guard published tags and stage a private draft\n' >&2
+  exit 1
+fi

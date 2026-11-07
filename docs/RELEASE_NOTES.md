@@ -2,16 +2,26 @@
 
 Ottrin 0.1.0 is a development candidate of the keyboard-first file manager. Final daily-driver and public-release acceptance remains outstanding.
 
-## Current local preview
+## Local preview builds
+
+The [roadmap](ROADMAP.md#current-delivery-and-next-work) and the Linux and Windows
+package receipts list the current local previews. Linux has an AppImage,
+portable archive, DEB and RPM. Windows has a portable ZIP, EXE installer and
+unsigned development MSIX. The MSI rollback gate remains open.
+
+The tag workflow stages verified artifacts in a GitHub release draft for native
+acceptance before public publication. See the [release checklist](RELEASE_CHECKLIST.md#release-review).
+
+## Historical local preview checkpoint
 
 Linux AppImage/portable/DEB/RPM and Windows ZIP/NSIS/unsigned development
-MSIX20 use verified runtime `b0203882`. Exact-source
-CI41966597535 passes all four Linux/Windows verification/performance jobs.
-The stable AppImage is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
+MSIX20 used verified runtime `b0203882`. Exact-source
+CI41966597535 passed all four Linux/Windows verification/performance jobs.
+The stable AppImage path is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json` and
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind delivered hashes and acceptance scopes.
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` bind current delivered hashes and scopes.
 
-Current delivery improves file-icon/name/thumbnail spacing and keeps wide List
+This checkpoint improved file-icon/name/thumbnail spacing and keeps wide List
 filenames clear of metadata. Footer text/wordmark honor the selected theme color;
 Ready text is readable in built-in Light/Dark themes. All32 current original
 Linux/Windows UI captures were directly reviewed, including Linux150% backend

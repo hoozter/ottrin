@@ -95,6 +95,9 @@ rows, shared Button text styling, sample Trash action isolation and Cancel
 restoration. Ten reviewed frames and teardown evidence are in
 `inspector-menu-current/NATIVE_REVIEW.json`. This checkpoint joins Image/PDF
 for the next mounted package review.
+Tag builds stage a GitHub release draft after checksum, content and Linux
+signature verification. Native acceptance uses those exact assets before
+public publication. The MSI rollback gate remains open.
 Protect active CI runs for viable delivery candidates from superseding pushes.
 A rejected package revision can be superseded by the corrected candidate.
 `0298384d` was pushed on that basis after mounted review rejected `23635f30`.

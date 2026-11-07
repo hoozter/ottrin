@@ -39,6 +39,8 @@ require_line '- [ ] Archive inspection confirms the exact rebuilt app, indexer, 
 require_line '- A fresh isolated artifact set was rebuilt and reverified on 2026-07-31, including'
 require_line '- [ ] Linux and Windows CI are green for the release commit.'
 require_line '- [ ] Portable zip launches on a real Windows desktop.'
+require_line '- [ ] The tag workflow stages the verified assets in a GitHub release draft.'
+require_line 'native checks, including the MSI rollback matrix, before publishing the draft.'
 require_line '- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem and cross-filesystem Move support Skip/Rename/Overwrite/Cancel with explicit complete/partial/recovery outcomes.'
 require_line '- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; same-volume and cross-volume Windows Move satisfy the roadmap contract and fail closed for every still-unsupported conflict or entry-kind boundary.'
 require_line '- [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.'
@@ -59,7 +61,7 @@ fi
 # automated exact-artifact evidence from publication and native acceptance. Each
 # document has explicit payload, renderer, and evidence boundaries.
 require_document_line "$README" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'
-require_document_line "$README" 'no exact-current-commit' 'the artifact non-availability boundary'
+require_document_line "$README" 'The current 0.1.0 packages are local development previews.' 'the local artifact scope'
 require_document_line "$README" 'Exact release artifacts must still verify' 'the exact-artifact gate'
 require_document_line "$README" 'Automatic, Native, and OpenGL compatibility' 'the renderer selection contract'
 
@@ -69,8 +71,8 @@ require_document_line "$RELEASE_NOTES" 'exact rebuilt portable ZIP and installer
 require_document_line "$RELEASE_NOTES" 'Automatic compatibility paths' 'the renderer acceptance contract'
 
 require_document_line "$USER_GUIDE" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'
-require_document_line "$USER_GUIDE" 'Recorded MSI/NSIS candidates have scoped ordinary-user native installation, upgrade, indexing and uninstall checks.' 'the scoped native-candidate evidence boundary'
-require_document_line "$USER_GUIDE" 'MSI acceptance is blocked; the broader installer matrix remains incomplete.' 'the failed-rollback and incomplete installer boundary'
+require_document_line "$USER_GUIDE" 'Recorded MSI and NSIS candidates have scoped ordinary-user installation,' 'the scoped native-candidate evidence boundary'
+require_document_line "$USER_GUIDE" 'MSI acceptance is blocked on failed' 'the failed-rollback and incomplete installer boundary'
 require_document_line "$USER_GUIDE" 'Automatic selection, persisted preferences, diagnostic override behavior' 'the renderer acceptance contract'
 
 require_document_line "$ROADMAP" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'
@@ -90,7 +92,7 @@ done
 
 # Require canonical non-availability and dormant-recovery statements, then
 # reject broader contradictory claims that could otherwise coexist with them.
-require_document_line "$README" 'artifact is claimed as published or accepted' 'the current binary non-availability statement'
+require_document_line "$README" 'or complete release acceptance is claimed.' 'the local build and public acceptance boundary'
 require_document_line "$RELEASE_NOTES" 'no packaged or runtime recovery capability is claimed' 'the dormant recovery boundary'
 require_document_line "$USER_GUIDE" 'dormant/test-only journal and recovery machinery' 'the dormant recovery boundary'
 require_document_line "$USER_GUIDE" 'accepted Linux same-filesystem native-rename' 'the accepted Move path boundary'

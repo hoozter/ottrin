@@ -291,6 +291,9 @@ ottrin --uninstall --purge-config
 
 ## Current Limitations
 
+- Recorded MSI and NSIS candidates have scoped ordinary-user installation,
+  upgrade, indexing and uninstall checks. MSI acceptance is blocked on failed
+  rollback. Broader installer acceptance remains open.
 - Windows packages have native checks for specific recorded builds; [ROADMAP.md](ROADMAP.md) binds their exact hashes and acceptance scopes. These checks do not establish complete Windows release acceptance. MSI registration rollback after a failed transaction remains a confirmed blocker.
 - Specific real Windows settings, service and installer scopes pass in the recorded native fixtures. Administrator UAC/helper operations still need their own acceptance.
 - Windows GUI startup failures write `%LOCALAPPDATA%\\Ottrin\\startup.log` and
@@ -298,7 +301,7 @@ ottrin --uninstall --purge-config
   limited: corrected probes reject any newly appended startup failure and prove
   the OpenGL path loaded Ottrin's app-local Mesa loader; real Windows
   native-driver validation remains required.
-- Windows packaging uses WGPU when Automatic finds no compatibility signal and includes checksum-pinned Mesa 26.1.3 OpenGL compatibility libraries plus DXIL. Exact recorded native fixtures cover selected renderer/preferences/loading scenarios; current settings checks exercise both software renderers. Full physical-GPU and platform coverage remain separate; consult the roadmap for each receipt's source and scope.
+- Windows packaging uses WGPU when Automatic finds no compatibility signal and includes the checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime plus DXIL. Exact recorded native fixtures cover selected renderer scenarios. Full acceptance still covers Automatic selection, persisted preferences, diagnostic override behavior and loaded-DLL provenance. Current settings checks exercise both software renderers. Full physical-GPU and platform coverage remain separate; consult the roadmap for each receipt's source and scope.
 - Linux helper package/content checks pass; actual authentication prompt/cancel/setup/reinstall and managed-service states remain independent full-system acceptance work.
 - Stable acceptance manifests bind the current artifacts to fresh package checks and scoped Linux/real-Windows settings/service workflows. Earlier preview/media/picker/folder receipts retain their original sources; they do not automatically certify changed implementations. Uncovered polkit/UAC, installed MSIX startup and complete platform workflows remain pending.
 - Quick Inspector covers text/code, images, PDF text/metadata, bounded native DOCX structure, clearly labeled Office extracted fallbacks, XLSX/XLSM/ODS worksheets, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.

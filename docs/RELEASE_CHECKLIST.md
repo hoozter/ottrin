@@ -115,6 +115,9 @@ scope: `.hermes/evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
 - [ ] Known limitations are complete and plainly worded.
 - [ ] Version, artifact names, checksums, and generated release notes agree for the exact release artifacts.
 - [ ] No release-blocking item is waived without a written rationale.
+- [ ] The tag workflow stages the verified assets in a GitHub release draft. Review
+  the downloaded draft assets against the exact commit and complete the open
+  native checks, including the MSI rollback matrix, before publishing the draft.
 - [ ] Direct Windows portable ZIP/EXE/MSI downloads are explicitly labeled
   unsigned, with verified checksums and an honest explanation of publisher and
   SmartScreen warnings. A paid Authenticode certificate is not required.
@@ -122,9 +125,9 @@ scope: `.hermes/evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
   submission. The Store signs MSIX after certification; it does not sign the
   direct EXE/MSI downloads. Store submission is deferred until readiness and is
   not a prerequisite for the unsigned direct-download channel.
-- [ ] Linux portable and AppImage artifacts have armored detached signatures;
-  the publish job verifies the exact downloaded files against the approved
-  primary-key fingerprint before creating the release.
+- [ ] Linux AppImage, portable, DEB and RPM artifacts have armored detached
+  signatures. The draft job verifies the exact downloaded files against the
+  approved primary-key fingerprint before staging the release draft.
 
 Deferred macOS release requirement:
 

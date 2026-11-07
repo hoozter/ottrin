@@ -296,7 +296,7 @@ jobs:
             Get-ChildItem dist\Ottrin-*-windows-x64-setup.exe -File
             Get-ChildItem dist\Ottrin-*-windows-x64.msi -File
           )
-          if ($installers.Count -ne 2) { throw "Expected one EXE installer and one MSI installer for signing." }
+          if ($installers.Count -ne 2) { throw "Expected one EXE installer and one MSI installer." }
           foreach ($installer in $installers) {
             $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLowerInvariant()
             "$hash  $($installer.Name)" | Set-Content -Encoding ascii "$($installer.FullName).sha256"
@@ -347,7 +347,7 @@ jobs:
           }
 
   release:
-    name: Publish GitHub release
+    name: Stage GitHub release draft
     needs: [package-linux, verify-windows-artifacts]
     runs-on: ubuntu-latest
     permissions:
@@ -389,9 +389,21 @@ jobs:
             dist/ottrin_*_amd64.deb \
             dist/ottrin-*.x86_64.rpm
 
-      - name: Create GitHub Release
+      - name: Refuse changes to a published release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          published_tags="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq '.[] | select(.draft == false) | .tag_name')"
+          if grep -Fxq -- "$GITHUB_REF_NAME" <<< "$published_tags"; then
+            echo "Release $GITHUB_REF_NAME is already public. Use a new tag for new artifacts." >&2
+            exit 1
+          fi
+
+      - name: Create GitHub release draft
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
+          draft: true
           files: dist/*
           generate_release_notes: true
           fail_on_unmatched_files: true
