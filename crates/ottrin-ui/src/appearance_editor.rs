@@ -1811,7 +1811,10 @@ mod tests {
 
     #[test]
     fn preview_uses_real_smart_panel_icons_and_toggle_behavior() {
+        use egui::accesskit::{Action, ActionRequest};
+
         let ctx = Context::default();
+        ctx.enable_accesskit();
         let c = Colors::preset(ThemePreset::Nord, true);
         let render = |mut view, events| {
             let mut picked = None;
@@ -1838,6 +1841,39 @@ mod tests {
             );
             (output, picked)
         };
+        let (output, _) = render(ViewMode::List, vec![]);
+        let activate_info = |output: &egui::FullOutput| {
+            let info = output
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .find(|(_, node)| {
+                    node.label() == Some("Show or hide info panel")
+                        && node.supports_action(Action::Click)
+                })
+                .unwrap()
+                .0;
+
+            vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: info,
+                data: None,
+            })]
+        };
+        assert_eq!(
+            render(ViewMode::List, activate_info(&output)).1,
+            Some(ThemePreviewRegion::Sidebar)
+        );
+        let (info_panel, _) = render(ViewMode::List, vec![]);
+        assert!(info_panel.shapes.iter().any(|shape| matches!(&shape.shape,
+            egui::epaint::Shape::Text(text) if text.galley.job.text == "Info")));
+        assert_eq!(
+            render(ViewMode::List, activate_info(&info_panel)).1,
+            Some(ThemePreviewRegion::Sidebar)
+        );
         let (output, _) = render(ViewMode::Miller, vec![]);
         for icon in [
             MI_DESCRIPTION,

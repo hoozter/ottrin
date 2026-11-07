@@ -110,11 +110,16 @@ The next source checkpoint gives theme color swatches and restore controls
 field-specific accessibility names. The picker exposes named RGB and opacity
 controls. Rendered Dark/Light tests activate the swatch, edit the live toolbar
 color and opacity, and restore the opening value through accessibility actions.
-This checkpoint awaits the next combined package build.
 The File manager theme sample and live Smart Panel now share section headings.
 Clicking Info in List or Grid shows the Info title and icon. Column view keeps
 Info inline. The rendered regression opens and closes Info in all three views
 and checks that the preview never substitutes the Trash heading.
+The combined `5f434acf` candidate passed all four hosted jobs in
+[run 42376208602](https://github.com/hoozter/ottrin/actions/runs/42376208602)
+and mounted Dark/Light checks. Promotion is pending while the desktop session
+uses the stable AppImage. A follow-up routes non-pointer Smart Panel activation
+to the same styling selection as a mouse click. The rendered regression covers
+Info activation and collapse without a pointer and preserves border hit testing.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.

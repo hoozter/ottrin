@@ -25866,18 +25866,16 @@ fn theme_editor_large_preview(
         .pointer_hover_pos()
         .filter(|pos| rect.contains(*pos) && ui.rect_contains_pointer(rect))
         .and_then(|pos| theme_editor_region_at_pos(&regions, pos, preview));
-    if hovered_region != Some(ThemePreviewRegion::Borders)
-        && let Some(section) = strip_clicked
-    {
+    let border_clicked = hovered_region == Some(ThemePreviewRegion::Borders)
+        && ui.ctx().input(|i| i.pointer.primary_clicked());
+    if !border_clicked && let Some(section) = strip_clicked {
         ui.ctx()
             .data_mut(|data| data.insert_temp(preview_state_id, section));
     }
     if hovered_region.is_some() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }
-    let clicked_region = if hovered_region == Some(ThemePreviewRegion::Borders)
-        && ui.ctx().input(|i| i.pointer.primary_clicked())
-    {
+    let clicked_region = if border_clicked {
         Some(ThemePreviewRegion::Borders)
     } else if status_clicked {
         Some(ThemePreviewRegion::StatusBar)
@@ -25887,13 +25885,14 @@ fn theme_editor_large_preview(
         Some(ThemePreviewRegion::Titlebar)
     } else if navigation_clicked || tab_clicked {
         Some(ThemePreviewRegion::Navigation)
-    } else if ui.rect_contains_pointer(rect)
-        && ui.ctx().input(|i| {
-            i.pointer.primary_clicked()
-                && i.pointer
-                    .interact_pos()
-                    .is_some_and(|pos| sidebar.contains(pos))
-        })
+    } else if strip_clicked.is_some()
+        || (ui.rect_contains_pointer(rect)
+            && ui.ctx().input(|i| {
+                i.pointer.primary_clicked()
+                    && i.pointer
+                        .interact_pos()
+                        .is_some_and(|pos| sidebar.contains(pos))
+            }))
     {
         Some(ThemePreviewRegion::Sidebar)
     } else if ui.ctx().input(|i| {
