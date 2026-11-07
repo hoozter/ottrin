@@ -73,15 +73,18 @@ of the installed `ac935037` index stayed Ready with 248,585 indexed items and
 an unchanged snapshot. CPU averaged 0.18% of one core and peaked at 0.30% per
 ten-second interval. The sample covers settled Ready behavior on this machine.
 
-The next source checkpoint adds an Image sample using the production Inspector
-action row, fit and zoom controls, image sizing and scrolling. Image sample
-controls select button styling and use bundled bytes without writing a file.
-A rendered test compares named production controls and exercises visible raster
-sizing and property selection. PDF and installed-provider samples, native
-package review and the full appearance audit remain open.
-Wait for an active hosted run to finish before another source push so
-`cancel-in-progress` cannot discard its result. Current source/test/package and
-owner/external waits stay separate throughout this queue.
+The next source checkpoint adds Image and PDF samples using production Inspector
+controls, image sizing and scrolling. The bundled two-page PDF uses PDFium and
+shares page navigation and continuous fit-width presentation with live previews.
+The samples select button styling and use bundled bytes without writing a file.
+Rendered tests exercise named production controls, raster sizing and page changes.
+All 539 active UI tests passed, including a separate focused run with the staged
+AppImage's PDFium library. Installed-provider samples, native package review
+and the full appearance audit remain open.
+Protect active CI runs for viable delivery candidates from superseding pushes.
+A rejected package revision can be superseded by the corrected candidate.
+`0298384d` was pushed on that basis after mounted review rejected `23635f30`.
+Current source, test, package and owner/external scopes stay separate.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
    Implemented source includes original-caller profile/registry admission, private

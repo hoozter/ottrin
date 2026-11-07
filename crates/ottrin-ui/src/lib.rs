@@ -2947,6 +2947,53 @@ fn inspector_visual_bounds(ui: &egui::Ui) -> Vec2 {
     )
 }
 
+fn render_following_pdf_pages(
+    ui: &mut egui::Ui,
+    path: &Path,
+    page_count: usize,
+    spec: VisualPreviewRenderSpec,
+    first_size: Vec2,
+    c: Colors,
+    mut image_for_page: impl FnMut(VisualPreviewRenderSpec) -> Option<egui::Image<'static>>,
+) {
+    if !spec.fit_width {
+        return;
+    }
+    for page_index in spec.page_index + 1..page_count {
+        ui.add_space(12.0);
+        let size_id = ui.id().with(("pdf_page_aspect", path, page_index));
+        let aspect = ui
+            .ctx()
+            .data(|data| data.get_temp::<f32>(size_id))
+            .unwrap_or(first_size.y / first_size.x.max(1.0));
+        let expected = Vec2::new(first_size.x, first_size.x * aspect);
+        let rect = Rect::from_min_size(ui.cursor().min, expected);
+        // Retain the continuous scroll extent without loading off-screen pages.
+        if !ui.is_rect_visible(rect) {
+            ui.allocate_exact_size(expected, egui::Sense::hover());
+            continue;
+        }
+        if let Some(image) = image_for_page(VisualPreviewRenderSpec { page_index, ..spec }) {
+            let response = ui.add(image);
+            ui.ctx().data_mut(|data| {
+                data.insert_temp(
+                    size_id,
+                    response.rect.height() / response.rect.width().max(1.0),
+                )
+            });
+        } else {
+            let (rect, _) = ui.allocate_exact_size(expected, egui::Sense::hover());
+            ui.painter().text(
+                rect.center(),
+                Align2::CENTER_CENTER,
+                format!("Loading page {}…", page_index + 1),
+                FontId::proportional(14.0 * c.font_scale),
+                c.text_dim,
+            );
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 struct PreviewLoadSlot {
     generation: u64,
@@ -4584,56 +4631,6 @@ impl OttrinApp {
                 spec.corner_radius,
                 spec.page_index,
             )
-        }
-    }
-
-    fn render_following_pdf_pages(
-        &mut self,
-        ui: &mut egui::Ui,
-        path: &Path,
-        page_count: usize,
-        spec: VisualPreviewRenderSpec,
-        first_size: Vec2,
-    ) {
-        if !spec.fit_width {
-            return;
-        }
-        for page_index in spec.page_index + 1..page_count {
-            ui.add_space(12.0);
-            let size_id = ui.id().with(("pdf_page_aspect", path, page_index));
-            let aspect = ui
-                .ctx()
-                .data(|data| data.get_temp::<f32>(size_id))
-                .unwrap_or(first_size.y / first_size.x.max(1.0));
-            let expected = Vec2::new(first_size.x, first_size.x * aspect);
-            let rect = Rect::from_min_size(ui.cursor().min, expected);
-            // Retain the continuous scroll extent without loading off-screen pages.
-            if !ui.is_rect_visible(rect) {
-                ui.allocate_exact_size(expected, egui::Sense::hover());
-                continue;
-            }
-            if let Some(image) = self.cached_shared_visual_preview_widget(
-                path,
-                PreviewKind::Pdf,
-                VisualPreviewRenderSpec { page_index, ..spec },
-            ) {
-                let response = ui.add(image);
-                ui.ctx().data_mut(|data| {
-                    data.insert_temp(
-                        size_id,
-                        response.rect.height() / response.rect.width().max(1.0),
-                    )
-                });
-            } else {
-                let (rect, _) = ui.allocate_exact_size(expected, egui::Sense::hover());
-                ui.painter().text(
-                    rect.center(),
-                    Align2::CENTER_CENTER,
-                    format!("Loading page {}…", page_index + 1),
-                    FontId::proportional(14.0 * self.colors.font_scale),
-                    self.colors.text_dim,
-                );
-            }
         }
     }
 
@@ -18256,7 +18253,7 @@ impl OttrinApp {
                                 let response =
                                     submit_sized_preview(ui, img, visual_fit, &mut visual_zoom);
                                 if let Some(count) = preview_page_count(&preview, None) {
-                                    self.render_following_pdf_pages(
+                                    render_following_pdf_pages(
                                         ui,
                                         &entry.path,
                                         count,
@@ -18269,6 +18266,14 @@ impl OttrinApp {
                                             zoom: visual_zoom,
                                         },
                                         response.rect.size(),
+                                        c,
+                                        |spec| {
+                                            self.cached_shared_visual_preview_widget(
+                                                &entry.path,
+                                                PreviewKind::Pdf,
+                                                spec,
+                                            )
+                                        },
                                     );
                                 }
                             });
@@ -19433,7 +19438,7 @@ impl OttrinApp {
                         None => {},
                     }
                     if let Some(page_count) = preview_page_count(&preview, office_render.as_ref())
-                        && let Some(page) = render_page_navigation(ui, self.preview.pdf_page_index, page_count, c)
+                        && let Some(page) = render_page_navigation(ui, self.preview.pdf_page_index, page_count, c).page
                     {
                         self.set_preview_page(page);
                     }
@@ -19684,8 +19689,9 @@ impl OttrinApp {
                                     if let Some(img) = image {
                                         let image_resp = submit_sized_preview(ui, img, self.preview.visual_fit, &mut self.preview.visual_zoom);
                                         if let Some(count) = preview_page_count(&preview, None) {
-                                            self.render_following_pdf_pages(ui, &path, count,
-                                                VisualPreviewRenderSpec { max_size: Vec2::new(max_w, max_h), corner_radius: 8, page_index: pdf_page_index, fit: self.preview.visual_fit, fit_width: self.preview.visual_fit_width, zoom: self.preview.visual_zoom }, image_resp.rect.size());
+                                            render_following_pdf_pages(ui, &path, count,
+                                                VisualPreviewRenderSpec { max_size: Vec2::new(max_w, max_h), corner_radius: 8, page_index: pdf_page_index, fit: self.preview.visual_fit, fit_width: self.preview.visual_fit_width, zoom: self.preview.visual_zoom }, image_resp.rect.size(), c,
+                                                |spec| self.cached_shared_visual_preview_widget(&path, PreviewKind::Pdf, spec));
                                         }
                                         if let Some(delta) =
                                             render_image_hover_nav(ui, c, image_resp.rect)
@@ -23635,55 +23641,54 @@ fn apply_markdown_line_prefix(
     adjust(start)..adjust(end)
 }
 
+struct PageNavigation {
+    page: Option<usize>,
+    buttons: [egui::Response; 2],
+}
+
 /// Page navigation owns its reading direction and wraps complete controls.
-/// It must not inherit the action toolbar's right-to-left packing direction.
 fn render_page_navigation(
     ui: &mut egui::Ui,
     page_index: usize,
     page_count: usize,
     c: Colors,
-) -> Option<usize> {
-    if page_count == 0 {
-        return None;
-    }
+) -> PageNavigation {
     let page_index = page_index.min(page_count - 1);
-    let mut changed = None;
     ui.allocate_ui_with_layout(
         Vec2::new(ui.available_width(), ui.spacing().interact_size.y),
         Layout::left_to_right(Align::Center).with_main_wrap(true),
         |ui| {
-            if ui
+            let previous = ui
                 .add_enabled(page_index > 0, egui::Button::new("Previous").themed(&c))
-                .on_hover_text("Show the previous document page.")
-                .clicked()
-            {
-                changed = Some(page_index - 1);
-            }
+                .on_hover_text("Show the previous document page.");
             let mut page = page_index + 1;
-            if ui
-                .add(
-                    egui::DragValue::new(&mut page)
-                        .range(1..=page_count)
-                        .prefix("Page ")
-                        .suffix(format!(" of {page_count}")),
-                )
-                .changed()
-            {
-                changed = Some(page - 1);
-            }
-            if ui
+            let number = ui.add(
+                egui::DragValue::new(&mut page)
+                    .range(1..=page_count)
+                    .prefix("Page ")
+                    .suffix(format!(" of {page_count}")),
+            );
+            name_control(&number, "Page number");
+            let next = ui
                 .add_enabled(
                     page_index + 1 < page_count,
                     egui::Button::new("Next").themed(&c),
                 )
-                .on_hover_text("Show the next document page.")
-                .clicked()
-            {
-                changed = Some(page_index + 1);
+                .on_hover_text("Show the next document page.");
+            let page = if next.clicked() {
+                Some(page_index + 1)
+            } else if number.changed() {
+                Some(page - 1)
+            } else {
+                previous.clicked().then(|| page_index - 1)
+            };
+            PageNavigation {
+                page,
+                buttons: [previous, next],
             }
         },
-    );
-    changed
+    )
+    .inner
 }
 
 fn render_source_editor(

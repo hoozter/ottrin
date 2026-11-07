@@ -486,7 +486,8 @@ mod tests {
                                     |ui| {
                                         bounds = ui.max_rect();
                                         assert_eq!(
-                                            crate::render_page_navigation(ui, 1, 12, app.colors),
+                                            crate::render_page_navigation(ui, 1, 12, app.colors)
+                                                .page,
                                             None
                                         );
                                     },

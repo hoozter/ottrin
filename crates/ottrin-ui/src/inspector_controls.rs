@@ -168,6 +168,7 @@ pub(crate) enum SampleKind {
     Document,
     Spreadsheet,
     Image,
+    Pdf,
 }
 impl SampleKind {
     fn label(self) -> &'static str {
@@ -176,6 +177,7 @@ impl SampleKind {
             Self::Document => "Document",
             Self::Spreadsheet => "Spreadsheet",
             Self::Image => "Image",
+            Self::Pdf => "PDF",
         }
     }
 }
@@ -186,6 +188,7 @@ pub(crate) struct ThemePreviewState {
     sizing: PreviewBodySizing,
     selected_sheet: Option<String>,
     visual: VisualSampleSizing,
+    page_index: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -206,6 +209,44 @@ impl Default for VisualSampleSizing {
 }
 
 const IMAGE_SAMPLE: &[u8] = include_bytes!("../../../assets/icon.png");
+
+const PDF_SAMPLE: &[u8] = include_bytes!("../../../assets/inspector-sample.pdf");
+const PDF_SAMPLE_PAGES: usize = 2;
+
+fn sample_visual_image(
+    kind: SampleKind,
+    spec: VisualPreviewRenderSpec,
+) -> Result<egui::Image<'static>, &'static str> {
+    use std::sync::OnceLock;
+    static PDF_PAGES: [OnceLock<Result<Vec<u8>, String>>; PDF_SAMPLE_PAGES] =
+        [const { OnceLock::new() }; PDF_SAMPLE_PAGES];
+    let (uri, bytes) = if kind == SampleKind::Pdf {
+        let page = PDF_PAGES[spec.page_index].get_or_init(|| {
+            ottrin_preview::render_pdf_bytes_page_png(PDF_SAMPLE, spec.page_index, 768)
+                .map_err(|error| error.to_string())
+        });
+        (
+            format!("bytes://theme-sample/document-page-{}.png", spec.page_index),
+            page.as_deref().map_err(String::as_str)?,
+        )
+    } else {
+        (
+            "bytes://theme-sample/ottrin-icon.png".to_owned(),
+            IMAGE_SAMPLE,
+        )
+    };
+    if spec.fit {
+        Ok(preview_image_with_fit_bounds(
+            uri,
+            bytes.to_vec(),
+            spec.fit_bounds(),
+            spec.corner_radius,
+        ))
+    } else {
+        preview_image_with_zoom(uri, bytes.to_vec(), spec.zoom, spec.corner_radius)
+            .ok_or("Could not decode the sample image.")
+    }
+}
 
 /// The sample controls and the real Inspector/sidebar share the same text and
 /// worksheet controls. Callers retain their own per-file presentation state.
@@ -250,6 +291,11 @@ fn theme_sample(kind: SampleKind) -> PreviewData {
             sample.title = "ottrin-icon.png".into();
             sample.kind = PreviewKind::Image;
             sample.body.clear();
+        }
+        SampleKind::Pdf => {
+            sample.title = "inspector-sample.pdf".into();
+            sample.kind = PreviewKind::Pdf;
+            sample.body = format!("Filetype: PDF document\nPages: {PDF_SAMPLE_PAGES}");
         }
         SampleKind::Document => {
             sample.title = "document.docx".into();
@@ -332,6 +378,7 @@ pub(crate) fn theme_preview(
                     SampleKind::Document,
                     SampleKind::Spreadsheet,
                     SampleKind::Image,
+                    SampleKind::Pdf,
                 ] {
                     ui.selectable_value(&mut state.kind, kind, kind.label());
                 }
@@ -340,11 +387,16 @@ pub(crate) fn theme_preview(
         if previous != state.kind {
             state.sizing = PreviewBodySizing::default();
             state.selected_sheet = None;
-            state.visual = VisualSampleSizing::default();
+            state.visual = VisualSampleSizing {
+                fit_width: state.kind == SampleKind::Pdf,
+                ..Default::default()
+            };
+            state.page_index = 0;
         }
     });
     ui.add_space(4.0);
     let sample = theme_sample(state.kind);
+    let visual_sample = matches!(state.kind, SampleKind::Image | SampleKind::Pdf);
     let (outer, _) =
         ui.allocate_exact_size(ui.available_size().max(Vec2::splat(320.0)), Sense::hover());
     let frame = outer.shrink(14.0);
@@ -387,8 +439,18 @@ pub(crate) fn theme_preview(
         );
         buttons_clicked |= actions.action.is_some() || actions.more.clicked();
         targets.extend(actions.targets);
+        if let Some(page_count) = preview_page_count(&sample, None) {
+            let navigation = render_page_navigation(ui, state.page_index, page_count, c);
+            let button_clicked = navigation.buttons.iter().any(egui::Response::clicked);
+            buttons_clicked |= button_clicked;
+            targets.extend(navigation.buttons.map(|button| button.rect));
+            if let Some(page) = navigation.page {
+                state.page_index = page;
+                inspector_clicked |= !button_clicked;
+            }
+        }
         ui.horizontal_wrapped(|ui| {
-            if state.kind == SampleKind::Image {
+            if visual_sample {
                 for control in render_visual_sizing_controls(
                     ui,
                     &mut state.visual.fit,
@@ -414,7 +476,7 @@ pub(crate) fn theme_preview(
             targets.extend(controls.targets);
         });
         ui.separator();
-        let scrolling = if state.kind != SampleKind::Image {
+        let scrolling = if !visual_sample {
             preview_render::PreviewScroll::Body
         } else if state.visual.fit && state.visual.fit_width {
             preview_render::PreviewScroll::WidthFittedPage
@@ -422,31 +484,42 @@ pub(crate) fn theme_preview(
             preview_render::PreviewScroll::Frame
         };
         preview_render::preview_content_frame(ui, ui.available_size(), scrolling, |ui| {
-            if state.kind == SampleKind::Image {
+            if visual_sample {
                 let spec = VisualPreviewRenderSpec {
                     max_size: inspector_visual_bounds(ui),
                     corner_radius: 8,
-                    page_index: 0,
+                    page_index: state.page_index,
                     fit: state.visual.fit,
                     fit_width: state.visual.fit_width,
                     zoom: state.visual.zoom,
                 };
-                let uri = "bytes://theme-sample/ottrin-icon.png".into();
-                let bytes = IMAGE_SAMPLE.to_vec();
-                let image = if spec.fit {
-                    Some(preview_image_with_fit_bounds(
-                        uri,
-                        bytes,
-                        spec.fit_bounds(),
-                        spec.corner_radius,
-                    ))
-                } else {
-                    preview_image_with_zoom(uri, bytes, spec.zoom, spec.corner_radius)
-                };
-                if let Some(image) = image {
-                    ui.vertical_centered(|ui| {
-                        submit_sized_preview(ui, image, spec.fit, &mut state.visual.zoom);
-                    });
+                match sample_visual_image(state.kind, spec) {
+                    Ok(image) => {
+                        ui.vertical_centered(|ui| {
+                            let response =
+                                submit_sized_preview(ui, image, spec.fit, &mut state.visual.zoom);
+                            if let Some(count) = preview_page_count(&sample, None) {
+                                render_following_pdf_pages(
+                                    ui,
+                                    Path::new(&sample.title),
+                                    count,
+                                    spec,
+                                    response.rect.size(),
+                                    c,
+                                    |spec| sample_visual_image(state.kind, spec).ok(),
+                                );
+                            }
+                        });
+                    }
+                    Err(error) => {
+                        render_metadata_card_preview(
+                            ui,
+                            c,
+                            MI_PICTURE_PDF,
+                            &sample.title,
+                            &format!("{}\n{error}", sample.body),
+                        );
+                    }
                 }
                 return;
             }
@@ -969,6 +1042,80 @@ mod tests {
         render(&mut state, activate(button(&output, "Rotate Right").0));
         assert_eq!(picked.get(), Some(ThemePreviewRegion::Accent));
         assert_eq!(state.visual.zoom, 1.2);
+    }
+
+    #[test]
+    fn pdf_sample_navigates_pages_with_the_inspector_controls() {
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        egui_extras::install_image_loaders(&ctx);
+        ctx.enable_accesskit();
+        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        theme_colors::apply_to_context(&ctx, &colors);
+        let mut state = ThemePreviewState {
+            kind: SampleKind::Pdf,
+            visual: VisualSampleSizing {
+                fit_width: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let picked = std::cell::Cell::new(None);
+        let render = |state: &mut ThemePreviewState, events| {
+            ctx.run(input(Vec2::new(748.0, 660.0), events), |ctx| {
+                egui::CentralPanel::default()
+                    .frame(Frame::NONE)
+                    .show(ctx, |ui| {
+                        picked.set(theme_preview(
+                            ui,
+                            colors,
+                            ThemePreviewRegion::Inspector,
+                            state,
+                        ));
+                    });
+            })
+        };
+        let output = render(&mut state, vec![]);
+        assert!(
+            output
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .any(|(_, node)| node.role() == Role::SpinButton
+                    && node.label() == Some("Page number"))
+        );
+        render(&mut state, activate(button(&output, "Next").0));
+        assert_eq!(state.page_index, 1);
+        assert_eq!(picked.get(), Some(ThemePreviewRegion::Accent));
+        let output = render(&mut state, vec![]);
+        assert!(output.shapes.iter().any(|shape| matches!(&shape.shape,
+            egui::Shape::Text(text) if text.galley.job.text == "Page 2 of 2")));
+        render(&mut state, activate(button(&output, "Previous").0));
+        assert_eq!(state.page_index, 0);
+
+        if ottrin_preview::pdfium_runtime_is_available() {
+            let spec = VisualPreviewRenderSpec {
+                max_size: Vec2::splat(600.0),
+                corner_radius: 8,
+                page_index: 0,
+                fit: true,
+                fit_width: false,
+                zoom: 1.0,
+            };
+            let first = sample_visual_image(SampleKind::Pdf, spec).expect("Render first PDF page");
+            let second = sample_visual_image(
+                SampleKind::Pdf,
+                VisualPreviewRenderSpec {
+                    page_index: 1,
+                    ..spec
+                },
+            )
+            .expect("Render second PDF page");
+            assert_ne!(first.source(&ctx).uri(), second.source(&ctx).uri());
+        }
     }
 
     #[test]
