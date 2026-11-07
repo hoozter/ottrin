@@ -5203,8 +5203,8 @@ superseded and tampered inputs. Staging is opt-in and keeps the snapshots
 in Actions artifacts. An independently gated R2 publisher verifies immutable
 objects over anonymous HTTPS before switching stable metadata. A disposable
 failure fixture verifies interrupted publication, retry, downgrade refusal,
-and immutable collisions. The public hostname, real R2 publication, native
-end-to-end updates, and signing-key recovery remain to be verified. See
+and immutable collisions. The public hostname, real R2 publication and signing-key recovery remain
+to be verified. See
 [Linux repository setup and recovery](LINUX_REPOSITORIES.md).
 
 A fresh Ubuntu 24.04.5 QEMU guest passed the full DEB lifecycle with
@@ -5228,8 +5228,17 @@ Removal retired the active source and key file and saved the edit as
 `ottrin.repo.rpmsave`. The signed fixture RPM hashes are
 `4453d0e2b1a071e7f0e705de3a7bb2a5232ad3796d59d48b98e6b36ea57b31ba`
 and `20cc992fa0c9a8b63f9c4fe0c2cf49809b09b79b9b884a90ce5a355acb07296d`.
-The guest, keys and packages were retired. A DNF tampered-metadata
-rejection trial and real R2 publication remain open.
+A separate fresh Fedora 44 guest used the staged DNF source and signed
+RPM. DNF rejected an altered `repomd.xml` with Bad PGP signature after a
+cache clear. Restoring the matching index restored package discovery.
+Both guests, their keys, repositories and packages were retired.
+
+The public rollout awaits the signing identity and secure backup, the
+R2 custom domain and a first approved stable GitHub Release. As of this
+checkpoint the repository has R2 API credentials configured, no signing
+secret, and no published release. The planned update hostname did not
+resolve. Keep production publication and package source registration
+disabled while verifying the endpoint.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
