@@ -27771,7 +27771,11 @@ mod tests {
                     _ => None,
                 })
                 .collect();
-            assert!(labels.contains(&"Default folder opening"));
+            assert!(labels.contains(&"Default folder app"));
+            assert_eq!(
+                labels.contains(&"This installation supports Open in Ottrin in folder menus. Your current default folder app stays selected."),
+                !supported
+            );
             assert_eq!(
                 labels.contains(&"Use Ottrin to open folders"),
                 supported && !default_ready
