@@ -29,7 +29,7 @@ mod caller;
 mod caller_prefixes;
 #[cfg(test)]
 pub(super) use caller_prefixes::{
-    exercise_caller_dispatch_prefixes, exercise_first_profile_creation_faults,
+    exercise_caller_dispatch_prefixes, exercise_profile_creation_faults,
 };
 #[cfg(test)]
 mod caller_terminal;

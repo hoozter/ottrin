@@ -1,7 +1,11 @@
 //! Journal and native private-creation faults reached by the public caller dispatcher.
 use super::*;
 use crate::{ConflictAction, PlatformOps, windows_privileged_transport::CallerCopyContext};
-use std::{os::windows::io::AsRawHandle, path::Path, sync::Arc};
+use std::{
+    os::windows::{fs::MetadataExt, io::AsRawHandle},
+    path::Path,
+    sync::Arc,
+};
 use windows_sys::Win32::Storage::FileSystem::{
     FILE_BASIC_INFO, FileBasicInfo, SetFileInformationByHandle,
 };
@@ -23,32 +27,56 @@ impl Drop for Trace {
         FAULT.with(|slot| slot.set(None));
     }
 }
-pub(in super::super) fn exercise_first_profile_creation_faults(
+pub(in super::super) fn exercise_profile_creation_faults(
     caller: &Arc<CallerCopyContext>,
     source: &Path,
     destination: &Path,
+    anchor_name: &OsStr,
     mut as_original_owner: impl FnMut(&mut dyn FnMut()),
 ) {
     let app = caller.local_app_data().unwrap().join("Ottrin");
-    assert!(!app.exists());
+    let state = app.join("State");
+    let paths = [
+        app.clone(),
+        state.clone(),
+        state.join(anchor_name),
+        state.join("copies"),
+    ];
+    assert!(
+        !app.exists(),
+        "Each persistent fault needs a fresh owned profile"
+    );
     let original = std::fs::read(source).unwrap();
     let output = destination.join(source.file_name().unwrap());
+    let before = Step::PrivateCreateBefore;
+    let after = Step::PrivateCreateAfter;
+    // A fresh SYSTEM companion may select one persistent fault per owned
+    // profile. The default exercises the original two first-entry boundaries.
+    let requested = std::env::var("OTTRIN_TEST_COPY_PROFILE_FAULT");
+    let cases: &[(u64, Step)] = match requested.as_deref() {
+        Err(std::env::VarError::NotPresent) => &[(1, before), (1, after)],
+        Ok("before-state") => &[(2, before)],
+        Ok("after-state") => &[(2, after)],
+        Ok("before-anchor") => &[(3, before)],
+        Ok("after-anchor") => &[(3, after)],
+        Ok("before-root") => &[(4, before)],
+        Ok("after-root") => &[(4, after)],
+        other => panic!("Unknown owned profile creation fault: {other:?}"),
+    };
 
-    for (step, expected) in [
-        (
-            Step::PrivateCreateBefore,
-            vec![(1, Step::PrivateCreateBefore, true)],
-        ),
-        (
-            Step::PrivateCreateAfter,
-            vec![
-                (1, Step::PrivateCreateBefore, false),
-                (1, Step::PrivateCreateAfter, true),
-            ],
-        ),
-    ] {
+    for &(ordinal, step) in cases {
+        let mut expected = Vec::new();
+        for prior in 1..ordinal {
+            expected.extend([(prior, before, false), (prior, after, false)]);
+        }
+        if step == after {
+            expected.push((ordinal, before, false));
+        }
+        expected.push((ordinal, step, true));
+        let created = usize::try_from(ordinal - u64::from(step == before)).unwrap();
+
         let trace = Trace::start();
-        FAULT.with(|slot| slot.set(Some((1, step, false))));
+        FAULT.with(|slot| slot.set(Some((ordinal, step, false))));
         let result = caller.copy_entry_with_progress(
             source,
             destination,
@@ -59,30 +87,75 @@ pub(in super::super) fn exercise_first_profile_creation_faults(
         assert!(result.is_err());
         assert_eq!(trace.finish(), expected);
 
-        let observe_app = || match std::fs::symlink_metadata(&app) {
-            Ok(metadata) => {
-                assert!(metadata.is_dir() && !metadata.file_type().is_symlink());
-                assert!(std::fs::read_dir(&app).unwrap().next().is_none());
-                let directory = windows_fs::open_directory(&app, FILE_GENERIC_READ).unwrap();
-                Some(stable_identity_from_handle(&directory).unwrap())
+        let observe = || {
+            let mut snapshot = Vec::new();
+            for (index, path) in paths.iter().enumerate() {
+                if index >= created {
+                    assert_eq!(
+                        std::fs::symlink_metadata(path).unwrap_err().kind(),
+                        std::io::ErrorKind::NotFound,
+                    );
+                    continue;
+                }
+                let metadata = std::fs::symlink_metadata(path).unwrap();
+                assert_eq!(metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT, 0);
+                let file = if index == 2 {
+                    let file = File::open(path).unwrap();
+                    assert!(read(&file).unwrap().is_empty());
+                    file
+                } else {
+                    let count = match index {
+                        0 => usize::from(created >= 2),
+                        1 => created.saturating_sub(2),
+                        _ => 0,
+                    };
+                    let entries = std::fs::read_dir(path)
+                        .unwrap()
+                        .collect::<Result<Vec<_>, _>>()
+                        .unwrap();
+                    assert_eq!(entries.len(), count);
+                    windows_fs::open_directory(path, FILE_GENERIC_READ).unwrap()
+                };
+                let identity = stable_identity_from_handle(&file).unwrap();
+                if index == 2 {
+                    assert!(identity.is_regular_file_without_reparse());
+                } else {
+                    assert!(identity.is_directory_without_reparse());
+                }
+                snapshot.push(identity);
             }
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
-            Err(error) => panic!("Cannot observe the caller profile directory: {error}"),
+            snapshot
         };
-        let mut before = None;
-        as_original_owner(&mut || before = observe_app());
-        assert_eq!(before.is_some(), step == Step::PrivateCreateAfter);
-        assert!(caller.copy_registry(&[], false).unwrap().is_none());
+        let mut snapshot = Vec::new();
+        as_original_owner(&mut || snapshot = observe());
+        let discovery = caller.copy_registry(&[], false);
+        if created >= 3 {
+            let error = discovery
+                .err()
+                .expect("Incomplete anchor must require review");
+            assert!(
+                error.to_string().contains("anchor is incomplete"),
+                "{error}"
+            );
+        } else {
+            assert!(discovery.unwrap().is_none());
+        }
         as_original_owner(&mut || {
-            assert_eq!(observe_app(), before);
-            if before.is_some() {
-                // Retire only the verified empty directory in this owned profile.
-                std::fs::remove_dir(&app).unwrap();
+            assert_eq!(observe(), snapshot);
+            for (index, path) in paths[..created].iter().enumerate().rev() {
+                if index == 2 {
+                    std::fs::remove_file(path).unwrap();
+                } else {
+                    std::fs::remove_dir(path).unwrap();
+                }
             }
         });
         assert!(!app.exists());
         assert!(!output.exists());
         assert_eq!(std::fs::read(source).unwrap(), original);
+        println!(
+            "caller profile creation fault {ordinal}:{step:?} preserved {created} native entries"
+        );
     }
 }
 
