@@ -19,7 +19,10 @@ impl GridMetrics {
         let icon_gap = (8.0 * scale.clamp(0.9, 1.35)).round();
         Self {
             size: Vec2::new(
-                (icon_size * 1.18).max(84.0),
+                // Theme text can grow independently of icon zoom. Reserve the
+                // same readable label width instead of shrinking the font or
+                // wrapping ordinary short names because the tile stayed fixed.
+                (icon_size * 1.18).max(84.0 * colors.font_scale.max(1.0)),
                 icon_size + icon_gap + label_size * 2.2 + 18.0,
             ),
             icon_size,
@@ -134,6 +137,68 @@ pub(crate) fn render_file_grid_cell(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn larger_theme_text_keeps_short_filenames_readable_without_shrinking_fonts() {
+        let ctx = Context::default();
+        install_application_fonts(&ctx);
+        for font_scale in [1.0, 1.35, 1.7] {
+            for name in ["movie.mp4", "budget.xlsx", "README.md"] {
+                let mut colors = Colors::preset(ThemePreset::Ottrin, true);
+                colors.font_scale = font_scale;
+                let entry = FileEntry {
+                    name: name.into(),
+                    path: PathBuf::from(name),
+                    kind: EntryKind::File,
+                    is_executable: false,
+                    symlink_target_is_dir: None,
+                    size_bytes: None,
+                    modified_unix_secs: None,
+                };
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(600.0, 400.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            render_file_grid_cell(
+                                ui,
+                                &entry,
+                                false,
+                                1.0,
+                                colors,
+                                &AppConfig::default(),
+                                GridThumbnail::Icon,
+                            );
+                        });
+                    },
+                );
+                let label = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == name => Some(text),
+                        _ => None,
+                    })
+                    .unwrap();
+                assert_eq!(
+                    label.galley.rows.len(),
+                    1,
+                    "{name} at theme text {font_scale} should fit a single label line"
+                );
+                assert!(!label.galley.elided);
+                assert!(
+                    (label.galley.job.sections[0].format.font_id.size - 11.0 * font_scale).abs()
+                        < 0.01,
+                    "Keep the requested font size"
+                );
+            }
+        }
+    }
+
     #[test]
     fn filenames_use_two_measured_lines_without_escaping_the_tile() {
         let ctx = Context::default();

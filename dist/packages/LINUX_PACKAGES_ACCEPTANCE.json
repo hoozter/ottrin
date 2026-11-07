@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped packaged historical-action/status layout delivery; full roadmap and UI audit incomplete",
-  "source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+  "status": "pass scoped Linux shared recovery, Services and theme-preview geometry delivery; full roadmap and UI audit incomplete",
+  "source_revision": "33e148b01d61dafa94dae6fb96dd92cb02dc1419",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "5ed59de7a7eac2877090ce76e12a16b9cfa39bffd41ad22a9a7402df017826cd",
-    "Ottrin-0.1.0-x86_64.AppImage": "015e3b04d9427422a545269c4424fe92ce2bbebb576e2193b69d4ada75fc357f",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "ae93dcd50ad9bcb555fef69d92a622ab471c00993ea34367f700d0cf2d9e4ec1",
-    "ottrin_0.1.0_amd64.deb": "dfcacc4cb8ffb718f5487f4481f4f7602c2c70f880ed890de8b0da6de7f6768e"
+    "ottrin-0.1.0-1.x86_64.rpm": "8bc12d26abc794b1828469be3796619247f21ea4bd67302fea31932974ab2684",
+    "Ottrin-0.1.0-x86_64.AppImage": "c96c440ee6e6ba1482d77e0b74c802ce5f96fa9a4643589c3d2495c968a8b713",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "4393acef2e14676e1879031e8ad99dd8a6190661701ce708e1319ce9cdc9d845",
+    "ottrin_0.1.0_amd64.deb": "1c1b3c87a7540f53c0f7f90c527de15447c0e1ebffbcf1a963e7498fd5ae7091"
   },
-  "evidence": ".hermes/evidence/service-ui-delivery-current",
+  "evidence": ".hermes/evidence/linux-ui-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,23 +17,23 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "4ccf340f5b1bb57e0d1a721f4189ad7f2a55d4bdeb5aed1b41cd3a500dddea4a",
-    "index_daemon": "2a03a40cba04c869dc8a2e1c268fff04f0c7e1747256ca02014e7da39be1c6d3",
-    "privileged_helper": "9aed6636ff29bb70ad9c804539c3994eac307c028c80d5d2d4763f46e7507cf2",
+    "application": "5b55b954c91f4515e7b7898c09c8408ffaf3cef70c69e77b03906f2e40662664",
+    "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
+    "privileged_helper": "b64113ef2c10cc40b049802a571bddb02713539f5acf35c8588f1dd1bd467da2",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42033104462,
-    "tested_source_revision": "bee15669e83353b043350a099b9041ccdd14e5c8",
+    "run": 42328760444,
+    "tested_source_revision": "33e148b01d61dafa94dae6fb96dd92cb02dc1419",
     "all_four_jobs_success": true
   },
-  "native_current_ui": ".hermes/evidence/service-ui-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+  "native_current_ui": ".hermes/evidence/linux-ui-delivery-current/NATIVE_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/service-ui-delivery-current/SOURCE_SCOPE.json",
-  "daemon_identity": ".hermes/evidence/service-ui-delivery-current/DAEMON_IDENTITY_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/list-density-delivery-current/LINUX_DAEMON_RUNTIME.json",
+  "source_scope": ".hermes/evidence/linux-ui-delivery-current/SOURCE_SCOPE.json",
+  "daemon_identity": null,
+  "daemon_runtime": ".hermes/evidence/linux-ui-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
   "daemon_runtime_scope": {
     "freshly_rerun": false,
     "original_source_revision": "24af31d70cb9950527b6fcb113c466213f3a2422",
@@ -42,8 +42,7 @@
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
   "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
   "current_helper_read_only": [
-    ".hermes/evidence/index-status-final-delivery-current/LINUX_HELPER_CAPABILITY.json",
-    ".hermes/evidence/index-status-final-delivery-current/LINUX_HELPER_STDIO.json"
+    ".hermes/evidence/linux-ui-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "historical_daemon_evidence": {
@@ -56,10 +55,12 @@
   },
   "limits": [
     "Actual mounted AppImage on owned software X11. Six targeted Dark/Light Ready/error/full-scroll originals directly reviewed; automated Ready/Stopped/error/Ready, stable control geometry and full diagnostic visibility pass. No whole-interface or physical graphics acceptance.",
-    "Current daemon, helper and HTML bytes exactly match previous delivered d032. Their retained native runtime/wire checks keep original source scopes; no fresh idle/large-corpus, elevated Copy or personal helper authentication claim.",
+    "Current daemon has fresh mounted-image private1000-file watcher,30-second no-client idle and stop/recovery/lifetime checks. Current bundled protocol5 helper has10 real read-only CLI/wire checks. Neither proves personal workload, protected-file elevation or installed-helper authentication.",
+    "Actual mounted Dark/Light theme library, border selection versus real Drop Folder button, red border4 and radius24/0 rendered top/bottom corners, and Cancel restoration directly reviewed. Scale1 software X11 only; whole appearance audit remains incomplete.",
     "Native distribution installation, startup toggle, caption/footer and theme-name acceptance retain original receipt source/artifact scopes.",
     "Completed actions are explicitly qualified neutral history in this cohort; authoritative current health remains separate. Actual mounted-image action/error/recovery checks pass. Long shared status wrapping has its rendered320/760-point and1.0/1.7-scale source regression; native Windows long-label acceptance remains separate.",
     "No public release, signing, Store or MSI acceptance.",
-    "Packaged manuals are build-time snapshots at bee15669; repository metadata records later delivery."
-  ]
+    "Packaged manuals are build-time snapshots at 33e148b0; repository metadata records later delivery."
+  ],
+  "native_current_theme": ".hermes/evidence/linux-ui-delivery-current/THEME_UI_ACCEPTANCE.json"
 }

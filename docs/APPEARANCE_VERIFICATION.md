@@ -97,3 +97,25 @@ The Windows graphics compatibility notice is gated by Windows startup and cannot
 ## Delivery and cleanup
 
 The stable AppImage was built from clean committed source; its provenance sidecar and checksum identify the artifact above. Final package evidence is kept with compact control/action receipts and rendered acceptance captures. Private Ottrin/index processes, displays, buses, GTK portals and profiles were stopped and removed; packaging checkout/link staging and superseded development theme captures were removed. Unrelated Preview Windows changes and user `AGENTS.md` remain untouched.
+
+
+### Current List/Grid preview checkpoint (2026-11-07)
+
+The theme editor now cycles actual Column, List and Grid layouts independently
+of the main window. List shares production row/header rendering; Grid shares
+production cells and metrics. Selected files exposes shared Surface corners only
+for Grid; square List/Column selection does not imply rounded rows. File-label
+shared properties include List metadata/header text and raised/hover surfaces.
+Grid minimum label width grows with theme typography without shrinking the font.
+
+Source checks:526 active UI unit tests pass, one existing ignored; strict Linux
+and Windows cross-target UI lint and formatting pass. Native Linux software X11
+scale1 Dark/Light originals verify real List/Grid, radius14/0, text1.35 and
+Cancel restoration while retaining an independently changed main Grid view.
+Both disposable desktops and profiles were removed. Exact source/build hashes,
+checks and eighteen reviewed originals are bound in
+`.hermes/evidence/theme-view-layout-current/ACCEPTANCE.json`.
+
+This is a scoped source-built checkpoint, awaiting package delivery. It does not
+renew historical whole-theme acceptance, prove Windows runtime rendering or
+close the remaining Inspector role and full interface/property audit.

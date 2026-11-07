@@ -94,6 +94,7 @@ mod copy_activity_recovery;
 mod copy_activity_work;
 mod file_details;
 mod file_grid;
+mod file_list;
 mod file_row;
 mod picker;
 mod picker_parent;
@@ -637,6 +638,14 @@ fn application_menu_button(ui: &mut egui::Ui, c: Colors) -> egui::Response {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }
     response
+}
+
+fn next_view_mode(view: ViewMode) -> ViewMode {
+    match view {
+        ViewMode::Miller => ViewMode::List,
+        ViewMode::List => ViewMode::Grid,
+        ViewMode::Grid => ViewMode::Miller,
+    }
 }
 
 fn view_mode_button(ui: &mut egui::Ui, c: Colors, view: ViewMode) -> egui::Response {
@@ -3726,6 +3735,7 @@ struct ThemeEditorState {
     visible: bool,
     pending_exit: bool,
     selected_region: ThemePreviewRegion,
+    preview_view: ViewMode,
     preset: ThemePreset,
     mode: ThemeMode,
     source: ThemeEditorSource,
@@ -3746,6 +3756,7 @@ impl Default for ThemeEditorState {
             visible: false,
             pending_exit: false,
             selected_region: ThemePreviewRegion::default(),
+            preview_view: ViewMode::Miller,
             preset: ThemePreset::default(),
             mode: ThemeMode::default(),
             source: ThemeEditorSource::Preset,
@@ -5177,7 +5188,7 @@ impl OttrinApp {
             ThemePreviewRegion::Navigation => "Navigation & tabs",
             ThemePreviewRegion::Bookmarks => "Locations rail",
             ThemePreviewRegion::ColumnBackground => "File view",
-            ThemePreviewRegion::SelectedRow => "Selected row",
+            ThemePreviewRegion::SelectedRow => "Selected files",
             ThemePreviewRegion::ColumnText => "File labels & icons",
             ThemePreviewRegion::Sidebar => "Smart Panel",
             ThemePreviewRegion::StatusBar => "Status bar",
@@ -5189,7 +5200,7 @@ impl OttrinApp {
     fn theme_preview_region_hint(region: ThemePreviewRegion) -> &'static str {
         match region {
             ThemePreviewRegion::Defaults => {
-                "Shared panels, inputs, text, focus and hover colors. Window corners affect application windows; surface corners affect tabs, inputs and cards. Button corners are separate."
+                "Shared panels, inputs, text, focus and hover colors. Window corners affect application windows; surface corners affect tabs, inputs, cards and grid tiles. Button corners are separate."
             }
             ThemePreviewRegion::Titlebar => {
                 "Title-bar background and window controls. Select a tab to edit Navigation & tabs; its colors blend with this background."
@@ -5201,13 +5212,13 @@ impl OttrinApp {
                 "The left rail containing bookmarked locations and storage devices."
             }
             ThemePreviewRegion::ColumnBackground => {
-                "Background behind files in every view mode. The file canvas and row fills are square; the outline here only identifies the editing target."
+                "Background behind files in every view mode. Canvas and row fills stay square; selected Grid tiles use Surface corners. The editing outline only identifies the target."
             }
             ThemePreviewRegion::SelectedRow => {
-                "Selected file-row background, also used for text selection. Row fills are square; the focus outline uses the shared accent."
+                "Selected file background, also used for text selection. Row fills stay square; Grid tiles use Surface corners. Focus outlines use the shared accent."
             }
             ThemePreviewRegion::ColumnText => {
-                "Neutral and category-colored samples show the theme’s file and folder styling."
+                "File names, folder icons and category styling. List headers and metadata use the shared text and raised-surface colors below."
             }
             ThemePreviewRegion::Sidebar => {
                 "Info, Drop Folder, Search, Activity and Trash controls, panel background and shared contrast."
@@ -5257,7 +5268,13 @@ impl OttrinApp {
         region: ThemePreviewRegion,
     ) -> &'static [ThemeColorField] {
         match region {
-            ThemePreviewRegion::Defaults | ThemePreviewRegion::ColumnText => &[],
+            ThemePreviewRegion::Defaults => &[],
+            ThemePreviewRegion::ColumnText => &[
+                ThemeColorField::TextDim,
+                ThemeColorField::TextMuted,
+                ThemeColorField::RaisedPanel,
+                ThemeColorField::Hover,
+            ],
             ThemePreviewRegion::Titlebar => &[
                 ThemeColorField::TextHeading,
                 ThemeColorField::TextMuted,
@@ -12671,11 +12688,7 @@ impl OttrinApp {
                         let view = self.state.active_tab().view_mode;
                         let view_btn = view_mode_button(ui, c, view);
                         if view_btn.clicked() {
-                            let next = match view {
-                                ViewMode::Miller => ViewMode::List,
-                                ViewMode::List => ViewMode::Grid,
-                                ViewMode::Grid => ViewMode::Miller,
-                            };
+                            let next = next_view_mode(view);
                             self.set_tab_view_mode(active_tab_id, next);
                         }
 
@@ -17147,11 +17160,7 @@ impl OttrinApp {
             let view_btn = view_mode_button(ui, c, view);
             if view_btn.clicked() {
                 self.focus_tab(tab_id);
-                let next = match view {
-                    ViewMode::Miller => ViewMode::List,
-                    ViewMode::List => ViewMode::Grid,
-                    ViewMode::Grid => ViewMode::Miller,
-                };
+                let next = next_view_mode(view);
                 self.set_tab_view_mode(tab_id, next);
             }
             let view_options_popup_id = ui.make_persistent_id(("view_options_menu", tab_id));
@@ -18683,12 +18692,8 @@ impl OttrinApp {
         }
 
         // Column headers (click to sort)
-        let header_h = (26.0 * scale.clamp(0.92, 1.22) * c.font_scale).round();
-        let row_h = (28.0 * scale.clamp(0.92, 1.28) * c.font_scale).round();
-        let icon_size = (16.0 * scale.sqrt()).max(14.0);
-        let name_size = (13.0 * scale.sqrt()).max(11.0) * c.font_scale;
-        let meta_size = (12.0 * scale.sqrt()).max(10.0) * c.font_scale;
-        let header_size = (11.5 * scale.sqrt()).max(10.2) * c.font_scale;
+        let header_h = file_list::header_height(scale, c);
+        let row_h = file_list::row_height(scale, c);
         let header_rect =
             Rect::from_min_size(ui.cursor().min, Vec2::new(ui.available_width(), header_h));
         let header_resp = ui.allocate_rect(header_rect, Sense::click());
@@ -18739,35 +18744,16 @@ impl OttrinApp {
                 ListColumn::Modified => SortBy::Modified,
             }
         };
-        let col_label = |col: ListColumn| -> &'static str {
-            match col {
-                ListColumn::Name => "Name",
-                ListColumn::Kind => "Type",
-                ListColumn::Size => "Size",
-                ListColumn::Modified => "Modified",
-            }
-        };
         let mut x = header_rect.min.x + 8.0;
-        let mut col_widths = visible_cols
+        let initial_widths = visible_cols
             .iter()
             .map(|c| self.list_col_px[col_index(*c)])
             .collect::<Vec<_>>();
-        let max_total = (header_rect.width() - 16.0).max(120.0);
-        let mut used_total: f32 = col_widths.iter().sum();
-        if used_total > max_total {
-            let scale = max_total / used_total;
-            for w in &mut col_widths {
-                *w = (*w * scale).max(80.0);
-            }
-            used_total = col_widths.iter().sum();
-        }
-        if used_total < max_total {
-            col_widths[0] += max_total - used_total;
-        }
+        let col_widths = file_list::column_widths(header_rect.width(), &initial_widths);
 
         for (idx, col) in visible_cols.iter().enumerate() {
             let sort_by = col_sort(*col);
-            let label = col_label(*col);
+            let label = file_list::column_label(*col);
             let w = col_widths[idx];
             let col_rect = Rect::from_min_size(
                 egui::Pos2::new(x, header_rect.min.y),
@@ -18806,18 +18792,13 @@ impl OttrinApp {
                 }
                 return;
             }
-            paint_sort_header(
+            file_list::paint_heading(
                 ui,
-                col_rect.shrink2(Vec2::new(4.0, 0.0)),
-                label,
+                col_rect,
+                *col,
                 (current_sort.by == sort_by).then_some(current_sort.ascending),
-                FontId::proportional(header_size),
-                if current_sort.by == sort_by {
-                    c.text_dim
-                } else {
-                    c.text_muted
-                },
-                false,
+                c,
+                scale,
             );
 
             // Drag handle between columns
@@ -18858,34 +18839,29 @@ impl OttrinApp {
                 for (i, entry) in entries.iter().enumerate() {
                     let selected = selected_paths.contains(&entry.path)
                         || (selected_paths.is_empty() && sel == Some(i));
-                    let row_rect = Rect::from_min_size(
-                        ui.cursor().min,
-                        Vec2::new(ui.available_width(), row_h),
-                    );
-                    let row_fill = if selected {
-                        c.selected_bg
-                    } else if i % 2 == 0 {
-                        Color32::TRANSPARENT
+                    let thumb_size = (row_h - 7.0).clamp(18.0, 32.0);
+                    let thumbnail = if thumbnails_enabled && image_thumbnail_candidate(entry) {
+                        self.cached_image_preview_widget(&entry.path, thumb_size, thumb_size, 4)
                     } else {
-                        c.row_alt
+                        None
                     };
-                    if row_fill != Color32::TRANSPARENT {
-                        ui.painter().rect_filled(row_rect, 0.0, row_fill);
-                    }
-
-                    let response = ui.allocate_rect(row_rect, Sense::click());
+                    let response = file_list::render_file_list_row(
+                        ui,
+                        entry,
+                        selected,
+                        file_list::ListRowLayout {
+                            index: i,
+                            columns: &visible_cols,
+                            widths: &col_widths,
+                            scale,
+                            thumbnails_enabled,
+                        },
+                        c,
+                        &self.state.config,
+                        thumbnail,
+                    );
+                    let row_rect = response.rect;
                     list_rows.push((entry.path.clone(), row_rect));
-                    response.widget_info(|| {
-                        WidgetInfo::selected(
-                            WidgetType::Button,
-                            true,
-                            selected,
-                            entry.name.as_str(),
-                        )
-                    });
-                    if response.hovered() && !selected {
-                        ui.painter().rect_filled(row_rect, 0.0, c.hover);
-                    }
                     if Self::row_pointer_selects(response.clicked(), response.secondary_clicked()) {
                         self.focus_tab(tab_id);
                         let modifiers = ui.ctx().input(|input| input.modifiers);
@@ -18918,136 +18894,6 @@ impl OttrinApp {
                         &mut add_bookmark,
                         &mut remove_bookmark,
                     );
-
-                    // Row content
-                    let mut x = row_rect.min.x + 8.0;
-                    let y = row_rect.center().y;
-                    let style = style_for_entry(
-                        entry,
-                        EntryVisualState {
-                            selected,
-                            focused: true,
-                            hovered: response.hovered(),
-                            opened: false,
-                            symlink_dir: matches!(entry.kind, EntryKind::Symlink)
-                                && entry.symlink_target_is_dir == Some(true),
-                        },
-                        &c,
-                        &self.state.config,
-                    );
-
-                    for (idx, col) in visible_cols.iter().enumerate() {
-                        let w = col_widths[idx];
-                        match col {
-                            ListColumn::Name => {
-                                let icon_str = material_icon(style.icon);
-                                let thumb_size = (row_h - 7.0).clamp(18.0, 32.0);
-                                let thumb_rect = Rect::from_min_size(
-                                    egui::pos2(x + 6.0, y - thumb_size / 2.0),
-                                    Vec2::splat(thumb_size),
-                                );
-                                let mut painted_thumbnail = false;
-                                if thumbnails_enabled && image_thumbnail_candidate(entry) {
-                                    paint_thumbnail_slot(ui, thumb_rect, c);
-                                    let thumb = self.cached_image_preview_widget(
-                                        &entry.path,
-                                        thumb_size,
-                                        thumb_size,
-                                        4,
-                                    );
-                                    if let Some(img) = thumb {
-                                        paint_centered_image(ui, thumb_rect, img);
-                                        painted_thumbnail = true;
-                                    }
-                                }
-                                let mut leading_width = icon_size.ceil();
-                                if thumbnails_enabled {
-                                    // One leading slot keeps image and ordinary-file
-                                    // names aligned while thumbnails load or fail.
-                                    leading_width = leading_width.max(thumb_size);
-                                }
-                                if !painted_thumbnail {
-                                    let icon_rect = ui.painter().text(
-                                        egui::Pos2::new(x + 6.0, y),
-                                        Align2::LEFT_CENTER,
-                                        icon_str,
-                                        FontId::proportional(icon_size),
-                                        style.icon_color,
-                                    );
-                                    leading_width = leading_width.max(icon_rect.width());
-                                }
-                                let name_right = x + w - 6.0;
-                                let name_left = x
-                                    + 6.0
-                                    + leading_width
-                                    + file_row::ICON_TEXT_GAP * c.font_scale;
-                                let name_rect = Rect::from_min_max(
-                                    egui::pos2(name_left.min(name_right), row_rect.top()),
-                                    egui::pos2(name_right, row_rect.bottom()),
-                                );
-                                let font = FontId::proportional(name_size);
-                                let visible_name = Self::middle_ellipsis(
-                                    ui,
-                                    &entry.name,
-                                    name_rect.width(),
-                                    &font,
-                                );
-                                // Column widths are pixels, not character counts. Use
-                                // real glyph advances and keep painting inside the cell.
-                                ui.painter_at(name_rect).text(
-                                    egui::Pos2::new(name_rect.left(), y),
-                                    Align2::LEFT_CENTER,
-                                    &visible_name,
-                                    font,
-                                    style.text_color,
-                                );
-                                if visible_name != entry.name {
-                                    ui.interact(
-                                        name_rect,
-                                        ui.id().with(("list_name_tip", tab_id, i)),
-                                        Sense::hover(),
-                                    )
-                                    .on_hover_text(entry.name.clone());
-                                }
-                            }
-                            ListColumn::Kind => {
-                                ui.painter().text(
-                                    egui::Pos2::new(x + 2.0, y),
-                                    Align2::LEFT_CENTER,
-                                    entry_kind_label(entry.kind),
-                                    FontId::proportional(meta_size),
-                                    c.text_dim,
-                                );
-                            }
-                            ListColumn::Size => {
-                                let size_str = match entry.kind {
-                                    EntryKind::Directory => "—".to_string(),
-                                    _ => entry.size_bytes.map(format_size).unwrap_or_default(),
-                                };
-                                ui.painter().text(
-                                    egui::Pos2::new(x + 2.0, y),
-                                    Align2::LEFT_CENTER,
-                                    size_str,
-                                    FontId::proportional(meta_size),
-                                    c.text_dim,
-                                );
-                            }
-                            ListColumn::Modified => {
-                                let mod_str = entry
-                                    .modified_unix_secs
-                                    .map(format_modified)
-                                    .unwrap_or_default();
-                                ui.painter().text(
-                                    egui::Pos2::new(x + 2.0, y),
-                                    Align2::LEFT_CENTER,
-                                    mod_str,
-                                    FontId::proportional(meta_size),
-                                    c.text_dim,
-                                );
-                            }
-                        }
-                        x += w;
-                    }
                 }
             })
             .inner_rect;
@@ -25580,6 +25426,7 @@ fn theme_editor_large_preview(
     ui: &mut egui::Ui,
     preview: Colors,
     selected_region: ThemePreviewRegion,
+    view: &mut ViewMode,
 ) -> (Option<ThemePreviewRegion>, Option<ThemePreviewRegion>) {
     let width = ui.available_width().max(320.0);
     let height = ui.available_height().max(320.0);
@@ -25614,8 +25461,9 @@ fn theme_editor_large_preview(
         .ctx()
         .data_mut(|data| data.get_temp::<SidebarSection>(preview_state_id))
         .unwrap_or_default();
-    // This fixture is a Miller view: Info stays inline, as in the main window.
-    let expanded = !matches!(selected, SidebarSection::None | SidebarSection::Info);
+    // Info stays inline only in Column view, matching the main window.
+    let expanded = selected != SidebarSection::None
+        && !(*view == ViewMode::Miller && selected == SidebarSection::Info);
     let sidebar_w = SMART_PANEL_STRIP_WIDTH
         + if expanded {
             (content.width() * 0.30).min(220.0)
@@ -25718,7 +25566,11 @@ fn theme_editor_large_preview(
     navigation_ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
         ui.add_space(4.0);
         navigation_clicked |= application_menu_button(ui, preview).clicked();
-        navigation_clicked |= view_mode_button(ui, preview, ViewMode::Miller).clicked();
+        if view_mode_button(ui, preview, *view).clicked() {
+            *view = next_view_mode(*view);
+            navigation_clicked = true;
+            ui.ctx().request_repaint();
+        }
         navigation_clicked |= view_options_button(ui, preview).clicked();
         ui.add_space(6.0);
         let width = (ui.available_width() - 20.0).max(80.0);
@@ -25763,97 +25615,248 @@ fn theme_editor_large_preview(
     }
 
     p.rect_filled(columns_rect, 0.0, preview.bg);
-    for (idx, col_rect) in [col1, col2, col3].into_iter().enumerate() {
-        p.rect_filled(col_rect, 0.0, preview.bg);
-        if idx > 0 {
-            p.line_segment(
+    if *view == ViewMode::Miller {
+        for (idx, col_rect) in [col1, col2, col3].into_iter().enumerate() {
+            p.rect_filled(col_rect, 0.0, preview.bg);
+            if idx > 0 {
+                p.line_segment(
+                    [
+                        egui::pos2(col_rect.left() - column_gap * 0.5, col_rect.top() + 8.0),
+                        egui::pos2(col_rect.left() - column_gap * 0.5, col_rect.bottom() - 8.0),
+                    ],
+                    Stroke::new(1.0, preview.border),
+                );
+            }
+            let samples = [
                 [
-                    egui::pos2(col_rect.left() - column_gap * 0.5, col_rect.top() + 8.0),
-                    egui::pos2(col_rect.left() - column_gap * 0.5, col_rect.bottom() - 8.0),
+                    ("Documents", true),
+                    ("Downloads", true),
+                    ("Pictures", true),
+                    ("Music", true),
+                    ("Videos", true),
+                    ("Projects", true),
                 ],
-                Stroke::new(1.0, preview.border),
+                [
+                    ("src", true),
+                    ("assets", true),
+                    ("tests", true),
+                    ("Cargo.toml", false),
+                    ("README.md", false),
+                    ("notes.txt", false),
+                ],
+                [
+                    ("photo.png", false),
+                    ("movie.mp4", false),
+                    ("archive.zip", false),
+                    ("budget.xlsx", false),
+                    ("slides.pptx", false),
+                    ("settings.ini", false),
+                ],
+            ];
+            let config = AppConfig {
+                colorize_file_types: idx > 0,
+                colorize_folder_labels: idx > 0,
+                ..Default::default()
+            };
+            let mut column_ui = ui.new_child(
+                UiBuilder::new()
+                    .id_salt(("theme_preview_column", idx))
+                    .max_rect(col_rect)
+                    .layout(Layout::top_down(Align::Min)),
             );
+            column_ui.set_clip_rect(col_rect.intersect(ui.clip_rect()));
+            for (row, (label, directory)) in samples[idx].iter().enumerate() {
+                let entry = FileEntry {
+                    name: (*label).into(),
+                    path: PathBuf::from(label),
+                    kind: if *directory {
+                        EntryKind::Directory
+                    } else {
+                        EntryKind::File
+                    },
+                    is_executable: false,
+                    symlink_target_is_dir: None,
+                    size_bytes: None,
+                    modified_unix_secs: None,
+                };
+                let selected = idx == 1 && row == 1;
+                let response = file_row::render_file_row(
+                    &mut column_ui,
+                    &entry,
+                    EntryVisualState {
+                        selected,
+                        focused: idx == 1,
+                        ..Default::default()
+                    },
+                    file_row::FileRowLayout {
+                        index: row,
+                        width: col_rect.width(),
+                        scale: 1.0,
+                    },
+                    &preview,
+                    &config,
+                );
+                text_band = text_band.union(response.rect.intersect(col_rect));
+                if selected {
+                    selected_row = response.rect;
+                }
+                if response.clicked() {
+                    row_clicked = Some(if selected {
+                        ThemePreviewRegion::SelectedRow
+                    } else {
+                        ThemePreviewRegion::ColumnText
+                    });
+                }
+            }
         }
-        let samples = [
-            [
-                ("Documents", true),
-                ("Downloads", true),
-                ("Pictures", true),
-                ("Music", true),
-                ("Videos", true),
-                ("Projects", true),
-            ],
-            [
-                ("src", true),
-                ("assets", true),
-                ("tests", true),
-                ("Cargo.toml", false),
-                ("README.md", false),
-                ("notes.txt", false),
-            ],
-            [
-                ("photo.png", false),
-                ("movie.mp4", false),
-                ("archive.zip", false),
-                ("budget.xlsx", false),
-                ("slides.pptx", false),
-                ("settings.ini", false),
-            ],
-        ];
-        let config = AppConfig {
-            colorize_file_types: idx > 0,
-            colorize_folder_labels: idx > 0,
-            ..Default::default()
-        };
-        let mut column_ui = ui.new_child(
+    } else {
+        let entries = [
+            ("assets", true),
+            ("src", true),
+            ("photo.png", false),
+            ("movie.mp4", false),
+            ("archive.zip", false),
+            ("budget.xlsx", false),
+            ("slides.pptx", false),
+            ("Cargo.toml", false),
+            ("README.md", false),
+        ]
+        .map(|(name, directory)| FileEntry {
+            name: name.into(),
+            path: PathBuf::from(name),
+            kind: if directory {
+                EntryKind::Directory
+            } else {
+                EntryKind::File
+            },
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: (!directory).then_some(8192),
+            modified_unix_secs: Some(1_640_995_200),
+        });
+        let config = AppConfig::default();
+        let mut content_ui = ui.new_child(
             UiBuilder::new()
-                .id_salt(("theme_preview_column", idx))
-                .max_rect(col_rect)
+                .id_salt("theme_preview_file_view")
+                .max_rect(columns_rect)
                 .layout(Layout::top_down(Align::Min)),
         );
-        column_ui.set_clip_rect(col_rect.intersect(ui.clip_rect()));
-        for (row, (label, directory)) in samples[idx].iter().enumerate() {
-            let entry = FileEntry {
-                name: (*label).into(),
-                path: PathBuf::from(label),
-                kind: if *directory {
-                    EntryKind::Directory
-                } else {
-                    EntryKind::File
-                },
-                is_executable: false,
-                symlink_target_is_dir: None,
-                size_bytes: None,
-                modified_unix_secs: None,
-            };
-            let selected = idx == 1 && row == 1;
-            let response = file_row::render_file_row(
-                &mut column_ui,
-                &entry,
-                EntryVisualState {
-                    selected,
-                    focused: idx == 1,
-                    ..Default::default()
-                },
-                file_row::FileRowLayout {
-                    index: row,
-                    width: col_rect.width(),
-                    scale: 1.0,
-                },
-                &preview,
-                &config,
+        content_ui.set_clip_rect(columns_rect.intersect(ui.clip_rect()));
+        if *view == ViewMode::List {
+            let columns = [
+                ListColumn::Name,
+                ListColumn::Kind,
+                ListColumn::Size,
+                ListColumn::Modified,
+            ];
+            let widths =
+                file_list::column_widths(columns_rect.width(), &[360.0, 140.0, 120.0, 180.0]);
+            let (header, response) = content_ui.allocate_exact_size(
+                Vec2::new(columns_rect.width(), file_list::header_height(1.0, preview)),
+                Sense::click(),
             );
-            text_band = text_band.union(response.rect.intersect(col_rect));
-            if selected {
-                selected_row = response.rect;
+            content_ui
+                .painter()
+                .rect_filled(header, 0.0, preview.panel_raised);
+            let mut x = header.left() + 8.0;
+            for (col, width) in columns.iter().zip(&widths) {
+                let cell = Rect::from_min_size(
+                    egui::pos2(x, header.top()),
+                    Vec2::new(*width, header.height()),
+                );
+                file_list::paint_heading(
+                    &content_ui,
+                    cell,
+                    *col,
+                    (*col == ListColumn::Name).then_some(true),
+                    preview,
+                    1.0,
+                );
+                x += width;
             }
             if response.clicked() {
-                row_clicked = Some(if selected {
-                    ThemePreviewRegion::SelectedRow
-                } else {
-                    ThemePreviewRegion::ColumnText
-                });
+                row_clicked = Some(ThemePreviewRegion::ColumnText);
             }
+            ScrollArea::vertical()
+                .id_salt("preview_list_rows")
+                .auto_shrink([false, false])
+                .show(&mut content_ui, |ui| {
+                    for (index, entry) in entries.iter().enumerate() {
+                        let selected = index == 0;
+                        let response = file_list::render_file_list_row(
+                            ui,
+                            entry,
+                            selected,
+                            file_list::ListRowLayout {
+                                index,
+                                columns: &columns,
+                                widths: &widths,
+                                scale: 1.0,
+                                thumbnails_enabled: false,
+                            },
+                            preview,
+                            &config,
+                            None,
+                        );
+                        text_band = text_band.union(response.rect.intersect(columns_rect));
+                        if selected {
+                            selected_row = response.rect;
+                        }
+                        if response.clicked() {
+                            row_clicked = Some(if selected {
+                                ThemePreviewRegion::SelectedRow
+                            } else {
+                                ThemePreviewRegion::ColumnText
+                            });
+                        }
+                    }
+                });
+        } else {
+            let metrics = file_grid::GridMetrics::new(1.0, preview);
+            let count = (((columns_rect.width() - metrics.side_padding * 2.0 + metrics.gap)
+                / (metrics.size.x + metrics.gap))
+                .floor() as usize)
+                .max(1);
+            ScrollArea::vertical()
+                .id_salt("preview_grid_rows")
+                .auto_shrink([false, false])
+                .show(&mut content_ui, |ui| {
+                    ui.set_min_width(columns_rect.width());
+                    ui.add_space(metrics.gap * 0.5);
+                    for (row, entries) in entries.chunks(count).enumerate() {
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 0.0;
+                            ui.add_space(metrics.side_padding);
+                            for (col, entry) in entries.iter().enumerate() {
+                                let selected = row == 0 && col == 0;
+                                let response = file_grid::render_file_grid_cell(
+                                    ui,
+                                    entry,
+                                    selected,
+                                    1.0,
+                                    preview,
+                                    &config,
+                                    file_grid::GridThumbnail::Icon,
+                                );
+                                text_band = text_band.union(response.rect.intersect(columns_rect));
+                                if selected {
+                                    selected_row = response.rect;
+                                }
+                                if response.clicked() {
+                                    row_clicked = Some(if selected {
+                                        ThemePreviewRegion::SelectedRow
+                                    } else {
+                                        ThemePreviewRegion::ColumnText
+                                    });
+                                }
+                                if col + 1 < entries.len() {
+                                    ui.add_space(metrics.gap);
+                                }
+                            }
+                        });
+                        ui.add_space(metrics.gap * 0.25);
+                    }
+                });
         }
     }
 
@@ -26042,6 +26045,8 @@ fn theme_editor_large_preview(
             }
         } else if *region == ThemePreviewRegion::Accent {
             egui::CornerRadius::same(preview.button_radius)
+        } else if *region == ThemePreviewRegion::SelectedRow && *view == ViewMode::Grid {
+            egui::CornerRadius::same(preview.border_radius)
         } else {
             egui::CornerRadius::ZERO
         };
@@ -33702,8 +33707,13 @@ mod tests {
         let mut render = |events| {
             preview_context.run(input(events), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
-                    selected =
-                        theme_editor_large_preview(ui, colors, ThemePreviewRegion::Defaults).1;
+                    selected = theme_editor_large_preview(
+                        ui,
+                        colors,
+                        ThemePreviewRegion::Defaults,
+                        &mut ViewMode::Miller,
+                    )
+                    .1;
                 });
             })
         };
@@ -33805,7 +33815,13 @@ mod tests {
                 preview_ctx.run(input(events), |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
                         selected.set(
-                            theme_editor_large_preview(ui, colors, ThemePreviewRegion::Defaults).1,
+                            theme_editor_large_preview(
+                                ui,
+                                colors,
+                                ThemePreviewRegion::Defaults,
+                                &mut ViewMode::Miller,
+                            )
+                            .1,
                         );
                     });
                 })
@@ -33917,6 +33933,194 @@ mod tests {
     }
 
     #[test]
+    fn theme_preview_cycles_real_layouts_and_matches_live_list_and_grid() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+        for dark in [false, true] {
+            for font_scale in [1.0, 1.35, 1.7] {
+                let mut colors = Colors::preset(ThemePreset::Ottrin, dark);
+                colors.font_scale = font_scale;
+                colors.border_radius = 14;
+                let ctx = Context::default();
+                install_application_fonts(&ctx);
+                ctx.enable_accesskit();
+                let view = std::cell::Cell::new(ViewMode::Miller);
+                let picked = std::cell::Cell::new(None);
+                let input = |events| egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1200.0, 900.0),
+                    )),
+                    events,
+                    ..Default::default()
+                };
+                let render = |events| {
+                    ctx.run(input(events), |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            let mut mode = view.get();
+                            picked.set(
+                                theme_editor_large_preview(
+                                    ui,
+                                    colors,
+                                    ThemePreviewRegion::SelectedRow,
+                                    &mut mode,
+                                )
+                                .1,
+                            );
+                            view.set(mode);
+                        });
+                    })
+                };
+                let button = |out: &egui::FullOutput, label: &str| {
+                    out.platform_output
+                        .accesskit_update
+                        .as_ref()
+                        .unwrap()
+                        .nodes
+                        .iter()
+                        .find(|(_, node)| {
+                            node.role() == Role::Button && node.label() == Some(label)
+                        })
+                        .map(|(id, node)| (*id, node.bounds().unwrap()))
+                        .unwrap_or_else(|| panic!("Missing preview control {label}"))
+                };
+                let mut output = render(vec![]);
+                for expected in [ViewMode::List, ViewMode::Grid, ViewMode::Miller] {
+                    let label = view_toggle_accessibility_label(view.get());
+                    let target = button(&output, label).0;
+                    render(vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                        action: Action::Click,
+                        target,
+                        data: None,
+                    })]);
+                    assert_eq!(
+                        view.get(),
+                        expected,
+                        "Real mode button must change the preview"
+                    );
+                    output = render(vec![]);
+                    if expected == ViewMode::Miller {
+                        continue;
+                    }
+                    if expected == ViewMode::List {
+                        for label in ["Name", "Type", "Size", "Modified"] {
+                            assert!(output.shapes.iter().any(|shape| matches!(&shape.shape,egui::Shape::Text(text) if text.galley.job.text==label)));
+                        }
+                    }
+                    let (asset, bounds) = button(&output, "assets");
+                    let sample = Rect::from_min_max(
+                        egui::pos2(bounds.x0 as f32, bounds.y0 as f32),
+                        egui::pos2(bounds.x1 as f32, bounds.y1 as f32),
+                    );
+                    let mut app = OttrinApp::default();
+                    app.state.config = AppConfig::default();
+                    app.colors = colors;
+                    let tab = app.state.active_tab().id;
+                    app.state.active_tab_mut().view_mode = expected;
+                    let main = app.tab_ui.entry(tab).or_default();
+                    main.main.loading = false;
+                    main.main.error = None;
+                    main.main_sel = Some(0);
+                    main.main.entries = vec![FileEntry {
+                        name: "assets".into(),
+                        path: PathBuf::from("assets"),
+                        kind: EntryKind::Directory,
+                        is_executable: false,
+                        symlink_target_is_dir: None,
+                        size_bytes: None,
+                        modified_unix_secs: Some(1_640_995_200),
+                    }];
+                    let live_ctx = Context::default();
+                    install_application_fonts(&live_ctx);
+                    live_ctx.enable_accesskit();
+                    let canvas = output
+                        .shapes
+                        .iter()
+                        .filter_map(|shape| match &shape.shape {
+                            egui::Shape::Rect(rect)
+                                if rect.fill == colors.bg && rect.rect.contains_rect(sample) =>
+                            {
+                                Some(rect.rect)
+                            }
+                            _ => None,
+                        })
+                        .max_by(|a, b| a.area().total_cmp(&b.area()))
+                        .expect("Painted file canvas");
+                    let live = live_ctx.run(input(vec![]), |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            let bounds = Rect::from_min_size(
+                                ui.cursor().min,
+                                Vec2::new(canvas.width(), ui.available_height()),
+                            );
+                            let mut content = ui.new_child(
+                                UiBuilder::new()
+                                    .max_rect(bounds)
+                                    .layout(Layout::top_down(Align::Min)),
+                            );
+                            content.set_clip_rect(bounds);
+                            match expected {
+                                ViewMode::List => app.render_list(&mut content, tab),
+                                ViewMode::Grid => app.render_grid(&mut content, tab),
+                                _ => unreachable!(),
+                            }
+                        });
+                    });
+                    let live_bounds = button(&live, "assets").1;
+                    assert!(
+                        (sample.width() - live_bounds.width() as f32).abs() < 0.1,
+                        "{expected:?} sample={sample:?} live={live_bounds:?}"
+                    );
+                    assert!((sample.height() - live_bounds.height() as f32).abs() < 0.1);
+                    let label_style = |out: &egui::FullOutput| {
+                        out.shapes
+                            .iter()
+                            .find_map(|shape| match &shape.shape {
+                                egui::Shape::Text(text) if text.galley.job.text == "assets" => {
+                                    Some((
+                                        text.galley.size(),
+                                        text.galley.job.sections[0].format.clone(),
+                                    ))
+                                }
+                                _ => None,
+                            })
+                            .unwrap()
+                    };
+                    assert_eq!(
+                        label_style(&output),
+                        label_style(&live),
+                        "Live {expected:?} filename typography/color at {font_scale}"
+                    );
+                    let corners = |out: &egui::FullOutput| {
+                        out.shapes
+                            .iter()
+                            .find_map(|shape| match &shape.shape {
+                                egui::Shape::Rect(rect)
+                                    if rect.fill == colors.selected_bg
+                                        && (rect.rect.size() - sample.size()).length() < 0.1 =>
+                                {
+                                    Some(rect.corner_radius)
+                                }
+                                _ => None,
+                            })
+                            .unwrap()
+                    };
+                    assert_eq!(corners(&output), corners(&live));
+                    assert_eq!(
+                        corners(&output),
+                        egui::CornerRadius::same(if expected == ViewMode::Grid { 14 } else { 0 })
+                    );
+                    render(vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                        action: Action::Click,
+                        target: asset,
+                        data: None,
+                    })]);
+                    assert_eq!(picked.get(), Some(ThemePreviewRegion::SelectedRow));
+                    output = render(vec![]);
+                }
+            }
+        }
+    }
+
+    #[test]
     fn theme_preview_file_rows_match_live_geometry_and_select_their_role() {
         use egui::accesskit::{Action, ActionRequest, Role};
         for scale in [1.0, 1.5, 2.0] {
@@ -33939,7 +34143,13 @@ mod tests {
                 preview_ctx.run(input(events), |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
                         selected.set(
-                            theme_editor_large_preview(ui, colors, ThemePreviewRegion::Defaults).1,
+                            theme_editor_large_preview(
+                                ui,
+                                colors,
+                                ThemePreviewRegion::Defaults,
+                                &mut ViewMode::Miller,
+                            )
+                            .1,
                         );
                     });
                 })

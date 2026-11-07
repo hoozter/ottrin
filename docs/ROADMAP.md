@@ -6,27 +6,29 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `bee15669`; Windows now uses
+The stable local Linux packages use verified source `33e148b0`; Windows retains
 its separately accepted source `8e805d31`. All four exact-source hosted jobs
-for the current Linux source passed in
-[run42033104462](https://github.com/hoozter/ottrin/actions/runs/42033104462).
-The Linux cohort delivers explicitly qualified neutral action history and
-wrapped status labels, retaining complete diagnostic disclosure after recovery
-controls. Neither cohort completes administrator Copy, the full theme audit or
-this roadmap.
+for Linux passed in
+[run42328760444](https://github.com/hoozter/ottrin/actions/runs/42328760444).
+The Linux cohort delivers shared recovery refresh, Services health and theme
+preview border/targeting fixes. Neither cohort completes administrator Copy,
+the full theme audit or this roadmap.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
-ownership checks. Actual mounted AppImage Dark/Light action→Stopped→real endpoint
-error→Ready checks pass, with unchanged recovery-button geometry, diagnostic
-collapse/reopen and complete-error scrolling. Six targeted originals were
-reviewed; other transition frames are automated observations, not full interface
-acceptance. Daemon/helper/HTML bytes exactly match delivered d032; retained
-resource/wire/elevated-Copy evidence keeps its original scopes. The personal
-managed service is Ready after actual package replacement, preserving startup
-choice, exact preferences hash and database identity. Personal installed helper
-setup still requires owner OS authentication. The superseded Linux cohort
-(115,883,499 bytes), retired directory and consumed Linux stage are removed.
-Evidence: `.hermes/evidence/service-ui-delivery-current/`.
+ownership checks. Actual mounted AppImage Dark/Light Ready→Stopped→real endpoint
+error→Ready checks pass, including full diagnostics and stable recovery controls.
+Six Services and twelve theme originals were reviewed. Current mounted daemon
+watcher counts2→1002→2 and a30-second no-client/no-GUI idle sample pass; measured
+CPU is0.033333% of one core. Current bundled protocol5 helper passes ten real
+read-only checks. These do not establish sustained personal workload or actual
+protected-file authorization acceptance. Mounted theme-library/border selection,
+red border4, window radius24/0 and Cancel restoration pass at software X11 scale1.
+Personal managed service is Ready after guarded package replacement, preserving
+startup choice, exact preferences hash and database identity. The consumed stage
+and superseded package cohort are removed. Personal installed helper setup still
+requires owner OS authentication. Current authority:
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`; evidence:
+`.hermes/evidence/linux-ui-delivery-current/PROMOTION.json`.
 
 Windows: the59-file portable ZIP, NSIS and unsigned development MSIX25 are
 published at `dist/windows-candidate/`. All four exact-source hosted jobs pass
@@ -58,14 +60,25 @@ refresh fixes. In [run42317077429](https://github.com/hoozter/ottrin/actions/run
 all four hosted jobs pass.
 Its preceding `923b179b` passes all four jobs in
 [run42310288820](https://github.com/hoozter/ottrin/actions/runs/42310288820).
-The published thumbnail correction `db51abab` is in
-[run42323646024](https://github.com/hoozter/ottrin/actions/runs/42323646024):
-Linux verification and both performance jobs pass; Windows verification is running.
-Wait for an active run to finish before another push so `cancel-in-progress` does
-not interrupt it. Delivery receipts retain exact observed source/CI scopes, and
-stable application packages retain their separately accepted source scopes above.
-Historical component receipts keep their original scope; earlier green hosted
-baselines and corrected fixture failures remain in their receipts and Git history.
+The published thumbnail correction `db51abab` passed all four jobs in
+[run42323646024](https://github.com/hoozter/ottrin/actions/runs/42323646024).
+The later source `33e148b0` also passed all four jobs and is now the stable local
+Linux package cohort. Wait for an active run to finish before another push so
+`cancel-in-progress` does not interrupt it. Delivery receipts retain exact
+observed source/CI scopes; historical component receipts retain their own scopes.
+
+The next UI checkpoint adds real independently selectable Column/List/Grid
+layouts to the theme editor. Production List rows/headers and Grid cells are
+shared with the main view. Selected Grid tiles expose shared Surface corners;
+List/Column rows remain square. Grid width follows theme text size so ordinary
+short labels remain readable. All526 active UI unit tests pass (one pre-existing
+ignored), strict Linux/Windows cross-target UI lint and formatting pass. Actual
+source-built Linux Dark/Light scale1 verifies radius14/0, text1.35, real main
+List/Grid and Cancel restoring theme while preserving an independent main-view
+change. Both owned desktops/profiles are removed; twelve superseded incremental
+sessions and superseded initial captures are removed. This checkpoint still
+needs packaged delivery; it is not in the stable33 packages above. Evidence:
+`.hermes/evidence/theme-view-layout-current/ACCEPTANCE.json` and `CLEANUP.json`.
 
 1. Finish Windows administrator Copy. **Administrator Copy stays disabled.**
    Implemented source includes original-caller profile/registry admission, private
@@ -124,6 +137,17 @@ baselines and corrected fixture failures remain in their receipts and Git histor
    bounded 30/31/40-minute helper/client/host fixture limits. This Windows test-only
    checkpoint uses its original `2af31068` reference plus recorded source hashes;
    independent later UI fixes retain their own scopes. Copy stays disabled.
+
+   The next private-create boundary fixture has before/after native creation
+   hooks around the existing authenticated public Copy trace. Its cross-built
+   executable, strict Windows lint and formatting pass. Native execution has
+   not occurred: the teardown-owning guest producer refused allocation below
+   its24GiB free-space guard. The owned three-file test patch is held in
+   `caller-native-create-current/IMPLEMENTATION.patch`; original source bytes
+   were restored to allow independent UI work. Retain its verified executable
+   for native execution, recheck exact baseline hashes before applying the patch,
+   and preserve the guard. Creation/profile-init and other failure matrices
+   remain open; this is not native or administrator Copy acceptance.
 
    - Extend creation coverage through initialization/claim/native-IO boundary
      domains beyond the reached journal events. Finish readonly/symbolic-link

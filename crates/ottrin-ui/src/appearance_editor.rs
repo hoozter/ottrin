@@ -276,7 +276,7 @@ impl OttrinApp {
                 ui.set_min_size(preview_rect.size());
                 let preview = self.theme_editor_preview_colors();
                 if let Some(region) = theme_editor_large_preview(ui, preview,
-                    self.theme_editor.selected_region).1 {
+                    self.theme_editor.selected_region, &mut self.theme_editor.preview_view).1 {
                     self.theme_editor.selected_region = region;
                 }
             });
@@ -373,7 +373,8 @@ impl OttrinApp {
                         group_changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
                             group_changed
                         });
-                        if matches!(region, ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::Sidebar) {
+                        if matches!(region, ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::Sidebar)
+                            || (region == ThemePreviewRegion::SelectedRow && self.theme_editor.preview_view == ViewMode::Grid) {
                             ui.add_space(6.0);
                             changed |= property_group(ui, "Shared geometry", c, |ui| {
                             let mut group_changed = false;
@@ -381,12 +382,16 @@ impl OttrinApp {
                                 ThemePreviewRegion::Sidebar => {
                                     group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
                                 }
+                                ThemePreviewRegion::SelectedRow => {
+                                    ui.label(RichText::new("Shared surface corners affect Grid tiles, tabs, inputs and cards. List and Column rows stay square.").small().color(c.text_dim));
+                                    group_changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                                }
                                 ThemePreviewRegion::Navigation => {
-                                    ui.label(RichText::new("Surface corners: tabs, text inputs and cards.").small().color(c.text_dim));
+                                    ui.label(RichText::new("Shared surface corners: tabs, inputs, cards and Grid tiles.").small().color(c.text_dim));
                                     group_changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
                                 }
                                 ThemePreviewRegion::Bookmarks => {
-                                    ui.label(RichText::new("Surface corners: expanded location cards, tabs and inputs.").small().color(c.text_dim));
+                                    ui.label(RichText::new("Shared surface corners: location cards, tabs, inputs and Grid tiles.").small().color(c.text_dim));
                                     group_changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
                                     ui.label(RichText::new("Button corners: collapsed location icons and other buttons.").small().color(c.text_dim));
                                     group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
@@ -1382,7 +1387,13 @@ mod tests {
                 },
                 |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
-                        picked = theme_editor_large_preview(ui, c, ThemePreviewRegion::Sidebar).1;
+                        picked = theme_editor_large_preview(
+                            ui,
+                            c,
+                            ThemePreviewRegion::Sidebar,
+                            &mut ViewMode::Miller,
+                        )
+                        .1;
                     });
                 },
             );
@@ -1566,6 +1577,7 @@ mod tests {
                                 ui,
                                 colors,
                                 ThemePreviewRegion::ColumnBackground,
+                                &mut ViewMode::Miller,
                             );
                         });
                     },
@@ -1678,7 +1690,8 @@ mod tests {
                 },
                 |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
-                        clicked = theme_editor_large_preview(ui, colors, region).1;
+                        clicked =
+                            theme_editor_large_preview(ui, colors, region, &mut ViewMode::Miller).1;
                     });
                 },
             );
@@ -1778,7 +1791,12 @@ mod tests {
         colors.text_muted = Color32::from_rgb(111, 232, 149);
         let output = ctx.run(Default::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                theme_editor_large_preview(ui, colors, ThemePreviewRegion::Navigation);
+                theme_editor_large_preview(
+                    ui,
+                    colors,
+                    ThemePreviewRegion::Navigation,
+                    &mut ViewMode::Miller,
+                );
             });
         });
         let tab = output
@@ -1876,7 +1894,12 @@ mod tests {
             },
             |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
-                    theme_editor_large_preview(ui, colors, ThemePreviewRegion::ColumnText);
+                    theme_editor_large_preview(
+                        ui,
+                        colors,
+                        ThemePreviewRegion::ColumnText,
+                        &mut ViewMode::Miller,
+                    );
                 });
             },
         );
@@ -1918,7 +1941,7 @@ mod tests {
                 },
                 |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
-                        theme_editor_large_preview(ui, c, region);
+                        theme_editor_large_preview(ui, c, region, &mut ViewMode::Miller);
                     });
                 },
             );
