@@ -192,11 +192,12 @@ jobs:
       - name: Import Linux release signing key
         env:
           LINUX_SIGNING_PRIVATE_KEY: ${{ secrets.LINUX_SIGNING_PRIVATE_KEY }}
+          OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT: ${{ vars.LINUX_SIGNING_KEY_FINGERPRINT }}
         run: |
           install -d -m 700 "$RUNNER_TEMP/ottrin-gnupg"
           export GNUPGHOME="$RUNNER_TEMP/ottrin-gnupg"
           printf 'GNUPGHOME=%s\n' "$RUNNER_TEMP/ottrin-gnupg" >> "$GITHUB_ENV"
-          printf '%s' "$LINUX_SIGNING_PRIVATE_KEY" | gpg --batch --import
+          printf '%s' "$LINUX_SIGNING_PRIVATE_KEY" | ./packaging/linux/import-release-signing-subkey.sh
 
       - name: Package native Linux formats
         env:
@@ -245,6 +246,15 @@ jobs:
             dist/ottrin-*.x86_64.rpm.sha256
             dist/*.asc
           if-no-files-found: error
+
+      - name: Retire Linux signing keyring
+        if: always()
+        run: |
+          keyring="$RUNNER_TEMP/ottrin-gnupg"
+          if [[ -d "$keyring" ]]; then
+            GNUPGHOME="$keyring" gpgconf --kill all
+            rm -rf -- "$keyring"
+          fi
 
   package-windows-portable:
     name: Windows portable zip
@@ -469,7 +479,7 @@ jobs:
             rm -rf -- "$GNUPGHOME"
           }
           trap cleanup EXIT
-          printf '%s' "$LINUX_SIGNING_PRIVATE_KEY" | gpg --batch --import
+          printf '%s' "$LINUX_SIGNING_PRIVATE_KEY" | ./packaging/linux/import-release-signing-subkey.sh
           unset LINUX_SIGNING_PRIVATE_KEY
           ./packaging/linux/prepare-release-repositories.sh "$RELEASE_TAG" "$RUNNER_TEMP/ottrin-linux-repositories"
 

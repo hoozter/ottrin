@@ -5203,8 +5203,11 @@ superseded and tampered inputs. Staging is opt-in and keeps the snapshots
 in Actions artifacts. An independently gated R2 publisher verifies immutable
 objects over anonymous HTTPS before switching stable metadata. A disposable
 failure fixture verifies interrupted publication, retry, downgrade refusal,
-and immutable collisions. The public hostname, real R2 publication and signing-key recovery remain
-to be verified. See
+and immutable collisions. The public hostname, real R2 publication and production-key recovery remain
+to be verified. A disposable certification key and signing subkey passed
+unattended release and APT signing from the subkey-only export, refusal of
+the full private key in CI, and encrypted backup restoration with fresh
+signature verification under the original fingerprint. See
 [Linux repository setup and recovery](LINUX_REPOSITORIES.md).
 
 A fresh Ubuntu 24.04.5 QEMU guest passed the full DEB lifecycle with

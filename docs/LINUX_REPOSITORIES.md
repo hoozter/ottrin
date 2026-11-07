@@ -20,7 +20,12 @@ The package manager owns its imported keys.
   `LINUX_SIGNING_PRIVATE_KEY` Actions secret. Set
   `LINUX_SIGNING_KEY_FINGERPRINT` to the approved primary fingerprint.
   The current unattended workflow needs an importable signing subkey that
-  can sign without an interactive passphrase prompt.
+  can sign without an interactive passphrase prompt. Select the signing
+  subkey by its full fingerprint with
+  `gpg --armor --export-secret-subkeys "SIGNING_SUBKEY_FINGERPRINT!"`.
+  Both workflow jobs check that the approved primary secret is absent
+  and exactly one signing subkey is available. The fingerprint variable
+  continues to identify the primary key.
 - Back up an encrypted export of the full secret key, its public key, and
   revocation certificate to the Enpass vault. Record the fingerprint and
   keep the export passphrase recoverable. Restore into a separate GnuPG home

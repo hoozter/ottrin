@@ -128,6 +128,11 @@ scope: `.hermes/evidence/windows-msi-rollback-current/ACCEPTANCE.json`.
 - [ ] Linux AppImage, portable, DEB and RPM artifacts have armored detached
   signatures. The draft job verifies the exact downloaded files against the
   approved primary-key fingerprint before staging the release draft.
+- [ ] The signing-only CI export has been tested against the offline backup.
+  Check the primary fingerprint and verify a signature after restoring the
+  backup in an isolated keyring. For native updates, verify the signed
+  public APT and DNF endpoints and complete the rollout checklist.
+  [Linux repository setup and recovery](LINUX_REPOSITORIES.md)
 
 Deferred macOS release requirement:
 
