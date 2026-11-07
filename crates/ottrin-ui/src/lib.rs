@@ -5389,9 +5389,9 @@ impl OttrinApp {
         match field {
             ThemeColorField::Background => "Background of file views",
             ThemeColorField::Panel => {
-                "Shared panels and dialogs; inputs have their own surface color"
+                "Shared panels and dialogs, including the Quick Inspector background; inputs have their own surface color"
             }
-            ThemeColorField::RaisedPanel => "Text fields, cards and the Quick Inspector surface",
+            ThemeColorField::RaisedPanel => "Text fields, raised cards and List column headers",
             ThemeColorField::Statusbar => "Bottom status and utility bar",
             ThemeColorField::Toolbar => "Tabs and navigation row",
             ThemeColorField::Bookmarks => "Background of the left locations rail",

@@ -204,6 +204,21 @@ remain33. Current package evidence and cleanup:
    (30 existing and one actual event-routing regression), strict lint and actual
    Dark GUI edge-versus-icon selection, with independent owned cleanup. These
    bounded checks do not close the remaining complete interface audit.
+   The Inspector surface audit in `inspector-theme-roles-current/ACCEPTANCE.json`
+   verifies its actual shared panel/title/heading/border/radius roles in Dark/Light
+   headless rendering and three actual mounted source43 custom-palette windows.
+   Pixel checks confirm panel/title colors and border4, raised-color independence,
+   radius24/0 and Space closing read-only content without changing original bytes.
+   The production Inspector/chrome consumers are unchanged from that exact package.
+   Source descriptions now correctly assign Inspector background to Panels and
+   dialogs; Inputs / raised surfaces describes inputs, cards and List headers.
+   All527 active UI tests, strict Linux/Windows cross-target lint and formatting
+   pass. Five superseded incremental sessions and all owned QA runtimes are
+   removed. These description/test changes await the next batched push/package;
+   source43's staged packages and running CI retain their exact earlier scope.
+   An Inspector target/representation within the theme editor itself, all-property
+   coverage and broader platform/scale acceptance remain open.
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

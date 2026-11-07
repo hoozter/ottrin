@@ -2418,6 +2418,113 @@ mod tests {
     }
 
     #[test]
+    fn quick_inspector_uses_shared_window_surface_title_and_border_roles() {
+        for dark in [false, true] {
+            for radius in [0, 24] {
+                let ctx = Context::default();
+                install_application_fonts(&ctx);
+                ctx.enable_accesskit();
+                let mut app = OttrinApp::default();
+                app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                app.colors.panel = Color32::from_rgb(40, 84, 106);
+                app.colors.panel_raised = Color32::from_rgb(153, 41, 75);
+                app.colors.titlebar_bg = Color32::from_rgb(23, 109, 63);
+                app.colors.heading = Color32::from_rgb(244, 210, 70);
+                app.colors.window_border = Color32::from_rgb(235, 113, 135);
+                app.colors.window_border_width = 4.0;
+                app.colors.app_radius = radius;
+                app.preview.visible = true;
+                app.preview.path = Some(PathBuf::from("/__appearance_fixture__/sample.bin"));
+                app.preview.data = Some(PreviewData {
+                    title: "Theme fixture".into(),
+                    kind: PreviewKind::Unsupported,
+                    body: "Read-only theme fixture".into(),
+                    document: None,
+                    spreadsheet: None,
+                    open_external: false,
+                });
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(720.0, 560.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| app.render_preview_overlay(ctx),
+                );
+                let title = output
+                    .shapes
+                    .iter()
+                    .find_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text)
+                            if text.galley.job.text == "Quick Inspector — Theme fixture" =>
+                        {
+                            Some(text)
+                        }
+                        _ => None,
+                    })
+                    .expect("Actual Inspector title rendered");
+                assert!(
+                    title
+                        .galley
+                        .job
+                        .sections
+                        .iter()
+                        .all(|s| s.format.color == app.colors.heading)
+                );
+                let title_center = title.pos + title.galley.rect.center().to_vec2();
+                let rects: Vec<_> = output
+                    .shapes
+                    .iter()
+                    .filter_map(|shape| match &shape.shape {
+                        egui::Shape::Rect(rect) => Some(rect),
+                        _ => None,
+                    })
+                    .collect();
+                assert!(
+                    rects
+                        .iter()
+                        .any(|r| r.fill == app.colors.titlebar_bg && r.rect.contains(title_center)),
+                    "Title must use the shared Title bar color"
+                );
+                assert!(
+                    rects
+                        .iter()
+                        .any(|r| r.fill == app.colors.panel
+                            && r.rect.size() == Vec2::new(720.0, 560.0)),
+                    "Inspector window background must use Panels and dialogs"
+                );
+                assert!(
+                    !rects.iter().any(|r| r.fill == app.colors.panel_raised
+                        && r.rect.size() == Vec2::new(720.0, 560.0)),
+                    "Inputs / raised surfaces must not recolor the Inspector window"
+                );
+                assert!(
+                    rects
+                        .iter()
+                        .any(|r| r.stroke == Stroke::new(4.0, app.colors.window_border)
+                            && r.corner_radius == egui::CornerRadius::same(radius)
+                            && r.rect.size() == Vec2::new(720.0, 560.0)),
+                    "Inspector must use shared window border width/color and radius"
+                );
+                assert!(
+                    output
+                        .platform_output
+                        .accesskit_update
+                        .as_ref()
+                        .unwrap()
+                        .nodes
+                        .iter()
+                        .any(|(_, node)| node.label() == Some("Close window")),
+                    "Actual shared window close control must remain available"
+                );
+                assert!(app.preview.text_editor.is_none());
+            }
+        }
+    }
+
+    #[test]
     fn dialogs_use_panel_and_window_shape_roles_independently_of_inputs() {
         fn rectangles(shape: &egui::epaint::Shape, result: &mut Vec<egui::epaint::RectShape>) {
             match shape {
