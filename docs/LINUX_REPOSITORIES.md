@@ -6,6 +6,13 @@ GitHub Releases is the manual download location. The planned update origin is
 The signed native installers can register these sources for subsequent
 updates through the system package manager.
 
+APT scopes the embedded key to the Ottrin source. Fedora DNF can ask to
+confirm the same signing fingerprint twice on first use. It keeps a
+repository-specific key for metadata and imports the package verification key
+into the RPM database. Ottrin's DNF source is restricted to the `ottrin`
+package. Uninstall removes the source and the packaged certificate file.
+The package manager owns its imported keys.
+
 ## Before enabling publication
 
 - Set up a dedicated OpenPGP release signing identity. Keep the primary

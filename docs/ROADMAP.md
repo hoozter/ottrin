@@ -5194,7 +5194,7 @@ are verified. A package inspection confirms the DEB conffiles and RPM
 `%config(noreplace)` flag. The isolated dpkg fixture preserves a disabled
 source across upgrade and removal, then removes it on purge. The embedded
 APT key stays scoped to that source throughout. Native lifecycle with the
-full RPM packages and R2 publication remain open.
+full packages is recorded below. R2 publication remains open.
 
 The release workflow can stage signed repository snapshots after a stable
 release is published, with an explicit retry for the current release. A
@@ -5218,13 +5218,18 @@ source and purge removed both source and pin. The fixture DEB hashes are
 and `e4f4c6924424c699b6a726b110dddc9afa234c9387cbfce0f894ee38b8c0d6ed`.
 The temporary guest, repository, packages and keys were retired.
 
-A fresh Fedora 44 guest reached repository assembly with both signed RPMs
-and exposed a verifier dependency on the older RPM diagnostic format.
-The verifier now requires RPM's digest and signature policy via the exit
-status. RPM 4.18 accepts an approved signed package and rejects its
-unsigned and payload-tampered variants. Repeat the Fedora 44 guest run
-with the corrected verifier to reach the DNF lifecycle checks. Public
-hosting remains open.
+Fresh Fedora 44 QEMU acceptance passed with packaging revision `b41c0e7b`,
+the cached release payload, and a disposable signed HTTPS repository.
+RPM 6 rejected the unsigned fixture and verified both signed packages.
+Installing 0.1.0 registered the source. DNF imported the metadata and
+package signing keys from the package-owned certificate, detected 0.1.1,
+honored disable, upgraded to 0.1.1, and preserved the edited source.
+Removal retired the active source and key file and saved the edit as
+`ottrin.repo.rpmsave`. The signed fixture RPM hashes are
+`4453d0e2b1a071e7f0e705de3a7bb2a5232ad3796d59d48b98e6b36ea57b31ba`
+and `20cc992fa0c9a8b63f9c4fe0c2cf49809b09b79b9b884a90ce5a355acb07296d`.
+The guest, keys and packages were retired. A DNF tampered-metadata
+rejection trial and real R2 publication remain open.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
