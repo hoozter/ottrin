@@ -106,6 +106,11 @@ Dark/Light captures and runtime teardown are recorded in
 passed and guarded promotion moved these packages to the stable local paths.
 The managed index returned to Ready with preferences, startup configuration,
 and database identity preserved. The consumed stage was removed.
+The next source checkpoint gives theme color swatches and restore controls
+field-specific accessibility names. The picker exposes named RGB and opacity
+controls. Rendered Dark/Light tests activate the swatch, edit the live toolbar
+color and opacity, and restore the opening value through accessibility actions.
+This checkpoint awaits the next combined package build.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.

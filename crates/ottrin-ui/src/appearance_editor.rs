@@ -543,6 +543,7 @@ impl OttrinApp {
     ) -> bool {
         let mut changed = false;
         ui.push_id(field, |ui| {
+            let label = Self::theme_color_field_label(field);
             let rgba = Self::theme_color_field_value(&self.theme_editor.custom, field);
             let mut hex = self
                 .theme_editor
@@ -557,12 +558,12 @@ impl OttrinApp {
                     Layout::left_to_right(Align::Center),
                     |ui| {
                         ui.set_width(label_width);
-                        ui.add(egui::Label::new(Self::theme_color_field_label(field)).wrap())
+                        ui.add(egui::Label::new(label).wrap())
                             .on_hover_text(Self::theme_color_field_hint(field));
                     },
                 );
                 let mut color = rgba;
-                if compact_color_picker(ui, &mut color, self.colors).changed() {
+                if compact_color_picker(ui, label, &mut color, self.colors).changed() {
                     *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field) =
                         color;
                     hex = format!("#{:02X}{:02X}{:02X}", color[0], color[1], color[2]);
@@ -577,7 +578,7 @@ impl OttrinApp {
                         egui::TextEdit::singleline(&mut hex)
                             .id(egui::Id::new(("appearance_hex", field)))
                             .desired_width(88.0 * self.colors.font_scale)
-                            .text_color(if valid_hex { self.colors.text } else { self.colors.error }).themed(&self.colors).accessible_name(format!("{} (hex)", Self::theme_color_field_label(field))),
+                            .text_color(if valid_hex { self.colors.text } else { self.colors.error }).themed(&self.colors).accessible_name(format!("{label} (hex)")),
                     )
                     .on_hover_text(if valid_hex {
                         "RGB color: three or six hexadecimal digits. Use the color picker to change opacity."
@@ -595,10 +596,10 @@ impl OttrinApp {
                         changed = true;
                     }
                 }
-                if appearance_icon_button(ui, MI_SETTINGS_BACKUP_RESTORE, self.colors)
-                    .on_hover_text("Restore this color to its value when the editor opened")
-                    .clicked()
-                {
+                let restore = appearance_icon_button(ui, MI_SETTINGS_BACKUP_RESTORE, self.colors)
+                    .on_hover_text("Restore this color to its value when the editor opened");
+                name_control(&restore, format!("Restore {label}"));
+                if restore.clicked() {
                     *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field) =
                         Self::theme_color_field_value(seed, field);
                     let color = Self::theme_color_field_value(seed, field);
@@ -617,13 +618,19 @@ impl OttrinApp {
 
 /// A compact, labelled color control. RGBA bytes remain authoritative; only
 /// the hue of a gray color is remembered as transient picker interaction state.
-fn compact_color_picker(ui: &mut egui::Ui, rgba: &mut [u8; 4], c: Colors) -> egui::Response {
+fn compact_color_picker(
+    ui: &mut egui::Ui,
+    label: &str,
+    rgba: &mut [u8; 4],
+    c: Colors,
+) -> egui::Response {
     use egui::ecolor::{Hsva, HsvaGamma};
     let popup_id = ui.make_persistent_id("appearance_color_picker");
     let hue_id = popup_id.with("gray_hue");
     let (swatch, response) =
         ui.allocate_exact_size(Vec2::new(28.0 * c.font_scale, 22.0), Sense::click());
     response.widget_info(|| egui::WidgetInfo::new(egui::WidgetType::ColorButton));
+    name_control(&response, format!("Choose {label}"));
     egui::widgets::color_picker::show_color_at(
         ui.painter(),
         Color32::from_rgba_unmultiplied(rgba[0], rgba[1], rgba[2], rgba[3]),
@@ -747,10 +754,9 @@ fn compact_color_picker(ui: &mut egui::Ui, rgba: &mut [u8; 4], c: Colors) -> egu
             for (index, label) in [(0, "Red"), (1, "Green"), (2, "Blue")] {
                 ui.horizontal(|ui| {
                     ui.add_sized([60.0 * c.font_scale, 22.0], egui::Label::new(label));
-                    if ui
-                        .add(egui::Slider::new(&mut rgba[index], 0..=255))
-                        .changed()
-                    {
+                    let channel = ui.add(egui::Slider::new(&mut rgba[index], 0..=255));
+                    name_control(&channel, label);
+                    if channel.changed() {
                         response.mark_changed();
                     }
                 });
@@ -758,14 +764,13 @@ fn compact_color_picker(ui: &mut egui::Ui, rgba: &mut [u8; 4], c: Colors) -> egu
             let mut opacity = rgba[3] as f32 * 100.0 / 255.0;
             ui.horizontal(|ui| {
                 ui.add_sized([60.0 * c.font_scale, 22.0], egui::Label::new("Opacity"));
-                if ui
-                    .add(
-                        egui::Slider::new(&mut opacity, 0.0..=100.0)
-                            .step_by(1.0)
-                            .suffix("%"),
-                    )
-                    .changed()
-                {
+                let slider = ui.add(
+                    egui::Slider::new(&mut opacity, 0.0..=100.0)
+                        .step_by(1.0)
+                        .suffix("%"),
+                );
+                name_control(&slider, "Opacity");
+                if slider.changed() {
                     rgba[3] = (opacity * 255.0 / 100.0).round() as u8;
                     response.mark_changed();
                 }
@@ -1687,6 +1692,39 @@ mod tests {
 
     #[test]
     fn rendered_theme_fields_name_the_theme_and_each_visible_color() {
+        use egui::accesskit::{Action, ActionData, ActionRequest, Role};
+
+        let render = |app: &mut OttrinApp, ctx: &Context, events| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1180.0, 1600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_theme_editor_embedded(ctx);
+                },
+            )
+        };
+        let node_id = |output: &egui::FullOutput, role, label: &str, action| {
+            output
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .find(|(_, node)| {
+                    node.role() == role
+                        && node.label() == Some(label)
+                        && node.supports_action(action)
+                })
+                .unwrap_or_else(|| panic!("Missing {label} control for {action:?}"))
+                .0
+        };
         for mode in [ThemeMode::Light, ThemeMode::Dark] {
             let ctx = Context::default();
             ctx.enable_accesskit();
@@ -1694,18 +1732,7 @@ mod tests {
             app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
             app.switch_theme_editor_variant(mode, &ctx);
             app.theme_editor.selected_region = ThemePreviewRegion::Navigation;
-            let output = ctx.run(
-                egui::RawInput {
-                    screen_rect: Some(Rect::from_min_size(
-                        egui::Pos2::ZERO,
-                        Vec2::new(1180.0, 1600.0),
-                    )),
-                    ..Default::default()
-                },
-                |ctx| {
-                    app.render_theme_editor_embedded(ctx);
-                },
-            );
+            let output = render(&mut app, &ctx, vec![]);
             let fields = super::super::tests::rendered_text_fields(&output);
             assert!(
                 fields.contains(&("Theme name".into(), app.theme_editor.save_as_name.clone())),
@@ -1724,6 +1751,60 @@ mod tests {
             assert!(
                 fields.iter().all(|(name, _)| !name.is_empty()),
                 "{fields:?}"
+            );
+
+            let field = ThemeColorField::Toolbar;
+            let label = OttrinApp::theme_color_field_label(field);
+            let seed = OttrinApp::theme_color_field_value(&app.theme_editor.custom, field);
+            let choose = node_id(
+                &output,
+                Role::ColorWell,
+                &format!("Choose {label}"),
+                Action::Click,
+            );
+            let restore = node_id(
+                &output,
+                Role::Button,
+                &format!("Restore {label}"),
+                Action::Click,
+            );
+            let action = |target, action, data| {
+                egui::Event::AccessKitActionRequest(ActionRequest {
+                    target,
+                    action,
+                    data,
+                })
+            };
+            let output = render(&mut app, &ctx, vec![action(choose, Action::Click, None)]);
+            let red = node_id(&output, Role::Slider, "Red", Action::SetValue);
+            let _ = node_id(&output, Role::Slider, "Green", Action::SetValue);
+            let _ = node_id(&output, Role::Slider, "Blue", Action::SetValue);
+            let opacity = node_id(&output, Role::Slider, "Opacity", Action::SetValue);
+            let _ = render(
+                &mut app,
+                &ctx,
+                vec![
+                    action(red, Action::SetValue, Some(ActionData::NumericValue(147.0))),
+                    action(
+                        opacity,
+                        Action::SetValue,
+                        Some(ActionData::NumericValue(50.0)),
+                    ),
+                ],
+            );
+            let edited = [147, seed[1], seed[2], 128];
+            assert_eq!(
+                OttrinApp::theme_color_field_value(&app.theme_editor.custom, field),
+                edited
+            );
+            assert_eq!(
+                app.colors.toolbar_bg,
+                Color32::from_rgba_unmultiplied(147, seed[1], seed[2], 128)
+            );
+            let _ = render(&mut app, &ctx, vec![action(restore, Action::Click, None)]);
+            assert_eq!(
+                OttrinApp::theme_color_field_value(&app.theme_editor.custom, field),
+                seed
             );
         }
     }
