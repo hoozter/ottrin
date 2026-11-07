@@ -48,6 +48,15 @@ The package manager owns its imported keys.
 
 ## Release and recovery
 
+For the first stable release, leave `LINUX_REPOSITORY_URL` unset. Publish the
+approved, signed bootstrap release to GitHub and let the repository job seed
+R2. From clean Ubuntu and Fedora guests, use temporary sources with the same
+trust and package restrictions as the intended official packages. Verify
+anonymous HTTPS access, signature verification, and a native upgrade from a
+lower-version fixture to the published package. Retire the temporary sources.
+After both checks pass, set `LINUX_REPOSITORY_URL` for the next stable tag and
+verify that its exact DEB and RPM install the source before approving the draft.
+
 The release workflow builds signed artifacts for a version tag and creates a
 GitHub draft. Review and publish that draft on GitHub to start the repository
 job. The job stages exact assets from the latest published stable release.

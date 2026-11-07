@@ -66,6 +66,15 @@ Dark and Light checks named the private caller while its request was open and
 offered Apply change after it closed. All four exact hosted jobs passed and
 the stable packages were promoted without restarting the index.
 
+The combined Linux candidate `e365563b` passed four-format content checks,
+mounted Dark and Light Inspector checks, exact non-UTF-8 Save overwrite
+selection with original bytes preserved, and folder integration recovery
+after a real write denial. A mounted AppImage replacement also kept the old
+window usable while a fresh launch used the candidate. Guarded promotion
+waits for all four exact-source jobs in
+[run 42405483643](https://github.com/hoozter/ottrin/actions/runs/42405483643).
+Candidate evidence is in `.hermes/evidence/picker-folders-delivery-current/`.
+
 The status bar geometry update, delivered with `0298384d`, exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
 on hover and focus. Rendered Dark/Light tests verify the live and sample hover
@@ -426,7 +435,8 @@ Current source, test, package and owner/external scopes stay separate.
    filename, returned the exact native path after confirmation, and
    preserved the file bytes. The owned display, profile and processes were
    removed. Evidence: `picker-overwrite-confirmation-current/linux/RESULT.json`.
-   Mounted package and native Windows coverage remain open.
+   The combined Linux candidate passed mounted package coverage. Native
+   Windows coverage remains open.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
@@ -435,7 +445,8 @@ Current source, test, package and owner/external scopes stay separate.
    requested repair, retry updated the D-Bus service, and disable restored
    the original GIO default while preserving a separate PDF association edit.
    The private session was retired. See
-   `folder-interrupted-repair-current/ACCEPTANCE.json`. Packaged testing is open.
+   `folder-interrupted-repair-current/ACCEPTANCE.json`. The combined Linux
+   candidate also passed the packaged fault and repair trial.
 4. Resolve ordinary-user MSI registration rollback, including the failed independent
    file-only control. Preserve its held diagnostic input. Elevation, ACL/policy
    changes and manual registry compensation are not a working installer. This
