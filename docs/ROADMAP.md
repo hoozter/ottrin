@@ -463,8 +463,15 @@ Current source, test, package and owner/external scopes stay separate.
    native Dark and Light confirmation frames, exact Unicode Save paths and
    unchanged files and preferences during selection. The guest and its media
    were removed. Evidence: `windows-picker-confirmation-delivery-current/NATIVE_PICKER_ACCEPTANCE.json`.
-   Windows upgrade, development MSIX and recovery acceptance retain their
-   separate scopes before candidate replacement.
+   The exact NSIS also passes upgrade from accepted `8e805d31` with a live
+   scheduled index, three reinstall intent combinations, locked-cache
+   uninstall refusal and supported retry. The upgrade preserves the saved
+   database identity, preferences and source. The portable chooser passes
+   ten ordinary-user cases without starting indexing. The disposable guest,
+   media and portable extraction were removed. Evidence:
+   `windows-picker-confirmation-delivery-current/NATIVE_UPGRADE_ACCEPTANCE.json`.
+   Development MSIX and broader recovery acceptance remain separate before
+   candidate replacement.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
