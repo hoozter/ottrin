@@ -1542,6 +1542,126 @@ mod tests {
     }
 
     #[test]
+    fn appearance_preview_border_clicks_do_not_activate_underlying_controls() {
+        for radius in [0, 24] {
+            let ctx = Context::default();
+            let mut colors = Colors::preset(ThemePreset::Ottrin, true);
+            colors.app_radius = radius;
+            colors.window_border_width = 4.0;
+            colors.window_border = Color32::from_rgb(113, 13, 149);
+            let render = |colors, events| {
+                let mut picked = (None, None);
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(1000.0, 700.0),
+                        )),
+                        events,
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            picked = theme_editor_large_preview(
+                                ui,
+                                colors,
+                                ThemePreviewRegion::ColumnBackground,
+                            );
+                        });
+                    },
+                );
+                (output, picked)
+            };
+            let click = |pos| {
+                vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: false,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ]
+            };
+            let (output, _) = render(colors, vec![]);
+            let frame = output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Rect(r)
+                        if r.stroke.color == colors.window_border && r.rect.width() > 500.0 =>
+                    {
+                        Some(r.rect)
+                    }
+                    _ => None,
+                })
+                .unwrap();
+            let target = output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Text(t) if t.galley.job.text == MI_MOVE_TO_INBOX => {
+                        Some(t.pos + t.galley.size() / 2.0)
+                    }
+                    _ => None,
+                })
+                .unwrap();
+            for pos in [
+                egui::pos2(frame.left() + 2.0, frame.center().y),
+                egui::pos2(frame.center().x, frame.top() + 2.0),
+                egui::pos2(frame.center().x, frame.bottom() - 2.0),
+                egui::pos2(frame.right() - 2.0, target.y),
+            ] {
+                assert_eq!(
+                    render(colors, click(pos)).1.1,
+                    Some(ThemePreviewRegion::Borders)
+                );
+            }
+            let (closed, _) = render(colors, vec![]);
+            let has_panel = |output: &egui::FullOutput| {
+                output.shapes.iter().any(|shape| {
+                matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "Drop Folder")
+            })
+            };
+            assert!(
+                !has_panel(&closed),
+                "Border clicks must not open the underlying panel"
+            );
+            assert_eq!(
+                render(colors, click(target)).1.1,
+                Some(ThemePreviewRegion::Sidebar)
+            );
+            assert!(
+                has_panel(&render(colors, vec![]).0),
+                "The actual panel button must still work"
+            );
+            let corner = frame.min + Vec2::splat(1.0);
+            assert_eq!(
+                render(colors, click(corner)).1.1,
+                if radius == 0 {
+                    Some(ThemePreviewRegion::Borders)
+                } else {
+                    None
+                }
+            );
+            colors.window_border_width = 0.0;
+            assert_eq!(
+                render(colors, click(egui::pos2(frame.right() - 2.0, target.y)))
+                    .1
+                    .0,
+                Some(ThemePreviewRegion::Sidebar),
+                "An invisible border must not capture content input"
+            );
+        }
+    }
+
+    #[test]
     fn appearance_preview_selection_matches_painted_row_and_square_canvas() {
         let ctx = Context::default();
         let colors = Colors::preset(ThemePreset::Ottrin, true);

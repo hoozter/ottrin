@@ -25421,7 +25421,27 @@ fn truncate_middle(name: &str, max_chars: usize) -> String {
 fn theme_editor_region_at_pos(
     regions: &[(ThemePreviewRegion, Rect)],
     pos: egui::Pos2,
+    colors: Colors,
 ) -> Option<ThemePreviewRegion> {
+    if let Some((_, frame)) = regions
+        .iter()
+        .find(|(region, _)| *region == ThemePreviewRegion::Borders)
+    {
+        let radius = f32::from(colors.app_radius);
+        let contains = |rect: Rect, radius: f32| {
+            let radius = radius.clamp(0.0, rect.width().min(rect.height()) / 2.0);
+            rect.contains(pos) && rect.shrink(radius).distance_sq_to_pos(pos) <= radius * radius
+        };
+        // The frame paints above its contents. Hit-test that same visible
+        // rounded stroke first, excluding the transparent corner cutouts.
+        if !contains(*frame, radius) {
+            return None;
+        }
+        let width = colors.window_border_width;
+        if width > 0.0 && !contains(frame.shrink(width), (radius - width).max(0.0)) {
+            return Some(ThemePreviewRegion::Borders);
+        }
+    }
     for (region, rect) in regions {
         if rect.contains(pos) {
             return Some(*region);
@@ -25870,7 +25890,7 @@ fn theme_editor_large_preview(
         smart_panel_header(&mut panel_ui, &preview, icon, title);
     }
     let mut strip_ui = ui.new_child(UiBuilder::new().max_rect(strip));
-    if let Some(section) = render_smart_panel_strip(
+    let strip_clicked = render_smart_panel_strip(
         &mut strip_ui,
         strip,
         &preview,
@@ -25880,10 +25900,7 @@ fn theme_editor_large_preview(
             activity_pending: false,
             search_tip: "Show or hide Search",
         },
-    ) {
-        ui.ctx()
-            .data_mut(|data| data.insert_temp(preview_state_id, section));
-    }
+    );
 
     p.rect_filled(
         status,
@@ -25951,11 +25968,21 @@ fn theme_editor_large_preview(
         .ctx()
         .pointer_hover_pos()
         .filter(|pos| rect.contains(*pos) && ui.rect_contains_pointer(rect))
-        .and_then(|pos| theme_editor_region_at_pos(&regions, pos));
+        .and_then(|pos| theme_editor_region_at_pos(&regions, pos, preview));
+    if hovered_region != Some(ThemePreviewRegion::Borders)
+        && let Some(section) = strip_clicked
+    {
+        ui.ctx()
+            .data_mut(|data| data.insert_temp(preview_state_id, section));
+    }
     if hovered_region.is_some() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }
-    let clicked_region = if row_clicked.is_some() {
+    let clicked_region = if hovered_region == Some(ThemePreviewRegion::Borders)
+        && ui.ctx().input(|i| i.pointer.primary_clicked())
+    {
+        Some(ThemePreviewRegion::Borders)
+    } else if row_clicked.is_some() {
         row_clicked
     } else if titlebar_clicked {
         Some(ThemePreviewRegion::Titlebar)

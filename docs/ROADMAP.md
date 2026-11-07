@@ -162,8 +162,13 @@ baselines and corrected fixture failures remain in their receipts and Git histor
    checks: border4/colorFF4040 on main/Settings/editor/preview, radius24 versus0,
    exact framebuffer corner extents and Cancel restoration. Owned GUI profiles,
    processes and portal mount are removed. Light/enlarged-scale/Windows/package
-   coverage is not inferred. Painted border-edge hit testing can still resolve to
-   an underlying content region; correct that mapping in the remaining audit.
+   coverage is not inferred. Painted border-edge hit testing now follows the same
+   visible rounded stroke before underlying regions, excludes corner cutouts and
+   lets zero-width borders pass input through. Border clicks do not toggle a panel
+   underneath. `theme-border-selection-current/` passes 31 Linux appearance cases
+   (30 existing and one actual event-routing regression), strict lint and actual
+   Dark GUI edge-versus-icon selection, with independent owned cleanup. These
+   bounded checks do not close the remaining complete interface audit.
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
