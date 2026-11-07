@@ -5196,8 +5196,12 @@ source across upgrade and removal, then removes it on purge. The embedded
 APT key stays scoped to that source throughout. Native lifecycle with the
 full packages and R2 publication remain open.
 
-Extend the draft release flow with a stable-release publication gate and an
-explicit retry path. Publish immutable package and index objects before
+The release workflow can stage signed repository snapshots after a stable
+release is published, with an explicit retry for the current release. A
+disposable test accepts exact signed assets and rejects draft, prerelease,
+superseded and tampered inputs. Staging is opt-in and keeps the snapshots
+in Actions artifacts. R2 publication remains open. Publish immutable
+package and index objects before
 switching metadata, verify anonymous HTTPS reads, and test cache consistency
 and downgrade refusal. Keep the primary signing key out of Actions and test
 backup restoration and rotation. Production requires verified domain access,
