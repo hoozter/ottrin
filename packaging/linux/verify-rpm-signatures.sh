@@ -20,9 +20,8 @@ fi
 mkdir "$database/rpmdb"
 rpmkeys --dbpath "$database/rpmdb" --import "$key"
 for package in "$@"; do
-  verification="$(LC_ALL=C rpmkeys --dbpath "$database/rpmdb" --checksig --verbose -- "$package")"
-  if ! grep -Eq 'Signature, key ID [[:xdigit:]]+: OK$' <<< "$verification"; then
-    printf 'RPM has no valid signature from the approved key: %s\n' "$package" >&2
-    exit 2
-  fi
+  # Require both digests and a trusted signature through RPM's exit
+  # status. The human-readable verbose format differs between RPM releases.
+  rpmkeys --dbpath "$database/rpmdb" --define '_pkgverify_level all' \
+    --define '_pkgverify_flags 0x0' --checksig -- "$package"
 done

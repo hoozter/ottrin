@@ -5216,8 +5216,15 @@ upgrade to 0.1.1 while preserving a local edit. Removal retained a usable
 source and purge removed both source and pin. The fixture DEB hashes are
 `bd6f187604d2343e09a0a4529a587f2b6d73f62299f3286470e9d8261de5783b`
 and `e4f4c6924424c699b6a726b110dddc9afa234c9387cbfce0f894ee38b8c0d6ed`.
-The temporary guest, repository, packages and keys were retired. Fedora
-DNF acceptance and public hosting remain open.
+The temporary guest, repository, packages and keys were retired.
+
+A fresh Fedora 44 guest reached repository assembly with both signed RPMs
+and exposed a verifier dependency on the older RPM diagnostic format.
+The verifier now requires RPM's digest and signature policy via the exit
+status. RPM 4.18 accepts an approved signed package and rejects its
+unsigned and payload-tampered variants. Repeat the Fedora 44 guest run
+with the corrected verifier to reach the DNF lifecycle checks. Public
+hosting remains open.
 
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
