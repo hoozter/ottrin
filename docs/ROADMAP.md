@@ -5207,6 +5207,14 @@ and immutable collisions. The public hostname, real R2 publication, native
 end-to-end updates, and signing-key recovery remain to be verified. See
 [Linux repository setup and recovery](LINUX_REPOSITORIES.md).
 
+The full Ubuntu 24.04.5 update trial built both DEBs using the release
+payload and verified the signed repository. The disposable user-namespace
+root could not configure Ubuntu's system dependencies, including D-Bus and
+fontconfig, so it did not reach the Ottrin installation and upgrade
+assertions. Use a booted Ubuntu guest with normal UID/GID and service
+semantics for the next full APT run. Use the retained Fedora base for a
+disposable DNF guest.
+
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
 - **Portable LibreOffice fidelity pack:** start only after installed-provider acceptance shows a concrete need and provenance, update ownership, licence and removal responsibilities are acceptable.
