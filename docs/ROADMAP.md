@@ -454,7 +454,18 @@ Current source, test, package and owner/external scopes stay separate.
    Windows coverage remains open.
    Source `e91dcf50` also gives the Replace confirmation the shared window
    geometry. Dark and Light rendering, 544 isolated UI tests and Linux and
-   Windows-target Clippy passed. It awaits its own package build.
+   Windows-target Clippy passed. The staged `7aabcc56` Linux cohort passes
+   four-format content checks, mounted Dark and Light Save replacement with
+   exact native paths and unchanged files, and atomic AppImage replacement.
+   Promotion awaits [run 42409736660](https://github.com/hoozter/ottrin/actions/runs/42409736660),
+   whose source differs only in this roadmap and the prior Linux receipt.
+   The Windows `7aabcc56` portable and NSIS payloads match across all 59 files.
+   The exact NSIS passes ordinary-user fresh install and uninstall, with
+   native Dark and Light confirmation frames, exact Unicode Save paths and
+   unchanged files and preferences during selection. The guest and its media
+   were removed. Evidence: `windows-picker-confirmation-delivery-current/NATIVE_PICKER_ACCEPTANCE.json`.
+   Windows upgrade, development MSIX and recovery acceptance retain their
+   separate scopes before candidate replacement.
 
    Linux folder setup `b9543fe9` keeps interrupted launcher replacements
    repairable while refusing edits outside the recorded versions. Eight
