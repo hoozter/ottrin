@@ -33,7 +33,12 @@ preview with a newly downloaded build of that same version, use
 `sudo apt-get install --reinstall ./ottrin_0.1.0_amd64.deb` or
 `sudo dnf reinstall ./ottrin-0.1.0-1.x86_64.rpm`.
 
-Current packages do not install an Ottrin APT/DNF repository. Uploading a new GitHub release alone does not update an installed copy; download and install the newer package manually. A signed update repository can be added later, but is not configured by these builds.
+The current local preview packages update by manual download. If you install
+an official DEB or RPM built with Ottrin's signed update source, it registers
+that source automatically. Future stable versions appear with your regular
+system updates. Fedora may ask you to approve the signing key for repository
+metadata and again for packages. APT reads the key included in the Ottrin
+source. AppImage and portable builds update by manual download.
 
 Removing the DEB or RPM stops native index daemons and removes Ottrin’s native user and Administrator service registrations. Reinstalling refreshes running native services; stopped services stay stopped. Independent portable/AppImage indexers, preferences, saved indexes and your files are retained. If an offline user has a customized service override whose ownership cannot be established, removal stops with an error before changing services. Resolve that override under the owning account before retrying removal. See [ROADMAP.md](ROADMAP.md) for the tested scope and remaining native installation gates.
 
