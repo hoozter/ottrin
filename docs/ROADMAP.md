@@ -90,7 +90,11 @@ The sample now opens the production More actions menu. Its rows select button
 styling without file or clipboard operations. A rendered regression compares
 the live and sample rows, then verifies the live Copy Path dispatch and its
 absence in the sample. All 540 active UI tests and Linux/Windows-target Clippy
-passed. This checkpoint joins Image/PDF for the next mounted package review.
+passed. Source-built Dark and Light review confirms the live and sample menu
+rows, shared Button text styling, sample Trash action isolation and Cancel
+restoration. Ten reviewed frames and teardown evidence are in
+`inspector-menu-current/NATIVE_REVIEW.json`. This checkpoint joins Image/PDF
+for the next mounted package review.
 Protect active CI runs for viable delivery candidates from superseding pushes.
 A rejected package revision can be superseded by the corrected candidate.
 `0298384d` was pushed on that basis after mounted review rejected `23635f30`.
