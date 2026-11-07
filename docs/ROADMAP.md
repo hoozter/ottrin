@@ -6,8 +6,8 @@ Updated 2026-11-07. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use verified source `ac935037`. All four hosted
-jobs passed in [run 42346402977](https://github.com/hoozter/ottrin/actions/runs/42346402977).
+The stable local Linux packages use verified source `0298384d`. All four hosted
+jobs passed in [run 42367417279](https://github.com/hoozter/ottrin/actions/runs/42367417279).
 Windows retains its separately accepted source `8e805d31`.
 
 Linux: all four formats pass contents, runtime closure, provenance and namespace
@@ -25,7 +25,7 @@ Guarded promotion replaced all four stable packages and restarted the managed
 daemon to Ready. Its startup setting, preferences hash and database identity
 were preserved. The consumed stage, superseded packages and 20 transition
 captures were removed. Current authority: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-Promotion evidence: `.hermes/evidence/inspector-samples-delivery-current/PROMOTION.json`.
+Promotion evidence: `.hermes/evidence/statusbar-geometry-delivery-current/PROMOTION.json`.
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
@@ -54,8 +54,8 @@ VMs/disks/desktops/profiles/transports are removed. Current authority:
 
 ### Current ordered work
 
-Linux source `ac935037` is delivered at the stable local paths. The newer
-status bar geometry checkpoint exposes shared window and button corners from
+Linux source `0298384d` is delivered at the stable local paths. The
+status bar geometry update exposes shared window and button corners from
 the status bar selection. Footer utility buttons paint their themed backgrounds
 on hover and focus. Rendered Dark/Light tests verify the live and sample hover
 shape at three text scales, and component reset preserves shared values. All
@@ -67,8 +67,8 @@ All 537 active UI tests and Linux/Windows-target UI Clippy passed again.
 The corrected `0298384d` cohort passed content checks for all four formats
 and mounted Dark/Light footer, Services and private daemon verification.
 Native captures show unclipped square and rounded hover fills, shared geometry
-preserved by component reset, and Cancel restoration. It is staged pending
-exact-source CI and guarded promotion. A separate read-only three-minute sample
+preserved by component reset, and Cancel restoration. Guarded promotion removed
+the consumed stage and restarted the managed index to Ready. A separate read-only three-minute sample
 of the installed `ac935037` index stayed Ready with 248,585 indexed items and
 an unchanged snapshot. CPU averaged 0.18% of one core and peaked at 0.30% per
 ten-second interval. The sample covers settled Ready behavior on this machine.
@@ -104,10 +104,8 @@ workflows covered live and sample Image/PDF controls, More menu frame styling,
 sample action isolation, Cancel restoration, and Services recovery. Forty
 Dark/Light captures and runtime teardown are recorded in
 `.hermes/evidence/inspector-visual-delivery-current/`. The candidate awaits
-its own hosted verification and promotion. Keep the preceding footer run
-[42367417279](https://github.com/hoozter/ottrin/actions/runs/42367417279)
-intact while its Windows verification runs. No additional Linux rebuild is
-required for either staged revision while its evidence and bytes match.
+its own hosted verification and promotion. No additional Linux rebuild is
+required while its evidence and staged bytes match.
 Tag builds stage a GitHub release draft after checksum, content and Linux
 signature verification. Native acceptance uses those exact assets before
 public publication. The MSI rollback gate remains open.
