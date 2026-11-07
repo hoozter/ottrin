@@ -5203,7 +5203,7 @@ These outcomes remain available, but they start only when their trigger is met. 
 
 The requested distribution milestone follows the current Services delivery.
 Official DEB and RPM installs should register an update source and receive
-stable releases through APT and DNF. Plan for `updates.ottrin.com` on the
+stable releases through APT and DNF. Plan for `update.ottrin.com` on the
 existing Cloudflare R2 bucket, with independent APT and RPM prefixes. The
 website can use the apex separately.
 

@@ -1,7 +1,7 @@
 # Linux repository setup and recovery
 
 GitHub Releases is the manual download location. The planned update origin is
-`https://updates.ottrin.com` on the `ottrin` Cloudflare R2 bucket. APT uses
+`https://update.ottrin.com` on the `ottrin` Cloudflare R2 bucket. APT uses
 `/apt`, with suite `stable` and component `main`. DNF uses `/rpm`.
 The signed native installers can register these sources for subsequent
 updates through the system package manager.
