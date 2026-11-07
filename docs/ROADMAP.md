@@ -5161,6 +5161,29 @@ Approved on 2026-10-11 as a must-have, not optional research. Start after the ea
 
 ## Triggered work, not background work
 
+### Linux package-manager updates
+
+The requested distribution milestone follows the current Services delivery.
+Official DEB and RPM installs should register an update source and receive
+stable releases through APT and DNF. Plan for `updates.ottrin.com` on the
+existing Cloudflare R2 bucket, with independent APT and RPM prefixes. The
+website can use the apex separately.
+
+Verify in isolated repositories before enabling production publishing. APT
+uses a scoped package-managed keyring, signed archive metadata, and preferences
+that exclude unrelated packages. RPM uses package signatures, signed repository
+metadata, and an Ottrin-only package allowlist. Test first-install trust prompts,
+disabled sources, upgrades, removal, signature rejection, and interrupted
+publishing on Debian/Ubuntu and Fedora. AppImage and portable builds keep their
+existing behavior.
+
+Extend the draft release flow with a stable-release publication gate and an
+explicit retry path. Publish immutable package and index objects before
+switching metadata, verify anonymous HTTPS reads, and test cache consistency
+and downgrade refusal. Keep the primary signing key out of Actions and test
+backup restoration and rotation. Production requires verified domain access,
+bucket-scoped credentials, signing authority, and a published stable release.
+
 These outcomes remain available, but they start only when their trigger is met. Workers must not choose them merely because another lane is waiting for physical QA.
 
 - **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
