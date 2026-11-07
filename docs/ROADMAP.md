@@ -257,13 +257,21 @@ cohort were removed. Current package evidence:
    `inspector-delivery-current/THEME_UI_ACCEPTANCE.json`; source continuity,
    runtime and cleanup are sealed in the same evidence root. All owned desktops,
    buses, processes, profiles, mounts and content extraction are removed. Guarded
-   publication preflight passed for that exact candidate. It is now superseded
-   for publication by the combined grouping/scroll follow-ups below. Retain its
-   verified115,961,332 bytes during replacement assembly; retire it only after
-   the replacement's acceptance. Preserve the live preceding main run, then push
-   the complete new source batch once. Do not dispatch redundant source21 CI.
-   Current combined build/verification state belongs to
-   `appearance-delivery-current/`; stable Linux43 remains usable.
+   publication preflight passed for that exact candidate. It was superseded
+   by combined source `c3fb224e`, pushed once after the preceding CI completed.
+   The replacement now passes all four-format content/closure/provenance checks,
+   ten real helper read-only checks, fresh daemon1000-file watcher and30-second
+   no-client/no-GUI idle (0.067% one core), stop/error/recovery and lifetime checks.
+   Thirty-eight Inspector/editor and six Services originals were directly reviewed
+   in both themes, covering shared geometry/reset ownership, complete descriptions
+   after preview-title/dropdown selection, divider colors, Cancel and readonly Space.
+   Evidence: `appearance-delivery-current/` source/content/native/theme acceptance.
+   All owned profiles/desktops/processes/mounts/extractions are removed; the
+   verified superseded115,961,332-byte source21 candidate is retired. The current
+   115,966,860-byte candidate remains at the canonical staging path for exact-source
+   [run42342453872](https://github.com/hoozter/ottrin/actions/runs/42342453872)
+   and guarded publication. Linux verification and both performance jobs pass;
+   Windows verification is still running. Stable Linux43 remains usable.
    The next source-only follow-up moves Inspector Shared window geometry below
    Reset component and explicitly states its shared scope. The actual Dark/Light
    reset regression verifies component reset restores only the panel and preserves

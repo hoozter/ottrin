@@ -16,7 +16,7 @@
     {
       "id": "U02",
       "requirement": "Indexer must be quiet while idle, use its own process name, survive main-window closure when enabled, and start reliably without a first-launch readiness error.",
-      "current_scope": "Delivered DAC cohort: actual mounted AppImage daemon watcher/query/restart/two-shutdown acceptance; private1000-file30-second idle sample0.0333% of one core. Native DEB normal GUI-close and two real reboot enabled/disabled startup checks plus four aa-to-DAC replacement cases pass. Managed personal daemon is Ready on exact DAC bytes after guarded publication, with preferences/startup/database identity preserved. Private fixture performance is not personal/large-corpus or full resource acceptance. Settled initial item-count observation remains open. Older Windows and personal-index receipts remain bound to their original artifacts and workloads.",
+      "current_scope": "Accepted Linux source43 retains exact current daemon bytes; fresh private1000-file/30-second watcher/idle and restart/GUI-close checks pass. Two bounded personal60-second samples show process name ottrin-indexd, roughly30-31MiB RSS and0.67/0.98% of one core; the second is Ready while applying47 snapshot revisions/35 additional records. This is active filesystem work and does not establish sustained idle/personal resource acceptance. Windows daemon/native lifetime receipts keep their original scopes.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/LINUX_DAEMON_RUNTIME.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
@@ -26,7 +26,10 @@
         ".hermes/evidence/release-audit-current/cohort/FULL_WINDOWS_PAYLOAD_COMPARISON.json",
         ".hermes/evidence/release-audit-current/cohort/FULL_LINUX_PAYLOAD_COMPARISON.json",
         ".hermes/evidence/release-audit-current/PERSONAL_INDEX_AFTER_REFRESH.json",
-        ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json"
+        ".hermes/evidence/recovery-transport-delivery-current/PROMOTION.json",
+        ".hermes/evidence/theme-layout-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
+        ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SAMPLE.json",
+        ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SETTLED.json"
       ]
     },
     {
@@ -42,41 +45,58 @@
     {
       "id": "U04",
       "requirement": "Services show clear ready/running status dots and appropriate install, repair/reinstall, start, stop and uninstall actions for actual state.",
-      "current_scope": "Installed-source action matrix has rendered regression coverage and DAC DEB native sign-in checkbox/lifetime evidence. Runtime status and startup choice remain separate controls, but automatic-startup wording still mixes running/disabled concepts. Do not call whole Services presentation finished.",
+      "current_scope": "Current accepted Linux43 mounted Dark/Light Ready/Stopped/error/Ready checks and six original reviews pass; qualified neutral action history is distinct from current health and Automatic startup at sign-in is distinct from runtime. Full error disclosure and recovery-control geometry pass. Current Windows25 has its separately scoped installed Services and sign-in/removal preservation evidence. Whole interface and personal authentication acceptance remain separate.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/CAPTURE_REVIEW.json",
-        ".hermes/evidence/recovery-transport-delivery-current/SOURCE_CHECKS.json"
+        ".hermes/evidence/recovery-transport-delivery-current/SOURCE_CHECKS.json",
+        ".hermes/evidence/theme-layout-delivery-current/NATIVE_UI_ACCEPTANCE.json",
+        ".hermes/evidence/packaged-shell-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json"
       ]
     },
     {
       "id": "U05",
       "requirement": "Appearance settings have logical framed groups, meaningful headings, compact controls and consistent text/icon alignment.",
-      "current_scope": "Historical appearance receipts exist; concentrated source/payload and rendered scope review pending.",
-      "evidence": []
+      "current_scope": "Framed property groups, shared control sizes and production presenters have bounded source/native receipts. Latest source grouping/reset ownership and component-selection scroll fixes pass533 active UI tests plus strict Linux/Windows cross-target lint. Actual Dark/Light software X11 scale1 with theme typography1.35 checks show complete new component descriptions through tabs/title/dropdown and unchanged field position during real edits. Full interface/menu inventory and broader platform/scale acceptance remain open; the new combined Linux package is undergoing verification.",
+      "evidence": [
+        ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
+        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json"
+      ]
     },
     {
       "id": "U06",
       "requirement": "Theme editor selects the exact production element and only its intended themeable roles, including the tab bar.",
-      "current_scope": "Historical controls acceptance exists; ownership and full control inventory still require concentrated review.",
-      "evidence": []
+      "current_scope": "Production navigation/tabs/Smart-panel/window-control/Miller presenters retain exact historical scopes. Real shared List/Grid preview layouts are delivered in Linux43. Inspector source now reuses production action row, titlebar, read-only renderer and text sizing; actual source21 package checks pass but the superseding combined batch is still under verification. Shared roles and unsupported specialized preview states still require full inventory; no full-property closure inferred.",
+      "evidence": [
+        ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json"
+      ]
     },
     {
       "id": "U07",
       "requirement": "Expose every supported theme property and explain shared defaults; radius/border/color changes must reach every intended window/control.",
-      "current_scope": "Historical appearance verification is scoped; all controls and cross-window behavior require explicit evidence.",
-      "evidence": []
+      "current_scope": "Latest source explicitly separates Inspector component panel reset from shared window geometry/colors, exposes actual border/radius roles and restores individual geometry independently. Source regressions and actual Dark/Light source windows verify ownership, controls and shared frame/button/foreground/divider roles; source21 mounted package retains its earlier exact scope. Full property/preset/window/platform coverage remains open; current combined packages are not yet published.",
+      "evidence": [
+        ".hermes/evidence/inspector-theme-roles-current/ACCEPTANCE.json",
+        ".hermes/evidence/inspector-editor-current/ACCEPTANCE.json",
+        ".hermes/evidence/preview-divider-current/ACCEPTANCE.json",
+        ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json"
+      ]
     },
     {
       "id": "U08",
       "requirement": "Preview selection outlines match actual geometry; production Smart-panel controls and shared themed chrome replace invented preview controls.",
-      "current_scope": "Production navigation/menu/view/breadcrumb/tab/window-control/Miller presenters retain their documented exact scopes. Status, List/Grid representation and Inspector role ownership remain open in the theme editor. Native7fefe browser Grid captures show distinct filenames but untidy extension wrapping; a rendered regression reproduces that finding, and a separator-wrapping source fix passes503 UI tests and strict Linux/Windows cross-target lint. Refined native/package acceptance remains open.",
+      "current_scope": "Linux43 delivers real shared Column/List/Grid previews with square row selection and appropriately rounded Grid controls, and typography-aware Grid width. Production Smart-panel, navigation/tabs/window-control and Miller presenters retain their scoped checks. Inspector source21 mounted checks prove real controls/chrome/read-only rendering and shared roles; later source grouping/scroll fixes have native source evidence. Specialized Inspector image/Office/PDF representations and whole-property/platform acceptance remain open. Main status-bar presenter sharing also remains open: the enlarged file-manager preview still paints sample footer text and a generic Button instead of the actual service/view controls.",
       "evidence": [
         ".hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json",
         ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_CAPTURE_REVIEW.json",
         "docs/ROADMAP.md",
         ".hermes/evidence/grid-label-layout-current/NATIVE_REVIEW.json",
-        ".hermes/evidence/grid-label-layout-current/WRAP_SOURCE_CHECKS.json"
+        ".hermes/evidence/grid-label-layout-current/WRAP_SOURCE_CHECKS.json",
+        ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json"
       ]
     },
     {
@@ -156,5 +176,7 @@
     "runtime_candidate": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
     "grid_source": "7fefe191c65a3313d38025126a8530f59d37a174",
     "note": "Original requirements preserved; updated evidence scopes do not mean all requirements are complete."
-  }
+  },
+  "reviewed_source_revision": "c3fb224e318473c847881dacf8390f1669b81cf5",
+  "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958"
 }
