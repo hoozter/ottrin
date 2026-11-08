@@ -163,6 +163,18 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         ):
             self.assertTrue(qa.entry_selected("notes.txt"))
 
+    def test_pressed_toggle_row_reports_selection_but_pressed_push_button_does_not(self):
+        node = MagicMock()
+        node.getState.return_value.getStates.return_value = [qa.pyatspi.STATE_PRESSED]
+        with (
+            patch.object(qa, "visible_entry", return_value=node),
+            patch.object(qa, "visible_a11y_nodes", return_value=[]),
+        ):
+            node.getRoleName.return_value = "toggle button"
+            self.assertTrue(qa.entry_selected("notes.txt"))
+            node.getRoleName.return_value = "push button"
+            self.assertFalse(qa.entry_selected("notes.txt"))
+
     def test_pointer_selection_never_uses_accessibility_activation_or_keyboard_fallback(self):
         commands = []
         node = MagicMock()

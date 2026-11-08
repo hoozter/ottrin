@@ -107,7 +107,11 @@ def entry_selected(name: str) -> bool:
     node = visible_entry(name)
     if node is None:
         return False
-    if pyatspi.STATE_SELECTED in node.getState().getStates():
+    states = node.getState().getStates()
+    if pyatspi.STATE_SELECTED in states:
+        return True
+    # AccessKit maps a selected toggle button to AT-SPI's pressed state.
+    if node.getRoleName() == "toggle button" and pyatspi.STATE_PRESSED in states:
         return True
     # KWin/Xwayland occasionally exposes the selected row without
     # STATE_SELECTED, while Ottrin's visible status still identifies it.  That

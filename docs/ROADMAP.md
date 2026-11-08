@@ -503,6 +503,12 @@ Current source, test, package and owner/external scopes stay separate.
    interaction and the explicitly selected portal. All profiles and
    mounts were removed. Evidence: `fractional-border-delivery-current/`
    daemon runtime and GTK portal receipts.
+   The same mounted GTK Open route also passes AT-SPI-only selection and
+   Open activation in Dark List and Light Grid. The earlier probe missed
+   the selected state because the adapter reports a selected toggle as
+   pressed. The shared QA reader now recognizes that state for toggle rows
+   and still rejects a pressed push button. All 34 harness tests pass.
+   Evidence: `fractional-border-delivery-current/GTK_ACCESSIBILITY_ACCEPTANCE.json`.
    The next source change puts the whole-frame selection outline outside the
    actual border in the Inspector and File manager samples. Source-rendered
    checks cover Theme defaults, Quick Inspector and Borders at scales 1 and
