@@ -509,6 +509,11 @@ Current source, test, package and owner/external scopes stay separate.
    pressed. The shared QA reader now recognizes that state for toggle rows
    and still rejects a pressed push button. All 34 harness tests pass.
    Evidence: `fractional-border-delivery-current/GTK_ACCESSIBILITY_ACCEPTANCE.json`.
+   GTK 3 FileChooserNative Save also passes through the selected Ottrin
+   portal. Dark confirms an existing target and preserves its bytes. Light
+   returns a new target path without creating a file. The caller receives
+   the exact native paths. All private profiles and mounts were retired.
+   Evidence: `fractional-border-delivery-current/GTK_SAVE_ACCEPTANCE.json`.
    The next source change puts the whole-frame selection outline outside the
    actual border in the Inspector and File manager samples. Source-rendered
    checks cover Theme defaults, Quick Inspector and Borders at scales 1 and
