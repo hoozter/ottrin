@@ -1,0 +1,46 @@
+{
+  "status": "pass",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "scope": "Exact mounted AppImage in private X11, Dark and Light, shared Quick Inspector panel reset, independent geometry restore and Cancel. Remaining editor groups and native Windows are separate.",
+  "variants": {
+    "dark": {
+      "named_panel_reset_removed_custom_panel_fill": true,
+      "title_color_pixels_before_and_after": [
+        66929,
+        66929
+      ],
+      "geometry_after_panel_reset": [
+        21,
+        3.5
+      ],
+      "geometry_after_independent_restore": [
+        6,
+        1.0
+      ],
+      "cancel_removed_remaining_draft_color": true,
+      "saved_preferences_preserved": true,
+      "profile_and_mounts_removed": true,
+      "retained_capture_sha256": "e341777b9023655e1c92e2c38a39668c5a1692b1abae2b8161c2597ee7dff036"
+    },
+    "light": {
+      "named_panel_reset_removed_custom_panel_fill": true,
+      "title_color_pixels_before_and_after": [
+        66956,
+        66956
+      ],
+      "geometry_after_panel_reset": [
+        21,
+        3.5
+      ],
+      "geometry_after_independent_restore": [
+        5,
+        1.0
+      ],
+      "cancel_removed_remaining_draft_color": true,
+      "saved_preferences_preserved": true,
+      "profile_and_mounts_removed": true,
+      "retained_capture_sha256": "a891cec5b2304f13aea2f710c4f0a86d7d417b24b6c34140ccab147d264ac50c"
+    }
+  }
+}
