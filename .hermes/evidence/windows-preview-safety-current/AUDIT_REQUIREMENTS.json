@@ -197,8 +197,11 @@
       "id": 22,
       "section": "Linux",
       "requirement": "Run one daily-driver workflow covering navigation, New File/New Folder, file operations, cross-volume Copy, Tandem View, multi-select, search, Quick Inspector, context menus and status messages.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "current local desktop smoke passed; full daily-driver workflow open",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/LINUX_45A89D62_DESKTOP_WORKFLOWS.json"
+      ],
+      "latest_scope": "Both exact stable Linux portable formats pass 27 checks, including search, Inspector, Tandem View, selection, Copy, rename and delete. The single complete daily-driver workflow and physical cross-volume cases are not established by this receipt."
     },
     {
       "id": 23,
@@ -389,8 +392,12 @@
       "id": 44,
       "section": "Release candidate gate",
       "requirement": "Linux AppImage and portable tarball launch and pass the Linux workflow.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "current local portable and AppImage desktop workflows verified; final release pending",
+      "evidence": [
+        ".hermes/evidence/release-audit-current/LINUX_45A89D62_DESKTOP_WORKFLOWS.json",
+        "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json"
+      ],
+      "latest_scope": "Exact stable 45a89d62 AppImage and portable archive both pass the 27-check isolated desktop workflow. Test coverage is enumerated in the receipt. Final public artifacts, physical desktop, and separately required workflows remain open."
     },
     {
       "id": 45,
