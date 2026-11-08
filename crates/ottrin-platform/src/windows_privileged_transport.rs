@@ -1292,4 +1292,66 @@ mod tests {
             _ => panic!("Unrecognized native acceptance expectation"),
         }
     }
+
+    #[test]
+    #[ignore = "requires an owned ordinary desktop, a protected destination and real UAC"]
+    fn windows_helper_pipe_native_uac_copy() {
+        use ottrin_core::{ConflictAction, FileCommand};
+
+        let helper = std::env::var("OTTRIN_QA_PRIV_HELPER").unwrap();
+        let destination = PathBuf::from(std::env::var_os("OTTRIN_QA_ADMIN_DIRECTORY").unwrap());
+        let source = PathBuf::from(std::env::var_os("OTTRIN_QA_COPY_SOURCE").unwrap());
+        let original = std::fs::read(&source).unwrap();
+        assert!(!original.is_empty());
+        assert_eq!(
+            std::fs::read_dir(&destination).unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        let request = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+            command: PrivilegedCommand::File(FileCommand::Copy {
+                sources: vec![source.clone()],
+                destination,
+                conflict: ConflictAction::Skip,
+            }),
+            context: PrivilegedContext {
+                reason: Some("Copy the owned native UAC fixture".into()),
+                cwd: None,
+            },
+        };
+        let mut progress = Vec::new();
+        // Exercise the production helper launch and authenticated stream while
+        // the public Copy capability remains gated on native acceptance.
+        let response = execute(&helper, false, &request, &mut |bytes| {
+            progress.push(bytes);
+            Ok(())
+        })
+        .unwrap();
+        match std::env::var("OTTRIN_QA_UAC_EXPECT").unwrap().as_str() {
+            "cancel" => {
+                assert_eq!(response.status, PrivilegedStatus::Denied);
+                assert!(response.message.as_deref().unwrap().contains("cancelled"));
+                assert!(response.payload.is_none());
+                assert_eq!(progress, [0]);
+            }
+            "approve" => {
+                assert_eq!(
+                    response.status,
+                    PrivilegedStatus::Success,
+                    "{:?}",
+                    response.message
+                );
+                let Some(PrivilegedPayload::Copy(receipt)) = response.payload else {
+                    panic!("Missing elevated Copy receipt");
+                };
+                assert_eq!(receipt.completed_sources, 1);
+                assert_eq!(receipt.transactions.len(), 1);
+                assert_eq!(receipt.paths.len(), 1);
+                assert_eq!(receipt.paths[0].1.file_name(), source.file_name());
+                assert!(progress.iter().any(|&bytes| bytes >= original.len() as u64));
+            }
+            _ => panic!("Unrecognized native acceptance expectation"),
+        }
+        assert_eq!(std::fs::read(source).unwrap(), original);
+    }
 }
