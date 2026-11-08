@@ -26,6 +26,10 @@ ShowItems, and ShowItemProperties with exact native path bytes. Repair
 reactivated the backend while preserving the open Properties window.
 Disable removed the private registration. See
 [FileManager1 acceptance](../.hermes/evidence/current-filemanager/ACCEPTANCE.json).
+A separate private GIO session resolved Ottrin as the registered directory
+handler and launched the mounted AppImage with the original path bytes.
+Disabling restored the previous handler and preserved an unrelated MIME edit.
+See [GIO acceptance](../.hermes/evidence/current-gio-folder/ACCEPTANCE.json).
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 

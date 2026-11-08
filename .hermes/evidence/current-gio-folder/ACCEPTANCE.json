@@ -1,0 +1,23 @@
+{
+  "theme": "Dark",
+  "scope": "Actual GIO default-handler resolution, native URI-to-argv dispatch and reversible private registration in owned X11",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "binary_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "status": "pass",
+  "actual_default_dispatch": true,
+  "native_folder_argv_preserved": true,
+  "original_file_preserved": true,
+  "previous_handler_restored": true,
+  "unrelated_pdf_change_preserved": true,
+  "foreign_desktop_entry_preserved": true,
+  "managed_assets_removed": true,
+  "main_closed_via_visible_button": true,
+  "enabled_ready": true,
+  "disabled_ready": false,
+  "cleanup": {
+    "profile_removed": true,
+    "owned_mounts_unmounted": 1,
+    "remaining_mounts": 0
+  },
+  "fixture_source": ".hermes/evidence/fractional-border-delivery-current/verify-folder.py"
+}
