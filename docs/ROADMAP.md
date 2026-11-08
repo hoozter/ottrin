@@ -617,7 +617,9 @@ Current source, test, package and owner/external scopes stay separate.
    For the next native diagnosis, compare ordinary and transacted query-only
    opens of the same existing HKCU keys under the same user, inside and
    outside package identity. Record the key, access flags, and return code
-   independently of Ottrin's status logic. Microsoft defines 6801 as
+   independently of Ottrin's status logic. The cross-compiled read-only
+   [diagnostic probe](../.hermes/evidence/msix-registry-diagnostic/README.md)
+   is ready for this native comparison. Microsoft defines 6801 as
    `ERROR_RM_NOT_ACTIVE`. The return code identifies the failed resource
    manager boundary and leaves the cause open.
    [Windows error codes](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--6000-8199)
