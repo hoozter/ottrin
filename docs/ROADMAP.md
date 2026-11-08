@@ -614,6 +614,22 @@ Current source, test, package and owner/external scopes stay separate.
    passed local promotion preflight and exact-source CI, and was promoted.
    Implementing default-folder opening inside MSIX remains open.
 
+   For the next native diagnosis, compare ordinary and transacted query-only
+   opens of the same existing HKCU keys under the same user, inside and
+   outside package identity. Record the key, access flags, and return code
+   independently of Ottrin's status logic. Microsoft defines 6801 as
+   `ERROR_RM_NOT_ACTIVE`. The return code identifies the failed resource
+   manager boundary and leaves the cause open.
+   [Windows error codes](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--6000-8199)
+
+   Windows documents selective HKCU exclusions under the restricted
+   `unvirtualizedResources` capability. The exclusions expose writes outside
+   the package and let those writes survive uninstall. The documentation
+   does not establish that an exclusion restores transacted registry access.
+   Keep the delivered capability boundary until native evidence supports a
+   transaction-preserving approach with tested restoration and uninstall.
+   [MSIX flexible virtualization](https://learn.microsoft.com/en-us/windows/msix/desktop/flexible-virtualization)
+
    Picker Select All now selects only files for an Open request and only folders
    for a folder request. Enter submits a multi-folder selection. Range and
    toggle selection use the same eligibility rule. Folders remain available

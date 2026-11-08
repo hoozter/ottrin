@@ -5,12 +5,13 @@
     {
       "id": "U01",
       "requirement": "Preserve saved view mode across newly built/updated packages; startup must show the actual Home contents.",
-      "current_scope": "Exact Linux AppImage 21f18bbe opened in the saved Column, List and Grid modes on first launch in private profiles. Atomic replacement also preserved the open window and a fresh launch used the replacement image. Earlier Windows startup and MSIX upgrade receipts keep their recorded artifact scopes. The current Linux package 45a89d62 was not rerun through all three modes.",
+      "current_scope": "Exact Linux AppImage 21f18bbe opened in the saved Column, List and Grid modes on first launch in private profiles. Atomic replacement also preserved the open window and a fresh launch used the replacement image. Earlier Windows startup and MSIX upgrade receipts keep their recorded artifact scopes. The current Linux package e2171c3b opened directly in saved Column and Grid modes in separate private profiles. Earlier full-mode and replacement evidence retains its own scope.",
       "evidence": [
         ".hermes/evidence/release-audit-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
         ".hermes/evidence/release-audit-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/WINDOWS_DELIVERY.json",
+        ".hermes/evidence/current-saved-view/ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/SAVED_VIEW_STARTUP_ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/ATOMIC_APPIMAGE_QA.json"
       ]
