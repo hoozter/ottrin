@@ -171,6 +171,29 @@ guest resources were removed. Current authority:
 
 ### Current ordered work
 
+1. **Windows administrator Copy recovery.** Run the nine fresh-profile
+   fault cases using the rebuilt native fixture, starting with the truncated
+   anchor write. Follow with the installed administrator Copy workflow.
+   The guest admission limit and last measured shortfall are in the
+   [waiting list](#ownerexternal-waiting-list).
+2. **Deliver the Windows Save fix.** Run the staged `7992ad1e` NSIS Save
+   actor in Dark and Light, finish installer lifecycle checks, and build and
+   validate the development MSIX from the same portable payload. Keep the
+   accepted `67d3cbe1` Windows cohort available until the replacement passes.
+3. **Close Windows desktop integration and theme acceptance.** Run the
+   prepared read-only MSIX registry comparison under matching identities.
+   Verify supported folder actions, picker behavior, and remaining theme
+   controls in the installed candidate. The current MSIX exposes Explorer
+   commands and reports the default-folder limitation.
+4. **Finish release-candidate acceptance.** Retest changed surfaces and their
+   normal entry points against the packages being delivered. Keep public
+   signing, Store submission, physical-device tests and personal acceptance
+   in the waiting list with their own evidence. Linux is already delivered
+   for the current Vivaldi and index checkpoint.
+
+The records below identify the exact source and package coverage behind
+this queue.
+
 The Services source update replaces the footer magnifier with a labeled
 shortcut, separates required setup from optional maintenance, and uses the
 shared Settings typography. Open and Save dialogs show a pending or repair
