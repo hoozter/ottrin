@@ -208,7 +208,18 @@ and the held MSI were preserved. See
    open. Administrator Copy remains disabled in the delivered Windows
    app. Use a private candidate with the shared capability enabled to
    verify the installed UI and interruption paths before enabling it in a
-   deliverable. The disposable guests and temporary resources were removed.
+   deliverable. Private revision `94549b87` changes the shared capability
+   gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
+   across all 59 payload files. The installer ran as a standard user, and
+   the bundled helper advertised Copy recovery. An incomplete fixture
+   configuration initially prevented startup. With a complete configuration,
+   the installed app opened and selected the source. The scripted address
+   input did not reach the protected folder. Retry through the parent-folder
+   controls before testing UAC, History and Undo. The temporary worktree,
+   unpacked payload, duplicate private ZIP and disposable guests were removed.
+   The exact private NSIS is retained for the retry.
+   See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
+   and [installed navigation observation](../.hermes/evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
    See [fresh-process Undo acceptance](../.hermes/evidence/windows-uac-copy-restart-current-retry/ACCEPTANCE.json),
    [alternate-account Undo acceptance](../.hermes/evidence/windows-uac-copy-alternate-restart-current/ACCEPTANCE.json),
    [alternate-account acceptance](../.hermes/evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),

@@ -1,0 +1,21 @@
+{
+  "status": "fixture configuration rejected before main window",
+  "input": {
+    "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+    "installer_sha256": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "60a526bf8aa133584517ca24c3f4e9ddb6dc58f81668588d53e4aad77314dff8",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "diagnostic": "Missing list_columns in the fixture-generated config. The startup dialog reported that the file was preserved.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "6d21e54d-da55-4ecc-ade3-dbcb3484ad70",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "status": "installed payload and helper capability verified; main window not reached",
+  "input": {
+    "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+    "installer_sha256": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "53e767c557c7e111b7d025c680ee5d7c65bd8cb28410cc2048b6180201ea5a87",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "result": {
+    "mode": "copy",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "error": "Installed main window missing",
+    "phase": "failed",
+    "stack": "at Require, <No file>: line 10\r\nat <ScriptBlock>, <No file>: line 101\r\nat <ScriptBlock>, <No file>: line 1",
+    "client_pid": 2764,
+    "status": "failed"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "6e48ddf1-d59a-4905-9019-af43849daac2",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}

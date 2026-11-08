@@ -1,0 +1,8 @@
+{
+  "base": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+  "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+  "worktree": "/home/campbell/Projects/Ottrin/.hermes/worktrees/windows-admin-copy-package",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-admin-copy-stage",
+  "branch": "branch/windows-admin-copy-qa",
+  "scope": "Private Windows capability-enabled packages. Do not promote or publish."
+}

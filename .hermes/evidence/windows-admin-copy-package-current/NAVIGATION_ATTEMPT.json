@@ -1,0 +1,33 @@
+{
+  "status": "installed app mapped; fixture address input did not navigate to protected folder",
+  "input": {
+    "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+    "installer_sha256": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "d9523f124d9fdc2454ac659c6708bf7244d2680ba2aa11d6dc51ae49c9a53f70",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "result": {
+    "mode": "copy",
+    "client_stderr": null,
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "error": "Missing unique control destination-marker.txt count=0",
+    "phase": "failed",
+    "stack": "at Node, <No file>: line 33\r\nat <ScriptBlock>, <No file>: line 129\r\nat <ScriptBlock>, <No file>: line 1",
+    "client_pid": 5580,
+    "status": "failed"
+  },
+  "observation": "The captured app showed the selected source and Not a directory after the scripted address input. No elevation or protected Copy was exercised.",
+  "capture_sha256": "f45121af685e538ca2c26fb00914bfeb3ef2192509c125a00b6156597ef501a2",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "b8dadff9-c55d-42b7-9b5f-fdf71e3df54e",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}
