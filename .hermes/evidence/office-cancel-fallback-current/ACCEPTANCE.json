@@ -1,0 +1,116 @@
+{
+  "status": "pass native Office fallback from exact staged AppImage",
+  "source_revision": "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
+  "appimage_sha256": "c6b76ed7073d5652c8734134231ab41a317b911800492b724ce0960a9373992b",
+  "scope": "Real mounted AppImage in private software X11 sessions with installed Office preference enabled and no host LibreOffice. Native DOCX, XLSX and PPTX document content, Escape exit and unchanged fixture bytes in Dark and Light. Independent of installed-provider cancellation.",
+  "cases": {
+    "dark-docx": {
+      "fixture_marker": "document fidelity",
+      "capture_sha256": "0a4e3204368165aa7dc4a2ddcb2d15bde9ed956c61c92c3fbf14190d8791a2ce",
+      "source_unchanged": true,
+      "mounted_appimage": true
+    },
+    "dark-xlsx": {
+      "fixture_marker": "sheet fidelity",
+      "capture_sha256": "66acb48fcf247fe06f2ebfe0e845503c6de1951b0bce48f18ce5965e1528d0c7",
+      "source_unchanged": true,
+      "mounted_appimage": true
+    },
+    "dark-pptx": {
+      "fixture_marker": "slide 1 fidelity",
+      "capture_sha256": "728285aec4d89246118fbacadb190e1a7235be621e94e9a9996e8da3190c0680",
+      "source_unchanged": true,
+      "mounted_appimage": true
+    },
+    "dark-teardown": {
+      "status": "closed",
+      "profile": "/var/tmp/.ottrin-picker-qa-exuuhe4w",
+      "owned_processes_reaped": [
+        {
+          "pid": 1480712,
+          "exit": 0
+        },
+        {
+          "pid": 1480715,
+          "exit": 0
+        },
+        {
+          "pid": 1480716,
+          "exit": 15
+        },
+        {
+          "pid": 1480771,
+          "exit": 0
+        },
+        {
+          "pid": 1480863,
+          "exit": 0
+        },
+        {
+          "pid": 1480936,
+          "exit": 0
+        }
+      ],
+      "owned_children": {
+        "stopped": [],
+        "unreadable_foreign_processes_preserved": 4
+      },
+      "owned_mounts_unmounted": [],
+      "profile_removed": true
+    },
+    "light-docx": {
+      "fixture_marker": "document fidelity",
+      "capture_sha256": "0a4e3204368165aa7dc4a2ddcb2d15bde9ed956c61c92c3fbf14190d8791a2ce",
+      "source_unchanged": true,
+      "mounted_appimage": true
+    },
+    "light-xlsx": {
+      "fixture_marker": "sheet fidelity",
+      "capture_sha256": "66acb48fcf247fe06f2ebfe0e845503c6de1951b0bce48f18ce5965e1528d0c7",
+      "source_unchanged": true,
+      "mounted_appimage": true
+    },
+    "light-pptx": {
+      "fixture_marker": "slide 1 fidelity",
+      "capture_sha256": "728285aec4d89246118fbacadb190e1a7235be621e94e9a9996e8da3190c0680",
+      "source_unchanged": true,
+      "mounted_appimage": true
+    },
+    "light-teardown": {
+      "status": "closed",
+      "profile": "/var/tmp/.ottrin-picker-qa-b4vrmbbs",
+      "owned_processes_reaped": [
+        {
+          "pid": 1481010,
+          "exit": 0
+        },
+        {
+          "pid": 1481013,
+          "exit": 0
+        },
+        {
+          "pid": 1481014,
+          "exit": 15
+        },
+        {
+          "pid": 1481065,
+          "exit": 0
+        },
+        {
+          "pid": 1481157,
+          "exit": 0
+        },
+        {
+          "pid": 1481229,
+          "exit": 0
+        }
+      ],
+      "owned_children": {
+        "stopped": [],
+        "unreadable_foreign_processes_preserved": 4
+      },
+      "owned_mounts_unmounted": [],
+      "profile_removed": true
+    }
+  }
+}

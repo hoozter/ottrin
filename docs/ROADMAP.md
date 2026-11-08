@@ -30,8 +30,8 @@ content. A separate direct-file launch rendered both PPTX slides with the
 LibreOffice label and verified Next and Previous against their distinct
 content. XLSX displayed the chart and formula totals in the page viewport.
 The heading OCR check stopped before the XLSX label capture. All three
-fixture files retained their original bytes. Resume with the XLSX label,
-DOCX page-two content and current-package cancellation.
+fixture files retained their original bytes. The later package checks below
+cover the XLSX label, DOCX page-two content and cancellation.
 See [DOCX acceptance](../.hermes/evidence/current-linux-installed-office/ACCEPTANCE.json)
 and [direct-file acceptance](../.hermes/evidence/current-linux-office-pages/ACCEPTANCE.json).
 
@@ -56,6 +56,10 @@ A separate native run held a conversion already requested by Miller. Closing
 Inspector preserved the original unit and PID, and the conversion could be
 resumed. The staged AppImage also passed isolated mounted path replacement.
 See [shared render acceptance](../.hermes/evidence/office-cancel-shared-current/ACCEPTANCE.json).
+The same staged AppImage passed mounted native fallback for DOCX, XLSX and
+PPTX in Dark and Light with installed previews enabled and LibreOffice
+unavailable. All six fixture launches exited normally and preserved the
+files. See [fallback acceptance](../.hermes/evidence/office-cancel-fallback-current/ACCEPTANCE.json).
 The four formats passed content verification. This cohort still needs
 source CI and promotion. See [failure reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json)
 and [packaged retest](../.hermes/evidence/office-cancel-delivery-current/ACCEPTANCE.json).
@@ -3089,7 +3093,7 @@ Do not move a fixable implementation or test failure onto this list.
 
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
-| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. The partial-anchor recovery preflight bound the existing `e12187c7` test binary and refused guest allocation at 23,992,766,464 bytes available (22.34 GiB). The scoped cleanup audit found zero superseded standalone test binaries with matching compiler settings and zero obsolete incremental sessions. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
+| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. The partial-anchor recovery preflight bound the existing `e12187c7` test binary and refused guest allocation at 23,883,796,480 bytes available (22.24 GiB). The scoped cleanup audit found zero superseded standalone test binaries with matching compiler settings and zero obsolete incremental sessions. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
 | Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
 | Personal administrator helper update | Settings → Services → Update / reinstall helper, then complete OS administrator authentication. Installed binary differs from the delivered tested helper; no privileged host file was silently replaced. Exact hashes: `privileged-copy-current/HOST_HELPER_STATUS.json`. | All implementation/package work, including versioned capability/readiness reporting, elevated Copy restart discovery and Windows bridge. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
