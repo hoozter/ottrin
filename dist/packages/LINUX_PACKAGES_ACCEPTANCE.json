@@ -50,5 +50,6 @@
   ],
   "package_content_acceptance": ".hermes/evidence/search-stalled-theme-current/PACKAGE_CONTENT_ACCEPTANCE.json",
   "promotion": ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
-  "atomic_appimage_qa": ".hermes/evidence/search-stalled-theme-current/ATOMIC_APPIMAGE_QA.json"
+  "atomic_appimage_qa": ".hermes/evidence/search-stalled-theme-current/ATOMIC_APPIMAGE_QA.json",
+  "native_installed_deb_rpm": ".hermes/evidence/current-native-linux/ACCEPTANCE.json"
 }

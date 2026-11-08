@@ -1,0 +1,51 @@
+{
+  "status": "pass native DEB and RPM lifecycle and installed GUI smoke",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "cases": {
+    "deb": {
+      "guest": "Ubuntu 24.04",
+      "artifact": "ottrin_0.1.0_amd64.deb",
+      "sha256": "4cad717288e496e1aab9832e10b3b83fda3a3acc5f13fa80d0760caec14e3841",
+      "installed_gui_sha256": "933ee9115528a63df8c0be3f1f14a5a45e82ff2571edda2a57229207ed6e81ad",
+      "installed_daemon_sha256": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
+      "native_cli_index_watcher": true,
+      "native_gui_and_inspector": true,
+      "inspector_closed_via_visible_control": true,
+      "live_reinstall_restarted_daemon": true,
+      "removal_preserved_user_state": true,
+      "guest_teardown": {
+        "domain_removed": true,
+        "volumes_removed": [
+          "ottrin-current-deb-qa-base.qcow2",
+          "ottrin-current-deb-qa-work.qcow2",
+          "ottrin-current-deb-qa-seed.iso"
+        ]
+      },
+      "temporary_seed_and_ssh_keys_removed": true,
+      "actor_sha256": "5b22039754f70be0f6ecd82f84b85ab6a09ffb8578572b507ab72b045609413e"
+    },
+    "rpm": {
+      "guest": "Fedora 44",
+      "artifact": "ottrin-0.1.0-1.x86_64.rpm",
+      "sha256": "258479197dee49d63b88cceedf0110058027ab3202f2fb685e1a8929e89768d9",
+      "installed_gui_sha256": "a2a5236d54e40982301f10537c33a93bd3f025b821392e144d96eafc3d7fdb63",
+      "installed_daemon_sha256": "258a22c486f7136c378990ff509d3fd24fa6419e6a39a74c29ffdab69520e963",
+      "native_cli_index_watcher": true,
+      "native_gui_and_inspector": true,
+      "inspector_closed_via_visible_control": true,
+      "live_reinstall_restarted_daemon": true,
+      "removal_preserved_user_state": true,
+      "guest_teardown": {
+        "domain_removed": true,
+        "volumes_removed": [
+          "ottrin-current-rpm-qa-base.qcow2",
+          "ottrin-current-rpm-qa-work.qcow2",
+          "ottrin-current-rpm-qa-seed.iso"
+        ]
+      },
+      "temporary_seed_and_ssh_keys_removed": true,
+      "actor_sha256": "725c640be2b989e44374c601dad18563f6abec41be817de4426944609fac7914"
+    }
+  },
+  "scope": "Fresh native package-manager installations with software X11 in disposable QEMU guests. Ordinary-user GUI and Quick Inspector launch, package identity, watcher discovery, live reinstall and uninstall were exercised. The window-manager-free test uses a visible Close button. Full desktop workflow, physical and cross-version acceptance remain separate."
+}

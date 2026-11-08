@@ -185,13 +185,15 @@
       "id": 21,
       "section": "Linux",
       "requirement": "Launch the AppImage, portable tarball and native packages on a clean supported desktop.",
-      "classification": "scoped native evidence; wider requirement open",
+      "classification": "all four current Linux local formats launched in scoped desktop tests",
       "evidence": [
         ".hermes/evidence/fractional-border-delivery-current/native-deb/ACCEPTANCE.json",
         ".hermes/evidence/fractional-border-delivery-current/native-rpm/ACCEPTANCE.json",
-        "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json"
+        "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+        ".hermes/evidence/current-native-linux/ACCEPTANCE.json",
+        ".hermes/evidence/release-audit-current/LINUX_45A89D62_DESKTOP_WORKFLOWS.json"
       ],
-      "latest_scope": "d76c351a passes native Ubuntu APT and Fedora DNF install, live reinstall and removal, including user daemon and database preservation. The exact current 45a89d62 AppImage was mounted on private X11. Current GUI launch for every format on clean desktops is still separate."
+      "latest_scope": "Exact current 45a89d62 DEB and RPM passed fresh native install, ordinary-user installed GUI/Inspector, live reinstall and removal on Ubuntu/Fedora software X11 guests. The same source AppImage and portable archive passed the 27-check isolated desktop workflows. Physical desktop and final public artifacts remain separate."
     },
     {
       "id": 22,
