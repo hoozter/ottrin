@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "scope": "Fedora 44 stock cloud guest, DNF5, file repository and disposable RPM versions 1.0 and 1.1. Production repository and RPM signing scripts used an isolated Ed25519 signing subkey with the primary held outside the signing keyring.",
+  "package_sha256": {
+    "fixture-1.0.rpm": "8f31de997120cdd98151c40893b59d9bec753d0aaa4011698ea95a8d37f011ef",
+    "fixture-1.1.rpm": "30d09ae600eb6ed5d237778a2711400312f9badd50b05b997c2f870bebdc7d8a"
+  },
+  "upgrade": "DNF verified metadata and package signatures and upgraded 1.0 to 1.1",
+  "disable": "Disabled repository offered no upgrade until explicitly selected; upgrade preserved the disabled packaged source",
+  "removal": "Package and bundled key removed, disabled source preserved as rpmsave",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-dnf-subkey-qa-base.qcow2",
+      "ottrin-dnf-subkey-qa-work.qcow2",
+      "ottrin-dnf-subkey-qa-seed.iso"
+    ],
+    "temporary_seed_and_ssh_keys_removed": true,
+    "host_fixture_removed": true
+  },
+  "limits": "Synthetic package payloads and local repository. No production release key, R2 publication, or real Ottrin upgrade exercised. Cloud-init reported recoverable hostname warnings."
+}
