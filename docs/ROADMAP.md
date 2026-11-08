@@ -21,6 +21,11 @@ document bytes, and no index process started. The private profile and scope
 were removed. See
 [Firefox acceptance](../.hermes/evidence/current-firefox-picker/ACCEPTANCE.json).
 Physical desktop and other caller coverage remain separate.
+The same mounted AppImage passed private-bus FileManager1 ShowFolders,
+ShowItems, and ShowItemProperties with exact native path bytes. Repair
+reactivated the backend while preserving the open Properties window.
+Disable removed the private registration. See
+[FileManager1 acceptance](../.hermes/evidence/current-filemanager/ACCEPTANCE.json).
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 

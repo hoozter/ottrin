@@ -1,0 +1,60 @@
+{
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "binary_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "cases": [
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "normal_close": true
+    },
+    {
+      "method": "ShowFolders",
+      "native_argv_preserved": true,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItems",
+      "native_argv_preserved": true,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "normal_close": false
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "normal_close": true
+    }
+  ],
+  "backend_smaps_rollup": {
+    "Rss": "10256 kB",
+    "Pss": "8119 kB",
+    "Private_Clean": "6620 kB",
+    "Private_Dirty": "1468 kB"
+  },
+  "backend_memory_kib": {
+    "VmSize": "313848 kB",
+    "VmRSS": "10256 kB"
+  },
+  "idle": {
+    "duration_seconds": 5,
+    "cpu_ticks": 0,
+    "clock_ticks_per_second": 100
+  },
+  "active_window_survived_backend_restart": true,
+  "status": "pass",
+  "source_preserved": true,
+  "registration_removed": true,
+  "foreign_owner_not_replaced": true,
+  "teardown": {
+    "status": "closed",
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "scope": "Exact current AppImage on private X11 and D-Bus with private folder registration. All three FileManager1 methods and mounted runtime identity verified. Host desktop defaults and GIO caller acceptance are separate.",
+  "invalid_uri_batch_refused": true,
+  "no_index_started_for_properties": true,
+  "fixture_source": ".hermes/evidence/theme-selection-delivery-current/verify-file-manager.py"
+}
