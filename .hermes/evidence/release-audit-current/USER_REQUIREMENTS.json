@@ -5,18 +5,20 @@
     {
       "id": "U01",
       "requirement": "Preserve saved view mode across newly built/updated packages; startup must show the actual Home contents.",
-      "current_scope": "Delivered clean7d Linux/Windows startup acceptance and actual MSIX6-to7 preference-preserving updates pass.",
+      "current_scope": "Exact Linux AppImage 21f18bbe opened in the saved Column, List and Grid modes on first launch in private profiles. Atomic replacement also preserved the open window and a fresh launch used the replacement image. Earlier Windows startup and MSIX upgrade receipts keep their recorded artifact scopes. The current Linux package 45a89d62 was not rerun through all three modes.",
       "evidence": [
         ".hermes/evidence/release-audit-current/cohort/LINUX_NATIVE_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
         ".hermes/evidence/release-audit-current/cohort/WINDOWS_NATIVE_ACCEPTANCE.json",
-        ".hermes/evidence/release-audit-current/cohort/WINDOWS_DELIVERY.json"
+        ".hermes/evidence/release-audit-current/cohort/WINDOWS_DELIVERY.json",
+        ".hermes/evidence/theme-selection-delivery-current/SAVED_VIEW_STARTUP_ACCEPTANCE.json",
+        ".hermes/evidence/theme-selection-delivery-current/ATOMIC_APPIMAGE_QA.json"
       ]
     },
     {
       "id": "U02",
       "requirement": "Indexer must be quiet while idle, use its own process name, survive main-window closure when enabled, and start reliably without a first-launch readiness error.",
-      "current_scope": "Accepted Linux source43 retains exact current daemon bytes; fresh private1000-file/30-second watcher/idle and restart/GUI-close checks pass. Two bounded personal60-second samples show process name ottrin-indexd, roughly30-31MiB RSS and0.67/0.98% of one core; the second is Ready while applying47 snapshot revisions/35 additional records. This is active filesystem work and does not establish sustained idle/personal resource acceptance. Windows daemon/native lifetime receipts keep their original scopes.",
+      "current_scope": "Exact d76c351a mounted index daemon averaged 0.067% of one core over 60 seconds with 1,000 files and no clients, with a 0.20% peak over ten-second intervals. Current Linux 45a89d62 contains byte-identical daemon code. Promotion verified the installed ottrin-indexd stayed Ready on the same process with startup and database identity preserved. Full personal-workload and current Windows idle/lifetime verification remain open.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/LINUX_DAEMON_RUNTIME.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
@@ -30,13 +32,15 @@
         ".hermes/evidence/theme-layout-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SAMPLE.json",
         ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SETTLED.json",
-        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
+        ".hermes/evidence/fractional-border-delivery-current/LINUX_DAEMON_RUNTIME.json",
+        ".hermes/evidence/search-stalled-theme-current/PROMOTION.json"
       ]
     },
     {
       "id": "U03",
       "requirement": "Helper lock opens its settings; setup offers an actual administrator prompt with truthful cancellation/failure reporting.",
-      "current_scope": "Current DAC Linux candidate has actual AppImage/FUSE lock-to-Services, old-helper Update needed, genuine stock-polkit administrator prompt, cancellation preserving old helper, authenticated update/reinstall, protected Copy, restart/history/Undo/cleanup acceptance. Twenty original complete-window captures directly reviewed. Windows direct-UAC transport has its own focused native scope; current Windows packaged setup and complete recovery bridge are not inferred.",
+      "current_scope": "The historical DAC Linux candidate has actual AppImage/FUSE lock-to-Services, old-helper Update needed, genuine stock-polkit administrator prompt, cancellation preserving old helper, authenticated update/reinstall, protected Copy, restart/history/Undo/cleanup acceptance. Twenty original complete-window captures directly reviewed. Windows direct-UAC transport has its own focused native scope; current Windows packaged setup and complete recovery bridge are not inferred.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
         ".hermes/evidence/recovery-transport-delivery-current/CAPTURE_REVIEW.json",
@@ -46,7 +50,7 @@
     {
       "id": "U04",
       "requirement": "Services show clear ready/running status dots and appropriate install, repair/reinstall, start, stop and uninstall actions for actual state.",
-      "current_scope": "Current accepted Linux43 mounted Dark/Light Ready/Stopped/error/Ready checks and six original reviews pass; qualified neutral action history is distinct from current health and Automatic startup at sign-in is distinct from runtime. Full error disclosure and recovery-control geometry pass. Current Windows25 has its separately scoped installed Services and sign-in/removal preservation evidence. Whole interface and personal authentication acceptance remain separate.",
+      "current_scope": "The earlier accepted Linux43 mounted Dark/Light Ready/Stopped/error/Ready checks and six original reviews pass; qualified neutral action history is distinct from current health and Automatic startup at sign-in is distinct from runtime. Full error disclosure and recovery-control geometry pass. Windows25 has its separately scoped installed Services and sign-in/removal preservation evidence. Whole interface and personal authentication acceptance remain separate.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/CAPTURE_REVIEW.json",
@@ -59,20 +63,22 @@
     {
       "id": "U05",
       "requirement": "Appearance settings have logical framed groups, meaningful headings, compact controls and consistent text/icon alignment.",
-      "current_scope": "Framed property groups, compact controls, scoped menu alignment, and component scroll/reset ownership are delivered in the stable Linux cohort. The delivered Locations update adds field-specific accessibility names and real rail cards. The Locations changes have rendered and mounted Dark/Light checks. The full interface alignment and hierarchy review, additional scales, and native Windows parity remain open.",
+      "current_scope": "Framed groups and scoped alignment checks retain their recorded scopes. Exact 45a89d62 Linux mounted Search Settings shows the custom accent during an active scan and custom attention ink for a stalled scan in Dark and Light. This does not close full interface alignment or native Windows parity.",
       "evidence": [
         ".hermes/evidence/inspector-shared-geometry-current/ACCEPTANCE.json",
         ".hermes/evidence/appearance-scroll-current/ACCEPTANCE.json",
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/smart-panel-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
+        ".hermes/evidence/search-stalled-theme-current/mounted-dark/RESULT.json",
+        ".hermes/evidence/search-stalled-theme-current/mounted-light/RESULT.json"
       ]
     },
     {
       "id": "U06",
       "requirement": "Theme editor selects the exact production element and only its intended themeable roles, including the tab bar.",
-      "current_scope": "Stable Linux includes the shared navigation/tab, window-control, Smart Panel strip, file-layout, status bar, and Inspector presenters within their recorded scopes. The Locations update verifies named Info activation selecting Smart Panel properties and rail activation selecting Locations properties in the mounted AppImage. The independent preview-to-live role inventory across the whole interface remains open.",
+      "current_scope": "Shared navigation, tab, Smart Panel, Locations, status bar and Inspector presenters have scoped checks. Exact 21f18bbe verifies file-manager frame, title bar and status bar selection. The full preview-to-live mapping and native Windows checks remain open.",
       "evidence": [
         ".hermes/evidence/theme-layout-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/inspector-delivery-current/THEME_UI_ACCEPTANCE.json",
@@ -80,13 +86,14 @@
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
+        ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json"
       ]
     },
     {
       "id": "U07",
       "requirement": "Expose every supported theme property and explain shared defaults; radius/border/color changes must reach every intended window/control.",
-      "current_scope": "Stable Linux includes separate button, surface and window geometry, scoped component reset, and shared menu frame styling. Mounted Dark/Light checks cover Inspector menu border color, width, corners and Cancel. Mounted Locations verification covers separate rail button and card radii. A property-by-property inventory and full window, preset, scale and platform coverage remain open.",
+      "current_scope": "Separate window, surface and button roles retain historical scoped evidence. Exact 21f18bbe verifies quarter-pixel themed border visibility during frame and component selection at 100% and 125% in Dark and Light. Every current property, consumer and supported platform still requires a complete audit.",
       "evidence": [
         ".hermes/evidence/inspector-theme-roles-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-editor-current/ACCEPTANCE.json",
@@ -95,13 +102,15 @@
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
+        ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json",
+        ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json"
       ]
     },
     {
       "id": "U08",
       "requirement": "Preview selection outlines match actual geometry; production Smart-panel controls and shared themed chrome replace invented preview controls.",
-      "current_scope": "Stable Linux delivers production Column/List/Grid samples and Inspector text, DOCX, spreadsheet, image and PDF presenters, with scoped mounted layout, outline, paging, zoom and menu checks. Smart Panel section headings and the Locations rail now have separate mounted candidate evidence. Installed Office provider samples, the remaining preview surfaces and full outline/platform coverage remain open.",
+      "current_scope": "The exact 21f18bbe mounted candidate separates the whole-frame selection from the themed stroke and preserves actual window-border ink during title-bar and status-bar selection, in Dark and Light at 100% and 125%. Earlier Smart Panel and Inspector content samples keep their original scopes. Installed Office preview parity and full platform coverage remain open.",
       "evidence": [
         ".hermes/evidence/grid-label-layout-current/SOURCE_CHECKS.json",
         ".hermes/evidence/recovery-transport-delivery-current/REPLACEMENT_CAPTURE_REVIEW.json",
@@ -120,7 +129,9 @@
         ".hermes/evidence/inspector-visual-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/smart-panel-delivery-current/THEME_UI_ACCEPTANCE.json",
         ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
-        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
+        ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json",
+        ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json"
       ]
     },
     {
@@ -152,19 +163,26 @@
     {
       "id": "U12",
       "requirement": "Correct Ottrin application icon on supported Linux/Windows launches.",
-      "current_scope": "Existing icon/packaging evidence requires concentrated current caller review.",
-      "evidence": []
+      "current_scope": "All seven canonical icon frames match the staged 7992ad1e Windows app and index daemon PE resources, and its portable and NSIS payloads carry identical bytes. Hosted native Shell extraction passed for 7e89eedb. Actual Windows taskbar rendering and current Linux desktop launch attribution remain separate.",
+      "evidence": [
+        ".hermes/evidence/windows-picker-keyboard-current/EXECUTABLE_ICON_ACCEPTANCE.json"
+      ]
     },
     {
       "id": "U13",
       "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
-      "current_scope": "Implementation and native caller evidence recorded; remaining browser/platform scopes need requirement-by-requirement audit.",
-      "evidence": []
+      "current_scope": "Exact 21f18bbe Linux AppImage passes GTK Open and real FileManager1 requests. Exact 7e89eedb mounted GTK Save verifies prompt shortcut isolation, exact returned path and unchanged file bytes in both themes. Stable Windows 67d3cbe1 retains ordinary-user NSIS folder default restoration and development MSIX Explorer checks. MSIX default folder registration, native Save validation of staged 7992ad1e, and remaining caller coverage are open.",
+      "evidence": [
+        ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
+        ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
+        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
+        ".hermes/evidence/windows-picker-keyboard-current/NATIVE_PREFLIGHT.json"
+      ]
     },
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "The stable Linux and Windows receipts identify the currently delivered packages. Linux Inspector CI passed and promotion preserved personal state. The Locations candidate passed all four exact-source CI jobs and its mounted checks. It superseded the staged Smart Panel cohort and was promoted atomically while the foreground window and byte-identical index kept running. Source is on GitHub main. Historical failing runs were attributed to two Windows Copy tests, a Linux chooser test and MSIX template validation. Batching verified changes limits overlapping runs. Final release and sustained notification outcomes remain open.",
+      "current_scope": "Stable Linux 45a89d62 and Windows 67d3cbe1 match the package receipts. All four exact-source hosted jobs passed for Linux 45a89d62. Main holds the verified checkpoints. Public release and sustained CI notification outcomes remain open.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -177,13 +195,14 @@
         ".hermes/evidence/inspector-visual-delivery-current/PROMOTION.json",
         ".hermes/evidence/smart-panel-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/locations-rail-delivery-current/CI_CURRENT.json",
-        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
+        ".hermes/evidence/search-stalled-theme-current/PROMOTION.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "The current Linux promotion removed its consumed stage and replaced superseded packages. Smart Panel and Locations build and mounted QA producers removed extraction directories, test displays, processes and profiles. Both consumed or superseded stages were removed. Atomic replacement kept the existing app and index running. The held Windows recovery test and retained VM bases still have roadmap consumers. Historical receipts retain their original cleanup scopes.",
+      "current_scope": "The 45a89d62 Linux promotion removed the consumed stage and prior packages, after private test profiles, sockets, mounts and extraction were removed. The 7992ad1e Windows build removed duplicate expanded payload and temporary installer extraction. Its 95 MiB stage and retained guests have named native QA consumers. These checks do not certify unrelated project or machine-wide storage.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -195,7 +214,9 @@
         ".hermes/evidence/smart-panel-delivery-current/CURRENT_STATE.json",
         ".hermes/evidence/locations-rail-delivery-current/CURRENT_STATE.json",
         ".hermes/evidence/locations-rail-delivery-current/SUPERSEDED_STAGE_CLEANUP.json",
-        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json"
+        ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
+        ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
+        ".hermes/evidence/windows-picker-keyboard-current/STAGING.json"
       ]
     }
   ],
@@ -205,11 +226,14 @@
     "No macOS build; owner signing/Store/final human acceptance remain explicit waits."
   ],
   "latest_scope_reconciliation": {
-    "date": "2026-11-07",
-    "stable_linux": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
-    "stable_windows": "8e805d318557d3248ebf090aa8088dd86194b593",
+    "date": "2026-11-08",
+    "stable_linux": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+    "stable_windows": "67d3cbe14c03f1b8021284454e46ed046795131e",
     "staged_linux": [],
-    "note": "U05 through U08, U14 and U15 were reconciled against exact package and mounted evidence. Other entries retain their prior scopes."
+    "staged_windows": [
+      "7992ad1e702976ca8a1e8bf698ddb4010af75647"
+    ],
+    "note": "Reconciled U01–U08 and U12–U15 against exact artifact scopes. U09–U11 and the 54-clause roadmap audit retain their prior verification status."
   },
   "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
   "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958"
