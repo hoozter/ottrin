@@ -213,9 +213,9 @@ and the held MSI were preserved. Current authority is
    [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
    [upgrade acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
    and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
-3. **Close Windows desktop integration and theme acceptance.** Run the
-   prepared read-only MSIX registry comparison under matching identities.
-   Verify supported folder actions, picker behavior, and remaining theme
+3. **Close Windows desktop integration and theme acceptance.** The
+   read-only MSIX comparison confirmed transacted opens fail under package
+   identity. Verify supported folder actions, picker behavior, and remaining theme
    controls in the installed candidate. The current MSIX exposes Explorer
    commands and reports the default-folder limitation.
 4. **Finish release-candidate acceptance.** Retest changed surfaces and their
@@ -804,15 +804,17 @@ Current source, test, package and owner/external scopes stay separate.
    passed local promotion preflight and exact-source CI, and was promoted.
    Implementing default-folder opening inside MSIX remains open.
 
-   For the next native diagnosis, compare ordinary and transacted query-only
-   opens of the same existing HKCU keys under the same user, inside and
-   outside package identity. Record the key, access flags, and return code
-   independently of Ottrin's status logic. The cross-compiled read-only
-   [diagnostic probe](../.hermes/evidence/msix-registry-diagnostic/README.md)
-   is ready for this native comparison. Microsoft defines 6801 as
-   `ERROR_RM_NOT_ACTIVE`. The return code identifies the failed resource
-   manager boundary and leaves the cause open.
-   [Windows error codes](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--6000-8199)
+   A native read-only comparison on development MSIX 28 tested the same
+   ordinary user with and without package identity. All eight ordinary
+   queries returned the same result in both contexts. The six transacted
+   queries against existing keys succeeded outside the package and returned
+   `6801` inside it. The absent key returned file-not-found outside the
+   package and `6801` for transacted opens inside it. This confirms the
+   failure boundary for the diagnostic token. The lifecycle wrapper timed
+   out after exporting complete probe rows. The cause and a supported
+   restoration-preserving implementation remain open.
+   See [native comparison](../.hermes/evidence/windows-picker-keyboard-current/registry-diagnostic28/ACCEPTANCE.json)
+   and [Windows error codes](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--6000-8199-).
 
    Windows documents selective HKCU exclusions under the restricted
    `unvirtualizedResources` capability. The exclusions expose writes outside

@@ -1,0 +1,85 @@
+{
+  "status": "observed complete paired query-only registry outputs",
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "package_sha256": "48d1cf2c1858cb9c35458b216305ae47780a99dd5ffd9dab6e8e1805665e7416",
+  "package_identity": "Ottrin.Development_0.1.0.28_x64__vs01n017nxmbr",
+  "same_unelevated_user": true,
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "comparison": [
+    {
+      "key": "HKCU\\Software",
+      "access": "0x1",
+      "ordinary_both": 0,
+      "transacted_without_package": 0,
+      "transacted_with_package": 6801
+    },
+    {
+      "key": "HKCU\\Software",
+      "access": "0x101",
+      "ordinary_both": 0,
+      "transacted_without_package": 0,
+      "transacted_with_package": 6801
+    },
+    {
+      "key": "HKCU\\Software\\Classes",
+      "access": "0x1",
+      "ordinary_both": 0,
+      "transacted_without_package": 0,
+      "transacted_with_package": 6801
+    },
+    {
+      "key": "HKCU\\Software\\Classes",
+      "access": "0x101",
+      "ordinary_both": 0,
+      "transacted_without_package": 0,
+      "transacted_with_package": 6801
+    },
+    {
+      "key": "HKCU\\Software\\Ottrin\\DesktopIntegration",
+      "access": "0x1",
+      "ordinary_both": 2,
+      "transacted_without_package": 2,
+      "transacted_with_package": 6801
+    },
+    {
+      "key": "HKCU\\Software\\Ottrin\\DesktopIntegration",
+      "access": "0x101",
+      "ordinary_both": 2,
+      "transacted_without_package": 2,
+      "transacted_with_package": 6801
+    },
+    {
+      "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      "access": "0x1",
+      "ordinary_both": 0,
+      "transacted_without_package": 0,
+      "transacted_with_package": 6801
+    },
+    {
+      "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      "access": "0x101",
+      "ordinary_both": 0,
+      "transacted_without_package": 0,
+      "transacted_with_package": 6801
+    }
+  ],
+  "runtime_controller_status": "failed native MSIX lifecycle",
+  "runtime_controller_error": "Ordinary runtime actor timed out",
+  "scope": "Read-only diagnostics in an ordinary context and a package-identity diagnostic context. Output is complete. Wrapper timed out after probe and did not repeat deployment lifecycle acceptance. The reason Windows refuses the transacted opens and a supported fix remain open.",
+  "archive_sha256": "dce55147ad80e591eb3759f8d6a53b693b73ab586b62bb3ecd378e37364ebf1c",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}
