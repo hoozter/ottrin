@@ -1,0 +1,154 @@
+{
+  "status": "pass native portable picker and NSIS lifecycle",
+  "input": {
+    "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+    "files": [
+      {
+        "name": "portable.zip",
+        "sha256": "ebc519e44b43ec2eb0e6601fe4c6f5a81d55d3c806ac16560d65475b64c8dedd"
+      },
+      {
+        "name": "current-setup.exe",
+        "sha256": "fa7c85a9e66211edb60c2dec6237b498f1238caee793b0ca6ce8bf4f2e5553f5"
+      },
+      {
+        "name": "previous-setup.exe",
+        "sha256": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a"
+      }
+    ],
+    "previous_source": "7992ad1e702976ca8a1e8bf698ddb4010af75647"
+  },
+  "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+  "previous_source": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "payload_files": 59,
+  "picker_cases": [
+    {
+      "case": "picker-dark-baseline",
+      "status": "pass",
+      "expected_names": [
+        "beta.txt"
+      ]
+    },
+    {
+      "case": "picker-dark-up-single",
+      "status": "pass",
+      "expected_names": [
+        "alpha.txt"
+      ]
+    },
+    {
+      "case": "picker-dark-up-range",
+      "status": "pass",
+      "expected_names": [
+        "alpha.txt",
+        "beta.txt"
+      ]
+    },
+    {
+      "case": "picker-dark-down-single",
+      "status": "pass",
+      "expected_names": [
+        "gamma.txt"
+      ]
+    },
+    {
+      "case": "picker-dark-down-range",
+      "status": "pass",
+      "expected_names": [
+        "gamma.txt",
+        "beta.txt"
+      ]
+    },
+    {
+      "case": "picker-light-baseline",
+      "status": "pass",
+      "expected_names": [
+        "beta.txt"
+      ]
+    },
+    {
+      "case": "picker-light-up-single",
+      "status": "pass",
+      "expected_names": [
+        "alpha.txt"
+      ]
+    },
+    {
+      "case": "picker-light-up-range",
+      "status": "pass",
+      "expected_names": [
+        "alpha.txt",
+        "beta.txt"
+      ]
+    },
+    {
+      "case": "picker-light-down-single",
+      "status": "pass",
+      "expected_names": [
+        "gamma.txt"
+      ]
+    },
+    {
+      "case": "picker-light-down-range",
+      "status": "pass",
+      "expected_names": [
+        "gamma.txt",
+        "beta.txt"
+      ]
+    }
+  ],
+  "portable_picker_without_index": "pass",
+  "fresh_install_uninstall": "pass",
+  "running_index_upgrade": "pass",
+  "miller_view_preserved": true,
+  "database_identity_preserved": true,
+  "preferences_preserved": true,
+  "runtime_cases": [
+    {
+      "status": "pass",
+      "running": true,
+      "enabled": false
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": true
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": false
+    }
+  ],
+  "refused_uninstall": {
+    "exit": 1,
+    "source_preserved": true,
+    "task_and_security_preserved": true,
+    "database_identity": "402E2E37:00090000000250E2",
+    "after": {
+      "instance": "{485FBE37-D9EB-4E91-B6BC-911E4941CE09}",
+      "pid": 9928
+    },
+    "payload_preserved": true,
+    "before": {
+      "instance": "{485FBE37-D9EB-4E91-B6BC-911E4941CE09}",
+      "pid": 9928
+    },
+    "status": "pass",
+    "preferences_preserved": true
+  },
+  "uninstall_retry": "pass",
+  "driver_sha256": "bfa516b44a53c1228776cb8567849982ebb6f6ed4b3acfd9cae0be0d3af99f23",
+  "result_sha256": "e6571fe1858810b92b5da2a3a9b71acb7784d801ea968f99f1acc029ed9a7808",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "Standard-user software Windows guest, exact staged ZIP and NSIS, upgrade from accepted 7992ad1e. Separate MSIX and administrator Copy acceptance."
+}

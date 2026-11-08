@@ -264,14 +264,19 @@ and the held MSI were preserved. Current authority is
    bytes and preferences survived uninstall. The source-equivalent hosted
    Windows run passed the stalled-status color and unshared Office render
    cancellation tests. The native guest did not exercise those two states.
-   Before promotion, repeat the portable picker and NSIS running-index
-   upgrade, reinstall intent and locked-cache recovery against the staged
-   installer. The stable Windows cohort is `7992ad1e`.
+   The staged portable picker passed ten exact keyboard selection cases
+   without indexing. The staged NSIS passed fresh install/removal, upgrade
+   from `7992ad1e` with the index running, and all three reinstall intent
+   combinations. It kept the saved Miller view and index database identity.
+   Locked-cache removal refused without disturbing the task or running
+   daemon, and retry after releasing the lock passed. The stable Windows
+   cohort is `7992ad1e` pending the remaining MSIX checks and promotion.
    See [staged payload verification](../.hermes/evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
    See [installed Borders acceptance](../.hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
    and [native MSIX assembly](../.hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
    See [native MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json).
    See [installed Search and Inspector acceptance](../.hermes/evidence/windows-shared-ui-current/SEARCH_INSPECTOR_ACCEPTANCE.json).
+   See [portable picker and NSIS lifecycle acceptance](../.hermes/evidence/windows-shared-ui-current/NSIS_LIFECYCLE_ACCEPTANCE.json).
 
 The records below identify the exact source and package coverage behind
 this queue.
