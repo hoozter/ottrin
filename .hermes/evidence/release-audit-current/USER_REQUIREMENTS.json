@@ -179,19 +179,21 @@
     {
       "id": "U13",
       "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
-      "current_scope": "Current 45a89d62 Linux AppImage passes actual Firefox Open and Save with both requests attributed to Firefox in a private desktop session. Exact 21f18bbe Linux AppImage passes GTK Open and real FileManager1 requests. Exact 7e89eedb mounted GTK Save verifies prompt shortcut isolation, exact returned path and unchanged file bytes in both themes. Stable Windows 67d3cbe1 retains ordinary-user NSIS folder default restoration and development MSIX Explorer checks. MSIX default folder registration, native Save validation of staged 7992ad1e, and remaining caller coverage are open.",
+      "current_scope": "Exact 45a89d62 Linux AppImage passed installed Firefox Open and Save with browser attribution; earlier GTK and FileManager1 receipts retain their exact scopes. Stable e2c1b926 reproduced rejection of the installed Vivaldi parent XID. Staged 46802ab4 passed real Vivaldi Open and Save, exact output bytes, native transient parenting and no index startup. It is pending CI and promotion. Windows 67d3cbe1 retains ordinary-user NSIS folder restoration and development MSIX Explorer checks. MSIX default folder registration and native Save validation of staged 7992ad1e remain open.",
       "evidence": [
         ".hermes/evidence/current-firefox-picker/ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
         ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
         "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
-        ".hermes/evidence/windows-picker-keyboard-current/NATIVE_PREFLIGHT.json"
+        ".hermes/evidence/windows-picker-keyboard-current/NATIVE_PREFLIGHT.json",
+        ".hermes/evidence/current-vivaldi-picker/REPRODUCTION.json",
+        ".hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json"
       ]
     },
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable Linux 2afcfc5a and Windows 67d3cbe1 match the package receipts. All four exact-source hosted jobs passed for Linux 2afcfc5a. Main holds the verified checkpoints. The latest 20 main runs had 18 successes and two cancellations, with zero failures. The latest exact-source CI logs show all three tests from the three most recent failed runs passing. This checks GitHub job history. Delivery of GitHub notification emails is outside this evidence. Public release remains open.",
+      "current_scope": "Stable Linux e2c1b926 and Windows 67d3cbe1 match the recorded package authorities. Linux e2c1b926 passed all four hosted jobs and was promoted. The staged 0eec7cb4 cancellation cohort awaits its live Windows verification job in run 42461840752. Vivaldi 46802ab4 is committed locally and held until that run finishes, because a new source push to main cancels the earlier run. In the 20 most recent main CI runs at this review, 15 passed, four were cancelled and one was running. Public release and notification-email delivery are separate.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -205,13 +207,14 @@
         ".hermes/evidence/smart-panel-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/locations-rail-delivery-current/CI_CURRENT.json",
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
-        ".hermes/evidence/search-stalled-theme-current/PROMOTION.json"
+        ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
+        ".hermes/evidence/office-label-delivery-current/PROMOTION.json"
       ]
     },
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "The 2afcfc5a Linux promotion removed the consumed stage and prior packages, after private test profiles, sockets, mounts and extraction were removed. The 7992ad1e Windows build removed duplicate expanded payload and temporary installer extraction. Its 95 MiB stage and retained guests have named native QA consumers. These checks do not certify unrelated project or machine-wide storage.",
+      "current_scope": "Linux e2c1b926 promotion removed its consumed stage and superseded packages. Later Ubuntu and Fedora test guests, private browser profiles, transient service, AppImage mounts and disposable scripts were removed. The cancellation and Vivaldi Linux stages and the 95 MiB Windows stage have named promotion or native acceptance consumers. Protected Windows guest storage, user data and active packages remain retained. This is scoped project cleanup.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -226,7 +229,10 @@
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
         ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
         ".hermes/evidence/windows-picker-keyboard-current/STAGING.json",
-        ".hermes/evidence/services-startup-delivery-current/PROMOTION.json"
+        ".hermes/evidence/services-startup-delivery-current/PROMOTION.json",
+        ".hermes/evidence/office-label-delivery-current/PROMOTION.json",
+        ".hermes/evidence/vivaldi-native-transition-current/ACCEPTANCE.json",
+        ".hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json"
       ]
     }
   ],
@@ -237,13 +243,16 @@
   ],
   "latest_scope_reconciliation": {
     "date": "2026-11-08",
-    "stable_linux": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
+    "stable_linux": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
     "stable_windows": "67d3cbe14c03f1b8021284454e46ed046795131e",
-    "staged_linux": [],
+    "staged_linux": [
+      "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
+      "46802ab4360f25770ff525b297b716954006e76a"
+    ],
     "staged_windows": [
       "7992ad1e702976ca8a1e8bf698ddb4010af75647"
     ],
-    "note": "Reconciled U01–U08 and U12–U15 against exact artifact scopes. U09–U11 and the 54-clause roadmap audit retain their prior verification status."
+    "note": "Reconciled U13–U15 with stable and staged package scopes, live CI and owned teardown. Other clauses retain their previous evidence scope."
   },
   "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
   "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
