@@ -43,19 +43,12 @@ draft with verified checksums, package contents and Linux signatures. The
 downloaded draft assets still require exact-candidate native acceptance before
 publication.
 
-The accepted Windows preview now uses source `8e805d31`: portable ZIP, NSIS and
-unsigned development MSIX25, with identical59-file payloads. Installed Dark/Light
-Services checks pass for qualified action history, real daemon timeout, visible
-diagnostics, stable recovery controls, startup retention and uninstall preservation.
-Fresh25 and enabled24-to25 upgrade checks pass actual Explorer folder-background,
-two-selected-folder and drive invocation, ordinary user/package identity, automatic
-foreground, real reboot/login and COM removal. Six Services and seven originals per
-MSIX case were reviewed. All four exact-source hosted jobs passed in
-[run42054602533](https://github.com/hoozter/ottrin/actions/runs/42054602533).
-MSIX default-folder opening, native icon contrast and supplementary glyph fallback
-remain open; the Windows11 drive result does not accept every lower advertised OS
-build. Evidence: `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json` and the [roadmap](docs/ROADMAP.md).
-
+The [Windows package receipt](dist/WINDOWS_CANDIDATE_ACCEPTANCE.json)
+records the accepted ZIP, NSIS and development MSIX. The native checks include
+restoring the previous default folder app on NSIS and running Explorer menu
+actions after a development MSIX upgrade. Changing the default folder app from
+MSIX remains unavailable. The [roadmap](docs/ROADMAP.md#current-delivery-and-next-work)
+lists the exact Windows builds and test scopes.
 The Linux daemon, helper and HTML renderer retain identical accepted bytes;
 their earlier resource, service and administrator-operation receipts keep their
 original scopes. An older personal helper still requires an authenticated

@@ -438,8 +438,16 @@
       "id": 51,
       "section": "Release candidate gate",
       "requirement": "`README.md`, `USER_GUIDE.md`, `ROADMAP.md` and `RELEASE_NOTES.md` agree with the exact artifacts.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "repository preview documentation reconciled; final release artifacts pending",
+      "evidence": [
+        "README.md",
+        "docs/USER_GUIDE.md",
+        "docs/ROADMAP.md",
+        "docs/RELEASE_NOTES.md",
+        "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+        "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json"
+      ],
+      "latest_scope": "README, User Guide, Roadmap and Release Notes agree on the supported local Linux and Windows formats, the held MSI, the development MSIX default-folder limitation, and manual DEB/RPM updates. Packaged manuals are build-time snapshots. Recheck the final downloaded release artifacts separately."
     },
     {
       "id": 52,

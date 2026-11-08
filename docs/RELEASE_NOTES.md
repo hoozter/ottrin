@@ -9,6 +9,12 @@ package receipts list the current local previews. Linux has an AppImage,
 portable archive, DEB and RPM. Windows has a portable ZIP, EXE installer and
 unsigned development MSIX. The MSI rollback gate remains open.
 
+The Linux preview includes the Save confirmation keyboard fix and theme-aware
+Search Settings warnings. The Windows preview supports reversible default folder
+opening through NSIS and Explorer menu actions through development MSIX.
+The current DEB and RPM require manual updates. Production APT and DNF
+registration awaits signing and verification of the first stable release.
+
 The tag workflow stages verified artifacts in a GitHub release draft for native
 acceptance before public publication. See the [release checklist](RELEASE_CHECKLIST.md#release-review).
 
@@ -23,7 +29,7 @@ The stable AppImage path is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 
 This checkpoint improved file-icon/name/thumbnail spacing and keeps wide List
 filenames clear of metadata. Footer text/wordmark honor the selected theme color;
-Ready text is readable in built-in Light/Dark themes. All32 current original
+Ready text is readable in built-in Light/Dark themes. All 32 original
 Linux/Windows UI captures were directly reviewed, including Linux150% backend
 scaling. The personal Linux daemon returned Ready with preferences, startup choice
 and database identity preserved. Its exact daemon bytes are unchanged; previous
