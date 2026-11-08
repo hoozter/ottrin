@@ -489,6 +489,11 @@ Current source, test, package and owner/external scopes stay separate.
    and removed its unit and enablement while keeping those user files.
    All guest volumes and temporary credentials were removed.
    Evidence: `fractional-border-delivery-current/native-rpm/ACCEPTANCE.json`.
+   The exact staged DEB passes the corresponding Ubuntu 24.04 APT install,
+   live reinstall and purge, including watcher discovery, post-restart
+   search and preserved database identity, preferences and source. The
+   guest, three volumes and temporary credentials were removed.
+   Evidence: `fractional-border-delivery-current/native-deb/ACCEPTANCE.json`.
    The next source change puts the whole-frame selection outline outside the
    actual border in the Inspector and File manager samples. Source-rendered
    checks cover Theme defaults, Quick Inspector and Borders at scales 1 and
