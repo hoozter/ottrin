@@ -29,6 +29,12 @@ DOCX page-two content and current-package cancellation.
 See [DOCX acceptance](../.hermes/evidence/current-linux-installed-office/ACCEPTANCE.json)
 and [direct-file acceptance](../.hermes/evidence/current-linux-office-pages/ACCEPTANCE.json).
 
+Quick Inspector now places the renderer label above the scrolling document
+area so Fit Width can keep it visible. Source checks passed 548 UI tests with
+one existing exclusion and strict UI library lint. This change is awaiting
+exact-package verification in Fit Width with LibreOffice installed. The stable
+AppImage still uses `2afcfc5a`.
+
 The preceding `e2171c3b` cohort passed all four hosted jobs in
 [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
 The mounted Dark and Light AppImage omits the empty Shared colors group in

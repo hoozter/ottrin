@@ -19356,6 +19356,16 @@ impl OttrinApp {
                     }
 
                     self.render_office_provider_fallback_notice(ui, &path);
+                    if preview.kind == PreviewKind::OfficeMetadata
+                        && uses_office_provider
+                        && let Some(rendered) = office_render.as_ref()
+                    {
+                        ui.label(
+                            RichText::new(&rendered.label)
+                                .color(c.text_dim)
+                                .size(11.0 * c.font_scale),
+                        );
+                    }
                     let specialized_body_renderer = (preview.kind == PreviewKind::Text
                         && self.preview.text_editor.is_some())
                         || (preview.kind == PreviewKind::OfficeMetadata
@@ -19645,7 +19655,7 @@ impl OttrinApp {
                             if uses_office_provider {
                                 ui.scope(|ui| {
                                     let max_w = ui.available_width().max(1.0);
-                                    let max_h = (ui.available_height() - 34.0).max(1.0);
+                                    let max_h = ui.available_height().max(1.0);
                                     ui.vertical_centered(|ui| {
                                         let page_index = self.preview.pdf_page_index;
                                         let image = self.cached_shared_visual_preview_widget(
@@ -19687,14 +19697,6 @@ impl OttrinApp {
                                                         .size(11.0 * c.font_scale),
                                                 );
                                             });
-                                        }
-                                        if let Some(rendered) = office_render.as_ref() {
-                                            ui.add_space(6.0);
-                                            ui.label(
-                                                RichText::new(&rendered.label)
-                                                    .color(c.text_dim)
-                                                    .size(11.0 * c.font_scale),
-                                            );
                                         }
                                     });
                                 });
