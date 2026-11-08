@@ -33,5 +33,14 @@
   },
   "ubuntu_retrieval_failure_in_primary_run": "Prepare pinned search provider; five HTTP 504 responses before test steps",
   "equivalence": "Each CI head has the same application source and workflow as the staged package. The only packaging-input differences are the reviewed retry flags and API URL for the existing Windows release asset. The complete provider manifest matches after removing only the added API URL. No pin or verifier changed. The prior Ubuntu verification job passed its provider, workspace, lint, production portal and release steps. Promotion still requires all four named jobs to succeed.",
-  "windows_verification_failure": "Focused windows_job_native passed. Workspace windows_job_native failed normal output capture (Unavailable) and cancellation (CreateAppContainerProfile HRESULT 0x8007000A, then no descendant PID). Eight other tests passed and one was ignored."
+  "windows_verification_failure": "Focused windows_job_native passed. Workspace windows_job_native failed normal output capture (Unavailable) and cancellation (CreateAppContainerProfile HRESULT 0x8007000A, then no descendant PID). Eight other tests passed and one was ignored.",
+  "windows_fixture_comparison": {
+    "passing_run": 42461840752,
+    "passing_job": 128672604912,
+    "passing_source": "0be8d3a921963594257aecd7a1dc4faa3b2c13d9",
+    "focused_executable_basename": "windows_job_native-f55973cbc0a11d34.exe",
+    "workspace_executable_basename": "windows_job_native-65dd3980fc76e10a.exe",
+    "comparison": "Each executable basename matches its counterpart across runs. Both affected cases passed in both invocations of the earlier job and in the failing job\u2019s focused invocation. The two heads have identical preview source, workspace manifest and lockfile, and CI workflow. Basenames are Cargo target identifiers, not binary hashes.",
+    "next_run": 42469453296
+  }
 }
