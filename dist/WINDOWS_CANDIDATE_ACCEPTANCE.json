@@ -1,46 +1,46 @@
 {
-  "status": "pass scoped Windows Save, installer and desktop integration",
-  "source_commit": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "status": "pass scoped Windows UI, installer and desktop integration",
+  "source_commit": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a",
-    "Ottrin-0.1.0-windows-x64-development.msix": "48d1cf2c1858cb9c35458b216305ae47780a99dd5ffd9dab6e8e1805665e7416"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "ebc519e44b43ec2eb0e6601fe4c6f5a81d55d3c806ac16560d65475b64c8dedd",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "fa7c85a9e66211edb60c2dec6237b498f1238caee793b0ca6ce8bf4f2e5553f5",
+    "Ottrin-0.1.0-windows-x64-development.msix": "5038288097362e39af2fa52d6a8d7849b5845c7ba1c4c3ae517425b1dc70b91a"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/windows-picker-keyboard-current",
+  "evidence_directory": ".hermes/evidence/windows-shared-ui-current",
   "hosted_source": {
-    "run": 42434627263,
-    "tested_source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+    "run": 42509840748,
+    "tested_source_revision": "121962fe893f43721d2423fdc3aaf663f29450d3",
     "all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/windows-picker-keyboard-current/WINDOWS_DAEMON_RUNTIME.json",
+  "current_native_fields": ".hermes/evidence/windows-shared-ui-current/SEARCH_INSPECTOR_ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_runtime_login_removal": ".hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json"
+    "current_assembly": ".hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/windows-shared-ui-current/MSIX_FRESH_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json",
+    "current_disabled_update": ".hermes/evidence/windows-shared-ui-current/MSIX_DISABLED_ACCEPTANCE.json"
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json",
+  "source_scope": ".hermes/evidence/windows-shared-ui-current/WINDOWS_DELIVERY.json",
   "public_release_published": false,
   "limits": [
-    "Prior Services results retain their original source scope.",
-    "Software guest/default DPI only; no physical GPU, signing, Store or human acceptance",
-    "Targeted Services and Explorer originals only; full theme/interface property audit remains open",
-    "MSIX default folder opening transaction error remains separate software work",
-    "MSIX drive-menu schema requires Windows11 build22621; lower advertised package builds are not accepted by this Windows11 case",
-    "Native light-menu icon contrast and supplementary glyph fallback remain open",
-    "Administrator Copy coordinator/caller registry and ordinary MSI rollback remain gated",
-    "MSIX 27-to-28 upgrade verified with startup enabled. Disabled upgrade and Store acceptance are separate."
+    "Software guest/default DPI only; physical GPU, Store, signing and human acceptance remain separate.",
+    "Native Inspector checks cover DOCX fallback; stalled Search and unshared provider cancellation were verified separately at source scope on Windows.",
+    "Borders fields were checked in both editing variants with one fixture palette; full theme audit remains open.",
+    "Previous native NSIS default-folder and Save confirmation receipts retain their exact prior source scope.",
+    "MSIX exposes Explorer folder actions and preserves the default folder app.",
+    "Administrator Copy remains disabled and ordinary MSI rollback remains held."
   ],
   "previous_native_upgrade": ".hermes/evidence/windows-picker-confirmation-delivery-current/NATIVE_UPGRADE_ACCEPTANCE.json",
   "native_default_capability": ".hermes/evidence/windows-picker-keyboard-current/native-default/ACCEPTANCE.json",
-  "native_upgrade": ".hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json"
+  "native_upgrade": ".hermes/evidence/windows-shared-ui-current/NSIS_LIFECYCLE_ACCEPTANCE.json",
+  "native_borders": ".hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json"
 }

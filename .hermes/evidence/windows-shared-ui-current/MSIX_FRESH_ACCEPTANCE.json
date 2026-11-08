@@ -1,0 +1,39 @@
+{
+  "status": "pass native fresh MSIX 29 deployment, actual login and removal",
+  "input": {
+    "runtime_script_sha256": "3cb5f09c1693c0987d9a77181076ad584a967f8ce9651bdd7a0b546c785e6f72",
+    "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+    "sha256": "5038288097362e39af2fa52d6a8d7849b5845c7ba1c4c3ae517425b1dc70b91a",
+    "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+    "version": "0.1.0.29",
+    "startup_enabled": true
+  },
+  "deployment": {
+    "full_name": "Ottrin.Development_0.1.0.29_x64__vs01n017nxmbr",
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "location": "C:\\Program Files\\WindowsApps\\Ottrin.Development_0.1.0.29_x64__vs01n017nxmbr",
+    "version": "0.1.0.29"
+  },
+  "ordinary_user": true,
+  "index_store_identity_preserved": true,
+  "actual_login": "pass",
+  "explorer_contexts": [
+    "Background",
+    "Multiple",
+    "Drive"
+  ],
+  "default_folder_notice_and_host_registry_preservation": true,
+  "package_process_task_and_com_removal": true,
+  "preferences_and_fixture_preserved": true,
+  "result_sha256": "7b675f5161abc1ecdae4591bad0e31159c7b34cdb481f85ff522466346ba6b5a",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}

@@ -1,7 +1,7 @@
 {
   "status": "pass native development MSIX 29 assembly and independent host payload verification",
   "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
-  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-shared-ui-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
   "artifact_sha256": "5038288097362e39af2fa52d6a8d7849b5845c7ba1c4c3ae517425b1dc70b91a",
   "version": "0.1.0.29",
   "native_payload_files": 59,
@@ -87,5 +87,6 @@
     "status": "pass scoped rebuilt daemon runtime and idle sample",
     "account_sid": "S-1-5-18"
   },
-  "scope": "Native MakeAppx assembly and unpack of the exact portable payload; independent host archive, manifest, and file hash comparison. Deployment, update and Store acceptance remain separate."
+  "scope": "Native MakeAppx assembly and unpack of the exact portable payload; independent host archive, manifest, and file hash comparison. Deployment, update and Store acceptance remain separate.",
+  "assembled_artifact_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-shared-ui-stage/Ottrin-0.1.0-windows-x64-development.msix"
 }

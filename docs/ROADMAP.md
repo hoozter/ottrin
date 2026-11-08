@@ -149,8 +149,15 @@ and superseded package paths were removed. Current authority:
 Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
-The 59-file Windows portable ZIP, NSIS installer and unsigned development
-MSIX 28 from `7992ad1e` are available at `dist/windows-candidate/`.
+The stable local Windows portable ZIP, NSIS installer and unsigned development
+MSIX 29 use `d2031d5e` and are available at `dist/windows-candidate/`.
+The 59-file payload, installed UI, portable picker, NSIS lifecycle and all
+three MSIX deployment cases passed in the software Windows guest.
+Promotion retired the superseded cohort and preserved the Linux artifacts
+and held MSI. See [current Windows delivery](../.hermes/evidence/windows-shared-ui-current/WINDOWS_DELIVERY.json)
+and `dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`.
+
+The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
 upgrade, reinstall intent preservation, locked-cache uninstall refusal and
 retry, and default-folder enable and restoration. Native MSIX 28 passed
@@ -161,9 +168,8 @@ preserves the existing default folder app.
 
 The source-equivalent hosted checks all passed. Promotion removed the
 superseded Windows cohort and consumed staging directory. Linux artifacts
-and the held MSI were preserved. Current authority is
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. See
-[Windows delivery](../.hermes/evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json).
+and the held MSI were preserved. See
+[preceding Windows delivery](../.hermes/evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json).
 
 ### Current ordered work
 
@@ -242,8 +248,8 @@ and the held MSI were preserved. Current authority is
    normal entry points against the packages being delivered. Keep public
    signing, Store submission, physical-device tests and personal acceptance
    in the waiting list with their own evidence. Linux is already delivered
-   for the current Vivaldi and index checkpoint. The staged Windows ZIP and
-   NSIS successor uses `d2031d5e`. The host verified all 59 payload files,
+   for the current Vivaldi and index checkpoint. The delivered Windows ZIP and
+   NSIS use `d2031d5e`. The host verified all 59 payload files,
    provenance and the installer transaction script. The exact NSIS passed
    installed Borders field checks in both editing variants after invoking
    the component by its accessible action and confirming the resulting
@@ -261,25 +267,28 @@ and the held MSI were preserved. Current authority is
    three minutes of real sign-in observation. Removal also passed. The
    first run stopped on an incorrect enabled-checkbox assumption. The
    corrected fixture verified the declared initial choice, toggled it and
-   restored it before sign-in. Fresh deployment of 29 remains open. The exact NSIS showed
-   Ready and 100% in Search Settings with a watched two-file index.
+   restored it before sign-in. Fresh deployment of 29 passed ordinary
+   runtime, Explorer actions, real sign-in startup and removal. The exact
+   NSIS showed Ready and 100% in Search Settings with a watched two-file index.
    Quick Inspector showed the native DOCX preview label above its content.
    Escape closed Inspector while leaving the main window open, and file
    bytes and preferences survived uninstall. The source-equivalent hosted
    Windows run passed the stalled-status color and unshared Office render
    cancellation tests. The native guest did not exercise those two states.
-   The staged portable picker passed ten exact keyboard selection cases
-   without indexing. The staged NSIS passed fresh install/removal, upgrade
+   The delivered portable picker passed ten exact keyboard selection cases
+   without indexing. The delivered NSIS passed fresh install/removal, upgrade
    from `7992ad1e` with the index running, and all three reinstall intent
    combinations. It kept the saved Miller view and index database identity.
    Locked-cache removal refused without disturbing the task or running
-   daemon, and retry after releasing the lock passed. The stable Windows
-   cohort is `7992ad1e` pending the remaining MSIX checks and promotion.
+   daemon, and retry after releasing the lock passed. All four hosted jobs
+   passed on source-equivalent `121962fe`. Promotion replaced the three
+   stable package paths and removed the old packages and consumed stage.
    See [staged payload verification](../.hermes/evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
    See [installed Borders acceptance](../.hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
    and [native MSIX assembly](../.hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
    See [native MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json).
    See [disabled MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_DISABLED_ACCEPTANCE.json).
+   See [fresh MSIX deployment](../.hermes/evidence/windows-shared-ui-current/MSIX_FRESH_ACCEPTANCE.json).
    See [installed Search and Inspector acceptance](../.hermes/evidence/windows-shared-ui-current/SEARCH_INSPECTOR_ACCEPTANCE.json).
    See [portable picker and NSIS lifecycle acceptance](../.hermes/evidence/windows-shared-ui-current/NSIS_LIFECYCLE_ACCEPTANCE.json).
 
