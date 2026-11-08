@@ -676,9 +676,14 @@ Current source, test, package and owner/external scopes stay separate.
    `46802ab4` AppImage passed real Vivaldi Open and Save. Both chooser
    windows reported the browser XID as their native transient parent.
    Save wrote identical bytes and no index started. All four Linux formats
-   passed package checks. The packaged index and privileged helper hashes
-   differ from the previous cohort, so their transition requires separate
-   verification before promotion. See
+   passed package checks. The changed index and helper passed isolated
+   verification. The stable daemon populated a 10,000-file private content
+   index, then the staged daemon reopened it after offline edits and restored
+   exact queries and content while preserving the database inode and settings
+   bytes. The staged daemon's 30-second quiet samples used at most 0.1% of one
+   core. The bundled helper passed ten protocol checks. The personal service
+   and installed system helper were untouched. See
+   [runtime transition](../.hermes/evidence/vivaldi-picker-delivery-current/RUNTIME_TRANSITION.json),
    [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json)
    and [Vivaldi acceptance](../.hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json).
 
