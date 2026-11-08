@@ -301,7 +301,12 @@ Current source, test, package and owner/external scopes stay separate.
    These are implementation/QA tasks, not owner waits. Personal authentication,
    unavailable hardware and final acceptance remain on the separate waiting list.
 
-2. Finish U05–U08 interface/theme consistency and property mapping. Include the
+2. Finish U05–U08 interface/theme consistency and property mapping. Search
+   Settings now uses the theme's Error & danger color for a stalled index
+   and stale or missing system filename index maintenance. Active scans
+   retain the accent and Ready retains the success color. The threshold and
+   custom color mapping passed the UI suite. This source follow-up awaits
+   package acceptance. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters

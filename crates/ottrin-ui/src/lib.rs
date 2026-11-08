@@ -21781,19 +21781,10 @@ impl OttrinApp {
                                         ui.add_space(12.0);
                                     }
 
-                                    let ok_col = c.success_text();
-                                    let warn_col = Color32::from_rgb(214, 167, 78);
                                     settings_section_icon(ui, c, MI_SEARCH, "Index status", "Live health, progress, and rebuild controls.", |ui| {
                                         let diag = self.search_service.diagnostics();
                                         let is_indexing = matches!(diag.status, SearchIndexStatus::Indexing);
                                         let is_loading = matches!(diag.status, SearchIndexStatus::Loading);
-                                        let ready_col = ok_col;
-                                        let (mut dot_col, mut status_word) = match diag.status {
-                                            SearchIndexStatus::Loading    => (c.accent, "Loading"),
-                                            SearchIndexStatus::Indexing   => (c.accent, "Indexing"),
-                                            SearchIndexStatus::Ready      => (ready_col, "Ready"),
-                                            SearchIndexStatus::Unavailable => (c.error, "Unavailable"),
-                                        };
                                         let est_total = diag.last_completed_indexed_items
                                             .or(diag.estimated_total_items)
                                             .filter(|t| *t > 0);
@@ -21823,11 +21814,8 @@ impl OttrinApp {
                                             .duration_since(std::time::UNIX_EPOCH)
                                             .map(|d| d.as_secs()).unwrap_or(0);
                                         let last_progress_age = diag.last_progress_unix_secs.map(|t| now_secs.saturating_sub(t));
-                                        let stalled = is_indexing && last_progress_age.map(|age| age > 600).unwrap_or(false);
-                                        if stalled {
-                                            dot_col = warn_col;
-                                            status_word = "Stalled";
-                                        }
+                                        let (status_text, dot_col) =
+                                            search_index_status_presentation(diag.status, last_progress_age, &c);
                                         let second_line: Option<String> = if is_indexing {
                                             diag.last_indexed_path
                                                 .as_ref()
@@ -21852,13 +21840,6 @@ impl OttrinApp {
                                                 ui.painter().circle_filled(dot_r.center(), 4.0, dot_col);
                                             }
                                             ui.add_space(6.0);
-                                            let status_text = if matches!(diag.status, SearchIndexStatus::Ready) {
-                                                "Ready"
-                                            } else if matches!(diag.status, SearchIndexStatus::Unavailable) {
-                                                "Unavailable"
-                                            } else {
-                                                status_word
-                                            };
                                             ui.label(RichText::new(status_text).color(dot_col).size(11.0 * c.font_scale).strong());
                                             if let Some(pct) = status_pct {
                                                 ui.add_space(6.0);
@@ -22608,7 +22589,7 @@ impl OttrinApp {
                                                     ).color(c.text_muted).size(10.5 * c.font_scale));
                                                     ui.add_space(4.0);
                                                     if locate_ok {
-                                                        ui.label(RichText::new("plocate is installed and available").size(10.5 * c.font_scale).color(ok_col));
+                                                        ui.label(RichText::new("plocate is installed and available").size(10.5 * c.font_scale).color(c.success_text()));
                                                         let sys_age = ottrin_search::SearchService::system_locate_db_age_secs();
                                                         let stale = sys_age.map(|s| s > 7 * 86_400).unwrap_or(false);
                                                         let age_label = sys_age
@@ -22616,7 +22597,7 @@ impl OttrinApp {
                                                             .unwrap_or_else(|| "System locate DB age: unknown".to_string());
                                                         ui.label(RichText::new(age_label)
                                                             .size(10.5 * c.font_scale)
-                                                            .color(if stale { warn_col } else { c.text_muted }));
+                                                            .color(if stale { c.error } else { c.text_muted }));
                                                         if self.state.config.search.use_system_locate
                                                             && updatedb_ok
                                                             && (stale || sys_age.is_none())
@@ -22667,7 +22648,7 @@ impl OttrinApp {
                                                         } else if sys_sched.needs_setup {
                                                             ui.label(RichText::new(
                                                                 "No updatedb schedule detected. Enable this only if you rely on system path fallback."
-                                                            ).size(10.5 * c.font_scale).color(warn_col));
+                                                            ).size(10.5 * c.font_scale).color(c.error));
                                                         } else {
                                                             let detail = match (sys_sched.source.as_deref(), sys_sched.detail.as_deref()) {
                                                                 (Some(src), Some(det)) => format!("System schedule detected: {} ({})", src, det),
@@ -26212,6 +26193,22 @@ fn search_scan_summary(diagnostics: &SearchIndexDiagnostics) -> String {
     }
 }
 
+fn search_index_status_presentation(
+    status: SearchIndexStatus,
+    last_progress_age_seconds: Option<u64>,
+    colors: &Colors,
+) -> (&'static str, Color32) {
+    match status {
+        SearchIndexStatus::Indexing if last_progress_age_seconds.is_some_and(|age| age > 600) => {
+            ("Stalled", colors.error)
+        }
+        SearchIndexStatus::Indexing => ("Indexing", colors.accent),
+        SearchIndexStatus::Loading => ("Loading", colors.accent),
+        SearchIndexStatus::Ready => ("Ready", colors.success_text()),
+        SearchIndexStatus::Unavailable => ("Unavailable", colors.error),
+    }
+}
+
 fn index_service_status(
     observation: &remote_index::Observation,
     c: &Colors,
@@ -27843,6 +27840,30 @@ mod tests {
                 blocked
             );
             assert!(!labels.contains(&"Repair setup"));
+        }
+    }
+
+    #[test]
+    fn stalled_search_status_follows_themes_attention_color() {
+        for dark in [false, true] {
+            let mut colors = Colors::preset(ThemePreset::Ottrin, dark);
+            colors.error = Color32::from_rgb(148, 17, 93);
+            assert_eq!(
+                search_index_status_presentation(SearchIndexStatus::Indexing, Some(601), &colors),
+                ("Stalled", colors.error)
+            );
+            assert_eq!(
+                search_index_status_presentation(SearchIndexStatus::Indexing, Some(600), &colors),
+                ("Indexing", colors.accent)
+            );
+            assert_eq!(
+                search_index_status_presentation(SearchIndexStatus::Indexing, None, &colors),
+                ("Indexing", colors.accent)
+            );
+            assert_eq!(
+                search_index_status_presentation(SearchIndexStatus::Ready, Some(601), &colors),
+                ("Ready", colors.success_text())
+            );
         }
     }
 
