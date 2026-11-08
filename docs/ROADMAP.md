@@ -7,32 +7,25 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`0eec7cb4`. The four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42461840752)
-passed with identical runtime inputs. Promotion preserved the running index
-process, startup, preferences and database identity. The consumed stage and
-superseded packages were removed. The Vivaldi `46802ab4` stage is waiting for
-[run 42465900817](https://github.com/hoozter/ottrin/actions/runs/42465900817).
-Its first attempt hit HTTP 504 in the pinned-provider download on Linux and
-Windows. Both performance jobs passed. The failed verification jobs were
-retried on the same revision. Ubuntu reached tests, but Windows hit another
-504. The original Windows URL also exhausted five retries locally. A separate
-source fix adds bounded retries and uses GitHub's API route for the same
-Windows release asset. The final downloader verified the original archive and
-binary hashes for both platforms.
-The earlier Ubuntu verification and both performance jobs passed.
-[Run 42466849620](https://github.com/hoozter/ottrin/actions/runs/42466849620)
-passed the Windows provider and focused native preview gates. The full
-Windows workspace suite then failed two AppContainer fixtures: normal
-output capture returned Unavailable and cancellation never received the
-descendant PID after Windows rejected AppContainer creation with
-`0x8007000A`. The Ubuntu job stopped at the original Linux provider URL
-after five HTTP 504s. The committed Linux API route downloaded and verified
-the same pinned archive and executable locally. A new run with both API
-routes checks whether the Windows failure reproduces on another runner.
-The staged Linux package remains held until its four required gates pass.
-See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json).
-See [download retry acceptance](../.hermes/evidence/vivaldi-picker-delivery-current/CI_DOWNLOAD_RETRY.json).
-See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+`46802ab4`. Real Vivaldi Open and Save passed, including window parenting,
+cancellation and caller exit. Native Ubuntu and Fedora package transitions
+preserved index state. The four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42469453296)
+passed on `be6540b7` with identical application inputs and verified pinned
+provider bytes. Both API download routes and the previously intermittent
+Windows AppContainer cases passed. The earlier failed run and the comparison
+to its passing control remain in the CI evidence.
+Promotion restarted the managed index with the verified new binary and
+confirmed Ready with the watcher active. Startup, preferences, database
+identity and the stable Windows packages were preserved. The superseded
+Linux packages, consumed stage and previous managed mount were removed.
+See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json),
+[promotion receipt](../.hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json)
+and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+The preceding Linux cohort used `0eec7cb4`. Its four
+[hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42461840752)
+passed with identical runtime inputs. That promotion preserved the running
+index process, startup, preferences and database identity.
 
 The preceding stable cohort used `e2c1b926`. All four exact-source jobs passed in
 [run 42458261617](https://github.com/hoozter/ottrin/actions/runs/42458261617).

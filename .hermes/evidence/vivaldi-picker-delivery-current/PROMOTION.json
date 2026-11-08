@@ -1,0 +1,83 @@
+{
+  "status": "pass promoted exact four-format Linux cohort and activated verified managed index",
+  "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "84d467fd9a9129b075ee793023a48d37ec9066750b3114497aed946b3dfca22c",
+    "Ottrin-0.1.0-x86_64.AppImage": "8ae503256ab42fe0d2a4b5fcc82d85ee721b0e69ab28d81a06acbe56fe846121",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f542e835b1b5501b4c81ecf84af75f46293d432d64fcdc98bfa9ad32746572e9",
+    "ottrin_0.1.0_amd64.deb": "37b06f6147ccb107e02c83a29ef89e1773eae5d3d24d5dcd01dfb9dfce6dcc7f"
+  },
+  "windows_preserved": true,
+  "previous_managed_mount_removed": true,
+  "existing_appimage_holders_preserved": [],
+  "managed_service": {
+    "before": {
+      "MainPID": "917890",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/ottrin-index.service",
+      "ActiveState": "active"
+    },
+    "after": {
+      "MainPID": "1526210",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/ottrin-index.service",
+      "ActiveState": "active"
+    },
+    "binary_sha256": "79f2abe711197c577154cd712fb733dc1c54db5fdee6c1aa5b4baffbc3724ec3",
+    "ready": "Ready",
+    "startup_preserved": true,
+    "preferences_bytes_match_at_verification": true,
+    "database_identity_preserved": true
+  },
+  "superseded_files_removed": [
+    {
+      "name": "Ottrin-0.1.0-x86_64.AppImage.sha256",
+      "bytes": 95,
+      "sha256": "f3aa7aa19a28b42bebb1af96172170fb8821a1a44046dfbb6fe2a05ccd6c6855"
+    },
+    {
+      "name": "ottrin-0.1.0-1.x86_64.rpm",
+      "bytes": 28345052,
+      "sha256": "4ea54c3542530e9492720f64df3afe50cc48ea47c0f13d35549d5408cfd7ea9f"
+    },
+    {
+      "name": "Ottrin-0.1.0-x86_64.AppImage",
+      "bytes": 33162432,
+      "sha256": "c6b76ed7073d5652c8734134231ab41a317b911800492b724ce0960a9373992b"
+    },
+    {
+      "name": "Ottrin-0.1.0-linux-x86_64-portable.tar.gz.sha256",
+      "bytes": 108,
+      "sha256": "5e92dc32d4c69dc058c15f3c44118a01349f42e1425f0cd5c3c17ef46d16c104"
+    },
+    {
+      "name": "ottrin-0.1.0-1.x86_64.rpm.sha256",
+      "bytes": 92,
+      "sha256": "bf89ed7413f08f41f4aa60b106a6cd224688284951f7a9b738b09c3c1267c651"
+    },
+    {
+      "name": "Ottrin-0.1.0-linux-x86_64-portable.tar.gz",
+      "bytes": 32778391,
+      "sha256": "4512f4437d8b7582d1551943fa216b8839f119de52b958c9121c19c3871eeb6b"
+    },
+    {
+      "name": "ottrin_0.1.0_amd64.deb.sha256",
+      "bytes": 89,
+      "sha256": "3ad96e34be0a2250cb1ae3ec10213118063f8dfbd1e395dbae202c6a46ec009e"
+    },
+    {
+      "name": "ottrin_0.1.0_amd64.deb",
+      "bytes": 21870156,
+      "sha256": "0afd320e4a42e0705069e721fbe1bb625a357665d14ebb5e67054afe6d811a8f"
+    },
+    {
+      "name": "LINUX_PACKAGES_ACCEPTANCE.json",
+      "bytes": 2689,
+      "sha256": "4ae729cb67bb9a14fa855519b3321d6b1ba997da47ef677f76fb4c02d589c972"
+    },
+    {
+      "name": "Ottrin-0.1.0-x86_64.AppImage.provenance.json",
+      "bytes": 230,
+      "sha256": "123f427f7347a04b837275721a22306c276b308184ef80453a3150c4aa9ddd92"
+    }
+  ],
+  "stage_and_retired_removed": true
+}

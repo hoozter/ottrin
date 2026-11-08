@@ -1,5 +1,5 @@
 {
-  "status": "three required jobs passed; Windows verification failed in workspace tests",
+  "status": "all four required jobs passed on the final run; Linux packages promoted",
   "candidate_source": "46802ab4360f25770ff525b297b716954006e76a",
   "verification_jobs": {
     "verify (ubuntu-latest)": {
@@ -42,5 +42,44 @@
     "workspace_executable_basename": "windows_job_native-65dd3980fc76e10a.exe",
     "comparison": "Each executable basename matches its counterpart across runs. Both affected cases passed in both invocations of the earlier job and in the failing job\u2019s focused invocation. The two heads have identical preview source, workspace manifest and lockfile, and CI workflow. Basenames are Cargo target identifiers, not binary hashes.",
     "next_run": 42469453296
+  },
+  "final_verification": {
+    "run": 42469453296,
+    "tested_source_revision": "be6540b72b3908e1b40f519cf1f3d9face105867",
+    "non_runtime_diff": [
+      "packaging/package-search-runtime.sh",
+      "packaging/search-runtime.json"
+    ],
+    "all_four_jobs_success": true,
+    "verified_jobs": {
+      "verify (windows-latest)": {
+        "run": 42469453296,
+        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
+        "job_id": 128696589291,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "verify (ubuntu-latest)": {
+        "run": 42469453296,
+        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
+        "job_id": 128696589396,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "search-performance (ubuntu-latest)": {
+        "run": 42469453296,
+        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
+        "job_id": 128696589554,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "search-performance (windows-latest)": {
+        "run": 42469453296,
+        "source": "be6540b72b3908e1b40f519cf1f3d9face105867",
+        "job_id": 128696589592,
+        "status": "completed",
+        "conclusion": "success"
+      }
+    }
   }
 }
