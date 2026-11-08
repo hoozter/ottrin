@@ -15,6 +15,12 @@ configured Error & danger color for a stalled scan. Promotion kept the
 index Ready on the same process and preserved startup, preferences and
 database identity. The consumed stage and superseded packages were
 removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+The same AppImage passed Firefox Open and Save in an isolated X11 desktop
+session. Both requests carried Firefox's portal identity, Save preserved the
+document bytes, and no index process started. The private profile and scope
+were removed. See
+[Firefox acceptance](../.hermes/evidence/current-firefox-picker/ACCEPTANCE.json).
+Physical desktop and other caller coverage remain separate.
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 
@@ -2973,7 +2979,7 @@ Do not move a fixable implementation or test failure onto this list.
 
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
-| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. The latest recovery preflight measured about 22.36 GiB. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
+| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. The partial-anchor recovery preflight bound the existing `e12187c7` test binary and refused guest allocation at 23,992,766,464 bytes available (22.34 GiB). The scoped cleanup audit found zero superseded standalone test binaries with matching compiler settings and zero obsolete incremental sessions. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
 | Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
 | Personal administrator helper update | Settings → Services → Update / reinstall helper, then complete OS administrator authentication. Installed binary differs from the delivered tested helper; no privileged host file was silently replaced. Exact hashes: `privileged-copy-current/HOST_HELPER_STATUS.json`. | All implementation/package work, including versioned capability/readiness reporting, elevated Copy restart discovery and Windows bridge. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
