@@ -7,7 +7,16 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`e2171c3b`. All four exact-source hosted jobs passed in
+`2afcfc5a`. All four exact-source hosted jobs passed in
+[run 42451117154](https://github.com/hoozter/ottrin/actions/runs/42451117154).
+With a pending Open and Save change in a private session, the mounted Dark
+and Light AppImage showed Finish setup before opening Settings. The shortcut
+opened Services, which named the blocking app and offered Apply change
+after its dialog closed. Promotion preserved the running index process,
+database identity and preferences. The consumed stage and superseded
+packages were removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+The preceding `e2171c3b` cohort passed all four hosted jobs in
 [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
 The mounted Dark and Light AppImage omits the empty Shared colors group in
 Borders while retaining border thickness and shared typography. Package

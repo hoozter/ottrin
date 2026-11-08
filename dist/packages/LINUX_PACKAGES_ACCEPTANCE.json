@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux Borders appearance delivery",
-  "source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
+  "status": "pass scoped Linux Services startup delivery",
+  "source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "5447fe4a7d4d1c339cc0fa6e3edd1cdb2d9824f70f10fc58228d07c9bf352dd3",
-    "Ottrin-0.1.0-x86_64.AppImage": "d8e57303fd94d0f907e4dd06d895be3264b48bdb2d503fd12b43bd6987926e62",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a28ab32cbaa5596566a3b39f16b8b572ddb706c824d7b611f619ac5ca9aae834",
-    "ottrin_0.1.0_amd64.deb": "097e8ccd5f80e07960c94ba66f1fda334c1f5d573fb72145e4f96089b9f6bc07"
+    "ottrin-0.1.0-1.x86_64.rpm": "03933eef8b76c3178f294769493b8f4508aefafbfe8169fbb6126701b21fd8ee",
+    "Ottrin-0.1.0-x86_64.AppImage": "633889dc5706e38cdf117ecbf8e95dcc43cfd8938aa174b6a466df4dacfe452d",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "48160a79286bc22dcc976131ed5833ac88e93ab84205c8270180e0793ce03ad8",
+    "ottrin_0.1.0_amd64.deb": "f00433d596babe387dedc3c2fc26d1073c7eeb6d5fe6e99a872c0d268ea1ef47"
   },
-  "evidence": ".hermes/evidence/borders-group-delivery-current",
+  "evidence": ".hermes/evidence/services-startup-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,30 +17,33 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "bd985863c79bb3dddd8c49e99207ef866e4f7a6bfaecea99bbdb2378f1c14a73",
+    "application": "67d44601a2f26bbca8271f22cc979bee3398ed8bdcd9d9cfaa40d2e2e0670774",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
     "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42446285622,
-    "tested_source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
+    "run": 42451117154,
+    "tested_source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
     "non_runtime_diff": [],
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/borders-group-delivery-current/BUILD_SOURCE.json",
-  "mounted_borders_editor": ".hermes/evidence/borders-group-delivery-current/BORDERS_GUI.json",
+  "source_scope": ".hermes/evidence/services-startup-delivery-current/BUILD_SOURCE.json",
+  "mounted_services_startup": [
+    ".hermes/evidence/services-startup-delivery-current/dark/RESULT.json",
+    ".hermes/evidence/services-startup-delivery-current/light/RESULT.json"
+  ],
   "current_helper_read_only": [
-    ".hermes/evidence/borders-group-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/services-startup-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
-    "receipt": ".hermes/evidence/borders-group-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
+    "receipt": ".hermes/evidence/services-startup-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted Dark and Light Borders editor keeps border thickness and shared typography and omits the empty shared colors section.",
+    "Mounted Dark and Light main window displays Finish setup before Services opens with a private pending FileChooser request. The named blocker and post-close Apply change were verified.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
     "Daemon, helper and HTML renderer bytes match the previous cohort.",
-    "Packaged manuals are build-time snapshots at e2171c3b; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at 2afcfc5a; repository metadata records later delivery."
   ]
 }
