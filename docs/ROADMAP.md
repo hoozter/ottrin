@@ -617,6 +617,12 @@ Current source, test, package and owner/external scopes stay separate.
    assembly are pending. The 95 MiB stage keeps only the two archives and
    their checksums. The duplicate payload and verifier extraction were
    retired. See `windows-picker-keyboard-current/STAGING.json`.
+   The native Save actor now checks Ctrl+L during Replace, Escape dismissal,
+   address editing afterward, exact UTF-16 selection and source bytes in
+   both themes. It passes the PowerShell parser. The local runner binds the
+   actor, staged hashes and existing guest driver. Host preflight correctly
+   refuses allocation below 24 GiB. No guest execution is claimed.
+   See `windows-picker-keyboard-current/NATIVE_PREFLIGHT.json`.
    Source `e91dcf50` also gives the Replace confirmation the shared window
    geometry. Dark and Light rendering, 544 isolated UI tests and Linux and
    Windows-target Clippy passed. The delivered `7aabcc56` Linux cohort passes

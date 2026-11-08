@@ -1,0 +1,14 @@
+{
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a"
+  },
+  "actor_sha256": "837724b49b651231c216793af105e40bae23df8d91f5ebc0d758cf3adb585d58",
+  "base_driver_sha256": "7486c402d3e0b7492d15212f7aa48082fdcebb7b0048803913d490d9a33df5ba",
+  "adapted_driver_sha256": "34e3bb949727bb0b72e833a5debf7d69f1df6af694ccd4246310f5fc518459a2",
+  "payload_files": 59,
+  "available_bytes": 24010522624,
+  "required_bytes": 25769803776,
+  "guest_admitted": false
+}
