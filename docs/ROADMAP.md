@@ -199,7 +199,10 @@ and the held MSI were preserved. Current authority is
    using a separate local administrator at each UAC prompt. The copied bytes
    matched, the original caller owned the publication, and Undo removed it
    while preserving the source. Installed UI and interrupted recovery remain
-   open. The disposable guests and temporary resources were removed.
+   open. Administrator Copy remains disabled in the delivered Windows
+   app. Use a private candidate with the shared capability enabled to
+   verify the installed UI and interruption paths before enabling it in a
+   deliverable. The disposable guests and temporary resources were removed.
    See [fresh-process Undo acceptance](../.hermes/evidence/windows-uac-copy-restart-current-retry/ACCEPTANCE.json),
    [alternate-account Undo acceptance](../.hermes/evidence/windows-uac-copy-alternate-restart-current/ACCEPTANCE.json),
    [alternate-account acceptance](../.hermes/evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),
@@ -239,9 +242,20 @@ and the held MSI were preserved. Current authority is
    normal entry points against the packages being delivered. Keep public
    signing, Store submission, physical-device tests and personal acceptance
    in the waiting list with their own evidence. Linux is already delivered
-   for the current Vivaldi and index checkpoint. Build and verify a Windows
-   successor to `7992ad1e` for the shared theme, search status and Inspector
-   fixes. The Linux package receipts cover those changes on Linux.
+   for the current Vivaldi and index checkpoint. The staged Windows ZIP and
+   NSIS successor uses `d2031d5e`. The host verified all 59 payload files,
+   provenance and the installer transaction script. Installed Borders,
+   Search status and Inspector verification and development MSIX assembly
+   remain separate from that check. The stable Windows cohort is
+   `7992ad1e` until native acceptance and promotion.
+   Two fresh Windows guests installed the exact NSIS payload and verified
+   its file hashes. The Borders fixture first missed the component dropdown
+   by accessibility name. The retry reached the wrong control and captured
+   Theme defaults with its color popup open. Confirm the selected component
+   before checking its fields in Dark and Light. Both guests and their
+   fixture media were removed.
+   See [staged payload verification](../.hermes/evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
+   See [installed test observations](../.hermes/evidence/windows-shared-ui-current/BORDERS_ATTEMPTS.json).
 
 The records below identify the exact source and package coverage behind
 this queue.

@@ -1,0 +1,63 @@
+{
+  "status": "installed payload verified; Borders selection not accepted",
+  "attempts": [
+    {
+      "input": {
+        "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+        "files": [
+          {
+            "name": "current-setup.exe",
+            "sha256": "fa7c85a9e66211edb60c2dec6237b498f1238caee793b0ca6ce8bf4f2e5553f5"
+          }
+        ],
+        "actor_sha256": "a971220d06aabae36a15ea34291312bd56f22cc8424650d72b83dde13fbc3871",
+        "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+      },
+      "status": "failed installed Borders audit",
+      "phase": "Borders Dark",
+      "error": "Missing unique visible control Theme defaults",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    {
+      "input": {
+        "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+        "files": [
+          {
+            "name": "current-setup.exe",
+            "sha256": "fa7c85a9e66211edb60c2dec6237b498f1238caee793b0ca6ce8bf4f2e5553f5"
+          }
+        ],
+        "actor_sha256": "c8673d54fe28b493f0889cb5c57146d2a97ded2aee1f882b9b9d9bca2e18fcdf",
+        "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+      },
+      "status": "failed installed Borders audit",
+      "phase": "Borders Dark",
+      "error": "Missing unique Window border thickness count=0",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-nsis-client.qcow2",
+          "ottrin-nsis-client-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      },
+      "observations": {
+        "editor-dark.png": "1a33192d9415224dd8e7d80970a4fbae4d8827afa38c801192d7fbc9a77dc8c0",
+        "missing-control.png": "74916e5a637757282cccf186a8239dbc53db1d38fd83c13dea6e2c35699ab161"
+      }
+    }
+  ],
+  "observed": "The retry ended with Theme defaults selected and its Error & danger color popup open. The harness did not reach Borders. This establishes no Borders control result and no product defect.",
+  "next_action": "Use the visible component popup through UI Automation invocation or verified pointer coordinates, capture its selection before asserting the Borders fields, and repeat in both themes."
+}
