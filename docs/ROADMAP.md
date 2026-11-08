@@ -36,7 +36,12 @@ DOCX Next and Previous showed distinct page content. PPTX Next showed the
 second-slide subtitle and renderer label. The check stopped before PPTX
 Previous and Fit Page after failing to read the slide title in Fit Width.
 All source bytes were preserved and no rendering unit remained after exit.
-Current-package in-flight cancellation remains open. The four packages passed
+The same staged package reproduced a cancellation defect. Closing Inspector
+left a deliberately held LibreOffice conversion active while the main window
+stayed open. Route cancellation by the consuming surface so closing Inspector
+does not interrupt a concurrent file-view or panel preview.
+See [cancellation reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json).
+The four packages passed
 content verification and isolated mounted AppImage replacement. The stable
 cohort stays at `2afcfc5a` until the Windows verification job in
 [run 42458261617](https://github.com/hoozter/ottrin/actions/runs/42458261617)

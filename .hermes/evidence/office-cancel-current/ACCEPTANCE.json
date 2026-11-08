@@ -1,0 +1,32 @@
+{
+  "source_revision": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
+  "appimage_sha256": "bb436a97f10d86ba5e3a3543308a38954e9ad36e23a7cd08628649aa099da08b",
+  "fixture_sha256": "b3fcaba0d0cad5f4bb2db5958d9f1f0d220439e7fee0f63e358b4661eadb6d9a",
+  "controlled_in_flight_conversion": true,
+  "inspector_closed_main_survived": true,
+  "render_unit_after_close": "active",
+  "cancelled_while_main_alive": false,
+  "source_unchanged": true,
+  "status": "reproduced in-flight Office conversion surviving Inspector close",
+  "scope": "Ubuntu 24.04 software X11, exact staged AppImage extracted and launched through AppRun, ordinary user and systemd user bus, distribution Bubblewrap profile with global user namespace restriction enabled. Opened Quick Inspector from List view with thumbnails disabled. A transient unit whose command line contained the generated DOCX and --convert-to was suspended to keep the request in flight. Escape closed Inspector while Ottrin stayed open. The held unit remained active after four seconds and was killed during fixture teardown. This establishes missing cancellation under a slow-conversion control, without measuring ordinary conversion runtime.",
+  "cleanup": [
+    {
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-office-cancel-qa-base.qcow2",
+        "ottrin-office-cancel-qa-work.qcow2",
+        "ottrin-office-cancel-qa-seed.iso"
+      ],
+      "temporary_seed_and_ssh_keys_removed": true
+    },
+    {
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-office-cancel-qa-base.qcow2",
+        "ottrin-office-cancel-qa-work.qcow2",
+        "ottrin-office-cancel-qa-seed.iso"
+      ],
+      "temporary_seed_and_ssh_keys_removed": true
+    }
+  ]
+}
