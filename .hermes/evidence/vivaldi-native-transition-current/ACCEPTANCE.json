@@ -1,0 +1,81 @@
+{
+  "status": "pass staged same-version native Linux package replacements",
+  "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "platforms": {
+    "ubuntu": {
+      "status": "pass",
+      "distro": "ubuntu",
+      "previous_revision": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
+      "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+      "package_sha256": "37b06f6147ccb107e02c83a29ef89e1773eae5d3d24d5dcd01dfb9dfce6dcc7f",
+      "scope": "Exact native same-version package replacement from stable e2c1b926 to staged 46802ab4, with a real running installed ordinary-user index and synthetic source.",
+      "previous_runtime_sha256": {
+        "application": "241f47ba9d15ed3ff2c9abb86e4ab30eee52f901456bd7db6d0d572c3a27a18c",
+        "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
+        "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
+        "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+      },
+      "installed_runtime_sha256": {
+        "application": "3ae9336aa2cb453bb4bc62b19d09e5614bb2d119be8875eda4b2a1c7c9a2315e",
+        "index_daemon": "79f2abe711197c577154cd712fb733dc1c54db5fdee6c1aa5b4baffbc3724ec3",
+        "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
+        "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+      },
+      "old_pid": 3610,
+      "new_pid": 3889,
+      "indexed_items": 1000,
+      "database_inode_preserved": true,
+      "settings_and_unit_bytes_preserved": true,
+      "source_unchanged": true,
+      "helper_protocol_5": true,
+      "previous_package_sha256": "a531dfdbd60370c7414879a7f44a59b518884a8662bf72314087742b67422958",
+      "guest_cleanup": {
+        "domain_removed": true,
+        "volumes_removed": [
+          "ottrin-vivaldi-ubuntu-qa-base.qcow2",
+          "ottrin-vivaldi-ubuntu-qa-work.qcow2",
+          "ottrin-vivaldi-ubuntu-qa-seed.iso"
+        ],
+        "temporary_seed_and_ssh_keys_removed": true
+      }
+    },
+    "fedora": {
+      "status": "pass",
+      "distro": "fedora",
+      "previous_revision": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
+      "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+      "package_sha256": "84d467fd9a9129b075ee793023a48d37ec9066750b3114497aed946b3dfca22c",
+      "scope": "Exact native same-version package replacement from stable e2c1b926 to staged 46802ab4, with a real running installed ordinary-user index and synthetic source.",
+      "previous_runtime_sha256": {
+        "application": "7d421642e9530a279e35728a1960a422c760dfeda1aef60bdf0c1ccba8defbda",
+        "index_daemon": "258a22c486f7136c378990ff509d3fd24fa6419e6a39a74c29ffdab69520e963",
+        "privileged_helper": "fdbc215bb1bcb3272de190af26435de491e507c9218e197899d540167b128f25",
+        "html_renderer": "5c09f93a0fe1ed696081882c48e869c023601a360d3e9ab24b82e3c9fd72ba2c"
+      },
+      "installed_runtime_sha256": {
+        "application": "ac0013b9e5b379ebce42ed7258634d5a6e2e0d1e7c7f19a0f73fd5801313e453",
+        "index_daemon": "012dd0b9be3c40401154047fe9c4afb6cba2e4833fdd2ddf12cb5d23085ea4a0",
+        "privileged_helper": "19f16ce0be22a72dc31c758e534bd345f35e399727871ab37cb30ccde549ee23",
+        "html_renderer": "5c09f93a0fe1ed696081882c48e869c023601a360d3e9ab24b82e3c9fd72ba2c"
+      },
+      "old_pid": 1984,
+      "new_pid": 2195,
+      "indexed_items": 1000,
+      "database_inode_preserved": true,
+      "settings_and_unit_bytes_preserved": true,
+      "source_unchanged": true,
+      "helper_protocol_5": true,
+      "previous_package_sha256": "9be8328e0da051a5d7e3bc370d1b7a8a2d4f6f938f7687c86efb8bf93f064185",
+      "guest_cleanup": {
+        "domain_removed": true,
+        "volumes_removed": [
+          "ottrin-vivaldi-fedora-qa-base.qcow2",
+          "ottrin-vivaldi-fedora-qa-work.qcow2",
+          "ottrin-vivaldi-fedora-qa-seed.iso"
+        ],
+        "temporary_seed_and_ssh_keys_removed": true
+      }
+    }
+  },
+  "limits": "Fresh Ubuntu and Fedora guest package-manager reinstallation with different payload bytes at the same package version. Ordinary-user daemon lifecycle and helper protocol only. No protected-file authorization or signed repository upgrade."
+}

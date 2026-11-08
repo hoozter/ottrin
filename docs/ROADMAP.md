@@ -686,6 +686,12 @@ Current source, test, package and owner/external scopes stay separate.
    service also stayed on the old binary during atomic AppImage replacement,
    then loaded the staged daemon after restart with the same database,
    settings and launcher. Both private mounts and the unit were removed.
+   APT and DNF replaced the exact stable DEB and RPM with the staged
+   packages at the same version in fresh Ubuntu and Fedora guests. Both
+   restarted the installed index on the new bytes, preserved enablement,
+   settings, service definition and database identity, and passed the
+   installed helper protocol check. The two guests and their volumes were
+   removed. See [native replacement](../.hermes/evidence/vivaldi-native-transition-current/ACCEPTANCE.json).
    See [managed transition](../.hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json),
    [runtime transition](../.hermes/evidence/vivaldi-picker-delivery-current/RUNTIME_TRANSITION.json),
    [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json)
