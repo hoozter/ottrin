@@ -203,13 +203,13 @@ guest resources were removed. Current authority:
    fresh install, Save shortcut ownership and exact UTF-16 selection in both
    themes, and uninstall in a fresh ordinary-user guest. The caller file and
    configuration bytes were preserved. The upgrade from `67d3cbe1` with
-   a running index passed, along with two reinstall intent combinations.
-   The stopped-and-disabled reinstall timed out before the locked-cache
-   check. Diagnose that reinstall and build and validate development MSIX
-   from the same portable payload. Keep the accepted Windows cohort
-   available until replacement. See
-   [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json)
-   and [upgrade results](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
+   a running index, all three reinstall intent combinations, and locked-cache
+   uninstall refusal and retry passed in the fresh native repeat. The earlier
+   stopped-and-disabled timeout did not recur. Build and validate development
+   MSIX from the same portable payload before replacing the accepted cohort.
+   See [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
+   [upgrade acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
+   and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
 3. **Close Windows desktop integration and theme acceptance.** Run the
    prepared read-only MSIX registry comparison under matching identities.
    Verify supported folder actions, picker behavior, and remaining theme
@@ -851,7 +851,8 @@ Current source, test, package and owner/external scopes stay separate.
    `7992ad1e`, which differs from hosted `7e89eedb` only in delivery
    metadata. All 59 extracted payload files match in both formats.
    Native Save and fresh install/uninstall passed in Dark and Light.
-   Upgrade lifecycle verification and development MSIX assembly are pending.
+   Native upgrade, reinstall and uninstall retry passed. Development MSIX
+   assembly and validation remain pending.
    The 95 MiB stage keeps only the two archives and
    their checksums. The duplicate payload and verifier extraction were
    retired. See `windows-picker-keyboard-current/STAGING.json`.

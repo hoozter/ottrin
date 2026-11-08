@@ -1,0 +1,69 @@
+{
+  "status": "pass native NSIS upgrade and uninstall lifecycle",
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "previous_source": "67d3cbe14c03f1b8021284454e46ed046795131e",
+  "packages": [
+    {
+      "name": "portable.zip",
+      "sha256": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95"
+    },
+    {
+      "name": "current-setup.exe",
+      "sha256": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a"
+    },
+    {
+      "name": "previous-setup.exe",
+      "sha256": "be0cfcc02b2d858870885ac1d44d8d51675b17504fbb0051833b9184a6856b2d"
+    }
+  ],
+  "runtime_cases": [
+    {
+      "status": "pass",
+      "running": true,
+      "enabled": false
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": true
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": false
+    }
+  ],
+  "running_index_upgrade": "pass",
+  "portable_picker_cases": 10,
+  "refused_uninstall": {
+    "exit": 1,
+    "source_preserved": true,
+    "task_and_security_preserved": true,
+    "database_identity": "402E2E37:00080000000251B3",
+    "after": {
+      "instance": "{421B4039-8A18-4FEC-A1D7-3C6D4D2EF63B}",
+      "pid": 10156
+    },
+    "payload_preserved": true,
+    "before": {
+      "instance": "{421B4039-8A18-4FEC-A1D7-3C6D4D2EF63B}",
+      "pid": 10156
+    },
+    "status": "pass",
+    "preferences_preserved": true
+  },
+  "uninstall_retry": "pass",
+  "payload_files": 59,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "ab9131116fb3cbc43f04f50130ea3c4985f159d75ced566ce31e572169912793",
+  "retry_scope": "Same packages and assertions. A bounded diagnostic extension for the stopped-and-disabled reinstall was armed but never triggered. The original timeout did not recur and its cause remains open."
+}
