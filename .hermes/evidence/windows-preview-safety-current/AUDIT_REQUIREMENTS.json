@@ -234,13 +234,14 @@
       "id": 24,
       "section": "Linux",
       "requirement": "Exercise installed LibreOffice with representative DOCX, XLSX and PPTX files. Confirm conversion, cancellation, cleanup, provider labels, page navigation and native fallback. Add fixtures only for defects found or features Ottrin claims to support.",
-      "classification": "current Linux native fallback verified; installed DOCX provider verified in configured Ubuntu guest",
+      "classification": "current Linux native fallback verified; installed DOCX and PPTX provider verified in configured Ubuntu guests",
       "evidence": [
         ".hermes/evidence/current-office-native-fallback/ACCEPTANCE.json",
         ".hermes/evidence/current-linux-installed-office/ACCEPTANCE.json",
+        ".hermes/evidence/current-linux-office-pages/ACCEPTANCE.json",
         ".hermes/evidence/linux-office-native-20261012/ACCEPTANCE.json"
       ],
-      "latest_scope": "Mounted 2afcfc5a AppImage with installed-provider preference enabled and LibreOffice unavailable displayed native DOCX, XLSX and PPTX content and preserved the source bytes. Historical Ubuntu source 60f64774 exercised installed LibreOffice conversion, nine formats, cancellation and cleanup under the recorded Bubblewrap policy. The exact 2afcfc5a AppImage showed LibreOffice DOCX rendering and the provider label, and the page selector moved forward and back. Page-two content, installed XLSX/PPTX and current packaged cancellation remain open."
+      "latest_scope": "Mounted 2afcfc5a AppImage with installed-provider preference enabled and LibreOffice unavailable displayed native DOCX, XLSX and PPTX content and preserved the source bytes. Historical Ubuntu source 60f64774 exercised installed LibreOffice conversion, nine formats, cancellation and cleanup under the recorded Bubblewrap policy. The exact 2afcfc5a AppImage showed LibreOffice DOCX rendering and the provider label, and the page selector moved forward and back. Direct-file PPTX verified both slides and return navigation with the LibreOffice label. Direct-file XLSX displayed chart and formula totals, but an OCR check stopped before capturing the label. DOCX page-two content and current packaged cancellation remain open."
     },
     {
       "id": 25,

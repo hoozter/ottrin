@@ -1,0 +1,46 @@
+{
+  "source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
+  "appimage_sha256": "633889dc5706e38cdf117ecbf8e95dcc43cfd8938aa174b6a466df4dacfe452d",
+  "libreoffice_version": "LibreOffice 24.2.7.2 420(Build:2)",
+  "cases": {
+    "xlsx": {
+      "error": "('content', 'quick inspector \u2014 office-fidelity.xlsx\\n\\npage 1 of 1\\n\\nfit page fit width 100%\\n\\n- fit width - 32% +\\n\\n- text \u201d % +text overview\\n\\nquantity\\nae ; \u00a7 00 amounts by item\\ntotal $4,000.00 $3.000.00\\n$2.500.00\\ncurrency tatals and calculated formulas\\n$2.000.00 w amount\\n$1,500.00\\n\\n$1.000.00\\n\\n')",
+      "source_unchanged": true,
+      "capture_sha256": "4fd99c6409fbac6584d821bb074b2969c53be6213d3d2f3977f64a5bc02a4777"
+    },
+    "pptx": {
+      "fit_width": {
+        "ocr": "quick inspector \u2014 office-fidelity.pptx\n\npage 1 of 2 next\nfit page fit width 100%\n\n- fit width - 32% +\n\nottrin slide 1 fidelity\n\ngreen shape with text",
+        "capture_sha256": "0f34cc90a5dcabc97a518db3f7d288b017c95c3af1ef79363f1780f3c56a604c"
+      },
+      "provider": {
+        "ocr": "quick inspector \u2014 office-fidelity.pptx\n\npage 1 of 2 next\nfit page fit width 100%\n\n- fit page \u00ab26% +\n\nottrin slide 1 fidelity\n\ngreen shape with text\n\nrendered with libreoffice 24.2.7.2",
+        "capture_sha256": "64ed176a5bef9de381cec3d8d90d619f338d3f41c51349dc31189ff69aa33ae5"
+      },
+      "next": {
+        "ocr": "quick inspector \u2014 office-fidelity.pptx\n\nprevious page 2 of 2\n\nfit page fit width 100%\n\n= ffitpage-27% +\n\nottrin slide 2 fidelity\n\nsecond slide stays separate and ordered\n\nrendered with libreoffice 24.2.7.2",
+        "capture_sha256": "da7f9589f3845089937997c45e5ebe3b42a3bdd04045eb8d2df8b98a19f51f78"
+      },
+      "previous": {
+        "ocr": "quick inspector \u2014 office-fidelity.pptx\n\npage 1 of 2 next\nfit page fit width 100%\n\n- fit page \u00ab27% +\n\nottrin slide 1 fidelity\n\ngreen shape with text\n\nrendered with libreoffice 24.2.7.2",
+        "capture_sha256": "30fd70874b279a6ef289178e477ef14e912521bcd816bd8a9625a33fa08efe28"
+      },
+      "source_unchanged": true
+    },
+    "docx": {
+      "error": "('content', '\u2018or \u2014 office-fidelity.docx\\n\\npage 1 of 2 next\\n\\nfit page fit width 100%\\n\\n- fitwidth-41% +\\n\\nbold sample and ilalic sample\\n\\nfeature expected layout\\nimage | orange and cyan halves\\ntable two bordered columns\\n\\n')",
+      "source_unchanged": true
+    }
+  },
+  "environment": "Fresh Ubuntu 24.04 guest, ordinary user, real systemd user bus, restrictive distribution Bubblewrap profile with global user namespace restriction enabled, software X11, exact AppImage extracted once and launched through AppRun with a direct file argument.",
+  "scope": "PPTX rendered two distinct slides with the LibreOffice label and returned to slide one through the visible controls. XLSX rendered the chart and formula totals in a page viewport, but the literal heading OCR condition stopped the check before the label capture. DOCX also stopped on the heading OCR condition, with its rendered document body captured. DOCX page-two content, explicit XLSX label and current packaged cancellation remain open.",
+  "cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-office-pages-qa-base.qcow2",
+      "ottrin-office-pages-qa-work.qcow2",
+      "ottrin-office-pages-qa-seed.iso"
+    ],
+    "temporary_seed_and_ssh_keys_removed": true
+  }
+}
