@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux picker keyboard delivery",
-  "source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+  "status": "pass scoped Linux search status appearance delivery",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "931de2e403cce5948203c94c1d793f8806326aa7bc51660b505de1dfbd560d1c",
-    "Ottrin-0.1.0-x86_64.AppImage": "dec84cbc27b614c98981d581409191e149da627ecd5b5a20606cd81b7baa818b",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a268638ae4cd171786be34348dea64b43fe00d1c341044632f812b7d1701570a",
-    "ottrin_0.1.0_amd64.deb": "30aa6210eb254bc52a00fa8b5a0b5450fb3ee5e07cdd20c28ff4132df7b95957"
+    "ottrin-0.1.0-1.x86_64.rpm": "258479197dee49d63b88cceedf0110058027ab3202f2fb685e1a8929e89768d9",
+    "Ottrin-0.1.0-x86_64.AppImage": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "3d77dbe9f26a032c652aacf989cdd4cfe4521fa99679a243a8f7a0deb1131a20",
+    "ottrin_0.1.0_amd64.deb": "4cad717288e496e1aab9832e10b3b83fda3a3acc5f13fa80d0760caec14e3841"
   },
-  "evidence": ".hermes/evidence/picker-overwrite-keyboard-current",
+  "evidence": ".hermes/evidence/search-stalled-theme-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,34 +17,38 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "2b8f1428fc290b25054f603c5656b3a4a48cdf9f0a727c40c48b36f6fa62d527",
+    "application": "933ee9115528a63df8c0be3f1f14a5a45e82ff2571edda2a57229207ed6e81ad",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
     "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42434627263,
-    "tested_source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+    "run": 42439849292,
+    "tested_source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
     "non_runtime_diff": [],
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/picker-overwrite-keyboard-current/BUILD_SOURCE.json",
-  "mounted_save_keyboard": ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
+  "source_scope": ".hermes/evidence/search-stalled-theme-current/BUILD_SOURCE.json",
+  "mounted_search_status": [
+    ".hermes/evidence/search-stalled-theme-current/mounted-dark/RESULT.json",
+    ".hermes/evidence/search-stalled-theme-current/mounted-light/RESULT.json",
+    ".hermes/evidence/search-stalled-theme-current/mounted-light-stable/RESULT.json"
+  ],
   "current_helper_read_only": [
-    ".hermes/evidence/picker-overwrite-keyboard-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/search-stalled-theme-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
-    "receipt": ".hermes/evidence/picker-overwrite-keyboard-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+    "receipt": ".hermes/evidence/search-stalled-theme-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted Dark and Light GTK Save checks cover Ctrl+L and Escape while Replace is open, confirmed paths and original bytes.",
+    "Mounted Dark and Light Search Settings render the configured accent during active indexing and the configured attention color for stalled indexing. The protocol snapshots were scripted on a private socket.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
     "Daemon, helper and HTML renderer bytes match the previous cohort.",
-    "Packaged manuals are build-time snapshots at 7e89eedb; repository metadata records later delivery.",
+    "Packaged manuals are build-time snapshots at 45a89d62; repository metadata records later delivery.",
     "The repository tracks compact receipts. Screenshot files and full diagnostic logs are retained locally."
   ],
-  "package_content_acceptance": ".hermes/evidence/picker-overwrite-keyboard-current/PACKAGE_CONTENT_ACCEPTANCE.json",
-  "promotion": ".hermes/evidence/picker-overwrite-keyboard-current/PROMOTION.json",
-  "atomic_appimage_qa": ".hermes/evidence/picker-overwrite-keyboard-current/ATOMIC_APPIMAGE_QA.json"
+  "package_content_acceptance": ".hermes/evidence/search-stalled-theme-current/PACKAGE_CONTENT_ACCEPTANCE.json",
+  "promotion": ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
+  "atomic_appimage_qa": ".hermes/evidence/search-stalled-theme-current/ATOMIC_APPIMAGE_QA.json"
 }

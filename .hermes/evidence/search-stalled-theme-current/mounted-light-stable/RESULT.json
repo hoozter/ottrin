@@ -1,0 +1,55 @@
+{
+  "status": "pass",
+  "source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+  "appimage_sha256": "dec84cbc27b614c98981d581409191e149da627ecd5b5a20606cd81b7baa818b",
+  "theme": "Light",
+  "captures": {
+    "Indexing": {
+      "ink": [
+        36,
+        126,
+        193
+      ],
+      "matching_pixels": 28,
+      "sha256": "efb9a3a859e7b5f8b74231794a110827b3ff53c67da6176c9a63da300ba02f22"
+    },
+    "Stalled": {
+      "ink": [
+        214,
+        167,
+        78
+      ],
+      "matching_pixels": 40,
+      "sha256": "c19e31c696035b26cf91f6ce076176e510385a324a5a1f866078d830c8fa76f1"
+    }
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-2b86d818",
+    "owned_processes_reaped": [
+      {
+        "pid": 1345986,
+        "exit": 0
+      },
+      {
+        "pid": 1345989,
+        "exit": 0
+      },
+      {
+        "pid": 1345990,
+        "exit": 15
+      },
+      {
+        "pid": 1346066,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "private_socket_only": true
+}

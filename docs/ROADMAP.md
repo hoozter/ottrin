@@ -7,13 +7,14 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`7e89eedb`. All four exact-source hosted jobs passed in
-[run 42434627263](https://github.com/hoozter/ottrin/actions/runs/42434627263).
-Mounted Dark and Light GTK Save checks confirmed the Replace prompt keeps
-navigation shortcuts inactive and preserves the existing file.
-Promotion kept the index Ready on the same process and preserved startup,
-preferences and database identity. The consumed stage and superseded packages
-were removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+`45a89d62`. All four exact-source hosted jobs passed in
+[run 42439849292](https://github.com/hoozter/ottrin/actions/runs/42439849292).
+Mounted Dark and Light Search Settings checks with a private scripted
+index socket showed the configured accent for active scans and the
+configured Error & danger color for a stalled scan. Promotion kept the
+index Ready on the same process and preserved startup, preferences and
+database identity. The consumed stage and superseded packages were
+removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 
@@ -305,8 +306,8 @@ Current source, test, package and owner/external scopes stay separate.
    Settings now uses the theme's Error & danger color for a stalled index
    and stale or missing system filename index maintenance. Active scans
    retain the accent and Ready retains the success color. The threshold and
-   custom color mapping passed the UI suite. This source follow-up awaits
-   package acceptance. Include the
+   custom color mapping passed the UI suite. The Linux package promotion
+   above includes the fix. Native Windows verification remains open. Include the
    historical-feedback correction now delivered on Linux and Windows; finish the
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters

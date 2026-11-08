@@ -1,0 +1,57 @@
+{
+  "status": "pass",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "theme": "Light",
+  "captures": {
+    "Indexing": {
+      "ink": [
+        36,
+        126,
+        193
+      ],
+      "matching_pixels": 28,
+      "sha256": "0ad2bc0aed6903ef2d2c920188d8e45b8f2f579119f8d991d64622b503af0f93"
+    },
+    "Stalled": {
+      "ink": [
+        148,
+        17,
+        93
+      ],
+      "matching_pixels": 63,
+      "sha256": "99896200cb5bccfea52966a0e741441efb9b15f41950e58e331753ebe51415f4"
+    }
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-qjscnhix",
+    "owned_processes_reaped": [
+      {
+        "pid": 1354546,
+        "exit": 0
+      },
+      {
+        "pid": 1354549,
+        "exit": 0
+      },
+      {
+        "pid": 1354550,
+        "exit": 15
+      },
+      {
+        "pid": 1354629,
+        "exit": -15
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [
+      "144 34 0:65 / /var/tmp/.ottrin-picker-qa-qjscnhix/runtime/doc rw,nosuid,nodev,relatime shared:595 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "private_socket_only": true
+}
