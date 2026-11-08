@@ -1,0 +1,45 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+    "installer_sha256": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead",
+    "source_sha256": "87e7c7d1965ebd6904a1e80e54750fb53ced36e8e85a78869e1d4cdaa3ce3170",
+    "interrupt": false,
+    "stop": true,
+    "actor_sha256": "f04f10c5fe984f69891d197b4149dabb1bed8bcce52e445bc13be7676b08d55d",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phase": {
+    "mode": "copy",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "transactions": [
+      "1e9622aad8e34ae11ba7c40024511a67",
+      "3d03778cb3ff0e7165139b8161c2d27e"
+    ],
+    "phase": "complete",
+    "client_exit": 0,
+    "client_pid": 7696,
+    "status": "pass",
+    "client_exited": true
+  },
+  "system_checks": [
+    "First publication exactly matched source bytes and was owned by the original standard user",
+    "Second publication was absent and both transaction stages were retained",
+    "Both sources and unrelated destination file were unchanged"
+  ],
+  "rendered_observation": "Activity showed Stopped, batch completed 1 of 2 items, and Undo copy. The first publication and unrelated marker were the only visible destination files.",
+  "ui_follow_up": "Stopped badge has low contrast in Dark and the failure body and command area show repeated technical paths and nested diagnostic wording.",
+  "scope": "Exact installed private NSIS, two-member administrator Copy, user-driven Stop after one publication, and live availability of Undo for that prefix. Applying that Undo, verified forward Resume and late terminal result are separate.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "595511e5-b93c-45fd-a071-dc2cf9384147",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporarily_moved_compiler_test_restored_by_hash": true
+  }
+}

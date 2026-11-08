@@ -265,8 +265,17 @@ and the held MSI were preserved. See
    with its journal and stage intact. All three clients exited normally.
    The source hash and unrelated destination file were preserved. See the
    [installed interruption receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_INTERRUPTION.json).
-   The expanded platform regression and installed forward Resume, Stop
-   and partial or late result handling remain open. The temporary worktrees,
+   The same private installer passed a rendered Stop on a two-file Copy
+   after the first item published and the second acquired its own journal.
+   Activity showed Stopped and one of two completed, with Undo available for
+   the completed item. Native checks verified the first file's bytes and
+   caller ownership, absence of the second target, and preservation of
+   both sources, both stages and an unrelated file. See the
+   [installed Stop receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_STOP.json).
+   The Dark Stopped badge and repeated technical errors need a presentation
+   pass. Executing Undo for the stopped batch, forward Resume, late terminal
+   result handling and the expanded platform regression remain open.
+   The temporary worktrees,
    unpacked payloads, duplicate ZIP, superseded private installer and
    disposable guests were removed. The rebuilt private installer remains
    staged for the remaining native tests.
