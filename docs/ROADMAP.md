@@ -42,9 +42,13 @@ stayed open. The source fix cancels Inspector-only Office jobs and retains
 work also requested by another preview surface. A regression covers close,
 shared work admitted with no new job budget, stale responses and reopen.
 The complete UI suite passed 549 tests with one existing exclusion, and
-strict UI library lint passed. Repeat the held-conversion test with a package
-built from the fix. See
-[cancellation reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json).
+strict UI library lint passed. The staged `0eec7cb4` AppImage repeated the
+held-conversion test on Ubuntu. Escape stopped the held conversion in about
+58 ms while the main window stayed open. Its private output was removed,
+the original bytes were preserved and reopening rendered with LibreOffice.
+The four formats passed content verification. This cohort still needs
+source CI and promotion. See [failure reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json)
+and [packaged retest](../.hermes/evidence/office-cancel-delivery-current/ACCEPTANCE.json).
 The four packages passed
 content verification and isolated mounted AppImage replacement. The stable
 cohort stays at `2afcfc5a` until the Windows verification job in

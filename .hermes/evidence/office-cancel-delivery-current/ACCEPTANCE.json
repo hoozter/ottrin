@@ -1,0 +1,24 @@
+{
+  "source_revision": "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
+  "appimage_sha256": "c6b76ed7073d5652c8734134231ab41a317b911800492b724ce0960a9373992b",
+  "fixture_sha256": "55664a372f2c0cd5d96100f1811e135fd6da22ff121d885846477c8689a6ef90",
+  "controlled_in_flight_conversion": true,
+  "inspector_closed_main_survived": true,
+  "cancelled_while_main_alive": true,
+  "cancel_seconds": 0.058,
+  "private_conversion_output_removed": true,
+  "reopen_rendered_with_libreoffice": true,
+  "source_unchanged": true,
+  "status": "pass exact staged Linux AppImage Office cancellation and reopen",
+  "scope": "Ubuntu 24.04 software X11, exact staged AppImage extracted and launched through AppRun, ordinary user and real systemd user bus, distribution Bubblewrap profile with global user namespace restriction enabled. List view thumbnails disabled. A real LibreOffice DOCX conversion was held using the same SIGSTOP control as the red fixture. Closing Inspector canceled the held unit while the main window stayed open, then reopening rendered through LibreOffice. Shared preview retention passed in the scheduler regression and was not separately reproduced in the native guest.",
+  "reopened_capture_sha256": "8c6eafda5f0490d1a023dc24748b15f7aefaba2ad755df19c1b80ebe991c2b88",
+  "guest_cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-office-cancel-green-qa-base.qcow2",
+      "ottrin-office-cancel-green-qa-work.qcow2",
+      "ottrin-office-cancel-green-qa-seed.iso"
+    ],
+    "temporary_seed_and_ssh_keys_removed": true
+  }
+}
