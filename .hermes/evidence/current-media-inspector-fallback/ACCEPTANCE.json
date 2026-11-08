@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
+  "appimage_sha256": "633889dc5706e38cdf117ecbf8e95dcc43cfd8938aa174b6a466df4dacfe452d",
+  "mounted_application_hash_verified": true,
+  "scope": "Exact mounted Linux AppImage, private X11 and deliberately hidden GStreamer plugins, generated silent AVI",
+  "visible_missing_components_message": true,
+  "play_pause_disabled": true,
+  "space_closed_inspector": true,
+  "fixture_bytes_preserved": true,
+  "private_profile_and_mounts_removed": true
+}
