@@ -46,5 +46,6 @@
     "domain_removed": true,
     "overlay_removed": true,
     "protected_definitions_states_and_backing_unchanged": true
-  }
+  },
+  "history_capture_observation": "The restored Copy row and Undo action are visible while administrator history still says Loading. This does not establish completed authenticated history loading or that Undo was invoked."
 }

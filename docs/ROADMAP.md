@@ -228,8 +228,12 @@ and the held MSI were preserved. See
    completed state, and a SYSTEM check found the exact publication and
    original source intact. See
    `.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESTART.json`.
-   Capture Activity diagnostics on the next Undo attempt. Undo, rediscovery
-   as Undone and interrupted recovery remain open. The temporary worktree,
+   The capture still shows administrator history loading alongside the
+   already-restored Copy row. The fixture now waits for the explicit
+   authenticated history success message before requesting Undo and records
+   visible Activity text on failure. The retry could not start because the
+   host fell below the fixture's 24 GiB storage requirement. Authenticated
+   history, Undo, rediscovery as Undone and interrupted recovery remain open. The temporary worktree,
    unpacked payload, duplicate private ZIP and disposable guests were removed.
    The exact private NSIS is retained for the retry.
    See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
