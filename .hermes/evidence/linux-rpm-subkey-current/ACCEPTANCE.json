@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
+  "unsigned_input_sha256": "03933eef8b76c3178f294769493b8f4508aefafbfe8169fbb6126701b21fd8ee",
+  "rpm_version": "4.18.2",
+  "scope": "Production importer and RPM signing script on a disposable copy of the delivered RPM, using a throwaway Ed25519 certification key and signing subkey. Verification used an isolated RPM database and the test public key.",
+  "rpmkeys_result": "Header V4 EdDSA/SHA512 signature and all header/payload digests OK",
+  "cleanup": "Temporary package copy, downloaded libfsverity0, wrappers, keyrings, agents and RPM database removed. No host packages installed or production signing performed.",
+  "limit": "No repository metadata generation, hosted signer execution, release key authentication or native DNF upgrade in this check."
+}
