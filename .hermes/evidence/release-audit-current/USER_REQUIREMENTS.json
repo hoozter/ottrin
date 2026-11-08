@@ -189,7 +189,7 @@
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable Linux e2171c3b and Windows 67d3cbe1 match the package receipts. All four exact-source hosted jobs passed for Linux e2171c3b. Main holds the verified checkpoints. Public release and sustained CI notification outcomes remain open.",
+      "current_scope": "Stable Linux e2171c3b and Windows 67d3cbe1 match the package receipts. All four exact-source hosted jobs passed for Linux e2171c3b. Main holds the verified checkpoints. The latest 20 main runs had 18 successes and two cancellations, with zero failures. The latest exact-source CI logs show all three tests from the three most recent failed runs passing. This checks GitHub job history. Delivery of GitHub notification emails is outside this evidence. Public release remains open.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",

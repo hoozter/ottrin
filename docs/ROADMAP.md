@@ -3009,6 +3009,15 @@ Current evidence includes rebuilt Linux packages and targeted actual-package QA.
 It does not establish full roadmap or personal daily-driver acceptance. There is
 no defensible overall completion percentage or completion date from test counts.
 
+The latest 20 main-branch CI runs recorded 18 successes and two
+cancellations. The three most recent failures were the Linux chooser
+lease fixture hitting `ETXTBSY` and two Windows Copy tests failing on
+retained-name overlap and a journal transition. The exact `e2171c3b`
+logs show each previously failing test passing. This covers GitHub run
+history. Email delivery is a separate observation.
+[Linux verification](https://github.com/hoozter/ottrin/actions/runs/42446285622/job/128625792211)
+and [Windows verification](https://github.com/hoozter/ottrin/actions/runs/42446285622/job/128625792385).
+
 ## Owner/external waiting list
 
 The active goal is to finish independently executable work. These entries do not
