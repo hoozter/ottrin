@@ -482,6 +482,13 @@ Current source, test, package and owner/external scopes stay separate.
    `fractional-border-delivery-current/MOUNTED_ACCEPTANCE.json`.
    The single 111 MiB stage passes guarded promotion preflight and waits
    for [run 42426557500](https://github.com/hoozter/ottrin/actions/runs/42426557500).
+   The exact staged RPM also passes fresh Fedora 44 DNF install, payload
+   verification, ordinary-user file watching, live reinstall and removal.
+   Reinstall restarted the daemon and preserved the saved database identity,
+   preferences and source. Removing the package stopped the running daemon
+   and removed its unit and enablement while keeping those user files.
+   All guest volumes and temporary credentials were removed.
+   Evidence: `fractional-border-delivery-current/native-rpm/ACCEPTANCE.json`.
    The next source change puts the whole-frame selection outline outside the
    actual border in the Inspector and File manager samples. Source-rendered
    checks cover Theme defaults, Quick Inspector and Borders at scales 1 and
