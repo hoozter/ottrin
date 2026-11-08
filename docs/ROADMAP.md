@@ -30,6 +30,14 @@ A separate private GIO session resolved Ottrin as the registered directory
 handler and launched the mounted AppImage with the original path bytes.
 Disabling restored the previous handler and preserved an unrelated MIME edit.
 See [GIO acceptance](../.hermes/evidence/current-gio-folder/ACCEPTANCE.json).
+The Borders editor fix at `e2171c3b` is staged in all four Linux formats.
+The mounted Dark and Light candidate omits the empty Shared colors group
+while retaining border thickness and shared typography. The previous AppImage
+reproduced the empty group. Package content verification and isolated atomic
+replacement passed. Stable promotion awaits the two remaining exact-source
+verification jobs in [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
+See [Borders editor acceptance](../.hermes/evidence/borders-group-delivery-current/BORDERS_GUI.json).
+
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 

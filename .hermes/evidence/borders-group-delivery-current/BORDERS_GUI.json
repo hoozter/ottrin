@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
+  "appimage_sha256": "d8e57303fd94d0f907e4dd06d895be3264b48bdb2d503fd12b43bd6987926e62",
+  "scope": "Exact mounted Linux AppImage on private software X11. Dark and Light Borders panel; stable Dark negative control is separate.",
+  "variants": {
+    "Dark": {
+      "empty_group_absent": true,
+      "border_and_typography_visible": true,
+      "owned_profile_removed": true,
+      "capture_sha256": "90a927519aaaf1caaf24ea7680246853d1ed6a20825f8ba4d83b297af7bcea96"
+    },
+    "Light": {
+      "empty_group_absent": true,
+      "border_and_typography_visible": true,
+      "owned_profile_removed": true,
+      "capture_sha256": "68b4f75db51ff3698b670757e1aa26ad23a710c709c7d819bf98fc5895c1eb90"
+    }
+  }
+}

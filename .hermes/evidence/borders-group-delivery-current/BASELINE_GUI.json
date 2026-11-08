@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "mounted_executable_sha256": "933ee9115528a63df8c0be3f1f14a5a45e82ff2571edda2a57229207ed6e81ad",
+  "theme": "Dark",
+  "empty_shared_colors_visible": true,
+  "border_thickness_visible": true,
+  "shared_typography_visible": true,
+  "owned_profile_removed": true,
+  "capture_sha256": "b5aab700fc438043a4eaad8c8374c09e6ead912980b607c9320254214be17a10"
+}
