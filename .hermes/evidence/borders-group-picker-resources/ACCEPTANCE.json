@@ -1,0 +1,59 @@
+{
+  "artifact_sha256": "d8e57303fd94d0f907e4dd06d895be3264b48bdb2d503fd12b43bd6987926e62",
+  "source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
+  "scope": "Actual AppImage; private X11/software rendering; window mapping timings with warm shared OS caches, not whole-machine cold-cache claims",
+  "status": "pass",
+  "observations": [
+    {
+      "name": "first",
+      "window_mapped_ms": 590.42,
+      "quiet_idle": {
+        "seconds": 30.000345693086274,
+        "cpu_percent_one_core": 0.0,
+        "rss_kib": 130840
+      },
+      "window_icon_present": true,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "name": "repeat",
+      "window_mapped_ms": 454.64,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "name": "concurrent-a",
+      "window_mapped_ms": 457.41,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    },
+    {
+      "name": "concurrent-b",
+      "window_mapped_ms": 460.72,
+      "cancel_response": {
+        "accepted": false,
+        "paths": [],
+        "current_filter": null,
+        "choices": {}
+      }
+    }
+  ],
+  "fixture_bytes_unchanged": true,
+  "index_not_started": true,
+  "private_profile_removed": true,
+  "remaining_mounts": 0,
+  "mounted_runtime_hash_verified": true
+}

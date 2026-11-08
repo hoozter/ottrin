@@ -65,7 +65,8 @@
         "current-picker-first-paint/ACCEPTANCE.json: delivered 45a89d62 private X11 chooser mapped within 483 ms on first launch and 378 ms on repeats. Three filenames and Open/Cancel were verified within 1017 ms initially and 868 ms on repeats, including screenshot/OCR overhead. No index was started.",
         "Windows installed14-case raw result contains own timing/resource scope; do not reuse Linux numbers",
         "Linux native DEB/RPM removal restores provider choices and retains source/preferences",
-        "WINDOWS_PICKER_MEASUREMENT_AUDIT.json:directly inspected14 original cases; Dark300ms first/255ms repeat,30.03s idle0.104% one core/working set55,549,952B/private36,532,224B; Light192.9ms first,30.01s idle0%, independent scope"
+        "WINDOWS_PICKER_MEASUREMENT_AUDIT.json:directly inspected14 original cases; Dark300ms first/255ms repeat,30.03s idle0.104% one core/working set55,549,952B/private36,532,224B; Light192.9ms first,30.01s idle0%, independent scope",
+        "borders-group-picker-resources/ACCEPTANCE.json: staged e2171c3b AppImage, exact mounted executable verified. 30 seconds quiet idle measured zero CPU ticks and 130840 KiB process RSS. Two concurrent requests cancelled independently, with no index and unchanged fixture bytes."
       ],
       "remaining": "Bind current unchanged responsibilities to historical exact artifact measurements; do not label process-cold as cold boot or physical acceptance."
     },
