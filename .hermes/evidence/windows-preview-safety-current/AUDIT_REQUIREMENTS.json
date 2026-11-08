@@ -63,9 +63,11 @@
       "requirement": "Build a reusable Ottrin Open/Save/folder picker using the authoritative theme and shared UI components. Use familiar places/bookmarks, breadcrumbs/editable path, search, file views, optional preview and a clear filename/type/action footer. Support caller-specified locations, filters, multiple selection, cancellation, overwrite confirmation and parent-window behavior. Preserve useful picker preferences without overriding the caller's request. Verify theme changes on the actual picker, including fonts, colors, borders and corner geometry.",
       "classification": "scoped native evidence; wider requirement open",
       "evidence": [
-        ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json"
+        ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
+        ".hermes/evidence/linux-picker-package-current/GUI_ACCEPTANCE.json",
+        ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json"
       ],
-      "latest_scope": "Mounted GTK Save confirms shortcut isolation, exact native paths and unchanged files at 7e89eedb. These observations do not exercise every picker mode, control, theme role and parent-window behavior."
+      "latest_scope": "Historical exact Linux GUI and installed Windows evidence covers request precedence, selection, cancellation, theme controls and ownership at the recorded artifact scope. Mounted GTK Save at 7e89eedb covers shortcut isolation and native paths. Per-role and native parent-window coverage remains scoped to the individual receipts."
     },
     {
       "id": 9,
@@ -74,9 +76,13 @@
       "classification": "scoped native evidence; wider requirement open",
       "evidence": [
         ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
-        ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json"
+        ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
+        ".hermes/evidence/picker-integration-current/SOURCE_ACCEPTANCE.json",
+        ".hermes/evidence/current-firefox-picker/ACCEPTANCE.json",
+        ".hermes/evidence/current-native-linux/ACCEPTANCE.json",
+        ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json"
       ],
-      "latest_scope": "Exact 21f18bbe Linux AppImage passes GTK Open via the explicitly selected private portal. 7e89eedb passes GTK Save. The current checks do not repeat the complete portal preference restoration or Windows cooperating caller matrix."
+      "latest_scope": "All seven internal callers use the shared parent-owned picker in the delivered source; prior Linux source-built GUI exercised all seven. Exact 45a89d62 AppImage passed Firefox Open and Save through a privately projected Linux portal. Native DEB/RPM production lifecycle and Windows cooperating-app coverage retain their original artifact scopes."
     },
     {
       "id": 10,
@@ -86,23 +92,35 @@
       "evidence": [
         ".hermes/evidence/theme-selection-delivery-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
         ".hermes/evidence/windows-msix-default-status-delivery-current/NATIVE_NSIS_DEFAULT_ACCEPTANCE.json",
-        ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json"
+        ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
+        ".hermes/evidence/current-filemanager/ACCEPTANCE.json",
+        ".hermes/evidence/current-gio-folder/ACCEPTANCE.json"
       ],
-      "latest_scope": "Exact 21f18bbe AppImage passes FileManager1 reveal and Properties, including re-registration and disable. Windows 67d3cbe1 NSIS verifies restoration of the prior folder handler, and MSIX verifies Explorer verbs. MSIX default folder opening remains open."
+      "latest_scope": "Exact 45a89d62 AppImage passed FileManager1 and GIO dispatch in separate private sessions, including backend repair and restoration of the prior directory handler. Windows 67d3cbe1 NSIS verifies prior-default restoration, and MSIX verifies Explorer verbs. MSIX default opening remains open."
     },
     {
       "id": 11,
       "section": "4. Required Ottrin picker and folder integration — active",
       "requirement": "Keep picker launch independent of index readiness. Browse directories directly; use the existing index asynchronously for search when available. Do not add indexing responsibilities or an always-running full GUI to the picker. Start the picker on demand; consider bounded warm retention only if measured cold startup justifies it.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "verified at exact Linux artifact and current source scopes",
+      "evidence": [
+        ".hermes/evidence/current-indexed-picker/ACCEPTANCE.json",
+        ".hermes/evidence/desktop-integration-audit-current/PICKER_FOLDER_REQUIREMENT_AUDIT.json"
+      ],
+      "latest_scope": "Exact 45a89d62 AppImage used its packaged private daemon for indexed Save and recovered direct folder browsing and Open with no daemon. Both cases preserved file bytes. The inspected current source uses the same worker, request-scoped launcher and existing index client."
     },
     {
       "id": 12,
       "section": "4. Required Ottrin picker and folder integration — active",
       "requirement": "Accept cold/repeated launch latency, idle CPU, retained memory, cancellation/cleanup, concurrent requests, operation with indexing stopped, theme persistence, and enable/disable restoration on both supported platforms. Record measured results rather than promising unverified speed or universal application coverage.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "measured historical exact-package scopes; wider requirement open",
+      "evidence": [
+        ".hermes/evidence/current-picker-first-paint/ACCEPTANCE.json",
+        ".hermes/evidence/borders-group-picker-resources/ACCEPTANCE.json",
+        ".hermes/evidence/picker-accessibility-current/WINDOWS_NATIVE_ACCEPTANCE.json",
+        ".hermes/evidence/desktop-integration-audit-current/WINDOWS_PICKER_MEASUREMENT_AUDIT.json"
+      ],
+      "latest_scope": "Exact 45a89d62 Linux AppImage has process-cold and repeated content-ready upper bounds; exact e2171c3b has idle CPU, RSS, cancellation and concurrency measurements. Installed Windows d6ebd918 has separate native scope. The old measurements do not establish current Windows package performance, physical desktop performance or cold boot."
     },
     {
       "id": 13,
