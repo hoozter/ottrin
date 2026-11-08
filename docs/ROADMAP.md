@@ -275,6 +275,14 @@ Current source, test, package and owner/external scopes stay separate.
      The existing 24 GiB guard correctly refused allocation at about
      22.4 GiB free. Keep the retained Windows guests and current packages
      while recovering verified disposable space.
+     The exact `21f18bbe` hosted Windows job passed 19 native tests
+     across staging aborts, claim publication, release and retirement,
+     including process exits and preservation of foreign controls.
+     Its log explicitly marks the ordinary-client and SYSTEM-companion
+     tests ignored. The local partial-anchor runner still binds the
+     original binary with no platform-source drift and refuses allocation
+     at 22.46 GiB available against its 24 GiB guard.
+     [Hosted Windows job](https://github.com/hoozter/ottrin/actions/runs/42430923563/job/128579415040).
    - Extend coverage through the remaining claim and native I/O boundaries.
      Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including
