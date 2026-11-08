@@ -494,6 +494,15 @@ Current source, test, package and owner/external scopes stay separate.
    search and preserved database identity, preferences and source. The
    guest, three volumes and temporary credentials were removed.
    Evidence: `fractional-border-delivery-current/native-deb/ACCEPTANCE.json`.
+   The exact mounted AppImage daemon passed a private 1,000-file watcher,
+   create/rename/delete, query, shutdown and restart test. Over 60 seconds
+   with no GUI or clients, it averaged 0.067% of one core and peaked at
+   0.20% over a ten-second interval. A real GTK 3 FileChooserNative Open
+   request through the private desktop portal returned the exact path
+   and bytes in Dark and Light. Those checks cover software X11 pointer
+   interaction and the explicitly selected portal. All profiles and
+   mounts were removed. Evidence: `fractional-border-delivery-current/`
+   daemon runtime and GTK portal receipts.
    The next source change puts the whole-frame selection outline outside the
    actual border in the Inspector and File manager samples. Source-rendered
    checks cover Theme defaults, Quick Inspector and Borders at scales 1 and
