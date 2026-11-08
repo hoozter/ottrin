@@ -1,0 +1,51 @@
+{
+  "status": "pass installed Windows Borders fields in Dark and Light editing variants",
+  "input": {
+    "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "fa7c85a9e66211edb60c2dec6237b498f1238caee793b0ca6ce8bf4f2e5553f5"
+      }
+    ],
+    "actor_sha256": "ab4522161598889ce617828f3730485540b7af22cc3e89ee716ea515ae6d93f8",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "component_entry": {
+    "patterns": [
+      "InvokePatternIdentifiers.Pattern"
+    ],
+    "name": "Borders",
+    "type": "ControlType.Button"
+  },
+  "cases": [
+    {
+      "variant": "Dark",
+      "border_thickness_visible": true,
+      "empty_shared_colors_absent": true,
+      "shared_text_size_visible": true
+    },
+    {
+      "variant": "Light",
+      "border_thickness_visible": true,
+      "empty_shared_colors_absent": true,
+      "shared_text_size_visible": true
+    }
+  ],
+  "captures_sha256": {
+    "Dark": "6039741dd0313445c62f461bc4e9b5f728a7f48c66cf56232757b0d09e05c23b",
+    "Light": "590f19778338acecfb928886c511aa378ac5714eda949169802c1d509da0c8b0"
+  },
+  "normal_exit_uninstall_and_source_preferences_preserved": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "scope": "Exact NSIS installed in a standard-user software Windows guest. Confirmed Borders selection by its component hint before checking fields. Both editing variants used the same fixture palette. The component popup remained open during capture; no popup dismissal or distinct palette rendering claimed."
+}

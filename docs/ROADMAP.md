@@ -244,18 +244,20 @@ and the held MSI were preserved. Current authority is
    in the waiting list with their own evidence. Linux is already delivered
    for the current Vivaldi and index checkpoint. The staged Windows ZIP and
    NSIS successor uses `d2031d5e`. The host verified all 59 payload files,
-   provenance and the installer transaction script. Installed Borders,
-   Search status and Inspector verification and development MSIX assembly
-   remain separate from that check. The stable Windows cohort is
-   `7992ad1e` until native acceptance and promotion.
-   Two fresh Windows guests installed the exact NSIS payload and verified
-   its file hashes. The Borders fixture first missed the component dropdown
-   by accessibility name. The retry reached the wrong control and captured
-   Theme defaults with its color popup open. Confirm the selected component
-   before checking its fields in Dark and Light. Both guests and their
-   fixture media were removed.
+   provenance and the installer transaction script. The exact NSIS passed
+   installed Borders field checks in both editing variants after invoking
+   the component by its accessible action and confirming the resulting
+   selection. Both variants used the same test palette. Development MSIX
+   29 was assembled and unpacked with native MakeAppx. An independent
+   host comparison verified all 59 payload files and the manifest identity.
+   The bundled daemon passed watcher mutations and restart on a private
+   1,000-file corpus. It averaged 0.10% of one core over 30 seconds with
+   no connected clients. The native upgrade and removal, installed Search
+   status and Inspector checks, and promotion remain separate. The stable
+   Windows cohort is `7992ad1e`.
    See [staged payload verification](../.hermes/evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
-   See [installed test observations](../.hermes/evidence/windows-shared-ui-current/BORDERS_ATTEMPTS.json).
+   See [installed Borders acceptance](../.hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
+   and [native MSIX assembly](../.hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
 
 The records below identify the exact source and package coverage behind
 this queue.

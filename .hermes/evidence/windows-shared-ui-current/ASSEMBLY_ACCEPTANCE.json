@@ -1,0 +1,91 @@
+{
+  "status": "pass native development MSIX 29 assembly and independent host payload verification",
+  "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-shared-ui-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact_sha256": "5038288097362e39af2fa52d6a8d7849b5845c7ba1c4c3ae517425b1dc70b91a",
+  "version": "0.1.0.29",
+  "native_payload_files": 59,
+  "rejected_revisions": [
+    -1,
+    65536
+  ],
+  "owned_vm_cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-assembly.qcow2",
+      "ottrin-msix-assembly-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "daemon_runtime": {
+    "private_state_removed": true,
+    "restart_ready": {
+      "active_root": null,
+      "active_root_index": 0,
+      "configured_roots": 1,
+      "database_bytes": 1708032,
+      "detail": "Ready \u00b7 1000 indexed",
+      "error": null,
+      "estimated_total_items": null,
+      "freelist_bytes": 4096,
+      "freelist_pages": 1,
+      "indexed_items": 1000,
+      "last_completed_indexed_items": 1000,
+      "last_progress_unix_secs": 1794174400,
+      "last_scan_completed_unix_secs": 1794174400,
+      "last_scan_duration_ms": null,
+      "last_scan_started_unix_secs": null,
+      "snapshot_revision": 1,
+      "status": "ready",
+      "total_roots": 0,
+      "wal_bytes": 4152,
+      "watched_roots": 1,
+      "watcher_error": null,
+      "watcher_ready": true
+    },
+    "protocol_shutdowns": 2,
+    "idle": {
+      "no_clients_during_sample": true,
+      "seconds": 29.9976603,
+      "cpu_one_core_percent": 0.10417479125863693,
+      "criterion_below_one_percent": true
+    },
+    "source_and_preferences_preserved": true,
+    "scope": "Exact portable daemon in the disposable noninteractive assembly account, private1000-file corpus, content disabled; watcher/query/restart/idle sample. No ordinary-user task, installer lifecycle, GUI, Store or personal-service claim.",
+    "initial_ready": {
+      "active_root": null,
+      "active_root_index": 0,
+      "configured_roots": 1,
+      "database_bytes": 28672,
+      "detail": "Ready \u00b7 1000 indexed",
+      "error": null,
+      "estimated_total_items": null,
+      "freelist_bytes": 0,
+      "freelist_pages": 0,
+      "indexed_items": 1000,
+      "last_completed_indexed_items": 1000,
+      "last_progress_unix_secs": 1794174355,
+      "last_scan_completed_unix_secs": 1794174355,
+      "last_scan_duration_ms": null,
+      "last_scan_started_unix_secs": 1794174355,
+      "snapshot_revision": 1,
+      "status": "ready",
+      "total_roots": 1,
+      "wal_bytes": 0,
+      "watched_roots": 1,
+      "watcher_error": null,
+      "watcher_ready": true
+    },
+    "binary_sha256": "b137e041819573b67781ed10c7f509ce7bb5d5cc997bcec3af3d7f57036ac718",
+    "watcher_mutations": [
+      "create",
+      "rename",
+      "delete"
+    ],
+    "status": "pass scoped rebuilt daemon runtime and idle sample",
+    "account_sid": "S-1-5-18"
+  },
+  "scope": "Native MakeAppx assembly and unpack of the exact portable payload; independent host archive, manifest, and file hash comparison. Deployment, update and Store acceptance remain separate."
+}

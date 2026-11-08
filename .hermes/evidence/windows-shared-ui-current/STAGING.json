@@ -1,7 +1,7 @@
 {
   "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-shared-ui-stage",
-  "status": "portable and NSIS build pass; staged for native GUI/lifecycle/MSIX acceptance; held MSI unchanged",
+  "status": "portable and NSIS contents, installed Borders fields and native development MSIX 29 assembly verified; promotion awaits native update and remaining UI checks",
   "artifacts": {
     "Ottrin-0.1.0-windows-x64-portable.zip": "ebc519e44b43ec2eb0e6601fe4c6f5a81d55d3c806ac16560d65475b64c8dedd",
     "Ottrin-0.1.0-windows-x64-setup.exe": "fa7c85a9e66211edb60c2dec6237b498f1238caee793b0ca6ce8bf4f2e5553f5"
@@ -9,9 +9,14 @@
   "child_exit": 0,
   "staging_retained_for_pending_acceptance": true,
   "retired_duplicate_payload_allocated_bytes": 149053440,
-  "remaining_stage_bytes": 99078936,
+  "remaining_stage_bytes": 158527588,
   "next_consumers": [
-    "Native installed Borders, search status and Inspector checks",
-    "Native development MSIX assembly and upgrade"
-  ]
+    "Native development MSIX 28-to-29 upgrade and removal",
+    "Native installed Search status and Inspector checks"
+  ],
+  "development_msix": {
+    "path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-shared-ui-stage/Ottrin-0.1.0-windows-x64-development.msix",
+    "version": "0.1.0.29",
+    "sha256": "5038288097362e39af2fa52d6a8d7849b5845c7ba1c4c3ae517425b1dc70b91a"
+  }
 }
