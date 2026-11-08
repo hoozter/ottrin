@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
+  "blocked": {
+    "enabled": true,
+    "ready": false,
+    "pending": true,
+    "repair_needed": false,
+    "blocker": "TestBrowser has a desktop request open. Close its Open or Save window or finish the request, then check again.",
+    "detail": "Waiting to turn on"
+  },
+  "after_close": {
+    "enabled": true,
+    "ready": false,
+    "pending": true,
+    "repair_needed": false,
+    "blocker": null,
+    "detail": "Waiting to turn on"
+  },
+  "first_launch_footer": "Services",
+  "appimage_sha256": "d8e57303fd94d0f907e4dd06d895be3264b48bdb2d503fd12b43bd6987926e62",
+  "teardown_verified": true,
+  "capture_sha256": "a9bc96037d4ea02e866748e619180aa6f584cf6fe26aa6389623f10af9efde6e"
+}
