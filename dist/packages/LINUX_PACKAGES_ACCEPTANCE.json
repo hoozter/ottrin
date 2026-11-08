@@ -43,6 +43,9 @@
     "Mounted Dark and Light checks cover frame, title bar and status bar selection over the edited border and Cancel restoration.",
     "GTK Open and FileManager1 were rerun on the exact AppImage. Other portal and native distro receipts retain the previous cohort scope.",
     "Daemon, helper and HTML renderer bytes match the previous cohort.",
-    "Packaged manuals are build-time snapshots at 21f18bbe; repository metadata records later delivery."
-  ]
+    "Packaged manuals are build-time snapshots at 21f18bbe; repository metadata records later delivery.",
+    "The repository tracks compact receipts. Screenshot files and full diagnostic logs are retained locally."
+  ],
+  "package_content_acceptance": ".hermes/evidence/theme-selection-delivery-current/PACKAGE_CONTENT_ACCEPTANCE.json",
+  "promotion": ".hermes/evidence/theme-selection-delivery-current/PROMOTION.json"
 }

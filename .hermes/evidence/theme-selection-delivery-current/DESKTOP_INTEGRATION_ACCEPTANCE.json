@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+  "appimage_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+  "gtk_open": {
+    "dark": {
+      "result": "gtk-portal-dark/RESULT.json",
+      "capture": "gtk-portal-dark/gtk-chooser.png",
+      "sha256": "a5f1f606a7182dc1dc3223e98341597890822d66849ad13129e5d207fe165251"
+    },
+    "light": {
+      "result": "gtk-portal-light/RESULT.json",
+      "capture": "gtk-portal-light/gtk-chooser.png",
+      "sha256": "1fb0b8c6b7e3430a41e6476fab1ac4323f3bd5afa10091d3bfbea82df20e37b6"
+    }
+  },
+  "file_manager": {
+    "result": "FILE_MANAGER_DBUS_ACCEPTANCE.json",
+    "captures": {
+      "mounted-file-manager/reveal-link.png": "2cf524b8fcacf6dcbfde70f0a8cd482e283165467f28b479846ca98ae12d6815",
+      "mounted-file-manager/properties.png": "f66525c02bbf73f408253cc8b7963dbe430153d92e9d29fc48e9f85c33f67273"
+    }
+  }
+}

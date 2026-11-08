@@ -1,0 +1,379 @@
+{
+  "status": "pass",
+  "cases": {
+    "candidate-frame-dark": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-mnxbdg22/t/.mount_OttrineF1GnT/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1298146,
+        "start": "74518097",
+        "wrapper_pid": 1298146,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-mnxbdg22",
+        "theme": "Dark",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "border-quarter-value.png": {
+          "sha256": "6d4a5963a8406c193b3c92ece2986950a37346e4010177dbf76ec1bfa2a71741",
+          "pixels_at_x360": {
+            "199": [
+              92,
+              169,
+              243
+            ],
+            "200": [
+              92,
+              169,
+              243
+            ],
+            "201": [
+              49,
+              56,
+              66
+            ],
+            "204": [
+              236,
+              33,
+              123
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ],
+            "683": [
+              92,
+              169,
+              243
+            ]
+          }
+        },
+        "file-manager-frame.png": {
+          "sha256": "5607f9d58de9adb67f5e63b5f6471d147037177057ff4df96cced9a24880dc19",
+          "pixels_at_x360": {
+            "165": [
+              92,
+              169,
+              243
+            ],
+            "166": [
+              49,
+              56,
+              66
+            ],
+            "169": [
+              236,
+              33,
+              123
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ],
+            "683": [
+              92,
+              169,
+              243
+            ]
+          }
+        }
+      }
+    },
+    "candidate-frame-light": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-yvtuvtrc/t/.mount_OttrinBDwPAq/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1298668,
+        "start": "74519884",
+        "wrapper_pid": 1298668,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-yvtuvtrc",
+        "theme": "Light",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "border-quarter-value.png": {
+          "sha256": "64801dc73b2d004636a3b8dc4f4844a0aeb04dc078b2c9688c14042f998bec99",
+          "pixels_at_x360": {
+            "199": [
+              35,
+              94,
+              223
+            ],
+            "200": [
+              35,
+              94,
+              223
+            ],
+            "201": [
+              235,
+              235,
+              235
+            ],
+            "204": [
+              236,
+              33,
+              123
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ],
+            "683": [
+              35,
+              94,
+              223
+            ]
+          }
+        },
+        "file-manager-frame.png": {
+          "sha256": "5a4a5f31f6e40fbcfc3a54acb453abdcefeacd4388ccba1ac98abb85c00edcbe",
+          "pixels_at_x360": {
+            "165": [
+              35,
+              94,
+              223
+            ],
+            "166": [
+              235,
+              235,
+              235
+            ],
+            "169": [
+              236,
+              33,
+              123
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ],
+            "683": [
+              35,
+              94,
+              223
+            ]
+          }
+        }
+      }
+    },
+    "candidate-component-dark": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-dw1vf5bx/t/.mount_OttrinhmBRK4/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1299208,
+        "start": "74521674",
+        "wrapper_pid": 1299208,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-dw1vf5bx",
+        "theme": "Dark",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "titlebar-selection.png": {
+          "sha256": "cde7be549651ad0e5c6602e2b059bf2baf4ad8fcf8b94d7c3579e00bf734ac46",
+          "pixels_at_x360": {
+            "169": [
+              236,
+              33,
+              123
+            ],
+            "203": [
+              92,
+              169,
+              243
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ]
+          }
+        },
+        "statusbar-selection.png": {
+          "sha256": "5763125a7700a65c4ab70893a1ca78a39cdaebe8d2b9aac7a9a845618b212f10",
+          "pixels_at_x360": {
+            "169": [
+              236,
+              33,
+              123
+            ],
+            "654": [
+              92,
+              169,
+              243
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ]
+          }
+        }
+      }
+    },
+    "candidate-component-light": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-ruum3ee4/t/.mount_OttrinaEug6L/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1299804,
+        "start": "74523640",
+        "wrapper_pid": 1299804,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-ruum3ee4",
+        "theme": "Light",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "titlebar-selection.png": {
+          "sha256": "a044bdb0f3352c03bf16bf593e86e5f319dccfcffd37a057916f0ee7b208f216",
+          "pixels_at_x360": {
+            "169": [
+              236,
+              33,
+              123
+            ],
+            "203": [
+              35,
+              94,
+              223
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ]
+          }
+        },
+        "statusbar-selection.png": {
+          "sha256": "57de45487cd3b851864b3908859dd0d612501e235adca3a43ff23256459f1892",
+          "pixels_at_x360": {
+            "169": [
+              236,
+              33,
+              123
+            ],
+            "654": [
+              35,
+              94,
+              223
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ]
+          }
+        }
+      }
+    },
+    "stable-frame-dark": {
+      "binding": {
+        "source": "d76c351a90055e91879ad9e5cf00f7d4a3e5a9e8",
+        "binary": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "4dfac313476ecbe872c94f231ed3fd14f0a6283328cbd9e9797ad1d39d216c53",
+        "executable": "/var/tmp/.ottrin-picker-qa-7_uh3ii6/t/.mount_OttrinD5qM7o/usr/bin/ottrin",
+        "executable_sha256": "c91ab013763629b77057ed6151bf231e8ea4777c52506b166ea5f7baf8eaf0c0",
+        "pid": 1289127,
+        "start": "74486514",
+        "wrapper_pid": 1289127,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-7_uh3ii6",
+        "theme": "Dark",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "file-manager-frame.png": {
+          "sha256": "dee7c47484d4a2f6a1e2078a0ac12e2688608744acf902504df3c61763c840bc",
+          "pixels_at_x360": {
+            "165": [
+              49,
+              56,
+              66
+            ],
+            "166": [
+              49,
+              56,
+              66
+            ],
+            "169": [
+              92,
+              169,
+              243
+            ],
+            "679": [
+              92,
+              169,
+              243
+            ],
+            "683": [
+              49,
+              56,
+              66
+            ]
+          }
+        }
+      }
+    },
+    "stable-component-dark": {
+      "binding": {
+        "source": "d76c351a90055e91879ad9e5cf00f7d4a3e5a9e8",
+        "binary": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "4dfac313476ecbe872c94f231ed3fd14f0a6283328cbd9e9797ad1d39d216c53",
+        "executable": "/var/tmp/.ottrin-picker-qa-me31rft_/t/.mount_OttrinAvM9k9/usr/bin/ottrin",
+        "executable_sha256": "c91ab013763629b77057ed6151bf231e8ea4777c52506b166ea5f7baf8eaf0c0",
+        "pid": 1289719,
+        "start": "74495472",
+        "wrapper_pid": 1289719,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-me31rft_",
+        "theme": "Dark",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "titlebar-selection.png": {
+          "sha256": "55a64482b8ddcde12762f8846af46da498b8f96337277d08d31130a442437cff",
+          "pixels_at_x360": {
+            "169": [
+              92,
+              169,
+              243
+            ],
+            "203": [
+              92,
+              169,
+              243
+            ],
+            "679": [
+              236,
+              33,
+              123
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "status": "pass",
+  "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+  "scale": "1.25",
+  "cases": {
+    "candidate-frame-dark-125": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-8jxnm69p/t/.mount_Ottrin7oUaI3/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1303195,
+        "start": "74549929",
+        "wrapper_pid": 1303195,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-8jxnm69p",
+        "theme": "Dark",
+        "desktop_scale": "1.25",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "border-quarter-value.png": {
+          "sha256": "5578d910b125ed0eafd4b82a7f477aedfaa20e1b117165cec858a44f818310e6",
+          "pixels_at_x450": {
+            "249": [
+              92,
+              169,
+              243
+            ],
+            "252": [
+              49,
+              56,
+              66
+            ],
+            "255": [
+              236,
+              33,
+              123
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ],
+            "854": [
+              92,
+              169,
+              243
+            ]
+          }
+        },
+        "file-manager-frame.png": {
+          "sha256": "2dcef5799c9342fd00207911eee5740aa1e30e86c5da482fdbb25fbbc0edd50d",
+          "pixels_at_x450": {
+            "207": [
+              92,
+              169,
+              243
+            ],
+            "209": [
+              49,
+              56,
+              66
+            ],
+            "211": [
+              236,
+              33,
+              123
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ],
+            "854": [
+              92,
+              169,
+              243
+            ]
+          }
+        }
+      }
+    },
+    "candidate-frame-light-125": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-px8ugrag/t/.mount_OttringqTPOZ/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1303724,
+        "start": "74551717",
+        "wrapper_pid": 1303724,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-px8ugrag",
+        "theme": "Light",
+        "desktop_scale": "1.25",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "border-quarter-value.png": {
+          "sha256": "0311f1fbe458ff311153d621c2413d0cf6de0e355da972e3baac9dfc59e626d4",
+          "pixels_at_x450": {
+            "249": [
+              35,
+              94,
+              223
+            ],
+            "252": [
+              235,
+              235,
+              235
+            ],
+            "255": [
+              236,
+              33,
+              123
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ],
+            "854": [
+              35,
+              94,
+              223
+            ]
+          }
+        },
+        "file-manager-frame.png": {
+          "sha256": "d84574e57965bac1ff7fdec3ac28f78cb8138c1ad4280d4c9e04ea7286ecef48",
+          "pixels_at_x450": {
+            "207": [
+              35,
+              94,
+              223
+            ],
+            "209": [
+              235,
+              235,
+              235
+            ],
+            "211": [
+              236,
+              33,
+              123
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ],
+            "854": [
+              35,
+              94,
+              223
+            ]
+          }
+        }
+      }
+    },
+    "candidate-component-dark-125": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-5h2zv6g7/t/.mount_OttrinjBJ4bP/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1304235,
+        "start": "74553513",
+        "wrapper_pid": 1304235,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-5h2zv6g7",
+        "theme": "Dark",
+        "desktop_scale": "1.25",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "titlebar-selection.png": {
+          "sha256": "d02757784b5894aae6b45ec051e528ca4fa0358d3de7a2bfe2868c319111bc0f",
+          "pixels_at_x450": {
+            "211": [
+              236,
+              33,
+              123
+            ],
+            "254": [
+              92,
+              169,
+              243
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ]
+          }
+        },
+        "statusbar-selection.png": {
+          "sha256": "690aa9770e93a0c7f8cf810425ba3a73f84aad875fae4873d71337f111ebab99",
+          "pixels_at_x450": {
+            "211": [
+              236,
+              33,
+              123
+            ],
+            "818": [
+              92,
+              169,
+              243
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ]
+          }
+        }
+      }
+    },
+    "candidate-component-light-125": {
+      "binding": {
+        "source": "21f18bbe092185166401a4b39d07b891bc7c691d",
+        "binary": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.linux-theme-selection-stage/Ottrin-0.1.0-x86_64.AppImage",
+        "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+        "executable": "/var/tmp/.ottrin-picker-qa-n3q2gp9c/t/.mount_Ottrinfuc4tF/usr/bin/ottrin",
+        "executable_sha256": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+        "pid": 1304837,
+        "start": "74555487",
+        "wrapper_pid": 1304837,
+        "display": ":2",
+        "profile": "/var/tmp/.ottrin-picker-qa-n3q2gp9c",
+        "theme": "Light",
+        "desktop_scale": "1.25",
+        "first_launch_without_retry": true
+      },
+      "profile_removed": true,
+      "captures": {
+        "titlebar-selection.png": {
+          "sha256": "930b04e56399e782a5246b48e5c8d5c52b51e0e335058cc61864e317c48c2ae6",
+          "pixels_at_x450": {
+            "211": [
+              236,
+              33,
+              123
+            ],
+            "254": [
+              35,
+              94,
+              223
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ]
+          }
+        },
+        "statusbar-selection.png": {
+          "sha256": "26d88ecae011a9923bf238cdf4738121a13c6f6555223fd37e0ebeb03a50c252",
+          "pixels_at_x450": {
+            "211": [
+              236,
+              33,
+              123
+            ],
+            "818": [
+              35,
+              94,
+              223
+            ],
+            "849": [
+              236,
+              33,
+              123
+            ]
+          }
+        }
+      }
+    }
+  }
+}

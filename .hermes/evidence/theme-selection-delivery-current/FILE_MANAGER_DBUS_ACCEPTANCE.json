@@ -1,0 +1,84 @@
+{
+  "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+  "binary_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+  "cases": [
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 1301285,
+      "normal_close": true
+    },
+    {
+      "method": "ShowFolders",
+      "native_argv_preserved": true,
+      "window_pid": 1301399,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItems",
+      "native_argv_preserved": true,
+      "window_pid": 1301521,
+      "normal_close": true
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 1301639,
+      "normal_close": false
+    },
+    {
+      "method": "ShowItemProperties",
+      "native_argv_preserved": true,
+      "window_pid": 1301735,
+      "normal_close": true
+    }
+  ],
+  "backend_smaps_rollup": {
+    "Rss": "10324 kB",
+    "Pss": "8219 kB",
+    "Private_Clean": "6720 kB",
+    "Private_Dirty": "1468 kB"
+  },
+  "backend_memory_kib": {
+    "VmSize": "313848 kB",
+    "VmRSS": "10324 kB"
+  },
+  "idle": {
+    "duration_seconds": 5,
+    "cpu_ticks": 0,
+    "clock_ticks_per_second": 100
+  },
+  "active_window_survived_backend_restart": true,
+  "status": "pass",
+  "source_preserved": true,
+  "registration_removed": true,
+  "foreign_owner_not_replaced": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-twx72k9j",
+    "owned_processes_reaped": [
+      {
+        "pid": 1301191,
+        "exit": 0
+      },
+      {
+        "pid": 1301194,
+        "exit": 0
+      },
+      {
+        "pid": 1301195,
+        "exit": 15
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1301277,
+        1301404,
+        1301467
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}

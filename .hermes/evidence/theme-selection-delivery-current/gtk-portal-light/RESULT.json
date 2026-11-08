@@ -1,0 +1,38 @@
+{
+  "status": "pass",
+  "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+  "gtk_chooser": "GtkFileChooserNative Open through private desktop portal",
+  "exact_original_path_and_bytes_delivered": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-40e7f_c6",
+    "owned_processes_reaped": [
+      {
+        "pid": 1302008,
+        "exit": 0
+      },
+      {
+        "pid": 1302011,
+        "exit": 0
+      },
+      {
+        "pid": 1302012,
+        "exit": 15
+      },
+      {
+        "pid": 1302068,
+        "exit": -15
+      },
+      {
+        "pid": 1302069,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  }
+}
