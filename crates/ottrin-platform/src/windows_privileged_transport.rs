@@ -1349,9 +1349,68 @@ mod tests {
                 assert_eq!(receipt.paths.len(), 1);
                 assert_eq!(receipt.paths[0].1.file_name(), source.file_name());
                 assert!(progress.iter().any(|&bytes| bytes >= original.len() as u64));
+                if let Some(path) = std::env::var_os("OTTRIN_QA_COPY_RECEIPT") {
+                    let file = std::fs::File::create_new(path).unwrap();
+                    serde_json::to_writer(file, &receipt).unwrap();
+                }
             }
             _ => panic!("Unrecognized native acceptance expectation"),
         }
         assert_eq!(std::fs::read(source).unwrap(), original);
+    }
+
+    #[test]
+    #[ignore = "requires a retained owned UAC Copy and a fresh interactive client"]
+    fn windows_helper_pipe_native_uac_copy_recovery() {
+        use ottrin_core::{PrivilegedCopyHistoryState, PrivilegedCopyReceipt};
+
+        let helper = std::env::var("OTTRIN_QA_PRIV_HELPER").unwrap();
+        let receipt_path = std::env::var_os("OTTRIN_QA_COPY_RECEIPT").unwrap();
+        let receipt: PrivilegedCopyReceipt =
+            serde_json::from_reader(std::fs::File::open(receipt_path).unwrap()).unwrap();
+        assert_eq!(receipt.completed_sources, 1);
+        assert_eq!(receipt.transactions.len(), 1);
+        let phase = std::env::var("OTTRIN_QA_COPY_RECOVERY_PHASE").unwrap();
+        let command = match phase.as_str() {
+            "history" | "undone" => PrivilegedCommand::DiscoverCopyHistory,
+            "undo" => PrivilegedCommand::UndoCopy {
+                transactions: receipt.transactions.clone(),
+            },
+            _ => panic!("Unrecognized native recovery phase"),
+        };
+        let request = PrivilegedRequest {
+            protocol_version: ottrin_core::PRIVILEGED_HELPER_PROTOCOL_VERSION,
+            command,
+            context: PrivilegedContext {
+                reason: Some("Verify recovery of the owned native UAC Copy".into()),
+                cwd: None,
+            },
+        };
+        let response = execute(&helper, false, &request, &mut |_| Ok(())).unwrap();
+        assert_eq!(
+            response.status,
+            PrivilegedStatus::Success,
+            "{:?}",
+            response.message
+        );
+        if phase != "undo" {
+            let Some(PrivilegedPayload::CopyHistory(entries)) = response.payload else {
+                panic!("Missing elevated Copy history");
+            };
+            let entry = entries
+                .iter()
+                .find(|entry| entry.reference.transactions == receipt.transactions)
+                .expect("Fresh helper must find the original Copy receipt");
+            assert_eq!(entry.reference.paths, receipt.paths);
+            // Discovery describes a retained operation, without reconstructing
+            // the original batch's completion count.
+            assert_eq!(entry.reference.completed_sources, 0);
+            let expected = if phase == "history" {
+                PrivilegedCopyHistoryState::UndoAvailable
+            } else {
+                PrivilegedCopyHistoryState::Undone
+            };
+            assert_eq!(entry.recovery, expected);
+        }
     }
 }
