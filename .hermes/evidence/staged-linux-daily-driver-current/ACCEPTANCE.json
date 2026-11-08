@@ -1,0 +1,196 @@
+{
+  "status": "pass staged Linux AppImage daily-driver software workflow",
+  "artifact_sha256": "8ae503256ab42fe0d2a4b5fcc82d85ee721b0e69ab28d81a06acbe56fe846121",
+  "runtime_source": "46802ab4360f25770ff525b297b716954006e76a",
+  "scope": "Exact staged 46802ab4 AppImage in private X11/AT-SPI/software desktop. One real process covered navigation, search, context menus, creation, previews, operations, tabs, Tandem and integrity. Cross-filesystem Copy targeted an owned tmpfs directory with distinct st_dev and verified nonempty bytes; physical removable-volume and personal acceptance remain separate.",
+  "driver_sha256": "7a5b155b9b5832677cada9c8d4c9a51adda7b507e6f44b84ca0a6b5df1c4949a",
+  "qa_root": "/var/tmp/.ottrin-picker-qa-c2q6hem0/workflow",
+  "exit": 0,
+  "checks": [
+    {
+      "check": "address-navigation",
+      "status": "passed",
+      "detail": "Opened /var/tmp/.ottrin-picker-qa-c2q6hem0/workflow/home/Documents and exposed all fixture entries."
+    },
+    {
+      "check": "search",
+      "status": "passed",
+      "detail": "Found sample.json through the packaged filename search interface."
+    },
+    {
+      "check": "search-space-preview",
+      "status": "passed",
+      "detail": "Selected a search result and opened its full Quick Inspector with Space."
+    },
+    {
+      "check": "search-context-actions",
+      "status": "passed",
+      "detail": "Opened the shared search-result context menu and copied its selected item."
+    },
+    {
+      "check": "list-view",
+      "status": "passed",
+      "detail": "Cycled from Miller to List with named selectable rows."
+    },
+    {
+      "check": "grid-view",
+      "status": "passed",
+      "detail": "Cycled from List to Grid with named selectable cells."
+    },
+    {
+      "check": "copy",
+      "status": "passed",
+      "detail": "Copied notes.txt into Subfolder without changing the source."
+    },
+    {
+      "check": "quick-inspector-text",
+      "status": "passed",
+      "detail": "Opened the packaged text preview from its accessible menu."
+    },
+    {
+      "check": "quick-inspector-image",
+      "status": "passed",
+      "detail": "Opened the packaged image preview."
+    },
+    {
+      "check": "quick-inspector-pdf",
+      "status": "passed",
+      "detail": "Opened the packaged rendered PDF plus metadata preview for preview.pdf."
+    },
+    {
+      "check": "quick-inspector-pdf",
+      "status": "passed",
+      "detail": "Opened the packaged second rendered PDF in the same process preview for preview-second.pdf."
+    },
+    {
+      "check": "quick-inspector-docx",
+      "status": "passed",
+      "detail": "Opened the packaged DOCX preview for letter.docx."
+    },
+    {
+      "check": "quick-inspector-svg",
+      "status": "passed",
+      "detail": "Opened the packaged rendered SVG preview for ottrin-preview.svg."
+    },
+    {
+      "check": "quick-inspector-xlsx",
+      "status": "passed",
+      "detail": "Opened the packaged XLSX preview for workbook.xlsx."
+    },
+    {
+      "check": "quick-inspector-xlsm",
+      "status": "passed",
+      "detail": "Opened the packaged XLSM preview for macros.xlsm."
+    },
+    {
+      "check": "quick-inspector-pptx",
+      "status": "passed",
+      "detail": "Opened the packaged PPTX preview for slides.pptx."
+    },
+    {
+      "check": "quick-inspector-zip",
+      "status": "passed",
+      "detail": "Opened the packaged archive preview for archive.zip."
+    },
+    {
+      "check": "quick-inspector-previewfolder",
+      "status": "passed",
+      "detail": "Opened the packaged folder summary preview for PreviewFolder."
+    },
+    {
+      "check": "quick-inspector-bin",
+      "status": "passed",
+      "detail": "Opened the packaged generic fallback preview for opaque.bin."
+    },
+    {
+      "check": "trash-delete",
+      "status": "passed",
+      "detail": "Moved only the disposable fixture into isolated XDG Trash."
+    },
+    {
+      "check": "permanent-delete",
+      "status": "passed",
+      "detail": "Permanently deleted only the disposable fixture."
+    },
+    {
+      "check": "multi-select",
+      "status": "passed",
+      "detail": "Selected two entries with Ctrl-click and copied both as one operation."
+    },
+    {
+      "check": "tabs",
+      "status": "passed",
+      "detail": "Created a second tab, navigated it independently, and switched back."
+    },
+    {
+      "check": "new-folder",
+      "status": "passed",
+      "detail": "Created Created folder QA through the packaged menu."
+    },
+    {
+      "check": "new-file",
+      "status": "passed",
+      "detail": "Created created-file-qa.txt through the packaged menu."
+    },
+    {
+      "check": "cross-filesystem-copy",
+      "status": "passed",
+      "detail": "Copied nonempty text across distinct st_dev values with source and destination bytes checked."
+    },
+    {
+      "check": "tandem",
+      "status": "passed",
+      "detail": "Opened Subfolder in Tandem and switched the active pane by keyboard."
+    },
+    {
+      "check": "rename",
+      "status": "passed",
+      "detail": "Renamed sample.json to renamed.json through the packaged UI."
+    },
+    {
+      "check": "filesystem-integrity",
+      "status": "passed",
+      "detail": "All original, renamed, copied and trashed fixture bytes match the exact intended changes."
+    },
+    {
+      "check": "process-health",
+      "status": "passed",
+      "detail": "Packaged process remained alive through the workflow."
+    }
+  ],
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-c2q6hem0",
+    "owned_processes_reaped": [
+      {
+        "pid": 1514828,
+        "exit": 0
+      },
+      {
+        "pid": 1514831,
+        "exit": 0
+      },
+      {
+        "pid": 1514832,
+        "exit": 15
+      },
+      {
+        "pid": 1514883,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "cross_volume_fixture_removed": true,
+  "capture_sha256": {
+    "04-copy-result.png": "4c7b550b392bb0e5c1220f942b16925cfef456a2180ab2a36e22fb006f4c8792",
+    "18-tandem.png": "c97c491dfdb12b2de198dc752b812327eb414429f8b9aafe06765b19238677af",
+    "19-cross-filesystem-copy.png": "b956abd6636a01030285a510084dbbb0804cdb2de5ba42328564dc4665394146"
+  },
+  "first_attempt": "Completed the previous fixture through Tandem and rename; the extension tried the main Menu while Tandem was active. Moved creation and cross-filesystem actions before entering Tandem for the passing run."
+}

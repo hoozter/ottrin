@@ -725,6 +725,14 @@ Current source, test, package and owner/external scopes stay separate.
    [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json)
    and [Vivaldi acceptance](../.hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json).
 
+   The same staged AppImage passed one 30-check private desktop workflow
+   covering file and folder creation, views, search, menus, previews,
+   multi-select, Copy, rename, delete, tabs and Tandem. A nonempty Copy to a
+   separate tmpfs filesystem preserved both byte sequences. The private
+   desktop and second-filesystem fixture were removed. Physical removable
+   volumes and personal acceptance remain separate.
+   See [daily-driver software acceptance](../.hermes/evidence/staged-linux-daily-driver-current/ACCEPTANCE.json).
+
    MSIX status now separates default-folder support from the Explorer menu
    toggle. Settings explains the limitation and the CLI refuses the
    unavailable action before opening a registry transaction. Unpackaged

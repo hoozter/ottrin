@@ -209,7 +209,8 @@
         ".hermes/evidence/fractional-border-delivery-current/native-rpm/ACCEPTANCE.json",
         "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
         ".hermes/evidence/current-native-linux/ACCEPTANCE.json",
-        ".hermes/evidence/release-audit-current/LINUX_45A89D62_DESKTOP_WORKFLOWS.json"
+        ".hermes/evidence/release-audit-current/LINUX_45A89D62_DESKTOP_WORKFLOWS.json",
+        ".hermes/evidence/staged-linux-daily-driver-current/ACCEPTANCE.json"
       ],
       "latest_scope": "Exact current 45a89d62 DEB and RPM passed fresh native install, ordinary-user installed GUI/Inspector, live reinstall and removal on Ubuntu/Fedora software X11 guests. The same source AppImage and portable archive passed the 27-check isolated desktop workflows. Physical desktop and final public artifacts remain separate."
     },
@@ -217,11 +218,11 @@
       "id": 22,
       "section": "Linux",
       "requirement": "Run one daily-driver workflow covering navigation, New File/New Folder, file operations, cross-volume Copy, Tandem View, multi-select, search, Quick Inspector, context menus and status messages.",
-      "classification": "current local desktop smoke passed; full daily-driver workflow open",
+      "classification": "staged AppImage daily-driver software workflow passed; personal and physical coverage separate",
       "evidence": [
         ".hermes/evidence/release-audit-current/LINUX_45A89D62_DESKTOP_WORKFLOWS.json"
       ],
-      "latest_scope": "Both exact stable Linux portable formats pass 27 checks, including search, Inspector, Tandem View, selection, Copy, rename and delete. The single complete daily-driver workflow and physical cross-volume cases are not established by this receipt."
+      "latest_scope": "Exact staged 46802ab4 AppImage passed one 30-check private X11/AT-SPI workflow covering navigation, New File and New Folder, search, Quick Inspector, context actions, multi-select, file operations and Tandem. Cross-filesystem Copy used an owned tmpfs destination with a distinct device identity and matched nonempty source bytes. Current native portable and physical removable-volume or personal acceptance retain separate scopes."
     },
     {
       "id": 23,
