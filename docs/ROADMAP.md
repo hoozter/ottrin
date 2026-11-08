@@ -7,7 +7,17 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`45a89d62`. All four exact-source hosted jobs passed in
+`e2171c3b`. All four exact-source hosted jobs passed in
+[run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
+The mounted Dark and Light AppImage omits the empty Shared colors group in
+Borders while retaining border thickness and shared typography. Package
+contents and isolated atomic replacement passed. Promotion preserved the
+running index process, startup settings, preferences and database identity.
+The consumed stage and superseded packages were removed. See the
+[Borders editor acceptance](../.hermes/evidence/borders-group-delivery-current/BORDERS_GUI.json)
+and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+The preceding `45a89d62` cohort passed all four hosted jobs in
 [run 42439849292](https://github.com/hoozter/ottrin/actions/runs/42439849292).
 Mounted Dark and Light Search Settings checks with a private scripted
 index socket showed the configured accent for active scans and the
@@ -30,13 +40,6 @@ A separate private GIO session resolved Ottrin as the registered directory
 handler and launched the mounted AppImage with the original path bytes.
 Disabling restored the previous handler and preserved an unrelated MIME edit.
 See [GIO acceptance](../.hermes/evidence/current-gio-folder/ACCEPTANCE.json).
-The Borders editor fix at `e2171c3b` is staged in all four Linux formats.
-The mounted Dark and Light candidate omits the empty Shared colors group
-while retaining border thickness and shared typography. The previous AppImage
-reproduced the empty group. Package content verification and isolated atomic
-replacement passed. Stable promotion awaits the two remaining exact-source
-verification jobs in [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
-See [Borders editor acceptance](../.hermes/evidence/borders-group-delivery-current/BORDERS_GUI.json).
 
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).

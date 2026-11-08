@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux search status appearance delivery",
-  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "status": "pass scoped Linux Borders appearance delivery",
+  "source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "258479197dee49d63b88cceedf0110058027ab3202f2fb685e1a8929e89768d9",
-    "Ottrin-0.1.0-x86_64.AppImage": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "3d77dbe9f26a032c652aacf989cdd4cfe4521fa99679a243a8f7a0deb1131a20",
-    "ottrin_0.1.0_amd64.deb": "4cad717288e496e1aab9832e10b3b83fda3a3acc5f13fa80d0760caec14e3841"
+    "ottrin-0.1.0-1.x86_64.rpm": "5447fe4a7d4d1c339cc0fa6e3edd1cdb2d9824f70f10fc58228d07c9bf352dd3",
+    "Ottrin-0.1.0-x86_64.AppImage": "d8e57303fd94d0f907e4dd06d895be3264b48bdb2d503fd12b43bd6987926e62",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "a28ab32cbaa5596566a3b39f16b8b572ddb706c824d7b611f619ac5ca9aae834",
+    "ottrin_0.1.0_amd64.deb": "097e8ccd5f80e07960c94ba66f1fda334c1f5d573fb72145e4f96089b9f6bc07"
   },
-  "evidence": ".hermes/evidence/search-stalled-theme-current",
+  "evidence": ".hermes/evidence/borders-group-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,39 +17,30 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "933ee9115528a63df8c0be3f1f14a5a45e82ff2571edda2a57229207ed6e81ad",
+    "application": "bd985863c79bb3dddd8c49e99207ef866e4f7a6bfaecea99bbdb2378f1c14a73",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
     "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42439849292,
-    "tested_source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+    "run": 42446285622,
+    "tested_source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
     "non_runtime_diff": [],
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/search-stalled-theme-current/BUILD_SOURCE.json",
-  "mounted_search_status": [
-    ".hermes/evidence/search-stalled-theme-current/mounted-dark/RESULT.json",
-    ".hermes/evidence/search-stalled-theme-current/mounted-light/RESULT.json",
-    ".hermes/evidence/search-stalled-theme-current/mounted-light-stable/RESULT.json"
-  ],
+  "source_scope": ".hermes/evidence/borders-group-delivery-current/BUILD_SOURCE.json",
+  "mounted_borders_editor": ".hermes/evidence/borders-group-delivery-current/BORDERS_GUI.json",
   "current_helper_read_only": [
-    ".hermes/evidence/search-stalled-theme-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/borders-group-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
-    "receipt": ".hermes/evidence/search-stalled-theme-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+    "receipt": ".hermes/evidence/borders-group-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted Dark and Light Search Settings render the configured accent during active indexing and the configured attention color for stalled indexing. The protocol snapshots were scripted on a private socket.",
+    "Mounted Dark and Light Borders editor keeps border thickness and shared typography and omits the empty shared colors section.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
     "Daemon, helper and HTML renderer bytes match the previous cohort.",
-    "Packaged manuals are build-time snapshots at 45a89d62; repository metadata records later delivery.",
-    "The repository tracks compact receipts. Screenshot files and full diagnostic logs are retained locally."
-  ],
-  "package_content_acceptance": ".hermes/evidence/search-stalled-theme-current/PACKAGE_CONTENT_ACCEPTANCE.json",
-  "promotion": ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
-  "atomic_appimage_qa": ".hermes/evidence/search-stalled-theme-current/ATOMIC_APPIMAGE_QA.json",
-  "native_installed_deb_rpm": ".hermes/evidence/current-native-linux/ACCEPTANCE.json"
+    "Packaged manuals are build-time snapshots at e2171c3b; repository metadata records later delivery."
+  ]
 }
