@@ -1,0 +1,28 @@
+{
+  "status": "pass package PE resource scope",
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "portable_sha256": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95",
+  "canonical_asset_sha256": "3db24c16886d05b2ac588e8c0639ddfa440f7778083544c16806a4c088a9dd42",
+  "canonical_frames": {
+    "16x16": "772b9a54f6421d5c7cf6348f4d655f3ae942462404f2011cab8e22dd1ba15dc1",
+    "24x24": "6769e1d095361006da4ac1d9f69694a3e98d5c3761ddef0ec512321f667f36be",
+    "32x32": "bde34f311909ab30fe1645427215d2c44c7eec3c5128b8ca549cd87e443539ec",
+    "48x48": "4c558a9d764d9ee494c89982df5c478d5e98b146011cd52e3b05cf66208bb1b3",
+    "64x64": "62d56eea655782b1aaf5d10f1b486686388cb094320d75e41a9a601e8b4ac4d6",
+    "128x128": "a0127e4ccd6676835c4e9798c74db6a12148dd94c554bcee4391ef8e95df8ef4",
+    "256x256": "5eef2bb6ee8f564733f7885e351d3a448548e5b9dbdc6745999b3e9e13c8033a"
+  },
+  "executables": {
+    "bin/ottrin.exe": {
+      "binary_sha256": "a74a030e1f4f5f3c8f35c2408382c16a848796c4026689b4ec2de469ab9c97fc",
+      "frame_hashes_match_canonical": true
+    },
+    "bin/ottrin-indexd.exe": {
+      "binary_sha256": "950931e6f5210f87389d88f4cecfded27a4f52469c178eff2663baf70a6e5cd6",
+      "frame_hashes_match_canonical": true
+    }
+  },
+  "nsis_payload_carries_identical_binaries": true,
+  "scope": "Exact packaged application and index daemon embedded icon frames; native Windows taskbar appearance remains open.",
+  "temporary_extraction_removed": true
+}
