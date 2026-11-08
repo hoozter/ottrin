@@ -1,0 +1,28 @@
+{
+  "status": "pass native before-anchor-flush recovery case",
+  "source_revision": "9c41c355d84f22623c785678bfc62dc913d6195d",
+  "executable_sha256": "1eb77077a431b9c7cdfff351da73ac21990fff6ccc1dd82710f9170205e83e8c",
+  "companion_sha256": "193fdc3d9ea4427aab6e4e3ab44b2f49bb284d4ab393f128139a15709ea27534",
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "ordinary_client_passed": true,
+  "system_cases_passed": 25,
+  "preserved_native_entries": 4,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "5cb5723d17ea104da9ae0624e678c73e5fcdb037775e9739dbd26fe948af2512",
+  "available_after_bytes": 25762037760,
+  "scope": "Fresh offline Windows client with ordinary interactive actor and SYSTEM helper. The anchor was readable in the running guest after injection. This does not establish power-loss durability, installed UAC or package acceptance."
+}

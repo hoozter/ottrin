@@ -172,12 +172,14 @@ guest resources were removed. Current authority:
 ### Current ordered work
 
 1. **Windows administrator Copy recovery.** Run the nine fresh-profile
-   fault cases using the rebuilt native fixture. The truncated-anchor case
-   passed in a fresh Windows 11 build 26300 guest. The ordinary client and
-   all 25 SYSTEM cases passed, and the injected write preserved four native
-   entries. The remaining eight cases and installed administrator Copy
-   workflow are open. The guest, ISO, overlay, viewer and profile were removed.
-   See [native acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json).
+   fault cases using the rebuilt native fixture. Truncated-anchor and
+   before-anchor-flush faults passed in separate fresh Windows 11 build
+   26300 guests. Each preserved four native entries and passed the ordinary
+   client and 25 SYSTEM checks. The before-flush check establishes readable
+   state in the running guest. Seven cases and the installed administrator
+   Copy workflow are open. Both guests and their temporary resources were
+   removed. See [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
+   and [before-flush acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).
 2. **Deliver the Windows Save fix.** Run the staged `7992ad1e` NSIS Save
    actor in Dark and Light, finish installer lifecycle checks, and build and
    validate the development MSIX from the same portable payload. Keep the
