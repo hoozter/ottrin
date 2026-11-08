@@ -1,0 +1,32 @@
+{
+  "status": "pass native after-anchor recovery case",
+  "source_revision": "5e786177d61dd6ed6640f548abba238afc7b1208",
+  "executable_sha256": "7253fb58252e8eb7db1af2ae0e1af3045e113a98ffca3a0e439f01d2ccb88e2b",
+  "companion_sha256": "c97574a6212b35220cb5f308efaab44ca736e40de409b8d673087d9e3757cc20",
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "ordinary_client_passed": true,
+  "system_cases_passed": 25,
+  "preserved_native_entries": 3,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "ed20b19ec1e709815ae9f25c3f1a4179508468ab54cf1a37ef65dcd3bee1c0b0",
+  "previous_attempt": {
+    "guest_result_sha256": "460418fcb0326edbd99a3bc251152d89b12e9f51cee1ceb6972bbcd0ca9258c0",
+    "failure": "Test observer incorrectly applied the nonempty production journal reader to an intentionally empty anchor."
+  },
+  "available_after_bytes": 26000138240,
+  "scope": "Fresh offline Windows client with ordinary interactive actor and SYSTEM helper. The production discovery refusal and exact empty-anchor preservation were checked. Installed UAC and package acceptance remain separate."
+}

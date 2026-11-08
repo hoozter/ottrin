@@ -184,9 +184,12 @@ guest resources were removed. Current authority:
    transaction result and boundary trace if it recurs.
    The after-state case passed in another fresh guest and preserved both
    expected entries. The before-anchor case also passed with both expected
-   entries preserved. Three cases and the installed administrator Copy
-   workflow are open. All completed guests and their temporary resources
-   were removed. See
+   entries preserved. The after-anchor case passed with three entries
+   preserved after fixing the test observer to inspect the expected empty
+   anchor directly. Production still refuses the incomplete anchor.
+   Two cases and the installed administrator Copy workflow are open.
+   All completed guests and their temporary resources were removed. See
+   [after-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-anchor-attempt-2/ACCEPTANCE.json),
    [before-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor/ACCEPTANCE.json),
    [after-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-state/ACCEPTANCE.json),
    [before-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-state-attempt-2/ACCEPTANCE.json), [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
