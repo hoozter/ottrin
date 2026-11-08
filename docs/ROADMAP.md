@@ -185,8 +185,13 @@ and the held MSI were preserved. Current authority is
    anchor directly. Production still refuses the incomplete anchor.
    The before-root and after-root cases passed with three and four entries
    preserved respectively. All nine native profile recovery cases have
-   passing evidence. Installed administrator Copy remains open. All
-   completed guests and their temporary resources were removed. See
+   passing evidence. The delivered helper passed real split-token UAC
+   cancellation and approval from the native test client. Cancellation left
+   the destination empty. Approval streamed progress and published exact bytes
+   owned by the original caller. Alternate-account credentials, installed UI,
+   Undo and restart remain open. All completed guests and temporary resources
+   were removed. See
+   [UAC transport acceptance](../.hermes/evidence/windows-uac-copy-current/ACCEPTANCE.json),
    [after-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-root/ACCEPTANCE.json),
    [before-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-root/ACCEPTANCE.json),
    [after-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-anchor-attempt-2/ACCEPTANCE.json),

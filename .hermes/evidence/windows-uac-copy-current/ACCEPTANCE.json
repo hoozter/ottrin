@@ -1,0 +1,30 @@
+{
+  "status": "pass native split-token UAC Copy cancellation and approval",
+  "test_input": {
+    "source": "6351036ca148713bcd37149703e7a3b17df58dd7",
+    "compiler_sha256": "807c48016a25fd11eee9b4e6a32fe907fde048a1f4f0a6a84ca19ea4a63aff0c",
+    "test_transferred_sha256": "eba251862dad65076bd07c0bbc07b5a06772c6ce06e3b68739052f0967678ff3",
+    "helper_sha256": "1c1d37bd0fe7189a04aa188439803a3bc419ccdf6a540bde9cff9ad0144dde33",
+    "stripped_sections_match": true
+  },
+  "package_source": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "nsis_sha256": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a",
+  "cancellation_left_destination_empty": true,
+  "approval": {
+    "source_bytes_preserved": true,
+    "destination_hash": "036655dde171ce9785f401356109f8f54d51d86565c36d9039d2e1df281cdc8e",
+    "destination_owner_matches_original_caller": true,
+    "streamed_progress_and_receipt": true
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "145132b5-1258-4776-ad6e-fa8a0cdf8347",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "cleanup_boundary": "Guest-side recursive deletion was denied by the protected retained Copy journal. The owned overlay containing it was removed. No retained guest or host data changed.",
+  "scope": "Exact helper bytes from the accepted NSIS payload launched through real split-token Windows consent, driven by a cross-built test client. Alternate-account credentials, installed app UI, Undo and restart are separate."
+}
