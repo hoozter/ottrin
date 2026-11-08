@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "previous_source_revision": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
+  "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "previous_appimage_sha256": "bb436a97f10d86ba5e3a3543308a38954e9ad36e23a7cd08628649aa099da08b",
+  "appimage_sha256": "8ae503256ab42fe0d2a4b5fcc82d85ee721b0e69ab28d81a06acbe56fe846121",
+  "scope": "Private transient systemd user service, stable-copy AppImage path replacement, synthetic data. No operator service, configuration, helper, or database access.",
+  "previous_daemon_survived_path_replacement": true,
+  "old_pid": 1501128,
+  "new_pid": 1501147,
+  "ready_seconds": 0.348,
+  "indexed_items": 1000,
+  "database_inode_preserved": true,
+  "settings_and_wrapper_bytes_preserved": true,
+  "unit_removed": true,
+  "profile_removed": true
+}

@@ -682,7 +682,11 @@ Current source, test, package and owner/external scopes stay separate.
    exact queries and content while preserving the database inode and settings
    bytes. The staged daemon's 30-second quiet samples used at most 0.1% of one
    core. The bundled helper passed ten protocol checks. The personal service
-   and installed system helper were untouched. See
+   and installed system helper were untouched. A private transient systemd
+   service also stayed on the old binary during atomic AppImage replacement,
+   then loaded the staged daemon after restart with the same database,
+   settings and launcher. Both private mounts and the unit were removed.
+   See [managed transition](../.hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_TRANSITION.json),
    [runtime transition](../.hermes/evidence/vivaldi-picker-delivery-current/RUNTIME_TRANSITION.json),
    [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json)
    and [Vivaldi acceptance](../.hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json).
