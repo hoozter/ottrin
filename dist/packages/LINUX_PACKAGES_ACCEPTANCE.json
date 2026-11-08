@@ -47,5 +47,6 @@
     "The repository tracks compact receipts. Screenshot files and full diagnostic logs are retained locally."
   ],
   "package_content_acceptance": ".hermes/evidence/theme-selection-delivery-current/PACKAGE_CONTENT_ACCEPTANCE.json",
-  "promotion": ".hermes/evidence/theme-selection-delivery-current/PROMOTION.json"
+  "promotion": ".hermes/evidence/theme-selection-delivery-current/PROMOTION.json",
+  "saved_view_startup": ".hermes/evidence/theme-selection-delivery-current/SAVED_VIEW_STARTUP_ACCEPTANCE.json"
 }

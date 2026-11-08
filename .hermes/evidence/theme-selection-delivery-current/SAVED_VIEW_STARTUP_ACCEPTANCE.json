@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+  "appimage_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+  "scope": "First window on exact stable AppImage with private pre-seeded preferences. View reported by actual accessible toolbar control. Separate in-use replacement acceptance is recorded in ATOMIC_APPIMAGE_QA.json.",
+  "cases": {
+    "Miller": {
+      "toolbar_control": "Switch to List view",
+      "first_launch": true,
+      "saved_mode_preserved": true,
+      "private_profile_removed": true
+    },
+    "List": {
+      "toolbar_control": "Switch to Grid view",
+      "first_launch": true,
+      "saved_mode_preserved": true,
+      "private_profile_removed": true
+    },
+    "Grid": {
+      "toolbar_control": "Switch to Column view",
+      "first_launch": true,
+      "saved_mode_preserved": true,
+      "private_profile_removed": true
+    }
+  }
+}
