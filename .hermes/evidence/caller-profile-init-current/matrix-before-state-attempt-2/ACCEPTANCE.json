@@ -1,0 +1,34 @@
+{
+  "status": "pass native before-state recovery case on second attempt",
+  "source_revision": "af8d44e9f1376256bfbbdb35fc3868b7999f9632",
+  "executable_sha256": "755e4a423c7067f94fe8e36a6be5046009f1ce4ae5ed15446907c79e45121b92",
+  "companion_sha256": "2c30db6905c5de7ef1dce32e8c92e88182a70c98f07eae69f7135617939586b9",
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "ordinary_client_passed": true,
+  "system_cases_passed": 25,
+  "preserved_native_entries": 1,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "810068d4ccbc2263024eb66edce9069cb886d04d84538b2bf823cf37fe1d90aa",
+  "previous_attempt": {
+    "source_revision": "9c41c355d84f22623c785678bfc62dc913d6195d",
+    "executable_sha256": "1eb77077a431b9c7cdfff351da73ac21990fff6ccc1dd82710f9170205e83e8c",
+    "guest_result_sha256": "cd43520d968e97dfe3a9fa02e37c3f6214d4ef817288ff076c112e267f8ff4c6",
+    "failure": "Later journal prefix expected LocalFlushed at sequence 14 and did not observe the injection. The ordinary client received EOF. The selected before-state fault passed."
+  },
+  "available_after_bytes": 25995317248,
+  "scope": "Fresh offline Windows client with ordinary interactive actor and SYSTEM helper. The diagnostic-only rebuild passed without a behavior change. The intermittent journal fixture miss remains unexplained."
+}
