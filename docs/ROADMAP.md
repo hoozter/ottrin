@@ -672,9 +672,15 @@ Current source, test, package and owner/external scopes stay separate.
    The installed Vivaldi Open test reached the stable AppImage FileChooser
    backend with application ID `vivaldi-stable` and parent `x11:0x400004`.
    The backend rejected the parent before opening the chooser. The earlier
-   Firefox and Falkon receipts retain their caller scopes. Repeat Vivaldi
-   Open and Save after the parent parser repair.
-   See [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json).
+   Firefox and Falkon receipts retain their caller scopes. The staged
+   `46802ab4` AppImage passed real Vivaldi Open and Save. Both chooser
+   windows reported the browser XID as their native transient parent.
+   Save wrote identical bytes and no index started. All four Linux formats
+   passed package checks. The packaged index and privileged helper hashes
+   differ from the previous cohort, so their transition requires separate
+   verification before promotion. See
+   [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json)
+   and [Vivaldi acceptance](../.hermes/evidence/current-vivaldi-picker/ACCEPTANCE.json).
 
    MSIX status now separates default-folder support from the Explorer menu
    toggle. Settings explains the limitation and the CLI refuses the

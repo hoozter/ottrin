@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "appimage_sha256": "8ae503256ab42fe0d2a4b5fcc82d85ee721b0e69ab28d81a06acbe56fe846121",
+  "actual_portal_app_id": "vivaldi-stable",
+  "open_transient_parent": "WM_TRANSIENT_FOR(WINDOW): window id # 0x400004",
+  "save_transient_parent": "WM_TRANSIENT_FOR(WINDOW): window id # 0x400004",
+  "source_sha256": "f27361edcd8904d52b5bd06f45ee9e2771bc0a8292d34b33d82d4f0d3d31bda2",
+  "saved_sha256": "f27361edcd8904d52b5bd06f45ee9e2771bc0a8292d34b33d82d4f0d3d31bda2",
+  "no_index_started": true,
+  "browser_version": "Vivaldi 8.2.4133.96 stable",
+  "parent_handle": "x11:0x400004",
+  "capture_sha256": {
+    "open.png": "0602907ebbb92791d8f5427eac22be15f172ea1c31189cffdcd842e8568fb135",
+    "save.png": "e2fd1e2970f7eec28a5217e1e9dd84546d4cd0c4678053d19b3bf0347183a303"
+  },
+  "scope": "Installed Vivaldi Open and Save on a private software X11 display and D-Bus session, production FileChooser service from the exact mounted AppImage with private portal registration. Both chooser windows attach to the native browser window. Vivaldi opened the selected file and wrote exact original bytes to the selected Save destination. Physical desktop and production setup retain separate scopes.",
+  "cleanup": {
+    "profile_removed": true,
+    "browser_scope_removed": true,
+    "owned_mounts_unmounted": [],
+    "retry_profiles_removed": true
+  }
+}
