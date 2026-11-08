@@ -182,8 +182,11 @@ guest resources were removed. Current authority:
    first run preserved the expected entry but missed a later LocalFlushed
    injection. The cause remains open. The diagnostic now reports the
    transaction result and boundary trace if it recurs.
-   Five cases and the installed administrator Copy workflow are open.
-   All completed guests and their temporary resources were removed. See
+   The after-state case passed in another fresh guest and preserved both
+   expected entries. Four cases and the installed administrator Copy
+   workflow are open. All completed guests and their temporary resources
+   were removed. See
+   [after-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-state/ACCEPTANCE.json),
    [before-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-state-attempt-2/ACCEPTANCE.json), [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
    [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
    and [before-flush acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).

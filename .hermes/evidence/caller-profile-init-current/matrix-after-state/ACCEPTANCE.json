@@ -1,0 +1,28 @@
+{
+  "status": "pass native after-state recovery case",
+  "source_revision": "af8d44e9f1376256bfbbdb35fc3868b7999f9632",
+  "executable_sha256": "755e4a423c7067f94fe8e36a6be5046009f1ce4ae5ed15446907c79e45121b92",
+  "companion_sha256": "2bb9f1ea49734198b951a505dbd6394795c7234bbf012d6ed67dd4ae48da84ab",
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "ordinary_client_passed": true,
+  "system_cases_passed": 25,
+  "preserved_native_entries": 2,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "90b542120f0910d289d369ab38acf506745c4c89df98279eee9f0fe21daaf237",
+  "available_after_bytes": 26021838848,
+  "scope": "Fresh offline Windows client with ordinary interactive actor and SYSTEM helper. The after-state fault and companion checks passed. Installed UAC and package acceptance remain separate."
+}
