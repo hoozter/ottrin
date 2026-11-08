@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
+  "appimage_sha256": "633889dc5706e38cdf117ecbf8e95dcc43cfd8938aa174b6a466df4dacfe452d",
+  "cases": {
+    "docx": {
+      "visible_fixture_marker": "document fidelity",
+      "capture_sha256": "7cbe8b392c73be746130a208771b56140997d8f99b58b0c2e8abd5999cd5e157",
+      "source_unchanged": true
+    },
+    "xlsx": {
+      "visible_fixture_marker": "sheet fidelity",
+      "capture_sha256": "0335e315e27e09a6566d398c981a90c3382a05b4702af3f678a3f488f01240b0",
+      "source_unchanged": true
+    },
+    "pptx": {
+      "visible_fixture_marker": "slide 1 fidelity",
+      "capture_sha256": "70adda92cf264c4450d593820b5ae4460c13321600e71147c9cedc826d0b6076",
+      "source_unchanged": true
+    }
+  },
+  "scope": "Exact mounted AppImage, private software X11, installed-provider preference enabled and no LibreOffice executable available. Checks native fallback content and close, not installed-provider conversion or full page fidelity.",
+  "private_profile_and_mounts_removed": true
+}
