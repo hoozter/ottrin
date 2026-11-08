@@ -488,6 +488,12 @@ Current source, test, package and owner/external scopes stay separate.
    `fractional-border-delivery-current/MOUNTED_ACCEPTANCE.json`.
    The single 111 MiB stage passes guarded promotion preflight and waits
    for [run 42426557500](https://github.com/hoozter/ottrin/actions/runs/42426557500).
+   The exact staged AppImage also passed real `org.freedesktop.FileManager1`
+   activation on a private desktop. Show in Folder selected the requested
+   broken symlink inside a non-UTF-8 directory, and Properties showed its
+   missing target. Re-registering preserved an open Properties window, and
+   disabling removed the private registration. The owned desktop and mounts
+   were removed. Evidence: `fractional-border-delivery-current/FILE_MANAGER_DBUS_ACCEPTANCE.json`.
    The exact staged RPM also passes fresh Fedora 44 DNF install, payload
    verification, ordinary-user file watching, live reinstall and removal.
    Reinstall restarted the daemon and preserved the saved database identity,
