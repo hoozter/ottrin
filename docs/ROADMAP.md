@@ -173,8 +173,8 @@ and the held MSI were preserved. See
 
 ### Current ordered work
 
-1. **Windows administrator Copy recovery.** Run the nine fresh-profile
-   fault cases using the rebuilt native fixture. Truncated-anchor and
+1. **Windows administrator Copy recovery.** The nine fresh-profile fault
+   cases ran using the rebuilt native fixture. Truncated-anchor and
    before-anchor-flush faults passed in separate fresh Windows 11 build
    26300 guests. Each preserved four native entries and passed the ordinary
    client and 25 SYSTEM checks. The before-flush check establishes readable
@@ -249,9 +249,17 @@ and the held MSI were preserved. See
    checks verified caller ownership, unchanged source bytes and removal
    of the exact publication. See the
    [installed recovery receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RECOVERY.json).
-   The next private fixture must exercise interrupted recovery and retained
-   data cleanup before enabling the capability in delivered builds. The
-   expanded platform regression still requires native execution. The
+   A fresh run of the same private installer passed administrator-approved
+   retained-data cleanup after Undo. The original standard user saw one
+   caller journal before cleanup and zero afterward. A SYSTEM observer
+   checked that protected destination recovery files were removed and the
+   unrelated marker and original source were preserved. A fourth process
+   authenticated, loaded empty history and exited normally. See the
+   [installed cleanup receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_CLEANUP.json).
+   The next private fixture must interrupt a real installed Copy with a
+   retained transaction, then verify discovery and recovery before enabling
+   the capability in delivered builds. The expanded platform regression
+   still requires native execution. The
    temporary worktrees, unpacked payloads, duplicate ZIP, superseded
    private installer and disposable guests were removed. The rebuilt
    private installer remains staged for the interruption fixture.

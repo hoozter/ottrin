@@ -1,0 +1,84 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+    "installer_sha256": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "baed81aea8f35cd3e70e65c1ea3ab0f89691ff9e163a32a9154e756e23c150ba",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 7636,
+      "status": "pass"
+    },
+    {
+      "client_pid": 7400,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    {
+      "client_pid": 3952,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    {
+      "client_pid": 3260,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  ],
+  "native_approval_sequence": [
+    "Copy",
+    "load History after reopen",
+    "Undo",
+    "load History after second reopen",
+    "clear retained Copy data",
+    "load History after third reopen"
+  ],
+  "caller_checks": [
+    "One central journal before cleanup",
+    "No central journal after cleanup and after fresh authenticated History"
+  ],
+  "system_checks": [
+    "Publication matches original bytes and owner SID",
+    "After Undo the publication was absent and destination recovery files were still present",
+    "After cleanup and after reopening the destination recovery files were absent",
+    "Original source bytes and unrelated destination marker stayed intact in all four phases"
+  ],
+  "rendered_final_observation": "Authenticated history loaded, zero recorded and No file activity yet. The unrelated destination marker remained visible.",
+  "scope": "Exact private NSIS, single-file Copy, completed Undo and explicit retained-data cleanup. Interrupted recovery remains separate.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "82103c03-6e14-41cc-a236-81a293d94a1f",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporarily_moved_compiler_test_restored_by_hash": true
+  }
+}
