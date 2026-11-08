@@ -610,7 +610,13 @@ Current source, test, package and owner/external scopes stay separate.
    tests and strict Linux and Windows-target UI lint passed. The exact
    `7e89eedb` Linux packages now include this fix. Mounted Dark and Light
    GTK Save checks returned the exact path and preserved the existing bytes.
-   Native Windows package acceptance remains open.
+   The newer Windows portable ZIP and NSIS installer are staged from
+   `7992ad1e`, which differs from hosted `7e89eedb` only in delivery
+   metadata. All 59 extracted payload files match in both formats.
+   Native Save and installer lifecycle verification and development MSIX
+   assembly are pending. The 95 MiB stage keeps only the two archives and
+   their checksums. The duplicate payload and verifier extraction were
+   retired. See `windows-picker-keyboard-current/STAGING.json`.
    Source `e91dcf50` also gives the Replace confirmation the shared window
    geometry. Dark and Light rendering, 544 isolated UI tests and Linux and
    Windows-target Clippy passed. The delivered `7aabcc56` Linux cohort passes

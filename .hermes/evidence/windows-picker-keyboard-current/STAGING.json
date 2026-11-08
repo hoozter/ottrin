@@ -1,0 +1,17 @@
+{
+  "status": "awaiting native Windows QA",
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-keyboard-stage",
+  "retired_duplicate_payload_allocated_bytes": 149028864,
+  "temporary_nsis_extraction_removed": true,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a"
+  },
+  "remaining_stage_bytes": 99070478,
+  "next_consumers": [
+    "Fresh standard-user NSIS Save keyboard verification",
+    "Reconstitute the verified MSIX input payload from the retained portable ZIP when native MakeAppx is available"
+  ],
+  "stable_windows_replaced": false
+}

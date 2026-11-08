@@ -1,0 +1,20 @@
+{
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-keyboard-stage",
+  "ci_run": 42434627263,
+  "ci_source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+  "non_runtime_diff": [
+    ".hermes/evidence/picker-overwrite-keyboard-current/ATOMIC_APPIMAGE_QA.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/BUILD_SOURCE.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/LINUX_HELPER_RUNTIME.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/PACKAGE_CONTENT_ACCEPTANCE.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/PROMOTION.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/gtk-save-dark-stable/RESULT.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/gtk-save-dark/RESULT.json",
+    ".hermes/evidence/picker-overwrite-keyboard-current/gtk-save-light/RESULT.json",
+    "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
+    "docs/ROADMAP.md"
+  ]
+}
