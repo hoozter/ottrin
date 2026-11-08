@@ -1,0 +1,28 @@
+{
+  "status": "pass native before-root recovery case",
+  "source_revision": "5e786177d61dd6ed6640f548abba238afc7b1208",
+  "executable_sha256": "7253fb58252e8eb7db1af2ae0e1af3045e113a98ffca3a0e439f01d2ccb88e2b",
+  "companion_sha256": "22689e71dbeead7013442267b950eb0962b545f266106152abf742a19ec5cde4",
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "ordinary_client_passed": true,
+  "system_cases_passed": 25,
+  "preserved_native_entries": 3,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "0e10dffcfed6455596592abed9e4245325627ed9eb8e9f0d069c9dc90bc086c9",
+  "available_after_bytes": 25994452992,
+  "scope": "Fresh offline Windows client with ordinary interactive actor and SYSTEM helper. The before-root fault and companion checks passed. Installed UAC and package acceptance remain separate."
+}

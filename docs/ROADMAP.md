@@ -187,8 +187,10 @@ guest resources were removed. Current authority:
    entries preserved. The after-anchor case passed with three entries
    preserved after fixing the test observer to inspect the expected empty
    anchor directly. Production still refuses the incomplete anchor.
-   Two cases and the installed administrator Copy workflow are open.
+   The before-root case also passed with three entries preserved. The
+   after-root case and installed administrator Copy workflow remain open.
    All completed guests and their temporary resources were removed. See
+   [before-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-root/ACCEPTANCE.json),
    [after-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-anchor-attempt-2/ACCEPTANCE.json),
    [before-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor/ACCEPTANCE.json),
    [after-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-state/ACCEPTANCE.json),
