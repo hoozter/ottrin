@@ -256,8 +256,12 @@ and the held MSI were preserved. Current authority is
    index database identity and folder-menu preference. Explorer background,
    multiple selection and drive commands passed. The index started at real
    sign-in, and uninstall removed the package, tasks and COM registration
-   while preserving preferences and test files. Fresh deployment and
-   disabled-upgrade coverage for 29 remain separate. The exact NSIS showed
+   while preserving preferences and test files. A separate disabled
+   28-to-29 upgrade preserved the saved index and kept it stopped during
+   three minutes of real sign-in observation. Removal also passed. The
+   first run stopped on an incorrect enabled-checkbox assumption. The
+   corrected fixture verified the declared initial choice, toggled it and
+   restored it before sign-in. Fresh deployment of 29 remains open. The exact NSIS showed
    Ready and 100% in Search Settings with a watched two-file index.
    Quick Inspector showed the native DOCX preview label above its content.
    Escape closed Inspector while leaving the main window open, and file
@@ -275,6 +279,7 @@ and the held MSI were preserved. Current authority is
    See [installed Borders acceptance](../.hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
    and [native MSIX assembly](../.hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
    See [native MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json).
+   See [disabled MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_DISABLED_ACCEPTANCE.json).
    See [installed Search and Inspector acceptance](../.hermes/evidence/windows-shared-ui-current/SEARCH_INSPECTOR_ACCEPTANCE.json).
    See [portable picker and NSIS lifecycle acceptance](../.hermes/evidence/windows-shared-ui-current/NSIS_LIFECYCLE_ACCEPTANCE.json).
 

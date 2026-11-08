@@ -1,0 +1,37 @@
+{
+  "status": "fixture assertion failed after successful native update",
+  "input": {
+    "runtime_script_sha256": "4ca55b3a6ab2b19b22252f3bdc8f792638ed090ccd92d846c5f948278fe3849a",
+    "native_controls_sha256": "c6fa404bd07713763f261a99a6194c3fe52930fbe123ffdb99355b77e20a7b11",
+    "sha256": "5038288097362e39af2fa52d6a8d7849b5845c7ba1c4c3ae517425b1dc70b91a",
+    "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+    "version": "0.1.0.29",
+    "startup_enabled": false,
+    "previous": {
+      "sha256": "48d1cf2c1858cb9c35458b216305ae47780a99dd5ffd9dab6e8e1805665e7416",
+      "version": "0.1.0.28",
+      "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647"
+    }
+  },
+  "update": {
+    "old_pids": [],
+    "startup_enabled": false,
+    "previous_daemon_count": 0,
+    "old_processes_removed": true,
+    "family": "Ottrin.Development_vs01n017nxmbr",
+    "after": "Ottrin.Development_0.1.0.29_x64__vs01n017nxmbr",
+    "before": "Ottrin.Development_0.1.0.28_x64__vs01n017nxmbr"
+  },
+  "assertion": "Initial MSIX startup choice must be enabled",
+  "startup_cli": "source=Windows Startup apps\nenabled=false\ndetail=Disabled at login",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-msix-runtime.qcow2",
+      "ottrin-msix-runtime-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  }
+}
