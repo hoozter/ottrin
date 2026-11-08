@@ -106,17 +106,22 @@ pub(in super::super) fn exercise_profile_creation_faults(
                 assert_eq!(metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT, 0);
                 let (file, anchor_bytes) = if index == 2 {
                     let file = File::open(path).unwrap();
-                    let bytes = read(&file).unwrap();
-                    match step {
+                    let bytes = match step {
                         Step::ProfileAnchorPartialWrite => {
-                            assert!(!bytes.is_empty());
+                            let bytes = read(&file).unwrap();
                             assert!(serde_json::from_slice::<serde_json::Value>(&bytes).is_err());
+                            bytes
                         }
                         Step::ProfileAnchorBeforeFlush => {
+                            let bytes = read(&file).unwrap();
                             assert!(serde_json::from_slice::<serde_json::Value>(&bytes).is_ok());
+                            bytes
                         }
-                        _ => assert!(bytes.is_empty()),
-                    }
+                        _ => {
+                            assert_eq!(file.metadata().unwrap().len(), 0);
+                            Vec::new()
+                        }
+                    };
                     (file, Some(bytes))
                 } else {
                     let count = match index {
