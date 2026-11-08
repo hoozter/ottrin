@@ -1,0 +1,16 @@
+{
+  "status": "reproduced Vivaldi FileChooser Open request refused before chooser launch",
+  "source_revision": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
+  "appimage_sha256": "bb436a97f10d86ba5e3a3543308a38954e9ad36e23a7cd08628649aa099da08b",
+  "browser_version": "Vivaldi 8.2.4133.96 stable",
+  "portal_app_id": "vivaldi-stable",
+  "method": "OpenFile",
+  "parent_window": "x11:0x400004",
+  "backend_error": "Invalid picker parent window identifier",
+  "scope": "Actual installed Vivaldi in private X11 with its own profile and correctly attributed scoped desktop ID. Private portal projection ran the stable mounted AppImage backend. Open failed before the chooser mapped; Save was not reached.",
+  "cleanup": {
+    "profile_removed": true,
+    "browser_scope_removed": true,
+    "owned_mounts_unmounted": []
+  }
+}

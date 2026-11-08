@@ -669,6 +669,13 @@ Current source, test, package and owner/external scopes stay separate.
    exact scopes. Do not infer universal Windows dialog replacement or repeat
    fulfilled matrices without changed inputs or a reproduced defect.
 
+   The installed Vivaldi Open test reached the stable AppImage FileChooser
+   backend with application ID `vivaldi-stable` and parent `x11:0x400004`.
+   The backend rejected the parent before opening the chooser. The earlier
+   Firefox and Falkon receipts retain their caller scopes. Repeat Vivaldi
+   Open and Save after the parent parser repair.
+   See [Vivaldi reproduction](../.hermes/evidence/current-vivaldi-picker/REPRODUCTION.json).
+
    MSIX status now separates default-folder support from the Explorer menu
    toggle. Settings explains the limitation and the CLI refuses the
    unavailable action before opening a registry transaction. Unpackaged
