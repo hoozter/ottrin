@@ -1,0 +1,37 @@
+{
+  "status": "pass real alternate-administrator UAC Copy transport",
+  "input": {
+    "source": "6351036ca148713bcd37149703e7a3b17df58dd7",
+    "test_sha256": "40e1d45bd4166244364333693b298859d902f65182c0e01f6580933fb1fc674e",
+    "helper_sha256": "1c1d37bd0fe7189a04aa188439803a3bc419ccdf6a540bde9cff9ad0144dde33",
+    "sections_match": true
+  },
+  "package_source": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "identity": {
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+    "caller_is_admin": false,
+    "admin_is_admin": true,
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031"
+  },
+  "cancelled_without_publication": true,
+  "approval": {
+    "destination_hash": "036655dde171ce9785f401356109f8f54d51d86565c36d9039d2e1df281cdc8e",
+    "status": "pass",
+    "caller_owner": "S-1-5-21-3183210791-1673105385-3262580894-1031"
+  },
+  "prompt_capture_sha256": {
+    "cancel": "5b6fc3b5ac3cf6d4abcf5d996ffc0d3ee7182a332441082cdce94d35ba46fc5f",
+    "approve": "52b0bacee70385890e64cf8b2cff6bca84c4e827928c6d3dfb59486795b5d5b1"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "b3e46acd-55d1-405c-9ef7-b27609b00aef",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "operator_path": "The secure desktop listed the owned administrator account with only a password field. The controller assumed a username field, so the selected account was supplied a fresh disposable password through the console. Results were verified separately and the original controller was signalled to perform its normal teardown. No personal credentials were used.",
+  "scope": "Exact delivered helper bytes, ordinary non-admin test client, alternate local administrator credentials, real UAC, streamed progress and receipt, exact publication bytes and original caller ownership. Installed app UI, Undo and restart remain separate."
+}

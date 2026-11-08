@@ -188,9 +188,12 @@ and the held MSI were preserved. Current authority is
    passing evidence. The delivered helper passed real split-token UAC
    cancellation and approval from the native test client. Cancellation left
    the destination empty. Approval streamed progress and published exact bytes
-   owned by the original caller. Alternate-account credentials, installed UI,
+   owned by the original caller. The separate non-administrator account also
+   passed cancellation and approval with a different local administrator's
+   credentials. The original caller owned the published file. Installed UI,
    Undo and restart remain open. All completed guests and temporary resources
    were removed. See
+   [alternate-account acceptance](../.hermes/evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),
    [UAC transport acceptance](../.hermes/evidence/windows-uac-copy-current/ACCEPTANCE.json),
    [after-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-root/ACCEPTANCE.json),
    [before-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-root/ACCEPTANCE.json),
