@@ -1,0 +1,31 @@
+{
+  "status": "pass native first-directory recovery case",
+  "source_revision": "9c41c355d84f22623c785678bfc62dc913d6195d",
+  "executable_sha256": "1eb77077a431b9c7cdfff351da73ac21990fff6ccc1dd82710f9170205e83e8c",
+  "companion_sha256": "5ebe34790edcaed569e4de78662e88318cd6e547f5bb0fa50aa68184a2343ca2",
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "ordinary_client_passed": true,
+  "system_cases_passed": 25,
+  "preserved_native_entries": {
+    "before": 0,
+    "after": 1
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "20fcdb2647d4c1dac5f484dea7a6f05ee6b51beacd525e2df6db262e3a5ba50a",
+  "available_after_bytes": 26009194496,
+  "scope": "Fresh offline Windows client with ordinary interactive actor and SYSTEM helper. First-directory before and after faults only. No installed administrator UAC or package acceptance."
+}

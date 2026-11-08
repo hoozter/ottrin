@@ -16,5 +16,15 @@
     "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-c246be4923adf3d9",
     "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-c246be4923adf3d9.d"
   ],
-  "available_bytes": 25788063744
+  "available_bytes": 25788063744,
+  "followup": {
+    "removed": [
+      "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_daemon-5d887fcce4b78854.exe",
+      "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-search-5d887fcce4b78854",
+      "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_daemon-5d887fcce4b78854.d"
+    ],
+    "replacement": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/windows_daemon-905dc7cbc4e65da4.exe",
+    "before_available_bytes": 25754374144,
+    "after_available_bytes": 25824350208
+  }
 }

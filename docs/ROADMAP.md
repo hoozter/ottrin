@@ -176,9 +176,11 @@ guest resources were removed. Current authority:
    before-anchor-flush faults passed in separate fresh Windows 11 build
    26300 guests. Each preserved four native entries and passed the ordinary
    client and 25 SYSTEM checks. The before-flush check establishes readable
-   state in the running guest. Seven cases and the installed administrator
-   Copy workflow are open. Both guests and their temporary resources were
-   removed. See [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
+   state in the running guest. A third fresh guest passed the before and
+   after faults at the first directory creation. Six cases and the installed
+   administrator Copy workflow are open. The three guests and their temporary
+   resources were removed. See [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
+   [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
    and [before-flush acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).
 2. **Deliver the Windows Save fix.** Run the staged `7992ad1e` NSIS Save
    actor in Dark and Light, finish installer lifecycle checks, and build and
