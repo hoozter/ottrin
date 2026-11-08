@@ -7,17 +7,14 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`d76c351a`. All four exact-source hosted jobs passed in
-[run 42426557500](https://github.com/hoozter/ottrin/actions/runs/42426557500).
-The promotion kept the managed index Ready on the same process and preserved
-startup, preferences and database identity. It removed the consumed stage and
-superseded packages. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
-The next local Linux cohort, `21f18bbe`, is staged. All four formats passed
-content verification. Its mounted AppImage passed Dark and Light selection
-checks for the frame, title bar and status bar, GTK Open in both variants,
-FileManager1 requests, and replacement while an older window was open.
-The staged cohort still requires all four exact-source jobs in
+`21f18bbe`. All four exact-source hosted jobs passed in
 [run 42430923563](https://github.com/hoozter/ottrin/actions/runs/42430923563).
+The exact mounted AppImage passed Dark and Light frame, title bar and status
+bar selection checks at 100% and 125% display scale, GTK Open in both variants,
+FileManager1 requests, and replacement while an older window was open.
+Promotion kept the index Ready on the same process and preserved startup,
+preferences and database identity. The consumed stage and superseded packages
+were removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 
@@ -550,7 +547,9 @@ Current source, test, package and owner/external scopes stay separate.
    stays out of the rounded cutouts. The isolated UI suite and Windows-target
    strict UI lint passed. Four owned desktop runs were removed and the initial
    captures were retired. Evidence: `preview-component-border-current/ACCEPTANCE.json`.
-   These follow-ups have separate package and Windows native gates.
+   The Linux packages now include both corrections. The exact mounted Linux
+   checks and promotion are recorded above. Native Windows GUI acceptance
+   remains open.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
