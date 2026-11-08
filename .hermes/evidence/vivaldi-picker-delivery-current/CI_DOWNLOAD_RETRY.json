@@ -15,5 +15,14 @@
   "manifest_sha256": "c209afcc3f3773fae727ddae5bf8f461c6f464ca84f8021a66d8a4874a51b001",
   "windows_attempt_2": "HTTP 504 from release download URL",
   "windows_local_original": "Five HTTP 504 responses exhausted bounded retries",
-  "windows_api_asset": "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643?download=1"
+  "windows_api_asset": "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643?download=1",
+  "linux_manifest_sha256": "c988545e5b0c2df24f2ff72f0d665a930e331957bdfc27534ecea17cd36b2ef0",
+  "linux_original_download_run": 42466849620,
+  "linux_original_download_result": "Ubuntu received five HTTP 504 responses before tests; Windows API route passed the provider gate",
+  "linux_api_asset": "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478120097?download=1",
+  "linux_api_local_checks": [
+    "Pinned archive SHA-256 passed",
+    "Pinned executable SHA-256 passed",
+    "Linux native package staging and release-workflow dependency contracts passed"
+  ]
 }

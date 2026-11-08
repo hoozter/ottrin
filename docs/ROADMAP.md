@@ -22,6 +22,10 @@ binary hashes for both platforms.
 Ubuntu and both performance jobs passed on the retry. Windows verification
 is running with the new download route in
 [run 42466849620](https://github.com/hoozter/ottrin/actions/runs/42466849620).
+The Windows API route passed its provider gate. The Ubuntu runner exhausted
+all five retries on the original Linux URL before tests. The Linux API route
+then downloaded and verified the same pinned archive and executable locally.
+Keep the running Windows checks and queue a new run with both API routes.
 Promotion preflight binds the two reviewed downloader files and checks
 that their changes leave the pinned provider and runtime inputs identical.
 See [download retry acceptance](../.hermes/evidence/vivaldi-picker-delivery-current/CI_DOWNLOAD_RETRY.json).
