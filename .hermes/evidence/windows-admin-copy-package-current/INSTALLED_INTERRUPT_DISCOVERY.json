@@ -1,0 +1,42 @@
+{
+  "status": "interruption and fresh discovery verified; End action not verified",
+  "input": {
+    "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+    "installer_sha256": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead",
+    "source_sha256": "87e7c7d1965ebd6904a1e80e54750fb53ced36e8e85a78869e1d4cdaa3ce3170",
+    "interrupt": true,
+    "actor_sha256": "7aa2ce3ede296a53d8c87a1274c0b17e045c366062e28bdeba66c5b2560e39c6",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "boundary": {
+    "helper_terminated": true,
+    "target_absent": true,
+    "client_pid": 1068,
+    "transaction": "154db441d2fae0fd7a14b08f83d85f3c",
+    "helper_owner_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+    "helper_pid": 3488
+  },
+  "copy": {
+    "mode": "copy",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "client_exited": true,
+    "phase": "complete",
+    "client_exit": 0,
+    "client_pid": 1068,
+    "status": "pass",
+    "transaction": "154db441d2fae0fd7a14b08f83d85f3c"
+  },
+  "rendered_observation": "Fresh authenticated History showed an incomplete administrator Copy and End copy attempt. The destination listed only its unrelated marker.",
+  "fixture_error": "Host decoded the PowerShell diagnostic stream as UTF-8 while the guest used its default console encoding.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "2420b61a-3d46-4ee6-a306-7eed707cade1",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}

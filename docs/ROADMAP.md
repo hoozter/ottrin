@@ -256,13 +256,20 @@ and the held MSI were preserved. See
    unrelated marker and original source were preserved. A fourth process
    authenticated, loaded empty history and exited normally. See the
    [installed cleanup receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_CLEANUP.json).
-   The next private fixture must interrupt a real installed Copy with a
-   retained transaction, then verify discovery and recovery before enabling
-   the capability in delivered builds. The expanded platform regression
-   still requires native execution. The
-   temporary worktrees, unpacked payloads, duplicate ZIP, superseded
-   private installer and disposable guests were removed. The rebuilt
-   private installer remains staged for the interruption fixture.
+   The same private installer passed a real helper interruption during
+   a 512 MiB Copy. The observer terminated only the installed administrator
+   helper bound to the test process after the caller journal and matching
+   destination stage appeared. No target was published. A second process
+   loaded the incomplete Copy, and End attempt requested its own
+   administrator approval. A third process reported the ended attempt
+   with its journal and stage intact. All three clients exited normally.
+   The source hash and unrelated destination file were preserved. See the
+   [installed interruption receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_INTERRUPTION.json).
+   The expanded platform regression and installed forward Resume, Stop
+   and partial or late result handling remain open. The temporary worktrees,
+   unpacked payloads, duplicate ZIP, superseded private installer and
+   disposable guests were removed. The rebuilt private installer remains
+   staged for the remaining native tests.
    See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
    and [installed navigation observation](../.hermes/evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
    See [installed Copy publication](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_PUBLICATION.json).

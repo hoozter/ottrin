@@ -1,0 +1,77 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+    "installer_sha256": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead",
+    "source_sha256": "87e7c7d1965ebd6904a1e80e54750fb53ced36e8e85a78869e1d4cdaa3ce3170",
+    "interrupt": true,
+    "actor_sha256": "cb1aae5b63cf6efdd2736d9a94e40d9671f46d5f81dc3e95d9bab35915072453",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "source_bytes": 536870912,
+  "boundary": {
+    "helper_terminated": true,
+    "target_absent": true,
+    "client_pid": 7120,
+    "transaction": "98779746e6e41f4c09c5fa1e03fd5ce2",
+    "helper_owner_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+    "helper_pid": 5592
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 7120,
+      "status": "pass",
+      "transaction": "98779746e6e41f4c09c5fa1e03fd5ce2"
+    },
+    {
+      "client_pid": 7400,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "interrupt-history",
+      "status": "pass"
+    },
+    {
+      "client_pid": 7672,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "interrupt-ended",
+      "status": "pass"
+    }
+  ],
+  "native_approval_sequence": [
+    "Copy",
+    "load interrupted History after reopen",
+    "End attempt",
+    "load ended History after second reopen"
+  ],
+  "system_checks": [
+    "The original source hash and unrelated marker stayed intact in all three phases",
+    "The target never appeared",
+    "The same retained destination stage was present after helper termination, End and fresh authenticated history"
+  ],
+  "rendered_final_observation": "The previous session remains visible. Recovery details say Copy attempt ended; partial files and recovery records are retained. End attempt is absent.",
+  "scope": "Exact private NSIS, real helper process exit before source verification and publication, recovery through End attempt. Forward Resume and packaged Stop or late result are separate.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "d7b0ee18-4b49-47d1-ba9c-bdae68550905",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporarily_moved_compiler_test_restored_by_hash": true
+  }
+}
