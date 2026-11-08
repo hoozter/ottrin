@@ -1,0 +1,28 @@
+{
+  "status": "pass native before-anchor recovery case",
+  "source_revision": "af8d44e9f1376256bfbbdb35fc3868b7999f9632",
+  "executable_sha256": "755e4a423c7067f94fe8e36a6be5046009f1ce4ae5ed15446907c79e45121b92",
+  "companion_sha256": "94de66c8ca88291f171f4f486fdf2d06d9c0241c0f90d1ac19eb36cb1db830a0",
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "ordinary_client_passed": true,
+  "system_cases_passed": 25,
+  "preserved_native_entries": 2,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "a1e3b5d0b3f42a2c70149339ad38b3cd41690c367f8d667f93441d2a30777031",
+  "available_after_bytes": 26012192768,
+  "scope": "Fresh offline Windows client with ordinary interactive actor and SYSTEM helper. The before-anchor fault and companion checks passed. Installed UAC and package acceptance remain separate."
+}

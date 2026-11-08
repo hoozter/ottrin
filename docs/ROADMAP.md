@@ -183,9 +183,11 @@ guest resources were removed. Current authority:
    injection. The cause remains open. The diagnostic now reports the
    transaction result and boundary trace if it recurs.
    The after-state case passed in another fresh guest and preserved both
-   expected entries. Four cases and the installed administrator Copy
+   expected entries. The before-anchor case also passed with both expected
+   entries preserved. Three cases and the installed administrator Copy
    workflow are open. All completed guests and their temporary resources
    were removed. See
+   [before-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor/ACCEPTANCE.json),
    [after-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-state/ACCEPTANCE.json),
    [before-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-state-attempt-2/ACCEPTANCE.json), [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
    [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
