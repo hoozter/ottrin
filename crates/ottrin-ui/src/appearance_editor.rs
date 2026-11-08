@@ -418,20 +418,23 @@ impl OttrinApp {
                         });
                     }
                     if region != ThemePreviewRegion::Defaults {
-                        ui.add_space(14.0);
-                        changed |= property_group(ui, "Shared colors", c, |ui| {
-                            let hint = if region == ThemePreviewRegion::Inspector {
-                                "These colors are shared. Reset shared panel background only restores the panel color."
-                            } else {
-                                "These values also affect other components. Reset component leaves them unchanged."
-                            };
-                            ui.label(RichText::new(hint).small().color(c.text_dim));
-                            let mut changed = false;
-                            for &field in Self::theme_preview_region_shared_fields(region) {
-                                changed |= self.appearance_color_row(ui, field, &seed);
-                            }
-                            changed
-                        });
+                        let shared_fields = Self::theme_preview_region_shared_fields(region);
+                        if !shared_fields.is_empty() {
+                            ui.add_space(14.0);
+                            changed |= property_group(ui, "Shared colors", c, |ui| {
+                                let hint = if region == ThemePreviewRegion::Inspector {
+                                    "These colors are shared. Reset shared panel background only restores the panel color."
+                                } else {
+                                    "These values also affect other components. Reset component leaves them unchanged."
+                                };
+                                ui.label(RichText::new(hint).small().color(c.text_dim));
+                                let mut changed = false;
+                                for &field in shared_fields {
+                                    changed |= self.appearance_color_row(ui, field, &seed);
+                                }
+                                changed
+                            });
+                        }
                         ui.add_space(6.0);
                         changed |= property_group(ui, "Shared typography", c, |ui| {
                             let mut group_changed = false;
@@ -2549,6 +2552,34 @@ mod tests {
         ] {
             assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == label)), "Missing contextual shared control {label}");
         }
+    }
+
+    #[test]
+    fn appearance_borders_omits_empty_shared_colors_group() {
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+        app.theme_editor.selected_region = ThemePreviewRegion::Borders;
+        let output = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(1180.0, 1300.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                app.render_theme_editor_embedded(ctx);
+            },
+        );
+        let has_label = |label| {
+            output.shapes.iter().any(|shape| {
+                matches!(&shape.shape, egui::epaint::Shape::Text(text) if text.galley.job.text == label)
+            })
+        };
+        assert!(has_label("Window border thickness"));
+        assert!(has_label("Shared typography"));
+        assert!(!has_label("Shared colors"));
     }
 
     #[test]
