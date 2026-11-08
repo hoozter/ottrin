@@ -199,10 +199,13 @@ guest resources were removed. Current authority:
    [before-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-state-attempt-2/ACCEPTANCE.json), [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
    [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
    and [before-flush acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).
-2. **Deliver the Windows Save fix.** Run the staged `7992ad1e` NSIS Save
-   actor in Dark and Light, finish installer lifecycle checks, and build and
-   validate the development MSIX from the same portable payload. Keep the
-   accepted `67d3cbe1` Windows cohort available until the replacement passes.
+2. **Deliver the Windows Save fix.** Exact staged `7992ad1e` NSIS passed
+   fresh install, Save shortcut ownership and exact UTF-16 selection in both
+   themes, and uninstall in a fresh ordinary-user guest. The caller file and
+   configuration bytes were preserved. Finish the upgrade lifecycle checks
+   and build and validate development MSIX from the same portable payload.
+   Keep the accepted `67d3cbe1` Windows cohort available until replacement.
+   See [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json).
 3. **Close Windows desktop integration and theme acceptance.** Run the
    prepared read-only MSIX registry comparison under matching identities.
    Verify supported folder actions, picker behavior, and remaining theme
@@ -843,8 +846,9 @@ Current source, test, package and owner/external scopes stay separate.
    The newer Windows portable ZIP and NSIS installer are staged from
    `7992ad1e`, which differs from hosted `7e89eedb` only in delivery
    metadata. All 59 extracted payload files match in both formats.
-   Native Save and installer lifecycle verification and development MSIX
-   assembly are pending. The 95 MiB stage keeps only the two archives and
+   Native Save and fresh install/uninstall passed in Dark and Light.
+   Upgrade lifecycle verification and development MSIX assembly are pending.
+   The 95 MiB stage keeps only the two archives and
    their checksums. The duplicate payload and verifier extraction were
    retired. See `windows-picker-keyboard-current/STAGING.json`.
    The native Save actor now checks Ctrl+L during Replace, Escape dismissal,

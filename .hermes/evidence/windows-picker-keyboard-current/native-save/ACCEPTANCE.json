@@ -1,0 +1,46 @@
+{
+  "source": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "phase": "complete",
+  "scope": "Exact NSIS install, native themed Save keyboard ownership and ordinary-user uninstall",
+  "cases": [
+    {
+      "nativePathVerified": true,
+      "accepted": true,
+      "modalShortcutOwnership": true,
+      "originalUnchanged": true,
+      "configUnchanged": true,
+      "variant": "Dark"
+    },
+    {
+      "nativePathVerified": true,
+      "accepted": true,
+      "modalShortcutOwnership": true,
+      "originalUnchanged": true,
+      "configUnchanged": true,
+      "variant": "Light"
+    }
+  ],
+  "status": "pass",
+  "payloadFiles": 59,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a"
+  },
+  "client": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "0d8ef2b875faa5bfc121516cd59777511ead081506eb96718ffbf9802e9e1118"
+}
