@@ -1,0 +1,18 @@
+{
+  "source_revision": "e2171c3beadd04642c428914f48de406f85280e3",
+  "appimage_sha256": "d8e57303fd94d0f907e4dd06d895be3264b48bdb2d503fd12b43bd6987926e62",
+  "cases": {
+    "Miller": {
+      "visible_toolbar_control": "Switch to List view",
+      "preference_preserved": true,
+      "profile_removed": true
+    },
+    "Grid": {
+      "visible_toolbar_control": "Switch to Column view",
+      "preference_preserved": true,
+      "profile_removed": true
+    }
+  },
+  "status": "pass",
+  "scope": "First launch of exact mounted AppImage on separate disposable profiles seeded with prior-format preferences. View checked through the native accessibility tree without changing settings. No prior image launch in this test."
+}
