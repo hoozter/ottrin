@@ -1,0 +1,58 @@
+{
+  "status": "pass Windows standard-user Copy and Undo with alternate administrator credentials",
+  "input": {
+    "source": "5f67709c8c4f9e9a7d60490b059e0f52b9238f75",
+    "test_sha256": "6431a3c6168cb78ac035cee90f53dfb6e7653379dbfcae9a7ed642bca9c78520",
+    "helper_sha256": "1c1d37bd0fe7189a04aa188439803a3bc419ccdf6a540bde9cff9ad0144dde33",
+    "sections_match": true
+  },
+  "package_source": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "identity": {
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+    "caller_is_admin": false,
+    "admin_is_admin": true,
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031"
+  },
+  "phases": [
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "status": "pass",
+      "client_pid": 4872,
+      "mode": "approve"
+    },
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "status": "pass",
+      "client_pid": 6304,
+      "mode": "history"
+    },
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "status": "pass",
+      "client_pid": 6480,
+      "mode": "undo"
+    },
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "status": "pass",
+      "client_pid": 4936,
+      "mode": "undone"
+    }
+  ],
+  "transaction": "02d31a78d9c11090210a9ec1c65f1526",
+  "source_preserved": true,
+  "published_bytes_match": true,
+  "publication_owned_by_original_caller": true,
+  "undo_removed_exact_publication": true,
+  "rediscovered_state": "Undone",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "b9baee37-cec3-4bd6-9f06-2fea5bdc6992",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "scope": "Four native test-client processes using the exact packaged helper and separate secure-desktop UAC prompts. Installed app UI and interrupted recovery remain separate."
+}

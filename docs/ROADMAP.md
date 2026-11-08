@@ -126,7 +126,7 @@ handler and launched the mounted AppImage with the original path bytes.
 Disabling restored the previous handler and preserved an unrelated MIME edit.
 See [GIO acceptance](../.hermes/evidence/current-gio-folder/ACCEPTANCE.json).
 
-The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
+The preceding Windows candidate used `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 
 The preceding Linux cohort `37961173` passed contents, runtime closure, provenance and namespace
@@ -193,9 +193,15 @@ and the held MSI were preserved. Current authority is
    credentials. The original caller owned the published file. Four separate
    test-client and UAC helper processes then passed Copy, history discovery,
    Undo and rediscovery as Undone. Undo removed the exact publication and
-   preserved the source. Installed UI, interrupted recovery and alternate-account
-   Undo remain open. All completed guests and temporary resources were removed.
+   preserved the source. All four hosted jobs passed at the
+   [fresh-process test checkpoint](https://github.com/hoozter/ottrin/actions/runs/42509840748).
+   Four fresh processes also passed the same sequence for a standard user
+   using a separate local administrator at each UAC prompt. The copied bytes
+   matched, the original caller owned the publication, and Undo removed it
+   while preserving the source. Installed UI and interrupted recovery remain
+   open. The disposable guests and temporary resources were removed.
    See [fresh-process Undo acceptance](../.hermes/evidence/windows-uac-copy-restart-current-retry/ACCEPTANCE.json),
+   [alternate-account Undo acceptance](../.hermes/evidence/windows-uac-copy-alternate-restart-current/ACCEPTANCE.json),
    [alternate-account acceptance](../.hermes/evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),
    [UAC transport acceptance](../.hermes/evidence/windows-uac-copy-current/ACCEPTANCE.json),
    [after-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-root/ACCEPTANCE.json),
@@ -233,7 +239,9 @@ and the held MSI were preserved. Current authority is
    normal entry points against the packages being delivered. Keep public
    signing, Store submission, physical-device tests and personal acceptance
    in the waiting list with their own evidence. Linux is already delivered
-   for the current Vivaldi and index checkpoint.
+   for the current Vivaldi and index checkpoint. Build and verify a Windows
+   successor to `7992ad1e` for the shared theme, search status and Inspector
+   fixes. The Linux package receipts cover those changes on Linux.
 
 The records below identify the exact source and package coverage behind
 this queue.

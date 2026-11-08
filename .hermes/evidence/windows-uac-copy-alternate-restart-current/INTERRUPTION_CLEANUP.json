@@ -1,0 +1,10 @@
+{
+  "status": "verified orphan cleanup",
+  "uuid": "180b7422-f47a-4156-b16e-8f4c7b20f256",
+  "domain_removed": true,
+  "overlay_removed": true,
+  "protected_definitions_and_states_unchanged": true,
+  "removed_transfer": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/ottrin-uac-transfer-j87y_k5b",
+  "transfer_bytes": 770416423,
+  "available_after_bytes": 25967742976
+}
