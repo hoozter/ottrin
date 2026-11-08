@@ -19,6 +19,11 @@ retried on the same revision. Ubuntu reached tests, but Windows hit another
 source fix adds bounded retries and uses GitHub's API route for the same
 Windows release asset. The final downloader verified the original archive and
 binary hashes for both platforms.
+Ubuntu and both performance jobs passed on the retry. Windows verification
+is running with the new download route in
+[run 42466849620](https://github.com/hoozter/ottrin/actions/runs/42466849620).
+Promotion preflight binds the two reviewed downloader files and checks
+that their changes leave the pinned provider and runtime inputs identical.
 See [download retry acceptance](../.hermes/evidence/vivaldi-picker-delivery-current/CI_DOWNLOAD_RETRY.json).
 See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
