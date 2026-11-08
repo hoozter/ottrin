@@ -1,0 +1,57 @@
+{
+  "status": "pass installed Windows Search Ready and DOCX fallback",
+  "input": {
+    "source_revision": "d2031d5e5bf587760e2b15b8f0da688d5b6fa99f",
+    "files": [
+      {
+        "name": "current-setup.exe",
+        "sha256": "fa7c85a9e66211edb60c2dec6237b498f1238caee793b0ca6ce8bf4f2e5553f5"
+      }
+    ],
+    "actor_sha256": "3131f9dd1aa77be8ebcc66264764966b2e87528f1fb6141029a1880380683591",
+    "scope": "Exact staged/accepted NSIS and declared custom native application actor on an owned ordinary-user desktop; the frozen actor and result define exercised behavior. No implicit preview-safety, installer-recovery, index-upgrade or whole-roadmap acceptance."
+  },
+  "cases": [
+    {
+      "percentage": 100,
+      "case": "Search",
+      "index_items": 2,
+      "watcher_ready": true,
+      "ready": true
+    },
+    {
+      "case": "Inspector",
+      "native_docx_content": true,
+      "escape_closed_only_inspector": true,
+      "document_sha256": "753f80c48a1b08b785dcce98306fa76ec1016b19e1223c96a4d49865be65f471"
+    }
+  ],
+  "provider_label_above_content": true,
+  "captures_sha256": {
+    "search": "8dc8b66f8b1c28b73dda99e020ce568ad184cd1c2ccf13cf7a0a850a8ed0f813",
+    "inspector": "a25060c884e15d1cd885896a99adac64d1f835322d9c97ba7e7a13b17da932fd"
+  },
+  "normal_exit_uninstall_and_source_preferences_preserved": true,
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "hosted": {
+    "run": 42509840748,
+    "windows_job": 128820324255,
+    "tested_revision": "121962fe893f43721d2423fdc3aaf663f29450d3",
+    "runtime_source_equivalent": true,
+    "passed": [
+      "appearance_borders_omits_empty_shared_colors_group",
+      "closing_inspector_cancels_only_unshared_office_render_requests",
+      "stalled_search_status_follows_themes_attention_color"
+    ]
+  },
+  "scope": "Exact NSIS installed on a standard-user Windows software desktop, Dark, private two-file index and native DOCX fallback. Stalled scan and in-flight installed LibreOffice conversion are covered by the separate source tests and Linux package evidence."
+}

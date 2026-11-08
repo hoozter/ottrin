@@ -257,13 +257,21 @@ and the held MSI were preserved. Current authority is
    multiple selection and drive commands passed. The index started at real
    sign-in, and uninstall removed the package, tasks and COM registration
    while preserving preferences and test files. Fresh deployment and
-   disabled-upgrade coverage for 29 remain separate. Installed Search
-   status and Inspector checks and promotion are still open. The stable
-   Windows cohort is `7992ad1e`.
+   disabled-upgrade coverage for 29 remain separate. The exact NSIS showed
+   Ready and 100% in Search Settings with a watched two-file index.
+   Quick Inspector showed the native DOCX preview label above its content.
+   Escape closed Inspector while leaving the main window open, and file
+   bytes and preferences survived uninstall. The source-equivalent hosted
+   Windows run passed the stalled-status color and unshared Office render
+   cancellation tests. The native guest did not exercise those two states.
+   Before promotion, repeat the portable picker and NSIS running-index
+   upgrade, reinstall intent and locked-cache recovery against the staged
+   installer. The stable Windows cohort is `7992ad1e`.
    See [staged payload verification](../.hermes/evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
    See [installed Borders acceptance](../.hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
    and [native MSIX assembly](../.hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
    See [native MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json).
+   See [installed Search and Inspector acceptance](../.hermes/evidence/windows-shared-ui-current/SEARCH_INSPECTOR_ACCEPTANCE.json).
 
 The records below identify the exact source and package coverage behind
 this queue.
