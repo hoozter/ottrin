@@ -3,17 +3,7 @@ set -euo pipefail
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 input="${1:-$root/dist/packages/ottrin-0.1.0-1.x86_64.rpm}"
-fixture="$(mktemp -d)"
-export GNUPGHOME="$fixture/gnupg"
-mkdir -m 0700 "$GNUPGHOME"
-cleanup() {
-  gpgconf --kill all
-  rm -rf -- "$fixture"
-}
-trap cleanup EXIT
-gpg --batch --passphrase '' --quick-generate-key 'Ottrin RPM archive test' rsa2048 sign 1d
-export OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT
-OTTRIN_LINUX_SIGNING_KEY_FINGERPRINT="$(gpg --batch --with-colons --list-keys | awk -F: '$1=="fpr" {print $10; exit}')"
+source "$root/packaging/tests/repository-signing-fixture.sh"
 
 package="$fixture/ottrin.rpm"
 cp -- "$input" "$package"
