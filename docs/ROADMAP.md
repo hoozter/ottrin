@@ -489,7 +489,15 @@ Current source, test, package and owner/external scopes stay separate.
    visible with a clear gap from the selection outline. The 544-test Linux UI
    suite and strict Windows cross-target UI lint passed. Both private profiles
    were removed. Evidence: `preview-frame-outline-current/ACCEPTANCE.json`.
-   This follow-up has its own package and Windows native gates.
+   The following File manager correction paints the real window border above
+   component selection ink and reuses the status bar's actual rounded corners
+   for its outline. Source-rendered checks cover the title bar, status bar,
+   Smart Panel and Locations rail. Dark/Light software X11 captures verify
+   that the real stroke and selection both remain visible and that selection
+   stays out of the rounded cutouts. The isolated UI suite and Windows-target
+   strict UI lint passed. Four owned desktop runs were removed and the initial
+   captures were retired. Evidence: `preview-component-border-current/ACCEPTANCE.json`.
+   These follow-ups have separate package and Windows native gates.
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.

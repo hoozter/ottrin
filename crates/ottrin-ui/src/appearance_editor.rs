@@ -1665,6 +1665,37 @@ mod tests {
                                     && rect.rect.contains_rect(frame.rect.expand(2.0))
                         )), "Frame selection must leave the actual border visible in {region:?}");
                     }
+                    if matches!(
+                        region,
+                        ThemePreviewRegion::Titlebar
+                            | ThemePreviewRegion::StatusBar
+                            | ThemePreviewRegion::Sidebar
+                            | ThemePreviewRegion::Bookmarks
+                    ) {
+                        let position = |stroke| {
+                            output.shapes.iter().rposition(|shape| matches!(
+                            &shape.shape, egui::Shape::Rect(rect) if rect.stroke == stroke
+                        )).unwrap()
+                        };
+                        assert!(
+                            position(Stroke::new(1.25, border_color))
+                                > position(Stroke::new(2.0, app.colors.accent)),
+                            "The window border must remain visible above the {region:?} selection"
+                        );
+                        if region == ThemePreviewRegion::StatusBar {
+                            let selection =
+                                &output.shapes[position(Stroke::new(2.0, app.colors.accent))];
+                            assert!(
+                                matches!(
+                                    &selection.shape, egui::Shape::Rect(rect)
+                                        if rect.corner_radius == egui::CornerRadius {
+                                            nw: 0, ne: 0, sw: app.colors.app_radius, se: app.colors.app_radius,
+                                        }
+                                ),
+                                "Status bar selection must follow the rounded window edge"
+                            );
+                        }
+                    }
                     for (_, node) in output.platform_output.accesskit_update.unwrap().nodes {
                         if node.role() == Role::SpinButton {
                             if node.label() == Some("Window border thickness") {

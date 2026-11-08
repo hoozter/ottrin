@@ -25926,16 +25926,13 @@ fn theme_editor_large_preview(
         },
     );
 
-    p.rect_filled(
-        status,
-        egui::CornerRadius {
-            nw: 0,
-            ne: 0,
-            sw: preview.app_radius,
-            se: preview.app_radius,
-        },
-        preview.statusbar_bg,
-    );
+    let status_corners = egui::CornerRadius {
+        nw: 0,
+        ne: 0,
+        sw: preview.app_radius,
+        se: preview.app_radius,
+    };
+    p.rect_filled(status, status_corners, preview.statusbar_bg);
     let mut status_ui = ui.new_child(
         UiBuilder::new()
             .id_salt("theme_preview_status_bar")
@@ -25961,14 +25958,6 @@ fn theme_editor_large_preview(
         },
     )
     .is_some();
-
-    // Like the actual viewport frame, the border must cover all content fills.
-    p.rect_stroke(
-        frame,
-        preview.app_radius,
-        Stroke::new(preview.window_border_width, preview.window_border),
-        egui::StrokeKind::Inside,
-    );
 
     let regions = vec![
         (ThemePreviewRegion::SelectedRow, selected_row),
@@ -26069,6 +26058,8 @@ fn theme_editor_large_preview(
                 sw: 0,
                 se: 0,
             }
+        } else if *region == ThemePreviewRegion::StatusBar {
+            status_corners
         } else if *region == ThemePreviewRegion::Accent {
             egui::CornerRadius::same(preview.button_radius)
         } else if *region == ThemePreviewRegion::SelectedRow && *view == ViewMode::Grid {
@@ -26078,6 +26069,14 @@ fn theme_editor_large_preview(
         };
         p.rect_stroke(*region_rect, corners, stroke, egui::StrokeKind::Inside);
     }
+
+    // Keep the actual window border visible over content and component outlines.
+    p.rect_stroke(
+        frame,
+        preview.app_radius,
+        Stroke::new(preview.window_border_width, preview.window_border),
+        egui::StrokeKind::Inside,
+    );
 
     (hovered_region, clicked_region)
 }
