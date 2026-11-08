@@ -8,25 +8,34 @@ package_search_runtime() (
     mapfile -d '' -t fields < <(python3 - "$manifest" "$platform" <<'PY'
 import json,sys
 m=json.load(open(sys.argv[1]));p=m['platforms'][sys.argv[2]]
-for value in [m['version'],p['url'],p['sha256'],p['archive'],p['prefix'],p['binary'],p['binary_sha256'],*m['licenses']]:
+for value in [m['version'],p['url'],p['sha256'],p['archive'],p['prefix'],p['binary'],p['binary_sha256'],p.get('download_api',''),*m['licenses']]:
     sys.stdout.buffer.write(value.encode()+b'\0')
 PY
     )
-    [[ "${#fields[@]}" == 10 ]] || { printf 'Invalid search-runtime manifest\n' >&2; exit 1; }
+    [[ "${#fields[@]}" == 11 ]] || { printf 'Invalid search-runtime manifest\n' >&2; exit 1; }
     local version="${fields[0]}" url="${fields[1]}" digest="${fields[2]}"
     local format="${fields[3]}" prefix="${fields[4]}" binary="${fields[5]}"
     work="$(mktemp -d)"
     trap 'rm -rf "$work"' EXIT
     mkdir -p "$work/extract" "$bin_dir" "$notice_dir"
-    if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$url" -o "$work/archive"
-    else
-        wget -q "$url" -O "$work/archive"
+    download_archive() {
+        if command -v curl >/dev/null 2>&1; then
+            curl -fsSL --retry 4 --retry-max-time 180 --connect-timeout 15 \
+                --max-time 60 -H 'Accept: application/octet-stream' "$1" -o "$work/archive"
+        else
+            wget -nv --tries=5 --timeout=30 --waitretry=8 \
+                --retry-on-http-error=408,429,500,502,503,504 \
+                --header='Accept: application/octet-stream' "$1" -O "$work/archive"
+        fi
+    }
+    # Both download routes must satisfy the same pinned archive hash.
+    if [[ -z "${fields[7]}" ]] || ! download_archive "${fields[7]}"; then
+        download_archive "$url"
     fi
     printf '%s  %s\n' "$digest" "$work/archive" | sha256sum -c -
     local -a members=("$prefix/$binary")
     local license
-    for license in "${fields[@]:7}"; do members+=("$prefix/$license"); done
+    for license in "${fields[@]:8}"; do members+=("$prefix/$license"); done
     case "$format" in
         tar.gz) tar -xzf "$work/archive" -C "$work/extract" -- "${members[@]}" ;;
         zip) unzip -q "$work/archive" "${members[@]}" -d "$work/extract" ;;
@@ -34,7 +43,7 @@ PY
     esac
     printf '%s  %s\n' "${fields[6]}" "$work/extract/$prefix/$binary" | sha256sum -c -
     install -m 0755 "$work/extract/$prefix/$binary" "$bin_dir/$binary"
-    for license in "${fields[@]:7}"; do
+    for license in "${fields[@]:8}"; do
         install -m 0644 "$work/extract/$prefix/$license" "$notice_dir/$license"
     done
     python3 - "$manifest" "$notice_dir" <<'PY'

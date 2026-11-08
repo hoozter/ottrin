@@ -1,0 +1,19 @@
+{
+  "status": "pass local bounded transient-download retry checks",
+  "failed_hosted_run": 42465900817,
+  "failed_attempt": 1,
+  "failed_step": "Prepare pinned search provider",
+  "failure": "HTTP 504 before verification tests on Ubuntu and Windows",
+  "retry_attempt": 2,
+  "script_sha256": "a994e6d60aea537fae6ebfecf60776f85c4e1b507ecf308f735a66087e8bdbe1",
+  "checks": [
+    "curl and wget each recovered from HTTP 504 on the second request and installed only checksum-verified fixture bytes",
+    "curl and wget each rejected an HTTP 200 response with a corrupt archive on the first request and installed no provider",
+    "shell syntax and release workflow dependency contract passed"
+  ],
+  "scope": "Owned loopback 504 and corrupt-archive checks exercised the retry options before the API route was added. The final packaging function downloaded both actual upstream archives and verified their existing archive and binary hashes. The Windows API route selects the same upstream release asset. No pinned version, archive or binary hash changed.",
+  "manifest_sha256": "c209afcc3f3773fae727ddae5bf8f461c6f464ca84f8021a66d8a4874a51b001",
+  "windows_attempt_2": "HTTP 504 from release download URL",
+  "windows_local_original": "Five HTTP 504 responses exhausted bounded retries",
+  "windows_api_asset": "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643?download=1"
+}

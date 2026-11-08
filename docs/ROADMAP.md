@@ -12,6 +12,14 @@ passed with identical runtime inputs. Promotion preserved the running index
 process, startup, preferences and database identity. The consumed stage and
 superseded packages were removed. The Vivaldi `46802ab4` stage is waiting for
 [run 42465900817](https://github.com/hoozter/ottrin/actions/runs/42465900817).
+Its first attempt hit HTTP 504 in the pinned-provider download on Linux and
+Windows. Both performance jobs passed. The failed verification jobs were
+retried on the same revision. Ubuntu reached tests, but Windows hit another
+504. The original Windows URL also exhausted five retries locally. A separate
+source fix adds bounded retries and uses GitHub's API route for the same
+Windows release asset. The final downloader verified the original archive and
+binary hashes for both platforms.
+See [download retry acceptance](../.hermes/evidence/vivaldi-picker-delivery-current/CI_DOWNLOAD_RETRY.json).
 See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
 The preceding stable cohort used `e2c1b926`. All four exact-source jobs passed in

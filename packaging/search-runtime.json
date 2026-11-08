@@ -16,6 +16,7 @@
     },
     "windows-x86_64": {
       "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
+      "download_api": "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643?download=1",
       "sha256": "71b2fef860abe467217a538ff31de02f5258807c0129f771846f87bd029aafc5",
       "archive": "zip",
       "prefix": "ripgrep-15.2.0-x86_64-pc-windows-msvc",
