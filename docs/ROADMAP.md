@@ -12,6 +12,12 @@ The stable local Linux AppImage, portable archive, DEB and RPM use source
 The promotion kept the managed index Ready on the same process and preserved
 startup, preferences and database identity. It removed the consumed stage and
 superseded packages. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+The next local Linux cohort, `21f18bbe`, is staged. All four formats passed
+content verification. Its mounted AppImage passed Dark and Light selection
+checks for the frame, title bar and status bar, GTK Open in both variants,
+FileManager1 requests, and replacement while an older window was open.
+The staged cohort still requires all four exact-source jobs in
+[run 42430923563](https://github.com/hoozter/ottrin/actions/runs/42430923563).
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 
@@ -2940,7 +2946,7 @@ Do not move a fixable implementation or test failure onto this list.
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
 | Windows Installer ordinary-user MSI rollback | A supported correction for the native per-user registration undo boundary, or an explicitly approved change to the MSI installation contract. Exact held MSI fails on both26300/.9444 and26100/.9711; independent native controls also fail. Role-only elevation restores state but is diagnostic only. No supported application-source correction is established. Evidence: `windows-msi-package-control-current/verified-teardown/ASSESSMENT.json` and `windows-msi-security-context-current/COMPARISON.json`. Keep MSI release held; revisit a new supported solution rather than waive the gate. | Current ZIP/NSIS/development-MSIX payload, runtime, update/removal and other software gates continue independently. No production elevation, registry/ACL compensation or silent format withdrawal. |
-| Linux public release signing | The owner-created Ottrin Release Signing identity is present in the local GnuPG keyring. Provision a dedicated signing subkey with owner authentication, verify encrypted backup recovery, and verify CI using only the subkey. No paid certificate is required. | Existing signer verification, unsigned local packages and all product work. |
+| Linux public release signing | The public fingerprint and R2 credentials are configured in GitHub. Disposable APT and DNF updates passed over the configured update hostname. The local GnuPG identity has no dedicated signing subkey, and the unattended signing probe requires pinentry. Create the dedicated subkey with owner authentication, verify encrypted backup recovery and CI using only the subkey, then verify the first approved stable release before enabling package source registration. | Existing signer verification, unsigned local packages and all product work. |
 | Microsoft Store account/submission | Owner-controlled Store identity, listing and certification after Windows is ready. | Implement/test MSIX packaging and deployment when dependency-ready; unsigned direct ZIP/EXE/MSI remain supported. No paid Windows certificate gate. |
 | Physical-only device/adapter/audio acceptance | A suitable available test device or the owner's later observation for claims virtual fixtures cannot establish. | Native VM/private desktop tests and all reproducible software/resource fixes; record each untested physical claim separately. |
 
