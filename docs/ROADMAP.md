@@ -228,14 +228,23 @@ and the held MSI were preserved. See
    completed state, and a SYSTEM check found the exact publication and
    original source intact. See
    `.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESTART.json`.
-   The capture still shows administrator history loading alongside the
-   already-restored Copy row. The fixture now waits for the explicit
-   authenticated history success message before requesting Undo and records
-   visible Activity text on failure. The retry could not start because the
-   host fell below the fixture's 24 GiB storage requirement. Authenticated
-   history, Undo, rediscovery as Undone and interrupted recovery remain open. The temporary worktree,
-   unpacked payload, duplicate private ZIP and disposable guests were removed.
-   The exact private NSIS is retained for the retry.
+   A second native run passed the authenticated history load. Activity
+   reported that it overlapped an existing ordinary Copy row. Undo took
+   the ordinary path, displayed Resume copy Undo and never opened the
+   expected administrator prompt. A SYSTEM check confirmed the source
+   and caller-owned publication stayed intact. See the
+   [route failure receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_ROUTE_FAILURE.json).
+   Windows Copy journals now record the administrator route for new
+   administrator operations. Discovery separates the two routes while
+   retaining read-only peer checks for dependency validation. Ordinary
+   recovery refuses admission for the marked transactions. Windows-target
+   test compilation and strict Clippy pass. The new regression and the
+   rebuilt capability-enabled installer still require native execution.
+   Verify authenticated Undo, rediscovery as Undone and interrupted
+   recovery before enabling the capability in delivered builds. The
+   temporary worktree, unpacked payload, duplicate ZIP and disposable
+   guests were removed.
+   The exact older private NSIS is retained as the reproduced-failure baseline.
    See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
    and [installed navigation observation](../.hermes/evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
    See [installed Copy publication](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_PUBLICATION.json).

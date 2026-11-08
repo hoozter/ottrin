@@ -304,6 +304,8 @@ impl DestinationAdmission {
 struct Header {
     protocol: String,
     schema: u16,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    administrator: bool,
     transaction: String,
     parent: WindowsStableIdentity,
     parent_case_sensitive: bool,
@@ -1435,6 +1437,7 @@ impl Journal {
             creator,
             protocol: "ottrin-windows-copy".into(),
             schema: 18,
+            administrator: matches!(authority, Authority::Caller(_)),
             transaction: name,
             parent: parent_id,
             parent_case_sensitive: destination.case_sensitive,
@@ -3411,6 +3414,17 @@ impl Snapshot {
             previous,
         } = decode(&bytes)?;
         let header = state.header.as_ref().unwrap();
+        // Peer controls and journal-only inspections can still observe the
+        // shared registry. A recovery plan must retain the original route.
+        if header.administrator
+            && matches!(authority, Authority::Process)
+            && access != SnapshotAccess::Inspect
+            && control.is_none()
+        {
+            return Err(io(
+                "This Copy must be recovered through administrator history",
+            ));
+        }
         if name != header.stage_name() {
             return Err(io("Copy journal name does not match its transaction"));
         }

@@ -1,0 +1,55 @@
+{
+  "scope": "Exact private NSIS on a fresh disposable standard-user Windows installation. Copy and authenticated history used a separate disposable administrator. Undo did not request a second elevation.",
+  "input": {
+    "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+    "installer_sha256": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "f55d4571cf1b61d59ba91d08579629e771901943d0d19810d5a74b62e32f6619",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "copy": {
+    "mode": "copy",
+    "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "client_exited": true,
+    "phase": "complete",
+    "client_exit": 0,
+    "client_pid": 7120,
+    "status": "pass"
+  },
+  "history_undo": {
+    "client_pid": 1608,
+    "client_stderr": null,
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "error": "Missing unique control Copy undone count=0",
+    "phase": "failed",
+    "stack": "at Node, <No file>: line 33\r\nat <ScriptBlock>, <No file>: line 161\r\nat <ScriptBlock>, <No file>: line 1",
+    "mode": "history-undo",
+    "status": "failed",
+    "activity_controls": [
+      "Administrator Copy history loaded. Undo and clearing retained data may request authentication again.",
+      "Administrator history overlaps an existing owned Copy activity. Finish or review that activity before reloading history.",
+      "Copy from previous session",
+      "Retained copy data is verified and available for Undo.",
+      "Resume copy Undo"
+    ]
+  },
+  "disk": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "target_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "target_owner": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "target_present": true
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "ba506a1d-374c-4209-a0af-9ff2d106af0b",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}

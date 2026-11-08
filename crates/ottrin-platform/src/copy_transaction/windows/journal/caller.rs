@@ -1106,6 +1106,20 @@ pub(in super::super) fn exercise_caller_recovery(
         .find(|row| row.transaction_id.as_deref() == Some(&id))
         .unwrap();
     assert_eq!(row.phase, Some(WindowsCopyPhase::Completed));
+    // The standard user can read its central journal but must not restore
+    // an ordinary Activity row or admit an ordinary Undo for this Copy.
+    as_caller(&mut || {
+        let journal = manager.path().join(format!("{id}.copy-journal"));
+        let state = decode(&std::fs::read(journal).unwrap()).unwrap().state;
+        assert!(state.header.unwrap().administrator);
+        let ordinary = discovery::discover_at(manager.path()).unwrap();
+        assert!(
+            ordinary
+                .iter()
+                .all(|row| row.transaction_id.as_deref() != Some(&id))
+        );
+        assert!(discovery::restore_undo_at(manager.path(), &id).is_err());
+    });
     assert_eq!(row.evidence, WindowsCopyRecoveryEvidence::VerifiedTree);
     assert!(
         fresh_registry

@@ -632,8 +632,15 @@ pub(in crate::copy_transaction::windows) fn discover_directory(
             output.push(status);
             continue;
         }
+        let record = registered_journal(authority, central, &name);
+        if record.as_ref().is_ok_and(|(_, state)| {
+            state.header.as_ref().unwrap().administrator
+                != matches!(authority, Authority::Caller(_))
+        }) {
+            continue;
+        }
         let result = (|| {
-            let (bytes, state) = registered_journal(authority, central, &name)?;
+            let (bytes, state) = record?;
             let header = state.header.as_ref().unwrap();
             status.phase = Some(phase(&state));
             status.source_label = Some(OsString::from_wide(&header.source_label));
