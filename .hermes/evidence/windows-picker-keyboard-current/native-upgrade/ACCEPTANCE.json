@@ -1,0 +1,46 @@
+{
+  "status": "partial native Windows upgrade acceptance",
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "previous_source": "67d3cbe14c03f1b8021284454e46ed046795131e",
+  "packages": [
+    {
+      "name": "portable.zip",
+      "sha256": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95"
+    },
+    {
+      "name": "current-setup.exe",
+      "sha256": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a"
+    },
+    {
+      "name": "previous-setup.exe",
+      "sha256": "be0cfcc02b2d858870885ac1d44d8d51675b17504fbb0051833b9184a6856b2d"
+    }
+  ],
+  "running_index_upgrade": "pass",
+  "reinstall_cases_passed": [
+    {
+      "status": "pass",
+      "running": true,
+      "enabled": false
+    },
+    {
+      "status": "pass",
+      "running": false,
+      "enabled": true
+    }
+  ],
+  "pending_phase": "reinstall-False-False",
+  "failure": "Owned child timed out: setup-reinstall-False-False",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "f32bda1f3e863234ccbf69749bf693968066422eb8e903594a11d53bd2372146",
+  "scope": "Exact NSIS lifecycle in a fresh ordinary-user guest. The stopped-and-disabled reinstall and subsequent locked-cache retry lack passing evidence."
+}

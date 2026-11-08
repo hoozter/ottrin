@@ -202,10 +202,14 @@ guest resources were removed. Current authority:
 2. **Deliver the Windows Save fix.** Exact staged `7992ad1e` NSIS passed
    fresh install, Save shortcut ownership and exact UTF-16 selection in both
    themes, and uninstall in a fresh ordinary-user guest. The caller file and
-   configuration bytes were preserved. Finish the upgrade lifecycle checks
-   and build and validate development MSIX from the same portable payload.
-   Keep the accepted `67d3cbe1` Windows cohort available until replacement.
-   See [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json).
+   configuration bytes were preserved. The upgrade from `67d3cbe1` with
+   a running index passed, along with two reinstall intent combinations.
+   The stopped-and-disabled reinstall timed out before the locked-cache
+   check. Diagnose that reinstall and build and validate development MSIX
+   from the same portable payload. Keep the accepted Windows cohort
+   available until replacement. See
+   [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json)
+   and [upgrade results](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
 3. **Close Windows desktop integration and theme acceptance.** Run the
    prepared read-only MSIX registry comparison under matching identities.
    Verify supported folder actions, picker behavior, and remaining theme
