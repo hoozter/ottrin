@@ -150,24 +150,20 @@ Previous List/Grid, Inspector and native distro-lifecycle receipts retain their
 original scopes.
 
 The 59-file Windows portable ZIP, NSIS installer and unsigned development
-MSIX 27 are available at `dist/windows-candidate/`. The installed NSIS build
-passed default-folder enable and restoration and Dark and Light Save
-replacement. The installed MSIX explains the default-folder limitation.
-Both CLI requests refuse before changing the checked host registry values.
-The full notice was reviewed after scrolling.
+MSIX 28 from `7992ad1e` are available at `dist/windows-candidate/`.
+The installed Save fix passed in Dark and Light. NSIS passed running-index
+upgrade, reinstall intent preservation, locked-cache uninstall refusal and
+retry, and default-folder enable and restoration. Native MSIX 28 passed
+fresh deployment and enabled upgrade from 27, including Explorer folder
+background, multiple selection and drive actions, real sign-in startup and
+removal. The MSIX Settings notice describes the folder-menu support and
+preserves the existing default folder app.
 
-Native MakeAppx assembled MSIX 27 from the same payload. Fresh deployment
-and the enabled 26-to-27 upgrade passed actual Explorer folder background,
-multiple selection and drive commands, login startup and removal.
-The `7aabcc56` NSIS upgrade and locked-cache uninstall recovery, and the
-`8e805d31` Services checks, retain their original source scope. MSIX default
-folder opening, lower Windows build coverage, the full theme audit,
-administrator Copy and MSI rollback remain open.
-
-The superseded Windows cohort, consumed stage, source archive and owned
-guest resources were removed. Current authority:
-`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. Delivery evidence:
-`.hermes/evidence/windows-msix-default-status-delivery-current/WINDOWS_DELIVERY.json`.
+The source-equivalent hosted checks all passed. Promotion removed the
+superseded Windows cohort and consumed staging directory. Linux artifacts
+and the held MSI were preserved. Current authority is
+`dist/WINDOWS_CANDIDATE_ACCEPTANCE.json`. See
+[Windows delivery](../.hermes/evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json).
 
 ### Current ordered work
 
@@ -211,7 +207,7 @@ guest resources were removed. Current authority:
    ordinary runtime, Explorer actions, real sign-in and removal. The first
    fixture expected outdated notice text. The corrected assertion verified
    the full current notice and unchanged host defaults. Guarded promotion
-   remains open. See
+   delivered the three formats to the stable Windows path. See
    [MSIX runtime acceptance](../.hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json),
    [MSIX assembly](../.hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json),
    [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),

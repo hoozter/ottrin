@@ -1,46 +1,46 @@
 {
-  "status": "pass scoped Windows folder capability and Explorer integration",
-  "source_commit": "67d3cbe14c03f1b8021284454e46ed046795131e",
+  "status": "pass scoped Windows Save, installer and desktop integration",
+  "source_commit": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
   "working_tree_at_build": "clean",
   "candidate": "/home/campbell/Projects/Ottrin/dist/windows-candidate",
   "artifacts": {
-    "Ottrin-0.1.0-windows-x64-portable.zip": "3b3d8d30ec64cb6909182c9307b144da46786a45f2be788f3e06b66583462ff6",
-    "Ottrin-0.1.0-windows-x64-setup.exe": "be0cfcc02b2d858870885ac1d44d8d51675b17504fbb0051833b9184a6856b2d",
-    "Ottrin-0.1.0-windows-x64-development.msix": "8512f2bdb69a2c783295f63de9ebf971f3c7d599bf21e819a918cc3f69f82bff"
+    "Ottrin-0.1.0-windows-x64-portable.zip": "ecce3edc80187a48d934157cfcf69d0e133f029dfc5cb62b3e02e2578a0c3c95",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a",
+    "Ottrin-0.1.0-windows-x64-development.msix": "48d1cf2c1858cb9c35458b216305ae47780a99dd5ffd9dab6e8e1805665e7416"
   },
   "payload_files": 59,
-  "evidence_directory": ".hermes/evidence/windows-msix-default-status-delivery-current",
+  "evidence_directory": ".hermes/evidence/windows-picker-keyboard-current",
   "hosted_source": {
-    "run": 42416812531,
-    "tested_source_revision": "67d3cbe14c03f1b8021284454e46ed046795131e",
+    "run": 42434627263,
+    "tested_source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
     "all_four_jobs_success": true
   },
   "host_content": "HOST_PAYLOAD.json",
-  "current_native_fields": ".hermes/evidence/windows-msix-default-status-delivery-current/NATIVE_NSIS_DEFAULT_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/windows-msix-default-status-delivery-current/WINDOWS_DAEMON_RUNTIME.json",
+  "current_native_fields": ".hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json",
+  "daemon_runtime": ".hermes/evidence/windows-picker-keyboard-current/WINDOWS_DAEMON_RUNTIME.json",
   "native_msix": {
-    "current_assembly": ".hermes/evidence/windows-msix-default-status-delivery-current/ASSEMBLY_ACCEPTANCE.json",
-    "current_runtime_login_removal": ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_CONTEXTS_ACCEPTANCE.json",
-    "current_enabled_update": ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_ENABLED_UPDATE_ACCEPTANCE.json",
-    "scope": "Exact 59-file ZIP/NSIS/MSIX equality, native unpackaged default and restoration, packaged refusal and visible explanation, fresh27 and enabled26-to27 Explorer contexts/login/removal."
+    "current_assembly": ".hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json",
+    "current_runtime_login_removal": ".hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json",
+    "current_enabled_update": ".hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json"
   },
   "native_msi_rollback": {
     "status": "held: ordinary-user registration rollback/retry failed on exact8ede diagnostic; no current accepted MSI",
     "release_accepted": false,
     "diagnostic_input": ".hermes/evidence/windows-msi-package-control-current/input/DIAGNOSTIC_INPUT.json"
   },
-  "source_scope": ".hermes/evidence/windows-msix-default-status-delivery-current/WINDOWS_SOURCE_SCOPE.json",
+  "source_scope": ".hermes/evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json",
   "public_release_published": false,
   "limits": [
-    "Prior NSIS upgrade and Services results retain their original source scopes.",
     "Prior Services results retain their original source scope.",
     "Software guest/default DPI only; no physical GPU, signing, Store or human acceptance",
     "Targeted Services and Explorer originals only; full theme/interface property audit remains open",
     "MSIX default folder opening transaction error remains separate software work",
     "MSIX drive-menu schema requires Windows11 build22621; lower advertised package builds are not accepted by this Windows11 case",
     "Native light-menu icon contrast and supplementary glyph fallback remain open",
-    "Administrator Copy coordinator/caller registry and ordinary MSI rollback remain gated"
+    "Administrator Copy coordinator/caller registry and ordinary MSI rollback remain gated",
+    "MSIX 27-to-28 upgrade verified with startup enabled. Disabled upgrade and Store acceptance are separate."
   ],
   "previous_native_upgrade": ".hermes/evidence/windows-picker-confirmation-delivery-current/NATIVE_UPGRADE_ACCEPTANCE.json",
-  "native_default_capability": ".hermes/evidence/windows-msix-default-status-delivery-current/MSIX_UPDATED_DEFAULT_ACCEPTANCE.json"
+  "native_default_capability": ".hermes/evidence/windows-picker-keyboard-current/native-default/ACCEPTANCE.json",
+  "native_upgrade": ".hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json"
 }

@@ -1,7 +1,7 @@
 {
   "status": "pass native MSIX28 assembly and59-file equality; runtime/update/login have separate acceptance receipts",
   "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
-  "artifact": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-keyboard-stage/Ottrin-0.1.0-windows-x64-development.msix",
+  "artifact": "/home/campbell/Projects/Ottrin/dist/windows-candidate/Ottrin-0.1.0-windows-x64-development.msix",
   "artifact_sha256": "48d1cf2c1858cb9c35458b216305ae47780a99dd5ffd9dab6e8e1805665e7416",
   "version": "0.1.0.28",
   "native_payload_files": 59,
@@ -19,5 +19,6 @@
     "base_still_off": true,
     "retained_pending_volume": null
   },
-  "scope": "Actual clean Git source/production MakeAppx assembly, then native unpack and independent host ZIP comparison; no Store/signing/runtime acceptance"
+  "scope": "Actual clean Git source/production MakeAppx assembly, then native unpack and independent host ZIP comparison; no Store/signing/runtime acceptance",
+  "assembled_artifact_path": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-picker-keyboard-stage/Ottrin-0.1.0-windows-x64-development.msix"
 }

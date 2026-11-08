@@ -1,0 +1,41 @@
+{
+  "source": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "default_folder": {
+    "status": "pass",
+    "original_host_state_restored": true,
+    "enabled_and_ready": true,
+    "supported": true
+  },
+  "phase": "complete",
+  "scope": "Exact ordinary-user NSIS installation, transactional default folder enable and restoration, themed Save and uninstall",
+  "cases": [
+    {
+      "variant": "Dark",
+      "nativePathVerified": true,
+      "accepted": true,
+      "originalUnchanged": true,
+      "configUnchanged": true
+    },
+    {
+      "variant": "Light",
+      "nativePathVerified": true,
+      "accepted": true,
+      "originalUnchanged": true,
+      "configUnchanged": true
+    }
+  ],
+  "status": "pass",
+  "payloadFiles": 59,
+  "installer_sha256": "f89191820065e65f09967d66068803407279da93100064c9c9ff4df49811087a",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-nsis-client.qcow2",
+      "ottrin-nsis-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null
+  },
+  "guest_result_sha256": "b5769b9f58226b54c02f4ce789f11ce45fc23e0b6fc3655684565b83ce3fe1cb"
+}
