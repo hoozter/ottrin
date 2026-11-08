@@ -26,6 +26,14 @@ impl PickerParentWindow {
         if handle.is_empty() || handle.contains('\0') || handle.len() > 1024 {
             return Err(invalid());
         }
+        let handle = if kind == "x11" {
+            handle
+                .strip_prefix("0x")
+                .or_else(|| handle.strip_prefix("0X"))
+                .unwrap_or(handle)
+        } else {
+            handle
+        };
         match kind {
             "wayland" => Ok(Self::Wayland(handle.to_owned())),
             "x11" | "win32" if handle.bytes().all(|b| b.is_ascii_hexdigit()) => {
@@ -314,6 +322,12 @@ mod tests {
             PickerParentWindow::parse("x11:ABC123").unwrap(),
             PickerParentWindow::X11(0xabc123)
         );
+        for handle in ["x11:0x400004", "x11:0X400004"] {
+            assert_eq!(
+                PickerParentWindow::parse(handle).unwrap(),
+                PickerParentWindow::X11(0x400004)
+            );
+        }
         assert_eq!(
             PickerParentWindow::parse("win32:1234").unwrap(),
             PickerParentWindow::Windows(0x1234)
@@ -326,7 +340,10 @@ mod tests {
             "1234",
             "x11:",
             "x11:0",
-            "x11:0x123",
+            "x11:0x",
+            "x11:0x0",
+            "x11:0x100000000",
+            "x11:0x0x123",
             "x11:100000000",
             "x11:-1",
             "x11: 123",
