@@ -26,8 +26,12 @@ The Windows API route passed its provider gate. The Ubuntu runner exhausted
 all five retries on the original Linux URL before tests. The Linux API route
 then downloaded and verified the same pinned archive and executable locally.
 Keep the running Windows checks and queue a new run with both API routes.
-Promotion preflight binds the two reviewed downloader files and checks
-that their changes leave the pinned provider and runtime inputs identical.
+Promotion preflight binds each of the four required jobs. The earlier
+Ubuntu verification passed the complete job with the same application,
+workflow and pinned provider bytes. It can serve as the Ubuntu receipt
+for the staged package while the current Windows job runs. The only
+packaging-input differences are the reviewed download retry and API route.
+See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json).
 See [download retry acceptance](../.hermes/evidence/vivaldi-picker-delivery-current/CI_DOWNLOAD_RETRY.json).
 See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
