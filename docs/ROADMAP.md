@@ -2960,7 +2960,13 @@ Do not move a fixable implementation or test failure onto this list.
 When a new external dependency is established, record the exact missing resource,
 its affected outcome and evidence here. Resume another ready outcome. Keep the
 project's active resume point above current after every verified checkpoint.
-## Current delivery and remaining outcomes
+## Historical delivery and remaining outcomes at that checkpoint
+
+For today's package revisions, the next work and the waiting list, see
+[Current delivery and next work](#current-delivery-and-next-work) and
+[Owner/external waiting list](#ownerexternal-waiting-list). The snapshots below
+describe the state at the time of each checkpoint. Package paths were reused
+by later promotions.
 
 The stable Linux AppImage, portable archive, DEB and RPM are published at
 `dist/packages/`; the AppImage has one stable path:
@@ -2998,7 +3004,7 @@ preserves the prior deliverables. The real staged build passed. An earlier Linux
 with host mounts unchanged. These checks do not replace physical desktop, device,
 fresh-distro lifecycle or full-application resource acceptance.
 
-| Area | Current evidence | Remaining outcome |
+| Area | Evidence at this checkpoint | Remaining outcome at this checkpoint |
 | --- | --- | --- |
 | Linux | Four4a1682bd formats delivered; all four exact-source CI jobs pass. Current worksheet geometry/typography verified Dark100/Light150; all other shipping source and non-GUI payload inputs unchanged from90. Earlier native/browser/lifecycle/resource scopes keep original hashes. | Finish the requirement audit and parked owner/device review; no new personal-workload claim. |
 | Windows | Current4a1682bd ZIP/NSIS/MSIX0.1.0.6 delivered. Native installed worksheet,58-file content, actual5→6 enabled/disabled real-login/removal and current GUI/menu/visibility scopes pass. Other shipping source/helper content unchanged, apart from daemon PE metadata. | Current native temporal PDF/read-only navigation/exact Save pass; finish remaining software audit and preserve held MSI rollback and owner/hardware waits. |
@@ -3995,7 +4001,7 @@ This source checkpoint adds no mutation authority. Exact package refresh, native
 desktop/OS-clipboard acceptance and the remaining interrupted-staging protocol
 are still open; existing packages and public Windows Copy are unchanged.
 
-## Current Windows candidate refresh
+## Historical Windows candidate refresh
 
 The three internal Windows formats now come from clean source `4fbc3e1a`, at
 `.hermes/packaging-tmp/windows-activity-candidate/`. They include the schema-18
@@ -4085,7 +4091,7 @@ Temporal and rendered-caption regressions cover this correction. The preceding
 Trash package receipt still describes its own artifact until the package refresh
 is accepted. Evidence: `.hermes/evidence/activity-timing-current/ACCEPTANCE.json`.
 
-## Current Windows Copy implementation checkpoint
+## Historical Windows Copy implementation checkpoint
 
 Claim and journal setup use persistent private controls. Claims publish only a
 complete first frame; the central journal publishes its canonical name only after
@@ -6634,7 +6640,7 @@ installer lifecycle, continuous daemon/IPC, and MSI registration rollback remain
 separate open gates.
 
 
-### Current Windows installer lifecycle — exact native acceptance
+### Historical Windows installer lifecycle — exact native acceptance
 
 Both installers from clean `4552483` now pass under a fresh non-administrator
 medium-integrity secondary interactive account. MSI SHA-256
@@ -6869,7 +6875,7 @@ execution, native GUI and replacement-package acceptance remain open; published
 packages are unchanged.
 
 
-### Current Windows candidate — native GUI rejection and path-identity repair
+### Historical Windows candidate — native GUI rejection and path-identity repair
 
 The clean 979db8f portable candidate, SHA-256
 `c08414ea72e3ff3c79f3221d6fc4a825aa1648d5e8ade8a260d896331516e3d0`,
@@ -7114,7 +7120,7 @@ checks, not new native install/upgrade/rollback/GUI acceptance. Repeat packaged
 lifecycle and blocked-cache recovery on these exact candidates; the per-user MSI
 registration rollback failure remains open independently.
 
-### Current NSIS candidate — packaged cleanup failure/retry accepted
+### Historical NSIS candidate — packaged cleanup failure/retry accepted
 
 The clean 160b803 NSIS candidate, SHA-256
 `48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e`,
@@ -7143,7 +7149,7 @@ preferences and staged candidates remain needed for subsequent native gates.
 Public downloads are unchanged. Current MSI registration rollback, exact-package
 login/reboot, interactive installer UI and broader Windows acceptance remain open.
 
-### Current NSIS candidate — real login startup and saved-index restoration
+### Historical NSIS candidate — real login startup and saved-index restoration
 
 The 160b803 NSIS candidate, SHA-256
 `48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e`,
@@ -7167,7 +7173,7 @@ Published downloads are unchanged. This closes focused current-package login/
 saved-index acceptance, not graphics, full GUI, heavy-index CPU or MSI
 failed-transaction registration rollback.
 
-### Current Windows public Move — regular-file integrity and session cleanup fix
+### Historical Windows public Move — regular-file integrity and session cleanup fix
 
 The clean 160b803 portable candidate (SHA-256
 `07e54ad17514b4593ff06cd46550a638f48d954fde00085178514e298312ebe1`)
@@ -7286,7 +7292,7 @@ platform daily-driver gates remain open.
 - **Linux:** the core browser, file operations, search and Inspector are implemented. Recent delivered changes cover saved-view preservation, indexer performance/service management, theme editing, target alignment, Settings/editor coherence and shared menu/choice-row alignment, repeated/cold AppImage startup, and native window desktop identity. The current AppImage is built from clean tracked revision `ad364d4`, SHA-256 `e3659a70f17f0352bba5fb8bfaeadf2f6b57dd5edec1b4befed7b983104e1a5a`. Exact-package CLI cleanup failure/retry and source/preference preservation pass; receipt `dist/packages/CACHE_CLEANUP_ACCEPTANCE.json`. DEB/RPM/portable are refreshed and payload identities pass. The following GUI and idle-daemon results remain scoped to preceding `b2d2702` (SHA-256 `e31d09cb36c50aceea716b85d594f3b239852235cee3da1876e8df1ab5fc0d22`); the already running user daemon remains that version until explicitly upgraded. Exact-package Dark 100% / Light 150% three-item restored batch Undo, completed restart, startup destination reveal, visibility after opening Activity and both menu visuals pass. Full destination captions stay visible beside the panel, and complete menu icons retain compact spacing. Native/portable payload identities pass. Receipt: `dist/packages/COPY_SCOPED_VIEWPORT_ACCEPTANCE.json`. The packaged empty-root index daemon records 60 wakeups over six seconds, no measured CPU ticks, 0.308 ms maximum ping latency and clean shutdown. The installed service has been gracefully upgraded to that exact daemon while preserving the main app, configuration, service definition and database inode; The running home index is now Ready with 158,825 entries and an active watch; a 12-second sample with the existing main GUI measured 0.5% of one CPU core while its snapshot advanced. Sustained quiet-idle and heavy-change acceptance remain separate. The preceding accepted batch artifact remains `9622e61`, SHA-256 `b63665e0b6a696476966f78c05398e164abc6bdc4624d7ba889e9446a46daf5f`.  Exact-package Dark 100% / Light 150% restoration and one-click reverse Undo of three overlapping items in one batch pass. Original sources and paired journals are preserved; normal restart shows three completed inverses without an Undo action. Native/portable payload identities pass. Receipt: `dist/packages/COPY_BATCH_PLAN_ACCEPTANCE.json`. These plan-admission and initial Miller target-column follow-ups were subsequently repaired in `a242cdc`; the bounded-read regression and later destination-reveal receipts retain their own exact source/artifact scopes. The following two-operation dependency/menu checks retain their preceding `2003969` artifact scope (`4220b6c435db36986fba6d1d72bc0b8601328e0b17b2689b516b51cb660e3a7a`). Exact-package Dark 100% / Light 150% fresh-process restoration of two source-produced overlapping Copy operations, automatic predecessor admission after newer Undo, both inverses, source preservation, visible empty caption and normal exits pass. Native/portable payload identities pass. Receipt: `dist/packages/COPY_DEPENDENCY_ACCEPTANCE.json`. That AppImage main/View Options menus also pass visual inspection in Dark 100% / Light 150%, including complete semantic icons and compact action-menu leading spacing; receipt `dist/packages/CURRENT_MENU_ACCEPTANCE.json`. Within-batch inverse admission is now covered by the latest package scope above. The following text-edit and batch/caption acceptance remains tied to the preceding `c27403f` artifact (`62e0747da6a40e86917ece64fc29a0b49964e0782465fd0e6edebea4d6c396f1`). Exact-package Dark 100% / Light 150% native Inspector text save, Activity Undo, original-byte restoration and correct completed text-edit labels pass; unrelated files are preserved and both runs exit normally. Receipt: `dist/packages/ACTIVITY_OPERATION_KIND_ACCEPTANCE.json`. Exact-package Dark 100% / Light 150% Copy restart/Undo and empty-caption layout checks pass: both durable inverses complete, the destination shows zero items, sources remain unchanged, and the full caption stays visible beside Activity. Native/portable payload identities pass. Receipt: `dist/packages/EMPTY_CAPTION_ACCEPTANCE.json`. The expanded Smart Panel overlays the file view; empty-state content now uses the uncovered column area. All 356 regular UI tests and Linux/Windows-target strict UI Clippy pass. The disposable Cargo runner passes success, failure, cancellation and native systemd renderer cleanup contracts while preserving unrelated units and operator state; native Windows runner acceptance remains separate. The following full recovery acceptance remains tied to the preceding `123e703` artifact (`a0b0bb28976c8812a9e3bf499ead0f7bc8912d16308fea8cbad7d97659f4efa2`). Exact-package Dark 100% / Light 150% Copy restart, restored batch Undo, visible listing refresh, completed history after filename reuse, and edited-copy refusal pass. Refreshed native/portable payload identities pass. Receipt: `dist/packages/COPY_RESTART_ACTIVITY_ACCEPTANCE.json`. The caption repair is also visible in the latest two-operation dependency checks above. The earlier `76f441f` receipts retain their historical scope. Rapid Shift+Delete now uses the press event’s modifiers: exact-package permanent/Trash confirmations, cancellation and file destinations pass Dark 100% / Light 150%. Refreshed portable/DEB/RPM identities pass; receipt `dist/packages/DELETE_SHORTCUT_ACCEPTANCE.json`. The following Activity receipt remains tied to its preceding `89fa193` hash. Activity now preserves running operations and Undo owners during history trimming and “Clear finished”; exact-package Dark 100% / Light 150% clearing and Copy Undo pass. The refreshed portable, DEB and RPM payload identities pass, with native installation and Windows refresh remaining separate. Receipt: `dist/packages/ACTIVITY_RETENTION_ACCEPTANCE.json`. Inspector and menu receipts below remain tied to their historical hashes. Inspector navigation now reads Previous / Page N of N / Next; exact-package two-page forward/backward behavior and minimum-size Dark/Light acceptance are in `dist/packages/INSPECTOR_NAVIGATION_ACCEPTANCE.json`. The preceding `b8d90a3` menu visual receipt remains historical. Main action menus now omit the unused check column, choice menus use a narrower check column, and view/sort options have complete semantic icons. Seven rendered widget regressions, all 345 regular UI tests and strict Clippy pass; exact-package main/view menu inspection passes Dark 100% and Light 150% with normal exits. Receipt: `dist/packages/MENU_REFINEMENT_ACCEPTANCE.json`. It includes the shared alignment repairs; their focused Dark/Light acceptance remains bound to historical revision `903c553` in `dist/packages/MENU_ALIGNMENT_ACCEPTANCE.json`. It preserves a visible adjacent Miller preview when the window shrinks, without overriding deliberate horizontal scrolling. Focused Dark/Light native Linux resize acceptance is recorded in `dist/packages/MILLER_RESIZE_ACCEPTANCE.json`; native Windows text-preview resize also passes at 100%. The preceding `6e8cef0` package’s shared button wrapping, preview toolbar layout and exact-package local file operations are recorded in `dist/packages/PREVIEW_TOOLBAR_ACCEPTANCE.json`. The earlier Copy/create directory-guard and private mount proof remains in `dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json`, bound to that receipt’s historical checksum. The preceding `771eae8` AppImage had SHA-256 `312eb7a0907e3895aee45ef5c087be315c5a6d94f6f70d44f3a3cff7b237a7c7`. Its rapid path-entry/Select All and local Copy/Move/Cancel/Overwrite/Undo acceptance is in `dist/packages/LOCAL_PATH_ADMISSION_ACCEPTANCE.json`; batch Copy Undo and receipt ownership are now accepted at this scope; safe transaction expiry/reclamation remains open. The preceding `73b913d` AppImage had SHA-256 `9c0c353435ea5fb640616c6ac3caf1c3d44ee7dd42c675f4e792d85de0483efb`. Historical exact-package Xvfb checks on that `73b913d` artifact at 1100 × 690 and 800 × 600 verify startup file selection reveals its full adjacent preview, ArrowUp preserves column positions, and both launches exit cleanly; receipt `dist/packages/MILLER_STARTUP_ACCEPTANCE.json`. `dist/packages/` also contains refreshed portable, DEB and RPM candidates from clean package revision `6e8cef08a2fc8f812bc515b875205230440b7166`, reusing the accepted `6e8cef0` release binaries; all three now contain the local-path admission, shortcut, batch Copy Undo and mount-safe directory-guard repairs. Portable PDFium placement is corrected and an exact archived-app PDF preview passes. Portable/DEB whole-file identity and RPM code/read-only-data identity after standard stripping are verified. All three extracted candidates pass startup selection/full-preview and ArrowUp checks at 1100 × 690 and 800 × 600 in private Xvfb/DBus, with clean exits and cleanup; this does not complete clean-distribution installation/upgrade acceptance. Checksums, source provenance and exact scope are recorded in `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Fresh Ubuntu 24.04.5 VM DEB installation, regular-user text-preview launch, same-version reinstall/uninstall, preference preservation and real systemd user-service install/status/restart/removal now pass; all five installed executables match accepted release binaries. Receipt: `dist/packages/DEB_INSTALL_ACCEPTANCE.json`. Full desktop integration, cross-version upgrade and fresh RPM installation remain open. Earlier receipt results apply to their recorded artifacts, not automatically to the newest package. The desktop-identity receipt verifies private KWin Wayland protocol, not a visual host-taskbar acceptance.
 
 
-### Current Linux completion package and session cleanup
+### Historical Linux completion package and session cleanup
 
 All four stable Linux deliverables are refreshed from clean tracked revision
 `af78252bdab900599d40ba8c8d74db29dbda48bc`. The current AppImage SHA-256 is
@@ -7325,7 +7331,7 @@ running daemon start identity/executable remain unchanged. The installed running
 daemon intentionally remains the preceding binary until a deliberate upgrade;
 no new live-home CPU/performance claim is made. Wider platform gates remain open.
 
-### Current Linux populated-index idle, burst and persisted restart
+### Historical Linux populated-index idle, burst and persisted restart
 
 Exact af78252 AppImage acceptance now covers 10,000 metadata-only files and 100
 directories. Both 30-second quiet samples measure 0.067% of one CPU core, before
@@ -7438,7 +7444,7 @@ owned VM and both backing guests are shut off, with source/preferences and
 backing content mtime preserved.
 
 
-### Current Windows local packages published after installer verification — 2026-10-15
+### Historical Windows local packages published after installer verification — 2026-10-15
 
 The `4a0c13b` portable/NSIS/MSI candidates now replace the older files at stable
 `dist/` paths. Their SHA-256 values are recorded in the current acceptance receipt
@@ -7497,7 +7503,7 @@ and GUI checks, plus other roadmap implementation, while this root cause remains
 unresolved.
 
 
-### Current NSIS real reboot and login-daemon startup — 2026-10-15
+### Historical NSIS real reboot and login-daemon startup — 2026-10-15
 
 The current published NSIS, SHA-256
 `78b6de52c91e4cecd4295154168f0723f8d9d21a5886f97dd5d2eea2dc0f558d`
@@ -8225,7 +8231,7 @@ cross-product. Stable public packages are unchanged. MSI registration rollback
 is the next installer gate; Office, wider GUI/DPI, reboot/login, signing and
 full daily-driver acceptance remain separate.
 
-### Current MSI early-execution hypothesis rejected (2026-10-15)
+### Historical MSI early-execution hypothesis rejected (2026-10-15)
 
 The exact unpublished `3ddb1bf` MSI (`717890c74af6e259005b37ae057bf5eb273e6bafea58a2c15d9fb139e0e138be`) reproduces the failed-registration rollback gate under a fresh interactive non-administrator. Cleanup refuses a locked owned preview-cache file before touching the daemon. PID/instance, task XML/security, all 51 payload files, preferences, source data and saved-index identity remain intact. Windows Installer nevertheless records 79 skipped registration rollback errors, leaves advertised product state 1, and fails an ordinary uninstall retry with 1603.
 
@@ -8319,7 +8325,7 @@ removed after its compact receipts and deferred actor inputs were retained.
 Native Windows/macOS and physical Wayland/GPU acceptance remain separate;
 this does not close the wider roadmap or the MSI rollback gate.
 
-### Current Windows preview and early setup recovery acceptance (2026-10-15)
+### Historical Windows preview and early setup recovery acceptance (2026-10-15)
 
 Clean source `a7c189f87172c73791493af0ac9e9579f73201f8` is now packaged as one
 coherent internal portable/NSIS/MSI cohort at
@@ -8356,7 +8362,7 @@ remain unchanged: failed-registration MSI rollback is still an open release
 gate. Physical GPU, wider DPI/theme coverage, temporal Windows PDF stability,
 explicit Windows edit/save, Office and other roadmap gates remain separate.
 
-### Current Windows GUI regular-file Move acceptance (2026-10-15)
+### Historical Windows GUI regular-file Move acceptance (2026-10-15)
 
 The exact internal NSIS from clean `a7c189f` (SHA-256
 `225e8c2dc3c454c9f7449f565353e3500c5d6509e689e3c87cc37aa934f429a0`)
@@ -8648,7 +8654,7 @@ clipboard and exact-package requirements remain open. Public Windows Copy stays
 disabled and current packages are unchanged. User testing remains deferred;
 the full roadmap goal is active.
 
-## Current Office package checkpoint — 2026-10-18
+## Historical Office package checkpoint — 2026-10-18
 
 Linux portable, AppImage, DEB and RPM at `dist/packages/` now contain clean
 source `a6dc0905a61277b3fb896ea76ff0524d552a757c`. Exact payload/provenance
