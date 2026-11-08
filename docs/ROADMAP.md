@@ -394,9 +394,12 @@ Current source, test, package and owner/external scopes stay separate.
      across staging aborts, claim publication, release and retirement,
      including process exits and preservation of foreign controls.
      Its log explicitly marks the ordinary-client and SYSTEM-companion
-     tests ignored. The local partial-anchor runner still binds the
-     original binary with no platform-source drift and refuses allocation
-     at 22.46 GiB available against its 24 GiB guard.
+     tests ignored. The local runner now binds the cross-built
+     `9c41c355` executable after the picker parser change. The rebuild used
+     the same compiler settings and replaced the executable in place. All
+     nine preflights passed the source and artifact checks. The 24 GiB
+     guard still prevented native execution after removing two superseded
+     incremental sessions.
      [Hosted Windows job](https://github.com/hoozter/ottrin/actions/runs/42430923563/job/128579415040).
    - Extend coverage through the remaining claim and native I/O boundaries.
      The exact `2afcfc5a` hosted Windows suite passed read-only candidate
@@ -3161,7 +3164,7 @@ Do not move a fixable implementation or test failure onto this list.
 
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
-| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. The partial-anchor recovery preflight bound the existing `e12187c7` test binary and refused guest allocation at 23,883,796,480 bytes available (22.24 GiB). The scoped cleanup audit found zero superseded standalone test binaries with matching compiler settings and zero obsolete incremental sessions. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
+| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. All nine recovery preflights bound the rebuilt `9c41c355` test binary and refused guest allocation at 23,859,703,808 bytes available (22.22 GiB). The scoped cleanup removed two superseded incremental sessions and recovered 0.95 GiB. The replacement test executable uses the same path. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
 | Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
 | Personal administrator helper update | Settings → Services → Update / reinstall helper, then complete OS administrator authentication. Installed binary differs from the delivered tested helper; no privileged host file was silently replaced. Exact hashes: `privileged-copy-current/HOST_HELPER_STATUS.json`. | All implementation/package work, including versioned capability/readiness reporting, elevated Copy restart discovery and Windows bridge. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
