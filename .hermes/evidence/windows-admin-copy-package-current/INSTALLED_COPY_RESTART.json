@@ -1,0 +1,50 @@
+{
+  "scope": "Exact private NSIS installed as standard user on disposable Windows 11 guest",
+  "input": {
+    "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+    "installer_sha256": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "c8a2c9fa4a6f362430f2d2fef4ad868e804b3c1ac0d7513e0286c52cbb8cc0e8",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "copy": {
+    "mode": "copy",
+    "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "client_exited": true,
+    "phase": "complete",
+    "client_exit": 0,
+    "client_pid": 5744,
+    "status": "pass"
+  },
+  "fresh_history_undo": {
+    "client_pid": 5916,
+    "client_stderr": null,
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "error": "Missing unique control Copy undone count=0",
+    "phase": "failed",
+    "stack": "at Node, <No file>: line 33\r\nat <ScriptBlock>, <No file>: line 159\r\nat <ScriptBlock>, <No file>: line 1",
+    "mode": "history-undo",
+    "status": "failed"
+  },
+  "fresh_history_undo_action_visible": true,
+  "after_undo_attempt": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "target_owner": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "target_present": true
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "69d7792a-8875-41b6-89f2-3b0fcaa5e694",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}

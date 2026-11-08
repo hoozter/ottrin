@@ -222,8 +222,14 @@ and the held MSI were preserved. See
    file bytes and the destination was owned by the original standard user.
    The first approval attempt read the target before the terminal action.
    The next verified terminal publication but stopped at the fixture's
-   normal-close assertion. Capture the process exit before continuing into
-   fresh History and Undo. Interrupted recovery remains open. The temporary worktree,
+   normal-close assertion. Holding the original process handle then verified
+   exit code zero. A fresh installed process loaded administrator history and
+   exposed Undo for the copied file. The Undo attempt did not reach the
+   completed state, and a SYSTEM check found the exact publication and
+   original source intact. See
+   `.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RESTART.json`.
+   Capture Activity diagnostics on the next Undo attempt. Undo, rediscovery
+   as Undone and interrupted recovery remain open. The temporary worktree,
    unpacked payload, duplicate private ZIP and disposable guests were removed.
    The exact private NSIS is retained for the retry.
    See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
