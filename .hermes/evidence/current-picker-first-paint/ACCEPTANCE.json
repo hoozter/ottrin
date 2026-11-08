@@ -1,0 +1,36 @@
+{
+  "status": "pass",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "artifact_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "cases": [
+    {
+      "launch": 0,
+      "fresh_profile": true,
+      "window_mapped_ms_upper_bound": 482.315247063525,
+      "contents_observed_ms_upper_bound": 1016.7404130334035,
+      "screenshot_sha256": "4c9dbc488921de5aa1d5784f8e142b61d2cfd1b0e7337108e29e82782b074f04",
+      "normal_cancel_exit": 0
+    },
+    {
+      "launch": 1,
+      "fresh_profile": false,
+      "window_mapped_ms_upper_bound": 377.7236419264227,
+      "contents_observed_ms_upper_bound": 867.2509579919279,
+      "screenshot_sha256": "4c9dbc488921de5aa1d5784f8e142b61d2cfd1b0e7337108e29e82782b074f04",
+      "normal_cancel_exit": 0
+    },
+    {
+      "launch": 2,
+      "fresh_profile": false,
+      "window_mapped_ms_upper_bound": 376.4773129951209,
+      "contents_observed_ms_upper_bound": 863.2157539250329,
+      "screenshot_sha256": "4c9dbc488921de5aa1d5784f8e142b61d2cfd1b0e7337108e29e82782b074f04",
+      "normal_cancel_exit": 0
+    }
+  ],
+  "scope": "Process-cold actual AppImage on private X11/software renderer. Content-ready upper bounds include screenshot/OCR observation overhead; OS disk caches are retained, not a disk-cold benchmark.",
+  "source_bytes_preserved": true,
+  "no_index_started": true,
+  "owned_profile_removed": true,
+  "remaining_mounts": 0
+}
