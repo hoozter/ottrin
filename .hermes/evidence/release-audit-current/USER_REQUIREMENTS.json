@@ -52,14 +52,16 @@
     {
       "id": "U04",
       "requirement": "Services show clear ready/running status dots and appropriate install, repair/reinstall, start, stop and uninstall actions for actual state.",
-      "current_scope": "The earlier accepted Linux43 mounted Dark/Light Ready/Stopped/error/Ready checks and six original reviews pass; qualified neutral action history is distinct from current health and Automatic startup at sign-in is distinct from runtime. Full error disclosure and recovery-control geometry pass. Windows25 has its separately scoped installed Services and sign-in/removal preservation evidence. Whole interface and personal authentication acceptance remain separate.",
+      "current_scope": "The earlier accepted Linux43 mounted Dark/Light Ready/Stopped/error/Ready checks and six original reviews pass; qualified neutral action history is distinct from current health and Automatic startup at sign-in is distinct from runtime. Full error disclosure and recovery-control geometry pass. Windows25 has its separately scoped installed Services and sign-in/removal preservation evidence. Whole interface and personal authentication acceptance remain separate. Stable Linux 2afcfc5a also shows Finish setup before Settings opens, names the blocking application and offers Apply change after it closes in isolated Dark and Light sessions.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/CAPTURE_REVIEW.json",
         ".hermes/evidence/recovery-transport-delivery-current/SOURCE_CHECKS.json",
         ".hermes/evidence/theme-layout-delivery-current/NATIVE_UI_ACCEPTANCE.json",
         ".hermes/evidence/packaged-shell-current/NATIVE_WINDOWS_UI_ACCEPTANCE.json",
-        ".hermes/evidence/appearance-delivery-current/PROMOTION.json"
+        ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
+        ".hermes/evidence/services-startup-delivery-current/dark/RESULT.json",
+        ".hermes/evidence/services-startup-delivery-current/light/RESULT.json"
       ]
     },
     {
@@ -209,7 +211,7 @@
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "The 45a89d62 Linux promotion removed the consumed stage and prior packages, after private test profiles, sockets, mounts and extraction were removed. The 7992ad1e Windows build removed duplicate expanded payload and temporary installer extraction. Its 95 MiB stage and retained guests have named native QA consumers. These checks do not certify unrelated project or machine-wide storage.",
+      "current_scope": "The 2afcfc5a Linux promotion removed the consumed stage and prior packages, after private test profiles, sockets, mounts and extraction were removed. The 7992ad1e Windows build removed duplicate expanded payload and temporary installer extraction. Its 95 MiB stage and retained guests have named native QA consumers. These checks do not certify unrelated project or machine-wide storage.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -223,18 +225,19 @@
         ".hermes/evidence/locations-rail-delivery-current/SUPERSEDED_STAGE_CLEANUP.json",
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
         ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
-        ".hermes/evidence/windows-picker-keyboard-current/STAGING.json"
+        ".hermes/evidence/windows-picker-keyboard-current/STAGING.json",
+        ".hermes/evidence/services-startup-delivery-current/PROMOTION.json"
       ]
     }
   ],
   "excluded_from_implementation_authorization": [
     "Optional tray behavior was a design question; do not invent tray infrastructure from it.",
-    "APT/DNF update repository question confirms feasibility only; no hosting/publication authorization inferred.",
+    "Production Linux update publication still requires an authenticated dedicated signing subkey and first approved stable release.",
     "No macOS build; owner signing/Store/final human acceptance remain explicit waits."
   ],
   "latest_scope_reconciliation": {
     "date": "2026-11-08",
-    "stable_linux": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+    "stable_linux": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
     "stable_windows": "67d3cbe14c03f1b8021284454e46ed046795131e",
     "staged_linux": [],
     "staged_windows": [
@@ -243,5 +246,6 @@
     "note": "Reconciled U01–U08 and U12–U15 against exact artifact scopes. U09–U11 and the 54-clause roadmap audit retain their prior verification status."
   },
   "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
-  "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958"
+  "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
+  "linux_update_owner_decision": "The owner authorized the proposed update.ottrin.com setup if the signing key is usable and allowed deferral. The configured endpoint and test repository retain their recorded scope."
 }
