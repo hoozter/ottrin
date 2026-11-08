@@ -1,0 +1,140 @@
+{
+  "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "binary_sha256": "79f2abe711197c577154cd712fb733dc1c54db5fdee6c1aa5b4baffbc3724ec3",
+  "process_name": "ottrin-indexd",
+  "same_process": true,
+  "database_identity_preserved": true,
+  "elapsed_seconds": 120.11924360098783,
+  "cpu_percent_of_one_core": 0.18716235072774898,
+  "peak_interval_percent": 0.2026713434688228,
+  "before": {
+    "status": "Ready",
+    "watcher_ready": true,
+    "snapshot_revision": 4,
+    "indexed_items": 248640,
+    "watched_root_count": 1
+  },
+  "observations": [
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.010295314947143,
+      "cpu_percent_of_one_core": 0.2026713434688228,
+      "unit_memory_bytes": 398405632
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.010297611006536,
+      "cpu_percent_of_one_core": 0.17821647960181064,
+      "unit_memory_bytes": 398663680
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.009569711983204,
+      "cpu_percent_of_one_core": 0.17717045297930542,
+      "unit_memory_bytes": 398647296
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.010385289089754,
+      "cpu_percent_of_one_core": 0.2019502688076679,
+      "unit_memory_bytes": 398671872
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.00905479292851,
+      "cpu_percent_of_one_core": 0.18990804220024182,
+      "unit_memory_bytes": 398327808
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.008967549074441,
+      "cpu_percent_of_one_core": 0.1884410145953978,
+      "unit_memory_bytes": 398585856
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.009501703898422,
+      "cpu_percent_of_one_core": 0.17021826364607315,
+      "unit_memory_bytes": 398544896
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.010983374086209,
+      "cpu_percent_of_one_core": 0.19030098530893777,
+      "unit_memory_bytes": 398094336
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.009909778949805,
+      "cpu_percent_of_one_core": 0.1883833162977658,
+      "unit_memory_bytes": 398053376
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.010513604036532,
+      "cpu_percent_of_one_core": 0.2003593501127897,
+      "unit_memory_bytes": 399323136
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.010071028023958,
+      "cpu_percent_of_one_core": 0.16788092664830367,
+      "unit_memory_bytes": 398807040
+    },
+    {
+      "status": "Ready",
+      "watcher_ready": true,
+      "snapshot_revision": 4,
+      "indexed_items": 248640,
+      "watched_root_count": 1,
+      "elapsed_seconds": 10.009693842963316,
+      "cpu_percent_of_one_core": 0.1904453852342451,
+      "unit_memory_bytes": 399351808
+    }
+  ],
+  "scope": "Read-only 120-second settled managed user service observation. CPU is percentage of one core. Memory is the whole systemd unit."
+}

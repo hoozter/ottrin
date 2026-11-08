@@ -18,6 +18,10 @@ Promotion restarted the managed index with the verified new binary and
 confirmed Ready with the watcher active. Startup, preferences, database
 identity and the stable Windows packages were preserved. The superseded
 Linux packages, consumed stage and previous managed mount were removed.
+A two-minute read-only sample of the delivered daemon stayed Ready with the
+watcher active and about 248,640 indexed items. It averaged 0.19% of one
+CPU core and peaked at 0.20% per ten-second interval.
+See [steady index observation](../.hermes/evidence/vivaldi-picker-delivery-current/MANAGED_INDEX_STEADY.json).
 See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json),
 [promotion receipt](../.hermes/evidence/vivaldi-picker-delivery-current/PROMOTION.json)
 and `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
@@ -3156,7 +3160,7 @@ Do not move a fixable implementation or test failure onto this list.
 
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
-| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. All nine recovery preflights bound the rebuilt `9c41c355` test binary and refused guest allocation at 23,859,703,808 bytes available (22.22 GiB). The scoped cleanup removed two superseded incremental sessions and recovered 0.95 GiB. The replacement test executable uses the same path. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
+| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. All nine recovery preflights bound the rebuilt `9c41c355` test binary and refused guest allocation at 24,014,966,784 bytes available (22.37 GiB) after Linux promotion. The scoped cleanup removed two superseded incremental sessions and recovered 0.95 GiB. The replacement test executable uses the same path. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
 | Personal administrator helper update | Settings → Services → Update / reinstall helper, then complete OS administrator authentication. Installed binary differs from the delivered tested helper; no privileged host file was silently replaced. Exact hashes: `privileged-copy-current/HOST_HELPER_STATUS.json`. | All implementation/package work, including versioned capability/readiness reporting, elevated Copy restart discovery and Windows bridge. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
