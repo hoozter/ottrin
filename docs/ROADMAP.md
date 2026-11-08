@@ -3165,7 +3165,6 @@ Do not move a fixable implementation or test failure onto this list.
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
 | Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. All nine recovery preflights bound the rebuilt `9c41c355` test binary and refused guest allocation at 23,859,703,808 bytes available (22.22 GiB). The scoped cleanup removed two superseded incremental sessions and recovered 0.95 GiB. The replacement test executable uses the same path. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
-| Protected owned viewer diagnostic cores | Remove only `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.142689.1793600069000000.zst` and `/var/lib/systemd/coredump/core.virt-viewer.1000.b09afa6709f84c95bfb276fb9f47fcd3.143576.1793600343000000.zst`. Noninteractive sudo requires a password. Exact ownership/hashes are recorded under `windows-startup-lifetime-current/`; both private viewer sessions are removed. | Product/package work continues. Private X11 environment inheritance is corrected; accelerated viewer DMA-BUF remains unaccepted and further probes must use a declared software display. |
 | Personal administrator helper update | Settings → Services → Update / reinstall helper, then complete OS administrator authentication. Installed binary differs from the delivered tested helper; no privileged host file was silently replaced. Exact hashes: `privileged-copy-current/HOST_HELPER_STATUS.json`. | All implementation/package work, including versioned capability/readiness reporting, elevated Copy restart discovery and Windows bridge. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
@@ -3177,6 +3176,12 @@ Do not move a fixable implementation or test failure onto this list.
 When a new external dependency is established, record the exact missing resource,
 its affected outcome and evidence here. Resume another ready outcome. Keep the
 project's active resume point above current after every verified checkpoint.
+The two protected viewer diagnostic cores recorded under
+`windows-startup-lifetime-current/` are absent at their exact paths as of
+2026-11-08. Their private viewer sessions were already removed. Accelerated
+viewer DMA-BUF remains unaccepted. Use a declared software display for
+further private viewer probes.
+
 ## Historical delivery and remaining outcomes at that checkpoint
 
 For today's package revisions, the next work and the waiting list, see
