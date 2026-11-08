@@ -1,0 +1,63 @@
+{
+  "status": "pass exact mounted AppImage",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "theme": "Dark",
+  "scale": 1,
+  "main_window_size": [
+    1200,
+    700
+  ],
+  "settled_pdf_frames": 70,
+  "settled_pdf_box": [
+    932,
+    176,
+    1138,
+    307
+  ],
+  "inspector_titlebar_edge_matches_center": true,
+  "clicked_body_arrows_navigated": true,
+  "clicked_body_space_closed": true,
+  "fixture_bytes_unchanged": true,
+  "clean_close": true,
+  "captures": {
+    "controls.png": "cc1be11e5828180ab7af8ea27e650198107bf4959ac94ebfb353e2d45dd527f2",
+    "pdf-frame-99.png": "6999cb14327da135e685fb498583e1fc5c7cba560d42801761a80363f88ccbdf",
+    "pdf-frame-30.png": "6999cb14327da135e685fb498583e1fc5c7cba560d42801761a80363f88ccbdf",
+    "vcf-inspector.png": "d361f9245327259faf47a111a1b2493124cecf143527676bd14c66bcc8ad65fc"
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-6tyxjxb7",
+    "owned_processes_reaped": [
+      {
+        "pid": 1362334,
+        "exit": 0
+      },
+      {
+        "pid": 1362337,
+        "exit": 0
+      },
+      {
+        "pid": 1362338,
+        "exit": 15
+      },
+      {
+        "pid": 1362395,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1362399,
+        1362467
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [
+      "144 34 0:65 / /var/tmp/.ottrin-picker-qa-6tyxjxb7/runtime/doc rw,nosuid,nodev,relatime shared:595 - fuse.portal portal rw,user_id=1000,group_id=1000"
+    ],
+    "profile_removed": true
+  },
+  "scope_limit": "Dark software X11. At 800 x 600 the preview column was mostly clipped after reselecting the PDF. This run verified stability when the full preview was visible at 1200 x 700. Native Windows and other display conditions remain separate."
+}
