@@ -1,13 +1,13 @@
 {
-  "status": "pass scoped Linux picker confirmation geometry",
-  "source_revision": "7aabcc567af540d6f815249b85aaadddea561dfb",
+  "status": "pass scoped Linux folder integration and border width",
+  "source_revision": "d76c351a90055e91879ad9e5cf00f7d4a3e5a9e8",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "2d746493efe6036063a6f60a0dc021b7011d4827140c427af484661ffd739111",
-    "Ottrin-0.1.0-x86_64.AppImage": "9fb6fd91ab7a0f875700a1d5814f9d9ea615b839ab29b98f0a9b6c2fee7bf9c9",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "9db4ad7cb413f6fd999005bc6451deeef4b57a315fd6a8fb59ca6d0918810f84",
-    "ottrin_0.1.0_amd64.deb": "0c1b20342e2bfd0da3c83629dfee927a36667882520de370817c7e18ae4d103f"
+    "ottrin-0.1.0-1.x86_64.rpm": "8054e9044a921e8f954a2ed05dfc4b8225d9fe0eb8991dd474ef0be47811008e",
+    "Ottrin-0.1.0-x86_64.AppImage": "4dfac313476ecbe872c94f231ed3fd14f0a6283328cbd9e9797ad1d39d216c53",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "f9c3e34dcc2eaeb01a4470bc3509cf0083ca4123edd30fd6a45c441681ea0acc",
+    "ottrin_0.1.0_amd64.deb": "c64feaccdbcf8debedbc558fd462e1031196f85144c8ae0ffab53808b72f77a9"
   },
-  "evidence": ".hermes/evidence/picker-confirmation-delivery-current",
+  "evidence": ".hermes/evidence/fractional-border-delivery-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,25 +17,22 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "cdbabdcfd4f881603a257a8838226c1a74a219b3ed9b17dabad7296752d2d964",
+    "application": "c91ab013763629b77057ed6151bf231e8ea4777c52506b166ea5f7baf8eaf0c0",
     "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
     "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42409736660,
-    "tested_source_revision": "7f38dbe3ad909a40534634a92875ba3f17afd30b",
-    "non_runtime_diff": [
-      "dist/packages/LINUX_PACKAGES_ACCEPTANCE.json",
-      "docs/ROADMAP.md"
-    ],
+    "run": 42426557500,
+    "tested_source_revision": "d76c351a90055e91879ad9e5cf00f7d4a3e5a9e8",
+    "non_runtime_diff": [],
     "all_four_jobs_success": true
   },
   "native_current_ui": ".hermes/evidence/services-clarity-delivery-current/SERVICES_UI_ACCEPTANCE.json",
   "native_services": ".hermes/evidence/list-density-delivery-current/NATIVE_SERVICES_ACCEPTANCE.json",
   "native_captions_and_footer": ".hermes/evidence/list-density-delivery-current/NATIVE_CAPTION_ACCEPTANCE.json",
   "native_saved_theme_name": ".hermes/evidence/caption-footer-delivery-current/APPEARANCE_ACCEPTANCE.json",
-  "source_scope": ".hermes/evidence/picker-confirmation-delivery-current/BUILD_SOURCE.json",
+  "source_scope": ".hermes/evidence/fractional-border-delivery-current/BUILD_SOURCE.json",
   "daemon_identity": null,
   "daemon_runtime": ".hermes/evidence/inspector-visual-delivery-current/DAEMON_RUNTIME_ACCEPTANCE.json",
   "daemon_runtime_scope": {
@@ -46,7 +43,7 @@
   "native_privileged_copy": ".hermes/evidence/recovery-transport-delivery-current/LINUX_PRIVILEGED_COPY_ACCEPTANCE.json",
   "native_privileged_copy_scope": "Historical older helper/source only; current helper read-only wire/capability checks do not prove elevated Copy",
   "current_helper_read_only": [
-    ".hermes/evidence/picker-confirmation-delivery-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/fractional-border-delivery-current/LINUX_HELPER_RUNTIME.json"
   ],
   "retained_native_scope_source": "dacedd8dfe7bd04cbfc4208d319d17a9d797deae",
   "historical_daemon_evidence": {
@@ -58,13 +55,20 @@
     "applies_to_current_daemon_identity": false
   },
   "limits": [
-    "Mounted Dark and Light checks cover the picker Replace confirmation frame and exact native Save without writes.",
-    "Inspector, folder repair, Services, performance and native distribution receipts retain their original source scopes.",
+    "Mounted Dark and Light checks cover quarter-pixel border editing, Cancel, reversible GIO folder dispatch, picker Save replacement, and the Services portal blocker.",
+    "The exact RPM and DEB passed native Fedora and Ubuntu install, live reinstall and removal or purge. Broader picker, Inspector and Services, performance and other native distribution receipts retain their original source scopes.",
     "Daemon, helper and HTML renderer bytes match the previous accepted cohort.",
-    "Packaged manuals are build-time snapshots at 7aabcc56; repository metadata records later delivery."
+    "Packaged manuals are build-time snapshots at d76c351a; repository metadata records later delivery."
   ],
   "native_current_theme": ".hermes/evidence/picker-folders-delivery-current/THEME_UI_ACCEPTANCE.json",
   "previous_theme_ui": ".hermes/evidence/locations-rail-delivery-current/THEME_UI_ACCEPTANCE.json",
-  "native_current_picker": ".hermes/evidence/picker-confirmation-delivery-current/PICKER_CONFIRMATION_ACCEPTANCE.json",
-  "native_folder_repair": ".hermes/evidence/picker-folders-delivery-current/FOLDER_REPAIR_ACCEPTANCE.json"
+  "native_folder_repair": ".hermes/evidence/picker-folders-delivery-current/FOLDER_REPAIR_ACCEPTANCE.json",
+  "native_current_folder_border": ".hermes/evidence/fractional-border-delivery-current/MOUNTED_ACCEPTANCE.json",
+  "native_current_fedora_rpm": ".hermes/evidence/fractional-border-delivery-current/native-rpm/ACCEPTANCE.json",
+  "native_current_ubuntu_deb": ".hermes/evidence/fractional-border-delivery-current/native-deb/ACCEPTANCE.json",
+  "mounted_file_manager": ".hermes/evidence/fractional-border-delivery-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
+  "gtk_portal_open": ".hermes/evidence/fractional-border-delivery-current/GTK_PORTAL_ACCEPTANCE.json",
+  "gtk_portal_save": ".hermes/evidence/fractional-border-delivery-current/GTK_SAVE_ACCEPTANCE.json",
+  "gtk_portal_accessibility": ".hermes/evidence/fractional-border-delivery-current/GTK_ACCESSIBILITY_ACCEPTANCE.json",
+  "mounted_daemon_runtime": ".hermes/evidence/fractional-border-delivery-current/LINUX_DAEMON_RUNTIME.json"
 }

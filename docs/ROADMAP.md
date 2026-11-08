@@ -2,13 +2,16 @@
 
 ## Current delivery and next work
 
-Updated 2026-11-07. This is the single active queue. Historical sections and
+Updated 2026-11-08. This is the single active queue. Historical sections and
 receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
-The stable local Linux packages use source `7aabcc56`. All four hosted jobs
-passed on `7f38dbe3` in [run 42409736660](https://github.com/hoozter/ottrin/actions/runs/42409736660).
-The package source differs only in the roadmap and prior Linux receipt.
+The stable local Linux AppImage, portable archive, DEB and RPM use source
+`d76c351a`. All four exact-source hosted jobs passed in
+[run 42426557500](https://github.com/hoozter/ottrin/actions/runs/42426557500).
+The promotion kept the managed index Ready on the same process and preserved
+startup, preferences and database identity. It removed the consumed stage and
+superseded packages. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 The current Windows candidate uses `67d3cbe1`, with all four hosted jobs
 passing in [run 42416812531](https://github.com/hoozter/ottrin/actions/runs/42416812531).
 
@@ -486,8 +489,8 @@ Current source, test, package and owner/external scopes stay separate.
    blocker handling and private atomic replacement. Owned profiles and
    package extraction are removed. Evidence:
    `fractional-border-delivery-current/MOUNTED_ACCEPTANCE.json`.
-   The single 111 MiB stage passes guarded promotion preflight and waits
-   for [run 42426557500](https://github.com/hoozter/ottrin/actions/runs/42426557500).
+   All four exact-source jobs passed and guarded promotion replaced the
+   stable Linux packages. The 111 MiB stage was removed.
    The exact staged AppImage also passed real `org.freedesktop.FileManager1`
    activation on a private desktop. Show in Folder selected the requested
    broken symlink inside a non-UTF-8 directory, and Properties showed its
