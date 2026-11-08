@@ -1,0 +1,29 @@
+{
+  "status": "pass mounted GTK Save shortcut regression",
+  "cases": {
+    "gtk-save-dark-stable": {
+      "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+      "appimage_sha256": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+      "captures": {
+        "after-escape.png": "2959ff7054479a0263623fb3af59b57b300d827a24c14c24ca75ee739dad4573",
+        "replace-confirmation.png": "01199699b51f39725026f2fe3082aa1579b2b882f87e5715570525c8448df94f"
+      }
+    },
+    "gtk-save-dark": {
+      "source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+      "appimage_sha256": "dec84cbc27b614c98981d581409191e149da627ecd5b5a20606cd81b7baa818b",
+      "captures": {
+        "after-escape.png": "140d985cad8a49baf2128412012129e88f2ff018b99cd8d453e079575a754f21",
+        "replace-confirmation.png": "1f2a9e5eab870122555ff6fd684d2c1019037f9791a834ed8e65432aaf41e9a0"
+      }
+    },
+    "gtk-save-light": {
+      "source_revision": "7e89eedb5fc5d6631036c3fd75651fda0ab16712",
+      "appimage_sha256": "dec84cbc27b614c98981d581409191e149da627ecd5b5a20606cd81b7baa818b",
+      "captures": {
+        "after-escape.png": "0f77ce740cf6f4ec36b3902f46ea11e42452d35403e658e1cb4b9637551dab6a",
+        "replace-confirmation.png": "45cd64eff79cd3e48897efc0366aa42c375e71e76b666890824d5bb044538280"
+      }
+    }
+  }
+}

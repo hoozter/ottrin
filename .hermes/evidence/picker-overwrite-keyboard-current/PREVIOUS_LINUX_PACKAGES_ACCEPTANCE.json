@@ -1,0 +1,52 @@
+{
+  "status": "pass scoped Linux theme selection delivery",
+  "source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "7e2edc8c2d7289473ead897e66c73c04c2fe5e93d6da17181749072bf2ea710c",
+    "Ottrin-0.1.0-x86_64.AppImage": "f5178beaa8a1bf709d094b0694dd077756daf23c2c369833c0aa359549d59ef5",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "e791eeaf6550ee76e11269a5cfd1e0e72f9352d2a470af778a795ebb17bd536d",
+    "ottrin_0.1.0_amd64.deb": "a1d326321fb8cd648e3a36512b143f9f2f4cb8e03c2d996e9980ecc7d8f63ea0"
+  },
+  "evidence": ".hermes/evidence/theme-selection-delivery-current",
+  "checks": [
+    "production portable/AppImage runtime closure and playback checks",
+    "production native payload, dependencies, policy, hooks and code identity blocks",
+    "exact bundled-font notice in all four formats",
+    "seven matching portable/AppImage runtime payloads including the HTML helper",
+    "exact current documentation and clean source notes",
+    "actual AppImage and RPM index daemon namespace/ownership refusal checks"
+  ],
+  "runtime_sha256": {
+    "application": "72e2ccb957514cc6c097736e5f6d1b4e81ce5801ba7870f6655cc8ef2cd6a8ae",
+    "index_daemon": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
+    "privileged_helper": "599112d1aae4f80401a4efdbff408ee072a970d2b1754302536a673e9564069e",
+    "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
+  },
+  "hosted_source": {
+    "run": 42430923563,
+    "tested_source_revision": "21f18bbe092185166401a4b39d07b891bc7c691d",
+    "non_runtime_diff": [],
+    "all_four_jobs_success": true
+  },
+  "source_scope": ".hermes/evidence/theme-selection-delivery-current/BUILD_SOURCE.json",
+  "mounted_theme_selection": ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json",
+  "mounted_fractional_scale": ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json",
+  "mounted_desktop_integration": ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
+  "current_helper_read_only": [
+    ".hermes/evidence/theme-selection-delivery-current/LINUX_HELPER_RUNTIME.json"
+  ],
+  "previous_cohort": {
+    "source_revision": "d76c351a90055e91879ad9e5cf00f7d4a3e5a9e8",
+    "receipt": ".hermes/evidence/theme-selection-delivery-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+  },
+  "limits": [
+    "Mounted Dark and Light checks cover frame, title bar and status bar selection over the edited border and Cancel restoration.",
+    "GTK Open and FileManager1 were rerun on the exact AppImage. Other portal and native distro receipts retain the previous cohort scope.",
+    "Daemon, helper and HTML renderer bytes match the previous cohort.",
+    "Packaged manuals are build-time snapshots at 21f18bbe; repository metadata records later delivery.",
+    "The repository tracks compact receipts. Screenshot files and full diagnostic logs are retained locally."
+  ],
+  "package_content_acceptance": ".hermes/evidence/theme-selection-delivery-current/PACKAGE_CONTENT_ACCEPTANCE.json",
+  "promotion": ".hermes/evidence/theme-selection-delivery-current/PROMOTION.json",
+  "saved_view_startup": ".hermes/evidence/theme-selection-delivery-current/SAVED_VIEW_STARTUP_ACCEPTANCE.json"
+}

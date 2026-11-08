@@ -7,11 +7,10 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`21f18bbe`. All four exact-source hosted jobs passed in
-[run 42430923563](https://github.com/hoozter/ottrin/actions/runs/42430923563).
-The exact mounted AppImage passed Dark and Light frame, title bar and status
-bar selection checks at 100% and 125% display scale, GTK Open in both variants,
-FileManager1 requests, and replacement while an older window was open.
+`7e89eedb`. All four exact-source hosted jobs passed in
+[run 42434627263](https://github.com/hoozter/ottrin/actions/runs/42434627263).
+Mounted Dark and Light GTK Save checks confirmed the Replace prompt keeps
+navigation shortcuts inactive and preserves the existing file.
 Promotion kept the index Ready on the same process and preserved startup,
 preferences and database identity. The consumed stage and superseded packages
 were removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
@@ -608,8 +607,10 @@ Current source, test, package and owner/external scopes stay separate.
    while the Replace confirmation is open. The rendered regression failed
    before the fix and passes afterward. Escape dismisses the prompt, Ctrl+L
    works again, and the existing file stays intact. All 545 active Linux UI
-   tests and strict Linux and Windows-target UI lint passed. This follow-up
-   awaits exact-package delivery.
+   tests and strict Linux and Windows-target UI lint passed. The exact
+   `7e89eedb` Linux packages now include this fix. Mounted Dark and Light
+   GTK Save checks returned the exact path and preserved the existing bytes.
+   Native Windows package acceptance remains open.
    Source `e91dcf50` also gives the Replace confirmation the shared window
    geometry. Dark and Light rendering, 544 isolated UI tests and Linux and
    Windows-target Clippy passed. The delivered `7aabcc56` Linux cohort passes
