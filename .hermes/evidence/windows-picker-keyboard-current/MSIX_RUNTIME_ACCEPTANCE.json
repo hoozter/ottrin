@@ -1,0 +1,60 @@
+{
+  "status": "pass fresh and enabled 27-to-28 native MSIX lifecycle",
+  "source_revision": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "cases": {
+    "menus28-attempt-2": {
+      "version": "0.1.0.28",
+      "package_sha256": "48d1cf2c1858cb9c35458b216305ae47780a99dd5ffd9dab6e8e1805665e7416",
+      "previous": null,
+      "actual_login": "pass",
+      "explorer_contexts": [
+        "Background",
+        "Multiple",
+        "Drive"
+      ],
+      "default_folder_notice": "pass",
+      "uninstall": "pass",
+      "result_sha256": "3f05e5202980ab5a19d78f97769bfa03b154462ae65816d6c4bcf5f79914495a",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    },
+    "update27to28": {
+      "version": "0.1.0.28",
+      "package_sha256": "48d1cf2c1858cb9c35458b216305ae47780a99dd5ffd9dab6e8e1805665e7416",
+      "previous": {
+        "sha256": "8512f2bdb69a2c783295f63de9ebf971f3c7d599bf21e819a918cc3f69f82bff",
+        "version": "0.1.0.27",
+        "source_revision": "67d3cbe14c03f1b8021284454e46ed046795131e"
+      },
+      "actual_login": "pass",
+      "explorer_contexts": [
+        "Background",
+        "Multiple",
+        "Drive"
+      ],
+      "default_folder_notice": "pass",
+      "uninstall": "pass",
+      "result_sha256": "3d41e8703a5b44e88ba0b71f50848337ad0321bdcb4bdb4d58ff78eecb3ad1cf",
+      "cleanup": {
+        "domain_removed": true,
+        "owned_volumes_removed": [
+          "ottrin-msix-runtime.qcow2",
+          "ottrin-msix-runtime-fixture.iso"
+        ],
+        "fixture_removed": true,
+        "base_still_off": true,
+        "retained_pending_volume": null
+      }
+    }
+  },
+  "first_attempt": "Deployment passed. The fixture expected obsolete Settings wording and stopped before Explorer checks. The retry binds the current exact notice and retains its full-visibility and unchanged-registry checks.",
+  "scope": "Windows 11 guest. Unsigned development MSIX, ordinary runtime, Explorer integration, real sign-in and removal. Store signing and disabled upgrade are separate."
+}

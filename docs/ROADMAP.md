@@ -207,8 +207,12 @@ guest resources were removed. Current authority:
    uninstall refusal and retry passed in the fresh native repeat. The earlier
    stopped-and-disabled timeout did not recur. Native MakeAppx assembled
    unsigned development MSIX 28 from the same payload and verified all
-   59 files. Fresh deployment and the 27-to-28 upgrade remain open before
-   replacing the accepted cohort. See
+   59 files. Fresh deployment and the enabled 27-to-28 upgrade passed
+   ordinary runtime, Explorer actions, real sign-in and removal. The first
+   fixture expected outdated notice text. The corrected assertion verified
+   the full current notice and unchanged host defaults. Guarded promotion
+   remains open. See
+   [MSIX runtime acceptance](../.hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json),
    [MSIX assembly](../.hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json),
    [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
    [upgrade acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
@@ -855,7 +859,7 @@ Current source, test, package and owner/external scopes stay separate.
    metadata. All 59 extracted payload files match in both formats.
    Native Save and fresh install/uninstall passed in Dark and Light.
    Native upgrade, reinstall and uninstall retry passed. Development MSIX 28
-   assembly passed. Deployment and upgrade remain pending.
+   assembly, fresh deployment and enabled 27-to-28 upgrade passed.
    The 152 MiB stage retains the ZIP, NSIS and MSIX with their checksums.
    Duplicate payload and verifier extractions were retired. See `windows-picker-keyboard-current/STAGING.json`.
    The native Save actor now checks Ctrl+L during Replace, Escape dismissal,
