@@ -5,7 +5,7 @@
   "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-admin-copy-stage",
   "branch": "branch/windows-admin-copy-qa",
   "scope": "Private Windows capability-enabled packages. Do not promote or publish.",
-  "status": "private package verified and installed; standard-user Copy acceptance remains pending",
+  "status": "installed Copy verified through exact publication; normal exit and fresh-process recovery still pending",
   "artifacts": {
     "Ottrin-0.1.0-windows-x64-portable.zip": "7253a2d65fb4b69a58be46a1c611cd08790e8414df5a5cb471fee458b5e8fdb2",
     "Ottrin-0.1.0-windows-x64-setup.exe": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606"
@@ -13,6 +13,6 @@
   "worktree_removed": true,
   "retired_duplicate_payload_allocated_bytes": 149106688,
   "remaining_stage_bytes": 41332038,
-  "next_consumer": "Run the installed Copy fixture using parent-folder navigation, followed by UAC History and Undo",
+  "next_consumer": "Repeat installed Copy with process exit diagnostics, then verify fresh History and Undo and prepare interrupted recovery",
   "private_duplicate_portable_retired": true
 }

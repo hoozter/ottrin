@@ -1,0 +1,33 @@
+{
+  "status": "native retry displayed a UAC prompt and the actor observed a target path after authorization; terminal Copy receipt not confirmed",
+  "input": {
+    "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+    "installer_sha256": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "8b4becfe17236360184c78189dae3379d1e9d9c663e937d3b99dd4758703aadb",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "result": {
+    "mode": "copy",
+    "client_stderr": null,
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "payload_files": 59,
+    "error": "You cannot call a method on a null-valued expression.",
+    "phase": "failed",
+    "stack": "at Hash, <No file>: line 19\r\nat <ScriptBlock>, <No file>: line 139\r\nat <ScriptBlock>, <No file>: line 1",
+    "client_pid": 4684,
+    "status": "failed"
+  },
+  "observation": "Normal folder navigation worked. Ordinary paste refused, Retry As Administrator opened Windows UAC, and the fixture submitted its separate disposable administrator credentials. The actor saw the target path, but its immediate hash read returned no value. Source and target comparison must be performed after terminal completion.",
+  "capture_sha256": "63a4db02828cb14269ecdcf0c2e1db3a3954504362f93cddab5f7c9d44535817",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "ddaada03-03fe-45f4-bac2-94b254752dfe",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  }
+}

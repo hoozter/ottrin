@@ -214,12 +214,21 @@ and the held MSI were preserved. See
    the bundled helper advertised Copy recovery. An incomplete fixture
    configuration initially prevented startup. With a complete configuration,
    the installed app opened and selected the source. The scripted address
-   input did not reach the protected folder. Retry through the parent-folder
-   controls before testing UAC, History and Undo. The temporary worktree,
+   input did not reach the protected folder. Parent-folder navigation then
+   reached the protected folder through the installed app. Ordinary Paste
+   refused and exposed the administrator retry. A real UAC prompt approved
+   with a separate administrator account produced a completed Copy with an
+   Undo action in Activity. Both accounts' scoped checks confirmed matching
+   file bytes and the destination was owned by the original standard user.
+   The first approval attempt read the target before the terminal action.
+   The next verified terminal publication but stopped at the fixture's
+   normal-close assertion. Capture the process exit before continuing into
+   fresh History and Undo. Interrupted recovery remains open. The temporary worktree,
    unpacked payload, duplicate private ZIP and disposable guests were removed.
    The exact private NSIS is retained for the retry.
    See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
    and [installed navigation observation](../.hermes/evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
+   See [installed Copy publication](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_PUBLICATION.json).
    See [fresh-process Undo acceptance](../.hermes/evidence/windows-uac-copy-restart-current-retry/ACCEPTANCE.json),
    [alternate-account Undo acceptance](../.hermes/evidence/windows-uac-copy-alternate-restart-current/ACCEPTANCE.json),
    [alternate-account acceptance](../.hermes/evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),

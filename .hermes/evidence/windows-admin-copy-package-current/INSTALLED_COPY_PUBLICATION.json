@@ -1,0 +1,34 @@
+{
+  "status": "installed administrator Copy passed through publication and visible Undo",
+  "input": {
+    "source_revision": "94549b871cb809f4f853ed1c99430ac87ad5b9e2",
+    "installer_sha256": "249b9bbfcfdd54d550fc0b7c8a08a41e1649859d045abc7c8bd8d4cce8f27606",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "0db0918f4e52202576da8a468f7775d029a7324adeb86b3b05b8c7bcc753c241",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "client_pid": 5596,
+  "ordinary_paste_refused": true,
+  "alternate_admin_secure_desktop_approved": true,
+  "terminal_undo_action_visible": true,
+  "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+  "disk": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "target_owner": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "target_present": true
+  },
+  "close_check": "Installed app did not close normally",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "bde856d5-668a-48ab-a49e-11d588b9734c",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "scope": "Private capability-enabled NSIS, original standard user and separate disposable administrator. Normal close, fresh History, Undo, and interrupted recovery remain open."
+}
