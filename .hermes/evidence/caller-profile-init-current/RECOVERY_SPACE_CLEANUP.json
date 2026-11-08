@@ -1,0 +1,20 @@
+{
+  "removed": [
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226",
+    "/home/campbell/Projects/Ottrin/target/debug/.fingerprint/ottrin-app-5062561a46f8a226",
+    "/home/campbell/Projects/Ottrin/target/debug/deps/ottrin_indexd-5062561a46f8a226.d",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_legacy_doc_render-3f0573d6f97d20b6.exe",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-3f0573d6f97d20b6",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_legacy_doc_render-3f0573d6f97d20b6.d",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_legacy_doc_render-8ed9ede301e3aaf9.exe",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-8ed9ede301e3aaf9",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_legacy_doc_render-8ed9ede301e3aaf9.d",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_legacy_doc_render-2415928232bff8b1.exe",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-preview-2415928232bff8b1",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_legacy_doc_render-2415928232bff8b1.d",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-c246be4923adf3d9.exe",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/.fingerprint/ottrin-platform-c246be4923adf3d9",
+    "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_priv_helper-c246be4923adf3d9.d"
+  ],
+  "available_bytes": 25788063744
+}

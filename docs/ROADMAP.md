@@ -172,10 +172,12 @@ guest resources were removed. Current authority:
 ### Current ordered work
 
 1. **Windows administrator Copy recovery.** Run the nine fresh-profile
-   fault cases using the rebuilt native fixture, starting with the truncated
-   anchor write. Follow with the installed administrator Copy workflow.
-   The guest admission limit and last measured shortfall are in the
-   [waiting list](#ownerexternal-waiting-list).
+   fault cases using the rebuilt native fixture. The truncated-anchor case
+   passed in a fresh Windows 11 build 26300 guest. The ordinary client and
+   all 25 SYSTEM cases passed, and the injected write preserved four native
+   entries. The remaining eight cases and installed administrator Copy
+   workflow are open. The guest, ISO, overlay, viewer and profile were removed.
+   See [native acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json).
 2. **Deliver the Windows Save fix.** Run the staged `7992ad1e` NSIS Save
    actor in Dark and Light, finish installer lifecycle checks, and build and
    validate the development MSIX from the same portable payload. Keep the
@@ -3183,7 +3185,6 @@ Do not move a fixable implementation or test failure onto this list.
 
 | Waiting item | Needed later | Work that continues now |
 | --- | --- | --- |
-| Local native Windows guest storage | The libvirt volume filesystem needs at least 24 GiB available for the existing owned guest guard. All nine recovery preflights bound the rebuilt `9c41c355` test binary and refused guest allocation at 24,014,966,784 bytes available (22.37 GiB) after Linux promotion. The scoped cleanup removed two superseded incremental sessions and recovered 0.95 GiB. The replacement test executable uses the same path. Resume the fresh-profile administrator Copy recovery matrix first, then test the staged NSIS Save fix and assemble the development MSIX from the verified portable payload. The retained guests and 95 MiB package stage have pending consumers. | Linux and hosted Windows checks, source fixes and package verification that can run without the local guest. |
 | Personal administrator helper update | Settings → Services → Update / reinstall helper, then complete OS administrator authentication. Installed binary differs from the delivered tested helper; no privileged host file was silently replaced. Exact hashes: `privileged-copy-current/HOST_HELPER_STATUS.json`. | All implementation/package work, including versioned capability/readiness reporting, elevated Copy restart discovery and Windows bridge. |
 | Optional personal HTML sandbox setup | Choose Settings → Services → Set up HTML sandbox and complete administrator authentication. Production source installation/rendering is verified on hosted Linux; the personal machine's system files are unchanged. | All product engineering and package QA; setup is actionable in the delivered app. |
 | Personal daily-driver and final release acceptance | Owner review on the owner's Linux/Windows installations when time permits. | Automated/native workflows, defect repair, documented known limits and exact-package acceptance. |
