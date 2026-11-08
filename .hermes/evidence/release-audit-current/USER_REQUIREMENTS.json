@@ -146,21 +146,23 @@
     {
       "id": "U10",
       "requirement": "Quick Inspector uses shared window chrome; PDF sidebar fit remains stable when arriving from non-PDF content.",
-      "current_scope": "Exact stable Linux 45a89d62 mounted Dark X11 at 1200 × 700 passes 70 settled Fit width PDF frames after switching from VCF, and the read-only Inspector title bar fills its width. At 800 × 600 the preview was mostly clipped after reselection, so that run does not establish PDF sizing stability. Older Windows temporal checks keep their original artifact scope.",
+      "current_scope": "Exact stable Linux 45a89d62 mounted Dark X11 passes 70 settled Fit width frames after switching from VCF at both 1200 × 700 and 800 × 600. The narrow run separates the pointer move from the click. The immediate synthetic move-and-click shifted the horizontal viewport before the arrow presses. Older Windows temporal checks retain their original artifact scope.",
       "evidence": [
         ".hermes/evidence/release-audit-current/../windows-preview-safety-current/ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/cohort/SOURCE_SCOPE.json",
-        ".hermes/evidence/current-preview-regression/dark/RESULT.json"
+        ".hermes/evidence/current-preview-regression/dark/RESULT.json",
+        ".hermes/evidence/current-preview-regression/narrow-accepted/RESULT.json"
       ]
     },
     {
       "id": "U11",
       "requirement": "Read-only previews never edit bytes before explicit Edit; native arrows and Space retain preview-navigation/close behavior even after clicking text.",
-      "current_scope": "Exact stable Linux 45a89d62 mounted Dark X11 passes clicked-body VCF arrow navigation to PDF and back, then Space to close after another text click. Both fixtures remain byte-identical. Earlier native Windows and explicit Edit/Save results keep their original scopes.",
+      "current_scope": "Exact stable Linux 45a89d62 mounted Dark X11 passes clicked-body VCF arrow navigation to PDF and back, then Space to close after another text click. Both fixtures remain byte-identical. Earlier native Windows and explicit Edit/Save results keep their original scopes. The same clicked-text path also passes at 800 × 600.",
       "evidence": [
         ".hermes/evidence/release-audit-current/WINDOWS_UNATTENDED_ACCEPTANCE.json",
         ".hermes/evidence/release-audit-current/../windows-preview-safety-current/ACCEPTANCE.json",
-        ".hermes/evidence/current-preview-regression/dark/RESULT.json"
+        ".hermes/evidence/current-preview-regression/dark/RESULT.json",
+        ".hermes/evidence/current-preview-regression/narrow-accepted/RESULT.json"
       ]
     },
     {

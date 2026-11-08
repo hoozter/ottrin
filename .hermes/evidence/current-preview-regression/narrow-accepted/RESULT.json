@@ -1,0 +1,62 @@
+{
+  "status": "pass exact mounted AppImage",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "theme": "Dark",
+  "scale": 1,
+  "main_window_size": [
+    800,
+    600
+  ],
+  "settled_pdf_frames": 70,
+  "settled_pdf_box": [
+    532,
+    176,
+    738,
+    307
+  ],
+  "inspector_titlebar_edge_matches_center": true,
+  "clicked_body_arrows_navigated": true,
+  "clicked_body_space_closed": true,
+  "fixture_bytes_unchanged": true,
+  "clean_close": true,
+  "captures": {
+    "controls.png": "285cfcbc2e899fe7026ed64b5a2c74974b2356dd51ef190680ee1dd757993860",
+    "pdf-frame-99.png": "e53abaa600513d1614a7f0abf19f80012ee55229451908af4532e4b1cb063648",
+    "pdf-frame-30.png": "e53abaa600513d1614a7f0abf19f80012ee55229451908af4532e4b1cb063648",
+    "vcf-inspector.png": "9414a7d4a822ed4aae81844716c95d0464a3a976e635c61fc0ae47fd30c41e34"
+  },
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-2whrpmr5",
+    "owned_processes_reaped": [
+      {
+        "pid": 1365070,
+        "exit": 0
+      },
+      {
+        "pid": 1365073,
+        "exit": 0
+      },
+      {
+        "pid": 1365074,
+        "exit": 15
+      },
+      {
+        "pid": 1365149,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [
+        1365154,
+        1365271
+      ],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "pointer_click_method": "Pointer moved and settled for 200 ms before the physical button event.",
+  "comparison": "Immediate pointer relocation and click moved the horizontal viewport at Fit width activation, before the file navigation keys. With settled pointer input the column stayed visible. This is a scoped Dark X11 acceptance."
+}
