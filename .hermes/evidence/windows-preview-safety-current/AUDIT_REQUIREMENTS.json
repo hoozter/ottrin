@@ -226,9 +226,10 @@
       "classification": "unverified in concentrated final audit",
       "evidence": [
         ".hermes/evidence/current-packaged-linux-media/ACCEPTANCE.json",
-        ".hermes/evidence/current-media-inspector-fallback/ACCEPTANCE.json"
+        ".hermes/evidence/current-media-inspector-fallback/ACCEPTANCE.json",
+        ".hermes/evidence/current-packaged-linux-audio/ACCEPTANCE.json"
       ],
-      "latest_scope": "Exact 2afcfc5a portable helper passed decoded silent video frames, pause/resume, Stop, malformed input, retained descriptor after source-path replacement and missing GStreamer plugin fallback. It used the host GStreamer installation. The same revision's mounted AppImage Quick Inspector explained missing GStreamer components, disabled Play and Pause, and closed with Space while preserving source bytes. Audible playback and clean-distro plugin availability remain open."
+      "latest_scope": "Exact 2afcfc5a portable helper passed decoded silent video frames, pause/resume, Stop, malformed input, retained descriptor after source-path replacement and missing GStreamer plugin fallback. It used the host GStreamer installation. The same revision's mounted AppImage Quick Inspector explained missing GStreamer components, disabled Play and Pause, and closed with Space while preserving source bytes. The portable helper also sent a 440 Hz WAV tone to a private virtual sink and reported end of stream. Median waveform frequency matched; the capture does not establish uninterrupted or physically audible playback. Physical audio and clean-distro plugin availability remain open."
     },
     {
       "id": 26,

@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
+  "portable_sha256": "48160a79286bc22dcc976131ed5833ac88e93ab84205c8270180e0793ce03ad8",
+  "helper_sha256": "d8b602a62cebb37d212629fd61cfeb700dd10dddfc87c8e9f22544ba3d205ca3",
+  "scope": "Packaged playback helper with isolated PipeWire virtual sink and host GStreamer WAV and PulseAudio plugins. No physical sound output.",
+  "expected_hz": 440,
+  "measured_hz_from_median_period": 440.37,
+  "positive_crossings_in_one_second": 432,
+  "samples_above_threshold": 86827,
+  "playing_and_end_of_stream": true,
+  "private_profile_removed": true
+}
