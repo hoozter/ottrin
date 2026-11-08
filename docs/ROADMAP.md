@@ -243,12 +243,18 @@ and the held MSI were preserved. See
    NSIS matches its 59 staged files, the uninstaller, the index controller
    and the installer transaction script. See the
    [host package receipt](../.hermes/evidence/windows-admin-copy-package-current/ROUTED_HOST_PAYLOAD.json).
-   The new regression and installed recovery still require native execution.
-   Verify authenticated Undo, rediscovery as Undone and interrupted
-   recovery before enabling the capability in delivered builds. The
-   temporary worktree, unpacked payload, duplicate ZIP and disposable
-   guests were removed.
-   The exact older private NSIS is retained as the reproduced-failure baseline.
+   The rebuilt private NSIS passed ordinary Paste denial, administrator
+   Copy, normal exit, authenticated history and a separate administrator
+   Undo, followed by rediscovery as Undone in a third process. Native
+   checks verified caller ownership, unchanged source bytes and removal
+   of the exact publication. See the
+   [installed recovery receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_RECOVERY.json).
+   The next private fixture must exercise interrupted recovery and retained
+   data cleanup before enabling the capability in delivered builds. The
+   expanded platform regression still requires native execution. The
+   temporary worktrees, unpacked payloads, duplicate ZIP, superseded
+   private installer and disposable guests were removed. The rebuilt
+   private installer remains staged for the interruption fixture.
    See [private package verification](../.hermes/evidence/windows-admin-copy-package-current/HOST_PAYLOAD.json)
    and [installed navigation observation](../.hermes/evidence/windows-admin-copy-package-current/NAVIGATION_ATTEMPT.json).
    See [installed Copy publication](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_PUBLICATION.json).

@@ -1,0 +1,67 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+    "installer_sha256": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "actor_sha256": "17ef5892c9756ada8bc7e0e4920f29c211bc1ba013a00a2002df717b361ccbd7",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 6484,
+      "status": "pass"
+    },
+    {
+      "client_pid": 2460,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    {
+      "client_pid": 5868,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    }
+  ],
+  "native_approval_sequence": [
+    "Copy",
+    "load History after reopen",
+    "Undo",
+    "load History after second reopen"
+  ],
+  "system_checks": [
+    "After Copy, publication bytes equal source and owner SID equals standard user",
+    "After Undo and after reopening again, publication absent and source hash unchanged"
+  ],
+  "rendered_final_observation": "Activity shows Administrator Copy from previous session and Copy undone. The destination marker is the only visible file.",
+  "scope": "Private NSIS installed on a fresh Windows guest. Interrupted recovery and retained-data cleanup were not exercised.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "58220ae6-378c-4c22-a6ed-86b450ad36b6",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporarily_moved_compiler_test_restored_by_hash": true,
+    "superseded_private_installer_removed_bytes": 41340928
+  }
+}
