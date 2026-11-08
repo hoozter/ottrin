@@ -262,7 +262,13 @@ Current source, test, package and owner/external scopes stay separate.
      readable in the running system after the injected failure, with no
      destination file created. It does not test crash durability. Strict
      Windows-target test lint passes. Native execution of the expanded
-     matrix remains open.
+     matrix remains open. The owned runner
+     `caller-profile-init-current/run-profile-fault.py` binds the exact
+     cross-built `e12187c7` executable and selects one case for a fresh
+     stock guest. All nine host preflights bind distinct companion inputs.
+     The existing 24 GiB guard correctly refused allocation at about
+     22.4 GiB free. Keep the retained Windows guests and current packages
+     while recovering verified disposable space.
    - Extend coverage through the remaining claim and native I/O boundaries.
      Finish readonly/symbolic-link
      publication and original-retention/restoration failure matrices, including
