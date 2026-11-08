@@ -1,5 +1,5 @@
 {
-  "status": "three required jobs passed; Windows verification still running",
+  "status": "three required jobs passed; Windows verification failed in workspace tests",
   "candidate_source": "46802ab4360f25770ff525b297b716954006e76a",
   "verification_jobs": {
     "verify (ubuntu-latest)": {
@@ -20,8 +20,8 @@
       "run": 42466849620,
       "source": "7f6b39c7420eeb8dc341379ede2c6414e03e0974",
       "job_id": 128688229696,
-      "status": "in_progress",
-      "conclusion": ""
+      "status": "completed",
+      "conclusion": "failure"
     },
     "search-performance (ubuntu-latest)": {
       "run": 42466849620,
@@ -32,5 +32,6 @@
     }
   },
   "ubuntu_retrieval_failure_in_primary_run": "Prepare pinned search provider; five HTTP 504 responses before test steps",
-  "equivalence": "Each CI head has the same application source and workflow as the staged package. The only packaging-input differences are the reviewed retry flags and API URL for the existing Windows release asset. The complete provider manifest matches after removing only the added API URL. No pin or verifier changed. The prior Ubuntu verification job passed its provider, workspace, lint, production portal and release steps. Promotion still requires all four named jobs to succeed."
+  "equivalence": "Each CI head has the same application source and workflow as the staged package. The only packaging-input differences are the reviewed retry flags and API URL for the existing Windows release asset. The complete provider manifest matches after removing only the added API URL. No pin or verifier changed. The prior Ubuntu verification job passed its provider, workspace, lint, production portal and release steps. Promotion still requires all four named jobs to succeed.",
+  "windows_verification_failure": "Focused windows_job_native passed. Workspace windows_job_native failed normal output capture (Unavailable) and cancellation (CreateAppContainerProfile HRESULT 0x8007000A, then no descendant PID). Eight other tests passed and one was ignored."
 }

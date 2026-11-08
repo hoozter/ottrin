@@ -19,18 +19,17 @@ retried on the same revision. Ubuntu reached tests, but Windows hit another
 source fix adds bounded retries and uses GitHub's API route for the same
 Windows release asset. The final downloader verified the original archive and
 binary hashes for both platforms.
-Ubuntu and both performance jobs passed on the retry. Windows verification
-is running with the new download route in
-[run 42466849620](https://github.com/hoozter/ottrin/actions/runs/42466849620).
-The Windows API route passed its provider gate. The Ubuntu runner exhausted
-all five retries on the original Linux URL before tests. The Linux API route
-then downloaded and verified the same pinned archive and executable locally.
-Keep the running Windows checks and queue a new run with both API routes.
-Promotion preflight binds each of the four required jobs. The earlier
-Ubuntu verification passed the complete job with the same application,
-workflow and pinned provider bytes. It can serve as the Ubuntu receipt
-for the staged package while the current Windows job runs. The only
-packaging-input differences are the reviewed download retry and API route.
+The earlier Ubuntu verification and both performance jobs passed.
+[Run 42466849620](https://github.com/hoozter/ottrin/actions/runs/42466849620)
+passed the Windows provider and focused native preview gates. The full
+Windows workspace suite then failed two AppContainer fixtures: normal
+output capture returned Unavailable and cancellation never received the
+descendant PID after Windows rejected AppContainer creation with
+`0x8007000A`. The Ubuntu job stopped at the original Linux provider URL
+after five HTTP 504s. The committed Linux API route downloaded and verified
+the same pinned archive and executable locally. A new run with both API
+routes checks whether the Windows failure reproduces on another runner.
+The staged Linux package remains held until its four required gates pass.
 See [CI evidence mapping](../.hermes/evidence/vivaldi-picker-delivery-current/CI_EQUIVALENCE.json).
 See [download retry acceptance](../.hermes/evidence/vivaldi-picker-delivery-current/CI_DOWNLOAD_RETRY.json).
 See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
