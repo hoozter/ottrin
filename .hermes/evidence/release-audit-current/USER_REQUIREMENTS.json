@@ -18,7 +18,7 @@
     {
       "id": "U02",
       "requirement": "Indexer must be quiet while idle, use its own process name, survive main-window closure when enabled, and start reliably without a first-launch readiness error.",
-      "current_scope": "Exact d76c351a mounted index daemon averaged 0.067% of one core over 60 seconds with 1,000 files and no clients, with a 0.20% peak over ten-second intervals. Current Linux 45a89d62 contains byte-identical daemon code. Promotion verified the installed ottrin-indexd stayed Ready on the same process with startup and database identity preserved. Full personal-workload and current Windows idle/lifetime verification remain open.",
+      "current_scope": "Exact d76c351a mounted index daemon averaged 0.067% of one core over 60 seconds with 1,000 files and no clients, with a 0.20% peak over ten-second intervals. Current Linux 45a89d62 contains byte-identical daemon code. Promotion verified the installed ottrin-indexd stayed Ready on the same process with startup and database identity preserved. A read-only 120-second sample of the installed cgroup averaged 0.19% of one core with a 0.21% ten-second peak. The index stayed Ready, the file count stayed at 248,638, and the snapshot advanced one revision. This is a bounded live-workload sample. Current Windows idle/lifetime verification remains open.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/LINUX_DAEMON_RUNTIME.json",
         ".hermes/evidence/recovery-transport-delivery-current/login/ACCEPTANCE.json",
@@ -34,7 +34,8 @@
         ".hermes/evidence/appearance-scroll-current/PERSONAL_DAEMON_SETTLED.json",
         ".hermes/evidence/appearance-delivery-current/PROMOTION.json",
         ".hermes/evidence/fractional-border-delivery-current/LINUX_DAEMON_RUNTIME.json",
-        ".hermes/evidence/search-stalled-theme-current/PROMOTION.json"
+        ".hermes/evidence/search-stalled-theme-current/PROMOTION.json",
+        ".hermes/evidence/search-stalled-theme-current/PERSONAL_INDEX_OBSERVATION.json"
       ]
     },
     {

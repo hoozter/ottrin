@@ -1,0 +1,150 @@
+{
+  "status": "observed enabled live managed index",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "binary_sha256": "3c52237b3d8192ede4258f5bebabb760355a4c34d6c0f169246a3af89af0b40b",
+  "process_name": "ottrin-indexd",
+  "same_process": true,
+  "startup_enabled": true,
+  "elapsed_seconds": 120.13201088295318,
+  "cpu_percent_of_one_core": 0.1878724898893924,
+  "peak_interval_percent": 0.2052888037676009,
+  "before": {
+    "status": "Ready",
+    "snapshot_revision": 478,
+    "indexed_items": 248638,
+    "watcher_ready": true,
+    "watched_root_count": 1
+  },
+  "after": {
+    "status": "Ready",
+    "snapshot_revision": 479,
+    "indexed_items": 248638,
+    "watcher_ready": true,
+    "watched_root_count": 1
+  },
+  "database_identity_preserved": true,
+  "preferences_bytes_match_at_end": true,
+  "observations": [
+    {
+      "seconds": 10.010508178034797,
+      "cpu_percent_of_one_core": 0.18850191882770576,
+      "memory_bytes": 37916672,
+      "status": "Ready",
+      "snapshot_revision": 478,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.009167192969471,
+      "cpu_percent_of_one_core": 0.19344266737396534,
+      "memory_bytes": 38690816,
+      "status": "Ready",
+      "snapshot_revision": 478,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.010689749964513,
+      "cpu_percent_of_one_core": 0.18520202366740737,
+      "memory_bytes": 38125568,
+      "status": "Ready",
+      "snapshot_revision": 478,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.009026944986545,
+      "cpu_percent_of_one_core": 0.1921965052720303,
+      "memory_bytes": 38219776,
+      "status": "Ready",
+      "snapshot_revision": 478,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.010171846020967,
+      "cpu_percent_of_one_core": 0.17747947061530184,
+      "memory_bytes": 37707776,
+      "status": "Ready",
+      "snapshot_revision": 478,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.008873975020833,
+      "cpu_percent_of_one_core": 0.18131909788545644,
+      "memory_bytes": 36880384,
+      "status": "Ready",
+      "snapshot_revision": 478,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.008826405974105,
+      "cpu_percent_of_one_core": 0.2052888037676009,
+      "memory_bytes": 37224448,
+      "status": "Ready",
+      "snapshot_revision": 479,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.010485937003978,
+      "cpu_percent_of_one_core": 0.1830980045858359,
+      "memory_bytes": 37265408,
+      "status": "Ready",
+      "snapshot_revision": 479,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.008545472985134,
+      "cpu_percent_of_one_core": 0.1908569037484991,
+      "memory_bytes": 37273600,
+      "status": "Ready",
+      "snapshot_revision": 479,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.0089650740847,
+      "cpu_percent_of_one_core": 0.20069007985660212,
+      "memory_bytes": 37756928,
+      "status": "Ready",
+      "snapshot_revision": 479,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.009862778009847,
+      "cpu_percent_of_one_core": 0.1712111382550577,
+      "memory_bytes": 37748736,
+      "status": "Ready",
+      "snapshot_revision": 479,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    },
+    {
+      "seconds": 10.026887327898294,
+      "cpu_percent_of_one_core": 0.1851920680143136,
+      "memory_bytes": 37208064,
+      "status": "Ready",
+      "snapshot_revision": 479,
+      "indexed_items": 248638,
+      "watcher_ready": true,
+      "watched_root_count": 1
+    }
+  ],
+  "scope": "Read-only observation of the configured user service and its complete cgroup. Twelve status reads were made during the sample. External GUI activity and filesystem workload were uncontrolled."
+}
