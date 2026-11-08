@@ -435,8 +435,11 @@
       "id": 46,
       "section": "Release candidate gate",
       "requirement": "The Windows packages contain the pinned Mesa 26.1.3/DXC payload and notices; Automatic, native and OpenGL paths report the correct loaded DLLs.",
-      "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "classification": "current Windows graphics payload verified; native runtime and hardware coverage open",
+      "evidence": [
+        ".hermes/evidence/current-windows-graphics-payload/ACCEPTANCE.json"
+      ],
+      "latest_scope": "Exact stable 67d3cbe1 ZIP, NSIS and development MSIX contain matching 16 graphics files and notices. Four Mesa DLLs and DXIL match the build pins. Runtime renderer selection, loaded DLL provenance and GPU coverage retain separate native scopes."
     },
     {
       "id": 47,
