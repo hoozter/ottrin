@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "scope": "Actual installed browser Open/Save and current AppImage chooser on private X11/bus/profile; private portal definition projection; production installation setup was tested separately",
+  "browser": "firefox",
+  "browser_version": "Firefox 159.0",
+  "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+  "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+  "actual_portal_app_id": "firefox",
+  "identity_evidence": "Actual FileChooser backend OpenFile and SaveFile calls both carry the installed browser app ID",
+  "open_save": "Actual native Open and Save dialogs both owned by the delivered AppImage chooser; Open displays the outside-sandbox selected document; Save writes exact synthetic bytes from the opened local text document",
+  "source_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "saved_sha256": "d33cc86d0fcf836c80ee17a691eecb202f4f85240b50754202aba67e8a8af6c6",
+  "no_index_started": true,
+  "cleanup": {
+    "profile_removed": true,
+    "scope_load_state": "not-found",
+    "remaining_mounts": 0
+  }
+}

@@ -176,8 +176,9 @@
     {
       "id": "U13",
       "requirement": "Must-have themed open/save picker and reversible supported default-folder integration; no unnecessary always-on picker process.",
-      "current_scope": "Exact 21f18bbe Linux AppImage passes GTK Open and real FileManager1 requests. Exact 7e89eedb mounted GTK Save verifies prompt shortcut isolation, exact returned path and unchanged file bytes in both themes. Stable Windows 67d3cbe1 retains ordinary-user NSIS folder default restoration and development MSIX Explorer checks. MSIX default folder registration, native Save validation of staged 7992ad1e, and remaining caller coverage are open.",
+      "current_scope": "Current 45a89d62 Linux AppImage passes actual Firefox Open and Save with both requests attributed to Firefox in a private desktop session. Exact 21f18bbe Linux AppImage passes GTK Open and real FileManager1 requests. Exact 7e89eedb mounted GTK Save verifies prompt shortcut isolation, exact returned path and unchanged file bytes in both themes. Stable Windows 67d3cbe1 retains ordinary-user NSIS folder default restoration and development MSIX Explorer checks. MSIX default folder registration, native Save validation of staged 7992ad1e, and remaining caller coverage are open.",
       "evidence": [
+        ".hermes/evidence/current-firefox-picker/ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/DESKTOP_INTEGRATION_ACCEPTANCE.json",
         ".hermes/evidence/picker-overwrite-keyboard-current/MOUNTED_KEYBOARD_ACCEPTANCE.json",
         "dist/WINDOWS_CANDIDATE_ACCEPTANCE.json",
