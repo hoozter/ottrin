@@ -20813,7 +20813,7 @@ impl OttrinApp {
     }
 
     #[cfg(target_os = "linux")]
-    fn render_portal_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
+    fn poll_portal_status(&mut self, ctx: &Context) {
         if let Some(status) = self
             .portal_status_rx
             .as_ref()
@@ -20824,11 +20824,15 @@ impl OttrinApp {
         }
         if self.portal_status.is_none() && self.service_action_rx.is_none() {
             Self::request_service_status(
-                ui.ctx(),
+                ctx,
                 &mut self.portal_status_rx,
                 ottrin_platform::portal_integration::status,
             );
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    fn render_portal_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
         appearance_editor::settings_surface(c).inner_margin(12).show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             settings_section_title(ui, c, "Open and Save dialogs");
@@ -23117,6 +23121,8 @@ impl eframe::App for OttrinApp {
             }
             return;
         }
+        #[cfg(target_os = "linux")]
+        self.poll_portal_status(ctx);
         self.sync_search_scope_root();
         let search_indexing = self.search_started
             && matches!(
@@ -27800,6 +27806,34 @@ mod tests {
                 supported && enabled
             );
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn portal_status_is_available_without_opening_services() {
+        use ottrin_platform::portal_integration::PortalStatus;
+
+        let mut app = OttrinApp::default();
+        let (sender, receiver) = mpsc::channel();
+        app.portal_status_rx = Some(receiver);
+        sender
+            .send(PortalStatus {
+                enabled: true,
+                ready: false,
+                pending: true,
+                repair_needed: false,
+                blocker: None,
+                detail: "Waiting to turn on".into(),
+            })
+            .unwrap();
+
+        let ctx = Context::default();
+        assert!(!app.show_settings);
+        app.poll_portal_status(&ctx);
+        assert!(app.portal_status.as_ref().unwrap().pending);
+        assert!(app.portal_status_rx.is_none());
+        app.poll_portal_status(&ctx);
+        assert!(app.portal_status_rx.is_none());
     }
 
     #[cfg(target_os = "linux")]
