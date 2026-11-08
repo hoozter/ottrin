@@ -1,0 +1,14 @@
+{
+  "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+  "base": "92725569",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-admin-copy-routed",
+  "payload_files": 59,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead"
+  },
+  "nsis_payload_matches_stage": true,
+  "uninstaller_sha256": "3429cfb36f6d092b2f5c114a175e7cb08c74239e0ccad98dd4032a84e166aa58",
+  "index_controller_matches_daemon": true,
+  "transaction_script_matches_source": true,
+  "scope": "Private NSIS host payload verification. Release binaries from the exact revision and unchanged third-party files from the delivered archive. Installed recovery pending."
+}

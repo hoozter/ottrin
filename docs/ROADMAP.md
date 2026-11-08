@@ -238,8 +238,12 @@ and the held MSI were preserved. See
    administrator operations. Discovery separates the two routes while
    retaining read-only peer checks for dependency validation. Ordinary
    recovery refuses admission for the marked transactions. Windows-target
-   test compilation and strict Clippy pass. The new regression and the
-   rebuilt capability-enabled installer still require native execution.
+   test compilation and strict Clippy pass. Private revision `645b48f0`
+   rebuilds the capability-enabled app and helper with this fix. The exact
+   NSIS matches its 59 staged files, the uninstaller, the index controller
+   and the installer transaction script. See the
+   [host package receipt](../.hermes/evidence/windows-admin-copy-package-current/ROUTED_HOST_PAYLOAD.json).
+   The new regression and installed recovery still require native execution.
    Verify authenticated Undo, rediscovery as Undone and interrupted
    recovery before enabling the capability in delivered builds. The
    temporary worktree, unpacked payload, duplicate ZIP and disposable
