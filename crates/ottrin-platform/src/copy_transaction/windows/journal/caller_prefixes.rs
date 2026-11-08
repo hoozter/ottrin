@@ -363,7 +363,7 @@ pub(in super::super) fn exercise_caller_dispatch_prefixes(
         let observed = trace.finish();
         assert!(
             observed.contains(&(sequence, step, true)),
-            "fault did not fire {directory} {sequence} {step:?}"
+            "fault did not fire for directory={directory}, case={case},              target=({sequence}, {step:?}); result={result:?}; observed={observed:?}"
         );
         assert!(
             result.is_err(),

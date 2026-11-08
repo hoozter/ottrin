@@ -177,9 +177,12 @@ guest resources were removed. Current authority:
    26300 guests. Each preserved four native entries and passed the ordinary
    client and 25 SYSTEM checks. The before-flush check establishes readable
    state in the running guest. A third fresh guest passed the before and
-   after faults at the first directory creation. Six cases and the installed
-   administrator Copy workflow are open. The three guests and their temporary
-   resources were removed. See [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
+   after faults at the first directory creation. The before-state fault
+   preserved the expected entry, but its guest failed a later journal prefix
+   check when the reference LocalFlushed boundary was not reached. The
+   assertion now reports the actual transaction result and boundary trace.
+   Six cases and the installed administrator Copy workflow are open.
+   All completed guests and their temporary resources were removed. See [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
    [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
    and [before-flush acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).
 2. **Deliver the Windows Save fix.** Run the staged `7992ad1e` NSIS Save
