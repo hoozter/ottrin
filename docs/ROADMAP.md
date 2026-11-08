@@ -38,9 +38,13 @@ Previous and Fit Page after failing to read the slide title in Fit Width.
 All source bytes were preserved and no rendering unit remained after exit.
 The same staged package reproduced a cancellation defect. Closing Inspector
 left a deliberately held LibreOffice conversion active while the main window
-stayed open. Route cancellation by the consuming surface so closing Inspector
-does not interrupt a concurrent file-view or panel preview.
-See [cancellation reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json).
+stayed open. The source fix cancels Inspector-only Office jobs and retains
+work also requested by another preview surface. A regression covers close,
+shared work admitted with no new job budget, stale responses and reopen.
+The complete UI suite passed 549 tests with one existing exclusion, and
+strict UI library lint passed. Repeat the held-conversion test with a package
+built from the fix. See
+[cancellation reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json).
 The four packages passed
 content verification and isolated mounted AppImage replacement. The stable
 cohort stays at `2afcfc5a` until the Windows verification job in

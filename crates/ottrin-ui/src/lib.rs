@@ -2604,6 +2604,7 @@ struct PreviewJobRequest {
 
 #[derive(Debug, Default)]
 struct PreviewJobSources {
+    inspector: bool,
     sqlite: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
     obj: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     ply: Option<ottrin_preview::PlyPreviewSourceGeneration>,
@@ -2675,6 +2676,7 @@ impl PreviewRequestSlot {
 
 #[derive(Debug, Clone)]
 struct PreviewRequestState {
+    used_outside_inspector: bool,
     request_id: u64,
     cache_key: String,
     cancellation: Arc<AtomicBool>,
@@ -2691,12 +2693,21 @@ impl PreviewRequestScheduler {
     /// Reserves a new request only when this slot expects different content.
     /// A returning key must supersede an older request after an intervening
     /// generation, even if that older request used the same cache key.
-    fn reserve(&mut self, slot: PreviewRequestSlot, cache_key: String) -> Option<u64> {
-        if self
-            .current
-            .get(&slot)
-            .is_some_and(|state| state.cache_key == cache_key)
+    fn reserve(
+        &mut self,
+        slot: PreviewRequestSlot,
+        cache_key: String,
+        inspector: bool,
+        has_budget: bool,
+    ) -> Option<u64> {
+        if let Some(state) = self.current.get_mut(&slot)
+            && state.cache_key == cache_key
         {
+            // Joining existing work consumes no budget and protects shared renders.
+            state.used_outside_inspector |= !inspector;
+            return None;
+        }
+        if !has_budget {
             return None;
         }
         self.next_request_id = self.next_request_id.wrapping_add(1).max(1);
@@ -2708,6 +2719,7 @@ impl PreviewRequestScheduler {
         self.current.insert(
             slot.clone(),
             PreviewRequestState {
+                used_outside_inspector: !inspector,
                 request_id,
                 cache_key,
                 cancellation,
@@ -2728,6 +2740,17 @@ impl PreviewRequestScheduler {
             }
             self.inflight.remove(slot);
         }
+    }
+
+    fn cancel_inspector_only(&mut self) {
+        self.current.retain(|slot, state| {
+            if state.used_outside_inspector {
+                return true;
+            }
+            state.cancellation.store(true, Ordering::Release);
+            self.inflight.remove(slot);
+            false
+        });
     }
 
     fn cancellation(&self, slot: &PreviewRequestSlot, request_id: u64) -> Option<Arc<AtomicBool>> {
@@ -4534,14 +4557,13 @@ impl OttrinApp {
         cache_key: String,
         sources: PreviewJobSources,
     ) {
-        if self.preview_budget_remaining == 0 {
-            return;
-        }
         let slot = PreviewRequestSlot::new(path.to_path_buf(), target, target_dim, page_index);
-        let Some(request_id) = self
-            .preview_scheduler
-            .reserve(slot.clone(), cache_key.clone())
-        else {
+        let Some(request_id) = self.preview_scheduler.reserve(
+            slot.clone(),
+            cache_key.clone(),
+            sources.inspector && sources.office_provider.is_some(),
+            self.preview_budget_remaining > 0,
+        ) else {
             return;
         };
         let sent = self.preview_tx.send(PreviewJobRequest {
@@ -4611,7 +4633,7 @@ impl OttrinApp {
     fn cached_shared_visual_preview_widget(
         &mut self,
         path: &Path,
-        _kind: PreviewKind,
+        inspector: bool,
         spec: VisualPreviewRenderSpec,
     ) -> Option<egui::Image<'static>> {
         if spec.fit {
@@ -4622,6 +4644,7 @@ impl OttrinApp {
                 bounds.y,
                 spec.corner_radius,
                 spec.page_index,
+                inspector,
             )
         } else {
             self.cached_original_image_zoom_widget_for_page(
@@ -4629,6 +4652,7 @@ impl OttrinApp {
                 spec.zoom,
                 spec.corner_radius,
                 spec.page_index,
+                inspector,
             )
         }
     }
@@ -4830,6 +4854,7 @@ impl OttrinApp {
                 page_index,
                 cache_key.clone(),
                 PreviewJobSources {
+                    inspector: false,
                     sqlite: sqlite_source_generation,
                     obj: obj_source_generation,
                     ply: ply_source_generation,
@@ -4872,6 +4897,7 @@ impl OttrinApp {
         max_height: f32,
         corner_radius: u8,
         page_index: usize,
+        inspector: bool,
     ) -> Option<egui::Image<'static>> {
         let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
             .then(|| ottrin_preview::sqlite_preview_source_generation(path))
@@ -4924,6 +4950,7 @@ impl OttrinApp {
                 page_index,
                 cache_key,
                 PreviewJobSources {
+                    inspector,
                     sqlite: sqlite_source_generation,
                     obj: obj_source_generation,
                     ply: ply_source_generation,
@@ -4992,6 +5019,7 @@ impl OttrinApp {
         zoom: f32,
         corner_radius: u8,
         page_index: usize,
+        inspector: bool,
     ) -> Option<egui::Image<'static>> {
         let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
             .then(|| ottrin_preview::sqlite_preview_source_generation(path))
@@ -5044,6 +5072,7 @@ impl OttrinApp {
                 page_index,
                 cache_key,
                 PreviewJobSources {
+                    inspector,
                     sqlite: sqlite_source_generation,
                     obj: obj_source_generation,
                     ply: ply_source_generation,
@@ -9678,6 +9707,7 @@ impl OttrinApp {
         {
             self.preview.media_playback = None;
         }
+        self.preview_scheduler.cancel_inspector_only();
         self.preview.visible = false;
         self.preview.path = None;
         self.preview.data = None;
@@ -18097,7 +18127,7 @@ impl OttrinApp {
                         if use_visual_renderer {
                             if let Some(img) = self.cached_shared_visual_preview_widget(
                                 &entry.path,
-                                preview.kind,
+                                false,
                                 VisualPreviewRenderSpec {
                                     max_size: ui.available_size(),
                                     corner_radius: 8,
@@ -18176,7 +18206,7 @@ impl OttrinApp {
                                         |spec| {
                                             self.cached_shared_visual_preview_widget(
                                                 &entry.path,
-                                                PreviewKind::Pdf,
+                                                false,
                                                 spec,
                                             )
                                         },
@@ -19553,7 +19583,7 @@ impl OttrinApp {
                                     };
                                     let image = self.cached_shared_visual_preview_widget(
                                         &path,
-                                        preview.kind,
+                                        false,
                                         VisualPreviewRenderSpec {
                                             max_size: Vec2::new(max_w, max_h),
                                             corner_radius: 8,
@@ -19572,7 +19602,7 @@ impl OttrinApp {
                                         if let Some(count) = preview_page_count(&preview, None) {
                                             render_following_pdf_pages(ui, &path, count,
                                                 VisualPreviewRenderSpec { max_size: Vec2::new(max_w, max_h), corner_radius: 8, page_index: pdf_page_index, fit: self.preview.visual_fit, fit_width: self.preview.visual_fit_width, zoom: self.preview.visual_zoom }, image_resp.rect.size(), c,
-                                                |spec| self.cached_shared_visual_preview_widget(&path, PreviewKind::Pdf, spec));
+                                                |spec| self.cached_shared_visual_preview_widget(&path, false, spec));
                                         }
                                         if let Some(delta) =
                                             render_image_hover_nav(ui, c, image_resp.rect)
@@ -19660,7 +19690,7 @@ impl OttrinApp {
                                         let page_index = self.preview.pdf_page_index;
                                         let image = self.cached_shared_visual_preview_widget(
                                             &path,
-                                            PreviewKind::OfficeMetadata,
+                                            true,
                                             VisualPreviewRenderSpec {
                                                 max_size: Vec2::new(max_w, max_h),
                                                 corner_radius: 8,
@@ -30260,6 +30290,47 @@ mod tests {
     }
 
     #[test]
+    fn closing_inspector_cancels_only_unshared_office_render_requests() {
+        let mut app = OttrinApp::default();
+        let slot = |page| {
+            PreviewRequestSlot::new(
+                PathBuf::from("/tmp/ottrin-office-preview.docx"),
+                PreviewRequestTarget::Original,
+                PREVIEW_CACHE_ORIGINAL,
+                page,
+            )
+        };
+        let exclusive = slot(0);
+        let shared = slot(1);
+        let scheduler = &mut app.preview_scheduler;
+        let exclusive_id = scheduler
+            .reserve(exclusive.clone(), "office-page-0".into(), true, true)
+            .unwrap();
+        let shared_id = scheduler
+            .reserve(shared.clone(), "office-page-1".into(), true, true)
+            .unwrap();
+        let exclusive_cancel = scheduler.cancellation(&exclusive, exclusive_id).unwrap();
+        let shared_cancel = scheduler.cancellation(&shared, shared_id).unwrap();
+        assert_eq!(
+            scheduler.reserve(shared.clone(), "office-page-1".into(), false, false),
+            None
+        );
+
+        app.close_preview(&Context::default());
+
+        let scheduler = &mut app.preview_scheduler;
+        assert!(exclusive_cancel.load(Ordering::Acquire));
+        assert!(!shared_cancel.load(Ordering::Acquire));
+        assert!(!scheduler.accept_response(&exclusive, exclusive_id, "office-page-0"));
+        assert!(scheduler.accept_response(&shared, shared_id, "office-page-1"));
+        assert!(
+            scheduler
+                .reserve(exclusive, "office-page-0".into(), true, true)
+                .is_some()
+        );
+    }
+
+    #[test]
     fn preview_request_scheduler_supersedes_a_returning_content_generation() {
         let path = PathBuf::from("/tmp/ottrin-preview-scheduler.sqlite");
         let slot = PreviewRequestSlot::new(
@@ -30271,13 +30342,13 @@ mod tests {
         let mut scheduler = PreviewRequestScheduler::default();
 
         let first_a = scheduler
-            .reserve(slot.clone(), "cache-a".to_string())
+            .reserve(slot.clone(), "cache-a".to_string(), false, true)
             .unwrap();
         let first_cancellation = scheduler
             .cancellation(&slot, first_a)
             .expect("first cancellation token");
         let b = scheduler
-            .reserve(slot.clone(), "cache-b".to_string())
+            .reserve(slot.clone(), "cache-b".to_string(), false, true)
             .unwrap();
         assert!(
             first_cancellation.load(Ordering::Acquire),
@@ -30287,7 +30358,7 @@ mod tests {
             .cancellation(&slot, b)
             .expect("second cancellation token");
         let returning_a = scheduler
-            .reserve(slot.clone(), "cache-a".to_string())
+            .reserve(slot.clone(), "cache-a".to_string(), false, true)
             .unwrap();
         assert!(second_cancellation.load(Ordering::Acquire));
 
@@ -30330,18 +30401,33 @@ mod tests {
         let mut scheduler = PreviewRequestScheduler::default();
 
         let thumbnail_request = scheduler
-            .reserve(thumbnail.clone(), "thumbnail-page-0".to_string())
+            .reserve(
+                thumbnail.clone(),
+                "thumbnail-page-0".to_string(),
+                false,
+                true,
+            )
             .unwrap();
         assert_eq!(
-            scheduler.reserve(thumbnail.clone(), "thumbnail-page-0".to_string()),
+            scheduler.reserve(
+                thumbnail.clone(),
+                "thumbnail-page-0".to_string(),
+                false,
+                true
+            ),
             None,
             "a cache miss already being rendered must not consume another budget slot"
         );
         let next_page_request = scheduler
-            .reserve(next_page.clone(), "thumbnail-page-1".to_string())
+            .reserve(
+                next_page.clone(),
+                "thumbnail-page-1".to_string(),
+                false,
+                true,
+            )
             .unwrap();
         let larger_request = scheduler
-            .reserve(larger.clone(), "thumbnail-large".to_string())
+            .reserve(larger.clone(), "thumbnail-large".to_string(), false, true)
             .unwrap();
 
         assert!(scheduler.accept_response(&thumbnail, thumbnail_request, "thumbnail-page-0"));
@@ -30935,7 +31021,7 @@ mod tests {
         let mut app = OttrinApp::default();
         let request_id = app
             .preview_scheduler
-            .reserve(slot.clone(), cache_key.clone())
+            .reserve(slot.clone(), cache_key.clone(), false, true)
             .expect("reserve provider response");
         let (tx, rx) = mpsc::channel();
         app.preview_rx = rx;
@@ -30999,7 +31085,7 @@ mod tests {
         let mut app = OttrinApp::default();
         let request_id = app
             .preview_scheduler
-            .reserve(slot.clone(), cache_key.clone())
+            .reserve(slot.clone(), cache_key.clone(), false, true)
             .expect("reserve provider response");
         app.state.config.installed_office_previews_enabled = false;
         let (tx, rx) = mpsc::channel();
@@ -31150,7 +31236,7 @@ mod tests {
         *app.office_provider.lock().expect("provider cache") = Some(detected);
         let request_id = app
             .preview_scheduler
-            .reserve(slot.clone(), cache_key.clone())
+            .reserve(slot.clone(), cache_key.clone(), false, true)
             .expect("reserve provider response");
         let (tx, rx) = mpsc::channel();
         app.preview_rx = rx;
@@ -35354,7 +35440,7 @@ mod tests {
                     let image = app
                         .cached_shared_visual_preview_widget(
                             path,
-                            PreviewKind::Image,
+                            false,
                             VisualPreviewRenderSpec {
                                 max_size: bounds,
                                 corner_radius: 0,
@@ -42575,7 +42661,7 @@ mod tests {
             GraphicsRuntimeStatus::default(),
         );
         assert!(
-            app.cached_original_image_preview_widget_for_page(&path, 400.0, 300.0, 0, 0)
+            app.cached_original_image_preview_widget_for_page(&path, 400.0, 300.0, 0, 0, false)
                 .is_none()
         );
         let deadline = Instant::now() + Duration::from_secs(15);
