@@ -16,6 +16,14 @@ after its dialog closed. Promotion preserved the running index process,
 database identity and preferences. The consumed stage and superseded
 packages were removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
+The same AppImage showed installed LibreOffice DOCX rendering in a fresh
+Ubuntu guest with the distribution Bubblewrap profile and the global
+namespace restriction enabled. Fit Page exposed the provider label, and the
+page selector moved forward and back. The capture did not establish page-two
+content, and the automation stopped before opening the XLSX Inspector. Resume
+with installed XLSX and PPTX, page content after navigation, and cancellation.
+See [installed Office acceptance](../.hermes/evidence/current-linux-installed-office/ACCEPTANCE.json).
+
 The preceding `e2171c3b` cohort passed all four hosted jobs in
 [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
 The mounted Dark and Light AppImage omits the empty Shared colors group in

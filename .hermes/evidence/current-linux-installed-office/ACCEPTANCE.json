@@ -1,0 +1,42 @@
+{
+  "source_revision": "2afcfc5a0137d33c7a1c850486a3b96f42cdb45e",
+  "appimage_sha256": "633889dc5706e38cdf117ecbf8e95dcc43cfd8938aa174b6a466df4dacfe452d",
+  "environment": "Fresh Ubuntu 24.04 guest, ordinary user and real systemd user bus, Xvfb/software rendering, LibreOffice 24.2.7.2, distribution bwrap-userns-restrict policy with global user namespace restriction enabled.",
+  "scope": "DOCX visual preview showed its image and bordered table in Fit Width and identified LibreOffice in Fit Page. Next changed the page selector to 2 of 2 and Previous returned it to 1 of 2. The page-two capture showed a render in progress, so page-two content remains unverified. The automation did not open the XLSX Inspector and never attempted PPTX. Current packaged cancellation is unverified.",
+  "captures": {
+    "docx-fit-width": {
+      "sha256": "6ef34a5b973a0ed117000aa5c618ee5a2ce4a0e3dd9841dd615fa5653f85dfa7",
+      "ocr": "Quick inspector \u2014 office-fidelity.docx\n\nPage1of2 Next\n\nFitpage Fitwidth 100%.\nFitwidth 41% +\n\n~text\n\nBold sample and italic sample\n\nFeature Expected layout\n\nImage (Orange and cyan halves\n\nTable. \u201cTwo bordered columns"
+    },
+    "docx": {
+      "sha256": "987cc9080b7923d26425165234dcfd0a4615d257eaec8770e807d054f1b75ede",
+      "ocr": "Quick inspector \u2014office-fidelity. docx\n\nPage 1of2 \u2014 Next\n\nFitpage Fitwidth 100%.\n= Fitpage-15% +\n\n=text Text 100% + text\n\nRendered with LibreOffice 24.2.7."
+    },
+    "docx-page-two": {
+      "sha256": "2965c81e949cf95f0fc4d5783d70b69929b9de7a1b60558768005fc0af4807e2",
+      "ocr": "Quick inspector \u2014 office fidelity. docx\n\nPrevious Page2of2 Next\n\nFitpage Fitwidth 100%.\n= Fitpage-15% +\n\nRendering Office preview.\n\n=text Text 100% + text\n\nRendered with Libreoffice 242.72"
+    },
+    "docx-page-one-return": {
+      "sha256": "552dd49b8be10717d9979155cf2dcab8722fcb95f48d52dbbd009e2d13c6e3e6",
+      "ocr": "Quick inspector \u2014office-fidelity. docx\n\nPage 1of2 \u2014 Next\n\nFitpage Fitwidth 100%.\n= Fitpage-15% +\n\n=text Text 100% + text\n\nRendered with LibreOffice 24.2.7."
+    }
+  },
+  "owned_teardown": [
+    {
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-installed-office-qa-base.qcow2",
+        "ottrin-installed-office-qa-work.qcow2",
+        "ottrin-installed-office-qa-seed.iso"
+      ]
+    },
+    {
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-installed-office-qa-base.qcow2",
+        "ottrin-installed-office-qa-work.qcow2",
+        "ottrin-installed-office-qa-seed.iso"
+      ]
+    }
+  ]
+}
