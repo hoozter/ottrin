@@ -880,6 +880,7 @@ impl PickerDialog {
             ctx.request_repaint_after(due.saturating_duration_since(Instant::now()));
         }
         let popup_open = egui::Popup::is_any_open(&ctx);
+        let blocked = self.overwrite.is_some();
         if !popup_open
             && ctx.input(|input| input.key_pressed(egui::Key::Escape))
             && self.overwrite.take().is_none()
@@ -891,15 +892,17 @@ impl PickerDialog {
                 self.cancel();
             }
         }
-        if !popup_open && ctx.input(|input| crate::command_key_pressed(input, egui::Key::L)) {
+        if !blocked
+            && !popup_open
+            && ctx.input(|input| crate::command_key_pressed(input, egui::Key::L))
+        {
             self.editing_location = true;
             self.focus_location = true;
         }
-        let blocked = self.overwrite.is_some();
         if !blocked && !popup_open && !self.editing_location && !ctx.wants_keyboard_input() {
             self.handle_file_keys(&ctx);
         }
-        ui.add_enabled_ui(!blocked, |ui| {
+        ui.add_enabled_ui(self.overwrite.is_none(), |ui| {
             egui::Frame::new()
                 .fill(colors.toolbar_bg)
                 .inner_margin(6)
@@ -1972,6 +1975,56 @@ mod tests {
         assert_eq!(std::fs::read(other).unwrap(), b"another original");
         assert_eq!(std::fs::read(path).unwrap(), b"original");
     }
+    #[test]
+    fn replace_confirmation_keeps_location_shortcuts_inactive() {
+        let root = tempfile::tempdir().unwrap();
+        let existing = root.path().join("existing.txt");
+        std::fs::write(&existing, b"original").unwrap();
+        let ctx = Context::default();
+        let mut app = host(
+            &ctx,
+            PickerRequest {
+                mode: PickerMode::Save,
+                initial_directory: Some(root.path().to_path_buf()),
+                ..Default::default()
+            },
+            true,
+            1.0,
+        );
+        wait_listing(&mut app.dialog);
+        app.dialog.overwrite = Some(existing.clone());
+        let size = Vec2::new(940.0, 640.0);
+        frame(&mut app, &ctx, size, 0.0, vec![]);
+        let key = |key, pressed, modifiers| egui::Event::Key {
+            key,
+            physical_key: Some(key),
+            pressed,
+            repeat: false,
+            modifiers,
+        };
+        let location = |pressed| key(egui::Key::L, pressed, egui::Modifiers::CTRL);
+        frame(&mut app, &ctx, size, 0.1, vec![location(true)]);
+        assert_eq!(app.dialog.overwrite.as_ref(), Some(&existing));
+        assert!(!app.dialog.editing_location);
+
+        frame(
+            &mut app,
+            &ctx,
+            size,
+            0.2,
+            vec![
+                location(false),
+                key(egui::Key::Escape, true, egui::Modifiers::NONE),
+            ],
+        );
+        assert!(app.dialog.overwrite.is_none());
+        assert!(!app.dialog.editing_location);
+        assert!(app.outcome.lock().unwrap().is_none());
+        frame(&mut app, &ctx, size, 0.3, vec![location(true)]);
+        assert!(app.dialog.editing_location);
+        assert_eq!(std::fs::read(existing).unwrap(), b"original");
+    }
+
     #[test]
     fn replace_confirmation_uses_window_corners_and_border() {
         for dark in [false, true] {

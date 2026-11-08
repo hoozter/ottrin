@@ -604,6 +604,12 @@ Current source, test, package and owner/external scopes stay separate.
    removed. Evidence: `picker-overwrite-confirmation-current/linux/RESULT.json`.
    The combined Linux candidate passed mounted package coverage. Native
    Windows coverage remains open.
+   A source follow-up keeps address and file navigation shortcuts inactive
+   while the Replace confirmation is open. The rendered regression failed
+   before the fix and passes afterward. Escape dismisses the prompt, Ctrl+L
+   works again, and the existing file stays intact. All 545 active Linux UI
+   tests and strict Linux and Windows-target UI lint passed. This follow-up
+   awaits exact-package delivery.
    Source `e91dcf50` also gives the Replace confirmation the shared window
    geometry. Dark and Light rendering, 544 isolated UI tests and Linux and
    Windows-target Clippy passed. The delivered `7aabcc56` Linux cohort passes
