@@ -224,7 +224,10 @@
       "section": "Linux",
       "requirement": "Native helper smoke verified on Linux: generated silent video, RGBA frames, pause/resume acknowledgement, Stop, end-of-stream, retained-descriptor pathname replacement, malformed input and isolated missing-plugin fallback (`scripts/linux-media-playback-smoke.py`). Source-built Inspector presentation has also been exercised in isolated Xvfb with generated video: decoded frames, Pause/resume, end-of-stream, missing-helper and missing-plugin fallback. Duplicate external-open actions and enabled controls for terminal sessions were corrected. Audible playback, representative user media and clean-package fallback remain pending; no codecs were added.",
       "classification": "unverified in concentrated final audit",
-      "evidence": []
+      "evidence": [
+        ".hermes/evidence/current-packaged-linux-media/ACCEPTANCE.json"
+      ],
+      "latest_scope": "Exact 2afcfc5a portable helper passed decoded silent video frames, pause/resume, Stop, malformed input, retained descriptor after source-path replacement and missing GStreamer plugin fallback. It used the host GStreamer installation. Audible playback, native GUI fallback and clean-distro plugin availability remain open."
     },
     {
       "id": 26,
