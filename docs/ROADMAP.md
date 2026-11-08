@@ -205,9 +205,12 @@ guest resources were removed. Current authority:
    configuration bytes were preserved. The upgrade from `67d3cbe1` with
    a running index, all three reinstall intent combinations, and locked-cache
    uninstall refusal and retry passed in the fresh native repeat. The earlier
-   stopped-and-disabled timeout did not recur. Build and validate development
-   MSIX from the same portable payload before replacing the accepted cohort.
-   See [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
+   stopped-and-disabled timeout did not recur. Native MakeAppx assembled
+   unsigned development MSIX 28 from the same payload and verified all
+   59 files. Fresh deployment and the 27-to-28 upgrade remain open before
+   replacing the accepted cohort. See
+   [MSIX assembly](../.hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json),
+   [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
    [upgrade acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
    and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
 3. **Close Windows desktop integration and theme acceptance.** Run the
@@ -851,11 +854,10 @@ Current source, test, package and owner/external scopes stay separate.
    `7992ad1e`, which differs from hosted `7e89eedb` only in delivery
    metadata. All 59 extracted payload files match in both formats.
    Native Save and fresh install/uninstall passed in Dark and Light.
-   Native upgrade, reinstall and uninstall retry passed. Development MSIX
-   assembly and validation remain pending.
-   The 95 MiB stage keeps only the two archives and
-   their checksums. The duplicate payload and verifier extraction were
-   retired. See `windows-picker-keyboard-current/STAGING.json`.
+   Native upgrade, reinstall and uninstall retry passed. Development MSIX 28
+   assembly passed. Deployment and upgrade remain pending.
+   The 152 MiB stage retains the ZIP, NSIS and MSIX with their checksums.
+   Duplicate payload and verifier extractions were retired. See `windows-picker-keyboard-current/STAGING.json`.
    The native Save actor now checks Ctrl+L during Replace, Escape dismissal,
    address editing afterward, exact UTF-16 selection and source bytes in
    both themes. It passes the PowerShell parser. The local runner binds the
