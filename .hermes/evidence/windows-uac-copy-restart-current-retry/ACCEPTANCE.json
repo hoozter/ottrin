@@ -1,0 +1,51 @@
+{
+  "status": "pass Windows UAC Copy rediscovery and Undo across fresh processes",
+  "input": {
+    "source": "5f67709c8c4f9e9a7d60490b059e0f52b9238f75",
+    "test_sha256": "8bf3ccaa95fdf94ec71e94cd80264f94ee65f31a57dbb3decc1a2e9fc3e8571f",
+    "helper_sha256": "1c1d37bd0fe7189a04aa188439803a3bc419ccdf6a540bde9cff9ad0144dde33",
+    "sections_match": true
+  },
+  "package_source": "7992ad1e702976ca8a1e8bf698ddb4010af75647",
+  "phases": [
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+      "status": "pass",
+      "client_pid": 1284,
+      "mode": "approve"
+    },
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+      "status": "pass",
+      "client_pid": 1192,
+      "mode": "history"
+    },
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+      "status": "pass",
+      "client_pid": 5924,
+      "mode": "undo"
+    },
+    {
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1001",
+      "status": "pass",
+      "client_pid": 5492,
+      "mode": "undone"
+    }
+  ],
+  "transaction": "530d92f128510f105791c199a0f7022e",
+  "source_preserved": true,
+  "undo_removed_exact_publication": true,
+  "rediscovered_state": "Undone",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "7fc19977-817d-4d04-85ea-d93202db05cf",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "first_attempt": "Copy passed and the fresh helper found the expected transaction and paths. The test incorrectly required the batch completion count in history. The retry checks retained operation state and the separately recorded original receipt. A subsequent boot required waiting for sign-in after guest-agent readiness.",
+  "scope": "Four distinct native ordinary test-client processes and separately launched exact production helpers using real split-token UAC. Installed app UI, interrupted recovery, and alternate-account Undo are separate."
+}

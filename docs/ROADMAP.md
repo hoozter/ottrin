@@ -190,9 +190,12 @@ and the held MSI were preserved. Current authority is
    the destination empty. Approval streamed progress and published exact bytes
    owned by the original caller. The separate non-administrator account also
    passed cancellation and approval with a different local administrator's
-   credentials. The original caller owned the published file. Installed UI,
-   Undo and restart remain open. All completed guests and temporary resources
-   were removed. See
+   credentials. The original caller owned the published file. Four separate
+   test-client and UAC helper processes then passed Copy, history discovery,
+   Undo and rediscovery as Undone. Undo removed the exact publication and
+   preserved the source. Installed UI, interrupted recovery and alternate-account
+   Undo remain open. All completed guests and temporary resources were removed.
+   See [fresh-process Undo acceptance](../.hermes/evidence/windows-uac-copy-restart-current-retry/ACCEPTANCE.json),
    [alternate-account acceptance](../.hermes/evidence/windows-uac-copy-alternate-current/ACCEPTANCE.json),
    [UAC transport acceptance](../.hermes/evidence/windows-uac-copy-current/ACCEPTANCE.json),
    [after-root acceptance](../.hermes/evidence/caller-profile-init-current/matrix-after-root/ACCEPTANCE.json),
