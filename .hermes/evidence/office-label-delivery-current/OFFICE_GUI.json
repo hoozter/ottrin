@@ -1,0 +1,67 @@
+{
+  "source_revision": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
+  "appimage_sha256": "bb436a97f10d86ba5e3a3543308a38954e9ad36e23a7cd08628649aa099da08b",
+  "libreoffice_version": "LibreOffice 24.2.7.2 420(Build:2)",
+  "cases": {
+    "xlsx": {
+      "fit_width": {
+        "ocr": "quick inspector \u2014 office-fidelity.xlsx\n\npage 1 of 1\n\nfit page fit width 100%\n\n- fit width - 32% +\n\n- text \u201d % +text overview\n\nrendered with libreoffice 24.2\n\nquantity\n00 amounts by item\noo\n$4,000.00 $3.000.00\n$2.500.00\ncurrency totals and calculated formulas\n$2,000.00 m= amount\n$1,500.00\n$1,000.00\n$500.00\n$0.00\n\n\npul wigtt\n\n7t\u00ae\n\na\n\nrendered with libreoffice 24.2.7.2\n\neee",
+        "capture_sha256": "630c0ce6c86eba7364d9fbacb86aec7b1e6cc4f9269dcaee8e4e39d4a2064fdc"
+      },
+      "fit_page": {
+        "ocr": "quick inspector \u2014 office-fidelity.xlsx\n\npage 1 of 1\nfit page fit width 100%\n\n- fit page \u00bb 22% +\n\n-text text100%  +text overview\n\nottrin sheet fidelity\n\u2018querialy\n\namounts by item\n\n7)\n\"\no)\n\n\n-=\n\npil paye eer\n\na\n\nrendered with libreoffice 24.2.7.2\n\neee",
+        "capture_sha256": "a54bb9dba72b1e567d027aa832ce7cfd9b347cf499f2c610be8fc3ef0ba0f4ee"
+      },
+      "source_unchanged": true
+    },
+    "pptx": {
+      "fit_width": {
+        "ocr": "quick inspector \u2014 office-fidelity.pptx\n\npage 1 of 2 next\nfit page fit width 100%\n\nshow the complete page or image in the viewport.\n\nrendered with libreoffice 24.2.7.2\n\nottrin slide 1 fidelity\n\ngreen shape with text\n\n\nshow the complete page or image in the viewport.\n\nrendered with libreoffice 24.2.7.2\n\neee",
+        "capture_sha256": "9a41a2b3aa1a367c367a86c64ebac94dd5ed6b770c4ec9b1d22e1cef3e729ae9"
+      },
+      "error": "('next', 'quick inspector \u2014 office-fidelity.pptx\\n\\nprevious page 2 of 2\\n\\nfit page fit width 100%\\n\\n- fitwidth-32% +\\n\\nrendered with libreoffice 24.2.7.2\\n\\nsecond slide stays separate and ordered\\n\\n\\npul wigtt\\n\\n7t\u00ae\\n\\na\\n\\nrendered with libreoffice 24.2.7.2\\n\\neee\\n')",
+      "source_unchanged": true,
+      "second_slide_capture_sha256": "ee6c52b43ede859c377651ca474bf2969b1399f5922c4b24f608487d6819672a"
+    },
+    "docx": {
+      "fit_width": {
+        "ocr": "\u2018or \u2014 office-fidelity.docx\n\npage 1 of 2 next\nfit page fit width\n\n- fitwidth-41% +\n\n1 show the next document page.\n\nrendered with libreoffice 24.2.7.2\n\nbold sample and ilalic sample\n\nfeature expected layout\n\nimage | orange and cyan halves\ntable two bordered columns\n\n\n-=\n\npul wigtt\n\ntin\n\na\n\nrendered with libreoffice 24.2.7.2\n\neee",
+        "capture_sha256": "1473d32fab268ade8a65b0b84a508849d91f97414274f02f005a5e09021d9884"
+      },
+      "next": {
+        "ocr": "quick inspector \u2014 office-fidelity.docx\n\nprevious page 2 of 2\n\nfit page fit width 100%\n\n- fitwidth-41% +\n\nrendered with libreo\n\n- text\n\nsecond page right aligned\n\n\n-=\n\npul wigtt\n\ntin\n\na\n\nrendered with libreoffice 24.2.7.2\n\neee",
+        "capture_sha256": "42cb5dadd3dd3fd8a4e404d99f912b95aaf0592faca93596adecec5dd77bb6e5"
+      },
+      "previous": {
+        "ocr": "\u2018or \u2014 office-fidelity.docx\n\npage 1 of 2 next\n\nfit page fit width 100%\n\n- text\n- fit width - 41% +\n\nrendered with libreoffice 24.2.7.2\n\nbold sample and ilalic sample\n\nfeature expected layout\nimage | orange and cyan halves\ntable two bordered columns\n\n\n-=\n\npul wigtt\n\ntin\n\na\n\nrendered with libreoffice 24.2.7.2\n\neee",
+        "capture_sha256": "1eec460be90eb57e848a1b24f4c5e3f803f125bce90a617a2c8552292f7fab1e"
+      },
+      "fit_page": {
+        "ocr": "quick inspector \u2014 office-fidelity.docx\n\npage 1 of 2 next\nfit page fit width 100%\n\n- fitpage-16% +\n\n-text text100% +text\n\nrendered with libreoffice 24.2.7.2\n\n\n=\n\nfi payee\u2019 10%\n\na\n\nrendered with libreoffice 24.2.7.2",
+        "capture_sha256": "e8ec5127694e032afc4f9e2ea5858aea663449609da32be04ddfcc5a09d2d393"
+      },
+      "source_unchanged": true
+    }
+  },
+  "remaining_render_units": "",
+  "status": "pass scoped Fit Width renderer label and second-page content",
+  "scope": "Ubuntu 24.04 software X11, exact AppImage extracted and launched through AppRun, installed LibreOffice with real systemd user bus and restrictive distribution Bubblewrap policy. All three formats showed the label in Fit Width. DOCX and XLSX showed it in Fit Page. DOCX verified Next and Previous with distinct content. PPTX Next displayed the unique second-slide subtitle and provider label. The expected slide title was outside the visible Fit Width crop, stopping automation before PPTX Previous and Fit Page. In-flight cancellation remains separate.",
+  "guest_cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-office-label-qa-base.qcow2",
+      "ottrin-office-label-qa-work.qcow2",
+      "ottrin-office-label-qa-seed.iso"
+    ],
+    "temporary_seed_and_ssh_keys_removed": true
+  },
+  "prior_attempt_cleanup": {
+    "domain_removed": true,
+    "volumes_removed": [
+      "ottrin-office-label-qa-base.qcow2",
+      "ottrin-office-label-qa-work.qcow2",
+      "ottrin-office-label-qa-seed.iso"
+    ],
+    "temporary_seed_and_ssh_keys_removed": true
+  }
+}

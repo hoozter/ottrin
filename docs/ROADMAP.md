@@ -29,11 +29,18 @@ DOCX page-two content and current-package cancellation.
 See [DOCX acceptance](../.hermes/evidence/current-linux-installed-office/ACCEPTANCE.json)
 and [direct-file acceptance](../.hermes/evidence/current-linux-office-pages/ACCEPTANCE.json).
 
-Quick Inspector now places the renderer label above the scrolling document
-area so Fit Width can keep it visible. Source checks passed 548 UI tests with
-one existing exclusion and strict UI library lint. This change is awaiting
-exact-package verification in Fit Width with LibreOffice installed. The stable
-AppImage still uses `2afcfc5a`.
+Quick Inspector places the renderer label above the scrolling document area.
+The staged `e2c1b926` AppImage showed the label in Fit Width for DOCX, XLSX
+and PPTX with installed LibreOffice. DOCX and XLSX also showed it in Fit Page.
+DOCX Next and Previous showed distinct page content. PPTX Next showed the
+second-slide subtitle and renderer label. The check stopped before PPTX
+Previous and Fit Page after failing to read the slide title in Fit Width.
+All source bytes were preserved and no rendering unit remained after exit.
+Current-package in-flight cancellation remains open. The four packages passed
+content verification and isolated mounted AppImage replacement. The stable
+cohort stays at `2afcfc5a` until the Windows verification job in
+[run 42458261617](https://github.com/hoozter/ottrin/actions/runs/42458261617)
+finishes successfully. See [staged Office acceptance](../.hermes/evidence/office-label-delivery-current/OFFICE_GUI.json).
 
 The preceding `e2171c3b` cohort passed all four hosted jobs in
 [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
