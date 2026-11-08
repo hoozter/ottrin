@@ -272,9 +272,15 @@ and the held MSI were preserved. See
    caller ownership, absence of the second target, and preservation of
    both sources, both stages and an unrelated file. See the
    [installed Stop receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_COPY_STOP.json).
+   A repeat reopened authenticated history and undid the completed member.
+   In a third process the UI showed Copy undone separately from the
+   incomplete attempt. Both sources and the unrelated destination file
+   stayed intact. Neither target remained, both stages were retained and
+   the incomplete journal stayed byte-for-byte unchanged. See the
+   [stopped-batch Undo receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_STOP_UNDO.json).
    The Dark Stopped badge and repeated technical errors need a presentation
-   pass. Executing Undo for the stopped batch, forward Resume, late terminal
-   result handling and the expanded platform regression remain open.
+   pass. Forward Resume, late terminal result handling and the expanded
+   platform regression remain open.
    The temporary worktrees,
    unpacked payloads, duplicate ZIP, superseded private installer and
    disposable guests were removed. The rebuilt private installer remains

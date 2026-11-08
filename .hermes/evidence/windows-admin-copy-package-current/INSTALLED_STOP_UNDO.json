@@ -1,0 +1,76 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "645b48f0415c8cf9a31921af7f33c2778ecceafb",
+    "installer_sha256": "4acde2f5ae486076f7bc6c456d54eb0338bf6f530b6b663aad8b24ba82e48ead",
+    "source_sha256": "87e7c7d1965ebd6904a1e80e54750fb53ced36e8e85a78869e1d4cdaa3ce3170",
+    "interrupt": false,
+    "stop": true,
+    "actor_sha256": "73d3d6b427a28a868fffe94d92433722fa3eedb38cfef816a6857310adfcb9af",
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "incomplete_journal": "b19d74fac647150fe8ea04aafab3b907.copy-journal",
+      "transactions": [
+        "543b69ce25de4f1184dec35f1baf78c5",
+        "b19d74fac647150fe8ea04aafab3b907"
+      ],
+      "phase": "complete",
+      "client_exit": 0,
+      "incomplete_hash": "e5de4e5f47ec2284d430ced247dbf9a9b01c6a9ac5b6d1a984fde4c3f018c8e4",
+      "client_pid": 8064,
+      "status": "pass",
+      "client_exited": true
+    },
+    {
+      "client_pid": 6752,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "stop-undo",
+      "status": "pass"
+    },
+    {
+      "client_pid": 5776,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "stop-restored",
+      "status": "pass"
+    }
+  ],
+  "native_approval_sequence": [
+    "Copy",
+    "load History after Stop and reopen",
+    "Undo completed member",
+    "load History after second reopen"
+  ],
+  "checks": [
+    "Before Undo the completed prefix matched its source and was owned by the caller",
+    "After Undo and after reopening, neither copied target existed",
+    "Both original sources and unrelated destination marker remained intact",
+    "The incomplete member journal SHA-256 remained unchanged after Undo and after reopening",
+    "Both retained destination stages remained present"
+  ],
+  "rendered_observation": "Fresh administrator history showed separate Incomplete copy with End copy attempt and recovered Copy undone entries.",
+  "scope": "Exact private NSIS, two-member administrator Copy, user-driven Stop and authenticated Undo of the completed prefix across three installed processes. Forward Resume and late terminal result remain separate.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "b79733fd-620a-4b62-8de7-e9b3fc824701",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporarily_moved_compiler_test_restored_by_hash": true
+  }
+}
