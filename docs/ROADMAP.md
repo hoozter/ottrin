@@ -252,12 +252,18 @@ and the held MSI were preserved. Current authority is
    host comparison verified all 59 payload files and the manifest identity.
    The bundled daemon passed watcher mutations and restart on a private
    1,000-file corpus. It averaged 0.10% of one core over 30 seconds with
-   no connected clients. The native upgrade and removal, installed Search
-   status and Inspector checks, and promotion remain separate. The stable
+   no connected clients. The native enabled 28-to-29 upgrade preserved the
+   index database identity and folder-menu preference. Explorer background,
+   multiple selection and drive commands passed. The index started at real
+   sign-in, and uninstall removed the package, tasks and COM registration
+   while preserving preferences and test files. Fresh deployment and
+   disabled-upgrade coverage for 29 remain separate. Installed Search
+   status and Inspector checks and promotion are still open. The stable
    Windows cohort is `7992ad1e`.
    See [staged payload verification](../.hermes/evidence/windows-shared-ui-current/HOST_PAYLOAD.json).
    See [installed Borders acceptance](../.hermes/evidence/windows-shared-ui-current/BORDERS_ACCEPTANCE.json)
    and [native MSIX assembly](../.hermes/evidence/windows-shared-ui-current/ASSEMBLY_ACCEPTANCE.json).
+   See [native MSIX upgrade](../.hermes/evidence/windows-shared-ui-current/MSIX_UPGRADE_ACCEPTANCE.json).
 
 The records below identify the exact source and package coverage behind
 this queue.
