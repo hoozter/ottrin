@@ -682,7 +682,11 @@ Current source, test, package and owner/external scopes stay separate.
    Firefox and Falkon receipts retain their caller scopes. The staged
    `46802ab4` AppImage passed real Vivaldi Open and Save. Both chooser
    windows reported the browser XID as their native transient parent.
-   Save wrote identical bytes and no index started. All four Linux formats
+   Save wrote identical bytes and no index started. Escape closed the chooser
+   while Vivaldi stayed open. On a second request, stopping the private
+   Vivaldi scope also closed the chooser and its process.
+   See [caller lifetime acceptance](../.hermes/evidence/vivaldi-caller-exit-current/ACCEPTANCE.json).
+   All four Linux formats
    passed package checks. The changed index and helper passed isolated
    verification. The stable daemon populated a 10,000-file private content
    index, then the staged daemon reopened it after offline edits and restored

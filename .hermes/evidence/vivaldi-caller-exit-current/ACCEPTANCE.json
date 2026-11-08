@@ -1,0 +1,50 @@
+{
+  "status": "pass",
+  "source_revision": "46802ab4360f25770ff525b297b716954006e76a",
+  "appimage_sha256": "8ae503256ab42fe0d2a4b5fcc82d85ee721b0e69ab28d81a06acbe56fe846121",
+  "scope": "Exact mounted AppImage in private software X11 and D-Bus session, actual installed Vivaldi, explicit private portal projection.",
+  "escape_cancel_browser_remained": true,
+  "caller_exit_closed_chooser": true,
+  "caller_exit_seconds": 0.19,
+  "no_index_started": true,
+  "actual_portal_app_id": "vivaldi-stable",
+  "unit_removed": true,
+  "teardown": {
+    "status": "closed",
+    "profile": "/var/tmp/.ottrin-picker-qa-fv7n3txb",
+    "owned_processes_reaped": [
+      {
+        "pid": 1507641,
+        "exit": 0
+      },
+      {
+        "pid": 1507645,
+        "exit": 0
+      },
+      {
+        "pid": 1507646,
+        "exit": 15
+      },
+      {
+        "pid": 1507710,
+        "exit": -15
+      },
+      {
+        "pid": 1507711,
+        "exit": -15
+      },
+      {
+        "pid": 1507712,
+        "exit": 0
+      }
+    ],
+    "owned_children": {
+      "stopped": [],
+      "unreadable_foreign_processes_preserved": 4
+    },
+    "owned_mounts_unmounted": [],
+    "profile_removed": true
+  },
+  "capture_sha256": "da68353e8bbfc0f420a7fe773ccffc9d6e953b550ac23a5ec8a9c8c24e11243b",
+  "fixture_retry": "The first Open and Escape passed. An immediate reopen arrived before the browser processed cancellation. The successful retry waited 1.5 seconds for the browser response before issuing the second Open."
+}
