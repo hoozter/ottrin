@@ -80,5 +80,70 @@
     "normalization": "Moved self.colors argument to c; removed one indent level and redundant local binding",
     "only_additional_behavior": "// Ottrin resolves System mode and editor previews into this palette.\n    // Keep egui on its matching style when a later OS appearance event arrives.\n    // Raw system_theme remains available to our own mode resolution.\n    ctx.set_theme(if visuals.dark_mode {\n        egui::Theme::Dark\n    } else {\n        egui::Theme::Light\n    });",
     "assessment": "Pins egui style to resolved Ottrin Dark/Light after an OS appearance event; existing palette/geometry mappings unchanged. Later native picker/appearance evidence retains its own source scope."
+  },
+  "current_delivered_comparison": {
+    "current_linux_source": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+    "historical_source": "a3a76ac1d26a88c3cde026faaf74d934e25faad5",
+    "historical_receipt": "appearance-redesign/FINAL_CONTROL_ACCEPTANCE.json",
+    "all_39_fields_present": [
+      "panel",
+      "panel_raised",
+      "accent",
+      "text",
+      "text_dim",
+      "text_muted",
+      "text_heading",
+      "hover",
+      "error",
+      "titlebar",
+      "toolbar",
+      "bookmarks_bar",
+      "background",
+      "selected_bg",
+      "smart_panel",
+      "statusbar",
+      "button_bg",
+      "button_text",
+      "text_folder",
+      "text_file",
+      "folder",
+      "border",
+      "window_border",
+      "palette_soft_white",
+      "palette_folder_blue",
+      "palette_link_blue",
+      "palette_steel",
+      "palette_green",
+      "palette_orange",
+      "palette_purple",
+      "palette_pink",
+      "palette_red",
+      "palette_yellow",
+      "file_label_blend",
+      "button_radius",
+      "window_border_width",
+      "app_radius",
+      "border_radius",
+      "font_scale"
+    ],
+    "unchanged_direct_palette_assignments": 38,
+    "changed_direct_palette_assignments": {
+      "window_border_width": {
+        "historical": "base.window_border_width = (custom.window_border_width.clamp(0.0, 4.0) * 2.0).round() / 2.0;",
+        "current": "base.window_border_width = custom.window_border_width.clamp(0.0, 4.0);"
+      }
+    },
+    "whole_customized_function_unchanged_after_accounting_for_border_width": true,
+    "editor_function_comparison": {
+      "theme_color_field_order": "unchanged",
+      "theme_color_field_value": "unchanged",
+      "theme_color_field_value_mut": "unchanged",
+      "theme_editor_draft": "unchanged",
+      "theme_editor_preview_colors": "unchanged",
+      "theme_preview_region_fields": "changed",
+      "theme_preview_region_shared_fields": "added"
+    },
+    "semantic_style_file_unchanged": true,
+    "limit": "Source mapping only. A matching assignment does not establish component ownership, appearance or actual usage. Changed region definitions and actual current behavior require separately scoped evidence."
   }
 }
