@@ -1,0 +1,41 @@
+{
+  "source_revision": "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
+  "appimage_sha256": "c6b76ed7073d5652c8734134231ab41a317b911800492b724ce0960a9373992b",
+  "cases": {
+    "miller_shared": {
+      "miller_conversion_started_before_inspector": true,
+      "inspector_saw_in_flight_preview": true,
+      "main_preview_retained_held_unit": true,
+      "main_preview_resumed": true,
+      "source_unchanged": true,
+      "capture_sha256": "fa4f2dd05ee55ecc93838e8777c34fabc5d130c894a398ed3f29fdb55ddae2e4"
+    },
+    "pptx": {
+      "error": "Timed out waiting for first slide with label",
+      "source_unchanged": true,
+      "capture_sha256": "b97dfc191c5ad6a9e8ec3524fe7b35abf5840436d322b3e4d95b45e1d055209c"
+    }
+  },
+  "status": "pass shared Miller conversion retention on Inspector close",
+  "scope": "Ubuntu 24.04, exact staged AppImage extracted and launched through AppRun, software X11, ordinary user and systemd user bus, distribution Bubblewrap policy with global namespace restriction enabled. Miller started a real conversion before Inspector opened. A SIGSTOP control held it while Inspector showed the in-flight state. Escape closed Inspector and the original unit and PID stayed active. The actor resumed the unit and observed its exit. It did not independently inspect the resulting Miller image. The PPTX capture visually shows slide one and the complete LibreOffice label in Fit Width; OCR missed the label and did not reach the subsequent Fit Page actions.",
+  "guest_cleanup": [
+    {
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-office-shared-qa-base.qcow2",
+        "ottrin-office-shared-qa-work.qcow2",
+        "ottrin-office-shared-qa-seed.iso"
+      ],
+      "temporary_seed_and_ssh_keys_removed": true
+    },
+    {
+      "domain_removed": true,
+      "volumes_removed": [
+        "ottrin-office-shared-qa-base.qcow2",
+        "ottrin-office-shared-qa-work.qcow2",
+        "ottrin-office-shared-qa-seed.iso"
+      ],
+      "temporary_seed_and_ssh_keys_removed": true
+    }
+  ]
+}

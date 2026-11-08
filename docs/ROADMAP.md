@@ -46,6 +46,10 @@ strict UI library lint passed. The staged `0eec7cb4` AppImage repeated the
 held-conversion test on Ubuntu. Escape stopped the held conversion in about
 58 ms while the main window stayed open. Its private output was removed,
 the original bytes were preserved and reopening rendered with LibreOffice.
+A separate native run held a conversion already requested by Miller. Closing
+Inspector preserved the original unit and PID, and the conversion could be
+resumed. The staged AppImage also passed isolated mounted path replacement.
+See [shared render acceptance](../.hermes/evidence/office-cancel-shared-current/ACCEPTANCE.json).
 The four formats passed content verification. This cohort still needs
 source CI and promotion. See [failure reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json)
 and [packaged retest](../.hermes/evidence/office-cancel-delivery-current/ACCEPTANCE.json).
