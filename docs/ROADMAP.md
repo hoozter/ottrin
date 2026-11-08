@@ -319,10 +319,16 @@ Current source, test, package and owner/external scopes stay separate.
      at 22.46 GiB available against its 24 GiB guard.
      [Hosted Windows job](https://github.com/hoozter/ottrin/actions/runs/42430923563/job/128579415040).
    - Extend coverage through the remaining claim and native I/O boundaries.
-     Finish readonly/symbolic-link
-     publication and original-retention/restoration failure matrices, including
-     readonly original roots. Preserve edited/unknown payloads and refuse divergent
-     journals; callback-only or seeded interruption checks do not close these gates.
+     The exact `2afcfc5a` hosted Windows suite passed read-only candidate
+     publication and reopen, process-exit recovery, cancellation and changed
+     payload refusal. It also passed retention recovery across injected and
+     real exits for writable file and directory originals. The source still
+     refuses read-only original-root retention. The hosted symbolic-link
+     policy-denial test was ignored because it needs the ordinary-user policy
+     lane. Keep that lane, read-only original-root behavior and the remaining
+     symbolic-link publication and restoration boundaries open. Preserve
+     edited or unknown payloads and refuse divergent journals.
+     [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Prove actual app/helper restart with newly authenticated connections.
      Recapturing the same live client is insufficient. Verify the actual launched
      helper's lifetime on disconnect, lost terminal reply and Stop through UAC.
