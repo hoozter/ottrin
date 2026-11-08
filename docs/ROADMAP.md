@@ -7,7 +7,14 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`e2c1b926`. All four exact-source jobs passed in
+`0eec7cb4`. The four [hosted jobs](https://github.com/hoozter/ottrin/actions/runs/42461840752)
+passed with identical runtime inputs. Promotion preserved the running index
+process, startup, preferences and database identity. The consumed stage and
+superseded packages were removed. The Vivaldi `46802ab4` stage is waiting for
+[run 42465900817](https://github.com/hoozter/ottrin/actions/runs/42465900817).
+See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+The preceding stable cohort used `e2c1b926`. All four exact-source jobs passed in
 [run 42458261617](https://github.com/hoozter/ottrin/actions/runs/42458261617).
 Promotion preserved the running index process, startup, preferences and
 database identity and retired the consumed stage and superseded packages.
@@ -48,7 +55,7 @@ stayed open. The source fix cancels Inspector-only Office jobs and retains
 work also requested by another preview surface. A regression covers close,
 shared work admitted with no new job budget, stale responses and reopen.
 The complete UI suite passed 549 tests with one existing exclusion, and
-strict UI library lint passed. The staged `0eec7cb4` AppImage repeated the
+strict UI library lint passed. The delivered `0eec7cb4` AppImage repeated the
 held-conversion test on Ubuntu. Escape stopped the held conversion in about
 58 ms while the main window stayed open. Its private output was removed,
 the original bytes were preserved and reopening rendered with LibreOffice.
@@ -60,12 +67,12 @@ The same staged AppImage passed mounted native fallback for DOCX, XLSX and
 PPTX in Dark and Light with installed previews enabled and LibreOffice
 unavailable. All six fixture launches exited normally and preserved the
 files. See [fallback acceptance](../.hermes/evidence/office-cancel-fallback-current/ACCEPTANCE.json).
-The four formats passed content verification. This cohort still needs
-source CI and promotion. See [failure reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json)
+The four formats passed content verification and the source-equivalent
+CI run before local promotion. See [failure reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json)
 and [packaged retest](../.hermes/evidence/office-cancel-delivery-current/ACCEPTANCE.json).
 The label cohort passed content verification and isolated mounted AppImage
-replacement. The cancellation cohort passed replacement against the now
-stable label cohort and is queued for source-equivalent CI and promotion.
+replacement. The cancellation cohort passed replacement against the preceding label cohort
+and is now stable.
 See [label acceptance](../.hermes/evidence/office-label-delivery-current/OFFICE_GUI.json).
 
 The preceding `e2171c3b` cohort passed all four hosted jobs in

@@ -193,7 +193,7 @@
     {
       "id": "U14",
       "requirement": "Keep one stable usable package path, current GitHub checkpoints, honest status/roadmap/waiting list and no failure-email flood.",
-      "current_scope": "Stable Linux e2c1b926 and Windows 67d3cbe1 match the recorded package authorities. Linux e2c1b926 passed all four hosted jobs and was promoted. The staged 0eec7cb4 cancellation cohort awaits its live Windows verification job in run 42461840752. Vivaldi 46802ab4 is committed locally and held until that run finishes, because a new source push to main cancels the earlier run. In the 20 most recent main CI runs at this review, 15 passed, four were cancelled and one was running. Public release and notification-email delivery are separate.",
+      "current_scope": "Stable Linux 0eec7cb4 and Windows 67d3cbe1 match the recorded package authorities. The four source-equivalent jobs in run 42461840752 passed, and the Linux cancellation cohort was promoted. Vivaldi 46802ab4 is pushed and awaits run 42465900817. Public release and notification-email delivery are separate.",
       "evidence": [
         ".hermes/evidence/recovery-transport-delivery-current/PROGRESS.json",
         ".hermes/evidence/recovery-transport-delivery-current/NATIVE_CLEANUP_CURRENT.json",
@@ -214,7 +214,7 @@
     {
       "id": "U15",
       "requirement": "Remove owned obsolete build/QA output and test processes while preserving user data, protected VMs, useful caches and current deliverables.",
-      "current_scope": "Linux e2c1b926 promotion removed its consumed stage and superseded packages. Later Ubuntu and Fedora test guests, private browser profiles, transient service, AppImage mounts and disposable scripts were removed. The cancellation and Vivaldi Linux stages and the 95 MiB Windows stage have named promotion or native acceptance consumers. Protected Windows guest storage, user data and active packages remain retained. This is scoped project cleanup.",
+      "current_scope": "Linux e2c1b926 promotion removed its consumed stage and superseded packages. Later Ubuntu and Fedora test guests, private browser profiles, transient service, AppImage mounts and disposable scripts were removed. The cancellation stage and superseded packages were retired on promotion. The Vivaldi Linux stage and the 95 MiB Windows stage have named promotion or native acceptance consumers. Protected Windows guest storage, user data and active packages remain retained. This is scoped project cleanup.",
       "evidence": [
         ".hermes/evidence/release-audit-current/CLEANUP.json",
         ".hermes/evidence/release-audit-current/cohort/EXTRACTION_CLEANUP.json",
@@ -243,10 +243,9 @@
   ],
   "latest_scope_reconciliation": {
     "date": "2026-11-08",
-    "stable_linux": "e2c1b926b20c21850e1cf3330e87fef4ad3ce3f9",
+    "stable_linux": "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
     "stable_windows": "67d3cbe14c03f1b8021284454e46ed046795131e",
     "staged_linux": [
-      "0eec7cb42b8aeec4e250fce6930dac134def4b0a",
       "46802ab4360f25770ff525b297b716954006e76a"
     ],
     "staged_windows": [
