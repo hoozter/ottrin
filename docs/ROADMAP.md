@@ -7,7 +7,13 @@ receipts keep their original artifact/source scope. Passing a focused test does
 not complete a broader native, platform or user-acceptance requirement.
 
 The stable local Linux AppImage, portable archive, DEB and RPM use source
-`2afcfc5a`. All four exact-source hosted jobs passed in
+`e2c1b926`. All four exact-source jobs passed in
+[run 42458261617](https://github.com/hoozter/ottrin/actions/runs/42458261617).
+Promotion preserved the running index process, startup, preferences and
+database identity and retired the consumed stage and superseded packages.
+See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
+
+The preceding stable cohort used `2afcfc5a`. All four exact-source hosted jobs passed in
 [run 42451117154](https://github.com/hoozter/ottrin/actions/runs/42451117154).
 With a pending Open and Save change in a private session, the mounted Dark
 and Light AppImage showed Finish setup before opening Settings. The shortcut
@@ -16,7 +22,7 @@ after its dialog closed. Promotion preserved the running index process,
 database identity and preferences. The consumed stage and superseded
 packages were removed. See `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.
 
-The same AppImage showed installed LibreOffice DOCX rendering in a fresh
+The preceding AppImage also showed installed LibreOffice DOCX rendering in a fresh
 Ubuntu guest with the distribution Bubblewrap profile and the global
 namespace restriction enabled. Fit Page exposed the provider label, and the
 page selector moved forward and back. The capture did not establish page-two
@@ -30,13 +36,13 @@ See [DOCX acceptance](../.hermes/evidence/current-linux-installed-office/ACCEPTA
 and [direct-file acceptance](../.hermes/evidence/current-linux-office-pages/ACCEPTANCE.json).
 
 Quick Inspector places the renderer label above the scrolling document area.
-The staged `e2c1b926` AppImage showed the label in Fit Width for DOCX, XLSX
+The delivered `e2c1b926` AppImage showed the label in Fit Width for DOCX, XLSX
 and PPTX with installed LibreOffice. DOCX and XLSX also showed it in Fit Page.
 DOCX Next and Previous showed distinct page content. PPTX Next showed the
 second-slide subtitle and renderer label. The check stopped before PPTX
 Previous and Fit Page after failing to read the slide title in Fit Width.
 All source bytes were preserved and no rendering unit remained after exit.
-The same staged package reproduced a cancellation defect. Closing Inspector
+That package also reproduced a cancellation defect. Closing Inspector
 left a deliberately held LibreOffice conversion active while the main window
 stayed open. The source fix cancels Inspector-only Office jobs and retains
 work also requested by another preview surface. A regression covers close,
@@ -53,11 +59,10 @@ See [shared render acceptance](../.hermes/evidence/office-cancel-shared-current/
 The four formats passed content verification. This cohort still needs
 source CI and promotion. See [failure reproduction](../.hermes/evidence/office-cancel-current/ACCEPTANCE.json)
 and [packaged retest](../.hermes/evidence/office-cancel-delivery-current/ACCEPTANCE.json).
-The four packages passed
-content verification and isolated mounted AppImage replacement. The stable
-cohort stays at `2afcfc5a` until the Windows verification job in
-[run 42458261617](https://github.com/hoozter/ottrin/actions/runs/42458261617)
-finishes successfully. See [staged Office acceptance](../.hermes/evidence/office-label-delivery-current/OFFICE_GUI.json).
+The label cohort passed content verification and isolated mounted AppImage
+replacement. The cancellation cohort passed replacement against the now
+stable label cohort and is queued for source-equivalent CI and promotion.
+See [label acceptance](../.hermes/evidence/office-label-delivery-current/OFFICE_GUI.json).
 
 The preceding `e2171c3b` cohort passed all four hosted jobs in
 [run 42446285622](https://github.com/hoozter/ottrin/actions/runs/42446285622).
