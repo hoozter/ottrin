@@ -1,0 +1,33 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "case": "ready",
+      "status": "passed: normal close and original bytes unchanged",
+      "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+      "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+      "scope": "Actual packaged picker and index in isolated X11/HOME/XDG",
+      "normal_exit": 0,
+      "exact_native_selection": true,
+      "files_unchanged": true,
+      "existing_index_survived_picker_close": true,
+      "index_not_started": null,
+      "profile_removed": true
+    },
+    {
+      "case": "unavailable",
+      "status": "passed: normal close and original bytes unchanged",
+      "source_revision": "45a89d62dcbd16b24d6a6b4db551c3d8ccaa4e90",
+      "appimage_sha256": "27ea1719679a0d3fc3bae9a4eac639eac6125d3986f86447bd191fbf7789e750",
+      "scope": "Actual packaged picker and index in isolated X11/HOME/XDG",
+      "normal_exit": 0,
+      "exact_native_selection": true,
+      "files_unchanged": true,
+      "existing_index_survived_picker_close": null,
+      "index_not_started": true,
+      "profile_removed": true
+    }
+  ],
+  "runtime_identity": "Mounted picker and private index executable SHA-256 verified against Linux package authority",
+  "scope_limit": "Private software X11; no Windows, physical desktop or personal-index acceptance"
+}

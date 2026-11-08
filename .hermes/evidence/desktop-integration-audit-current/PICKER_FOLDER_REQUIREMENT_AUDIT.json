@@ -51,9 +51,10 @@
         "Windows14-case installed picker:no index process; caller lifetime and independent concurrency",
         "Source ca7b0e06: picker.rs PickerDialog::new scans directly through Worker::start; schedule_search debounces work, query_cancellable opens only the existing authenticated endpoint, and poll discards stale generations. main.rs run_picker_gui owns a single request and returns after its window closes. Linux portal.rs spawns that request on demand. These source files and daemon_client.rs match delivered Linux 45a89d62.",
         "Cached Linux UI test executable SHA-256 cf1b97605521bddaef3c5e65f4916b89da3f272a2bc8c97535bca89459a7f081: four picker tests passed in disposable HOME/XDG, covering empty search and close, abandoned results, indexed Save, and unavailable-index recovery. Two unrelated filter matches also passed. Exact build revision of the cached executable was not established.",
-        "current-firefox-picker/ACCEPTANCE.json: both real portal requests used exact AppImage 45a89d62 without starting an index"
+        "current-firefox-picker/ACCEPTANCE.json: both real portal requests used exact AppImage 45a89d62 without starting an index",
+        "current-indexed-picker/ACCEPTANCE.json: exact AppImage 45a89d62 used its packaged private daemon for indexed Save, and returned an exact Open path after switching back to direct browsing with the daemon absent. Both preserved the fixture bytes."
       ],
-      "limits": "The source path and existing exact-package Open/Save results establish launch and ownership. They do not measure a live indexed query on the current packages or settle performance and native caller gates."
+      "limits": "The source path and existing exact-package Open/Save results establish launch and ownership. Performance and Windows native caller gates remain separate."
     },
     {
       "id": 12,
