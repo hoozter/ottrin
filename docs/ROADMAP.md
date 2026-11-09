@@ -1679,9 +1679,16 @@ Current source, test, package and owner/external scopes stay separate.
    The startup-disabled upgrade passed on the same candidate. No daemon
    appeared during 180 seconds after an actual sign-in and before any
    Ottrin command ran. Ordinary-user runtime, index identity, preference
-   preservation, removal and owned teardown passed. The installed NSIS
-   checks remain open.
+   preservation, removal and owned teardown passed.
    [Disabled upgrade receipt](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-disabled/ACCEPTANCE.json).
+
+   The NSIS lifecycle guest passed ten portable picker cases, fresh
+   install and removal, and upgrade with the running index. The host
+   storage guard stopped the run during the first reinstall case.
+   Its verified interrupted export preserves those results. The guest,
+   two volumes and private desktop were removed. Reinstall and locked
+   cache recovery still need full native results before promotion.
+   [Interrupted lifecycle export](../.hermes/evidence/theme-editor-pointer-fix-current/nsis31-lifecycle/INTERRUPTED_ARCHIVE_TRANSFER.json).
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
