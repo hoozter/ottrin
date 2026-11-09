@@ -900,8 +900,7 @@ Current source, test, package and owner/external scopes stay separate.
      ordinary-caller/SYSTEM cases now pass Replace followed by Undo and
      cleanup, and Replace followed by cleanup alone. Both names retain
      the exact original attributes, identity, security and streams.
-     Windows-target strict Clippy and formatting passed. Rebuild the
-     private installer and repeat the installed UAC and restart path.
+     Windows-target strict Clippy and formatting passed.
      [Native repair](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_REPAIR_NATIVE.json).
      The rebuilt private NSIS from `15579628` on `381ef193` matched
      all 59 ZIP payload files. Upstream returned HTTP 504, so the
@@ -919,6 +918,17 @@ Current source, test, package and owner/external scopes stay separate.
      Stable Windows delivery, crash recovery, cancellation and power
      loss retain separate acceptance gates.
      [Installed repair](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_REPAIR.json).
+     A second installed fixture kept the replacement and discarded
+     Undo from recovered history. The pointer-driven action passed
+     through four real UAC prompts and three fresh processes. Cleanup
+     removed the transaction data and journal and preserved the source,
+     replacement bytes and caller ownership, and the original alias's
+     exact metadata and streams. Cleared history stayed empty after
+     restart. Accessibility Invoke reached the same action in a
+     separate run but the expected confirmation did not remain open.
+     Its source and replacement stayed intact. Keep accessibility
+     activation open as a separate UI gate.
+     [Installed cleanup with replacement kept](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_KEEP_REPLACEMENT.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      Crash recovery, cancellation, power loss and production latency
      remain separate gates.

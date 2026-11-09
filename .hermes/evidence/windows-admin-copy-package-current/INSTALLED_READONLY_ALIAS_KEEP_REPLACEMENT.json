@@ -1,0 +1,106 @@
+{
+  "status": "pass installed pointer-driven clear with replacement kept",
+  "source_revision": "155796285ef6f00a0868bb797a400d5553efe4bf",
+  "base_source_revision": "381ef19397088c3ff9f0d1c30ecb1863c31757e5",
+  "installer_sha256": "7257c854c72986d24052c22f43514536a686ebf8965c18e73c25e28725c8c3b6",
+  "actor_sha256": "3764b6092f364d71a609f4398388c622d56f9d19370bf75888e388721f94412c",
+  "real_uac_prompts": [
+    "Replace",
+    "load history",
+    "discard undo and clear",
+    "confirm cleared history"
+  ],
+  "phases": {
+    "copy": {
+      "mode": "copy",
+      "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 7980,
+      "status": "pass"
+    },
+    "history-clear": {
+      "client_pid": 7276,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-clear",
+      "status": "pass"
+    },
+    "cleared-keep": {
+      "client_pid": 3244,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared-keep",
+      "status": "pass"
+    }
+  },
+  "checks": [
+    "Replacement bytes and caller ownership retained after cleanup and restart",
+    "Original alias file ID, security descriptor, exact attributes, unnamed data and named stream preserved",
+    "Source and unrelated marker preserved",
+    "Central journal and destination transaction data removed",
+    "Three distinct normal app processes exited successfully"
+  ],
+  "first_attempt": {
+    "input": "accessibility Invoke",
+    "error": "Missing unique control Discard Copy undo and clear history? count=0",
+    "source_and_replacement_intact": true,
+    "scope": "Pointer path passed. Accessibility activation of this action remains open."
+  },
+  "captures": {
+    "readonly-alias-keep-history-clear-cleared.png": "8420f340ad0352d2f65395a64dfd94dea1f935b30ef27c4a30f6361c3c6b81d9",
+    "readonly-alias-keep-cleared-keep-cleared.png": "f31c3406bfcfdf18c74b61e015843364299fba7ff90f007c444ae3d4d3d911d9"
+  },
+  "guest_teardown": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "0a1313bb-534c-42e7-9432-f293af1c5a9d",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "storage": {
+    "fixture_exit": 0,
+    "free_before": 23227969536,
+    "free_at_fixture_start": 27110633472,
+    "lowest_observed_free": 25757937664,
+    "free_after": 23206629376,
+    "restored_by_hash": [
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-e2d6933b1ac22a07.exe",
+        "sha256": "17c5edb3db97a06169cad8041246aba8a356ebe145ea32e0266713ddf220f321"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_ui-5d9606400e36b794.exe",
+        "sha256": "73e5752d7d8677e7e88c0187a08309e3c642bdbc58ebe5a3a1c1c921772fab7e"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_app-b14e5f4b4a3e18bf.exe",
+        "sha256": "c94272197bcfe863c99ecce770156e8fd9a49492b97ab4d00b8da88bf57bc9b1"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_indexd-2d6761405629f9c1.exe",
+        "sha256": "457fc7bfebcd6bce36fd1dc308eb32c98ba2c00e29a4ae10ba777a039f0df2fd"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/ottrin_platform-d1588445e089e3c2.exe",
+        "sha256": "8dc0b2629c8399a41f638acbc91f3eaa44cf6187657c612c99338b6d254c5c75"
+      },
+      {
+        "path": "/home/campbell/Projects/Ottrin/target/x86_64-pc-windows-gnu/debug/deps/native_office_boundary_contract-b59b07b52984880e.exe",
+        "sha256": "21980516606e164e28872bf5b30436ec373e56620a495118124f97be2ad5d220"
+      }
+    ],
+    "compression_stage_removed": true
+  }
+}
