@@ -3039,6 +3039,71 @@ mod tests {
     }
 
     #[test]
+    fn menu_preview_cancel_requests_native_editor_close_in_both_palettes() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+
+        for mode in [ThemeMode::Dark, ThemeMode::Light] {
+            let ctx = Context::default();
+            ctx.enable_accesskit();
+            ctx.set_embed_viewports(false);
+            let editor_id = OttrinApp::theme_editor_viewport_id();
+            let mut app = OttrinApp::default();
+            app.state.config.theme = mode;
+            app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+            app.theme_editor.selected_region = ThemePreviewRegion::Accent;
+            let original = app.state.config.custom_themes.clone();
+            let mut render = |events| {
+                ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(1180.0, 752.0),
+                        )),
+                        events,
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        ctx.show_viewport_deferred(
+                            editor_id,
+                            egui::ViewportBuilder::default(),
+                            |_, _| {},
+                        );
+                        app.render_theme_editor_embedded(ctx);
+                    },
+                )
+            };
+            let invoke = |output: &egui::FullOutput, name| {
+                let target = output
+                    .platform_output
+                    .accesskit_update
+                    .as_ref()
+                    .unwrap()
+                    .nodes
+                    .iter()
+                    .find(|(_, node)| node.role() == Role::Button && node.label() == Some(name))
+                    .unwrap_or_else(|| panic!("Missing {name}"))
+                    .0;
+                egui::Event::AccessKitActionRequest(ActionRequest {
+                    action: Action::Click,
+                    target,
+                    data: None,
+                })
+            };
+            let menu = render(vec![]);
+            let invoked = render(vec![invoke(&menu, "New Folder")]);
+            let cancelled = render(vec![invoke(&invoked, "Cancel")]);
+            let output = &cancelled.viewport_output[&editor_id];
+            assert!(
+                output.commands.contains(&egui::ViewportCommand::Close),
+                "Cancel must request the native editor close during its own pass"
+            );
+            assert!(!app.theme_editor.open);
+            assert_eq!(app.state.config.theme, mode);
+            assert_eq!(app.state.config.custom_themes, original);
+        }
+    }
+
+    #[test]
     fn appearance_cancel_restores_full_theme_and_does_not_save_preview() {
         let ctx = Context::default();
         let mut app = OttrinApp::default();

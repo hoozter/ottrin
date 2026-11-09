@@ -1421,6 +1421,13 @@ Current source, test, package and owner/external scopes stay separate.
    before accepting the Windows appearance change.
    [Native Windows menu receipt](../.hermes/evidence/windows-live-menu-delivery-current/MENU_NATIVE_ACCEPTANCE.json).
 
+   Cancel now clears the draft and queues the native editor close directly,
+   then wakes the root viewport to restore the active theme. A rendered
+   regression invokes a sample menu action and then Cancel in both palettes.
+   It verifies the editor close command and preservation of saved themes.
+   All 553 active Linux UI tests and strict Linux and Windows-target UI
+   lint passed. Native installed verification of this change remains open.
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

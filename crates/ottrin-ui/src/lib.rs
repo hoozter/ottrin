@@ -5800,9 +5800,16 @@ impl OttrinApp {
     }
 
     fn cancel_theme_editor(&mut self, ctx: &Context) {
+        let visible = self.theme_editor.visible;
         self.theme_editor = ThemeEditorState::default();
         self.reapply_theme(ctx);
-        ctx.request_repaint();
+        if visible {
+            ctx.send_viewport_cmd_to(
+                Self::theme_editor_viewport_id(),
+                egui::ViewportCommand::Close,
+            );
+        }
+        ctx.request_repaint_of(egui::ViewportId::ROOT);
     }
 
     fn is_builtin_theme_name(name: &str) -> bool {
@@ -6063,12 +6070,9 @@ impl OttrinApp {
         if close_requested {
             self.close_theme_editor_window(ctx);
             ctx.request_repaint();
-        } else if !self.theme_editor.open {
+        } else if !self.theme_editor.open && self.theme_editor.visible {
             self.theme_editor = ThemeEditorState::default();
-            ctx.send_viewport_cmd_to(
-                Self::theme_editor_viewport_id(),
-                egui::ViewportCommand::Close,
-            );
+            ctx.send_viewport_cmd_to(vp_id, egui::ViewportCommand::Close);
         }
     }
 
