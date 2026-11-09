@@ -1017,11 +1017,18 @@ Current source, test, package and owner/external scopes stay separate.
      fixture's 130-second deadline. The source and protected original
      remained present with their original hashes. An extended run
      stopped on a failed observer command before it could establish
-     completion or a timing result. The next run separates observer
-     errors from the app's completion check and records helper CPU,
-     visible staging and destination size throughout the attempt.
+     completion or a timing result. The corrected observer saw the
+     full 1 GiB candidate roughly two seconds after helper creation.
+     More than seven minutes later the original was still in place,
+     with over 300 seconds of helper CPU time. One helper thread
+     dominated the thread-time sample. The 480-second fixture deadline
+     ended the run without publication. The source and original hashes
+     passed again, and all disposable guests were removed. Localize
+     the post-staging CPU cost before changing validation or enabling
+     Administrator Copy in standard Windows packages.
      [Initial timing attempt](../.hermes/evidence/windows-alias-performance-current/ATTEMPT.json).
      [Diagnostic attempt](../.hermes/evidence/windows-alias-performance-diagnostic-current/ATTEMPT.json).
+     [Post-staging timing evidence](../.hermes/evidence/windows-alias-performance-retry-current/FINDING.json).
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
