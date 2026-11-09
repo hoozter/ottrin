@@ -1395,6 +1395,16 @@ Current source, test, package and owner/external scopes stay separate.
    The mounted Linux AppImage passed and is delivered. Native Windows
    Appearance acceptance remains open.
 
+   Buttons & menus now previews the actual application menu. The editor
+   and live app share the menu rows and themed frame. Opening the sample
+   selects the matching controls while sample actions leave files alone.
+   Source-built Dark and Light X11 checks cover icons, alignment, draft
+   text color, 14 px menu corners, 3.5 px borders, and Cancel. All 552
+   active Linux UI tests and strict Linux/Windows-target UI lint passed.
+   Both private desktops were retired. Package delivery and native Windows
+   rendering remain open.
+   [Menu preview receipt](../.hermes/evidence/appearance-live-menu-current/ACCEPTANCE.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

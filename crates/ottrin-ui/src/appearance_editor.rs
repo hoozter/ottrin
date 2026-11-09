@@ -310,7 +310,7 @@ impl OttrinApp {
                         ThemePreviewRegion::Inspector => self.theme_editor.preview_inspector = true,
                         ThemePreviewRegion::Navigation | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::ColumnBackground |
                         ThemePreviewRegion::SelectedRow | ThemePreviewRegion::ColumnText | ThemePreviewRegion::Sidebar |
-                        ThemePreviewRegion::StatusBar => self.theme_editor.preview_inspector = false,
+                        ThemePreviewRegion::StatusBar | ThemePreviewRegion::Accent => self.theme_editor.preview_inspector = false,
                         _ => {},
                     }
                 }

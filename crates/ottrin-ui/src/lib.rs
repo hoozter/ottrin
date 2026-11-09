@@ -641,6 +641,85 @@ fn application_menu_button(ui: &mut egui::Ui, c: Colors) -> egui::Response {
     response
 }
 
+#[derive(Clone, Copy)]
+enum ApplicationMenuAction {
+    NewFolder,
+    NewFile,
+    Open,
+    Copy,
+    Inspect,
+    Rename,
+    Delete,
+    Paste,
+    Settings,
+    About,
+}
+
+fn application_menu(
+    popup: egui::Popup<'_>,
+    style: &egui::Style,
+    colors: Colors,
+    has_selection: bool,
+    can_paste: bool,
+) -> Option<ApplicationMenuAction> {
+    use ApplicationMenuAction::*;
+    let frame = Frame::menu(style)
+        .fill(colors.panel)
+        .corner_radius(colors.border_radius)
+        .stroke(Stroke::new(
+            colors.window_border_width,
+            colors.window_border,
+        ));
+    popup
+        .frame(frame)
+        .show(|ui| {
+            ui.set_min_width(190.0);
+            ui.spacing_mut().item_spacing.y = 0.0;
+            let groups: &[&[_]] = &[
+                &[
+                    (NewFolder, MI_CREATE_FOLDER, "New Folder", true),
+                    (NewFile, MI_FILE, "New File", true),
+                ],
+                &[
+                    (Open, MI_FOLDER_OPEN, "Open Selection", has_selection),
+                    (Copy, MI_CONTENT_COPY, "Copy Selection", has_selection),
+                    (
+                        Inspect,
+                        MI_VISIBILITY,
+                        "Quick Inspector Selection",
+                        has_selection,
+                    ),
+                    (Rename, MI_EDIT, "Rename Selection…", has_selection),
+                    (Delete, MI_DELETE, "Delete Selection…", has_selection),
+                    (
+                        Paste,
+                        MI_CONTENT_PASTE,
+                        "Paste into Current Folder",
+                        can_paste,
+                    ),
+                ],
+                &[(Settings, MI_SETTINGS, "Settings…", true)],
+                &[(About, MI_INFO, "About Ottrin", true)],
+            ];
+            let mut selected = None;
+            for (index, group) in groups.iter().enumerate() {
+                if index != 0 {
+                    ui.add(egui::Separator::default().horizontal().spacing(4.0));
+                }
+                for &(action, icon, label, enabled) in *group {
+                    if ui
+                        .add_enabled(enabled, aligned_menu_button("", icon, label, &colors))
+                        .clicked()
+                    {
+                        selected = Some(action);
+                    }
+                }
+            }
+            selected
+        })
+        .and_then(|result| result.inner)
+}
+
 fn next_view_mode(view: ViewMode) -> ViewMode {
     match view {
         ViewMode::Miller => ViewMode::List,
@@ -12646,158 +12725,42 @@ impl OttrinApp {
                         // ── Hamburger menu ────────────────────────────────────
                         let menu_popup_id = ui.make_persistent_id("hamburger_menu");
                         let menu_btn = application_menu_button(ui, c);
-                        egui::Popup::menu(&menu_btn)
-                            .id(menu_popup_id)
-                            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
-                            .show(|ui| {
-                                ui.set_min_width(190.0);
-                                ui.style_mut().spacing.item_spacing.y = 0.0;
-
-                                // ── Create ─────────────────────────────────────
-                                if ui
-                                    .add(
-                                        aligned_menu_button("", MI_CREATE_FOLDER, "New Folder", &c)
-                                            .themed(&c),
-                                    )
-                                    .clicked()
-                                {
+                        if let Some(action) = application_menu(
+                            egui::Popup::menu(&menu_btn)
+                                .id(menu_popup_id)
+                                .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside),
+                            ui.style(),
+                            c,
+                            self.active_selected_entry().is_some(),
+                            self.clipboard.is_some(),
+                        ) {
+                            use ApplicationMenuAction::*;
+                            match action {
+                                NewFolder | NewFile => {
+                                    let kind = if matches!(action, NewFolder) {
+                                        CreationKind::Folder
+                                    } else {
+                                        CreationKind::File
+                                    };
                                     let tab_id = self.state.active_tab().id;
                                     let parent = self.displayed_path();
-                                    self.open_creation_dialog(CreationKind::Folder, tab_id, parent);
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                                    self.open_creation_dialog(kind, tab_id, parent);
                                 }
-                                if ui
-                                    .add(
-                                        aligned_menu_button("", MI_FILE, "New File", &c).themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    let tab_id = self.state.active_tab().id;
-                                    let parent = self.displayed_path();
-                                    self.open_creation_dialog(CreationKind::File, tab_id, parent);
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-
-                                ui.add(egui::Separator::default().horizontal().spacing(4.0));
-
-                                let can_copy = self.active_selected_entry().is_some();
-                                if ui
-                                    .add_enabled(
-                                        can_copy,
-                                        aligned_menu_button(
-                                            "",
-                                            MI_FOLDER_OPEN,
-                                            "Open Selection",
-                                            &c,
-                                        )
-                                        .themed(&c),
-                                    )
-                                    .clicked()
-                                {
+                                Open => {
                                     if let Some(entry) = self.active_selected_entry() {
                                         self.open_entry(entry.path, entry.kind);
                                     }
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
                                 }
-                                if ui
-                                    .add_enabled(
-                                        can_copy,
-                                        aligned_menu_button(
-                                            "",
-                                            MI_CONTENT_COPY,
-                                            "Copy Selection",
-                                            &c,
-                                        )
-                                        .themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    self.copy_selection(ui.ctx(), false);
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-                                if ui
-                                    .add_enabled(
-                                        can_copy,
-                                        aligned_menu_button(
-                                            "",
-                                            MI_VISIBILITY,
-                                            "Quick Inspector Selection",
-                                            &c,
-                                        )
-                                        .themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    self.open_preview();
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-                                if ui
-                                    .add_enabled(
-                                        can_copy,
-                                        aligned_menu_button("", MI_EDIT, "Rename Selection…", &c)
-                                            .themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    self.begin_rename();
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-                                if ui
-                                    .add_enabled(
-                                        can_copy,
-                                        aligned_menu_button("", MI_DELETE, "Delete Selection…", &c)
-                                            .themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    self.request_delete_selection(DeleteMode::Trash);
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-                                if ui
-                                    .add_enabled(
-                                        self.clipboard.is_some(),
-                                        aligned_menu_button(
-                                            "",
-                                            MI_CONTENT_PASTE,
-                                            "Paste into Current Folder",
-                                            &c,
-                                        )
-                                        .themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    self.paste_clipboard();
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-
-                                ui.add(egui::Separator::default().horizontal().spacing(4.0));
-
-                                // ── Settings ───────────────────────────────────
-                                if ui
-                                    .add(
-                                        aligned_menu_button("", MI_SETTINGS, "Settings…", &c)
-                                            .themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    self.show_settings = true;
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-
-                                ui.add(egui::Separator::default().horizontal().spacing(4.0));
-
-                                // ── About ──────────────────────────────────────
-                                if ui
-                                    .add(
-                                        aligned_menu_button("", MI_INFO, "About Ottrin", &c)
-                                            .themed(&c),
-                                    )
-                                    .clicked()
-                                {
-                                    self.show_about = true;
-                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
-                                }
-                            });
+                                Copy => self.copy_selection(ui.ctx(), false),
+                                Inspect => self.open_preview(),
+                                Rename => self.begin_rename(),
+                                Delete => self.request_delete_selection(DeleteMode::Trash),
+                                Paste => self.paste_clipboard(),
+                                Settings => self.show_settings = true,
+                                About => self.show_about = true,
+                            }
+                            egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                        }
 
                         // View mode toggle — Material Icon
                         let view = self.state.active_tab().view_mode;
@@ -25607,9 +25570,20 @@ fn theme_editor_large_preview(
     let mut navigation_clicked =
         navigation_buttons(&mut navigation_ui, preview, [true, false, true]).is_some();
     navigation_ui.add_space(6.0);
+    let mut menu_clicked = false;
     navigation_ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
         ui.add_space(4.0);
-        navigation_clicked |= application_menu_button(ui, preview).clicked();
+        let menu = application_menu_button(ui, preview);
+        menu_clicked = menu.clicked();
+        application_menu(
+            egui::Popup::menu(&menu)
+                .open(selected_region == ThemePreviewRegion::Accent || menu_clicked)
+                .align(egui::RectAlign::BOTTOM_END),
+            ui.style(),
+            preview,
+            true,
+            false,
+        );
         if view_mode_button(ui, preview, *view).clicked() {
             *view = next_view_mode(*view);
             navigation_clicked = true;
@@ -26044,6 +26018,8 @@ fn theme_editor_large_preview(
         row_clicked
     } else if titlebar_clicked {
         Some(ThemePreviewRegion::Titlebar)
+    } else if menu_clicked {
+        Some(ThemePreviewRegion::Accent)
     } else if navigation_clicked || tab_clicked {
         Some(ThemePreviewRegion::Navigation)
     } else if strip_clicked.is_some()
@@ -26103,8 +26079,6 @@ fn theme_editor_large_preview(
             }
         } else if *region == ThemePreviewRegion::StatusBar {
             status_corners
-        } else if *region == ThemePreviewRegion::Accent {
-            egui::CornerRadius::same(preview.button_radius)
         } else if *region == ThemePreviewRegion::SelectedRow && *view == ViewMode::Grid {
             egui::CornerRadius::same(preview.border_radius)
         } else {
@@ -34216,6 +34190,115 @@ mod tests {
             data: None,
         })]);
         assert_eq!(selected, Some(ThemePreviewRegion::Navigation));
+    }
+
+    #[test]
+    fn theme_preview_menu_uses_the_application_rows_and_draft_frame() {
+        use egui::accesskit::{Action, ActionRequest, Role};
+        let ctx = Context::default();
+        ctx.enable_accesskit();
+        let mut app = OttrinApp::default();
+        theme_colors::apply_to_context(&ctx, &app.colors);
+        ctx.style_mut(|style| style.animation_time = 0.0);
+        let mut colors = app.colors;
+        colors.panel = Color32::from_rgb(70, 34, 97);
+        colors.window_border = Color32::from_rgb(245, 110, 58);
+        colors.window_border_width = 3.5;
+        colors.border_radius = 13;
+        let input = |events| egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                egui::Pos2::ZERO,
+                Vec2::new(1000.0, 700.0),
+            )),
+            events,
+            ..Default::default()
+        };
+        let click = |target| {
+            egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target,
+                data: None,
+            })
+        };
+        let buttons = |output: &egui::FullOutput| {
+            output
+                .platform_output
+                .accesskit_update
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .filter(|(_, node)| node.role() == Role::Button)
+                .filter_map(|(id, node)| {
+                    Some((node.label()?.to_owned(), (*id, node.is_disabled())))
+                })
+                .collect::<std::collections::HashMap<_, _>>()
+        };
+        let live = ctx.run(input(vec![]), |ctx| app.render_nav_row(ctx));
+        let live = ctx.run(input(vec![click(buttons(&live)["Menu"].0)]), |ctx| {
+            app.render_nav_row(ctx)
+        });
+        let live_buttons = buttons(&live);
+        let preview_ctx = Context::default();
+        preview_ctx.enable_accesskit();
+        theme_colors::apply_to_context(&preview_ctx, &app.colors);
+        preview_ctx.style_mut(|style| style.animation_time = 0.0);
+        let mut picked = None;
+        let mut render = |events, region| {
+            preview_ctx.run(input(events), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    picked = theme_editor_large_preview(ui, colors, region, &mut ViewMode::List).1;
+                });
+            })
+        };
+        let preview = render(vec![], ThemePreviewRegion::Defaults);
+        let menu_id = buttons(&preview)["Menu"].0;
+        let _ = render(vec![click(menu_id)], ThemePreviewRegion::Defaults);
+        assert_eq!(picked, Some(ThemePreviewRegion::Accent));
+        let preview = preview_ctx.run(input(vec![]), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                theme_editor_large_preview(
+                    ui,
+                    colors,
+                    ThemePreviewRegion::Accent,
+                    &mut ViewMode::List,
+                );
+            });
+        });
+        let preview_buttons = buttons(&preview);
+        for label in [
+            "New Folder",
+            "New File",
+            "Open Selection",
+            "Copy Selection",
+            "Quick Inspector Selection",
+            "Rename Selection…",
+            "Delete Selection…",
+            "Paste into Current Folder",
+            "Settings…",
+            "About Ottrin",
+        ] {
+            assert!(
+                live_buttons.contains_key(label),
+                "Live menu missing {label}"
+            );
+            assert!(
+                preview_buttons.contains_key(label),
+                "Preview menu missing {label}"
+            );
+        }
+        assert!(preview_buttons["Paste into Current Folder"].1);
+        assert!(preview.shapes.iter().any(|shape| matches!(
+            &shape.shape,
+            egui::Shape::Rect(frame)
+                if frame.fill == colors.panel
+                    && frame.stroke == Stroke::new(colors.window_border_width, colors.window_border)
+                    && frame.corner_radius == egui::CornerRadius::same(colors.border_radius)
+        )));
+        let _ = ctx.run(input(vec![click(live_buttons["Settings…"].0)]), |ctx| {
+            app.render_nav_row(ctx)
+        });
+        assert!(app.show_settings);
     }
 
     #[test]
