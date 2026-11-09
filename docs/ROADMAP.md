@@ -687,8 +687,20 @@ Current source, test, package and owner/external scopes stay separate.
      open was also denied. The writable control opened and flushed, and
      the read-only fixture kept its attribute and bytes. This was a
      Win32 access probe, separate from the installed helper.
-     Prototype a journaled read-only attribute transition for the pinned
-     original, with recovery across attribute changes, retention and Undo.
+     A second native probe on the same build confirmed that a writer opened
+     while the flag is clear can restore the flag, flush and rename the
+     original in both directions with the flag set. Both fixture variants
+     retained their bytes and creation and write times. The transition
+     changed ChangeTime, and renaming a fixture that initially lacked the
+     archive bit set that bit. The hard-link fixture also exposed the clear
+     flag through its alias, so this approach needs a single-link check
+     before the transition and at writer handoff. This was a handle API
+     probe with a Win32 absolute rename, separate from Ottrin's relative
+     rename and installed helper. Prototype a journaled single-link
+     transition that restores and flushes attributes before rename, binds
+     the allowed ChangeTime transition to the original's identity and
+     evidence, and accounts for the archive-bit effect before acknowledging
+     retention or Undo. Keep read-only alias behavior open separately.
      Preserve edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Installed alternate-administrator UAC checks cover newly authenticated
