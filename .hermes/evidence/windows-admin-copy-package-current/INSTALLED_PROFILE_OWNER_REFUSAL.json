@@ -1,0 +1,39 @@
+{
+  "source_revision": "732b9d43ca1b340f1c7cfe99f6616ec4869e04dc",
+  "installer_sha256": "af14561c9d5e940ef3f814bcd4b4fc93c927e56407a69dacaf8c6f3543de8707",
+  "actor_sha256": "3f7777bd694170b4346174f7fb0f2cf3f2d95b06392ce9444a0ca52e2daf4079",
+  "status": "native installed refusal",
+  "scope": "Fresh standard-user install, 59 verified payload files, real alternate-administrator UAC.",
+  "helper_ui_error": "Original caller profile/state owner/group/DACL admission failed",
+  "observed_profile": {
+    "registered_local_app_data": "C:\\Users\\OttrinQaCaller\\AppData\\Local",
+    "owner_sid": "S-1-5-32-544",
+    "primary_group_sid": "S-1-5-18",
+    "inherited_full_access": [
+      "S-1-5-18",
+      "S-1-5-32-544",
+      "S-1-5-21-3183210791-1673105385-3262580894-1031"
+    ]
+  },
+  "disk": {
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "source_present": true,
+    "target_present": false
+  },
+  "administrator_marker_workflow": "Marker provisioned before authentication. The post-operation registry comparison was not reached.",
+  "first_fixture_attempt": "CreateProfile returned HRESULT 0x800706f7. A disposable administrator scheduled task provisioned the marker in the retry.",
+  "capture_sha256": {
+    "copy-ordinary-denial.png": "0a44be70a5567da650e9a7db7d12819456b0fe9683299e5760541324e25d75a5",
+    "copy-failure.png": "36577b9d146066723dab9564454aa891c6604ba02056a953e314354b3c96cb7e"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "822b1cf4-f765-4c9a-a57a-b4dcc6b52b7f",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "compiler_executables_restored_by_hash": true
+}

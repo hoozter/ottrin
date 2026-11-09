@@ -765,10 +765,19 @@ Current source, test, package and owner/external scopes stay separate.
      the same. The captured caller rejects both revalidation and profile
      lookup. See the
      [native token-owner receipt](../.hermes/evidence/windows-admin-copy-package-current/TOKEN_OWNER_MUTATION_NATIVE.json).
-   - Keep packaged identity and remaining read-only
-     original-root cases open before enabling the feature. Preserve the
-     original caller's authority and canonical registry throughout history,
-     Undo, recovery and cleanup.
+   - Packaged caller-profile admission is still a release blocker. In a
+     fresh installed `732b9d43` run, Windows gave the standard caller's
+     registered Local AppData directory a BUILTIN\Administrators owner
+     and an inherited DACL granting that caller full access. The real
+     alternate-administrator helper refused profile admission. The source
+     hash stayed exact and no destination appeared. The current rule
+     accepts only the caller or its token default owner. Establish how to
+     verify caller-authorized access and distinguish an OS-provisioned base
+     from a redirected foreign directory before relaxing that rule. Keep
+     the app registry's stricter owner checks, and rerun the installed
+     separate-profile marker check through history, Undo and cleanup.
+     [Installed profile-owner refusal](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_PROFILE_OWNER_REFUSAL.json).
+     Keep read-only originals with hard-link aliases open separately.
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,
