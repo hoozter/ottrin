@@ -1050,11 +1050,19 @@ Current source, test, package and owner/external scopes stay separate.
      after 60.2 seconds from helper creation. The app still reported
      Copying when the Undo observer's 25-second wait expired. The
      SYSTEM fallback could not read the published path during that
-     phase. Verify the terminal response, bytes and final permissions
-     with a longer Undo observation before claiming installed
-     completion or enabling Administrator Copy.
+     phase. The repeat with a longer Undo observation passed the full
+     installed workflow. Publication was visible after 74.4 seconds
+     and Undo after 143.6 seconds from helper creation. The standard
+     user read the expected SHA-256, the replacement had the correct
+     caller owner, and the retained original and hard link kept their
+     metadata and named stream. An ordinary copy afterward took 5.4
+     seconds in the same VM and did not exercise verification or
+     journaling. Treat that time as context for this sample. Profile
+     finalization cost before enabling Administrator Copy in the
+     standard package.
      [Native stream checks](../.hermes/evidence/windows-alias-stream-progress-current/native/NATIVE_TEST.json).
      [Rebuilt helper publication observation](../.hermes/evidence/windows-alias-performance-fixed-current/FINDING.json).
+     [Installed terminal timing](../.hermes/evidence/windows-alias-performance-terminal-current/ACCEPTANCE.json).
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
