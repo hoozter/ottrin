@@ -223,11 +223,19 @@ sign-in started the index before any Ottrin command ran. Removal cleared
 the package, processes, startup task and shell registration and preserved
 preferences and fixture files. MSIX 29-to-30 upgrade and the NSIS lifecycle
 are pending before replacing the stable paths.
+The first enabled MSIX upgrade installed revision 30 under the same
+package identity and stopped the revision 29 daemon. The post-upgrade
+fixture then attributed a PowerShell command line to an Ottrin process
+during its Explorer probe. The retry requires a matching executable path
+and a populated command line before comparing launch arguments. The
+disabled upgrade case also checks the saved checkbox state and restores
+that choice after exercising the toggle.
 [Staged payload](../.hermes/evidence/windows-save-identity-delivery-current/HOST_PAYLOAD.json).
 [Installed Save](../.hermes/evidence/windows-save-identity-delivery-current/INSTALLED_SAVE_IDENTITY.json).
 [MSIX assembly](../.hermes/evidence/windows-save-identity-delivery-current/ASSEMBLY_ACCEPTANCE.json).
 [Daemon runtime](../.hermes/evidence/windows-save-identity-delivery-current/WINDOWS_DAEMON_RUNTIME.json).
 [Fresh MSIX deployment](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-fresh/ACCEPTANCE.json).
+[First MSIX upgrade attempt](../.hermes/evidence/windows-save-identity-delivery-current/runtime30-upgrade/ATTEMPT.json).
 
 The preceding Windows cohort used `7992ad1e` and development MSIX 28.
 The installed Save fix passed in Dark and Light. NSIS passed running-index
