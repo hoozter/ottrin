@@ -205,3 +205,68 @@ fn ntfs_serial(file: &File) -> std::io::Result<u32> {
     }
     Ok(serial)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{ffi::OsStr, fs};
+
+    #[test]
+    #[ignore = "flushes the volume of an explicitly selected disposable Windows guest directory"]
+    fn native_readonly_alias_survives_relative_rename_and_volume_flush() {
+        let fixture = std::env::var_os("OTTRIN_TEST_VOLUME_FLUSH_ROOT").unwrap();
+        let temporary = tempfile::tempdir_in(fixture).unwrap();
+        let directory = temporary.path();
+        let original = directory.join("original.txt");
+        let alias = directory.join("alias.txt");
+        let retained = directory.join("retained.txt");
+        fs::write(&original, b"original payload").unwrap();
+        fs::write(
+            original.with_file_name("original.txt:ottrin-test"),
+            b"named stream",
+        )
+        .unwrap();
+        fs::hard_link(&original, &alias).unwrap();
+        let mut permissions = fs::metadata(&original).unwrap().permissions();
+        permissions.set_readonly(true);
+        fs::set_permissions(&original, permissions).unwrap();
+
+        let parent = open_directory(
+            directory,
+            FILE_LIST_DIRECTORY | FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+        )
+        .unwrap();
+        let root = super::super::with_file_privileges(|| {
+            super::super::PerObjectFile::open_for_caller(&parent, OsStr::new("original.txt"), true)
+        })
+        .unwrap();
+        let identity = stable_identity_from_handle(&root).unwrap();
+        let flush =
+            super::super::with_file_privileges(|| VolumeFlush::open(&root, &parent)).unwrap();
+        flush.sync(&root).unwrap();
+
+        for destination in [&retained, &original] {
+            crate::move_transaction::rename_windows_handle_no_replace(
+                &root,
+                &parent,
+                destination.file_name().unwrap(),
+            )
+            .unwrap();
+            flush.sync(&root).unwrap();
+            for path in [destination, &alias] {
+                assert_eq!(
+                    stable_identity_from_handle(&File::open(path).unwrap()).unwrap(),
+                    identity
+                );
+                assert!(fs::metadata(path).unwrap().permissions().readonly());
+                assert_eq!(fs::read(path).unwrap(), b"original payload");
+            }
+            assert_eq!(
+                fs::read(alias.with_file_name("alias.txt:ottrin-test")).unwrap(),
+                b"named stream"
+            );
+        }
+        drop((flush, root, parent));
+        temporary.close().unwrap();
+    }
+}

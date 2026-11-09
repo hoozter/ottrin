@@ -1,0 +1,16 @@
+{
+  "original_executable_sha256": "8b4f68895136e1a7193e507da2daa97dc462f1c3b4d1209467b5bbd2f9d2672c",
+  "executed_executable_sha256": "1455b8ab20fe287192822c57b9776e2617a5f728a0130f7bda877c3fb88f4afa",
+  "output": "NT AUTHORITY\\SYSTEM\r\n10.0.26100.0\r\n\nrunning 1 test\ntest windows_fs::recovery::tests::native_readonly_alias_survives_relative_rename_and_volume_flush ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 601 filtered out; finished in 0.60s\n\n",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "9c487050-0971-48da-8205-88d330849c12",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "source_base": "043e829d074eb3c0d65f54697dcf93c607124372",
+  "test_diff_sha256": "a2cbc8e2f8d2a124a6a0b6d33d5d2cd23c9a90cb5d60999557239d058ab75fc2"
+}

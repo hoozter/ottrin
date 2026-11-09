@@ -803,8 +803,15 @@ Current source, test, package and owner/external scopes stay separate.
      handoff, and uses the capability for retention, restoration and any
      paired rename-metadata repair. The multi-link path keeps the shared
      read-only bit set. Windows GNU test-target checking and strict
-     all-target Clippy pass. The installed Replace, restart, Undo and
-     cleanup fixture with an external alias and a named stream still needs
+     all-target Clippy pass. A focused native Windows build 26100 test
+     under SYSTEM passed with the production caller-rights file open,
+     volume capability and handle-relative rename in both directions.
+     Both names retained the file ID, read-only flag, unnamed data and
+     named stream. The guest fixture directory was empty afterward and
+     the disposable guest and overlay were removed.
+     [Relative-rename native receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_RELATIVE_RENAME_NATIVE.json).
+     The installed Replace, restart, Undo and cleanup fixture with an
+     external alias and a named stream still needs
      a newly built private installer and a native run. The installed guest
      runner requires 24 GiB of free host disk space. Crash recovery,
      cancellation, power loss and production latency remain separate gates.
