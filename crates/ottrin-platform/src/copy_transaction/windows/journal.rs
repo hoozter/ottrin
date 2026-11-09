@@ -6276,6 +6276,24 @@ mod tests {
             .unwrap()
             .parse()
             .unwrap();
+        if std::env::var_os("OTTRIN_ORIGINAL_MOVE_READONLY").is_some() {
+            let name = original_fixture(&root, false, true);
+            remove_undo_fixture_source(&root);
+            let mut journal = original_journal(&root, &name);
+            journal.prepare_original(100, |_| Ok(())).unwrap();
+            let step = readonly_original_faults()[index];
+            if restore {
+                journal.move_original(None, OriginalMove::Retain, |_| Ok(())).unwrap();
+                drop(journal);
+                overwrite_publish(&root, &name).unwrap();
+                let sequence = original_journal(&root, &name).sequence;
+                FAULT.with(|fault| fault.set(Some((sequence + 3, step, true))));
+                panic!("Expected abrupt Undo exit: {:?}", overwrite_undo(&root, &name));
+            }
+            FAULT.with(|fault| fault.set(Some((journal.sequence + 1, step, true))));
+            panic!("Expected abrupt retention exit: {:?}",
+                journal.move_original(None, OriginalMove::Retain, |_| Ok(())));
+        }
         let name = original_move_fixture(&root, directory, restore);
         let mut journal = original_journal(&root, &name);
         let (offset, step) = move_faults()[index];
@@ -6544,15 +6562,81 @@ mod tests {
         }
     }
 
-    #[test]
-    fn windows_native_original_move_readonly_recovers_attribute_transition() {
-        for step in [
+    fn readonly_original_faults() -> [Step; 5] {
+        [
             Step::ReadonlyWritable,
             Step::ReadonlyRestored,
             Step::ReadonlyFlushed,
             Step::OriginalRenamed,
             Step::OriginalFlushed,
-        ] {
+        ]
+    }
+
+    #[test]
+    fn windows_native_readonly_original_real_exit_public_resume_and_undo() {
+        for restore in [false, true] {
+            for (index, step) in readonly_original_faults().into_iter().enumerate() {
+                let root = tempfile::tempdir().unwrap();
+                let status = std::process::Command::new(std::env::current_exe().unwrap())
+                    .args([
+                        "--exact",
+                        "copy_transaction::windows::journal::tests::windows_native_original_move_exit_child",
+                        "--ignored",
+                        "--nocapture",
+                    ])
+                    .env("OTTRIN_ORIGINAL_MOVE_CHILD", root.path())
+                    .env("OTTRIN_ORIGINAL_MOVE_DIRECTORY", "0")
+                    .env("OTTRIN_ORIGINAL_MOVE_RESTORE", if restore { "1" } else { "0" })
+                    .env("OTTRIN_ORIGINAL_MOVE_FAULT", index.to_string())
+                    .env("OTTRIN_ORIGINAL_MOVE_READONLY", "1")
+                    .status()
+                    .unwrap();
+                assert_eq!(status.code(), Some(86), "restore={restore} {step:?}");
+                let destination = root.path().join("destination");
+                let central = root.path().join("central");
+                let name = stage_name(&destination);
+                let local = destination.join(&name).join(LOCAL);
+                let bytes = std::fs::read(&local).unwrap();
+                let state = decode(&bytes).unwrap().state;
+                let identity = state.original.unwrap().evidence.entries[0].version.identity;
+                let header = state.header.unwrap();
+                let mirror = central.join(header.central_name());
+                assert_eq!(std::fs::read(&mirror).unwrap(), bytes);
+                if !restore {
+                    let mut resume = RetainedCopyResumePlan::admit(
+                        &Authority::Process, &central, &header.transaction, |_| Ok(()),
+                    ).unwrap();
+                    assert_eq!(resume.admitted_phase(), WindowsCopyPhase::RetainingOriginal);
+                    assert_eq!(std::fs::read(&local).unwrap(), bytes);
+                    assert_eq!(std::fs::read(&mirror).unwrap(), bytes);
+                    resume.resume(|_| Ok(())).unwrap();
+                    assert!(resume.complete());
+                    let retained = destination.join(header.original_name());
+                    assert!(std::fs::metadata(retained).unwrap().permissions().readonly());
+                }
+                let mut undo = RetainedCopyUndoPlan::admit(
+                    &Authority::Process, &central, &header.transaction, |_| Ok(()),
+                ).unwrap();
+                if restore {
+                    assert_eq!(std::fs::read(&local).unwrap(), bytes);
+                    assert_eq!(std::fs::read(&mirror).unwrap(), bytes);
+                }
+                undo.undo_next().unwrap();
+                assert_eq!(undo.remaining(), 0);
+                assert_overwrite_versions(root.path(), &name, false);
+                let original = destination.join("copy");
+                assert_eq!(super::super::version(&source(&original)).unwrap().identity, identity);
+                let mut permissions = std::fs::metadata(&original).unwrap().permissions();
+                assert!(permissions.readonly());
+                permissions.set_readonly(false);
+                std::fs::set_permissions(&original, permissions).unwrap();
+            }
+        }
+    }
+
+    #[test]
+    fn windows_native_original_move_readonly_recovers_attribute_transition() {
+        for step in readonly_original_faults() {
             for direction in [OriginalMove::Retain, OriginalMove::Restore] {
                 let root = tempfile::tempdir().unwrap();
                 let name = original_fixture(root.path(), false, true);

@@ -713,9 +713,14 @@ Current source, test, package and owner/external scopes stay separate.
      flag before rename. Six native original-move tests passed under
      SYSTEM on build 26100, including ten injected interruptions across
      retention and restoration and refusal of an already-aliased read-only
-     original. This covers direct journal operations. Public Resume and
-     Undo admission, real exits during the attribute transition, and the
-     installed alternate-administrator helper remain separate gates.
+     original. A follow-up native test on build 26100 interrupted a child
+     process at each of those five boundaries in both directions. The
+     public Resume and Undo plans reopened the paired journals without
+     writing during admission, then completed recovery with the same
+     original file identity, bytes and read-only flag and retained the
+     replacement bytes. This verifies the platform recovery plans under
+     SYSTEM. Installed alternate-administrator helper verification remains
+     open.
      Keep read-only alias behavior open separately.
      Preserve edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
