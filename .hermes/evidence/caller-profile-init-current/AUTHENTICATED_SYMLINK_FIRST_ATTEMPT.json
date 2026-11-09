@@ -1,0 +1,28 @@
+{
+  "status": "fixture assertion failed after successful file-link Copy response",
+  "input": {
+    "source_base": "788178276913b7b9a2c66b7eeafd418e2577ce43",
+    "platform_diff_sha256": "4a84e2b988bd04fd965ffa323bae58424f2ad506435709397f75ae31b523883f",
+    "compiler_executable_sha256": "3acd4277b42c3cd9719ac050e6a10f6441bca07dbdc952cafc9e21c7e3ff65b2",
+    "compiler_files_restored_by_hash": 5
+  },
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "observation": "Copy reported one completed source and returned the retained candidate and publication paths. The fixture incorrectly expected the original source path and stopped before Undo.",
+  "assertion_excerpt": "left: [(\"\\\\\\\\?\\\\C:\\\\Windows\\\\Temp\\\\ottrin-msi-5274c79a6b75417eadcbcd65de17d501\\\\system-only\\\\.ottrin-copy-51c81c4de75403eb3a6c72237a20f3d9.candidate\", \"\\\\\\\\?\\\\C:\\\\Windows\\\\Temp\\\\ottrin-msi-5274c79a6b75417eadcbcd65de17d501\\\\system-only\\\\caller-wire-link-false\")]\n right: [(\"C:\\\\WINDOWS\\\\TEMP\\\\ottrin-msi-5274c79a6b75417eadcbcd65de17d501\\\\probe-data\\\\caller-wire-link-false\", \"C:\\\\WINDOWS\\\\TEMP\\\\ottrin-msi-5274c79a6b75417eadcbcd65de17d501\\\\system-only\\\\caller-wire-link-false\")]",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null,
+    "consumed_run_removed": true
+  }
+}

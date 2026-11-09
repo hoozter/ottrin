@@ -1,0 +1,60 @@
+{
+  "status": "pass",
+  "scope": "Authenticated standard caller and SYSTEM companion. Copy, Undo and Cleanup dispatched through the authenticated command handler for file and directory symbolic links. No installed package or UAC claim.",
+  "host_input": {
+    "source_base": "788178276913b7b9a2c66b7eeafd418e2577ce43",
+    "platform_diff_sha256": "1c7dea6cac94431b8e16a1d8d1dd8d63c15abdd760b08b2629051ca634a88dfd",
+    "compiler_executable_sha256": "74130453200390eb33a625e6d1b7e586421c62bde869ee5adf92a11e0198c618",
+    "compiler_files_restored_by_hash": 5
+  },
+  "guest_input": {
+    "source_revision": "788178276913b7b9a2c66b7eeafd418e2577ce43",
+    "source_test_sha256": "74130453200390eb33a625e6d1b7e586421c62bde869ee5adf92a11e0198c618",
+    "test_sha256": "4a4a6e142610bde777277802f7ac1d5449b07df7572187ccf9fb142a886322cb",
+    "source_bytes": 700695247,
+    "staged_bytes": 679171959,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 530706944,
+      "sha256": "590bfc311b9ff2b622ab96a1052ab5f14acbf584041aa326fb9c5f364456300d"
+    },
+    "actor_sha256": "357dade56295ae9b1528fd895fc7aac8e262ed580605e0b8bc8ed2d64afc4cba",
+    "scope": "Explicit ordinary-client/SYSTEM-companion native caller and ownership mechanism observation on an owned offline clone; not alternate-administrator UAC, enabled Copy, package or whole-roadmap acceptance.",
+    "system_companion_sha256": "5ebe34790edcaed569e4de78662e88318cd6e547f5bb0fa50aa68184a2343ca2",
+    "changed_product_sources": {
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs": "4335443f2da61460c8bc50c1a2fffe01c55eb029142166f203972a6a099aa4b3",
+      "crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner/copy_commands.rs": "599108ed974717f5d81e8cded15aa959448ad8c1600d53d594568e6d7b6c4143"
+    },
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "passed_invocations": 26,
+  "assertions": [
+    "caller symbolic-link overwrite directory=false: publication, original identity and security restoration, cleanup and target preservation passed",
+    "caller symbolic-link overwrite directory=true: publication, original identity and security restoration, cleanup and target preservation passed"
+  ],
+  "first_attempt": "AUTHENTICATED_SYMLINK_FIRST_ATTEMPT.json",
+  "archive_sha256": "d0ac6bea6cdef475fb368611b6b8c7464bcc8b610e70fce84278c46ad137dc57",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null,
+    "consumed_run_removed": true,
+    "obsolete_incremental_sessions_removed_this_turn": 1,
+    "reclaimed_gib": 0.95
+  }
+}

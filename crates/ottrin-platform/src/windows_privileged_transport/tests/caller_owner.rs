@@ -848,6 +848,7 @@ fn system_helper() {
             },
         );
     }
+    copy_commands::exercise_symlink_overwrite(&channel, &context, &root);
     for source in [&source_file, &source_directory] {
         crate::WindowsCopyRegistry::exercise_caller_cleanup(
             &context,

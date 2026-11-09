@@ -90,6 +90,142 @@ fn assert_state(pipe: &mut LocalPipeStream, ids: &[String], state: PrivilegedCop
     }
 }
 
+pub(super) fn exercise_symlink_overwrite(
+    channel: &HelperChannel,
+    caller: &CallerCopyContext,
+    root: &Path,
+) {
+    use std::os::windows::fs::{OpenOptionsExt, symlink_dir, symlink_file};
+    use windows_sys::Win32::Storage::FileSystem::{
+        FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+    };
+
+    let execute = |command| {
+        let response = channel.execute_copy_command(&command).unwrap();
+        assert_eq!(
+            response.status,
+            PrivilegedStatus::Success,
+            "{:?}",
+            response.message
+        );
+        response.payload
+    };
+    let open_link = |path: &Path| {
+        std::fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+            .open(path)
+            .unwrap()
+    };
+    let destination = root.join("system-only");
+    let probe = root.join("probe-data");
+    for directory in [false, true] {
+        let link_name = format!("caller-wire-link-{directory}");
+        let source_link = probe.join(&link_name);
+        let published = destination.join(&link_name);
+        let source_target = probe.join(format!("new-link-target-{directory}"));
+        let original_target = probe.join(format!("old-link-target-{directory}"));
+        let target_data = |target: &Path| {
+            if directory {
+                target.join("member.txt")
+            } else {
+                target.to_path_buf()
+            }
+        };
+        caller
+            .with_caller_token(|| {
+                if directory {
+                    std::fs::create_dir(&source_target)?;
+                    std::fs::create_dir(&original_target)?;
+                }
+                std::fs::write(target_data(&source_target), b"source link target")?;
+                std::fs::write(target_data(&original_target), b"original link target")
+            })
+            .unwrap();
+        let make_link = if directory { symlink_dir } else { symlink_file };
+        make_link(&source_target, &source_link).unwrap();
+        make_link(&original_target, &published).unwrap();
+        let original = open_link(&published);
+        let original_id = crate::move_recovery::stable_identity_from_handle(&original).unwrap();
+        let original_security =
+            crate::copy_transaction::owner_group_dacl_digest(&original).unwrap();
+        drop(original);
+        let source_link_target = caller
+            .with_caller_token(|| std::fs::read_link(&source_link))
+            .unwrap();
+        let original_link_target = std::fs::read_link(&published).unwrap();
+        assert_ne!(source_link_target, original_link_target);
+        let Some(PrivilegedPayload::Copy(receipt)) =
+            execute(PrivilegedCommand::File(FileCommand::Copy {
+                sources: vec![source_link.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Overwrite,
+            }))
+        else {
+            panic!("Missing symbolic-link Copy receipt");
+        };
+        assert_eq!(receipt.completed_sources, 1);
+        assert_eq!(receipt.transactions.len(), 1);
+        let [(retained, publication)] = receipt.paths.as_slice() else {
+            panic!("Expected one retained candidate and publication");
+        };
+        for path in [retained, publication] {
+            assert_eq!(
+                path.parent().unwrap().canonicalize().unwrap(),
+                destination.canonicalize().unwrap()
+            );
+        }
+        assert_eq!(publication.file_name(), published.file_name());
+        assert_eq!(
+            retained.file_name().unwrap(),
+            OsStr::new(&format!(
+                ".ottrin-copy-{}.candidate",
+                receipt.transactions[0]
+            ))
+        );
+        assert_eq!(std::fs::read_link(&published).unwrap(), source_link_target);
+        assert_eq!(
+            file_owner(&open_link(&published)),
+            caller.default_file_owner_sid().unwrap()
+        );
+        execute(PrivilegedCommand::UndoCopy {
+            transactions: receipt.transactions.clone(),
+        });
+        assert_eq!(
+            std::fs::read_link(&published).unwrap(),
+            original_link_target
+        );
+        let restored = open_link(&published);
+        assert_eq!(
+            crate::move_recovery::stable_identity_from_handle(&restored).unwrap(),
+            original_id
+        );
+        assert_eq!(
+            crate::copy_transaction::owner_group_dacl_digest(&restored).unwrap(),
+            original_security
+        );
+        drop(restored);
+        execute(PrivilegedCommand::CleanupCopy {
+            transactions: receipt.transactions,
+        });
+        assert_eq!(
+            std::fs::read_link(&source_link).unwrap(),
+            source_link_target
+        );
+        assert_eq!(
+            std::fs::read(target_data(&source_target)).unwrap(),
+            b"source link target"
+        );
+        assert_eq!(
+            std::fs::read(target_data(&original_target)).unwrap(),
+            b"original link target"
+        );
+        println!(
+            "caller symbolic-link overwrite directory={directory}: publication, original identity and security restoration, cleanup and target preservation passed"
+        );
+    }
+}
+
 pub(super) fn client(pipe: &mut LocalPipeStream, root: &Path, source: &Path) {
     let ready: PrivilegedResponse = read_json(pipe).unwrap();
     assert_eq!(ready.status, PrivilegedStatus::Success);
