@@ -750,7 +750,15 @@ Current source, test, package and owner/external scopes stay separate.
      unpublished. A fresh authenticated Activity session ended the
      retained attempt, and another launch confirmed the ended state.
      [Installed client-disconnect receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_CLIENT_DISCONNECT.json).
-     A lost terminal reply after durable publication remains open.
+     The same private installer passed the lost terminal reply case.
+     The app's response reader was suspended before publication and stayed
+     suspended through the helper's successful exit. Terminating the app
+     discarded its unprocessed reply. All 96 published files and caller
+     ownership were verified after termination. Fresh authenticated
+     launches recovered the completed transaction, undid it, and cleared
+     the retained data. The source and unrelated destination marker were
+     preserved.
+     [Installed lost-reply receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_LOST_TERMINAL_REPLY.json).
    - The native Windows build 26100 token-mutation check changes a disposable
      child's live primary TokenOwner. The original query handle observes the
      new owner while TokenUser, primary group and process generation stay

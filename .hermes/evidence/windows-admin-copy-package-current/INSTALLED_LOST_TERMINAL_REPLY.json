@@ -1,0 +1,91 @@
+{
+  "source_revision": "732b9d43ca1b340f1c7cfe99f6616ec4869e04dc",
+  "installer_sha256": "af14561c9d5e940ef3f814bcd4b4fc93c927e56407a69dacaf8c6f3543de8707",
+  "actor_sha256": "8ca59fe892744eeaac96f23fdc7157e0df30529b47f4d23c7cdd20138e627e8c",
+  "observer_sha256": "0a6d9deb8dc91893968d9f1f6e84e8b19c8c3f3e67c56de8a0b844d96f3d7813",
+  "status": "pass",
+  "scope": "Private installed NSIS, ordinary caller and real alternate-administrator UAC. The client response reader is suspended before publication and remains suspended until the app is terminated after helper exit.",
+  "tree_count": 96,
+  "member_sha256": "d8b2af1c85cdb4588e978aed5875e12cbfd20f68009823cf914b40cf41d8e4ce",
+  "boundary": {
+    "worker_tid": 6436,
+    "response_reader_suspended_at_helper_exit": true,
+    "client_exit": -1,
+    "helper_exited_before_stop": true,
+    "helper_pid": 7540,
+    "client_pid": 8064,
+    "target_published_after_client_exit": true,
+    "target_published_before_stop": true,
+    "helper_exit": 0
+  },
+  "phases": [
+    {
+      "mode": "copy",
+      "client_exit": -1,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "worker_tid": 6436,
+      "suspended_thread": "ottrin-helper-response",
+      "client_pid": 8064,
+      "status": "pass",
+      "transaction": "1ccc5a363f4c9d3a2fd569a6b7007521"
+    },
+    {
+      "client_pid": 5976,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    {
+      "client_pid": 2192,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    {
+      "client_pid": 6048,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  ],
+  "checks": [
+    "Durable destination and successful helper exit while response reader suspended",
+    "All published file hashes and original caller ownership verified after client exit",
+    "Fresh Activity recovered completed transaction and authenticated Undo removed destination",
+    "Cleanup removed retained data and journal",
+    "Final history was empty and source tree and unrelated marker survived"
+  ],
+  "capture_sha256": {
+    "copy-ordinary-denial.png": "9d4cf7a03d31271dc1b53406756f57a2dc830c0527307572358d120ac5b6a1d9",
+    "history-undo-history.png": "edb21599b48cab39bfae6025e2b004b6ee03516c352edc24ed207234c67ad40b",
+    "history-undo-undone.png": "722e4130fca451cc50364bead831c77471e9ff95d81822383526c898880d3fee",
+    "undone-undone.png": "74210a4b70ba73f765de133e2f9d5fa1ffb66f890eb9ac41a5b074a3d0ea27ab",
+    "undone-cleared.png": "aa7f80e2f3b2aed6f5b840087bfe3d3aed827da8250fe9a3d962577e46e41cfb",
+    "cleared-cleared.png": "50809092e5d83db9a2190cd053fc1591fe8253951b5c1368777ce82415859a81"
+  },
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "3f142963-b97c-4a69-96d9-acb3ffc4a672",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "compiler_executables_restored_by_hash": true
+}
