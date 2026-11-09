@@ -1207,9 +1207,17 @@ Current source, test, package and owner/external scopes stay separate.
    The four Linux formats from `4d3f11a3` are now staged and passed
    package-content verification. The exact mounted AppImage reproduced
    the same divider pixels and saved-state behavior at 150% in Dark
-   and Light. Its package extraction and both private profiles were
-   removed. Windows ZIP and NSIS compilation is in progress.
+   and Light. The same AppImage passed Smart Panel color editing,
+   FileManager1 dispatch and the Save caller workflow. All private
+   profiles and the package extraction were removed.
    [Packaged menu divider result](../.hermes/evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json).
+
+   The Windows ZIP and NSIS from the same source are staged. All 59
+   files match across the two payloads and both artifact hashes were
+   verified. The detached build worktree and temporary installer
+   extraction were removed. Native MSIX assembly and Windows
+   runtime verification remain open.
+   [Windows package content receipt](../.hermes/evidence/windows-menu-divider-delivery-current/HOST_PAYLOAD.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
