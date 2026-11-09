@@ -347,7 +347,12 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    Real sign-in preserved the automatic indexing choice and existing
    database and preferences. Explorer folder actions and removal
    passed. Administrator Copy under package identity is in a separate
-   fixture and remains open.
+   fixture and remains open. The exact MSIX 33 reached the in-app
+   administrator prompt as a standard user. After consent, the app
+   reported that the helper did not connect. The destination stayed
+   empty of the proposed publication and the source hash was preserved.
+   The native EXE acceptance remains scoped to that installer. The
+   MSIX diagnostic checks the launched process and its pipe arguments.
    [MSIX 33 assembly](../.hermes/evidence/windows-admin-copy-delivery-current/ASSEMBLY_ACCEPTANCE.json).
    [Fresh deployment](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-fresh/ACCEPTANCE.json),
    [enabled upgrade](../.hermes/evidence/windows-admin-copy-delivery-current/runtime33-upgrade/ACCEPTANCE.json)
