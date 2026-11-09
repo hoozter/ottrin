@@ -886,6 +886,12 @@ Current source, test, package and owner/external scopes stay separate.
      changing the paired metadata repair. The guest, overlay, private
      worktree and diagnostic build output were removed.
      [Installed diagnostic](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_DIAGNOSTIC.json).
+     The previous native test retained the existing archive bit when
+     setting read-only. A strengthened ordinary-caller/SYSTEM fixture
+     started with the archive bit clear and reproduced the same failure
+     through the production bound Copy handler. This gives a repeatable
+     native regression before the installed UAC gate.
+     [Native reproduction](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_ARCHIVE_NATIVE.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      Crash recovery, cancellation, power loss and production latency
      remain separate gates.

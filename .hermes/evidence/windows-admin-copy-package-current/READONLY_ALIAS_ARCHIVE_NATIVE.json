@@ -1,0 +1,25 @@
+{
+  "exe_sha256": "37a961293f09dfcd477065cea2e1488aafd55aebc620871a1fb9dd66e470ec86",
+  "outputs": {
+    "system.txt": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... FAILED\n\nfailures:\n\nfailures:\n    windows_privileged_transport::tests::caller_owner::system_helper\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 601 filtered out; finished in 1.83s\n\n",
+    "system.err": "\nthread 'windows_privileged_transport::tests::caller_owner::system_helper' (2228) panicked at crates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner/copy_commands.rs:244:9:\nassertion `left == right` failed: Some(\"copy failed and transaction cleanup is pending at \\\\\\\\?\\\\C:\\\\OttrinHelperPipeQA\\\\system-only\\\\.ottrin-copy-ee51dde81b69eca1dc8b9c7b34055f5c: copy failed and transaction cleanup is pending at \\\\\\\\?\\\\C:\\\\OttrinHelperPipeQA\\\\system-only\\\\.ottrin-copy-ee51dde81b69eca1dc8b9c7b34055f5c: filesystem operation failed: Windows Copy stream staging: existing tree entry 0 version changed after stream reads (attributes); all versions retained. Original locations to inspect: \\\\\\\\?\\\\C:\\\\OttrinHelperPipeQA\\\\system-only / \\\"caller-readonly-alias-true.txt\\\" or \\\".ottrin-copy-ee51dde81b69eca1dc8b9c7b34055f5c.original\\\"; new copy: \\\".ottrin-copy-ee51dde81b69eca1dc8b9c7b34055f5c.candidate\\\"; Copy data and recovery evidence remain at the transaction's recorded locations\")\n  left: Failed\n right: Success\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+    "system.exit": "101\r\n",
+    "client.txt": "\r\nrunning 1 test\r\nalias-test.exe : \r\nAt line:4 char:1\r\n+ & \"$r\\alias-test.exe\" --exact windows_privileged_transport::tests::ca ...\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\nthread 'windows_privileged_transport::tests::caller_owner::client' (2184) panicked at \r\ncrates/ottrin-platform/src/windows_privileged_transport/tests/caller_owner.rs:337:65:\r\ncalled `Result::unwrap()` on an `Err` value: Error { kind: UnexpectedEof, message: \"failed to \r\nfill whole buffer\" }\r\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\r\ntest windows_privileged_transport::tests::caller_owner::client ... FAILED\r\n\r\nfailures:\r\n\r\nfailures:\r\n    windows_privileged_transport::tests::caller_owner::client\r\n\r\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 601 filtered out; finished in 2.63s\r\n\r\n",
+    "client.exit": "101\r\n"
+  },
+  "teardown": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "2bc5ac84-6539-4982-9488-d275ae63b906",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "status": "reproduced native read-only hard-link overwrite failure with the archive bit initially clear",
+  "source_base": "61ced05d579390a7e2d027581700655d7edf2d62",
+  "test_diff_sha256": "8ebeebab52f45da4ce2343bfe1179fc20c22899a1b3cae32b0c5e5fa53da7f18",
+  "raw_test_executable_sha256": "acfd6f7f855d16df6de89c2da2ebac450dc66d0e1423ce537318d701ed629a7b",
+  "scope": "Bound ordinary caller and SYSTEM helper on a disposable Windows guest. Existing native regression now starts with only the read-only bit. No installer or UAC result in this run.",
+  "transfer_stage_removed": true
+}
