@@ -1625,6 +1625,19 @@ Current source, test, package and owner/external scopes stay separate.
    and deployment checks proceed independently.
    [Installer retry result](../.hermes/evidence/theme-editor-pointer-fix-current/native-installed-retry/GUEST_RESULT.json).
 
+   Native MakeAppx assembled unsigned development MSIX 31 from the
+   exact `a9c718a2` portable payload. Native unpack and independent
+   host verification matched all 59 payload members. The bundled
+   daemon passed create, rename, delete and restart on a private
+   1,000-file corpus, with 0.26% of one core in the 30-second quiet
+   sample. The assembly guest, volumes, source clone and source
+   archive were removed, and borrowed test files were restored.
+   Fresh deployment and both MSIX 30-to-31 startup choices are
+   queued before the bounded NSIS retest. The full NSIS lifecycle
+   fixture is prepared to follow a passing installed UI check.
+   [Native MSIX assembly](../.hermes/evidence/theme-editor-pointer-fix-current/ASSEMBLY_ACCEPTANCE.json).
+   [Packaged Windows daemon](../.hermes/evidence/theme-editor-pointer-fix-current/WINDOWS_DAEMON_RUNTIME.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
