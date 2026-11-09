@@ -1655,9 +1655,18 @@ Current source, test, package and owner/external scopes stay separate.
    Drive commands passed, and removal cleared package processes and
    COM registration while preserving preferences and fixture bytes.
    The result export matched the exact assembly hash and the guest
-   and volumes were removed. Enabled and disabled MSIX 30-to-31
-   upgrades remain separate gates.
+   and volumes were removed.
    [Fresh deployment result](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-fresh/RUNTIME_RESULT.json).
+
+   The same development MSIX passed the 30-to-31 upgrade with index
+   startup enabled. Windows stopped the old daemon during the update
+   and started the version 31 daemon at the next sign-in before any
+   Ottrin CLI call. The ordinary-user checks preserved the index identity,
+   preferences and fixture bytes. Removal cleared the package, its
+   processes, tasks and COM registration. The disposable guest, two
+   volumes and duplicate export were removed. The startup-disabled
+   upgrade and installed NSIS checks remain open.
+   [Enabled upgrade receipt](../.hermes/evidence/theme-editor-pointer-fix-current/runtime31-upgrade/ACCEPTANCE.json).
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
