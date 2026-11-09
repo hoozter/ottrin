@@ -1596,6 +1596,16 @@ Current source, test, package and owner/external scopes stay separate.
    [Windows package identity](../.hermes/evidence/theme-editor-pointer-fix-current/HOST_PAYLOAD.json).
    [Interrupted guest and cleanup](../.hermes/evidence/theme-editor-pointer-fix-current/native-close/OWNER.json).
 
+   Native ordinary-user execution from the exact `a9c718a2` portable
+   ZIP passed physical Cancel after measured 1.86-second Dark and
+   1.29-second Light holds. Both palettes dismissed the sample menu,
+   preserved files and settings, and exited normally. The guest and
+   volumes were removed and borrowed executables restored by hash.
+   The NSIS retry uses a fresh guest and a 27 GiB preflight minimum
+   after the earlier storage interruption. Portable evidence does not
+   close the installer or MSIX lifecycle gates.
+   [Windows portable acceptance](../.hermes/evidence/theme-editor-pointer-fix-current/native-portable/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
