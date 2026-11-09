@@ -54,6 +54,7 @@ use std::io::{Seek, SeekFrom};
 use std::mem::size_of;
 use std::os::windows::io::AsRawHandle;
 use std::ptr;
+use std::time::{Duration, Instant};
 use windows_sys::Wdk::Storage::FileSystem::{
     FILE_NO_INTERMEDIATE_BUFFERING, FILE_SYNCHRONOUS_IO_ALERT, FILE_SYNCHRONOUS_IO_NONALERT,
     FileModeInformation, NtQueryInformationFile,
@@ -66,6 +67,8 @@ use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
 
 const HEADER_BYTES: usize = 20;
 const BUFFER_BYTES: usize = 64 * 1024;
+const STREAM_PROGRESS_BYTES: u64 = 8 * 1024 * 1024;
+const STREAM_PROGRESS_INTERVAL: Duration = Duration::from_millis(25);
 const MAX_NAME_BYTES: usize = 65_534;
 const DATA: u32 = 1;
 const EXTENDED_ATTRIBUTES: u32 = 2;
@@ -412,6 +415,24 @@ fn transfer(
     let mut buffer = [0u8; BUFFER_BYTES];
     let mut total = 0u64;
     progress(0)?;
+    let mut last_reported = 0;
+    let mut last_report = Instant::now();
+    // A progress callback may re-open and verify the caller and journal
+    // bindings. Check at the first chunk and every record boundary, but
+    // coalesce data-only chunks on the held handles. The callers still
+    // validate bindings at namespace and journal mutations.
+    let mut stream_progress = |bytes: u64, end_of_record| {
+        if end_of_record
+            || last_reported == 0
+            || bytes - last_reported >= STREAM_PROGRESS_BYTES
+            || last_report.elapsed() >= STREAM_PROGRESS_INTERVAL
+        {
+            progress(bytes)?;
+            last_reported = bytes;
+            last_report = Instant::now();
+        }
+        Ok::<(), PlatformError>(())
+    };
     loop {
         let mut header = [0u8; HEADER_BYTES];
         if !reader.read_exact(&mut header, true)? {
@@ -467,9 +488,11 @@ fn transfer(
                 total = total
                     .checked_add(count as u64)
                     .ok_or_else(|| io("stream length overflow"))?;
-                progress(total)?;
+                stream_progress(total, left == 0)?;
             }
-            progress(total)?;
+            if bytes == 8 {
+                stream_progress(total, true)?;
+            }
             continue;
         }
         if attributes == sparse::ATTRIBUTE {
@@ -502,7 +525,7 @@ fn transfer(
             total = total
                 .checked_add(bytes)
                 .ok_or_else(|| io("stream length overflow"))?;
-            progress(total)?;
+            stream_progress(total, true)?;
             evidence.push(StreamEvidence {
                 kind,
                 attributes,
@@ -531,7 +554,7 @@ fn transfer(
             total = total
                 .checked_add(count as u64)
                 .ok_or_else(|| io("stream length overflow"))?;
-            progress(total)?;
+            stream_progress(total, left == 0)?;
         }
         evidence.push(StreamEvidence {
             kind,

@@ -1038,6 +1038,16 @@ Current source, test, package and owner/external scopes stay separate.
      [Diagnostic attempt](../.hermes/evidence/windows-alias-performance-diagnostic-current/ATTEMPT.json).
      [Post-staging timing evidence](../.hermes/evidence/windows-alias-performance-retry-current/FINDING.json).
      [Installed helper profile](../.hermes/evidence/windows-alias-performance-profile-current/FINDING.json).
+     The Windows stream engine now coalesces callbacks during data
+     reads and writes on held handles. The first chunk and each record
+     boundary still report, with additional checks after 8 MiB or
+     25 ms between chunks. The native I/O cancellation watcher and
+     namespace, authority and journal mutation checks stay in place.
+     Eight native Windows tests passed for cancellation, binding drift,
+     late occupants, candidate tampering and buffer boundaries. Strict
+     Windows-target Clippy passed. Installed 1 GiB performance and
+     packaged acceptance remain open.
+     [Native stream checks](../.hermes/evidence/windows-alias-stream-progress-current/native/NATIVE_TEST.json).
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
