@@ -1,0 +1,82 @@
+{
+  "status": "pass",
+  "input": {
+    "source_revision": "f23b13b0b01f5c5a13cd8df8de712f0c4e47b0f1",
+    "installer_sha256": "f65fd03e76219c36fdf722edf22d884c5dca19ca5fa26be9f4340c8e075b3c38",
+    "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+    "interrupt": false,
+    "stop": false,
+    "stopped_ui": false,
+    "symlink": true,
+    "directory_symlink": true,
+    "resume": false,
+    "late_stop": false,
+    "tree_count": null,
+    "actor_sha256": "aac1c89dfd329c829bdad8ce8ce98e22313136054c273afa0fba29b8580b6ed6",
+    "observer_sha256": null,
+    "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+    "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+  },
+  "phases": {
+    "copy": {
+      "mode": "copy",
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "ordinary_target_read_error": "You cannot call a method on a null-valued expression.",
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "client_pid": 7204,
+      "status": "pass"
+    },
+    "history-undo": {
+      "client_pid": 3752,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "history-undo",
+      "status": "pass"
+    },
+    "undone": {
+      "client_pid": 2296,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "undone",
+      "status": "pass"
+    },
+    "cleared": {
+      "client_pid": 5044,
+      "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+      "payload_files": 59,
+      "client_exited": true,
+      "phase": "complete",
+      "client_exit": 0,
+      "mode": "cleared",
+      "status": "pass"
+    }
+  },
+  "checks": [
+    "Ordinary Paste was denied before publication.",
+    "Alternate-administrator UAC published a directory symbolic link pointing to the same external directory as the source link.",
+    "A fresh app process loaded history and undid the publication.",
+    "Cleanup cleared retained files and journal and a fourth process found no history.",
+    "The source link, external directory member hash and unrelated protected marker survived all phases."
+  ],
+  "scope": "Exact private NSIS directory symbolic-link creation, Undo, Cleanup and restart through installed standard-user UI and alternate-administrator UAC. Overwrite restoration has separate native platform coverage.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "4a03c29b-e28d-4b10-9bca-4047e4535133",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporary_compiler_restored_by_hash": true,
+    "temporary_capture_and_result_files_removed": true
+  }
+}

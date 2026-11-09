@@ -662,8 +662,12 @@ Current source, test, package and owner/external scopes stay separate.
      restart, authenticated Undo and cleanup with a standard user and
      alternate-administrator UAC. The source link and target bytes remained
      intact. See the [installed file-link receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_SYMLINK_COPY.json).
-     Installed directory-link and overwrite restoration coverage, and
-     read-only original-root behavior, remain open. Preserve edited or
+     The same NSIS passed the directory-link case through four fresh app
+     launches. The published link pointed to the original target directory,
+     and Undo and cleanup preserved the source link and target member.
+     See the [installed directory-link receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_DIRECTORY_SYMLINK_COPY.json).
+     Installed overwrite restoration and read-only original-root behavior
+     remain open. Preserve edited or
      unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Installed alternate-administrator UAC checks cover newly authenticated
@@ -678,7 +682,7 @@ Current source, test, package and owner/external scopes stay separate.
      the same. The captured caller rejects both revalidation and profile
      lookup. See the
      [native token-owner receipt](../.hermes/evidence/windows-admin-copy-package-current/TOKEN_OWNER_MUTATION_NATIVE.json).
-   - Keep installed directory-link and link overwrite, packaged identity, and remaining read-only
+   - Keep installed link overwrite, packaged identity, and remaining read-only
      original-root cases open before enabling the feature. Preserve the
      original caller's authority and canonical registry throughout history,
      Undo, recovery and cleanup.
