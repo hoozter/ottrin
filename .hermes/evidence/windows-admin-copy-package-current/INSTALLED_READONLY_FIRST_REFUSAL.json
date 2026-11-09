@@ -1,0 +1,42 @@
+{
+  "source_revision": "71e5d2641eb41c06de89e713c09a0f8d1314bfa3",
+  "private_capability_diff_sha256": "b0c7961ee6acef2cb1a2560f57c8c3ea21d93ef700fed7499e9dfa4e50409281",
+  "stage": "/home/campbell/Projects/Ottrin/.hermes/packaging-tmp/.windows-readonly-original-qa",
+  "payload_files": 59,
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "05b98f2ac73c947d596ddd3ebeae5d3d16975ab47ecc236b637b84ba93fcdb89",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "f31537bec3691a582cbd7027d96a1080fc5e7d6b499efe13d149645d994f2d88"
+  },
+  "portable_matches_stage": true,
+  "status": "native installed refusal before original mutation",
+  "native_build": "26100",
+  "first_attempt": {
+    "source_revision": "71e5d2641eb41c06de89e713c09a0f8d1314bfa3",
+    "installer_sha256": "05b98f2ac73c947d596ddd3ebeae5d3d16975ab47ecc236b637b84ba93fcdb89",
+    "verified_installed_payload_files": 59,
+    "phase": "failed",
+    "error": "Exception calling \"Focus\" with \"1\" argument(s): \"Owned window did not acquire foreground focus\"",
+    "scope": "First-login shell setup occupied the foreground. The test ended before Replace."
+  },
+  "actor": "1f534885632632d73d19c92fbaefdcb22b17c7c6d75f3728d5070fad836c0448",
+  "helper_result": "Windows Copy stream staging: Access is denied. (os error 5)",
+  "local_journal_last_event": "original-retain-intent",
+  "local_journal_sha256": "97002bebcd3a1c1588fc453a12b118a8add92be4c57c795db61bbced829bf2fc",
+  "original_same_identity_acl_attributes_and_bytes": true,
+  "staged_candidate_retained": true,
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "e2d53bfe-c063-43ee-a213-3365d7a493e4",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "retired_artifacts": [
+    "private rejected NSIS",
+    "verified duplicate portable archive",
+    "expanded payload"
+  ],
+  "compiler_executables_restored_by_hash": true
+}

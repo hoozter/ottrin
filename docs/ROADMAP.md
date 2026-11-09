@@ -719,8 +719,17 @@ Current source, test, package and owner/external scopes stay separate.
      writing during admission, then completed recovery with the same
      original file identity, bytes and read-only flag and retained the
      replacement bytes. This verifies the platform recovery plans under
-     SYSTEM. Installed alternate-administrator helper verification remains
-     open.
+     SYSTEM. A private NSIS from source `71e5d264` verified all 59 installed
+     files and reached the real alternate-administrator UAC path. The
+     helper returned access denied with the journal at original-retain
+     intent. The public original retained its exact NTFS identity,
+     security descriptor, attributes and bytes, and the staged replacement
+     remained available. The read-only backup-intent open now requests
+     explicit access without MAXIMUM_ALLOWED, which the earlier native
+     access probe showed could fail under restore privilege. The Windows
+     cross-target test compilation passes. Rebuild the private NSIS and
+     repeat Replace, Undo and Cleanup before accepting this path.
+     [Installed refusal receipt](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_FIRST_REFUSAL.json).
      Keep read-only alias behavior open separately.
      Preserve edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).

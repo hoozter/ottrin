@@ -499,15 +499,17 @@ impl PerObjectFile {
             parent,
             name,
             None,
-            windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED
-                | FILE_GENERIC_READ
+            FILE_GENERIC_READ
                 | FILE_WRITE_ATTRIBUTES
                 | DELETE
                 | WRITE_DAC
                 | if readonly {
-                    SYNCHRONIZE
+                    // With backup intent, MAXIMUM_ALLOWED can request data
+                    // write access through SeRestorePrivilege. NTFS rejects
+                    // that combined request on a read-only file.
+                    0
                 } else {
-                    FILE_GENERIC_WRITE
+                    windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED | FILE_GENERIC_WRITE
                 },
             FILE_SHARE_READ,
         )
