@@ -1504,6 +1504,17 @@ Current source, test, package and owner/external scopes stay separate.
    borrowed executables were restored by hash.
    [Native timing comparison](../.hermes/evidence/theme-preview-popup-current/native-cancel-timing/GUEST_RESULT.json).
 
+   Reversing the test order did not reproduce a consistent duration
+   effect. Physical Cancel passed at 419 ms in Dark and 387 ms in Light,
+   and missed at 334 ms in Light and 278 ms in Dark. Accessible Cancel
+   closed the same editor in both misses. Native focus and the hit window
+   matched the editor. The result supports an intermittent pointer
+   activation failure across palettes. A private, source-bound diagnostic
+   build records the pointer events and the Cancel button's interaction
+   state inside the editor. The reversed-comparison guest and overlay
+   were removed and borrowed executables restored by hash.
+   [Reversed timing comparison](../.hermes/evidence/theme-preview-popup-current/native-cancel-timing-reverse/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
