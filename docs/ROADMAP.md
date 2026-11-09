@@ -892,6 +892,17 @@ Current source, test, package and owner/external scopes stay separate.
      through the production bound Copy handler. This gives a repeatable
      native regression before the installed UAC gate.
      [Native reproduction](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_ARCHIVE_NATIVE.json).
+     The source repair closes the volume-flushed rename handle before
+     observing settled metadata on an independent read handle. It
+     rechecks the complete original evidence under the reacquired writer
+     before repairing metadata, then verifies the exact original version
+     under a read handle before acknowledgement. The focused native
+     ordinary-caller/SYSTEM cases now pass Replace followed by Undo and
+     cleanup, and Replace followed by cleanup alone. Both names retain
+     the exact original attributes, identity, security and streams.
+     Windows-target strict Clippy and formatting passed. Rebuild the
+     private installer and repeat the installed UAC and restart path.
+     [Native repair](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_REPAIR_NATIVE.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
      Crash recovery, cancellation, power loss and production latency
      remain separate gates.

@@ -2185,9 +2185,21 @@ impl Journal {
             self.parent_dir.sync_all().map_err(io)?;
         }
         boundary(self.sequence, Step::OriginalFlushed)?;
+        let mut writer = Some(root);
+        let read = if volume.is_some() {
+            // NTFS can settle rename attributes when the renaming file object
+            // closes. Observe the settled object with an independent read
+            // handle before authorizing any metadata repair.
+            drop(writer.take());
+            let read = namespace::open_source_with(&self.authority, &self.parent_dir, &to, None)?;
+            flush_original(&read)?;
+            Some(read)
+        } else {
+            None
+        };
         let tree = tree::PinnedTree::open(
             &self.authority,
-            &root,
+            read.as_ref().or(writer.as_deref()).unwrap(),
             evidence.entries.len(),
             &mut progress,
         )?;
@@ -2197,11 +2209,33 @@ impl Journal {
         tree.validate_existing(&expected, &mut progress)?;
         self.authority
             .binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
-        drop(tree);
-        self.finish_creation(kind, &root, flush_original)?;
+        drop((tree, read));
+        if writer.is_none() {
+            let reopened = self.authority.open_candidate(&self.parent_dir, &to)?;
+            let tree = tree::PinnedTree::open(
+                &self.authority,
+                &reopened,
+                evidence.entries.len(),
+                &mut progress,
+            )?;
+            tree.validate_existing(&expected, &mut progress)?;
+            self.authority
+                .binding(&self.parent_dir, &to, expected.entries[0].version.identity)?;
+            drop(tree);
+            writer = Some(reopened);
+        }
+        self.finish_creation(kind, writer.as_deref().unwrap(), flush_original)?;
+        let read = if volume.is_some() {
+            drop(writer.take());
+            let read = namespace::open_source_with(&self.authority, &self.parent_dir, &to, None)?;
+            flush_original(&read)?;
+            Some(read)
+        } else {
+            None
+        };
         let tree = tree::PinnedTree::open(
             &self.authority,
-            &root,
+            read.as_ref().or(writer.as_deref()).unwrap(),
             evidence.entries.len(),
             &mut progress,
         )?;
@@ -2214,7 +2248,7 @@ impl Journal {
         let root_version = tree.root().clone();
         progress(0)?;
         let result = self.persist(direction.ack(root_version));
-        drop((tree, root, candidate));
+        drop((tree, read, writer, candidate));
         result
     }
     /// A paired intent authorizes only the readonly bit transition on one

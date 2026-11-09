@@ -233,7 +233,11 @@ pub(super) fn exercise_readonly_alias_overwrite(
 ) {
     use crate::copy_transaction::owner_group_dacl_digest;
     use crate::move_recovery::stable_identity_from_handle;
-    use std::fs;
+    use std::{
+        fs,
+        os::windows::{ffi::OsStrExt, fs::MetadataExt},
+    };
+    use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_READONLY, SetFileAttributesW};
 
     let execute = |command| {
         let response = channel.execute_copy_command(&command).unwrap();
@@ -263,9 +267,17 @@ pub(super) fn exercise_readonly_alias_overwrite(
         fs::write(named_stream(&target), b"original named stream").unwrap();
         fs::hard_link(&target, &alias).unwrap();
         let original_permissions = fs::metadata(&target).unwrap().permissions();
-        let mut readonly_permissions = original_permissions.clone();
-        readonly_permissions.set_readonly(true);
-        fs::set_permissions(&target, readonly_permissions).unwrap();
+        // Match the installed fixture: the read-only bit is set and the
+        // archive bit is clear before either original rename.
+        let wide_target: Vec<u16> = target.as_os_str().encode_wide().chain([0]).collect();
+        assert_ne!(
+            unsafe { SetFileAttributesW(wide_target.as_ptr(), FILE_ATTRIBUTE_READONLY) },
+            0
+        );
+        assert_eq!(
+            fs::metadata(&target).unwrap().file_attributes(),
+            FILE_ATTRIBUTE_READONLY
+        );
         let original = fs::File::open(&target).unwrap();
         let identity = stable_identity_from_handle(&original).unwrap();
         let security = owner_group_dacl_digest(&original).unwrap();
@@ -274,7 +286,10 @@ pub(super) fn exercise_readonly_alias_overwrite(
             let file = fs::File::open(path).unwrap();
             assert_eq!(stable_identity_from_handle(&file).unwrap(), identity);
             assert_eq!(owner_group_dacl_digest(&file).unwrap(), security);
-            assert!(file.metadata().unwrap().permissions().readonly());
+            assert_eq!(
+                file.metadata().unwrap().file_attributes(),
+                FILE_ATTRIBUTE_READONLY
+            );
             assert_eq!(fs::read(path).unwrap(), b"original payload");
             assert_eq!(
                 fs::read(named_stream(path)).unwrap(),

@@ -1,0 +1,31 @@
+{
+  "exe_sha256": "398bcdf3e5da1141dd42f7a4c6bad06a16048b5ded26fed86f7fdb57222f0dd4",
+  "outputs": {
+    "system.txt": "\nrunning 1 test\ntest windows_privileged_transport::tests::caller_owner::system_helper ... caller read-only hard-link overwrite undo=true: alias identity, permissions, streams and cleanup passed\ncaller read-only hard-link overwrite undo=false: alias identity, permissions, streams and cleanup passed\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 601 filtered out; finished in 13.09s\n\n",
+    "system.err": "",
+    "system.exit": "0\r\n",
+    "client.txt": "\r\nrunning 1 test\r\ntest windows_privileged_transport::tests::caller_owner::client ... ok\r\n\r\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 601 filtered out; finished in 14.24s\r\n\r\n",
+    "client.exit": "0\r\n"
+  },
+  "teardown": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "1a31d4cf-b540-4bf4-b900-076bd510c282",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "status": "pass focused native read-only hard-link Replace, Undo and cleanup",
+  "source_base": "3b2ea961f7a3f692e809e2fba25621cc0860a93e",
+  "code_and_test_diff_sha256": "332172e02301e66714e74884198bf71032b2ec2394b298202177088c4e6afdfc",
+  "raw_test_executable_sha256": "8dc0b2629c8399a41f638acbc91f3eaa44cf6187657c612c99338b6d254c5c75",
+  "scope": "Bound ordinary caller and SYSTEM helper on native Windows. The archive bit starts clear. Both linked names preserve exact original attributes, identity, security and stream contents. Installed UAC and package promotion remain separate.",
+  "first_exact_binary_attempt": "Readiness file sharing race before Copy. Fixture now renames a closed file into place.",
+  "host_checks": [
+    "Windows GNU platform test build",
+    "strict Windows GNU all-target Clippy",
+    "workspace formatting"
+  ],
+  "transfer_stage_removed": true
+}
