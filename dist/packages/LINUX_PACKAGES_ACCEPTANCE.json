@@ -1,13 +1,13 @@
 {
   "status": "pass scoped Linux theme menu preview delivery",
-  "source_revision": "9f27ece172a23d42155c8cbe6496248461f8e182",
+  "source_revision": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "92cbdd8e4f455b618470b60bd87d2a4da729b2432fc6415bfa4a8f8a9d7f53bd",
-    "Ottrin-0.1.0-x86_64.AppImage": "92744f85c4904f597e24d07ab6afacca7472f38d898407157f7f84f60ff52c2a",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "994824e1df0328c7bc597b0ed027f915d41142de9eb0988e44a4e4c8406843d8",
-    "ottrin_0.1.0_amd64.deb": "937bfbcc2227ea6c650942b2abe188f9570b160dbc112f0508d1c524a790c38d"
+    "ottrin-0.1.0-1.x86_64.rpm": "79a15bb0aa7f0c5421eda26cf95ec501b864ae2a12c89be57021af4c1f828537",
+    "Ottrin-0.1.0-x86_64.AppImage": "73d68bf20762d3deba7220b7e12dc078c81224ead08a9ca454aa16b3e1a643d0",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "221e8f9d62cf210e79cf5f31a3989d73c9b2c35ef643e8c29cf05eb2e9dd5e5f",
+    "ottrin_0.1.0_amd64.deb": "2258d28db918f372e9c4dc1c63c7c19c157061b984ebe3d926afb54a5f3406a7"
   },
-  "evidence": ".hermes/evidence/theme-preview-popup-linux-current",
+  "evidence": ".hermes/evidence/theme-editor-pointer-fix-linux-current",
   "checks": [
     "production portable/AppImage runtime closure and playback checks",
     "production native payload, dependencies, policy, hooks and code identity blocks",
@@ -17,32 +17,32 @@
     "actual AppImage and RPM index daemon namespace/ownership refusal checks"
   ],
   "runtime_sha256": {
-    "application": "54d4bb2e1c6acb1c523f7eacb637bd9ff01f7cc28f94223553e49c7578b6c832",
+    "application": "705a24e68c957a452a4fbf576a35bf17b3d32a5f098d9bc5d1112c414c3c13b0",
     "index_daemon": "f456fca656cb1c1dfe36832b4cf58beaefc0949d7bc065b6f673fe7afe613aaa",
     "privileged_helper": "f123b93368d7919067bdcfe6f295c079fc1d000c38fdb2f3f493c465bd0f932f",
     "html_renderer": "f6a4ebe343c58ad3f06398c81574aa44d2b1afcfd7486e9e180c9368efefcbed"
   },
   "hosted_source": {
-    "run": 42637304102,
-    "tested_source_revision": "9f27ece172a23d42155c8cbe6496248461f8e182",
+    "run": 42653629672,
+    "tested_source_revision": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
     "all_four_jobs_success": true
   },
-  "source_scope": ".hermes/evidence/theme-preview-popup-linux-current/BUILD_SOURCE.json",
-  "mounted_menu_preview": ".hermes/evidence/theme-preview-popup-linux-current/MENU_UI_ACCEPTANCE.json",
-  "daemon_runtime": ".hermes/evidence/theme-preview-popup-linux-current/LINUX_DAEMON_RUNTIME.json",
+  "source_scope": ".hermes/evidence/theme-editor-pointer-fix-linux-current/BUILD_SOURCE.json",
+  "mounted_menu_preview": ".hermes/evidence/theme-editor-pointer-fix-linux-current/MENU_UI_ACCEPTANCE.json",
+  "mounted_file_manager": ".hermes/evidence/theme-editor-pointer-fix-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
+  "mounted_picker_caller": ".hermes/evidence/theme-editor-pointer-fix-linux-current/picker-save/RESULT.json",
+  "daemon_runtime": ".hermes/evidence/theme-editor-pointer-fix-linux-current/LINUX_DAEMON_RUNTIME.json",
   "current_helper_read_only": [
-    ".hermes/evidence/theme-preview-popup-linux-current/LINUX_HELPER_RUNTIME.json"
+    ".hermes/evidence/theme-editor-pointer-fix-linux-current/LINUX_HELPER_RUNTIME.json"
   ],
   "previous_cohort": {
-    "source_revision": "4c88e968b3ef3b749c00da72cd202eb1d6f0f1c4",
-    "receipt": ".hermes/evidence/theme-preview-popup-linux-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
+    "source_revision": "9f27ece172a23d42155c8cbe6496248461f8e182",
+    "receipt": ".hermes/evidence/theme-editor-pointer-fix-linux-current/PREVIOUS_LINUX_PACKAGES_ACCEPTANCE.json"
   },
   "limits": [
-    "Mounted Dark and Light X11 verified live and preview menu rows, draft text and geometry, and Cancel. Native Windows appearance remains open.",
+    "Mounted Dark and Light X11 verified preview menu behavior, draft geometry, and physical Cancel after a 1.25-second hold. Native Windows appearance remains open.",
     "Other portal, theme and native distro receipts retain their recorded package scopes.",
     "Bundled administrator helper passed read-only protocol checks. Updating the installed system helper requires its own administrator action.",
-    "Packaged manuals are build-time snapshots at 9f27ece1; repository metadata records later delivery."
-  ],
-  "mounted_file_manager": ".hermes/evidence/theme-preview-popup-linux-current/FILE_MANAGER_DBUS_ACCEPTANCE.json",
-  "mounted_picker_caller": ".hermes/evidence/theme-preview-popup-linux-current/picker-save/RESULT.json"
+    "Packaged manuals are build-time snapshots at a9c718a2; repository metadata records later delivery."
+  ]
 }

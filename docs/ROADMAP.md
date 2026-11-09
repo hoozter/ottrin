@@ -1606,6 +1606,25 @@ Current source, test, package and owner/external scopes stay separate.
    close the installer or MSIX lifecycle gates.
    [Windows portable acceptance](../.hermes/evidence/theme-editor-pointer-fix-current/native-portable/GUEST_RESULT.json).
 
+   All four hosted jobs passed on `a9c718a2`. The four Linux formats
+   were promoted to their stable paths and rechecked by hash. The
+   managed daemon returned to Ready with startup intent, preferences
+   and database identity preserved. The stage, old artifacts and old
+   mount were removed. The exact folder and picker receipts are linked
+   in the current package manifest.
+   [Linux promotion](../.hermes/evidence/theme-editor-pointer-fix-linux-current/PROMOTION.json).
+
+   The fresh NSIS retry cleared the storage gate but exceeded the
+   actor's 180-second install deadline before reaching the editor.
+   At the subsequent process snapshot, the index daemon was running
+   from the new installation path and the installer process was absent.
+   This leaves open whether the setup completed just after the
+   deadline. The guest and both volumes were retired. Use a bounded
+   extended observation with the same installer to distinguish a slow
+   finish from a stuck transaction. Native development MSIX assembly
+   and deployment checks proceed independently.
+   [Installer retry result](../.hermes/evidence/theme-editor-pointer-fix-current/native-installed-retry/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
