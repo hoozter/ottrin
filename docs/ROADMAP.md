@@ -968,8 +968,16 @@ Current source, test, package and owner/external scopes stay separate.
      [Accessible installed cleanup](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_ACCESSIBLE_CLEANUP.json).
      [Installed cleanup with replacement kept](../.hermes/evidence/windows-admin-copy-package-current/INSTALLED_READONLY_ALIAS_KEEP_REPLACEMENT.json).
      [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
-     Crash recovery, cancellation, power loss and production latency
-     remain separate gates.
+     The same private installer passed cancellation at the real UAC
+     prompt during protected Replace. Ottrin showed the cancellation
+     message and closed normally. The original and its hard link kept
+     their file identity, bytes, attributes, security and named stream.
+     The source and unrelated marker were preserved, and no transaction
+     data or caller recovery journal appeared. The owned guest and
+     overlay were removed.
+     [Installed elevation cancellation](../.hermes/evidence/windows-alias-cancel-current/ACCEPTANCE.json).
+     Post-approval Stop, crash recovery, power loss and production
+     latency for this protected Replace case remain separate gates.
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
