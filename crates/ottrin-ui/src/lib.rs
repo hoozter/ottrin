@@ -655,6 +655,20 @@ enum ApplicationMenuAction {
     About,
 }
 
+fn menu_separator(ui: &mut egui::Ui, colors: Colors) {
+    let width = if ui.is_sizing_pass() {
+        0.0
+    } else {
+        ui.available_width()
+    };
+    let (rect, _) = ui.allocate_exact_size(Vec2::new(width, 4.0), Sense::hover());
+    ui.painter().hline(
+        rect.x_range(),
+        rect.center().y,
+        Stroke::new(1.0, colors.border),
+    );
+}
+
 fn application_menu(
     popup: egui::Popup<'_>,
     style: &egui::Style,
@@ -704,7 +718,7 @@ fn application_menu(
             let mut selected = None;
             for (index, group) in groups.iter().enumerate() {
                 if index != 0 {
-                    ui.add(egui::Separator::default().horizontal().spacing(4.0));
+                    menu_separator(ui, colors);
                 }
                 for &(action, icon, label, enabled) in *group {
                     if ui
@@ -5364,7 +5378,7 @@ impl OttrinApp {
                 "Bottom status bar, file counts and utility controls. Shared text and accent colors also affect other components. Preview controls select styling without operating services or files."
             }
             ThemePreviewRegion::Accent => {
-                "Button colors and corners also style menu rows. Open Menu in the preview to see the shared panel fill, window border and surface corners."
+                "Button colors and corners also style menu rows. Open Menu in the preview to see the shared panel fill, dividers, window border and surface corners."
             }
             ThemePreviewRegion::Borders => "Dividers, outlines, and window-edge definition.",
         }
@@ -5475,6 +5489,7 @@ impl OttrinApp {
                 ThemeColorField::Hover,
                 ThemeColorField::Accent,
                 ThemeColorField::Panel,
+                ThemeColorField::Border,
                 ThemeColorField::WindowBorder,
             ],
             ThemePreviewRegion::Borders => &[],
@@ -12540,7 +12555,7 @@ impl OttrinApp {
             }
         }
 
-        ui.add(egui::Separator::default().horizontal().spacing(4.0));
+        menu_separator(ui, c);
         match view_mode {
             ViewMode::Miller => {
                 ui.add_enabled(
@@ -12599,7 +12614,7 @@ impl OttrinApp {
             }
         }
 
-        ui.add(egui::Separator::default().horizontal().spacing(4.0));
+        menu_separator(ui, c);
         ui.label(
             RichText::new("Sort")
                 .size(11.5 * c.font_scale)
@@ -12657,7 +12672,7 @@ impl OttrinApp {
         }
 
         if matches!(view_mode, ViewMode::List) {
-            ui.add(egui::Separator::default().horizontal().spacing(4.0));
+            menu_separator(ui, c);
             ui.label(
                 RichText::new("List Columns")
                     .size(11.5 * c.font_scale)
@@ -12683,7 +12698,7 @@ impl OttrinApp {
             }
         }
 
-        ui.add(egui::Separator::default().horizontal().spacing(4.0));
+        menu_separator(ui, c);
         if ui
             .add(aligned_menu_button(
                 " ",
@@ -34214,6 +34229,7 @@ mod tests {
         let mut colors = app.colors;
         colors.panel = Color32::from_rgb(70, 34, 97);
         colors.window_border = Color32::from_rgb(245, 110, 58);
+        colors.border = Color32::from_rgb(39, 181, 108);
         colors.window_border_width = 3.5;
         colors.border_radius = 13;
         let input = |events| egui::RawInput {
@@ -34299,6 +34315,23 @@ mod tests {
             );
         }
         assert!(preview_buttons["Paste into Current Folder"].1);
+        let dividers = preview
+            .shapes
+            .iter()
+            .filter(|shape| {
+                matches!(
+                    &shape.shape,
+                    egui::Shape::LineSegment { points, stroke }
+                        if points[0].y == points[1].y
+                            && points[1].x - points[0].x >= 190.0
+                            && *stroke == Stroke::new(1.0, colors.border)
+                )
+            })
+            .count();
+        assert!(
+            dividers >= 3,
+            "The preview menu must paint its three themed dividers"
+        );
         assert!(preview.shapes.iter().any(|shape| matches!(
             &shape.shape,
             egui::Shape::Rect(frame)
