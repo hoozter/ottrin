@@ -13,6 +13,7 @@ on:
       - "docs/USER_GUIDE.md"
       - "docs/RELEASE_NOTES.md"
   pull_request:
+  workflow_dispatch:
 
 # A superseded revision must not keep consuming runners or report stale failures.
 # The newest revision still runs every required gate.
