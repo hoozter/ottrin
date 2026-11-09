@@ -1023,12 +1023,21 @@ Current source, test, package and owner/external scopes stay separate.
      with over 300 seconds of helper CPU time. One helper thread
      dominated the thread-time sample. The 480-second fixture deadline
      ended the run without publication. The source and original hashes
-     passed again, and all disposable guests were removed. Localize
-     the post-staging CPU cost before changing validation or enabling
-     Administrator Copy in standard Windows packages.
+     passed again, and all disposable guests were removed. A follow-up
+     sampled the busiest thread of the exact installed helper after the
+     full candidate appeared. Instruction pointers mostly landed in
+     Windows native libraries. Candidate return addresses repeatedly
+     pointed to caller, profile and directory validation. The source
+     confirms that every 64 KiB streaming callback also revalidates
+     these bindings, including during verification reads. Separate
+     stream cancellation and progress from full binding validation
+     while preserving authority and journal checks at mutation
+     boundaries. Verify the original large Replace fixture and native
+     binding-change and cancellation cases before enabling the feature.
      [Initial timing attempt](../.hermes/evidence/windows-alias-performance-current/ATTEMPT.json).
      [Diagnostic attempt](../.hermes/evidence/windows-alias-performance-diagnostic-current/ATTEMPT.json).
      [Post-staging timing evidence](../.hermes/evidence/windows-alias-performance-retry-current/FINDING.json).
+     [Installed helper profile](../.hermes/evidence/windows-alias-performance-profile-current/FINDING.json).
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
