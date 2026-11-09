@@ -1,0 +1,65 @@
+{
+  "status": "pass",
+  "scope": "Native ordinary-user symbolic-link policy denial on the private candidate installer. No packaged or positive symbolic-link publication or restoration claim.",
+  "input": {
+    "source_revision": "a78b5837d587d49062f0d41d2638b17d747a5601",
+    "source_test_sha256": "fc18dd6e190bbb3fbaf0adeb545e600463283cecceb53474def7e31c455da9c8",
+    "test_sha256": "f4b282d7641ca18becb1ac779639c060e5cf32a2ca17414d67fff7640b8eda85",
+    "source_bytes": 700675303,
+    "staged_bytes": 679152015,
+    "strip_command": [
+      "x86_64-w64-mingw32-strip",
+      "--strip-debug"
+    ],
+    "unchanged_executable_text": {
+      "entry_rva": 5136,
+      "bytes": 530691072,
+      "sha256": "d91d1860ab0335f5cf8189d63cc52be88c2687610dc24954cd4fab6548385ab8"
+    },
+    "actor_sha256": "69489ff3169338d1245c841375c3811ba3065622fe9dadbefe69dca541dd6324",
+    "scope": "Exact declared native test executable under a fresh ordinary interactive account; frozen actor and observed named assertions define acceptance. No implicit preview, package, elevation or full-roadmap acceptance.",
+    "changed_product_sources": {},
+    "source_scope": "Git revision is the reference base; changed_product_sources binds any uncommitted product snapshot. Executable hash/text bind the actual staged native test."
+  },
+  "windows": {
+    "caption": "Microsoft Windows 11 Enterprise Evaluation",
+    "disable_msi": null,
+    "build": "26300",
+    "msi": "5.0.26100.9444"
+  },
+  "identity": {
+    "developer_mode": false,
+    "sid": "S-1-5-21-3790294415-2606194316-2422870471-1002",
+    "administrator": false,
+    "session": 1
+  },
+  "result": {
+    "stdout": "\nrunning 1 test\ntest copy_transaction::windows::links::tests::windows_native_copy_symlink_policy_denial_retains_private_candidate ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 598 filtered out; finished in 0.20s\n\n",
+    "case": "ordinary symlink policy denial",
+    "stderr": "",
+    "exit": 0
+  },
+  "observations": [
+    "Windows rejected link installation for missing privilege",
+    "Unpublished candidate remained a non-link with the exact prior named-stream evidence and owner-only security",
+    "The target contents were unchanged"
+  ],
+  "fixture_corrections": [
+    "Password-based scheduled task registered but never started (0x41303)",
+    "The first interactive preflight used a registry accessor that threw for the absent Developer Mode value",
+    "The successful interactive run read the optional value from the registry item and still required native privilege refusal"
+  ],
+  "archive_sha256": "f5209477310fa1a981fec3731a81e1361735ee71fc9ae7cada3075a32d2b161b",
+  "cleanup": {
+    "domain_removed": true,
+    "owned_volumes_removed": [
+      "ottrin-boundary-client.qcow2",
+      "ottrin-boundary-client-fixture.iso"
+    ],
+    "fixture_removed": true,
+    "base_still_off": true,
+    "retained_pending_volume": null,
+    "temporarily_moved_compiler_executable_restored_by_hash": true,
+    "consumed_run_directories_removed": true
+  }
+}

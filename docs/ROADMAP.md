@@ -647,11 +647,15 @@ Current source, test, package and owner/external scopes stay separate.
      publication and reopen, process-exit recovery, cancellation and changed
      payload refusal. It also passed retention recovery across injected and
      real exits for writable file and directory originals. The source still
-     refuses read-only original-root retention. The hosted symbolic-link
-     policy-denial test was ignored because it needs the ordinary-user policy
-     lane. Keep that lane, read-only original-root behavior and the remaining
-     symbolic-link publication and restoration boundaries open. Preserve
-     edited or unknown payloads and refuse divergent journals.
+     refuses read-only original-root retention. The separate native
+     symbolic-link denial test passed on Windows build 26300 under a
+     signed-in standard user with Developer Mode disabled. Windows refused
+     installation, the private candidate kept its named data and owner-only
+     security, and the target bytes were unchanged. See the
+     [ordinary-user policy receipt](../.hermes/evidence/caller-profile-init-current/ORDINARY_SYMLINK_POLICY_NATIVE.json).
+     Positive symbolic-link publication and restoration, and read-only
+     original-root behavior, remain open. Preserve edited or unknown payloads
+     and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
    - Installed alternate-administrator UAC checks cover newly authenticated
      connections after app restart, termination of the launched helper,
