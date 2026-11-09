@@ -1,0 +1,85 @@
+{
+  "status": "pass: directly reviewed source-built Linux Appearance page",
+  "binary_sha256": "6b168f88f575b786debc653aef1dfb90cf4db6daf44229e833065e90e85e02d1",
+  "cases": [
+    {
+      "mode": "Dark",
+      "scale": 1,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-y71z1ao8",
+        "owned_processes_reaped": [
+          {
+            "pid": 1874898,
+            "exit": 0
+          },
+          {
+            "pid": 1874902,
+            "exit": 0
+          },
+          {
+            "pid": 1874997,
+            "exit": 15
+          },
+          {
+            "pid": 1875078,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1875167
+          ],
+          "unreadable_foreign_processes_preserved": 5
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      },
+      "captures": {
+        "top.png": "5b01b2b21f1b93422741a1524ba87725868e5594ec2b2e24976a12021cb96363",
+        "bottom.png": "995a8aba9f1efc27035f3c56034aa7b4e0a6173153166bc3d8ffeef68150c16f"
+      }
+    },
+    {
+      "mode": "Light",
+      "scale": 1.5,
+      "teardown": {
+        "status": "closed",
+        "profile": "/var/tmp/.ottrin-picker-qa-nnvorwvs",
+        "owned_processes_reaped": [
+          {
+            "pid": 1880718,
+            "exit": 0
+          },
+          {
+            "pid": 1880764,
+            "exit": 0
+          },
+          {
+            "pid": 1880765,
+            "exit": 15
+          },
+          {
+            "pid": 1880909,
+            "exit": -15
+          }
+        ],
+        "owned_children": {
+          "stopped": [
+            1881016
+          ],
+          "unreadable_foreign_processes_preserved": 4
+        },
+        "owned_mounts_unmounted": [],
+        "profile_removed": true
+      },
+      "captures": {
+        "top.png": "f6f0f571a28f6799d5c4130cb9ff5c08f71b6cdd7b3a13a7eb85e374aeab0009",
+        "bottom.png": "18c8a8e67b96dcbcbae7dca8118d9ecd258b3c3d16bb5b0be3049ce2d1bca711"
+      }
+    }
+  ],
+  "source_base": "26ad4858f9a355663e92147d70dbd06ae37aef1a",
+  "source_diff_sha256": "1777edc41a84b2e445aafb27f4a20f785d2368dd1b3ee1d26f369c982aabc13e",
+  "coverage": "Four framed sections, equal row and column gaps in the theme library, and end-of-page scrolling. Native X11 Dark scale 1 and Light scale 1.5. Linux UI suite 550 passed, one ignored. Strict Linux and Windows-target UI Clippy and formatting passed."
+}

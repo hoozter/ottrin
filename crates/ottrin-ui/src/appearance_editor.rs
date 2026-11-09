@@ -25,61 +25,62 @@ impl OttrinApp {
         let mut preferences_changed = false;
         ui.heading(RichText::new("Appearance").color(c.heading));
         ui.add_space(12.0);
-        ui.horizontal(|ui| {
-            ui.label(RichText::new("Appearance mode").color(c.text_dim));
-            let mut mode = self.current_theme_mode();
-            ui.add_enabled_ui(!self.theme_editor.open, |ui| {
-                appearance_mode_control(ui, &mut mode, true, c);
-            });
-            if mode != self.current_theme_mode() {
-                self.apply_theme_mode(mode, ctx);
-                preferences_changed = true;
-            }
-        });
-        ui.horizontal(|ui| {
-            let active_name = self
-                .state
-                .config
-                .active_custom_theme
-                .as_deref()
-                .unwrap_or(Self::theme_preset_label(self.state.config.theme_preset));
-            ui.label(
-                RichText::new(format!("Active · {active_name}"))
-                    .small()
-                    .color(c.text_dim),
-            );
-            if self.current_theme_mode() == ThemeMode::System {
-                ui.label(
-                    RichText::new(format!(
-                        "Effective · {}",
-                        Self::theme_mode_label(Colors::resolved_mode(
-                            ThemeMode::System,
-                            self.system_theme(ctx)
-                        ))
-                    ))
-                    .small()
-                    .color(c.text_dim),
-                );
-            }
-        });
-        if self.theme_editor.open {
-            ui.add_space(8.0);
+        property_group(ui, "Appearance mode", c, |ui| {
             ui.horizontal_wrapped(|ui| {
-                ui.label(RichText::new("Theme preview in progress").color(c.accent));
-                if ui
-                    .add(egui::Button::new("Continue editing").themed(&c))
-                    .clicked()
-                {
-                    self.resume_theme_editor(ctx);
-                }
-                if ui
-                    .add(egui::Button::new("Discard preview").themed(&c))
-                    .clicked()
-                {
-                    self.cancel_theme_editor(ctx);
+                let mut mode = self.current_theme_mode();
+                ui.add_enabled_ui(!self.theme_editor.open, |ui| {
+                    appearance_mode_control(ui, &mut mode, true, c);
+                });
+                if mode != self.current_theme_mode() {
+                    self.apply_theme_mode(mode, ctx);
+                    preferences_changed = true;
                 }
             });
-        }
+            ui.horizontal_wrapped(|ui| {
+                let active_name = self
+                    .state
+                    .config
+                    .active_custom_theme
+                    .as_deref()
+                    .unwrap_or(Self::theme_preset_label(self.state.config.theme_preset));
+                ui.label(
+                    RichText::new(format!("Active · {active_name}"))
+                        .small()
+                        .color(c.text_dim),
+                );
+                if self.current_theme_mode() == ThemeMode::System {
+                    ui.label(
+                        RichText::new(format!(
+                            "Effective · {}",
+                            Self::theme_mode_label(Colors::resolved_mode(
+                                ThemeMode::System,
+                                self.system_theme(ctx)
+                            ))
+                        ))
+                        .small()
+                        .color(c.text_dim),
+                    );
+                }
+            });
+            if self.theme_editor.open {
+                ui.add_space(8.0);
+                ui.horizontal_wrapped(|ui| {
+                    ui.label(RichText::new("Theme preview in progress").color(c.accent));
+                    if ui
+                        .add(egui::Button::new("Continue editing").themed(&c))
+                        .clicked()
+                    {
+                        self.resume_theme_editor(ctx);
+                    }
+                    if ui
+                        .add(egui::Button::new("Discard preview").themed(&c))
+                        .clicked()
+                    {
+                        self.cancel_theme_editor(ctx);
+                    }
+                });
+            }
+        });
         let presets = [
             ThemePreset::Ottrin,
             ThemePreset::Breeze,
@@ -89,41 +90,39 @@ impl OttrinApp {
             ThemePreset::Nord,
             ThemePreset::G33k,
         ];
-        let columns = ((ui.available_width() / 190.0).floor() as usize).clamp(1, 4);
-        let gap = 12.0;
-        let width = (ui.available_width() - gap * (columns - 1) as f32) / columns as f32;
         let dark = Colors::resolved_mode(self.current_theme_mode(), self.system_theme(ctx))
             != ThemeMode::Light;
-        ui.add_space(20.0);
-        ui.label(RichText::new("Built-in themes").strong().color(c.heading));
-        ui.add_space(8.0);
+        ui.add_space(12.0);
         let mut apply_preset = None;
         let mut edit_preset = None;
-        ui.add_enabled_ui(!self.theme_editor.open, |ui| {
-            for row in presets.chunks(columns) {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = gap;
-                    for &preset in row {
-                        let selected = self.state.config.theme_preset == preset
-                            && self.state.config.active_custom_theme.is_none();
-                        let action = appearance_theme_card(
-                            ui,
-                            c,
-                            Colors::preset(preset, dark),
-                            Self::theme_preset_label(preset),
-                            selected,
-                            width,
-                            false,
-                        );
-                        if action.edit {
-                            edit_preset = Some(preset);
-                        } else if action.apply {
-                            apply_preset = Some(preset);
+        property_group(ui, "Built-in themes", c, |ui| {
+            ui.add_enabled_ui(!self.theme_editor.open, |ui| {
+                let (columns, width, gap) = theme_card_layout(ui.available_width());
+                ui.spacing_mut().item_spacing.y = gap;
+                for row in presets.chunks(columns) {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = gap;
+                        for &preset in row {
+                            let selected = self.state.config.theme_preset == preset
+                                && self.state.config.active_custom_theme.is_none();
+                            let action = appearance_theme_card(
+                                ui,
+                                c,
+                                Colors::preset(preset, dark),
+                                Self::theme_preset_label(preset),
+                                selected,
+                                width,
+                                false,
+                            );
+                            if action.edit {
+                                edit_preset = Some(preset);
+                            } else if action.apply {
+                                apply_preset = Some(preset);
+                            }
                         }
-                    }
-                });
-                ui.add_space(gap);
-            }
+                    });
+                }
+            });
         });
         if let Some(preset) = apply_preset {
             self.apply_theme_preset(preset, ctx);
@@ -132,53 +131,55 @@ impl OttrinApp {
         if let Some(preset) = edit_preset {
             self.open_theme_editor_for_preset(preset, ctx);
         }
-        ui.add_space(8.0);
-        ui.label(RichText::new("Your themes").strong().color(c.heading));
-        ui.add_space(8.0);
-        if self.state.config.custom_themes.is_empty() {
-            ui.label(
-                RichText::new("Use a theme’s pencil to create your own.")
-                    .small()
-                    .color(c.text_dim),
-            );
-        }
+        ui.add_space(12.0);
         let mut apply = None;
         let mut edit = None;
         let mut remove = None;
-        ui.add_enabled_ui(!self.theme_editor.open, |ui| {
-            for (row_index, row) in self.state.config.custom_themes.chunks(columns).enumerate() {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = gap;
-                    for (column, saved) in row.iter().enumerate() {
-                        let index = row_index * columns + column;
-                        ui.push_id(("saved_theme", index), |ui| {
-                            let selected = self.state.config.active_custom_theme.as_deref()
-                                == Some(saved.name.as_str());
-                            let action = appearance_theme_card(
-                                ui,
-                                c,
-                                Colors::for_saved(
-                                    saved,
-                                    self.current_theme_mode(),
-                                    self.system_theme(ctx),
-                                ),
-                                &saved.name,
-                                selected,
-                                width,
-                                true,
-                            );
-                            if action.edit {
-                                edit = Some(index);
-                            } else if action.remove {
-                                remove = Some(index);
-                            } else if action.apply {
-                                apply = Some(index);
-                            }
-                        });
-                    }
-                });
-                ui.add_space(gap);
+        property_group(ui, "Your themes", c, |ui| {
+            if self.state.config.custom_themes.is_empty() {
+                ui.label(
+                    RichText::new("Use a theme’s pencil to create your own.")
+                        .small()
+                        .color(c.text_dim),
+                );
             }
+            ui.add_enabled_ui(!self.theme_editor.open, |ui| {
+                let (columns, width, gap) = theme_card_layout(ui.available_width());
+                ui.spacing_mut().item_spacing.y = gap;
+                for (row_index, row) in self.state.config.custom_themes.chunks(columns).enumerate()
+                {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = gap;
+                        for (column, saved) in row.iter().enumerate() {
+                            let index = row_index * columns + column;
+                            ui.push_id(("saved_theme", index), |ui| {
+                                let selected = self.state.config.active_custom_theme.as_deref()
+                                    == Some(saved.name.as_str());
+                                let action = appearance_theme_card(
+                                    ui,
+                                    c,
+                                    Colors::for_saved(
+                                        saved,
+                                        self.current_theme_mode(),
+                                        self.system_theme(ctx),
+                                    ),
+                                    &saved.name,
+                                    selected,
+                                    width,
+                                    true,
+                                );
+                                if action.edit {
+                                    edit = Some(index);
+                                } else if action.remove {
+                                    remove = Some(index);
+                                } else if action.apply {
+                                    apply = Some(index);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         });
         if let Some(index) = apply {
             self.apply_saved_custom_theme(&self.state.config.custom_themes[index].clone(), ctx);
@@ -191,31 +192,27 @@ impl OttrinApp {
             self.delete_saved_custom_theme(index, ctx);
             preferences_changed = true;
         }
-        ui.add_space(16.0);
-        ui.separator();
-        ui.add_space(6.0);
-        ui.label(
-            RichText::new("File and folder colors")
-                .strong()
-                .color(c.heading),
-        );
-        ui.label(RichText::new("Use category colors to distinguish images, documents, archives and other file types.").small().color(c.text_dim));
-        let file_colors_changed = ui
-            .checkbox(
-                &mut self.state.config.colorize_file_types,
-                "Color files by type",
-            )
-            .changed();
-        let folder_colors_changed = ui
-            .add_enabled(
-                self.state.config.colorize_file_types,
-                egui::Checkbox::new(
-                    &mut self.state.config.colorize_folder_labels,
-                    "Also color folder labels",
-                ),
-            )
-            .changed();
-        if file_colors_changed || folder_colors_changed {
+        ui.add_space(12.0);
+        let file_colors_changed = property_group(ui, "File and folder colors", c, |ui| {
+            ui.label(RichText::new("Use category colors to distinguish images, documents, archives and other file types.").small().color(c.text_dim));
+            let file_colors_changed = ui
+                .checkbox(
+                    &mut self.state.config.colorize_file_types,
+                    "Color files by type",
+                )
+                .changed();
+            let folder_colors_changed = ui
+                .add_enabled(
+                    self.state.config.colorize_file_types,
+                    egui::Checkbox::new(
+                        &mut self.state.config.colorize_folder_labels,
+                        "Also color folder labels",
+                    ),
+                )
+                .changed();
+            file_colors_changed || folder_colors_changed
+        });
+        if file_colors_changed {
             self.reapply_theme(ctx);
             preferences_changed = true;
         }
@@ -1052,16 +1049,20 @@ fn appearance_theme_card(
         ),
         Vec2::splat(28.0),
     );
-    let edit_response = ui
-        .scope_builder(UiBuilder::new().max_rect(edit_rect), |ui| {
-            appearance_icon_button(ui, MI_EDIT, c)
-        })
-        .inner
-        .on_hover_text(if custom {
-            "Edit theme"
-        } else {
-            "Customize theme"
-        });
+    let edit_response = appearance_icon_button(
+        &mut ui.new_child(
+            UiBuilder::new()
+                .id_salt((response.id, "edit"))
+                .max_rect(edit_rect),
+        ),
+        MI_EDIT,
+        c,
+    )
+    .on_hover_text(if custom {
+        "Edit theme"
+    } else {
+        "Customize theme"
+    });
     edit_response.widget_info(|| {
         egui::WidgetInfo::labeled(
             egui::WidgetType::Button,
@@ -1072,13 +1073,13 @@ fn appearance_theme_card(
     let edit = edit_response.clicked();
     let remove = custom
         && ui
-            .put(
+            .new_child(UiBuilder::new().id_salt((response.id, "remove")).max_rect(
                 Rect::from_min_size(
                     egui::pos2(rect.right() - 34.0, rect.bottom() - 35.0),
                     Vec2::splat(28.0),
                 ),
-                egui::Button::new("×").themed(&c),
-            )
+            ))
+            .add_sized(Vec2::splat(28.0), egui::Button::new("×").themed(&c))
             .on_hover_text("Delete custom theme")
             .clicked();
     ThemeCardAction {
@@ -1159,13 +1160,20 @@ pub(super) fn settings_surface(c: Colors) -> Frame {
         .inner_margin(12)
 }
 
-/// One consistent property surface for component colors, geometry and shared values.
-fn property_group(
+fn theme_card_layout(available_width: f32) -> (usize, f32, f32) {
+    let gap = 12.0;
+    let columns = ((available_width / 190.0).floor() as usize).clamp(1, 4);
+    let width = (available_width - gap * (columns - 1) as f32) / columns as f32;
+    (columns, width, gap)
+}
+
+/// One consistent surface for appearance settings and theme properties.
+fn property_group<T>(
     ui: &mut egui::Ui,
     title: &str,
     c: Colors,
-    body: impl FnOnce(&mut egui::Ui) -> bool,
-) -> bool {
+    body: impl FnOnce(&mut egui::Ui) -> T,
+) -> T {
     settings_surface(c)
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
@@ -3407,6 +3415,65 @@ mod tests {
                 app.colors,
                 Colors::preset(ThemePreset::Solarized, prior_mode == ThemeMode::Dark)
             );
+        }
+    }
+
+    #[test]
+    fn appearance_page_paints_aligned_section_frames_in_both_themes() {
+        for dark in [true, false] {
+            let ctx = Context::default();
+            let mut app = OttrinApp::default();
+            let mut colors = Colors::preset(ThemePreset::Ottrin, dark);
+            colors.font_scale = 1.5;
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(520.0, 1100.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_appearance_settings(ui, ctx, colors);
+                    });
+                },
+            );
+            let groups = output
+                .shapes
+                .iter()
+                .filter_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Rect(rect)
+                        if rect.fill == colors.panel
+                            && rect.stroke.color == colors.border
+                            && rect.rect.width() > 480.0 =>
+                    {
+                        Some(rect.rect)
+                    }
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(groups.len(), 4);
+            for pair in groups.windows(2) {
+                assert_eq!(pair[0].x_range(), pair[1].x_range());
+                assert!(pair[0].bottom() < pair[1].top());
+            }
+            assert!(groups.iter().all(|group| group.right() <= 520.0));
+            let cards = output
+                .shapes
+                .iter()
+                .filter_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Rect(rect)
+                        if rect.rect.height() == 138.0 && rect.stroke.width > 0.0 =>
+                    {
+                        Some(rect.rect)
+                    }
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(cards.len(), 7);
+            assert_eq!(cards[1].left() - cards[0].right(), 12.0);
+            assert_eq!(cards[2].top() - cards[0].bottom(), 12.0);
         }
     }
 

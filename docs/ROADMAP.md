@@ -1083,6 +1083,17 @@ Current source, test, package and owner/external scopes stay separate.
    checks and promotion are recorded above. Native Windows GUI acceptance
    remains open.
 
+   The Appearance page now shares the editor's framed groups for mode,
+   built-in themes, saved themes and file colors. Card action buttons stay
+   inside the card without changing the equal row and column gaps. A rendered
+   check at 150% text verifies frame alignment and card gaps in both palettes.
+   The Linux UI suite passed 550 tests with one ignored. Strict Linux and
+   Windows-target UI lint and formatting passed. The source-built X11 app
+   was reviewed in Dark at scale 1 and Light at scale 1.5, including scrolling
+   to the lower sections. Both private desktops were retired.
+   [Appearance page receipt](../.hermes/evidence/appearance-page-groups-final/ACCEPTANCE.json).
+   Native Windows and packaged acceptance for this change remain open.
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and
