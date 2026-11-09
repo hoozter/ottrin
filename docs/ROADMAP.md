@@ -1012,6 +1012,16 @@ Current source, test, package and owner/external scopes stay separate.
      This checks the observed pre-publication staging boundary.
      Physical storage power loss and production latency remain
      separate gates.
+     The first installed 1 GiB Replace timing run observed the
+     approved helper start but timed out before publication at the
+     fixture's 130-second deadline. The source and protected original
+     remained present with their original hashes. An extended run
+     stopped on a failed observer command before it could establish
+     completion or a timing result. The next run separates observer
+     errors from the app's completion check and records helper CPU,
+     visible staging and destination size throughout the attempt.
+     [Initial timing attempt](../.hermes/evidence/windows-alias-performance-current/ATTEMPT.json).
+     [Diagnostic attempt](../.hermes/evidence/windows-alias-performance-diagnostic-current/ATTEMPT.json).
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
