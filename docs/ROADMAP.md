@@ -272,6 +272,25 @@ superseded Windows cohort and consumed staging directory. Linux artifacts
 and the held MSI were preserved. See
 [preceding Windows delivery](../.hermes/evidence/windows-picker-keyboard-current/WINDOWS_DELIVERY.json).
 
+**Delivered Windows Save checkpoint.** Exact staged `7992ad1e` NSIS passed
+fresh install, Save shortcut ownership and exact UTF-16 selection in both
+themes, and uninstall in a fresh ordinary-user guest. The caller file and
+configuration bytes were preserved. The upgrade from `67d3cbe1` with
+a running index, all three reinstall intent combinations, and locked-cache
+uninstall refusal and retry passed in the fresh native repeat. The earlier
+stopped-and-disabled timeout did not recur. Native MakeAppx assembled
+unsigned development MSIX 28 from the same payload and verified all
+59 files. Fresh deployment and the enabled 27-to-28 upgrade passed
+ordinary runtime, Explorer actions, real sign-in and removal. The first
+fixture expected outdated notice text. The corrected assertion verified
+the full current notice and unchanged host defaults. Guarded promotion
+delivered the three formats to the stable Windows path. See
+[MSIX runtime acceptance](../.hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json),
+[MSIX assembly](../.hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json),
+[native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
+[upgrade acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
+and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
+
 ### Current ordered work
 
 1. **Windows administrator Copy recovery.** The nine fresh-profile fault
@@ -306,10 +325,14 @@ and the held MSI were preserved. See
    using a separate local administrator at each UAC prompt. The copied bytes
    matched, the original caller owned the publication, and Undo removed it
    while preserving the source. Installed UI and interrupted recovery remain
-   open. Administrator Copy remains disabled in the delivered Windows
-   app. Use a private candidate with the shared capability enabled to
-   verify the installed UI and interruption paths before enabling it in a
-   deliverable. Private revision `94549b87` changes the shared capability
+   open at this checkpoint. The installed recovery and interruption
+   receipts below cover those paths on capability-enabled private builds.
+   Administrator Copy is still disabled in the current Windows candidate.
+   The remaining delivery gate is a matched installed timing comparison
+   for the large protected Replace and its post-publication verification,
+   followed by capability-enabled acceptance against the source intended
+   for delivery. Keep caller identity, journal recovery and Undo checks
+   in that fixture. Private revision `94549b87` changes the shared capability
    gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
    across all 59 payload files. The installer ran as a standard user, and
    the bundled helper advertised Copy recovery. An incomplete fixture
@@ -449,30 +472,17 @@ and the held MSI were preserved. See
    [before-state acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-state-attempt-2/ACCEPTANCE.json), [first-directory acceptance](../.hermes/evidence/caller-profile-init-current/matrix-first-directory/ACCEPTANCE.json),
    [truncated-anchor acceptance](../.hermes/evidence/caller-profile-init-current/matrix-partial-anchor-write/ACCEPTANCE.json)
    and [before-flush acceptance](../.hermes/evidence/caller-profile-init-current/matrix-before-anchor-flush/ACCEPTANCE.json).
-2. **Deliver the Windows Save fix.** Exact staged `7992ad1e` NSIS passed
-   fresh install, Save shortcut ownership and exact UTF-16 selection in both
-   themes, and uninstall in a fresh ordinary-user guest. The caller file and
-   configuration bytes were preserved. The upgrade from `67d3cbe1` with
-   a running index, all three reinstall intent combinations, and locked-cache
-   uninstall refusal and retry passed in the fresh native repeat. The earlier
-   stopped-and-disabled timeout did not recur. Native MakeAppx assembled
-   unsigned development MSIX 28 from the same payload and verified all
-   59 files. Fresh deployment and the enabled 27-to-28 upgrade passed
-   ordinary runtime, Explorer actions, real sign-in and removal. The first
-   fixture expected outdated notice text. The corrected assertion verified
-   the full current notice and unchanged host defaults. Guarded promotion
-   delivered the three formats to the stable Windows path. See
-   [MSIX runtime acceptance](../.hermes/evidence/windows-picker-keyboard-current/MSIX_RUNTIME_ACCEPTANCE.json),
-   [MSIX assembly](../.hermes/evidence/windows-picker-keyboard-current/ASSEMBLY_ACCEPTANCE.json),
-   [native Save acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-save/ACCEPTANCE.json),
-   [upgrade acceptance](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade-attempt-2/ACCEPTANCE.json)
-   and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/native-upgrade/ACCEPTANCE.json).
-3. **Close Windows desktop integration and theme acceptance.** The
+2. **Close Windows desktop integration and theme acceptance.** The
    read-only MSIX comparison confirmed transacted opens fail under package
    identity. Verify supported folder actions, picker behavior, and remaining theme
    controls in the installed candidate. The current MSIX exposes Explorer
-   commands and reports the default-folder limitation.
-4. **Finish release-candidate acceptance.** Retest changed surfaces and their
+   commands and reports the default-folder limitation. Current MSIX 32
+   verified Explorer background, multiple-folder and drive actions, and
+   preserved the default registration. The current portable ZIP passed
+   keyboard picker navigation and the reported Dark and Light theme edits.
+   Continue with installed theme property coverage and any supported
+   desktop entry points outside those receipts.
+3. **Finish release-candidate acceptance.** Retest changed surfaces and their
    normal entry points against the packages being delivered. Keep public
    signing, Store submission, physical-device tests and personal acceptance
    in the waiting list with their own evidence. Linux is already delivered
