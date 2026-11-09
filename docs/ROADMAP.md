@@ -1143,8 +1143,13 @@ Current source, test, package and owner/external scopes stay separate.
    remaining complete interface/property audit.
    Live navigation/menu/view/breadcrumb, tab/window-control and Miller presenters
    have bounded acceptance; List/Grid now has source and actual mounted Linux package checks described
-   above, with original package acceptance at Linux source43. Broader scale/
-   platform coverage and whole-interface alignment/grouping remain open. The theme-library miniature now
+   above, with original package acceptance at Linux source43. The stable
+   `a9c718a2` AppImage also cycles Column → List → Grid → Column in
+   Dark and Light at 150% X11 scaling. The actual List headers and Grid
+   tiles stay readable, and Cancel preserves the saved view and theme.
+   Both private profiles were removed. [Scaled preview receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/view-scale150/ACCEPTANCE.json).
+   Broader platform and theme-property coverage and whole-interface
+   alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
    scales window radius/border values with its miniature button scale. Existing
    30 appearance tests, strict Linux lint and actual Dark/Light Appearance-page
