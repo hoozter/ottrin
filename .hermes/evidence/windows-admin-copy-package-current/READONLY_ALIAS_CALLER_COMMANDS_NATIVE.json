@@ -1,0 +1,28 @@
+{
+  "original_executable_sha256": "21242a58cebaf1a0d9d79d8f74eb2248fc5dbd9d685a6e8c40fc5acfcf74efb3",
+  "executed_executable_sha256": "df8e14ecc1d4dfb835efe040cb2344439913ea553ba4159ded4bcd23052ab2f2",
+  "output": "\r\nrunning 1 test\r\ntest windows_privileged_transport::tests::caller_owner::system_helper ... caller read-only hard-link overwrite undo=true: alias identity, permissions, streams and cleanup passed\r\ncaller read-only hard-link overwrite undo=false: alias identity, permissions, streams and cleanup passed\r\nok\r\n\r\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 601 filtered out; finished in 12.84s\r\n\r\n\r\nrunning 1 test\r\ntest windows_privileged_transport::tests::caller_owner::client ... ok\r\n\r\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 601 filtered out; finished in 13.01s\r\n\r\n",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "3fecce26-5c9f-4dca-b43b-358d6c313b54",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true
+  },
+  "source_base": "c4e69f925da7eca21fc1be308404e37d8c655fac",
+  "test_diff_sha256": "b7aba46f6e3a4fbb8d5fc621b682531b41123976ab2f2f25608e75351ea80fcb",
+  "status": "pass",
+  "scope": "Native Windows standard-user process bound to a SYSTEM helper over the local pipe. The helper invoked production caller-bound Copy, Undo and Cleanup handlers after authenticating that process. No installed UI, alternate-administrator UAC, crash or power-loss acceptance.",
+  "cases": [
+    "Replace, verify retained original and alias, Undo, then cleanup",
+    "Replace, verify retained original and alias, cleanup while keeping the replacement"
+  ],
+  "setup_finding": "The disposable account needed batch-logon rights. The broad mechanism fixture then stopped in its separate case-sensitive-directory setup, so the verified run isolated the hard-link operations after authenticating the same caller.",
+  "host_checks": [
+    "Windows GNU platform test build",
+    "strict Windows GNU all-target Clippy",
+    "formatting"
+  ]
+}

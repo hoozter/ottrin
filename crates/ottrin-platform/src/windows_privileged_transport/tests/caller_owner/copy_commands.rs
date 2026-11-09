@@ -226,6 +226,107 @@ pub(super) fn exercise_symlink_overwrite(
     }
 }
 
+pub(super) fn exercise_readonly_alias_overwrite(
+    channel: &HelperChannel,
+    caller: &CallerCopyContext,
+    root: &Path,
+) {
+    use crate::copy_transaction::owner_group_dacl_digest;
+    use crate::move_recovery::stable_identity_from_handle;
+    use std::fs;
+
+    let execute = |command| {
+        let response = channel.execute_copy_command(&command).unwrap();
+        assert_eq!(
+            response.status,
+            PrivilegedStatus::Success,
+            "{:?}",
+            response.message
+        );
+        response.payload
+    };
+    let destination = root.join("system-only");
+    for undo in [true, false] {
+        let name = format!("caller-readonly-alias-{undo}.txt");
+        let source = root.join("probe-data").join(&name);
+        let target = destination.join(&name);
+        let alias = destination.join(format!("outside-{name}"));
+        let named_stream = |path: &Path| {
+            let mut stream = path.as_os_str().to_os_string();
+            stream.push(":ottrin-test");
+            PathBuf::from(stream)
+        };
+        caller
+            .with_caller_token(|| fs::write(&source, b"replacement payload"))
+            .unwrap();
+        fs::write(&target, b"original payload").unwrap();
+        fs::write(named_stream(&target), b"original named stream").unwrap();
+        fs::hard_link(&target, &alias).unwrap();
+        let original_permissions = fs::metadata(&target).unwrap().permissions();
+        let mut readonly_permissions = original_permissions.clone();
+        readonly_permissions.set_readonly(true);
+        fs::set_permissions(&target, readonly_permissions).unwrap();
+        let original = fs::File::open(&target).unwrap();
+        let identity = stable_identity_from_handle(&original).unwrap();
+        let security = owner_group_dacl_digest(&original).unwrap();
+        drop(original);
+        let assert_original = |path: &Path| {
+            let file = fs::File::open(path).unwrap();
+            assert_eq!(stable_identity_from_handle(&file).unwrap(), identity);
+            assert_eq!(owner_group_dacl_digest(&file).unwrap(), security);
+            assert!(file.metadata().unwrap().permissions().readonly());
+            assert_eq!(fs::read(path).unwrap(), b"original payload");
+            assert_eq!(
+                fs::read(named_stream(path)).unwrap(),
+                b"original named stream"
+            );
+        };
+        let Some(PrivilegedPayload::Copy(receipt)) =
+            execute(PrivilegedCommand::File(FileCommand::Copy {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Overwrite,
+            }))
+        else {
+            panic!("Missing read-only hard-link Copy receipt");
+        };
+        assert_eq!(receipt.completed_sources, 1);
+        assert_eq!(receipt.transactions.len(), 1);
+        let retained =
+            destination.join(format!(".ottrin-copy-{}.original", receipt.transactions[0]));
+        assert_eq!(fs::read(&target).unwrap(), b"replacement payload");
+        assert_original(&alias);
+        assert_original(&retained);
+
+        if undo {
+            execute(PrivilegedCommand::UndoCopy {
+                transactions: receipt.transactions.clone(),
+            });
+            assert_original(&target);
+        }
+        execute(PrivilegedCommand::CleanupCopy {
+            transactions: receipt.transactions,
+        });
+        assert!(!retained.exists());
+        assert_original(&alias);
+        if undo {
+            assert_original(&target);
+        } else {
+            assert_eq!(fs::read(&target).unwrap(), b"replacement payload");
+        }
+        assert_eq!(fs::read(&source).unwrap(), b"replacement payload");
+
+        // The fixture owns both names and has finished observing their flags.
+        fs::set_permissions(&alias, original_permissions).unwrap();
+        for path in [alias, target, source] {
+            fs::remove_file(path).unwrap();
+        }
+        println!(
+            "caller read-only hard-link overwrite undo={undo}: alias identity, permissions, streams and cleanup passed"
+        );
+    }
+}
+
 pub(super) fn client(pipe: &mut LocalPipeStream, root: &Path, source: &Path) {
     let ready: PrivilegedResponse = read_json(pipe).unwrap();
     assert_eq!(ready.status, PrivilegedStatus::Success);

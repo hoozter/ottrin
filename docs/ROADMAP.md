@@ -824,6 +824,13 @@ Current source, test, package and owner/external scopes stay separate.
      named stream. The guest fixture directory was empty afterward and
      the disposable guest and overlay were removed.
      [Relative-rename native receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_RELATIVE_RENAME_NATIVE.json).
+     A native standard-user process also authenticated to a SYSTEM
+     helper over the local pipe. The production caller-bound command
+     handlers passed Replace and cleanup both with and without Undo.
+     The alias retained its file ID, security descriptor, read-only flag
+     and both streams. The helper preserved its original token state.
+     Both processes passed and their offline guest was removed.
+     [Native caller command receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_CALLER_COMMANDS_NATIVE.json).
      The installed Replace, restart, Undo and cleanup fixture with an
      external alias and a named stream still needs
      a newly built private installer and a native run. The installed guest

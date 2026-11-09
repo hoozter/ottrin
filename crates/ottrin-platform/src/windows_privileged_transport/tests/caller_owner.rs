@@ -333,6 +333,17 @@ fn client() {
     // transport's five-second default. The owned outer actor bounds the test
     // and terminates its process tree; a helper disconnect still fails here.
     pipe.set_io_timeout(Duration::MAX);
+    if std::env::var_os("OTTRIN_TEST_READONLY_ALIAS_ONLY").is_some() {
+        let response: PrivilegedResponse = read_json(&mut pipe).unwrap();
+        assert_eq!(response.status, PrivilegedStatus::Success);
+        assert_eq!(
+            response.message.as_deref(),
+            Some("owned read-only hard-link Copy complete")
+        );
+        assert!(response.payload.is_none());
+        assert_eq!(std::fs::read(&source).unwrap(), b"unchanged caller source");
+        return;
+    }
     copy_commands::client(&mut pipe, &root, &source);
     let response: PrivilegedResponse = read_json(&mut pipe).unwrap();
     assert_eq!(response.status, PrivilegedStatus::Success);
@@ -420,6 +431,18 @@ fn system_helper() {
     // this helper process's default owner. Verify the actual protected policy.
     let parent_owner = system_parent_policy(&parent);
     let original_helper_state = token_state();
+    if std::env::var_os("OTTRIN_TEST_READONLY_ALIAS_ONLY").is_some() {
+        copy_commands::exercise_readonly_alias_overwrite(&channel, &context, &root);
+        assert_eq!(token_state(), original_helper_state);
+        channel
+            .write_response(&PrivilegedResponse {
+                status: PrivilegedStatus::Success,
+                message: Some("owned read-only hard-link Copy complete".into()),
+                payload: None,
+            })
+            .unwrap();
+        return;
+    }
     let control_parent = crate::windows_fs::open_directory(
         &root.join("probe-data"),
         FILE_GENERIC_READ | FILE_GENERIC_WRITE,
@@ -849,6 +872,7 @@ fn system_helper() {
         );
     }
     copy_commands::exercise_symlink_overwrite(&channel, &context, &root);
+    copy_commands::exercise_readonly_alias_overwrite(&channel, &context, &root);
     for source in [&source_file, &source_directory] {
         crate::WindowsCopyRegistry::exercise_caller_cleanup(
             &context,
