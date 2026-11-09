@@ -1436,6 +1436,18 @@ Current source, test, package and owner/external scopes stay separate.
    restored by hash. The current Windows packages remain available.
    [Native repeat](../.hermes/evidence/theme-editor-close-current/native-close/GUEST_RESULT.json).
 
+   The exact same NSIS passed both palettes in an instrumented repeat.
+   Hit-testing and cursor position matched Cancel, and both clicks closed
+   the editor. The intermittent failure remains unproven, but the popup
+   reproducibly stayed open after the sample action in both palettes.
+   The preview now uses the normal application-menu popup lifecycle:
+   Escape, outside clicks and sample actions can dismiss it without
+   changing the selected styling controls or touching files. The rendered
+   regression checks menu dismissal and the native Cancel request in both
+   palettes. All 553 active Linux UI tests and strict lint on Linux and the
+   Windows target pass. Exact rebuilt Windows acceptance is pending.
+   [Native input diagnostic](../.hermes/evidence/theme-editor-close-current/native-cancel-diagnostic/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

@@ -5364,7 +5364,7 @@ impl OttrinApp {
                 "Bottom status bar, file counts and utility controls. Shared text and accent colors also affect other components. Preview controls select styling without operating services or files."
             }
             ThemePreviewRegion::Accent => {
-                "Button colors and corners also style menu rows. Menus use the shared panel fill, window border and surface corners for their frame."
+                "Button colors and corners also style menu rows. Open Menu in the preview to see the shared panel fill, window border and surface corners."
             }
             ThemePreviewRegion::Borders => "Dividers, outlines, and window-edge definition.",
         }
@@ -25579,15 +25579,21 @@ fn theme_editor_large_preview(
         ui.add_space(4.0);
         let menu = application_menu_button(ui, preview);
         menu_clicked = menu.clicked();
-        application_menu(
+        let menu_popup_id = ui.make_persistent_id("theme_preview_application_menu");
+        if application_menu(
             egui::Popup::menu(&menu)
-                .open(selected_region == ThemePreviewRegion::Accent || menu_clicked)
+                .id(menu_popup_id)
+                .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
                 .align(egui::RectAlign::BOTTOM_END),
             ui.style(),
             preview,
             true,
             false,
-        );
+        )
+        .is_some()
+        {
+            egui::Popup::close_id(ui.ctx(), menu_popup_id);
+        }
         if view_mode_button(ui, preview, *view).clicked() {
             *view = next_view_mode(*view);
             navigation_clicked = true;

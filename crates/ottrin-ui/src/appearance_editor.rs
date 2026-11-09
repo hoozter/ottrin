@@ -3089,8 +3089,15 @@ mod tests {
                     data: None,
                 })
             };
+            let initial = render(vec![]);
+            let _ = render(vec![invoke(&initial, "Menu")]);
             let menu = render(vec![]);
+            assert!(egui::Popup::is_any_open(&ctx));
             let invoked = render(vec![invoke(&menu, "New Folder")]);
+            assert!(
+                !egui::Popup::is_any_open(&ctx),
+                "Invoking a sample action must dismiss the popup"
+            );
             let cancelled = render(vec![invoke(&invoked, "Cancel")]);
             let output = &cancelled.viewport_output[&editor_id];
             assert!(
