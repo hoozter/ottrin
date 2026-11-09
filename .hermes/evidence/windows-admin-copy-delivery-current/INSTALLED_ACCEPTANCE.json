@@ -1,0 +1,177 @@
+{
+  "status": "pass exact installed Windows administrator Copy and recovery",
+  "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-setup.exe": "9dca62ae4a6a723f459a2906ef16ef67ba58d7cb4062d7d4516d1caaa160f4e0",
+    "Ottrin-0.1.0-windows-x64-portable.zip": "1d2ffccb7590dd462a325e63b75b4cd3226194fa4b1f8346d6b64ef9b3eb707f"
+  },
+  "bundled_helper_sha256": "ff95a2405883a1c3b6e480a0a68ceb2066a8183db15ff787f707f132e10c8f74",
+  "cases": {
+    "copy-undo": {
+      "input": {
+        "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+        "installer_sha256": "9dca62ae4a6a723f459a2906ef16ef67ba58d7cb4062d7d4516d1caaa160f4e0",
+        "diagnostic_helper_sha256": null,
+        "source_sha256": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+        "interrupt": false,
+        "disconnect": false,
+        "caller_registry": false,
+        "profile_refusals": false,
+        "stop": false,
+        "stopped_ui": false,
+        "symlink": false,
+        "directory_symlink": false,
+        "overwrite_symlink": false,
+        "overwrite_readonly": false,
+        "readonly_alias": false,
+        "keep_alias_replacement": false,
+        "invoke_alias_cleanup": false,
+        "resume": false,
+        "late_stop": false,
+        "lost_reply": false,
+        "tree_count": null,
+        "actor_sha256": "b827e608677389ee6b2c480b94fb72a86ca09b6f89bbe07f77b62d2c8cb79714",
+        "observer_sha256": null,
+        "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+        "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+      },
+      "phases": {
+        "copy": {
+          "mode": "copy",
+          "ordinary_target_hash": "3fc5d485b7cbea0501dd61db76c43ff6dadea69e25a93ff970da52a3ec597073",
+          "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "payload_files": 59,
+          "client_exited": true,
+          "phase": "complete",
+          "client_exit": 0,
+          "client_pid": 2152,
+          "status": "pass"
+        },
+        "history-undo": {
+          "client_pid": 7092,
+          "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "payload_files": 59,
+          "client_exited": true,
+          "phase": "complete",
+          "client_exit": 0,
+          "mode": "history-undo",
+          "status": "pass"
+        },
+        "undone": {
+          "client_pid": 1588,
+          "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "payload_files": 59,
+          "client_exited": true,
+          "phase": "complete",
+          "client_exit": 0,
+          "mode": "undone",
+          "status": "pass"
+        },
+        "cleared": {
+          "client_pid": 4792,
+          "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "payload_files": 59,
+          "client_exited": true,
+          "phase": "complete",
+          "client_exit": 0,
+          "mode": "cleared",
+          "status": "pass"
+        }
+      },
+      "cleanup": {
+        "domain": "ottrin-init-helper-pipe-qa",
+        "uuid": "ad8b5b94-f689-4290-9e49-aef3abf0cde9",
+        "volume": "ottrin-init-helper-pipe-qa.qcow2",
+        "status": "pass",
+        "domain_removed": true,
+        "overlay_removed": true,
+        "protected_definitions_states_and_backing_unchanged": true
+      }
+    },
+    "interrupt-recovery": {
+      "input": {
+        "source_revision": "c4c2f4beb0a859cadae68423bfaad2e56996a4e6",
+        "installer_sha256": "9dca62ae4a6a723f459a2906ef16ef67ba58d7cb4062d7d4516d1caaa160f4e0",
+        "diagnostic_helper_sha256": null,
+        "source_sha256": "87e7c7d1965ebd6904a1e80e54750fb53ced36e8e85a78869e1d4cdaa3ce3170",
+        "interrupt": true,
+        "disconnect": false,
+        "caller_registry": false,
+        "profile_refusals": false,
+        "stop": false,
+        "stopped_ui": false,
+        "symlink": false,
+        "directory_symlink": false,
+        "overwrite_symlink": false,
+        "overwrite_readonly": false,
+        "readonly_alias": false,
+        "keep_alias_replacement": false,
+        "invoke_alias_cleanup": false,
+        "resume": false,
+        "late_stop": false,
+        "lost_reply": false,
+        "tree_count": null,
+        "actor_sha256": "b827e608677389ee6b2c480b94fb72a86ca09b6f89bbe07f77b62d2c8cb79714",
+        "observer_sha256": null,
+        "caller_sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+        "admin_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032"
+      },
+      "phases": {
+        "copy": {
+          "mode": "copy",
+          "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "payload_files": 59,
+          "client_exited": true,
+          "phase": "complete",
+          "client_exit": 0,
+          "client_pid": 7388,
+          "status": "pass",
+          "transaction": "6283d87bc9b386a174724a3273f871a4"
+        },
+        "interrupt-history": {
+          "client_pid": 2308,
+          "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "payload_files": 59,
+          "client_exited": true,
+          "phase": "complete",
+          "client_exit": 0,
+          "mode": "interrupt-history",
+          "status": "pass"
+        },
+        "interrupt-ended": {
+          "client_pid": 812,
+          "sid": "S-1-5-21-3183210791-1673105385-3262580894-1031",
+          "payload_files": 59,
+          "client_exited": true,
+          "phase": "complete",
+          "client_exit": 0,
+          "mode": "interrupt-ended",
+          "status": "pass"
+        }
+      },
+      "cleanup": {
+        "domain": "ottrin-init-helper-pipe-qa",
+        "uuid": "c6ec70f3-b028-41d0-ac79-aa98d89cdb01",
+        "volume": "ottrin-init-helper-pipe-qa.qcow2",
+        "status": "pass",
+        "domain_removed": true,
+        "overlay_removed": true,
+        "protected_definitions_states_and_backing_unchanged": true
+      },
+      "boundary": {
+        "client_pid": 7388,
+        "target_absent": true,
+        "client_exit": null,
+        "helper_exit": -1,
+        "helper_pid": 7876,
+        "helper_exit_after_client_kill_ms": null,
+        "helper_terminated": true,
+        "client_disconnected": false,
+        "helper_owner_sid": "S-1-5-21-3183210791-1673105385-3262580894-1032",
+        "transaction": "6283d87bc9b386a174724a3273f871a4"
+      }
+    }
+  },
+  "scope": "Native NSIS workflows under the standard caller with alternate administrator consent. MSIX, additional Replace/Resume cases and package promotion are separate.",
+  "borrowed_test_executables_restored": 25
+}

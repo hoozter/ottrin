@@ -331,11 +331,14 @@ and [first-run timeout](../.hermes/evidence/windows-picker-keyboard-current/nati
    The matched installed timing comparison is complete. Candidate
    `c4c2f4be` enables the shared Windows capability on the current
    product source. Its private ZIP and NSIS match across all 59 files
-   and rebuild all six first-party binaries. Native tests will use
-   the helper shipped in the installer for Copy, Undo and interruption
-   recovery. The stable package remains on `4d3f11a3` while the
-   candidate goes through installed acceptance.
+   and rebuild all six first-party binaries. The exact bundled helper
+   passed installed Copy, fresh-process Undo and cleanup, and recovery
+   after forced helper termination before publication. A fresh process
+   showed the interrupted attempt as Ended and the original data was
+   preserved. The stable package remains on `4d3f11a3` while the
+   candidate goes through the remaining package gates.
    [Candidate package verification](../.hermes/evidence/windows-admin-copy-delivery-current/HOST_PAYLOAD.json).
+   [Installed Copy and recovery verification](../.hermes/evidence/windows-admin-copy-delivery-current/INSTALLED_ACCEPTANCE.json).
    Earlier private revision `94549b87` changes the shared capability
    gate relative to the delivered `d2031d5e` build. Its ZIP and NSIS matched
    across all 59 payload files. The installer ran as a standard user, and
