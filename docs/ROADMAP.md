@@ -1401,9 +1401,25 @@ Current source, test, package and owner/external scopes stay separate.
    Source-built Dark and Light X11 checks cover icons, alignment, draft
    text color, 14 px menu corners, 3.5 px borders, and Cancel. All 552
    active Linux UI tests and strict Linux/Windows-target UI lint passed.
-   Both private desktops were retired. Package delivery and native Windows
-   rendering remain open.
+   Both private desktops were retired. The AppImage, portable archive, DEB
+   and RPM from `4c88e968` are now delivered at the stable local paths.
+   The mounted AppImage passed Dark and Light menu styling, Cancel,
+   accessibility activation followed by Cancel, and private atomic
+   replacement. The packaged index averaged 0.033% of one core in 60
+   seconds without clients. All four hosted jobs passed. The managed index
+   returned to Ready with its database and preferences preserved, and
+   the consumed stage and previous cohort were retired.
    [Menu preview receipt](../.hermes/evidence/appearance-live-menu-current/ACCEPTANCE.json).
+   [Linux delivery receipt](../.hermes/evidence/appearance-live-menu-delivery-current/PROMOTION.json).
+
+   The private Windows installer and portable archive match across 59
+   payload files. Native installed Dark passed, and the real Light palette
+   showed the complete live and preview menus. The Light editor stayed
+   open after Cancel, so the Windows candidate remains staged. All four
+   disposable guests and their volumes were removed, and borrowed test
+   binaries were restored by hash. Investigate the native Cancel behavior
+   before accepting the Windows appearance change.
+   [Native Windows menu receipt](../.hermes/evidence/windows-live-menu-delivery-current/MENU_NATIVE_ACCEPTANCE.json).
 
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
