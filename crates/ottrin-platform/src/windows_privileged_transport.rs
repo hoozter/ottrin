@@ -897,6 +897,84 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires a disposable elevated Windows guest with an eligible owner group"]
+    fn caller_refuses_in_place_default_owner_change() {
+        use windows_sys::Win32::Security::{
+            CreateWellKnownSid, SetTokenInformation, TOKEN_ADJUST_DEFAULT, TOKEN_OWNER, TokenOwner,
+            WinBuiltinAdministratorsSid,
+        };
+
+        let command =
+            PathBuf::from(std::env::var_os("SystemRoot").unwrap()).join("System32/cmd.exe");
+        let child = Child(
+            std::process::Command::new(command)
+                .args(["/d", "/q", "/c", "set /p OTTRIN_QA_WAIT="])
+                .stdin(std::process::Stdio::piped())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .spawn()
+                .unwrap(),
+        );
+        let started = process_start_time(child.0.as_raw_handle()).unwrap();
+        let caller = CallerProcess::capture(child.0.id(), started).unwrap();
+        let token = process_token(&caller.process, TOKEN_QUERY | TOKEN_ADJUST_DEFAULT).unwrap();
+        let user = crate::windows_fs::user_for_token(&token).unwrap();
+        let group = crate::windows_fs::group_for_token(&token).unwrap();
+        let original = crate::windows_fs::owner_for_token(&token).unwrap();
+        let mut administrators = [0u32; 17];
+        let mut length = std::mem::size_of_val(&administrators) as u32;
+        let owner = if user == original {
+            // SAFETY: the aligned buffer has space for a maximum-length SID.
+            assert_ne!(
+                unsafe {
+                    CreateWellKnownSid(
+                        WinBuiltinAdministratorsSid,
+                        ptr::null_mut(),
+                        administrators.as_mut_ptr().cast(),
+                        &mut length,
+                    )
+                },
+                0
+            );
+            administrators.as_mut_ptr().cast()
+        } else {
+            user.as_ptr().cast_mut().cast()
+        };
+        let replacement = TOKEN_OWNER { Owner: owner };
+        // SAFETY: replacement names a live SID. Only the disposable child's
+        // existing primary token was opened with TOKEN_ADJUST_DEFAULT.
+        let changed = unsafe {
+            SetTokenInformation(
+                token.as_raw_handle(),
+                TokenOwner,
+                ptr::from_ref(&replacement).cast(),
+                std::mem::size_of_val(&replacement) as u32,
+            )
+        };
+        assert_ne!(changed, 0, "{}", io::Error::last_os_error());
+        let after = crate::windows_fs::owner_for_token(&token).unwrap();
+        assert_ne!(after, original);
+        assert_eq!(
+            crate::windows_fs::owner_for_token(&caller.token).unwrap(),
+            after
+        );
+        assert_eq!(crate::windows_fs::user_for_token(&token).unwrap(), user);
+        assert_eq!(crate::windows_fs::group_for_token(&token).unwrap(), group);
+        assert_eq!(
+            process_start_time(child.0.as_raw_handle()).unwrap(),
+            started
+        );
+        assert_eq!(
+            caller.validate().unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(
+            caller.local_app_data().unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+    }
+
+    #[test]
     #[ignore = "Owned subprocess entry; exercised by caller_profile_uses_kernel_token_not_environment"]
     fn caller_profile_worker() {
         let parent = std::env::var("OTTRIN_PROFILE_PARENT")

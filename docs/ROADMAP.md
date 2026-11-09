@@ -653,15 +653,22 @@ Current source, test, package and owner/external scopes stay separate.
      symbolic-link publication and restoration boundaries open. Preserve
      edited or unknown payloads and refuse divergent journals.
      [Hosted Windows verification](https://github.com/hoozter/ottrin/actions/runs/42451117154/job/128640353389).
-   - Prove actual app/helper restart with newly authenticated connections.
-     Recapturing the same live client is insufficient. Verify the actual launched
-     helper's lifetime on disconnect, lost terminal reply and Stop through UAC.
-   - Prove alternate-administrator UAC, in-place TokenOwner mutation, caller symbolic
-     links and packaged/profile contexts. Existing hard-link cases are insufficient.
-   - Prove queued worker, step progress, Stop and partial/late terminal ownership
-     through ordinary-user rendered GUI, launched UAC helper and packaged contexts
-     before enabling the feature. Retain original-caller authority and the one
-     canonical registry throughout history, Undo, recovery and cleanup.
+   - Installed alternate-administrator UAC checks cover newly authenticated
+     connections after app restart, termination of the launched helper,
+     forward Resume, Undo, cleanup, and ordinary-user GUI Stop with partial
+     and late terminal results. The exact receipts above distinguish those
+     cases. The actual launched helper's lifetime when its client
+     disconnects and when the terminal reply is lost still needs evidence.
+   - The native Windows build 26100 token-mutation check changes a disposable
+     child's live primary TokenOwner. The original query handle observes the
+     new owner while TokenUser, primary group and process generation stay
+     the same. The captured caller rejects both revalidation and profile
+     lookup. See the
+     [native token-owner receipt](../.hermes/evidence/windows-admin-copy-package-current/TOKEN_OWNER_MUTATION_NATIVE.json).
+   - Keep caller symbolic-link, packaged identity, and remaining read-only
+     original-root cases open before enabling the feature. Preserve the
+     original caller's authority and canonical registry throughout history,
+     Undo, recovery and cleanup.
 
    Missing member IDs never license deletion or a completed original-batch claim.
    These are implementation/QA tasks, not owner waits. Personal authentication,

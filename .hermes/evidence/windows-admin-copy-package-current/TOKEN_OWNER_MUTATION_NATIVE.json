@@ -1,0 +1,19 @@
+{
+  "source_base": "614944bd62941a08e1384334b27ffe3fe0decaac",
+  "source_diff_sha256": "dda7859a5ffb9a9e406e751b70d9d67a440f48da45d875ab4952d7e55dd5eabc",
+  "test_executable_sha256": "fc18dd6e190bbb3fbaf0adeb545e600463283cecceb53474def7e31c455da9c8",
+  "archive_sha256": "286c2d63b1342acd093d80adf794cc7f033a307d5461c35f4da716b6345ee47a",
+  "status": "pass",
+  "native_result": "Windows build 26100\r\n\nrunning 1 test\ntest windows_privileged_transport::tests::caller_refuses_in_place_default_owner_change ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 598 filtered out; finished in 0.02s\n\n",
+  "scope": "Exact Windows platform test under SYSTEM in disposable guest. Mutates only a live child primary TokenOwner and verifies captured identity and profile lookup refuse.",
+  "cleanup": {
+    "domain": "ottrin-init-helper-pipe-qa",
+    "uuid": "fc811dcb-7ca4-4006-b44f-2914939a3402",
+    "volume": "ottrin-init-helper-pipe-qa.qcow2",
+    "status": "pass",
+    "domain_removed": true,
+    "overlay_removed": true,
+    "protected_definitions_states_and_backing_unchanged": true,
+    "temporary_compiler_restored_by_hash": true
+  }
+}
