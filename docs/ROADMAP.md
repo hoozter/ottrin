@@ -1148,6 +1148,12 @@ Current source, test, package and owner/external scopes stay separate.
    Dark and Light at 150% X11 scaling. The actual List headers and Grid
    tiles stay readable, and Cancel preserves the saved view and theme.
    Both private profiles were removed. [Scaled preview receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/view-scale150/ACCEPTANCE.json).
+   On that same AppImage at 150%, clicking the selected List row or Grid
+   tile opens Selected files and outlines the clicked item. In both palettes,
+   changing Selection background changes the row fill, and changing the
+   shared Surface corners from 14 to 0 squares the selected Grid tile.
+   Cancel preserves the saved theme and view.
+   [Selection and property receipt](../.hermes/evidence/theme-editor-pointer-fix-linux-current/selection-scale150/ACCEPTANCE.json).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
