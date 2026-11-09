@@ -1549,6 +1549,20 @@ Current source, test, package and owner/external scopes stay separate.
    separately.
    [Diagnostic installer result](../.hermes/evidence/theme-editor-app-trace-current/native-close/GUEST_RESULT.json).
 
+   The portable diagnostic captured both mouse events inside the real
+   Cancel button in all four cases. The app observed 0.87–1.25 seconds
+   between the event-processing frames, beyond egui's 0.8-second
+   cutoff. Hit testing stayed on Cancel and accessible Cancel closed
+   each window. The shared input path now applies the duration cutoff
+   only to touch presses. Mouse clicks still obey the movement and
+   hit-testing rules. The rendered Light editor closes on a stationary
+   mouse release delayed by 1.25 seconds, while Dark accessible Cancel,
+   mouse drag suppression and touch hold suppression pass. All 554
+   active Linux UI tests passed. Exact rebuilt Windows package checks
+   remain pending. The private diagnostic guest, overlay and packages
+   were removed, and borrowed executables were restored by hash.
+   [Portable app trace](../.hermes/evidence/theme-editor-app-trace-current/native-portable-user-root/GUEST_RESULT.json).
+
    Verify every supported role/control against the actual interface and logical
    hierarchy; field-map/test/capture counts do not close this audit.
 3. Close remaining supported themed-picker, Linux FileChooser/FileManager1 and

@@ -2,7 +2,7 @@ mod touch_state;
 
 use crate::data::input::{
     Event, EventFilter, KeyboardShortcut, Modifiers, MouseWheelUnit, NUM_POINTER_BUTTONS,
-    PointerButton, RawInput, TouchDeviceId, ViewportInfo,
+    PointerButton, RawInput, TouchDeviceId, TouchPhase, ViewportInfo,
 };
 use crate::{
     SafeAreaInsets,
@@ -62,7 +62,7 @@ pub struct InputOptions {
     /// After a pointer-down event, if the pointer moves more than this, it won't become a click.
     pub max_click_dist: f32,
 
-    /// If the pointer is down for longer than this it will no longer register as a click.
+    /// If a touch pointer is down for longer than this it will no longer register as a click.
     ///
     /// If a touch is held for this many seconds while still, then it will register as a
     /// "long-touch" which is equivalent to a secondary click.
@@ -1090,6 +1090,9 @@ pub struct PointerState {
     /// `None` if no mouse button is down.
     press_start_time: Option<f64>,
 
+    /// Whether the current press participates in touch long-press recognition.
+    press_is_touch: bool,
+
     /// Set to `true` if the pointer has moved too much (since being pressed)
     /// for it to be registered as a click.
     pub(crate) has_moved_too_much_for_a_click: bool,
@@ -1134,6 +1137,7 @@ impl Default for PointerState {
             down: Default::default(),
             press_origin: None,
             press_start_time: None,
+            press_is_touch: false,
             has_moved_too_much_for_a_click: false,
             started_decidedly_dragging: false,
             last_click_time: f64::NEG_INFINITY,
@@ -1201,6 +1205,15 @@ impl PointerState {
                     if pressed {
                         self.press_origin = Some(pos);
                         self.press_start_time = Some(time);
+                        // Touch backends report Touch in addition to PointerButton.
+                        self.press_is_touch = button == PointerButton::Primary
+                            && new.events.iter().any(|event| {
+                                matches!(
+                                    event,
+                                    Event::Touch { phase: TouchPhase::Start, pos: touch_pos, .. }
+                                        if *touch_pos == pos
+                                )
+                            });
                         self.has_moved_too_much_for_a_click = false;
                         self.pointer_events.push(PointerEvent::Pressed {
                             position: pos,
@@ -1240,6 +1253,7 @@ impl PointerState {
 
                         self.press_origin = None;
                         self.press_start_time = None;
+                        self.press_is_touch = false;
                     }
 
                     self.down[button as usize] = pressed; // must be done after the above call to `could_any_button_be_click`
@@ -1522,7 +1536,8 @@ impl PointerState {
                 return false;
             }
 
-            if let Some(press_start_time) = self.press_start_time
+            if self.press_is_touch
+                && let Some(press_start_time) = self.press_start_time
                 && self.time - press_start_time > self.options.max_click_duration
             {
                 return false;
@@ -1706,6 +1721,7 @@ impl PointerState {
             down,
             press_origin,
             press_start_time,
+            press_is_touch: _,
             has_moved_too_much_for_a_click,
             started_decidedly_dragging,
             last_click_time,

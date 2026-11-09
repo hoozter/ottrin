@@ -3039,6 +3039,56 @@ mod tests {
     }
 
     #[test]
+    fn pointer_clicks_still_respect_drag_distance_and_touch_hold() {
+        let pos = egui::pos2(20.0, 20.0);
+        let moved = egui::pos2(40.0, 20.0);
+        let button = |pos, pressed| egui::Event::PointerButton {
+            pos,
+            button: egui::PointerButton::Primary,
+            pressed,
+            modifiers: egui::Modifiers::NONE,
+        };
+        let touch = |phase| egui::Event::Touch {
+            device_id: egui::TouchDeviceId(1),
+            id: egui::TouchId(1),
+            phase,
+            pos,
+            force: None,
+        };
+        let frame = |input: egui::InputState, time, events| {
+            input.begin_pass(
+                egui::RawInput {
+                    time: Some(time),
+                    events,
+                    ..Default::default()
+                },
+                false,
+                1.0,
+                egui::InputOptions::default(),
+            )
+        };
+        let pressed = frame(egui::InputState::default(), 0.0, vec![button(pos, true)]);
+        let dragged = frame(pressed, 0.1, vec![egui::Event::PointerMoved(moved)]);
+        assert!(dragged.pointer.is_decidedly_dragging());
+        let released = frame(dragged, 1.25, vec![button(moved, false)]);
+        assert!(!released.pointer.primary_clicked());
+
+        let pressed = frame(
+            egui::InputState::default(),
+            0.0,
+            vec![button(pos, true), touch(egui::TouchPhase::Start)],
+        );
+        let held = frame(pressed, 1.25, vec![]);
+        assert!(!held.pointer.could_any_button_be_click());
+        let released = frame(
+            held,
+            1.3,
+            vec![button(pos, false), touch(egui::TouchPhase::End)],
+        );
+        assert!(!released.pointer.primary_clicked());
+    }
+
+    #[test]
     fn menu_preview_cancel_requests_native_editor_close_in_both_palettes() {
         use egui::accesskit::{Action, ActionRequest, Role};
 
@@ -3052,7 +3102,7 @@ mod tests {
             app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
             app.theme_editor.selected_region = ThemePreviewRegion::Accent;
             let original = app.state.config.custom_themes.clone();
-            let mut render = |events| {
+            let mut render = |events, time| {
                 ctx.run(
                     egui::RawInput {
                         screen_rect: Some(Rect::from_min_size(
@@ -3060,6 +3110,7 @@ mod tests {
                             Vec2::new(1180.0, 752.0),
                         )),
                         events,
+                        time: Some(time),
                         ..Default::default()
                     },
                     |ctx| {
@@ -3089,16 +3140,29 @@ mod tests {
                     data: None,
                 })
             };
-            let initial = render(vec![]);
-            let _ = render(vec![invoke(&initial, "Menu")]);
-            let menu = render(vec![]);
+            let initial = render(vec![], 0.0);
+            let _ = render(vec![invoke(&initial, "Menu")], 0.1);
+            let menu = render(vec![], 0.2);
             assert!(egui::Popup::is_any_open(&ctx));
-            let invoked = render(vec![invoke(&menu, "New Folder")]);
+            let invoked = render(vec![invoke(&menu, "New Folder")], 0.3);
             assert!(
                 !egui::Popup::is_any_open(&ctx),
                 "Invoking a sample action must dismiss the popup"
             );
-            let cancelled = render(vec![invoke(&invoked, "Cancel")]);
+            let cancelled = if mode == ThemeMode::Dark {
+                render(vec![invoke(&invoked, "Cancel")], 0.4)
+            } else {
+                let pos = egui::pos2(1018.0, 702.0);
+                let pointer = |pressed| egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed,
+                    modifiers: egui::Modifiers::NONE,
+                };
+                let _ = render(vec![egui::Event::PointerMoved(pos)], 0.4);
+                let _ = render(vec![pointer(true)], 0.5);
+                render(vec![pointer(false)], 1.75)
+            };
             let output = &cancelled.viewport_output[&editor_id];
             assert!(
                 output.commands.contains(&egui::ViewportCommand::Close),
