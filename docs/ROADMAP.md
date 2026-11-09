@@ -831,11 +831,16 @@ Current source, test, package and owner/external scopes stay separate.
      and both streams. The helper preserved its original token state.
      Both processes passed and their offline guest was removed.
      [Native caller command receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_CALLER_COMMANDS_NATIVE.json).
-     The installed Replace, restart, Undo and cleanup fixture with an
-     external alias and a named stream still needs
-     a newly built private installer and a native run. The installed guest
-     runner requires 24 GiB of free host disk space. Crash recovery,
-     cancellation, power loss and production latency remain separate gates.
+     The private capability-enabled NSIS installer from `6dd568dc`
+     is built. The installer extraction and ZIP agree on all 59 payload
+     files. The installed Replace, restart, Undo and cleanup fixture
+     stopped at its 24 GiB storage check before allocating a guest.
+     The installer remains for this run. The private worktree, raw
+     payload, extraction, verified duplicate ZIP and private executable
+     compiler outputs were retired.
+     [Private installer receipt](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_HOST_PAYLOAD.json).
+     Crash recovery, cancellation, power loss and production latency
+     remain separate gates.
      [Native read-only alias probe](../.hermes/evidence/windows-admin-copy-package-current/READONLY_ALIAS_VOLUME_PROBE.json).
 
    Missing member IDs never license deletion or a completed original-batch claim.
