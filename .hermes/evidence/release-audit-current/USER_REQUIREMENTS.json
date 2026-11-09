@@ -98,7 +98,7 @@
     {
       "id": "U07",
       "requirement": "Expose every supported theme property and explain shared defaults; radius/border/color changes must reach every intended window/control.",
-      "current_scope": "Separate window, surface and button roles retain historical scoped evidence. Exact 21f18bbe verifies quarter-pixel themed border visibility during frame and component selection at 100% and 125% in Dark and Light. Every current property, consumer and supported platform still requires a complete audit. Staged Linux b1bc72fe exposes Secondary text from Smart Panel. Both variants recolor the painted Search header icon and restore it exactly at 150% X11. The all-property and all-window audit remains open.",
+      "current_scope": "Separate window, surface and button roles retain historical scoped evidence. Exact 21f18bbe verifies quarter-pixel themed border visibility during frame and component selection at 100% and 125% in Dark and Light. Every current property, consumer and supported platform still requires a complete audit. Staged Linux b1bc72fe exposes Secondary text from Smart Panel. Both variants recolor the painted Search header icon and restore it exactly at 150% X11. The all-property and all-window audit remains open. The combined staged Linux AppImage 4d3f11a3 verifies both Secondary text on the Smart Panel Search icon and the Borders and dividers color in the live and preview menus. Both variants passed at 150% X11.",
       "evidence": [
         ".hermes/evidence/inspector-theme-roles-current/ACCEPTANCE.json",
         ".hermes/evidence/inspector-editor-current/ACCEPTANCE.json",
@@ -110,7 +110,9 @@
         ".hermes/evidence/locations-rail-delivery-current/PROMOTION.json",
         ".hermes/evidence/theme-selection-delivery-current/MOUNTED_THEME_SELECTION_ACCEPTANCE.json",
         ".hermes/evidence/theme-selection-delivery-current/FRACTIONAL_SCALE_ACCEPTANCE.json",
-        ".hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json"
+        ".hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json",
+        ".hermes/evidence/view-options-alignment-current/PACKAGED_SMART_PANEL_ACCEPTANCE.json",
+        ".hermes/evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json"
       ]
     },
     {
@@ -145,9 +147,10 @@
     {
       "id": "U09",
       "requirement": "All menus have complete appropriate icons, compact gutters and consistent text/icon/check alignment.",
-      "current_scope": "Current native Windows main/Inspector menus and Linux search-result menu directly reviewed with compact aligned icons. Remaining whole-interface/menu inventory still requires concentrated audit.",
+      "current_scope": "Earlier native Windows main/Inspector menus and the Linux search-result menu passed scoped review. The combined staged Linux AppImage 4d3f11a3 verifies the main and View Options dividers and preserves the distinct action-menu and checkmark gutters. Dark and Light passed at 150% X11. The remaining whole-interface menu inventory stays open.",
       "evidence": [
-        ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/NATIVE_VISIBILITY_ACCEPTANCE.json"
+        ".hermes/evidence/release-audit-current/cohort/upgrade-enabled-console/NATIVE_VISIBILITY_ACCEPTANCE.json",
+        ".hermes/evidence/view-options-alignment-current/PACKAGED_MENU_ACCEPTANCE.json"
       ]
     },
     {
@@ -260,10 +263,11 @@
     "stable_linux": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
     "stable_windows": "a9c718a2f21f9c1c45e798f2fc83a3f59b96bbae",
     "staged_linux": [
-      "b1bc72fe369fea5e0f3892701b67a26833a653cd"
+      "b1bc72fe369fea5e0f3892701b67a26833a653cd",
+      "4d3f11a379df2d58424093a0bb13fbf42b2aa8b4"
     ],
     "staged_windows": [],
-    "note": "Reconciled U06–U08 and U13–U15 with current exact package evidence and open boundaries. Other clauses retain their prior scopes."
+    "note": "Reconciled U06–U08 and U13–U15 with current exact package evidence and open boundaries. Other clauses retain their prior scopes. Added the exact combined Linux menu and Smart Panel results to U07 and U09."
   },
   "reviewed_source_revision": "2bb6da9635f8a0eb50b2d598e97ac8e3f97bc89d",
   "historical_source_revision": "7d10a8b6eba74e642fcf5028af737a98bb5c0958",
