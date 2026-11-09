@@ -1187,6 +1187,15 @@ Current source, test, package and owner/external scopes stay separate.
    atomic replacement, FileManager1 dispatch and the Save caller
    workflow on private desktops. The candidate remains staged.
    [Packaged Smart Panel result](../.hermes/evidence/smart-panel-secondary-text-current/THEME_UI_ACCEPTANCE.json).
+   Strict local lint passed for both Linux and Windows targets. The
+   exact portable index passed watcher and restart checks and averaged
+   0.067% of one core over 60 seconds without clients. The daemon,
+   helper and HTML renderer match the preceding stable binaries.
+   Six superseded incremental sessions were removed, recovering
+   0.44 GiB. Local promotion preflight passed and the full hosted
+   matrix started on a source-equivalent revision that adds manual
+   CI dispatch without changing any job.
+   [Hosted matrix](https://github.com/hoozter/ottrin/actions/runs/42678015279).
    Broader platform and theme-property coverage and whole-interface
    alignment/grouping remain open. The theme-library miniature now
    paints square selected-row fills, rounds only outer title/status corners and
